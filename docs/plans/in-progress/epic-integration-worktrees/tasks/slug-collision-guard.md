@@ -4,7 +4,7 @@ status: in-progress
 repo: workbench
 value: "Two tickets can never produce the same branch, so no task lands on another's tree"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py]
-verify: "mise run test && mise run lint"
+verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && cd ../.. && mise run lint"
 depends_on: [epic-close-sweep]
 owns: []
 uses: [ticket-name-lookup]
