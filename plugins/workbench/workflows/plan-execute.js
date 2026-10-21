@@ -59,6 +59,13 @@ export const meta = {
 //                                "Plan: <path> - read the section for your task, not the
 //                                whole file."
 //   verifierAgent: string|null? the agent type the verifier runs as (default 'workbench:verifier'; null runs it as a plain prompt role)
+//   tasks[].forkPoint  a SHA (optional): the <epic> commit a task landed from in an earlier run;
+//                                seeds its fork point. A landing in this run records the base merge.py
+//                                reports as the fork point. Once a task has one, every diff base
+//                                in its prompts (reviewer, verifier --base, TDD revert recipe,
+//                                remediation and audit re-review, forward-merge re-verify) is that
+//                                SHA, so a landed task's diff stays exactly its own change. The
+//                                return carries `landed: [{id, head, forkPoint}]` and tasks[].forkPoint.
 //   baseRef:     string?         the ref a task's branch forked from (default 'main'); the
 //                                independent verifier diffs against its merge-base to scan
 //                                for debt markers
@@ -93,7 +100,7 @@ export const meta = {
 //                                one landing at a time, before any dependent counts it as released.
 //                                Dependents then merge args.baseRef once instead of each dependency
 //                                branch. A failed landing ends the task 'land-failed' and fails its
-//                                dependents; the return carries `landed: [{id, head}]`
+//                                dependents; the return carries `landed: [{id, head, forkPoint}]`
 // }
 const ARGS = (typeof args !== 'undefined' && args) || {}
 // Workflow agents' shells have no CLAUDE_PLUGIN_ROOT, so every script path is built from this.
@@ -111,6 +118,13 @@ const DO_NOT_BUILD = ARGS.doNotBuild || []
 const DESIGN_DOC = ARGS.designDoc || ''
 const PLAN_DOC = ARGS.planDoc || ''
 const BASE_REF = ARGS.baseRef || 'main'
+// A landed task's fork point (by root id): the epic commit it landed from. After landing,
+// merge-base(HEAD, <epic>) is the task's own HEAD, so its diffs are taken from here instead.
+const FORK_POINTS = new Map()
+for (const x of Array.isArray(ARGS.tasks) ? ARGS.tasks : []) if (x && x.forkPoint) FORK_POINTS.set(x.rootId || x.id, String(x.forkPoint))
+const forkPointOf = (t) => FORK_POINTS.get(t.rootId || t.id)
+// The one diff base: the fork point when recorded, else the merge-base with the base ref.
+const diffBase = (t, ref = false) => forkPointOf(t) || (ref ? BASE_REF : `$(git merge-base HEAD ${BASE_REF})`)
 const VERIFIER_AGENT = ARGS.verifierAgent === undefined ? 'workbench:verifier' : ARGS.verifierAgent
 const BRIEF = ARGS.brief || {}
 const APPROVALS = ARGS.approvals || []
@@ -696,6 +710,7 @@ const LAND = {
     landed: { type: 'boolean', description: 'true only when merge.py exited 0: the epic branch now contains the task' },
     head: { type: 'string', description: 'the epic branch SHA after the landing (git rev-parse in the task tree)' },
     conflict: { type: 'boolean', description: 'true when the rebase hit a conflict you did not resolve' },
+    base: { type: 'string', description: 'merge.py baseBefore: the epic branch commit the task was rebased onto and fast-forwarded from; empty when it did not land' },
     contained: { type: 'boolean', description: 'true when merge.py reported contained: true (the task is already in the epic branch); head is then the task tree HEAD' },
     verification: {
       type: 'object',
@@ -984,7 +999,7 @@ function reviewPrompt(t, impl, round, preFindings = [], scope = null) {
       : '',
     '',
     targetedVerify(t),
-    diffReadStep(scope ? scope.files : impl.filesChanged, scope ? `${scope.prev || '<previous head>'}..${scope.head || 'HEAD'}` : `$(git merge-base HEAD ${BASE_REF})..HEAD`),
+    diffReadStep(scope ? scope.files : impl.filesChanged, scope ? `${scope.prev || '<previous head>'}..${scope.head || 'HEAD'}` : `${diffBase(t)}..HEAD`),
     '',
     ...(preFindings.length
       ? ['Independent verification found:', ...preFindings.map((f) => `- [${f.severity}] ${f.file}${f.line ? ':' + f.line : ''} - ${f.summary}`), '']
@@ -1067,7 +1082,7 @@ function verifyPrompt(t, impl, prev) {
   const acs = Array.isArray(t.ac) && t.ac.length ? t.ac : null
   const flags = [
     `--worktree "$D"`,
-    `--base ${BASE_REF}`,
+    `--base ${diffBase(t, true)}`,
     `--cmd ${shq(verifyCommand(t, impl))}`,
     `--markers ${shq(DEBT_MARKERS)}`,
     `--test-re ${shq(TEST_FILE_RE.source)}`,
@@ -1254,11 +1269,11 @@ function deletionPinned(changed) {
     changed.some((c) => TEST_FILE_RE.test(c.file) && /^[AM]/.test(c.status || ''))
 }
 const TDD_REQUIREMENT = 'every behaviour change is written test-first and the red run is reported'
-const REVERT_RECIPE =
-  'commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); ' +
-  'git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence'
+const revertRecipe = (base) =>
+  `commit first, then for each changed non-test file: git show ${base}:<path> > <path>; run the test (must fail); ` +
+  `git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence`
 
-function tddFindings(impl, tdd, changed) {
+function tddFindings(impl, tdd, changed, t) {
   if (tdd && tdd.ran && tdd.failedOnBase && tdd.passedOnHead) return []
   const tests = (impl && impl.tests) || {}
   const file = (tests.added && tests.added[0]) || '(tests)'
@@ -1281,7 +1296,7 @@ function tddFindings(impl, tdd, changed) {
       severity: 'high',
       kind: 'quality',
       file,
-      summary: `TDD skipped without a listed exception; prove the tests catch the change - ${REVERT_RECIPE}`,
+      summary: `TDD skipped without a listed exception; prove the tests catch the change - ${revertRecipe(forkPointOf(t) || '<merge-base>')}`,
       requirement: TDD_REQUIREMENT,
       evidence: tests.note || '(no note)',
       gate: 'tdd-skipped',
@@ -1854,7 +1869,7 @@ async function reviewUntilClean(t, firstImpl, firstPre = [], tier = 'full', impl
     }
     lastFixer = fixed
     lastFix = { changed: v.changedSincePrevious, known: v.changedKnown, prev: v.prev, head: v.head }
-    preFindings = [...v.findings, ...tddFindings(v.impl, v.tdd, v.changed), ...approvalFindings(t, v.impl), ...readOnlyTestFindings(findings, fixed, v)]
+    preFindings = [...v.findings, ...tddFindings(v.impl, v.tdd, v.changed, t), ...approvalFindings(t, v.impl), ...readOnlyTestFindings(findings, fixed, v)]
   }
 }
 
@@ -1919,7 +1934,7 @@ async function runOne(t) {
     log(`${t.id}: implementer blocked (${v.impl.blocked.whoCanClear}): ${v.impl.blocked.reason}`)
     return { task: t, impl: v.impl, rounds: 0, clean: false, reason: 'blocked', blocked: v.impl.blocked, history: [], processGaps: [], declined: [], cannotVerify: [] }
   }
-  const pre = [...v.findings, ...tddFindings(v.impl, v.tdd, v.changed), ...approvalFindings(t, v.impl)]
+  const pre = [...v.findings, ...tddFindings(v.impl, v.tdd, v.changed, t), ...approvalFindings(t, v.impl)]
   const tier = reviewTier(t, v.impl, v, pre)
   if (tier === 'skip' && pre.length === 0 && verified(v.impl)) {
     log(`${t.id}: skip tier, verified - no per-task review; the scope audit still reads it`)
@@ -2035,6 +2050,7 @@ function landPrompt(t, impl) {
     `   cd ${shq(MAIN_CHECKOUT)} && python3 ${shq(PLUGIN_ROOT + '/skills/worktree-merge/scripts/merge.py')} ${flags.join(' ')}`,
     '2. Relay its output: landed is true only when it exited 0. verification.command is the --verify command, verification.passed is its `verify: pass` line, verification.evidence the output tail including that line. notes carries its notes lines.',
     `3. When it landed, run \`git -C "${repoDir(t)}" rev-parse ${BASE_REF}\` and report the SHA as head; otherwise report head as an empty string.`,
+    `   Also report base: the baseBefore value merge.py prints (the ${BASE_REF} commit the task was rebased onto and fast-forwarded from); empty when it did not land.`,
     `   Contained: when merge.py exits 0 printing \`merged 0 commit(s)\` and a note that there is nothing to merge because every commit is already in ${BASE_REF}, and its verify line is pass, the task is landed: report landed true, contained true, and head as the task tree HEAD (\`git -C "${repoDir(t)}" rev-parse HEAD\`). It is never a failure.`,
     `4. A rebase conflict can be a re-conflict: rebasing a dependent onto ${BASE_REF} drops its merge-of-${BASE_REF} commit, so conflicts that merge had resolved can come back. merge.py has already aborted its rebase, so the task worktree is clean. First reproduce the conflict: run \`git -C "${repoDir(t)}" rebase ${BASE_REF}\` in the task worktree and list the conflicted files with \`git -C "${repoDir(t)}" diff --name-only --diff-filter=U\`. Resolve a conflicted file only when the resolution is unambiguous: both sides carry the same change, or one side's hunk is exactly the dependency text already on ${BASE_REF}. For each resolved file run \`git -C "${repoDir(t)}" add <file>\`, then \`git -C "${repoDir(t)}" rebase --continue\` (with GIT_EDITOR=true), repeating until the rebase is finished and no rebase is in progress. Then re-run the task verify there (\`cd "${repoDir(t)}" && ${verifyCommand(t, impl)}\`), and re-run the step 1 command once.`,
     '   Otherwise (any ambiguous file) run `git rebase --abort` in the task worktree and report landed=false, conflict=true, with notes listing every conflicting file. If the re-run of the step 1 command conflicts again, merge.py has aborted its own rebase: run `git rebase --abort` only if a rebase is still in progress, and report landed=false, conflict=true with every conflicting file listed in notes.',
@@ -2058,7 +2074,8 @@ async function landTask(t, r) {
   const ok = res && (res.landed === true || res.contained === true) && res.verification && res.verification.passed === true
   if (ok) {
     const id = t.rootId || t.id
-    LANDED.push({ id, head: res.head })
+    if (res.landed === true && res.base) FORK_POINTS.set(id, String(res.base))
+    LANDED.push({ id, head: res.head, ...(FORK_POINTS.has(id) ? { forkPoint: FORK_POINTS.get(id) } : {}) })
     log(`${t.id}: landed on ${BASE_REF} at ${res.head}`)
     const prior = r.impl.verification || {}
     return { ...r, land: res, impl: { ...r.impl, verification: { ...prior, ...res.verification, evidence: res.verification.evidence || prior.evidence, head: res.head } } }
@@ -2370,6 +2387,7 @@ function mergePrompt(d, impl, branch) {
     `Merge a remediated dependency forward into plan task ${d.id}'s tree, then re-verify it.`,
     briefBlock(),
     valueLine(d),
+    ...(forkPointOf(d) ? [`${d.id}'s own change is the diff from its fork point: git diff ${forkPointOf(d)}..HEAD.`] : []),
     `1. Run: ${mergeCommand(d, branch)}`,
     `   ${OWN_CHECKOUT_ONLY}`,
     '2. If the merge conflicts, stop: run git merge --abort, report conflict=true and merged=false.',
@@ -2576,6 +2594,7 @@ return {
     clean: r.clean,
     rounds: r.rounds,
     stopped: r.reason || null,
+    ...(forkPointOf(r.task) ? { forkPoint: forkPointOf(r.task) } : {}),
     ...(r.agentError ? { agentError: r.agentError } : {}),
     ...(r.panel ? { panel: true } : {}),
     complete: r.impl ? r.impl.complete : false,
