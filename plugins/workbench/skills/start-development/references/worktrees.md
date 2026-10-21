@@ -3,13 +3,21 @@
 Read from Phase 4 of `start-development`. Isolation is enforced by this flow,
 not left to the agents:
 
-1. Name every task tree `<epic>--<task>`: the epic slug, two dashes, the task slug
-   (`cost-and-ticketing--ticket-run`). Branch and directory carry the same name, so
-   one tree maps to exactly one task. On the ticket flow, `ticket.py worktrees <epic>
+1. Name every task tree `<epic>-<task>`: the epic slug, one dash, the task slug
+   (`cost-and-ticketing-ticket-run`), at most 57 characters (28 + 1 + 28). Branch and
+   directory carry the same name, so one tree maps to exactly one task. Trees named with
+   the old double-hyphen form are legacy double-hyphen trees: they are still honoured, never created.
+   **The integration tree.** `ticket.py move <epic> in-progress` creates the epic's own tree at
+   `<configdir>/worktrees/<epic>[/<repo>]` on branch `<epic>`. Task trees fork from `<epic>`, not
+   from main, and land back on it in the run, so a dependent's diff carries only its own change and
+   the epic is one tested unit that `move done` merges to main. An epic claimed before this change
+   gets its tree through `ticket.py worktrees <epic> --integration`. Every role on a task (implementer,
+   fixer, reviewer, verifier, merger) shares the task's one tree; none gets another. A dependent's
+   first step merges the epic branch into its tree. On the ticket flow, `ticket.py worktrees <epic>
    [--base main]` creates the trees: it calls `worktree-create` for every task without a
    live tree, writes `worktree` and `branch` into the task file, sets `status:
    in-progress` (a no-op after `move in-progress`, which already did it), and reuses a tree that already exists. Off the ticket flow, invoke
-   `worktree-create` yourself with the same `<epic>--<task>` name. It refuses a name
+   `worktree-create` yourself with the same `<epic>-<task>` name. It refuses a name
    already in use and tells you what is taken; on a rejection fix the cause, never
    reuse or force. The tree lands at `<workbench>/.claude/worktrees/<name>` with the
    newest `origin/main` and local `main` merged in, so the agent starts from current code.
@@ -18,9 +26,11 @@ not left to the agents:
    one task's merged, clean tree without waiting for the epic to close.
 2. Pass that path as the task's `worktree`. The agent works in it by absolute
    path and never calls the built-in `EnterWorktree`, which relocates the
-   permission root and prompts on every skill-created tree.
+   permission root and prompts on every skill-created tree. The harness built-in
+   worktree feature is never used; every tree is plain `git worktree` made by `worktree-create`.
 3. When the task is review-clean and verified, **dispatch a `worktree-merger`
-   subagent to land it. You never run the merge yourself.** A merge reads
+   subagent to land it on the epic branch in the run
+   (`merge.py --base <epic> --keep --verify <cmd>`). You never run the merge yourself.** A merge reads
    diffs, resolves conflicts, and reruns tests - all of it expensive, and none
    of it something you need to be holding at the merge phase.
 
@@ -40,6 +50,10 @@ not left to the agents:
    Merge in plan order, one agent per worktree. The merge script prunes empty directories left under
    paths the merge deleted, union-merges conflicts in doc files (the `overlapIgnore` globs) and reports them,
    and runs the repo's `suites` from `.claude/workbench.json` under the suite lock (`workbench-config.md`).
+
+`ticket.py move <epic> done` removes every task and integration tree and branch of the epic,
+after merging `<epic>` to main. Reviewer and verifier diffs taken after a task has landed use
+the task's recorded `fork_point`, not the merge-base with `<epic>`.
 
 Never hand one path to two agents. Never merge a task that is not both clean and
 verified - merging unfinished work is how the remainder gets forgotten. If a

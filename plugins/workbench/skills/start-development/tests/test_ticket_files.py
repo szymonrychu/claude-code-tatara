@@ -348,8 +348,8 @@ def test_tickets_reference():
         "todo",
         "in-progress",
         "done",
-        "<epic>--<task>",
-        "58",
+        "<epic>-<task>",
+        "57",
         "Run name",
         "Integration branch",
         "slug freeze",
@@ -364,6 +364,7 @@ def test_tickets_reference():
         "blocked",
     ):
         assert needle.lower() in text.lower(), needle
+    assert "<epic>--<task>" not in text
     assert text.isascii()
 
 

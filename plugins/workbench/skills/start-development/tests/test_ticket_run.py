@@ -483,7 +483,8 @@ def test_worktree_create_skill_uses_epic_task_naming():
 
     text = (Path(__file__).resolve().parents[2] / "worktree-create" / "SKILL.md").read_text()
     assert "t4-decode-cardstate" not in text
-    assert "<epic>--<task>" in text
+    assert "<epic>-<task>" in text
+    assert "<epic>--<task>" not in text
 
 
 def test_tasks_out_writes_file_instead_of_stdout(root, tmp_path):

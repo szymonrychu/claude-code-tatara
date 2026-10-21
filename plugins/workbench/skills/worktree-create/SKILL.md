@@ -19,7 +19,7 @@ submodule for a whole branch. This one makes a single tree for a single agent.
 ## Procedure
 
 1. **Propose a name.** You (the orchestrator) choose it: short, lowercase. On the
-   ticket flow the name is `<epic>--<task>` (epic slug, two hyphens, task slug),
+   ticket flow the name is `<epic>-<task>` (epic slug, one hyphen, task slug, at most 57 characters),
    and `ticket.py worktrees` creates it for you. Otherwise name it for the task,
    so a stranded tree is traceable back to its work.
 

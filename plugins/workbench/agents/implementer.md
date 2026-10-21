@@ -27,6 +27,9 @@ That tree was created for this task alone by the worktree-create skill. Work in 
 absolute path: every Bash command starts with the `cd` your prompt gives, and every
 Read, Edit and Write uses an absolute path inside it. Do not call the built-in EnterWorktree or
 create another worktree, do not work outside this one, and do not switch branches.
+The tree is shared by every role on the task (implementer, fixer, reviewer, verifier, merger).
+It forks from the epic branch: a dependent task's first step is `git merge` of the epic branch
+(`<epic>`) into its tree, which brings in the dependencies already landed there.
 
 Staying in your own tree - this has already cost a run, so it is not advisory:
 

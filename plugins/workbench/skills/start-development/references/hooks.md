@@ -3,8 +3,8 @@
 Read from `start-development`. A rule an agent is only told about loses to the
 "end the turn and report" reflex; these hooks make the rule mechanical. Both
 ship with the plugin (`.claude-plugin/plugin.json`) and fire only in agent
-worktrees - `.claude/worktrees/<name>` from `worktree-create` and
-`.worktrees/<branch>/<repo>` from `git-worktrees-create`. The main checkout
+worktrees - `<configdir>/worktrees/<name>` from `worktree-create` (task trees and
+epic integration trees alike) and the legacy `.worktrees/<branch>/<repo>` from `git-worktrees-create`. The main checkout
 belongs to the human and is never blocked.
 
 ## The commit guard

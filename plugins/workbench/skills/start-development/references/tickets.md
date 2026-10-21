@@ -33,7 +33,7 @@ Each lives in its own module under `skills/start-development/scripts/ticket_cmds
 - `args`: `args <epic> --out-dir <dir>` writes the plan-execute args JSON and its named copy.
 - `continue`: `continue <epic> --out-dir <dir>` applies the last return, records rulings, refreshes trees, writes the next args.
   The merge gate exits 2 (exit 2): an accepted task that a still-open task depends on has no merge in the base yet.
-  `continue` then prints one line per task, `MERGE <task> --name <epic>--<task> --repo <repo>`, and writes no args file.
+  `continue` then prints one line per task, `MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>`, and writes no args file.
   The orchestrator dispatches `workbench:worktree-merger` with those `--name` and `--repo` values, then reruns `continue`
   (the earlier steps are idempotent).
 - `contract`: `contract add|use|list` keeps `docs/plans/contracts.json`.
@@ -44,6 +44,12 @@ Each lives in its own module under `skills/start-development/scripts/ticket_cmds
 - `questions`: `questions [--add|--answer]` lists, adds or answers open questions in todo epics.
 - `amend`: `amend <epic> <task> --requirement-file ... --reason ...` replaces a task's Requirement and AC.
 - `worktrees --refresh` (`worktrees <epic> --refresh`) fast-forwards live, clean trees with nothing ahead of the base.
+- `close`: `close <epic> --verify <cmd>` lands `<epic>` on main in a fixed order (every done task contained in `<epic>`,
+  rebase, `--verify` on the rebased tip in the integration tree, fast-forward main, `--verify` on main) and writes
+  `close.json` (`epic`, `base`, `baseBefore`, `baseAfter`, `epicTip`, `integrationVerify`, `mainVerify`, `at`).
+  Exit 2 means a task is not yet contained (MERGE lines), exit 4 a failed verify.
+- `worktrees --integration` (`worktrees <epic> --integration`) creates or reuses the integration trees of an epic
+  claimed before this change; it makes no task tree.
 - `reap --task` (`reap --epic <epic> --task <task>`) reaps one task's merged, clean worktree.
 
 `apply-run` resets a dependency-failed task to the initial status (`todo`) and appends a dated note line
@@ -58,10 +64,13 @@ naming the failed dependency, so the next run picks it up; a discovered task car
 | Run name and named copy | `<epic>`, giving `plan-execute-<epic>.js` |
 | Task `id` and `short` | `<task>` |
 | Agent labels | `<epic>:impl:<task>`, `<epic>:verify:<task>#n` |
-| Per-task worktree and branch | `<epic>--<task>`, at most 58 characters (28 + 2 + 28) |
-| Integration branch | `<epic>` |
+| Per-task worktree and branch | `<epic>-<task>`, at most 57 characters (28 + 1 + 28) |
+| Integration branch and tree | branch `<epic>`; tree `<configdir>/worktrees/<epic>[/<repo>]` |
 
-`ticket.py slug "<title>"` prints a slug. `worktree_name(epic, task)` raises past 58 characters.
+`ticket.py slug "<title>"` prints a slug. `worktree_name(epic, task)` raises past 57 characters.
+Collision rule: `new-epic`, `new-task` and `rename` refuse a slug whose worktree or branch name is taken,
+including a name whose tree or branch is still on disk (a legacy double-hyphen tree included), even when no ticket file
+carries it; the stop names what is occupying it.
 Slug freeze: a slug never changes once the epic leaves `todo/`; `ticket.py` refuses a rename after that.
 
 ## Creating an epic: near duplicates
@@ -93,7 +102,8 @@ Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `crea
 Project brief (What/How/Why), Description, Goals, Non-goals, Review.
 
 Task file: `title`, `status`, `repo`, `value`, `files`, `verify`, `depends_on`, `owns`, `uses`,
-`model`, `review`, `worktree`, `branch`, `verified_head`, `run`, `provides`. Sections: Requirement,
+`model`, `review`, `worktree`, `branch`, `fork_point` (the commit the task tree forked from, recorded at creation),
+`verified_head`, `run`, `provides`. Sections: Requirement,
 Acceptance conditions (`- <AC-id>: <text> [evidence: <kind>:<ref>]`), Files, Interfaces, Expected
 outcome, Steps, Notes.
 
