@@ -97,7 +97,7 @@ def run(a, t) -> int:
         "epic": name,
         "base": a.base,
         "baseBefore": before,
-        "baseAfter": res["baseAfter"],
+        "baseAfter": prior["baseAfter"] if rerun else res["baseAfter"],
         "epicTip": t._git(wb, "rev-parse", name).stdout.strip(),
         "integrationVerify": prior["integrationVerify"]
         if rerun
