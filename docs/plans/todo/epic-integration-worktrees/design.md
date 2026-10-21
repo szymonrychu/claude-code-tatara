@@ -320,3 +320,12 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
 - `git worktree remove` (never `--force`) of clean, merged trees during `move done` and `reap`.
 - Rebase of task branches onto `<epic>` and of `<epic>` onto main: local, unpushed branches only.
 - No force push, no history rewrite of a shared branch, no data deletion.
+
+## Builder check answers
+
+- Main not checked out in any worktree at meta-mode close (detached main checkout): merge.py refuses and prints the exact fix, `git -C <workbench root> switch main`, then the close is re-run; it never checks a branch out on its own. (my call)
+- Component-mode close runs a read-only `git fetch origin <tracked>` (fetching is not pushing). With no `origin` or no network it falls back to the local tracked branch and says so in the summary. (my call)
+- Mixed meta and component tasks in one epic are refused at claim only; epics already in progress are not re-checked by `continue`. (my call)
+- The collision guard checks new names against existing epic slugs, every `<epic>-<task>` name, and legacy `<epic>--<task>` trees and branches still on disk. (my call)
+- Landing always runs the task's own `verify` in the integration tree, whatever its review path (process-only or triage-rejected included). (answered by D4)
+- `land-failed` escalates the task and its dependents end `dependency-failed` for that run. Recovery: the orchestrator resolves the conflict through `worktree-merger` (or rules on it), and the relaunch from `ticket.py continue` lands the task through the same merger path before its dependents run. (my call)
