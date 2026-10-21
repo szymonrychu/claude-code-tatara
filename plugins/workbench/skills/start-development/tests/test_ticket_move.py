@@ -880,3 +880,18 @@ def test_tasks_emit_branch_and_verified_head_for_the_epic_close_audit(root):
     assert out["alpha"]["acsForAudit"] == ["AC1"]
     assert out["beta"]["branch"] == ""
     assert out["beta"]["verifiedHead"] == ""
+
+
+def test_reap_all_ignores_dirs_with_no_ticket(repo, root):
+    live = mk_epic(root, "Live epic")
+    commit_all(repo)
+    assert cli("move", live, "in-progress", "--root", root).returncode == 0
+    unknown = stray_tree(repo, "gone-epic-x", merged=True)  # single hyphen, maps to no ticket
+    plain = stray_tree(repo, "plain-name", merged=True)
+    legacy = stray_tree(repo, "gone-epic--x", merged=True)  # merged legacy tree stays reapable
+    r = cli("reap", "--root", root)
+    assert r.returncode == 0, r.stderr
+    s = summary(r)
+    assert unknown.is_dir() and plain.is_dir()
+    assert str(unknown) not in s["removed"] and str(plain) not in s["removed"]
+    assert not legacy.exists() and str(legacy) in s["removed"]

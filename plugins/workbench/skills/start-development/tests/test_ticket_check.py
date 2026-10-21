@@ -303,7 +303,7 @@ def _repo(tmp_path):
     return repo
 
 
-def test_live_worktree_of_non_in_progress_epic_warns(tmp_path):
+def test_live_tree_warning_uses_ticket_lookup(tmp_path):
     repo = _repo(tmp_path)
     root = repo / "docs" / "plans"
     root.mkdir(parents=True)

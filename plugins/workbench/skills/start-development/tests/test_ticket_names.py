@@ -20,7 +20,7 @@ def tk():
     return mod
 
 
-def test_maps_epics_and_tasks_in_every_phase(tk, tmp_path):
+def test_ticket_names_maps_epics_and_tasks(tk, tmp_path):
     root = tmp_path / "plans"
     root.mkdir()
     a = epic(root, "Alpha", "todo")

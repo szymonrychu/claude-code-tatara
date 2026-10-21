@@ -119,7 +119,7 @@ def test_done_task_overlap_ignored(root):
     assert r.returncode == 0, r.stderr
 
 
-def test_merged_task_overlap_is_ignored(tmp_path):
+def test_merged_fallback_branch_single_hyphen(tmp_path):
     repo = tmp_path / "repo"
     root = repo / "plans"
     root.mkdir(parents=True)
