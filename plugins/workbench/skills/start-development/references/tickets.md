@@ -102,7 +102,7 @@ Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `crea
 Project brief (What/How/Why), Description, Goals, Non-goals, Review.
 
 Task file: `title`, `status`, `repo`, `value`, `files`, `verify`, `depends_on`, `owns`, `uses`,
-`model`, `review`, `worktree`, `branch`, `fork_point` (the commit the task tree forked from, recorded at creation),
+`model`, `review`, `worktree`, `branch`, `fork_point` (the commit the task forked from, recorded when the task lands: apply-run stores the merge's `baseBefore`),
 `verified_head`, `run`, `provides`. Sections: Requirement,
 Acceptance conditions (`- <AC-id>: <text> [evidence: <kind>:<ref>]`), Files, Interfaces, Expected
 outcome, Steps, Notes.

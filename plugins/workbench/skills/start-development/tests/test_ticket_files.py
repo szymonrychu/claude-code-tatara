@@ -368,6 +368,50 @@ def test_tickets_reference():
     assert text.isascii()
 
 
+def _doc(name):
+    return (SD / "references" / name).read_text()
+
+
+def test_tickets_doc_names_single_hyphen_and_integration():
+    text = _doc("tickets.md")
+    for needle in ("<epic>-<task>", "57", "Integration branch", "<configdir>/worktrees/<epic>"):
+        assert needle in text, needle
+    assert "<epic>--<task>" not in text
+
+
+def test_tickets_doc_collision_rule_and_merge_line():
+    text = _doc("tickets.md")
+    assert "Collision rule" in text
+    for cmd in ("new-epic", "new-task", "rename"):
+        assert cmd in text, cmd
+    assert "still on disk" in text
+    assert "MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>" in text
+
+
+def test_worktrees_doc_integration_lifecycle():
+    text = _doc("worktrees.md")
+    for needle in (
+        "<epic>-<task>",
+        "57",
+        "The integration tree",
+        "<configdir>/worktrees/<epic>",
+        "move <epic> in-progress",
+        "worktree-merger",
+        "merge.py --base <epic> --keep --verify",
+        "Every role on a task",
+        "EnterWorktree",
+        "move <epic> done",
+    ):
+        assert needle in text, needle
+
+
+def test_tickets_doc_close_upgrade_and_fork_point():
+    text = _doc("tickets.md")
+    for needle in ("close <epic> --verify <cmd>", "close.json", "worktrees <epic> --integration", "fork_point"):
+        assert needle in text, needle
+    assert "recorded when the task lands" in text
+
+
 # (10) guard and (11) commit helper
 @pytest.fixture
 def repo(tmp_path):
