@@ -49,16 +49,19 @@ Close the three findings of the Epic B security review (scratchpad security-revi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py:Sweep.task(root, epic, p, m)` keeps its signature; refused items go to `Sweep.leave(item, reason)`.
+- `merge.py:merge_back` exits 2 on an unsafe `--name`.
+- `plan-execute.js:shq` is reused, not redefined.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`move <epic> done` and `reap` only delete the task's own trees and branches; a hostile or stale frontmatter value is listed under `left` and deletes nothing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the AC1-AC5 tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_close.py skills/worktree-merge/tests/test_merge_target.py -q` and `node --test workflows/tests/plan-execute-land.test.mjs`; expect the new tests to fail.
+- Green: guard `Sweep.task`/`branch_only`, validate the name in `merge_back`, `shq()` the land prompt flags.
+- Run the task's verify command; expect all green.
 
 ## Notes
 
