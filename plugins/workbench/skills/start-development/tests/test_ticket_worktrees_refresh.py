@@ -101,6 +101,12 @@ def mk_task(
     return p
 
 
+def epic_branch(repo, ep):
+    """The integration branch `move in-progress` would have made, for fixtures that skip it."""
+    if git(repo, "branch", "--list", ep).stdout.strip() == "":
+        git(repo, "branch", ep)
+
+
 def commit_all(repo):
     git(repo, "add", "-A")
     git(repo, "commit", "-m", "tickets", "--allow-empty")
@@ -128,10 +134,12 @@ def test_refresh_updates_clean_skips_done(repo, root):
         done = next(root.rglob("done-one.md"))
     set_status(done, "done")
     commit_all(repo)
+    epic_branch(repo, ep)
     cli("worktrees", ep, "--root", root)
     (repo / "new.txt").write_text("n")
     git(repo, "add", "-A")
     git(repo, "commit", "-m", "advance")
+    git(repo, "branch", "-f", ep, "main")  # the refresh follows the epic branch, not main
     (tree(repo, ep, "dirty-one") / "wip.txt").write_text("x")
     a = tree(repo, ep, "ahead-one")
     (a / "mine.txt").write_text("m")
@@ -155,6 +163,7 @@ def test_done_task_never_recreated(repo, root):
     set_status(p, "done")
     commit_all(repo)
     for extra in ([], ["--refresh"]):
+        epic_branch(repo, ep)
         assert cli("worktrees", ep, "--root", root, *extra).returncode == 0
     assert not tree(repo, ep, "gone").exists()
 
@@ -166,6 +175,7 @@ def test_keeps_escalated_and_blocked(repo, root, status):
     commit_all(repo)
     set_status(p, status)
     commit_all(repo)
+    epic_branch(repo, ep)
     assert cli("worktrees", ep, "--root", root).returncode == 0
     assert ticket.load(p.read_text(), p).meta["status"] == status
     assert tree(repo, ep, "held").is_dir()
@@ -175,6 +185,7 @@ def test_worktrees_todo_becomes_in_progress(repo, root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "Fresh")
     commit_all(repo)
+    epic_branch(repo, ep)
     assert cli("worktrees", ep, "--root", root).returncode == 0
     assert ticket.load(p.read_text(), p).meta["status"] == "in-progress"
 
@@ -189,6 +200,7 @@ def test_worktrees_keeps_live_legacy_tree_record(repo, root):
     doc.meta.update(worktree=str(legacy), branch=f"{ep}--old")
     p.write_text(ticket.dump(doc))
     commit_all(repo)
+    epic_branch(repo, ep)
     assert cli("worktrees", ep, "--root", root).returncode == 0
     m = ticket.load(p.read_text(), p).meta
     assert m["worktree"] == str(legacy) and m["branch"] == f"{ep}--old"

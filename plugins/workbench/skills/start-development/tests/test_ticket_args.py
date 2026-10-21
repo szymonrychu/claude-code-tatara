@@ -85,7 +85,9 @@ def test_args_strip_done_ids(epic, root):
     assert all("alpha" not in t["dependsOn"] for t in out["tasks"])
     assert [x["id"] for x in out["approvals"]] == ["A2"]
     assert out["approvals"][0]["tasks"] == ["beta"]
-    assert out["baseRef"] == "main" and out["verifierAgent"] == "workbench:verifier"
+    assert out["baseRef"] == ep
+    assert out["mainCheckout"] == str(d.parents[3].resolve())
+    assert out["verifierAgent"] == "workbench:verifier"
     assert out["rulingsFile"] == str(d / "rulings.json")
     assert out["designDoc"] == str(d / "design.md") and out["planDoc"] == str(d / "README.md")
     assert set(out["brief"]) == {"what", "how", "why"}

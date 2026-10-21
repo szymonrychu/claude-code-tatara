@@ -890,14 +890,41 @@ def _write_task(path: Path, doc: Doc, changed: list[Path], **updates) -> None:
         changed.append(path)
 
 
+def _require_integration_branch(root: Path, meta: dict, base: str, epic: str) -> None:
+    """Exit 1 naming the upgrade command when the epic branch is missing in the task's checkout."""
+    if base != integration_branch(epic):
+        return
+    src = _task_src(root, meta)
+    if not _branch_exists(src, base):
+        raise TicketError(
+            f"integration branch {base} missing in {src}; "
+            f"run ticket.py worktrees {epic} --integration"
+        )
+
+
+def _worktrees_integration(root: Path, epic_dir: Path) -> int:
+    """Create or reuse the integration trees of an in-progress epic; no task tree."""
+    phase = _phase_of(epic_dir)
+    if phase != "in-progress":
+        raise TicketError(
+            f"epic {epic_dir.name!r} is in {phase}; worktrees --integration needs it in-progress"
+        )
+    for tree in ensure_integration_trees(root, epic_dir):
+        print(f"integration {tree['path']} ({tree['verb']})")
+    return 0
+
+
 def cmd_worktrees(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
     epic_dir = resolve_epic(a.epic, root)
+    if getattr(a, "integration", False):
+        return _worktrees_integration(root, epic_dir)
     derive_tasks(epic_dir)
     create, create_mod = _create(), _mod()
     changed: list[Path] = []
     refresh = getattr(a, "refresh", False)
+    base = getattr(a, "base", None) or integration_branch(epic_dir.name)
     results: list[str] = []
     for path in _task_files(epic_dir):
         doc = _read_doc(path)
@@ -915,12 +942,13 @@ def cmd_worktrees(a: argparse.Namespace) -> int:
             if existing.is_dir():
                 wt, verb = str(existing / repo if repo else existing), "reused"
             else:
-                wt, verb = create(name=name, base=a.base, repo=repo, start=root)["path"], "created"
+                _require_integration_branch(root, doc.meta, base, epic_dir.name)
+                wt, verb = create(name=name, base=base, repo=repo, start=root)["path"], "created"
         status = "in-progress" if doc.meta.get("status", "todo") == "todo" else doc.meta["status"]
         _write_task(path, doc, changed, worktree=wt, branch=branch, status=status)
         if refresh:
             if verb == "created" or _tree_live(wt):
-                results.append(f"{path.stem} {create_mod.fast_forward(Path(wt), a.base)}")
+                results.append(f"{path.stem} {create_mod.fast_forward(Path(wt), base)}")
         else:
             print(f"{verb} {name}: {wt}")
     if changed:
@@ -1764,7 +1792,12 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--out", help="write the JSON to this file instead of stdout")
     sp = add("worktrees", cmd_worktrees)
     sp.add_argument("epic")
-    sp.add_argument("--base", default="main")
+    sp.add_argument("--base", default=None, help="default: the epic's integration branch")
+    sp.add_argument(
+        "--integration",
+        action="store_true",
+        help="create or reuse the integration tree(s) of an in-progress epic; no task tree",
+    )
     sp.add_argument(
         "--refresh",
         action="store_true",

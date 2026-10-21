@@ -96,7 +96,8 @@ def build_args(epic_dir, context_pack=None, t=None) -> dict:
             {g for r in repos for g in wb.config_for_repo(plans_root, r)["overlapIgnore"]}
         ),
         "rulingsFile": str(epic_dir / "rulings.json"),
-        "baseRef": "main",
+        "baseRef": t.integration_branch(epic),
+        "mainCheckout": str(top.resolve()),
         "verifierAgent": "workbench:verifier",
         "lenses": list(LENSES),
     }

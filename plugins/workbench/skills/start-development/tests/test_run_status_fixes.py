@@ -98,7 +98,7 @@ def test_merge_line_has_name_and_repo(repo, root, continue_epic, tmp_path):  # n
         rj,
     )
     assert r.returncode == 2, r.stderr
-    assert f"MERGE alpha --name {ep}--alpha --repo proj" in r.stdout.splitlines()
+    assert f"MERGE alpha --name {ep}-alpha --base {ep} --repo proj" in r.stdout.splitlines()
     assert not out.exists()
 
 

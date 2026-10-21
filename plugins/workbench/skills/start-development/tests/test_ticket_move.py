@@ -206,6 +206,7 @@ def test_rename_refused_while_task_worktrees_exist(repo, root):
     ep = mk_epic(root, "Old name")
     mk_task(root, ep, "alpha")
     commit_all(repo)
+    git(repo, "branch", ep)  # the integration branch worktrees forks from
     assert cli("worktrees", ep, "--root", root).returncode == 0
     r = cli("rename", ep, "New name", "--root", root)
     assert r.returncode == 1 and "worktree" in r.stderr

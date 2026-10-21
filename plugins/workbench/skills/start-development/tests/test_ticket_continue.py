@@ -39,6 +39,8 @@ def epic(repo, root):
     mk_task(root, ep, "Beta", extra=("--depends-on", "alpha"))
     commit_all(repo)
     assert cli("move", ep, "in-progress", "--root", root).returncode == 0
+    # the epic branch carries the ticket move
+    git(repo / ".claude" / "worktrees" / ep, "merge", "--ff-only", "main")
     return ep
 
 
@@ -175,11 +177,11 @@ def test_merge_gate_exit_2(repo, root, epic, tmp_path):
         rj,
     )
     assert r.returncode == 2, r.stderr
-    assert f"MERGE alpha --name {epic}--alpha --repo proj" in r.stdout.splitlines()
+    assert f"MERGE alpha --name {epic}-alpha --base {epic} --repo proj" in r.stdout.splitlines()
     assert not out.exists()
     assert meta(root, epic, "alpha")["status"] == "done"
     # the merger lands the branch, then the rerun is clean and does not duplicate the ruling
-    git(repo, "merge", "--no-edit", f"{epic}-alpha")
+    git(repo / ".claude" / "worktrees" / epic, "merge", "--no-edit", f"{epic}-alpha")
     r = cli(
         "continue",
         epic,
@@ -303,3 +305,43 @@ def test_idempotent(repo, root, epic, tmp_path):
     assert r.returncode == 0, r.stderr
     second = snapshot()
     assert [k for k in first if first[k] != second[k]] == []
+
+
+def _task_branch(repo, root, epic, name):
+    """A done alpha whose recorded branch is `name` and carries one commit."""
+    tree = repo / ".claude" / "worktrees" / f"{epic}-alpha-tmp"
+    git(repo, "worktree", "add", "-q", "-b", name, str(tree), "main")
+    (tree / "mine.txt").write_text("m")
+    git(tree, "add", "-A")
+    git(tree, "commit", "-m", "alpha work")
+    head = git(tree, "rev-parse", "HEAD").stdout.strip()
+    git(repo, "worktree", "remove", "--force", str(tree))
+    return head
+
+
+def _continue(repo, root, epic, tmp_path, head, branch):
+    data = ret(repo)
+    data["tasks"][0]["branch"] = branch
+    data["tasks"][0]["verification"] = {"head": head}
+    return cli(
+        "continue", epic, "--root", root, "--out-dir", tmp_path / "out",
+        "--accept", "alpha", "--reason", "ok", "--return", write_ret(repo, data),
+    )  # fmt: skip
+
+
+def test_merge_line_names_legacy_double_hyphen_branch(repo, root, epic, tmp_path):
+    head = _task_branch(repo, root, epic, f"{epic}--alpha")
+    r = _continue(repo, root, epic, tmp_path, head, f"{epic}--alpha")
+    assert r.returncode == 2, r.stderr
+    assert f"MERGE alpha --name {epic}--alpha --base {epic} --repo proj" in r.stdout.splitlines()
+
+
+def test_gate_counts_patch_equivalent_task_as_merged_after_rebase(repo, root, epic, tmp_path):
+    head = _task_branch(repo, root, epic, f"{epic}-alpha")
+    itree = repo / ".claude" / "worktrees" / epic
+    git(itree, "cherry-pick", head)  # same patch, new commit id: as after a rebase of <epic>
+    r = _continue(repo, root, epic, tmp_path, head, f"{epic}-alpha")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "MERGE" not in r.stdout
+    args = json.loads((tmp_path / "out" / f"{epic}-args.json").read_text())
+    assert args["baseRef"] == epic and args["mainCheckout"] == str(repo.resolve())

@@ -102,6 +102,12 @@ def mk_task(
     return p
 
 
+def epic_branch(repo, ep):
+    """The integration branch `move in-progress` would have made, for fixtures that skip it."""
+    if git(repo, "branch", "--list", ep).stdout.strip() == "":
+        git(repo, "branch", ep)
+
+
 def commit_all(repo):
     git(repo, "add", "-A")
     git(repo, "commit", "-m", "tickets", "--allow-empty")
@@ -202,6 +208,7 @@ def test_worktrees_creates_via_create_and_writes_frontmatter(repo, root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "Alpha work")
     commit_all(repo)
+    epic_branch(repo, ep)
     r = cli("worktrees", ep, "--root", root)
     assert r.returncode == 0, r.stderr
     name = f"{ep}-alpha-work"
@@ -260,6 +267,7 @@ def test_worktrees_reuses_existing_tree(repo, root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "Alpha work")
     commit_all(repo)
+    epic_branch(repo, ep)
     assert cli("worktrees", ep, "--root", root).returncode == 0
     head = git(repo, "rev-parse", "HEAD").stdout
     r = cli("worktrees", ep, "--root", root)
@@ -694,3 +702,53 @@ def test_apply_run_missing_run_dir_does_not_fail(repo, root):
     rj = repo / "return.json"
     rj.write_text(json.dumps(run_return()))
     assert cli("apply-run", ep, rj, "--root", root, "--run-dir", repo / "nope").returncode == 0
+
+
+def test_worktrees_fork_from_epic_branch(repo, root):
+    ep = mk_epic(root)
+    mk_task(root, ep, "Alpha work")
+    commit_all(repo)
+    epic_branch(repo, ep)
+    git(repo, "checkout", "-q", ep)
+    (repo / "epic.txt").write_text("e")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "epic only")
+    git(repo, "checkout", "-q", "main")
+    assert cli("worktrees", ep, "--root", root).returncode == 0
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha-work"
+    assert (wt / "epic.txt").is_file()
+
+
+def test_worktrees_missing_integration_branch_names_upgrade(repo, root):
+    ep = mk_epic(root)
+    mk_task(root, ep, "Alpha work")
+    commit_all(repo)
+    r = cli("worktrees", ep, "--root", root)
+    assert r.returncode == 1
+    assert f"integration branch {ep} missing in" in r.stderr
+    assert f"run ticket.py worktrees {ep} --integration" in r.stderr
+    assert not (repo / ".claude" / "worktrees" / f"{ep}-alpha-work").exists()
+
+
+def test_worktrees_integration_upgrades_in_progress_epic(repo, root):
+    ep = mk_epic(root)
+    mk_task(root, ep, "Alpha work")
+    commit_all(repo)
+    assert cli("move", ep, "in-progress", "--root", root).returncode == 0
+    git(repo, "worktree", "remove", "--force", str(repo / ".claude" / "worktrees" / ep))
+    git(repo, "branch", "-D", ep)
+    r = cli("worktrees", ep, "--root", root, "--integration")
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.startswith("integration ") and "(created)" in r.stdout
+    assert (repo / ".claude" / "worktrees" / ep).is_dir()
+    assert not (repo / ".claude" / "worktrees" / f"{ep}-alpha-work").exists()
+    again = cli("worktrees", ep, "--root", root, "--integration")
+    assert "(reused)" in again.stdout
+
+
+def test_worktrees_integration_refuses_epic_not_in_progress(repo, root):
+    ep = mk_epic(root)
+    mk_task(root, ep, "Alpha work")
+    commit_all(repo)
+    r = cli("worktrees", ep, "--root", root, "--integration")
+    assert r.returncode == 1 and "in-progress" in r.stderr

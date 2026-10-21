@@ -2,7 +2,7 @@
 
 Composes apply-run, rule, worktrees --refresh, facts and args; nothing is re-implemented
 here. The merge is done by the agent: when an accepted task that a still-open task depends
-on has no merge yet, continue prints `MERGE <task> --name <epic>--<task> --repo <repo>`
+on has no merge yet, continue prints `MERGE <task> --name <branch> --base <epic> --repo <repo>`
 lines and exits 2 before writing args. Steps 1 and 2 are idempotent, so rerunning after the
 merge repeats them safely.
 """
@@ -119,7 +119,8 @@ def _merge_gate(epic_dir, accept, base, t, root) -> list[str]:
         if not t._task_merged(
             t._task_src(root, m), m.get("branch", ""), m.get("verified_head", ""), base
         ):
-            lines.append(f"MERGE {task} --name {epic_dir.name}--{task} --repo {m.get('repo', '')}")
+            name = m.get("branch") or t.worktree_name(epic_dir.name, task)
+            lines.append(f"MERGE {task} --name {name} --base {base} --repo {m.get('repo', '')}")
     return lines
 
 
@@ -148,12 +149,13 @@ def run(a, t) -> int:
     _verified(ret, files, accept, t)
     _apply(a, t, root, ret, run_dir)
     _rule(epic_dir, files, accept, a.reason, t, root)
-    gate = _merge_gate(epic_dir, accept, a.base, t, root)
+    base = a.base or t.integration_branch(epic_dir.name)
+    gate = _merge_gate(epic_dir, accept, base, t, root)
     if gate:
         print("\n".join(gate))
         print("merge the tasks above (worktree-merger), then rerun continue", file=sys.stderr)
         return MERGE_EXIT
-    t.cmd_worktrees(argparse.Namespace(root=str(root), epic=a.epic, base=a.base, refresh=True))
+    t.cmd_worktrees(argparse.Namespace(root=str(root), epic=a.epic, base=base, refresh=True))
     _refresh_facts(root, t)
     script = _sibling("args").write_args_and_copy(epic_dir, a.out_dir, a.context_pack, t)
     print("arm the heartbeat once the run starts: heartbeat.py --run <runId>")
@@ -174,4 +176,4 @@ def register(sub, t) -> None:
     sp.add_argument("--run", default=None, help="run id: its record supplies the return")
     sp.add_argument("--return", dest="run_return", default=None, help="return.json to apply")
     sp.add_argument("--context-pack", default=None)
-    sp.add_argument("--base", default="main")
+    sp.add_argument("--base", default=None, help="default: the epic's integration branch")
