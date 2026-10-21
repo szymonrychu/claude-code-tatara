@@ -48,7 +48,7 @@ def epic(repo):
     return repo, ept, task
 
 
-def test_task_lands_in_the_integration_tree_not_main(epic):
+def test_lands_into_integration_tree(epic):
     repo, ept, task = epic
     main_before = rev(repo, "main")
     info = merge_back("ep-t1", base="ep", start=repo)
@@ -70,7 +70,7 @@ def test_summary_carries_verification_and_base_shas(epic):
     assert info["verification"]["passed"] is True
 
 
-def test_verify_runs_in_the_rebased_named_tree_before_the_fast_forward(epic):
+def test_verify_runs_in_rebased_tree_before_fast_forward(epic):
     repo, ept, task = epic
     commit(ept, "moved.py")  # base moves, so a rebase is needed
     ep_before = rev(repo, "ep")
@@ -81,7 +81,7 @@ def test_verify_runs_in_the_rebased_named_tree_before_the_fast_forward(epic):
     assert (task / "cwd.out").read_text().strip() == str(task.resolve())
 
 
-def test_failing_verify_exits_4_and_never_advances_base(epic, monkeypatch, capsys):
+def test_verify_failure_exits_4_and_never_advances_base(epic, monkeypatch, capsys):
     repo, ept, task = epic
     commit(ept, "moved.py")
     ep_before = rev(repo, "ep")
@@ -105,7 +105,7 @@ def test_failing_verify_result_dict(epic):
     assert info["cleaned"] is False
 
 
-def test_base_moving_after_verify_rebases_and_reverifies(epic):
+def test_base_moved_rebases_and_reverifies(epic):
     repo, ept, task = epic
     calls = []
     real = merge_mod._run_verify
@@ -147,7 +147,7 @@ def test_gives_up_after_three_attempts_without_moving_base(epic):
     assert task.exists()
 
 
-def test_refuses_when_base_is_checked_out_nowhere(epic):
+def test_refuses_base_checked_out_nowhere(epic):
     repo, ept, task = epic
     git(repo, "worktree", "remove", "--force", str(ept))
     ep_before = rev(repo, "ep")
@@ -160,7 +160,7 @@ def test_refuses_when_base_is_checked_out_nowhere(epic):
     assert rev(repo, "ep") == ep_before and rev(task, "HEAD") == task_before
 
 
-def test_never_switches_the_main_checkout(repo):
+def test_never_switches_main_checkout(repo):
     git(repo, "checkout", "-q", "-b", "other")
     wt = Path(create("feat", start=repo)["path"])
     commit(wt, "f.py")
@@ -188,7 +188,7 @@ def test_failing_suite_after_ff_exits_4_in_target_tree(epic, monkeypatch, capsys
     assert (ept / "t1.py").exists(), "merge stays in place"
 
 
-def test_epic_close_rebases_verifies_then_fast_forwards_main(epic):
+def test_epic_close_verifies_rebased_tip_and_records_base_before(epic):
     repo, ept, task = epic
     merge_back("ep-t1", base="ep", start=repo)
     commit(repo, "hotfix.py")  # main moved while the epic ran
@@ -215,3 +215,28 @@ def test_assess_works_against_an_epic_base(epic):
     repo, ept, _ = epic
     a = assess("ep-t1", base="ep", start=repo)
     assert a["commits"] == 1 and a["files"] == 1 and a["conflictPredicted"] is False
+
+
+def test_epic_close_fast_forwards_main_keeping_integration_tree(epic):
+    repo, ept, _ = epic
+    merge_back("ep-t1", base="ep", start=repo)
+    info = merge_back("ep", base="main", keep=True, verify="true", start=repo)
+    assert rev(repo, "main") == rev(repo, "ep") == info["baseAfter"]
+    assert (repo / "t1.py").exists()
+    assert ept.exists() and git(repo, "branch", "--list", "ep").stdout.strip()
+
+
+def test_cleanup_deletes_branch_merged_into_epic(epic):
+    repo, ept, task = epic
+    merge_back("ep-t1", base="ep", start=repo)
+    assert git(repo, "branch", "--list", "ep-t1").stdout.strip() == ""
+    assert git(repo, "merge-base", "--is-ancestor", "ep", "main", check=False).returncode != 0
+
+
+def test_nothing_ahead_cleanup_runs_from_the_target_tree(epic):
+    repo, ept, task = epic
+    merge_back("ep-t1", base="ep", start=repo)
+    commit(ept, "more.py")  # epic is now ahead of main
+    create("ep-t2", base="ep", start=repo)
+    merge_back("ep-t2", base="ep", start=repo)
+    assert git(repo, "branch", "--list", "ep-t2").stdout.strip() == ""

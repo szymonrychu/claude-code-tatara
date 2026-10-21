@@ -259,14 +259,14 @@ def merge_back(
             "this skill never discards work it did not create."
         )
 
+    target = target_tree(src, base)
     ahead = commits_ahead(wt, base)
     if not ahead:
         notes = ["nothing to merge (no commits ahead of base)"]
         if not keep:
-            notes += cleanup(src, wt, name)
+            notes += cleanup(src, wt, name, target)
         return {"name": name, "merged": 0, "cleaned": not keep, "notes": notes}
 
-    target = target_tree(src, base)
     notes = [f"{len(ahead)} commit(s) to merge", f"landing in {target}"]
 
     # Fetch so refs are current, but NEVER rebase onto origin/<base>. The branch
