@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "run 3: land-outcomes, slug-collision-guard clean; fork-point-diffs accepted (gate-repeat on a false-positive parking flag: plan-execute.js:2115 is a state-describing comment, verified 739bb65); epic-close-command landed on main 4f0a59c",
     "at": "2026-10-21T18:03:56Z"
+  },
+  {
+    "task": "forward-merge-via-epic",
+    "accept": true,
+    "reason": "run 4: fork-point-record, docs-worktree-refs clean; forward-merge-via-epic accepted (gate-repeat on the same false-positive parking flag at plan-execute.js:2115, verified 7624d1d); run 3 tasks landed on main f2e2131",
+    "at": "2026-10-21T19:10:21Z"
   }
 ]

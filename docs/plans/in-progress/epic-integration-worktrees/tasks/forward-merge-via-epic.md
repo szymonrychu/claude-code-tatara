@@ -1,6 +1,6 @@
 ---
 title: Forward merge via epic
-status: escalated
+status: done
 repo: workbench
 value: "A remediated dependency reaches its dependents through the epic branch, never around it"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
@@ -62,6 +62,10 @@ A remediation never leaves the integration branch behind a dependent: the depend
 - Red: add the six cases to `plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs`; run `cd plugins/workbench && node --test workflows/tests/plan-execute-forward-merge.test.mjs`; expect the five landing-mode cases to fail.
 - Green: branch `forwardMerge` on landing mode.
 - Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
+
+## Ruling
+
+- 2026-10-21 accepted: run 4: fork-point-record, docs-worktree-refs clean; forward-merge-via-epic accepted (gate-repeat on the same false-positive parking flag at plan-execute.js:2115, verified 7624d1d); run 3 tasks landed on main f2e2131
 
 ## Notes
 
