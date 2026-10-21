@@ -202,6 +202,9 @@ A plan-execute run without `args.epic` keeps dependency-branch merges and no lan
 guarded. `_counting_overlaps` keeps asking whether another epic's task reached main, which is still the
 right question for cross-epic overlap. (my call) Serves A2.
 
+### D11: Gate answer Q1 (user, 2026-10-21: yes): inside an epic run p
+Gate answer Q1 (user, 2026-10-21: yes): inside an epic run plan-execute lands each clean, verified task on the epic integration branch (rebase onto <epic>, fast-forward in the integration tree, task verify there); dependents merge the updated <epic>; verifier and reviewer diff against <epic>; escalated tasks land only after a ruling. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -259,6 +262,7 @@ right question for cross-epic overlap. (my call) Serves A2.
 | D8 mixed epic refused at claim | integration-tree-create |
 | D9 landed trees kept, guarded branch deletion | land-in-run, epic-close-sweep |
 | D10 non-epic runs and legacy markers unchanged | land-in-run, name-lookup-parsers |
+| D11 Gate answer Q1 (user, 2026-10-21: yes): inside an epic run p | land-in-run, forward-merge-via-epic, epic-base-wiring |
 
 ## Contracts
 
