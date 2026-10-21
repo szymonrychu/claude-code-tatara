@@ -83,7 +83,7 @@ with `--base <epic>`.
 ## Epic close
 
 The epic close has one entry point, run by the orchestrator: `ticket.py close <epic>
---verify '<full suite and lint>'` (start-development `scripts/ticket.py`). It enforces
+--verify '<full suite and lint>'` (the start-development skill's ticket script). It enforces
 the done-task gate and the review gate, rebases `<epic>` onto main inside the
 integration tree, runs the full suite and lint there, fast-forwards main, and writes
 `close.json`. This skill never fast-forwards main for an epic. The merger is dispatched
