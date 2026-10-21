@@ -118,7 +118,7 @@ def test_cli_failing_verify_exit_4(rebased, monkeypatch):
 
 def test_nothing_to_merge_without_verify(repo):
     ept = Path(create("ep", start=repo)["path"])
-    Path(create("ep-t1", base="ep", start=repo))
+    create("ep-t1", base="ep", start=repo)
     info = merge_back("ep-t1", base="ep", start=repo, suites=False)
     assert info["merged"] == 0 and info["contained"] is True
     assert info["containedBy"] == "ancestor"
