@@ -1,6 +1,6 @@
 ---
 title: Docs worktree refs
-status: todo
+status: in-progress
 repo: workbench
 value: "The worktree and ticket references match the new names, tree and landing"
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
