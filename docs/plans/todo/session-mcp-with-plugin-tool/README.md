@@ -18,18 +18,17 @@ Why: self-compact and self-reload need a human today; API integrations need hand
 ## Description
 
 User idea, 2026-10-21:
-1. An internal MCP tool that can make the session self-compact or self-reload plugins. When called, the MCP server routes a message back into the same session, and that message runs exactly as if the user had typed it (for example `/compact` or `/reload-plugins`). Trace other tools that do this, and ideally expose a single tool for it.
-2. The MCP server also lets people write plugins. Each plugin exposes one or more API endpoints, together with its own logic, as tools inside the MCP server.
-3. The internal session tool reuses that same plugin mechanism.
+An MCP server that lets people write plugins: each plugin exposes one or more API endpoints, together with its own logic, as tools inside the MCP server.
+
+Scope change by the user, 2026-10-21: "Just plugins, no self messages". The internal self-compact/self-reload session tool is dropped.
 
 ## Goals
 
-- A single MCP tool that injects a message into the calling session as user input, covering slash commands such as /compact and /reload-plugins, if the harness allows it. If it does not, the brief says so and gives the closest supported mechanism.
 - A plugin mechanism where each plugin declares API endpoints and logic that the MCP server exposes as tools.
-- The internal session tool is implemented as a plugin of that mechanism.
 
 ## Non-goals
 
+- Any tool that sends messages into its own session (self-compact, self-reload): dropped by the user.
 - Bypassing the harness's permission prompts or trust model.
 
 ## Time
