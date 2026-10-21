@@ -1,6 +1,6 @@
 {
   "name": "workbench",
-  "description": "development flow for any workbench tree (metarepo or flat): a development flow with one approval gate, an approval ledger, file-based epic tickets and research skills, tiered review with a script+haiku verifier, gated review and debugging flows, verification hooks that tie every test run to the committed HEAD, per-subagent worktree isolation, deterministic plan execution, read-only diagnostic subagents, and destructive-command guardrails.",
+  "description": "development flow for any workbench tree (metarepo or flat): a development flow with one approval gate, an approval ledger, file-based epic tickets and research skills, tiered review with a script+haiku verifier, gated review and debugging flows, verification hooks that tie every test run to the committed HEAD, per-task git worktrees with an epic integration worktree, deterministic plan execution, read-only diagnostic subagents, and destructive-command guardrails.",
   "version": "1.0.0",
   "author": {
     "name": "workbench contributors"

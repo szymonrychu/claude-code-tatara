@@ -22,7 +22,6 @@ AGENT_KEYS = (
     "maxTurns",
     "skills",
     "hooks",
-    "isolation",
     "permissionMode",
     "effort",
     "color",
