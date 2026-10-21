@@ -57,6 +57,8 @@ test('land-outcomes-prompt-contained-head', async () => {
   const p = landPrompt(r)
   assert.match(p, /contained/)
   assert.match(p, /task (tree|worktree) HEAD/i)
+  assert.match(p, /merged 0 commit/)
+  assert.match(p, /already in/)
 })
 
 test('land-prompt-resolves-rebase-reconflicts', async () => {
@@ -68,6 +70,9 @@ test('land-prompt-resolves-rebase-reconflicts', async () => {
   assert.match(p, /git .*rebase epic-x/)
   assert.match(p, /rebase --abort/)
   assert.match(p, /every conflicting file/)
+  assert.match(p, /git .*add/)
+  assert.match(p, /rebase --continue/)
+  assert.match(p, /only if a rebase is still in progress/)
   assert.match(p, /once/)
 })
 
