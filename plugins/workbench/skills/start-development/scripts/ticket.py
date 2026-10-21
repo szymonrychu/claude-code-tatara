@@ -1377,19 +1377,26 @@ def _integration_problems(root: Path, epic_dir: Path, base: str) -> list[str]:
     return out
 
 
-def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
+def review_gate(epic_dir: Path, action: str) -> None:
+    """Refuse unless the epic is in-progress at stage review with a last verdict of pass; the
+    gate `move done` and `close` share."""
     name, phase = epic_dir.name, _phase_of(epic_dir)
     if phase != "in-progress":
-        raise TicketError(f"epic {name!r} is in {phase}; move done needs it in-progress")
+        raise TicketError(f"epic {name!r} is in {phase}; {action} needs it in-progress")
     readme = _read_doc(epic_dir / "README.md")
     stage = readme.meta.get("stage", "")
     if stage != "review":
-        raise TicketError(f"epic {name!r} is at stage {stage!r}; move done needs stage review")
+        raise TicketError(f"epic {name!r} is at stage {stage!r}; {action} needs stage review")
     verdict = last_verdict(readme.body)
     if verdict is None:
         raise TicketError(f"epic {name!r} has no review verdict; run `review` first")
     if verdict != "pass":
         raise TicketError(f"epic {name!r}: the last review verdict is {verdict}, not pass")
+
+
+def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
+    name = epic_dir.name
+    review_gate(epic_dir, "move done")
     tasks = _tasks_of(epic_dir)
     problems = _undelivered(tasks)
     for p, m in tasks:

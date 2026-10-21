@@ -345,3 +345,27 @@ def test_merge_gate_counts_patch_equivalent_task_as_merged(repo, root, epic, tmp
     assert "MERGE" not in r.stdout
     args = json.loads((tmp_path / "out" / f"{epic}-args.json").read_text())
     assert args["baseRef"] == epic and args["mainCheckout"] == str(repo.resolve())
+
+
+def test_merge_gate_lists_every_done_task_not_in_epic(repo, root, epic, tmp_path):
+    assert cli("worktrees", epic, "--root", root).returncode == 0
+    wt = repo / ".claude" / "worktrees" / f"{epic}-beta"
+    (wt / "beta.txt").write_text("b")
+    git(wt, "add", "-A")
+    git(wt, "commit", "-m", "beta work")
+    head = git(wt, "rev-parse", "HEAD").stdout.strip()
+    bp = root / "in-progress" / epic / "tasks" / "beta.md"
+    doc = ticket.load(bp.read_text(), bp)
+    doc.meta.update(status="done", verified_head=head)
+    bp.write_text(ticket.dump(doc))
+    commit_all(repo)
+    out = tmp_path / "out"
+    r = cli("continue", epic, "--root", root, "--out-dir", out)
+    # beta has no dependents and no open task needs it, yet it still has to land on <epic>
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert f"MERGE beta --name {epic}-beta --base {epic} --repo proj" in r.stdout.splitlines()
+    assert not out.exists()
+    git(repo / ".claude" / "worktrees" / epic, "merge", "--no-edit", f"{epic}-beta")
+    r = cli("continue", epic, "--root", root, "--out-dir", out)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "MERGE" not in r.stdout

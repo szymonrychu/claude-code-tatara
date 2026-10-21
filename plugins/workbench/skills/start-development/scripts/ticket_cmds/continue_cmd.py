@@ -1,8 +1,9 @@
 """ticket.py continue: accept-and-continue after a run, as one command (D10).
 
 Composes apply-run, rule, worktrees --refresh, facts and args; nothing is re-implemented
-here. The merge is done by the agent: when an accepted task that a still-open task depends
-on has no merge yet, continue prints `MERGE <task> --name <branch> --base <epic> --repo <repo>`
+here. The merge is done by the agent: when the epic has an integration branch, every done task
+not yet contained in it (otherwise an accepted task that a still-open task depends on with no
+merge yet) makes continue print `MERGE <task> --name <branch> --base <epic> --repo <repo>`
 lines and exits 2 before writing args. Steps 1 and 2 are idempotent, so rerunning after the
 merge repeats them safely.
 """
@@ -107,20 +108,28 @@ def _rule(epic_dir, files, accept, reason, t, root):
 
 
 def _merge_gate(epic_dir, accept, base, t, root) -> list[str]:
-    """MERGE lines for done tasks an open task depends on whose branch is not in base."""
+    """MERGE lines for done tasks whose branch is not yet where it has to be.
+
+    Landing mode (the epic's integration branch exists in the task's source checkout): every
+    done task must be contained in <epic>, dependencies of open tasks or not. Without an
+    integration branch only the done dependencies of open tasks are checked, against base.
+    """
     metas = {p.stem: t._read_doc(p).meta for p in t._task_files(epic_dir)}
     open_ids = {k for k, m in metas.items() if m.get("status") != "done"}
     needed = {d for x in t.derive_tasks(epic_dir) if x["id"] in open_ids for d in x["dependsOn"]}
+    epic = t.integration_branch(epic_dir.name)
     lines = []
-    for task in sorted(needed):
-        m = metas.get(task)
-        if not m or m.get("status") != "done":
+    for task, m in sorted(metas.items()):
+        if m.get("status") != "done":
             continue
-        if not t._task_merged(
-            t._task_src(root, m), m.get("branch", ""), m.get("verified_head", ""), base
-        ):
-            name = m.get("branch") or t.worktree_name(epic_dir.name, task)
-            lines.append(f"MERGE {task} --name {name} --base {base} --repo {m.get('repo', '')}")
+        src = t._task_src(root, m)
+        landing = t._branch_exists(src, epic)
+        if not landing and task not in needed:
+            continue
+        target = epic if landing else base
+        name = m.get("branch") or t.worktree_name(epic_dir.name, task)
+        if not t._task_merged(src, name, m.get("verified_head", ""), target):
+            lines.append(f"MERGE {task} --name {name} --base {target} --repo {m.get('repo', '')}")
     return lines
 
 
