@@ -132,7 +132,7 @@ Close order for the epic, once every task is done:
 2. In meta mode run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py close <epic> --verify '<full suite and lint>'`.
    It rebases `<epic>` onto main in the integration tree, runs the full suite and lint on the
    rebased tip, fast-forwards main only when green, runs the full suite on main, and records
-   main's pre-fast-forward SHA in the close summary. Main never moves onto an untested tip.
+   main's pre-fast-forward SHA in the close summary, so main never moves onto an untested tip.
 3. Then `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py move <epic> done`,
    which checks that the epic reached main and removes every tree and branch.
 
