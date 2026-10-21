@@ -399,7 +399,7 @@ def test_worktrees_doc_integration_lifecycle():
         "worktree-merger",
         "merge.py --base <epic> --keep --verify",
         "Every role on a task",
-        "EnterWorktree",
+        "never calls the built-in `EnterWorktree`",
         "move <epic> done",
     ):
         assert needle in text, needle
