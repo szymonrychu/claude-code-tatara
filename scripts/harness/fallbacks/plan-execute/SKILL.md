@@ -14,6 +14,12 @@ files, read and written through `ticket.py`, and in one return file you write by
 `python3` from the main checkout. Input: an approved epic in `docs/plans/in-progress/<epic>/`
 (README.md, design.md, `tasks/<task>.md`, `approvals.json`), claimed with
 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py move <epic> in-progress`.
+The claim creates the epic integration worktree and branch `<epic>`; task trees are
+`<epic>-<task>` and land on `<epic>`, never on main. Use plain `git worktree` through
+`ticket.py` and `merge.py`, never the harness's built-in worktree feature. An epic claimed
+before this change (legacy `<epic>--<task>` trees, no `<epic>` branch) runs
+`python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py worktrees <epic> --integration`
+first; a recorded legacy tree is still accepted.
 
 ## Start of a run
 
@@ -26,14 +32,15 @@ files, read and written through `ticket.py`, and in one return file you write by
    the item's id and text in its prompt; where an item spans several tasks, each prompt names
    the other tasks that deliver the rest.
 3. **Worktrees.** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py worktrees <epic>`
-   creates one git worktree and branch per open task and records the path in the task file.
+   forks one git worktree and branch `<epic>-<task>` per open task from `<epic>` and records
+   the path in the task file.
 4. **Return file.** Create `<scratchpad dir>/<epic>-return.json` (schema below) with an empty
    `tasks` list. It is this run's only state outside the ticket files: update it after every
    phase of every task.
 
 ## Phases, per task (respect task dependencies; independent tasks may run in parallel)
 
-1. **Worktree.** Merge the task's finished dependencies into its worktree first. Work only inside
+1. **Worktree.** Merge `<epic>` (which already carries the finished dependencies) into the task worktree first, not the dependency branches. Work only inside
    that worktree by absolute path.
 2. **Implement test-first.** A subagent (or you) writes the failing test, runs it and sees it
    fail for the right reason, then implements until it passes, then cleans up. Commit on the
@@ -49,8 +56,9 @@ files, read and written through `ticket.py`, and in one return file you write by
    the wrong ones with a stated reason.
 5. **Fix rounds.** At most three fix rounds (fix, re-verify, re-review). The third round is
    the cap; the return file records a capped task with reason `round-cap` (schema below).
-6. **Merge.** Merge the green task branch back into the integration branch, resolving conflicts
-   so both sides' intent survives.
+6. **Merge.** From the main checkout land the green task branch on the epic branch:
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py --name <epic>-<task> --base <epic> --keep --verify '<verify>'`,
+   resolving conflicts so both sides' intent survives.
 7. **Record.** Update the task's entry in the return file, then apply it:
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py apply-run <epic> <scratchpad dir>/<epic>-return.json`.
    It writes status, branch and verified head into each task file and commits its own
@@ -115,6 +123,18 @@ The same schema the workflow returns, so `apply-run` and `continue` read it unch
     again. Its last lines name a script for the Claude workflow runtime (and it exits non-zero
     when `node` is missing, after the args JSON is written); ignore them and start the next
     pass from the args JSON with a fresh return file and a new `run` name.
+
+## Close
+
+Close order for the epic, once every task is done:
+
+1. Every done task is landed on `<epic>`: `ticket.py continue` prints no `MERGE` line.
+2. In meta mode run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py close <epic> --verify '<full suite and lint>'`.
+   It rebases `<epic>` onto main in the integration tree, runs the full suite and lint on the
+   rebased tip, fast-forwards main only when green, runs the full suite on main, and records
+   main's pre-fast-forward SHA in the close summary. Main never moves onto an untested tip.
+3. Then `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py move <epic> done`,
+   which checks that the epic reached main and removes every tree and branch.
 
 ## Waits and questions
 

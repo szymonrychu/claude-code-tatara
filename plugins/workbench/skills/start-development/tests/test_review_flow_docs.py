@@ -265,3 +265,4 @@ def test_readme_reap_task_needs_epic():
     readme = (ROOT / "README.md").read_text()
     assert "`ticket.py reap --epic <epic> --task <task-id>`" in readme
     assert "reap --task <epic>--<task>" not in readme
+    assert "<epic>--<task>" not in readme

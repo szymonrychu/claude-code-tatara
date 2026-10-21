@@ -198,8 +198,9 @@ Applies only when developing the template itself, in an uninitialised workbench.
 Never run init here.
 
 - `mise run test` and `mise run lint` must both be green before any change lands.
-- The plugin loads from the main checkout, not from a worktree: edits to `plugins/` take
-  effect in Claude Code after landing there and `/reload-plugins`.
+- The plugin loads from the main checkout, not from a worktree: edits to `plugins/` made in
+  a task or integration tree take effect in Claude Code only after the epic merges to main
+  and `/reload-plugins` runs.
 - The `workbench:rules` block is produced from `plugins/workbench/rules/`; change the rule
   files, then rebuild with `mise run harness-setup`, never edit the block by hand.
 - Record non-obvious decisions in `MEMORY.md`.

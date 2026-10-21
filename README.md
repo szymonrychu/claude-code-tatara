@@ -95,7 +95,7 @@ agent to run init first.
 
 The core plugin `workbench` is enabled by default. It brings the development
 flow, the approval ledger, file-based epic tickets, research skills, tiered
-review, debugging flow, verification hooks, worktree isolation and
+review, debugging flow, verification hooks, per-task git worktrees with an epic integration worktree and
 destructive-command guardrails.
 
 Optional packs, all requiring the core:
@@ -353,8 +353,8 @@ lint) and the `secrets` job on every push.
 ## Worktree caveat
 
 The plugin loads from the main checkout, not from a git worktree. Edits to
-`plugins/` made in a worktree take effect in Claude Code only after they land
-in the main checkout and you run `/reload-plugins`.
+`plugins/` made in a task or integration tree take effect in Claude Code only
+after the epic merges to main and you run `/reload-plugins`.
 
 ## License
 

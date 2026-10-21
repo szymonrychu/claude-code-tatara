@@ -54,6 +54,21 @@ def test_real_plan_execute_fallback_content():
     assert "CLAUDE_PLUGIN_ROOT" not in text
 
 
+def test_plan_execute_fallback_epic_lifecycle():
+    out = render_skills(load_sources(REAL))
+    text = out[".agents/skills/plan-execute/SKILL.md"]
+    for needle in (
+        "--base <epic>",
+        "merge.py",
+        "move <epic> done",
+        "worktrees <epic> --integration",
+        "ticket.py close <epic>",
+        "never the harness's built-in worktree feature",
+        "main never moves onto an untested tip",
+    ):
+        assert needle in text
+
+
 def test_fallback_emitted_for_every_target():
     out = render_skills(load_sources(REAL))
     paths = [p for p in out if p.endswith("/plan-execute/SKILL.md")]
