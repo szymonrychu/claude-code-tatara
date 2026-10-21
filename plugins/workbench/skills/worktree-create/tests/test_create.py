@@ -98,7 +98,7 @@ def test_two_agents_get_independent_trees(repo):
 # ---------------------------------------------------------------- integration
 
 
-def test_integration_creates_epic_tree_from_base(repo):
+def test_integration_creates_meta_tree(repo):
     info = integration("my-epic", start=repo)
     assert info["verb"] == "created" and info["branch"] == "my-epic" and info["base"] == "main"
     assert info["name"] == "my-epic"
@@ -107,12 +107,17 @@ def test_integration_creates_epic_tree_from_base(repo):
     assert git(repo, "rev-parse", "my-epic").stdout == git(repo, "rev-parse", "main").stdout
 
 
-def test_integration_reuses_existing_tree_unchanged(repo):
+def test_integration_reuses_tree_and_branch(repo):
     first = integration("my-epic", start=repo)
     (Path(first["path"]) / "wip.txt").write_text("x")
     again = integration("my-epic", start=repo)
     assert again["verb"] == "reused" and again["path"] == first["path"]
     assert (Path(first["path"]) / "wip.txt").exists()
+    git(repo, "worktree", "remove", "--force", first["path"])
+    git(repo, "branch", "-f", "my-epic", "HEAD")
+    again = integration("my-epic", start=repo)
+    assert again["verb"] == "created"
+    assert git(Path(again["path"]), "branch", "--show-current").stdout.strip() == "my-epic"
 
 
 def test_integration_refuses_destination_that_is_not_the_worktree(repo):
@@ -138,7 +143,7 @@ def test_integration_reuses_existing_branch(repo):
     assert git(Path(info["path"]), "branch", "--show-current").stdout.strip() == "my-epic"
 
 
-def test_integration_component_mode_forks_from_origin_ref_else_base(tmp_path):
+def test_integration_component_forks_tracked_branch(tmp_path):
     wb = tmp_path / "wb"
     comp = wb / "code" / "svc"
     comp.mkdir(parents=True)

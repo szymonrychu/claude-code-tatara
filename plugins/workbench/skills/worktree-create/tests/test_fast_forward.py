@@ -74,7 +74,7 @@ def test_fast_forward_results(tmp_path):
     assert fast_forward(trees["tree-a"], "main") == "current"
 
 
-def test_fast_forward_against_epic_branch_base(tmp_path):
+def test_fast_forward_against_epic_base(tmp_path):
     r = tmp_path / "proj"
     r.mkdir()
     git(r, "init", "-q", "-b", "main")

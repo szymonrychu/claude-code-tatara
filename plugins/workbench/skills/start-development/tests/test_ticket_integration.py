@@ -21,7 +21,7 @@ def test_integration_branch_is_the_epic_slug():
     assert ticket.integration_branch("big-epic") == "big-epic"
 
 
-def test_claim_creates_meta_integration_tree_from_main(repo, root):
+def test_claim_creates_meta_integration_tree(repo, root):
     ep = mk_epic(root)
     mk_task(root, ep, "alpha")
     commit_all(repo)
@@ -44,7 +44,7 @@ def test_second_claim_reuses_the_trees(repo, root):
     assert got[0]["path"] == str(tree_of(repo, ep))
 
 
-def test_creation_failure_exits_1_leaves_epic_in_todo_and_commits_nothing(repo, root):
+def test_claim_failure_moves_nothing_and_retry_reuses(repo, root):
     ep = mk_epic(root)
     mk_task(root, ep, "alpha")
     commit_all(repo)
@@ -97,7 +97,7 @@ def comp_task(root, ep, title, repo):
     p.write_text(text)
 
 
-def test_component_mode_one_tree_per_repo_from_tracked_branch(wb):
+def test_claim_creates_component_trees(wb):
     root = wb / "docs" / "plans"
     ep = mk_epic(root)
     comp_task(root, ep, "alpha", "svc")
@@ -118,7 +118,7 @@ def test_component_mode_one_tree_per_repo_from_tracked_branch(wb):
     assert got == {str(base / "svc"): "develop", str(base / "lib"): "main"}
 
 
-def test_mixed_meta_and_component_tasks_refused(wb):
+def test_claim_refuses_mixed_epic(wb):
     root = wb / "docs" / "plans"
     ep = mk_epic(root)
     comp_task(root, ep, "alpha", "svc")
