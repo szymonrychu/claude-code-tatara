@@ -1,6 +1,6 @@
 ---
 title: Fork point diffs
-status: escalated
+status: done
 repo: workbench
 value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]
@@ -66,6 +66,10 @@ After a task lands, every later diff of it (remediation, audit re-review, forwar
 - Red: write `plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs` with the five cases; run `cd plugins/workbench && node --test workflows/tests/plan-execute-fork-point.test.mjs`; expect failures.
 - Green: add `base` to `LAND`, the fork-point state, `diffBase(t)` at every diff site, and the return fields.
 - Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
+
+## Ruling
+
+- 2026-10-21 accepted: run 3: land-outcomes, slug-collision-guard clean; fork-point-diffs accepted (gate-repeat on a false-positive parking flag: plan-execute.js:2115 is a state-describing comment, verified 739bb65); epic-close-command landed on main 4f0a59c
 
 ## Notes
 
