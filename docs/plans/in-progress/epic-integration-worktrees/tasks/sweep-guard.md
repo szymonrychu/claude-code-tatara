@@ -1,6 +1,6 @@
 ---
 title: Sweep guard
-status: todo
+status: in-progress
 repo: workbench
 value: "Closing an epic can never delete a trunk branch or a tree that is not the task's own"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_target.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs]
@@ -12,8 +12,8 @@ model: sonnet
 estimate: 45
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--sweep-guard
+branch: epic-integration-worktrees--sweep-guard
 verified_head: ""
 run: ""
 provides: []
