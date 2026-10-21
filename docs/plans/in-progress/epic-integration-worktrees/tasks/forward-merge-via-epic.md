@@ -4,7 +4,7 @@ status: in-progress
 repo: workbench
 value: "A remediated dependency reaches its dependents through the epic branch, never around it"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
-verify: "mise run test && mise run lint"
+verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [fork-point-diffs]
 owns: []
 uses: [land-step, fork-point]

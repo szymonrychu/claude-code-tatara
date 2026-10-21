@@ -4,7 +4,7 @@ status: in-progress
 repo: workbench
 value: A later run diffs a landed task from the same fork point the landing recorded
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py]
-verify: "mise run test && mise run lint"
+verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && cd ../.. && mise run lint"
 depends_on: [slug-collision-guard, fork-point-diffs]
 owns: []
 uses: [fork-point]

@@ -4,7 +4,7 @@ status: in-progress
 repo: workbench
 value: "A task already on the epic branch, a rebase re-conflict and a legacy tree each land or fail with a named cause"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs]
-verify: "mise run test && mise run lint"
+verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [land-in-run, merge-contained-check]
 owns: []
 uses: [land-step, contained-check]

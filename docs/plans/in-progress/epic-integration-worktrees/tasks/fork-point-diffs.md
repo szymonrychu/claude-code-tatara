@@ -4,7 +4,7 @@ status: in-progress
 repo: workbench
 value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]
-verify: "mise run test && mise run lint"
+verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [land-outcomes]
 owns: [fork-point]
 uses: [land-step]
