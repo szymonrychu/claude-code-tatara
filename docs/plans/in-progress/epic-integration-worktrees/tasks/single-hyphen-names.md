@@ -37,7 +37,7 @@ Switch every task worktree and branch name that ticket.py produces from `<epic>-
 
 - AC1: worktree_name joins epic and task with one hyphen and rejects names over 57 characters [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_files.py::test_worktree_name_single_hyphen_cap_57]
 - AC2: ticket.py worktrees creates and records single-hyphen trees and branches [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_move.py::test_worktrees_creates_single_hyphen_trees]
-- AC3: reap of one task finds its single-hyphen tree and branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py::test_reap_task_mid_epic]
+- AC3: reap of one task finds its single-hyphen tree and branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py::test_reap_task_merged_into_epic_branch]
 - AC4: move done falls back to the single-hyphen branch name when the frontmatter has none [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_move.py::test_move_done_fallback_branch_single_hyphen]
 - AC5: ticket.py worktrees keeps the recorded worktree and branch of a live legacy double-hyphen tree [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py::test_worktrees_keeps_live_legacy_tree_record]
 
