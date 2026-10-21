@@ -1,6 +1,6 @@
 ---
 title: Fork point record
-status: in-progress
+status: done
 repo: workbench
 value: A later run diffs a landed task from the same fork point the landing recorded
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py]
@@ -14,7 +14,7 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-record
 branch: epic-integration-worktrees--fork-point-record
-verified_head: ""
+verified_head: 7fcb7c5ee698ada342f8e6f72870d84bb079cfa1
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []

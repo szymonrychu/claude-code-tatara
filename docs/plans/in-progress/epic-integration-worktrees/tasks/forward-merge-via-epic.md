@@ -1,6 +1,6 @@
 ---
 title: Forward merge via epic
-status: in-progress
+status: escalated
 repo: workbench
 value: "A remediated dependency reaches its dependents through the epic branch, never around it"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
@@ -14,10 +14,10 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--forward-merge-via-epic
 branch: epic-integration-worktrees--forward-merge-via-epic
-verified_head: ""
+verified_head: 7624d1d036f51b01d9c806215f24a9169fd1738c
 run: epic-integration-worktrees
 provides: []
-acs_for_audit: []
+acs_for_audit: [AC3]
 process_gaps: []
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Builtin worktree guard
-status: in-progress
+status: todo
 repo: workbench
 value: Any future use of the harness built-in worktree feature turns the suite red
 files: [scripts/tests/test_builtin_worktree_guard.py, plugins/workbench/skills/start-development/tests/test_repo_hygiene.py, plugins/workbench/.claude-plugin/plugin.json, .claude-plugin/marketplace.json]
@@ -74,3 +74,5 @@ Adding any instruction to use EnterWorktree, Agent isolation, `claude --worktree
 - Runs last so it scans the final wording of every doc task.
 
 - 2026-10-21 run epic-integration-worktrees: dependency-failed on docs-flow-phases, docs-worktree-refs, docs-readmes-fallback
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on docs-flow-phases, docs-readmes-fallback

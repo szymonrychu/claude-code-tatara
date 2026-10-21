@@ -1,6 +1,6 @@
 ---
 title: Docs worktree refs
-status: in-progress
+status: done
 repo: workbench
 value: "The worktree and ticket references match the new names, tree and landing"
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
@@ -14,11 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-worktree-refs
 branch: epic-integration-worktrees--docs-worktree-refs
-verified_head: ""
+verified_head: cdc965c3d5981ff89cf00e9c0b0c00a7166d3ee9
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []
-process_gaps: []
+process_gaps: [Implementer reports no red run and no captured pytest summary]
 ---
 
 # Docs worktree refs
