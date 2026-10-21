@@ -299,6 +299,7 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
 
 ## Open questions
 - Q1: Q1 (D4): inside an epic run, should plan-execute land each clean, verified task on the epic integration branch itself (a worktree-merger dispatch: rebase onto <epic>, fast-forward <epic> in the integration tree, run the task verify there), with dependents merging the updated <epic> and the verifier and reviewer diffing against <epic>, while escalated tasks land only after your ruling? [recommended: yes, land in the run as D4 describes]
+- Q2: Q2 (D5): at meta-mode epic close, should the flow rebase <epic> onto main and fast-forward main in the main checkout (after the pass verdict and the full suite on the integration tree), run the full suite on main, then have move done remove every task and integration tree and branch, replacing the meta-mode PR path, while component mode keeps the MR path and cleans up after the MRs merge? [recommended: yes, local rebase plus fast-forward for meta mode, MR path unchanged for component mode]
 
 ## Irreversible operations in scope
 
