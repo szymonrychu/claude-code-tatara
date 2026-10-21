@@ -56,7 +56,7 @@ test('short must equal id, explicit or derived', async () => {
   await rejects({ ...E, tasks: [task('a', { short: undefined })] }, /task a.*short/)
 })
 
-test('worktree-must-end-in-epic-id', async () => {
+test('epic-worktree-must-end-in-epic-hyphen-id', async () => {
   await rejects({ ...E, tasks: [task('a', { worktree: '/wt/a' })] }, /plan-execute: task a worktree \/wt\/a must be epic-x-a/)
 })
 
@@ -74,7 +74,7 @@ test('without epic nothing changes', async () => {
   assert.ok(r.calls.some((c) => c.opts.label.startsWith('pe:impl:')))
 })
 
-test('worktree-name-over-57-throws', async () => {
+test('epic-worktree-name-over-57-throws', async () => {
   const epic = 'e'.repeat(38)
   const id = 'i'.repeat(19)
   assert.equal(`${epic}-${id}`.length, 58)
@@ -84,7 +84,7 @@ test('worktree-name-over-57-throws', async () => {
   )
 })
 
-test('worktree-name-of-exactly-57-passes', async () => {
+test('epic-worktree-name-of-57-passes', async () => {
   const epic = 'e'.repeat(38)
   const id = 'i'.repeat(18)
   assert.equal(`${epic}-${id}`.length, 57)
@@ -92,7 +92,7 @@ test('worktree-name-of-exactly-57-passes', async () => {
   assert.equal(r.error, undefined)
 })
 
-test('legacy-double-hyphen-tree-passes', async () => {
+test('epic-worktree-legacy-double-hyphen-accepted', async () => {
   const r = await run({ ...E, tasks: [task('a', { worktree: '/wt/epic-x--a' }), task('b', { worktree: '/wt/epic-x--b/api' })] })
   assert.equal(r.error, undefined)
 })

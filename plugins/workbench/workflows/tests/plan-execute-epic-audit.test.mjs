@@ -208,7 +208,7 @@ test('auditOnly with no auditor result reports the audit itself as the gap', asy
   assert.deepEqual(r.result.gaps, [{ item: 'epic-close audit did not run', evidence: 'auditor agent returned nothing', taskId: null }])
 })
 
-test('the audit-only prompt carries the README, tasks with branch and verified head, the AC table, the ledger and the duplicate sweep', async () => {
+test('epic-audit-lists-single-hyphen-branches', async () => {
   const r = await run(closing({ approvals: [{ id: 'A', text: 'cards parse', tasks: ['parser', 'writer'] }] }))
   const p = r.calls[0].prompt
   assert.ok(p.includes(`Epic README (its Goals and Non-goals are the definition of done): ${README}`))
