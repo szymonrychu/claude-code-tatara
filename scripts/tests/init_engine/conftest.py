@@ -16,6 +16,9 @@ def git_env(monkeypatch, tmp_path):
     empty.write_text("")
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(empty))
     monkeypatch.setenv("GIT_CONFIG_SYSTEM", os.devnull)
+    # git reads $XDG_CONFIG_HOME/git/ignore by default even with no global config;
+    # a user-level ignore there hid a missing .gitignore once, so point it at nothing.
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     for k, v in {
         "GIT_AUTHOR_NAME": "Test",
         "GIT_AUTHOR_EMAIL": "t@example.com",
@@ -41,7 +44,14 @@ def workbench(tmp_path):
         dest / "scripts" / "init_engine",
         ignore=shutil.ignore_patterns("__pycache__"),
     )
-    for rel in ("AGENTS.md", ".mise.toml", "MEMORY.md", "ROADMAP.md", "docs/architecture.md"):
+    for rel in (
+        "AGENTS.md",
+        ".gitignore",
+        ".mise.toml",
+        "MEMORY.md",
+        "ROADMAP.md",
+        "docs/architecture.md",
+    ):
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / rel, dest / rel)
     for rel in (
