@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import ticket
 from ticket_repo_helpers import (
     branches,
     cli,
@@ -169,3 +170,15 @@ def test_sweep_lists_non_equivalent_branch_with_reason(repo, root):
     reason = s["left"][0]["reason"]
     assert "no equivalent" in reason and f"in {ep}" in reason
     assert wt.is_dir() and f"{ep}-alpha" in branches(repo)
+
+
+def test_dry_run_lists_integration_branch_once(repo, root):
+    ep = started(repo, root)
+    for t in ("alpha", "beta"):
+        land(repo, root, ep, t)
+    to_review(repo, root, ep)
+    close(repo, ep)
+    sweep = ticket.Sweep("main", True)
+    sweep.epic(root, ticket.find_epic(ep, root))
+    got = sweep.summary()["branches"]
+    assert sorted(got) == sorted({ep, f"{ep}-alpha", f"{ep}-beta"})

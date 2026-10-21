@@ -1614,7 +1614,8 @@ class Sweep:
         if not ok:
             return self.leave(f"{src} (branch {branch})", f"unmerged: {why}")
         if self.dry_run:
-            self.branches.append(branch)
+            if branch not in self.branches:
+                self.branches.append(branch)
             return None
         note = _merge().delete_if_merged(src, branch, target)
         if note.startswith("deleted branch "):
