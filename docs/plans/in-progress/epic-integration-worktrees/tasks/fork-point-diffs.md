@@ -1,6 +1,6 @@
 ---
 title: Fork point diffs
-status: in-progress
+status: escalated
 repo: workbench
 value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]
@@ -14,7 +14,7 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-diffs
 branch: epic-integration-worktrees--fork-point-diffs
-verified_head: ""
+verified_head: 739bb65444108908be1ec0387059ae71f9d52db0
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []
