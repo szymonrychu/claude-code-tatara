@@ -72,18 +72,6 @@ def worktree_name(epic: str, task: str) -> str:
 # ---------------------------------------------------------------- branch-name collisions
 
 
-def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
-    """Every epic slug -> (epic, None) and every `<epic>-<task>` -> (epic, task), all phases.
-    `<epic>-<task>` cannot be split back into its parts, so this is the one name-to-ticket map."""
-    names: dict[str, tuple[str, str | None]] = {}
-    for t in scan(Path(root)):
-        if t.kind == "epic":
-            names[t.slug] = (t.slug, None)
-        else:
-            names[f"{t.epic}-{t.slug}"] = (t.epic, t.slug)
-    return names
-
-
 def _disk_names(root: Path) -> dict[str, str]:
     """Names taken on disk -> what holds them: local branches of the source checkouts and
     directories under <configdir>/worktrees/. Empty outside a git checkout."""
