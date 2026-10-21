@@ -218,3 +218,38 @@ def test_close_component_mode_moves_nothing(wb):
     assert f"component mode: close through the phase 6 MR from {ep}" in r.stdout
     assert (sha(svc, "develop"), sha(svc, ep), sha(wb, "main")) == before
     assert not (root / "in-progress" / ep / "close.json").exists()
+
+
+def test_close_rerun_after_failed_main_verify_refreshes_record(repo, root, tmp_path):
+    ep = ready(repo, root)
+    main_before = sha(repo, "main")
+    flag = tmp_path / "ran-once"
+    assert close(root, ep, f"if [ -e {flag} ]; then exit 1; fi; touch {flag}").returncode == 4
+    first = close_json(root, ep)
+    moved = sha(repo, "main")
+    assert moved != main_before
+    r = close(root, ep, "false")
+    assert r.returncode == 4, r.stdout + r.stderr
+    assert "did not move" not in r.stderr
+    assert main_before in r.stderr
+    rec = close_json(root, ep)
+    assert rec["baseBefore"] == main_before == first["baseBefore"]
+    assert rec["baseAfter"] == first["baseAfter"]
+    assert rec["mainVerify"]["passed"] is False and rec["mainVerify"]["command"] == "false"
+    # only the close.json commit landed on main; the epic was not rebased or re-forwarded
+    assert git(repo, "merge-base", "--is-ancestor", moved, "main").returncode == 0
+    assert sha(repo, ep) == first["epicTip"]
+
+
+def test_close_rebase_conflict_exits_1_and_main_stays(repo, root):
+    ep = ready(repo, root)
+    # main gains a conflicting alpha.py after the fork
+    (repo / "alpha.py").write_text("alpha = 'main'\n")
+    git(repo, "add", "alpha.py")
+    git(repo, "commit", "-m", "main alpha")
+    main_before = sha(repo, "main")
+    r = close(root, ep)
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "conflict" in r.stderr.lower()
+    assert sha(repo, "main") == main_before
+    assert not (root / "in-progress" / ep / "close.json").exists()

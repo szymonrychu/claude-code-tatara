@@ -77,7 +77,9 @@ def run(a, t) -> int:
     except mm.WorktreeError as e:
         raise t.TicketError(str(e)) from e
     ver = res["verification"]
-    if not ver["passed"]:
+    # a rerun after a failed main verify: <epic> is already in <base>, so merge_back verified <base>
+    rerun = bool(prior) and res.get("contained", False)
+    if not ver["passed"] and not rerun:
         print("\n".join(ver["tail"]), file=sys.stderr)
         print(
             f"ticket.py: verify failed on the rebased {name!r} tip; {a.base!r} did not move "
@@ -87,14 +89,19 @@ def run(a, t) -> int:
         return VERIFY_EXIT
     # a rerun after a failed main verify keeps the commit main was at before the first close
     before = prior["baseBefore"] if prior else res["baseBefore"]
-    passed, tail = mm._run_verify(a.verify, mm.target_tree(wb, a.base))
+    if rerun:
+        passed, tail = ver["passed"], ver["tail"]
+    else:
+        passed, tail = mm._run_verify(a.verify, mm.target_tree(wb, a.base))
     rec = {
         "epic": name,
         "base": a.base,
         "baseBefore": before,
         "baseAfter": res["baseAfter"],
         "epicTip": t._git(wb, "rev-parse", name).stdout.strip(),
-        "integrationVerify": {"command": a.verify, "passed": True},
+        "integrationVerify": prior["integrationVerify"]
+        if rerun
+        else {"command": a.verify, "passed": True},
         "mainVerify": {"command": a.verify, "passed": passed, "tail": tail},
         "at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     }
