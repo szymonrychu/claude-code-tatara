@@ -18,5 +18,15 @@
       "flow-speed-and-token-optimiz"
     ],
     "note": "diffBase(t) from the recorded fork point; used by gate-provenance"
+  },
+  {
+    "name": "epic-run-args",
+    "kind": "args-schema",
+    "owner": "epic-integration-worktrees",
+    "file": "plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py",
+    "consumers": [
+      "flow-speed-and-token-optimiz"
+    ],
+    "note": "build_args epic run args; audit-context-and-models adds taskFile"
   }
 ]
