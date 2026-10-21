@@ -150,7 +150,7 @@ def test_accept_needs_reason(repo, root, epic, tmp_path):
     assert r.returncode == 1 and "reason" in r.stderr
 
 
-def test_merge_gate_exit_2(repo, root, epic, tmp_path):
+def test_merge_gate_uses_epic_base(repo, root, epic, tmp_path):
     assert cli("worktrees", epic, "--root", root).returncode == 0
     wt = repo / ".claude" / "worktrees" / f"{epic}-alpha"
     (wt / "mine.txt").write_text("m")
@@ -336,7 +336,7 @@ def test_merge_line_names_legacy_double_hyphen_branch(repo, root, epic, tmp_path
     assert f"MERGE alpha --name {epic}--alpha --base {epic} --repo proj" in r.stdout.splitlines()
 
 
-def test_gate_counts_patch_equivalent_task_as_merged_after_rebase(repo, root, epic, tmp_path):
+def test_merge_gate_counts_patch_equivalent_task_as_merged(repo, root, epic, tmp_path):
     head = _task_branch(repo, root, epic, f"{epic}-alpha")
     itree = repo / ".claude" / "worktrees" / epic
     git(itree, "cherry-pick", head)  # same patch, new commit id: as after a rebase of <epic>

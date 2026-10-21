@@ -30,6 +30,38 @@ def _mk(path, text):
     path.write_text(text)
 
 
+def test_merge_line_uses_recorded_legacy_branch(repo, root, continue_epic, tmp_path):  # noqa: F811
+    ep = continue_epic
+    legacy = f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / legacy
+    git(repo, "worktree", "add", "-q", "-b", legacy, str(wt), "main")
+    (wt / "mine.txt").write_text("m")
+    git(wt, "add", "-A")
+    git(wt, "commit", "-m", "alpha work")
+    head = git(wt, "rev-parse", "HEAD").stdout.strip()
+    data = {
+        "run": "r1",
+        "tasks": [
+            {
+                "id": "alpha",
+                "branch": legacy,
+                "verified": True,
+                "clean": False,
+                "stopped": "gate-repeat",
+                "verification": {"head": head},
+            },
+            {"id": "beta", "branch": "b-beta", "verified": False, "clean": False},
+        ],
+        "escalated": [{"id": "alpha", "reason": "gate-repeat"}],
+    }
+    r = cli(
+        "continue", ep, "--root", root, "--out-dir", tmp_path / "out",
+        "--accept", "alpha", "--reason", "ok", "--return", write_ret(repo, data),
+    )  # fmt: skip
+    assert r.returncode == 2, r.stderr
+    assert f"MERGE alpha --name {legacy} --base {ep} --repo proj" in r.stdout.splitlines()
+
+
 def test_roadmap_open_files_drops_merged(tmp_path):
     r = tmp_path / "proj"
     r.mkdir()

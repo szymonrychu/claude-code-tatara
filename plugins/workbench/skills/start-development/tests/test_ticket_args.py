@@ -76,6 +76,13 @@ def epic(root):
     return ep, d, a, b, c
 
 
+def test_args_base_ref_is_epic_and_main_checkout(epic, root):
+    ep, d, *_ = epic
+    out = args_mod.build_args(d)
+    assert out["baseRef"] == ep
+    assert out["mainCheckout"] == str(d.parents[3].resolve())
+
+
 def test_args_strip_done_ids(epic, root):
     ep, d, a, b, c = epic
     set_status(a, "done")

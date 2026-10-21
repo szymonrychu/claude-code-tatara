@@ -156,6 +156,24 @@ def test_refresh_updates_clean_skips_done(repo, root):
     assert not (tree(repo, ep, "dirty-one") / "new.txt").exists()
 
 
+def test_refresh_fast_forwards_against_epic_branch(repo, root):
+    ep = mk_epic(root)
+    mk_task(root, ep, "Clean one")
+    commit_all(repo)
+    epic_branch(repo, ep)
+    assert cli("worktrees", ep, "--root", root).returncode == 0
+    git(repo, "checkout", "-q", ep)
+    (repo / "epic.txt").write_text("e")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "epic only")
+    git(repo, "checkout", "-q", "main")
+    r = cli("worktrees", ep, "--root", root, "--refresh")
+    assert r.returncode == 0, r.stderr
+    assert "clean-one updated" in r.stdout
+    assert (tree(repo, ep, "clean-one") / "epic.txt").exists()
+    assert not (repo / "epic.txt").exists()
+
+
 def test_done_task_never_recreated(repo, root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "Gone")

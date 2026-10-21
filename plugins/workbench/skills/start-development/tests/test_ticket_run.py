@@ -719,7 +719,7 @@ def test_worktrees_fork_from_epic_branch(repo, root):
     assert (wt / "epic.txt").is_file()
 
 
-def test_worktrees_missing_integration_branch_names_upgrade(repo, root):
+def test_worktrees_refuses_missing_integration_branch(repo, root):
     ep = mk_epic(root)
     mk_task(root, ep, "Alpha work")
     commit_all(repo)
@@ -730,7 +730,7 @@ def test_worktrees_missing_integration_branch_names_upgrade(repo, root):
     assert not (repo / ".claude" / "worktrees" / f"{ep}-alpha-work").exists()
 
 
-def test_worktrees_integration_upgrades_in_progress_epic(repo, root):
+def test_worktrees_integration_creates_tree_for_in_progress_epic(repo, root):
     ep = mk_epic(root)
     mk_task(root, ep, "Alpha work")
     commit_all(repo)
