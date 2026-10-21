@@ -99,13 +99,18 @@ def verify(root, command="true", *extra, triage=None, base="main", acs=None):
 
 
 def stub_bin(tmp_path, monkeypatch, names, exit_code=0):
-    """Fake executables that append their argv to $RECORD."""
+    """Fake executables that append their argv to $RECORD.
+
+    Version probes are answered, not recorded: verify-task runs commands via
+    `bash -lc`, and a CI image's login profile may run `node -v` on its own.
+    """
     d = tmp_path / "bin"
     d.mkdir(exist_ok=True)
     rec = tmp_path / "record.txt"
+    probe = 'case "$*" in -v|--version) echo "0.0.0-stub"; exit 0;; esac\n'
     for n in names:
         p = d / n
-        p.write_text(f'#!/bin/bash\necho "{n} $*" >> "{rec}"\nexit {exit_code}\n')
+        p.write_text(f'#!/bin/bash\n{probe}echo "{n} $*" >> "{rec}"\nexit {exit_code}\n')
         p.chmod(p.stat().st_mode | stat.S_IEXEC)
     monkeypatch.setenv("PATH", f"{d}{os.pathsep}{os.environ['PATH']}")
     return rec

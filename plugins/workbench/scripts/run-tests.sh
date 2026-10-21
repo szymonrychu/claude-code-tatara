@@ -42,6 +42,13 @@ if [ -n "$only" ]; then
   fi
 fi
 
+# Suites that commit need a git identity; CI runners have none, and a host's own
+# (derived from the account name) must not be what makes a suite pass.
+export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-workbench-tests}"
+export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-workbench-tests@example.invalid}"
+export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
+export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
+
 LOG_DIR="${RUN_TESTS_LOG_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX")}"
 mkdir -p "$LOG_DIR/tmp"
 

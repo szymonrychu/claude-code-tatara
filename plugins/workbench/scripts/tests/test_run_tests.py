@@ -84,7 +84,7 @@ def tree(tmp_path):
             ["bash", *cmd], cwd=root, env=env, capture_output=True, text=True, timeout=120
         )
 
-    return SimpleNamespace(root=root, tmpdir=tmpdir, control=control, run=run)
+    return SimpleNamespace(root=root, tmpdir=tmpdir, control=control, run=run, env=env)
 
 
 def test_failing_component_keeps_full_output(tree):
@@ -153,3 +153,31 @@ def test_flake_hunt_bad_args_exit_2(tree, args):
     r = tree.run("scripts/flake-hunt.sh", *args)
     assert r.returncode == 2
     assert "usage:" in r.stderr
+
+
+IDENT_TEST = """
+import os
+from pathlib import Path
+
+
+def test_ident():
+    keys = ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
+    out = Path(__file__).parent / "ident.txt"
+    out.write_text("\\n".join(f"{k}={os.environ.get(k, '')}" for k in keys))
+"""
+
+
+def test_suites_get_a_git_identity_unless_one_is_set(tree):
+    # CI runners have no git identity; suites that commit must not depend on the host's.
+    ident = tree.root / "skills" / "ident" / "tests"
+    ident.mkdir(parents=True)
+    (ident / "test_ident.py").write_text(IDENT_TEST)
+    for k in ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL"):
+        tree.env.pop(k, None)
+    r = tree.run("scripts/run-tests.sh", "--only", "ident")
+    assert r.returncode == 0, r.stdout + r.stderr
+    got = dict(line.split("=", 1) for line in (ident / "ident.txt").read_text().splitlines())
+    assert all(got.values()), got
+    tree.env["GIT_AUTHOR_NAME"] = "Caller"
+    tree.run("scripts/run-tests.sh", "--only", "ident")
+    assert "GIT_AUTHOR_NAME=Caller" in (ident / "ident.txt").read_text()
