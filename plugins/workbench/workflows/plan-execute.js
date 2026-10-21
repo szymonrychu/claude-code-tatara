@@ -2095,7 +2095,7 @@ function runTasks(batch) {
   const released = (d) => releasable(d) && (!LANDING || landed.has(d))
   // Releasable but not landed yet: queued or landing now.
   const landPending = (d) => LANDING && releasable(d) && !landed.has(d)
-  // Settled verified, not releasable: only a ruling can release it.
+  // Settled verified and blocked from release: a ruling decides it.
   const rulable = (d) => Boolean(RULINGS_FILE) && settled.has(d) && verified(settled.get(d).impl) && !releasable(d) && !landFailed(d)
   const landQueue = []
   let landing = false
