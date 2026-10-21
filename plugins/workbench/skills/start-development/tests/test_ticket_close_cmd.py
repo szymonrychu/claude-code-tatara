@@ -22,6 +22,13 @@ from ticket_repo_helpers import (
 )
 
 
+@pytest.fixture(autouse=True)
+def private_suite_lock(tmp_path, monkeypatch):
+    # close runs --verify under suite-lock.sh; the machine lock is held by whoever runs this suite
+    monkeypatch.setenv("SUITE_LOCK_DIR", str(tmp_path / "lock"))
+    monkeypatch.delenv("SUITE_LOCK_SLOTS", raising=False)
+
+
 def ready(repo, root, tasks=("alpha", "beta"), land=True, verdict="pass"):
     """A started epic whose tasks are delivered (landed on <epic> unless land is False), then
     reviewed. deliver() commits the ticket change to main after the fork, as a real run does."""
