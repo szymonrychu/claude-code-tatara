@@ -1,9 +1,10 @@
 ---
 name: worktree-merge
 description: >
-  Rebases one subagent's worktree onto the base branch, fast-forwards it back
-  into the main checkout, verifies every commit landed, and only then removes
-  the worktree and its branch. Keeps the worktree intact on any conflict, dirty
+  Rebases one subagent's worktree onto the base branch, optionally verifies the
+  rebased tree, fast-forwards it into the worktree that has the base checked out
+  (an epic integration tree or the main checkout), verifies every commit landed,
+  and only then removes the worktree and its branch. Keeps the worktree intact on any conflict, dirty
   tree, or failed check. Use after a subagent returns work created with
   worktree-create.
 ---
@@ -18,30 +19,64 @@ recoverable; lost commits are not.
 
 ```sh
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py" \
-  --name <name> [--base main] [--repo <code/ submodule>] [--keep]
+  --name <name> [--base main|<epic>] [--repo <code/ submodule>] [--keep] [--verify '<cmd>']
 ```
+
+The **target tree** is the worktree whose checked-out branch is `<base>`, found with
+`git worktree list --porcelain`: the integration tree for `--base <epic>`, the main
+checkout for `--base main`. The script never runs `git checkout` and never switches the
+human's checkout. When `<base>` is checked out in no worktree it raises
+`<base> is not checked out in any worktree of <src>; run ticket.py move <epic> in-progress
+for an integration branch, or check out <base> in the main checkout`, with nothing
+rebased or merged.
 
 What it does, in order, stopping at the first failure:
 
 1. **Refuses a dirty worktree.** Uncommitted changes mean the agent did not
    finish. Nothing is discarded - commit the work in the worktree, then re-run.
-2. **Rebases onto `origin/<base>`** (or local `<base>` with no remote), so the
+2. **Finds the target tree** (above) or refuses.
+3. **Rebases onto local `<base>`** (never `origin/<base>`; `git fetch origin <base>` is
+   best effort and fails harmlessly for an epic branch with no remote), so the
    history lands linear on top of whatever else merged meanwhile. A conflict
    in a doc file or a file matching `overlapIgnore` (workbench.json, plus the
    defaults) is union-merged: both sides are kept. Any other conflict aborts the
    rebase and keeps the worktree for resolution. A malformed workbench.json
    prints `[ERR] <message>` and exits 1 before any rebase.
-3. **Fast-forwards `<base>`** in the main checkout. Fast-forward only by design:
-   after a clean rebase, anything else means the base moved again, and a merge
-   commit would paper over it. Re-run instead.
-4. **Verifies the merge landed** - every commit on the branch is present in
+4. **Runs `--verify <cmd>`** in the rebased named tree under `suite-lock.sh`, before
+   anything moves. The rebased tree carries exactly the commit the target will have
+   after the fast-forward, so this verifies the integration result. A failing verify
+   exits 4 with the 15-line tail and never advances `<base>`: the target tree and
+   `<base>` stay at their old commit and the named tree keeps its rebased commits.
+5. **Fast-forwards `<base>` in the target tree**, only on a green verify. Fast-forward
+   only by design. If `<base>` moved after the rebase, it rebases again onto the new
+   `<base>` and re-runs `--verify`, up to 3 attempts in all, then raises `WorktreeError`
+   naming the attempts. `<base>` never moves onto a tip the last verify did not pass.
+6. **Verifies the merge landed** - every commit on the branch is present in
    base. This is a real check against the repo, not an assumption.
-5. **Removes the worktree and deletes the branch.** Only after step 4 passes.
-   `--keep` merges without cleaning up. Directories left empty by the merge are
-   pruned.
-6. **Runs the `suites` from workbench.json after the fast-forward**, by default,
-   in the main checkout. `--no-suites` skips them. A failing suite exits 4 (exit 4):
+7. **Removes the worktree and deletes the branch** with `git branch -d` run from the
+   target tree, so a task branch merged into `<epic>` is deleted although the main
+   checkout's HEAD lacks it. A refusal keeps the branch and is reported. Only after
+   step 6 passes. `--keep` merges without cleaning up. Directories left empty by the
+   merge are pruned in the target tree.
+8. **Runs the `suites` from the source checkout's workbench.json** after the fast-forward,
+   by default, in the target tree. `--no-suites` skips them. A failing suite exits 4 (exit 4):
    the merge stays in place, it is not undone.
+
+The result carries `baseBefore` (the `<base>` SHA the final rebase was onto, before the
+fast-forward), `baseAfter` and `verification: {command, passed, tail}`. `--assess` works
+with `--base <epic>`.
+
+## Epic close
+
+```sh
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py" \
+  --name <epic> --base main --keep --verify '<full suite and lint>'
+```
+
+In order: rebases `<epic>` onto main inside the integration tree; runs the full suite and
+lint on the rebased tip there; only then fast-forwards main in the main checkout and runs
+the configured suites there. The integration tree and branch stay in place.
+`baseBefore` in the result is main's pre-fast-forward SHA.
 
 ## Rules
 

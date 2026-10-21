@@ -83,3 +83,15 @@ def test_repo_glob_union_merged(repo):
     assert info["unionMerged"] == ["notes.txt"]
     text = (repo / "notes.txt").read_text()
     assert "agent" in text and "main" in text
+
+
+def test_union_merge_lands_in_the_integration_tree(repo):
+    ept = Path(create("ep", start=repo)["path"])
+    task = Path(create("ep-t", base="ep", start=repo)["path"])
+    commit(task, "README.md", "# T\n\nbase line\nagent line\n")
+    commit(ept, "README.md", "# T\n\nbase line\nepic line\n")
+    info = merge_back("ep-t", base="ep", start=repo)
+    text = (ept / "README.md").read_text()
+    assert "agent line" in text and "epic line" in text and "<<<<" not in text
+    assert info["unionMerged"] == ["README.md"]
+    assert "agent line" not in (repo / "README.md").read_text()

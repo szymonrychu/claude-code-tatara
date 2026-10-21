@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Rebase one subagent worktree onto base, merge it back, then clean up.
+"""Rebase one subagent worktree onto base, land it in base's worktree, then clean up.
+
+The target is whichever worktree has base checked out (an epic integration tree or
+the main checkout); no checkout is ever switched.
 
 Cleanup is conditional: the worktree and its branch are removed only after the
 merge is verified to have landed. A worktree that fails any check is left in
@@ -184,16 +187,16 @@ def _rebase_with_union(wt: Path, target: str, globs: list) -> tuple:
 SUITE_LOCK = Path(__file__).resolve().parent / "suite-lock.sh"
 
 
-def run_suites(src: Path) -> tuple[str, list[str]]:
-    """Run the main checkout config's suites in order, each under suite-lock.sh,
-    from the checkout root. Stops at the first failure. Returns (status, tail)."""
+def run_suites(src: Path, target: Path = None) -> tuple[str, list[str]]:
+    """Run the source checkout config's suites in order, each under suite-lock.sh,
+    from the target tree root. Stops at the first failure. Returns (status, tail)."""
     suites = load_config(src)["suites"]
     if not suites:
         return "none configured", []
     for cmd in suites:
         r = subprocess.run(
             ["bash", str(SUITE_LOCK), "--", "bash", "-c", cmd],
-            cwd=src,
+            cwd=target or src,
             capture_output=True,
             text=True,
         )
@@ -203,6 +206,35 @@ def run_suites(src: Path) -> tuple[str, list[str]]:
     return "pass", []
 
 
+def target_tree(src: Path, base: str) -> Path:
+    """The worktree of src that has <base> checked out (integration tree or main checkout)."""
+    out = run(["git", "worktree", "list", "--porcelain"], cwd=src, check=False).stdout
+    path = None
+    for ln in out.splitlines():
+        if ln.startswith("worktree "):
+            path = Path(ln[len("worktree ") :])
+        elif ln == f"branch refs/heads/{base}" and path is not None:
+            return path
+    raise WorktreeError(
+        f"{base} is not checked out in any worktree of {src}; run ticket.py move <epic> "
+        "in-progress for an integration branch, or check out {0} in the main checkout".format(base)
+    )
+
+
+def _run_verify(cmd: str, wt: Path) -> tuple[bool, list[str]]:
+    """Run cmd in wt under suite-lock.sh. Returns (passed, last 15 output lines)."""
+    r = subprocess.run(
+        ["bash", str(SUITE_LOCK), "--", "bash", "-c", cmd],
+        cwd=wt,
+        capture_output=True,
+        text=True,
+    )
+    return r.returncode == 0, (r.stdout + r.stderr).splitlines()[-15:]
+
+
+MAX_ATTEMPTS = 3
+
+
 def merge_back(
     name: str,
     base: str = "main",
@@ -210,6 +242,7 @@ def merge_back(
     keep: bool = False,
     start: Path = None,
     suites: bool = True,
+    verify: str = None,
 ) -> dict:
     root = workbench_root(start)
     src = root / "code" / repo if repo else root
@@ -233,56 +266,85 @@ def merge_back(
             notes += cleanup(src, wt, name)
         return {"name": name, "merged": 0, "cleaned": not keep, "notes": notes}
 
-    notes = [f"{len(ahead)} commit(s) to merge"]
+    target = target_tree(src, base)
+    notes = [f"{len(ahead)} commit(s) to merge", f"landing in {target}"]
 
     # Fetch so refs are current, but NEVER rebase onto origin/<base>. The branch
     # is merged into LOCAL <base>, so that is the only correct rebase target.
     # Rebasing onto origin/<base> when local and origin have diverged rewrites
     # the unpushed local commits and the fast-forward then fails as diverging
     # branches. worktree-create already merged origin/<base> into the worktree,
-    # so the remote's work is present either way.
+    # so the remote's work is present either way. A base with no remote (an
+    # integration branch) fails the fetch harmlessly.
     fetched = run(["git", "fetch", "origin", base], cwd=wt, check=False)
-    if fetched.returncode == 0:
-        notes.append(f"fetched origin/{base}")
-    target = base
+    notes.append(
+        f"fetched origin/{base}" if fetched.returncode == 0 else f"no remote {base} to fetch"
+    )
 
-    ok, union, blocking = _rebase_with_union(wt, target, cfg["overlapIgnore"])
-    if not ok:
-        named = f" Conflicted paths: {', '.join(blocking)}." if blocking else ""
-        raise WorktreeError(
-            f"rebase of {name} onto {target} conflicted and was aborted.{named} The worktree is "
-            "intact at {0}; resolve the conflict there, then run this skill again.".format(wt)
+    union: list[str] = []
+    verification = {"command": verify, "passed": True, "tail": []}
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        ok, merged_docs, blocking = _rebase_with_union(wt, base, cfg["overlapIgnore"])
+        if not ok:
+            named = f" Conflicted paths: {', '.join(blocking)}." if blocking else ""
+            raise WorktreeError(
+                f"rebase of {name} onto {base} conflicted and was aborted.{named} The worktree is "
+                "intact at {0}; resolve the conflict there, then run this skill again.".format(wt)
+            )
+        union += [p for p in merged_docs if p not in union]
+        notes.append(f"rebased onto {base}")
+        if verify:
+            passed, tail = _run_verify(verify, wt)
+            verification = {"command": verify, "passed": passed, "tail": tail}
+            if not passed:
+                sha = run(["git", "rev-parse", base], cwd=target, check=False).stdout.strip()
+                notes.append(f"--verify failed; {base} not advanced, {name} kept")
+                return {
+                    "name": name,
+                    "merged": 0,
+                    "cleaned": False,
+                    "notes": notes,
+                    "unionMerged": union,
+                    "baseBefore": sha,
+                    "baseAfter": sha,
+                    "verification": verification,
+                }
+        old = run(["git", "rev-parse", base], cwd=target, check=False).stdout.strip()
+        # Fast-forward only, in the target tree: after a clean rebase anything else
+        # means the base moved under us, and a merge commit would hide that.
+        m = run(["git", "merge", "--ff-only", name], cwd=target, check=False)
+        if m.returncode == 0:
+            break
+        # <base> moved when it is no longer an ancestor of the rebased tip.
+        moved = (
+            run(
+                ["git", "merge-base", "--is-ancestor", base, name], cwd=target, check=False
+            ).returncode
+            != 0
         )
-    notes.append(f"rebased onto {target}")
+        if not moved:
+            raise WorktreeError(
+                f"fast-forward merge of {name} into {base} failed in {target}: "
+                f"{m.stderr.strip()}. {base} is still behind the tip; the worktree is intact."
+            )
+        notes.append(f"{base} moved after the rebase (attempt {attempt}); rebasing again")
+    else:
+        raise WorktreeError(
+            f"{base} kept moving: fast-forward of {name} failed after {MAX_ATTEMPTS} attempts "
+            f"(each rebased and re-verified). {base} was not advanced; the worktree is intact."
+        )
     if union:
         notes.append("union-merged doc files (both sides kept, review them): " + ", ".join(union))
-
-    # Merge into base in the source checkout. Fast-forward only: after a clean
-    # rebase anything else means the base moved under us, and a merge commit
-    # would hide that.
-    cur = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=src, check=False).stdout.strip()
-    if cur != base:
-        co = run(["git", "checkout", base], cwd=src, check=False)
-        if co.returncode != 0:
-            raise WorktreeError(f"could not check out {base} in {src}: {co.stderr.strip()}")
-
-    old = run(["git", "rev-parse", "HEAD"], cwd=src, check=False).stdout.strip()
-    m = run(["git", "merge", "--ff-only", name], cwd=src, check=False)
-    if m.returncode != 0:
-        raise WorktreeError(
-            f"fast-forward merge of {name} into {base} failed: {m.stderr.strip()}. "
-            f"{base} moved after the rebase. The worktree is intact; run this skill again."
-        )
     notes.append(f"fast-forwarded {base}")
-    new = run(["git", "rev-parse", "HEAD"], cwd=src, check=False).stdout.strip()
+    new = run(["git", "rev-parse", base], cwd=target, check=False).stdout.strip()
     deleted = run(
-        ["git", "diff", "--name-only", "--diff-filter=D", f"{old}..{new}"], cwd=src, check=False
+        ["git", "diff", "--name-only", "--diff-filter=D", f"{old}..{new}"], cwd=target, check=False
     ).stdout.splitlines()
-    pruned = prune_empty_dirs(src, [ln for ln in deleted if ln])
+    pruned = prune_empty_dirs(target, [ln for ln in deleted if ln])
     if pruned:
         notes.append("pruned empty directories: " + ", ".join(pruned))
 
-    if not merged_into(src, name, base):
+    if not merged_into(target, name, base):
         raise WorktreeError(
             f"post-merge check failed: {name} still has commits absent from {base}. Worktree kept."
         )
@@ -290,9 +352,9 @@ def merge_back(
 
     cleaned = False
     if not keep:
-        notes += cleanup(src, wt, name)
+        notes += cleanup(src, wt, name, target)
         cleaned = True
-    status, tail = run_suites(src) if suites else ("skipped (--no-suites)", [])
+    status, tail = run_suites(src, target) if suites else ("skipped (--no-suites)", [])
     return {
         "suites": status,
         "suitesTail": tail,
@@ -301,17 +363,22 @@ def merge_back(
         "cleaned": cleaned,
         "notes": notes,
         "unionMerged": union,
+        "baseBefore": old,
+        "baseAfter": new,
+        "verification": verification,
     }
 
 
-def cleanup(src: Path, wt: Path, name: str) -> list[str]:
+def cleanup(src: Path, wt: Path, name: str, target: Path = None) -> list[str]:
+    """Remove wt, then delete its branch with `git branch -d` run from the target tree,
+    so a branch merged into an integration branch is deleted though main's HEAD lacks it."""
     notes = []
     r = run(["git", "worktree", "remove", str(wt)], cwd=src, check=False)
     if r.returncode != 0:
         notes.append(f"worktree remove failed ({r.stderr.strip()}); left at {wt}")
         return notes
     notes.append(f"removed worktree {wt}")
-    d = run(["git", "branch", "-d", name], cwd=src, check=False)
+    d = run(["git", "branch", "-d", name], cwd=target or src, check=False)
     notes.append(
         f"deleted branch {name}"
         if d.returncode == 0
@@ -329,6 +396,12 @@ def main(argv=None) -> int:
     ap.add_argument("--keep", action="store_true", help="merge but do not remove the worktree")
     ap.add_argument(
         "--no-suites", action="store_true", help="skip the suites configured in workbench.json"
+    )
+    ap.add_argument(
+        "--verify",
+        default=None,
+        help="command run in the rebased named tree, under suite-lock.sh, before the "
+        "fast-forward; a failure exits 4 and leaves <base> untouched",
     )
     ap.add_argument(
         "--assess",
@@ -351,6 +424,7 @@ def main(argv=None) -> int:
             repo=args.repo,
             keep=args.keep,
             suites=not args.no_suites,
+            verify=args.verify,
         )
     except (WorktreeError, ConfigError) as e:
         print(f"[ERR] {e}", file=sys.stderr)
@@ -358,6 +432,13 @@ def main(argv=None) -> int:
     print(f"{info['name']}: merged {info['merged']} commit(s), cleaned={info['cleaned']}")
     for n in info["notes"]:
         print(f"  - {n}")
+    v = info.get("verification")
+    if v and v["command"]:
+        print(f"verify: {'pass' if v['passed'] else 'FAIL'} {v['command']}")
+        for ln in v["tail"] if not v["passed"] else []:
+            print(f"  {ln}")
+        if not v["passed"]:
+            return 4
     if "suites" in info:
         print(f"suites: {info['suites']}")
         for ln in info.get("suitesTail", []):

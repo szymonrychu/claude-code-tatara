@@ -65,3 +65,16 @@ def test_no_suites_and_flag(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(repo2)
     assert main(["--name", "ww"]) == 0
     assert "suites: none configured" in capsys.readouterr().out
+
+
+def test_suites_run_in_the_integration_tree(tmp_path, monkeypatch):
+    repo = setup(tmp_path, ["pwd > where.out"], monkeypatch)
+    ept = Path(create("ep", start=repo)["path"])
+    task = Path(create("ep-t", base="ep", start=repo)["path"])
+    (task / "c.txt").write_text("c\n")
+    git(task, "add", "-A")
+    git(task, "commit", "-qm", "c")
+    info = merge_back("ep-t", base="ep", start=repo)
+    assert info["suites"] == "pass"
+    assert (ept / "where.out").read_text().strip() == str(ept.resolve())
+    assert not (repo / "where.out").exists()

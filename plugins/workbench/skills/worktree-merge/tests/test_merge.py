@@ -232,3 +232,15 @@ def test_lands_when_local_and_origin_have_diverged(repo_with_remote):
         "local main was rewritten rather than advanced"
     )
     assert info["merged"] >= 1
+
+
+def test_refuses_instead_of_switching_a_checkout_on_another_branch(repo):
+    """The old behaviour checked <base> out in the main checkout; it must now refuse."""
+    wt = Path(create("feat", start=repo)["path"])
+    commit(wt, "feature.py")
+    git(repo, "checkout", "-q", "-b", "other")
+    with pytest.raises(WorktreeError) as e:
+        merge_back("feat", start=repo)
+    assert "main is not checked out in any worktree" in str(e.value)
+    assert git(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip() == "other"
+    assert wt.exists()
