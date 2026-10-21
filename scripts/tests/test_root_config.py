@@ -1,10 +1,9 @@
 """Pins the root config: ignore entries, local-only pre-commit hooks, workbench.json keys."""
 
 import json
+import re
 import subprocess
 from pathlib import Path
-
-import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIRS = [".claude", ".github", ".cursor", ".codex", ".gemini", ".agents"]
@@ -61,13 +60,17 @@ def test_gitignore_has_no_superpowers_and_plugin_gitignore_retired():
 
 
 def test_precommit_is_local_only():
-    cfg = yaml.safe_load((ROOT / ".pre-commit-config.yaml").read_text())
+    # Stdlib only (the template ships no PyYAML): every hook is a one-line flow mapping.
+    text = (ROOT / ".pre-commit-config.yaml").read_text()
+    repos = re.findall(r"^\s*-\s*repo:\s*(\S+)", text, re.M)
+    assert repos and all(r == "local" for r in repos), repos
+    hooks = re.findall(r"^\s*-\s*\{(.*)\}\s*$", text, re.M)
+    assert hooks
     ids = set()
-    for repo in cfg["repos"]:
-        assert repo["repo"] == "local"
-        for h in repo["hooks"]:
-            assert h["language"] == "system"
-            ids.add(h["id"])
+    for h in hooks:
+        fields = dict(re.findall(r"(\w+):\s*([^,]+?)\s*(?:,|$)", h))
+        assert fields.get("language") == "system", h
+        ids.add(fields["id"])
     for want in [
         "trailing-whitespace", "end-of-file-fixer", "check-yaml", "check-json",
         "check-toml", "check-merge-conflict", "check-added-large-files",
