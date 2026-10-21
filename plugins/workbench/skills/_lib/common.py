@@ -5,9 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "lib"))
-import workbench  # noqa: E402
-
 
 class RepoError(Exception):
     pass
@@ -74,6 +71,10 @@ def tracked_branch(name: str) -> str:
 
 
 def worktree_path(branch: str, repo: str) -> Path:
+    # lazy: copies of _lib without scripts/lib (release fixture) never call this
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "lib"))
+    import workbench
+
     return workbench.worktrees_dir(repo_root()) / branch / repo
 
 

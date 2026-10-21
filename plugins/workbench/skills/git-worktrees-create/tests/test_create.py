@@ -65,7 +65,7 @@ def _run_script(workbench_root, branch, repos):
     return result
 
 
-def test_creates_new_branch_off_tracked_default(workbench):
+def test_creates_worktree_under_config_dir(workbench):
     root, origin, repo1 = workbench
 
     result = _run_script(root, "feature-new", "repo1")
@@ -111,7 +111,7 @@ def test_reuses_existing_remote_branch(workbench):
     assert "reused" in result.stdout.lower()
 
 
-def test_skips_when_worktree_already_exists(workbench):
+def test_skips_existing_integration_tree(workbench):
     root, origin, repo1 = workbench
 
     first = _run_script(root, "feature-new", "repo1")
@@ -121,6 +121,19 @@ def test_skips_when_worktree_already_exists(workbench):
 
     assert second.returncode == 0, second.stdout + second.stderr
     assert "skipped" in second.stdout.lower()
+
+
+def test_skips_tree_created_by_claim(workbench):
+    root, origin, repo1 = workbench
+    tree = root / ".claude" / "worktrees" / "my-epic" / "repo1"
+    _git(["worktree", "add", "-q", "-b", "my-epic", str(tree)], repo1)
+    head = _rev_parse(tree, "HEAD")
+
+    result = _run_script(root, "my-epic", "repo1")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "skipped" in result.stdout.lower()
+    assert _rev_parse(tree, "HEAD") == head
 
 
 def test_unknown_repo_reports_failure(workbench):

@@ -95,7 +95,8 @@ def test_collect_unknown_repo_fails(workbench, capsys):
     assert "unknown repo" in captured.out
 
 
-def test_commit_creates_commit_with_title(workbench):
+def test_commits_in_config_dir_worktree(workbench):
+    assert workbench.parts[-4:-2] == (".claude", "worktrees")
     exit_code = commit.cmd_commit("my-branch", ["foo"], [], {"foo": "feat: update files"})
     assert exit_code == 0
     assert _log_subject(workbench) == "feat: update files"

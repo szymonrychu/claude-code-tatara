@@ -95,8 +95,15 @@ def test_tracked_branch_default(workbench):
     assert common.tracked_branch("bar") == "main"
 
 
-def test_worktree_path(workbench):
+def test_worktree_path_under_config_dir(workbench):
     expected = workbench / ".claude" / "worktrees" / "my-branch" / "foo"
+    assert common.worktree_path("my-branch", "foo") == expected
+
+
+def test_worktree_path_follows_non_default_config_dir(workbench):
+    (workbench / ".cursor").mkdir()
+    (workbench / ".cursor" / "workbench.json").write_text("{}")
+    expected = workbench / ".cursor" / "worktrees" / "my-branch" / "foo"
     assert common.worktree_path("my-branch", "foo") == expected
 
 
