@@ -76,5 +76,5 @@ test('fork-point-tdd-recipe-uses-fork-point', async () => {
   const a = async (p, o) => (o.label.split(':')[1] === 'impl' ? deliverable('a', noRed) : agent(landed({ contained: true }))(p, o))
   const r = await runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC, tasks: [task('a', { forkPoint: 'abc1234' })] }, agent: a })
   const all = r.calls.map((c) => c.prompt).join('\n')
-  assert.ok(!all.includes('git show <merge-base>'), 'recipe still names merge-base')
+  assert.ok(all.includes('git show abc1234:<path>'), 'recipe names the fork point')
 })
