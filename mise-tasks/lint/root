@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Lint root scripts (ruff) and shell files (shellcheck)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+ruff check scripts
+files=$(find scripts -name '*.sh' -type f; find mise-tasks -type f)
+# shellcheck disable=SC2086
+shellcheck $files

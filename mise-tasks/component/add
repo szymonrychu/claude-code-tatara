@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Add a component after init: --component NAME[:LANG] --remote ..., or --path / --url (init_engine component add)"
+set -euo pipefail
+# relative --path and --remote local-bare:<dir> resolve against where the user ran the task
+export INIT_ENGINE_CWD="${MISE_ORIGINAL_CWD:-$PWD}"
+cd "$(dirname "$0")/../.."
+exec python3 scripts/init_engine/cli.py component add "$@"

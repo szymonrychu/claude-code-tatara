@@ -1,0 +1,18 @@
+[tasks.test]
+description = "Run every skill's test suite, one pytest process per skill"
+run = ["bash scripts/run-tests.sh"]
+
+[tasks.lint]
+description = "Lint plugin scripts and skills"
+run = [
+  "ruff check scripts skills hooks",
+  "shellcheck scripts/*.sh skills/*/scripts/*.sh skills/_lib/*.sh hooks/*.sh",
+]
+
+[tasks.fmt]
+description = "Format python"
+run = ["ruff format scripts skills hooks"]
+
+[tasks.doctor]
+description = "Show the workbench this shell resolves to"
+run = ["python3 scripts/lib/workbench.py doctor"]

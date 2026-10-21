@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="After merging a template update: re-run the project writers, AGENTS.md block sync and harness regeneration (init_engine refresh)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/init_engine/cli.py refresh "$@"

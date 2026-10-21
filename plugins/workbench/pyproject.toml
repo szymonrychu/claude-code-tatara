@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+# The GitLab and GitHub SCM skills are deliberate parallel implementations, so
+# skills/*/tests/ contains several same-named modules (test_update.py,
+# test_watch.py). The default prepend import mode derives module names from the
+# basename and collides on them; importlib mode keys off the full path instead.
+addopts = "--import-mode=importlib"
+testpaths = ["skills", "scripts"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

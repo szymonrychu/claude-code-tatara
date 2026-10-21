@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "matcher": "Bash",
+        "bash": "python3 plugins/workbench/hooks/adapter.py --harness copilot --event pre-tool --hook guard-bash",
+        "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "matcher": "Edit|MultiEdit|NotebookEdit|Write",
+        "bash": "python3 plugins/workbench/hooks/adapter.py --harness copilot --event pre-tool --hook protect-files",
+        "timeoutSec": 10
+      }
+    ],
+    "SubagentStop": [
+      {
+        "type": "command",
+        "bash": "python3 plugins/workbench/hooks/adapter.py --harness copilot --event stop --hook subagent-commit-guard",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

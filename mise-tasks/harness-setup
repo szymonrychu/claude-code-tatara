@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Sync AGENTS.md blocks and recorded targets (no args), or write targets: harness-setup [<target>... | all | --check | --clean <target>]"
+set -euo pipefail
+exec python3 "$(dirname "$0")/../scripts/harness/setup.py" "$@"

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Fail when generated harness files drifted from their sources"
+set -euo pipefail
+exec python3 "$(dirname "$0")/../../scripts/harness/setup.py" --check

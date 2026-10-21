@@ -1,0 +1,11 @@
+{
+  "extraKnownMarketplaces": {
+    "fixture-market": {"source": {"source": "directory", "path": "./"}}
+  },
+  "enabledPlugins": {
+    "core@fixture-market": true,
+    "extra@fixture-market": true,
+    "off@fixture-market": false,
+    "foreign@other-market": true
+  }
+}

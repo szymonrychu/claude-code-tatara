@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Create a new project: components as submodules with origins (init_engine new)"
+set -euo pipefail
+# relative --remote local-bare:<dir> resolves against where the user ran the task
+export INIT_ENGINE_CWD="${MISE_ORIGINAL_CWD:-$PWD}"
+cd "$(dirname "$0")/../.."
+exec python3 scripts/init_engine/cli.py new "$@"

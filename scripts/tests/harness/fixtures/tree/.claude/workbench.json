@@ -1,0 +1,6 @@
+{
+  "harness": {
+    "targets": ["cursor", "codex"],
+    "models": {"cursor": {"opus": "gpt-fixture"}}
+  }
+}

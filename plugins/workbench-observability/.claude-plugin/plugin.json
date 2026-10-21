@@ -1,0 +1,8 @@
+{
+  "name": "workbench-observability",
+  "version": "1.0.0",
+  "description": "Observability pack for the workbench template: Grafana, Prometheus, Loki and Kubernetes health diagnostics. Requires the workbench core plugin.",
+  "author": {
+    "name": "workbench contributors"
+  }
+}

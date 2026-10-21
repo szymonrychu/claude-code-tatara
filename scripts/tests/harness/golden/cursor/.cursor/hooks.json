@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "python3 plugins/core/hooks/adapter.py --harness cursor --event pre-tool --hook guard-bash",
+        "type": "command",
+        "timeout": 10,
+        "matcher": "Shell",
+        "failClosed": true
+      },
+      {
+        "command": "python3 plugins/core/hooks/adapter.py --harness cursor --event pre-tool --hook protect-files",
+        "type": "command",
+        "timeout": 10,
+        "matcher": "Write|Delete",
+        "failClosed": true
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "python3 plugins/core/hooks/adapter.py --harness cursor --event stop --hook subagent-commit-guard",
+        "type": "command",
+        "timeout": 15
+      }
+    ]
+  }
+}

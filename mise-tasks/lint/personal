@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Fail on personal references in the tracked tree (scripts/personal-denylist.json)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/check_personal.py

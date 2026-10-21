@@ -1,0 +1,8 @@
+{
+  "name": "workbench-infra",
+  "version": "1.0.0",
+  "description": "Infrastructure pack for the workbench template: Kubernetes, Terraform and Helm diagnostic agents and chart drift checks. Requires the workbench core plugin.",
+  "author": {
+    "name": "workbench contributors"
+  }
+}

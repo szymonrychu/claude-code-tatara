@@ -1,0 +1,8 @@
+---
+description: Python
+globs: **/*.py,**/pyproject.toml
+alwaysApply: false
+---
+# Python
+
+Use type hints.

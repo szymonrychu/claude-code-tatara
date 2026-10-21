@@ -1,0 +1,38 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "workbench-template",
+  "description": "Workbench template plugins: a core plugin plus optional packs.",
+  "owner": {
+    "name": "workbench contributors"
+  },
+  "plugins": [
+    {
+      "name": "workbench",
+      "description": "development flow for any workbench tree (metarepo or flat): a development flow with one approval gate, an approval ledger, file-based epic tickets and research skills, tiered review with a script+haiku verifier, gated review and debugging flows, verification hooks that tie every test run to the committed HEAD, per-subagent worktree isolation, deterministic plan execution, read-only diagnostic subagents, and destructive-command guardrails.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench",
+      "category": "devops"
+    },
+    {
+      "name": "workbench-infra",
+      "description": "Infrastructure pack for the workbench template: Kubernetes, Terraform and Helm diagnostic agents and chart drift checks. Requires the workbench core plugin.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench-infra",
+      "category": "devops"
+    },
+    {
+      "name": "workbench-observability",
+      "description": "Observability pack for the workbench template: Grafana, Prometheus, Loki and Kubernetes health diagnostics. Requires the workbench core plugin.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench-observability",
+      "category": "devops"
+    },
+    {
+      "name": "workbench-secrets",
+      "description": "Secrets pack for the workbench template: dotenv and SOPS secret handling guardrails. Requires the workbench core plugin.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench-secrets",
+      "category": "devops"
+    }
+  ]
+}

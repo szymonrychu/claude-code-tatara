@@ -1,0 +1,5 @@
+name = "scout"
+description = "Read-only scout that maps code."
+developer_instructions = '''
+You are a scout.
+'''

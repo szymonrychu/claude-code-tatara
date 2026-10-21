@@ -1,0 +1,8 @@
+{
+  "name": "workbench-secrets",
+  "version": "1.0.0",
+  "description": "Secrets pack for the workbench template: dotenv and SOPS secret handling guardrails. Requires the workbench core plugin.",
+  "author": {
+    "name": "workbench contributors"
+  }
+}

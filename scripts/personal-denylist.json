@@ -1,0 +1,81 @@
+{
+  "patterns": [
+    "/Users/",
+    {
+      "name": "/home/<name>",
+      "regex": "/home/(?!user(?![\\w.-]))[\\w.-]+"
+    },
+    {
+      "name": "harbor.",
+      "regex": "(?<!\\w)harbor\\.[\\w-]"
+    },
+    "192.168.",
+    {
+      "name": ".lan",
+      "regex": "[\\w*-]\\.lan(?![\\w-])"
+    }
+  ],
+  "hashes": [
+    "0bc152c8aea418c104e55577382e1bb599e4e0cf0b502d41f085873558f61454",
+    "023b52d862779e627518790b99a1aa44ea35f8ca1e9647265bcc98351332e378",
+    "754135865cccc4e0a4583078dc6a6ff33ef009a471e6d43fa7fd796c6ef363c4",
+    "5652f973f9bca992b85cb721aec1cd4ce911138e010d139e31e9267550ea6130",
+    "5aebe8db67638020eeaab4fc46cee85832e521e32552846ae2130001fbd846d1",
+    "c34928c3c4608378eedddac362a5dd0d5e525719d753bf317ec1d6a5f0af2c4b",
+    "ca37f4c0a75e891fab6e60cc5a8e4b0d23249d647f90580813a81b919f8045b3",
+    "8b83d90b21cf82b42882f4cbb630d93bbae26e2f7330240cd567bf1837233a07",
+    "cdde66013990b290985ccfdebfb78ada047cb22b7132f4f6435c979a86d0b528",
+    "07bcbf984fed16712c84b7a0a75eac96c44271f4512046964fa986c239902624",
+    "9e66a118b9a0fb8cada5eb0f357806a21cc067fa4b9d9f76eb9773a24e022438",
+    "079f912e7f330a1bebb8f346ce65568201cec4bf4d2f7eeb69583578542bf91b",
+    "28d81f2e7f99e2f862924d4748a4b71c4fd94e3ec26e0c6da17ce1252992af68",
+    "8be0b5445fca6eb16d14c6f4eaff1cf1d1a3362ef660bfb2b66e74bf309b7e61",
+    "26b47209413e5776b8a32b9ef89bb47312a75875bf475d39a78e5ae4dcc095f3",
+    "564fc13e726db4cc3c07d05b43399554e2c64fa8b19056ae6cbf38d63b74ae56",
+    "ff36bdbb76618c58dce7428922ce467ed08474e467db8b76d47b5714a50af062",
+    "8892b9b28a6639617c23eda1e50cf4f80b137a24c80d5a61b2dd1edc8f8d06de",
+    "9289726290e45c90c803848c7cb31c6a3f12435ba2f0143e9d0f8b2c6b0d014a"
+  ],
+  "allow": [
+    {
+      "path": "LICENSE",
+      "pattern": "0bc152c8aea418c104e55577382e1bb599e4e0cf0b502d41f085873558f61454",
+      "line_contains": "Copyright"
+    },
+    {
+      "path": "LICENSE",
+      "pattern": "5652f973f9bca992b85cb721aec1cd4ce911138e010d139e31e9267550ea6130",
+      "line_contains": "Copyright"
+    },
+    {
+      "path": "plugins/*/LICENSE",
+      "pattern": "0bc152c8aea418c104e55577382e1bb599e4e0cf0b502d41f085873558f61454",
+      "line_contains": "Copyright"
+    },
+    {
+      "path": "plugins/*/LICENSE",
+      "pattern": "5652f973f9bca992b85cb721aec1cd4ce911138e010d139e31e9267550ea6130",
+      "line_contains": "Copyright"
+    },
+    {
+      "path": "README.md",
+      "pattern": "023b52d862779e627518790b99a1aa44ea35f8ca1e9647265bcc98351332e378",
+      "line_contains": "/workbench"
+    },
+    {
+      "path": "scripts/init_engine/*.py"
+    },
+    {
+      "path": "scripts/tests/init_engine/*.py"
+    },
+    {
+      "path": "docs/plans/**"
+    },
+    {
+      "path": "scripts/personal-denylist.json"
+    },
+    {
+      "path": "scripts/tests/test_check_personal.py"
+    }
+  ]
+}

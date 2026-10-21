@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "docs": {
+      "type": "http",
+      "url": "https://example.invalid/mcp"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+# Every hook is local and calls a mise-pinned tool: no github.com egress needed.
+repos:
+  - repo: local
+    hooks:
+      - {id: trailing-whitespace, name: trailing whitespace, entry: mise exec -- trailing-whitespace-fixer, language: system, types: [text]}
+      - {id: end-of-file-fixer, name: end of file, entry: mise exec -- end-of-file-fixer, language: system, types: [text]}
+      - {id: check-yaml, name: check yaml, entry: mise exec -- check-yaml, language: system, types: [yaml]}
+      - {id: check-json, name: check json, entry: mise exec -- check-json, language: system, types: [json]}
+      - {id: check-toml, name: check toml, entry: mise exec -- check-toml, language: system, types: [toml]}
+      - {id: check-merge-conflict, name: check merge conflict, entry: mise exec -- check-merge-conflict, language: system, types: [text]}
+      - {id: check-added-large-files, name: check large files, entry: mise exec -- check-added-large-files, language: system}
+      - {id: ruff, name: ruff, entry: mise exec -- ruff check --fix, language: system, types: [python]}
+      - {id: ruff-format, name: ruff format, entry: mise exec -- ruff format, language: system, types: [python]}
+      - {id: shellcheck, name: shellcheck, entry: mise exec -- shellcheck, language: system, types: [shell]}
+      - {id: gitleaks, name: gitleaks, entry: mise exec -- gitleaks git --pre-commit --staged --redact --no-banner, language: system, pass_filenames: false}

@@ -1,0 +1,19 @@
+{
+  "extraKnownMarketplaces": {
+    "workbench-template": {
+      "source": {
+        "source": "directory",
+        "path": "./"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "workbench@workbench-template": true,
+    "workbench-infra@workbench-template": false,
+    "workbench-observability@workbench-template": false,
+    "workbench-secrets@workbench-template": false
+  },
+  "permissions": {
+    "allow": []
+  }
+}

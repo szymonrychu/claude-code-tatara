@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the root scripts tests"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+pytest scripts/tests

@@ -1,0 +1,51 @@
+{
+  "context": {
+    "fileName": [
+      "AGENTS.md",
+      "GEMINI.md"
+    ]
+  },
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "run_shell_command",
+        "hooks": [
+          {
+            "name": "guard-bash",
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness gemini --event pre-tool --hook guard-bash",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "write_file|replace",
+        "hooks": [
+          {
+            "name": "protect-files",
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness gemini --event pre-tool --hook protect-files",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "hooks": [
+          {
+            "name": "subagent-commit-guard",
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness gemini --event stop --hook subagent-commit-guard",
+            "timeout": 15000
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "docs": {
+      "httpUrl": "https://example.invalid/mcp"
+    }
+  }
+}

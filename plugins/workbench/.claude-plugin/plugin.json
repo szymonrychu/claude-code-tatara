@@ -1,0 +1,89 @@
+{
+  "name": "workbench",
+  "description": "development flow for any workbench tree (metarepo or flat): a development flow with one approval gate, an approval ledger, file-based epic tickets and research skills, tiered review with a script+haiku verifier, gated review and debugging flows, verification hooks that tie every test run to the committed HEAD, per-subagent worktree isolation, deterministic plan execution, read-only diagnostic subagents, and destructive-command guardrails.",
+  "version": "1.0.0",
+  "author": {
+    "name": "workbench contributors"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/bash-output-filter.py\"",
+            "timeout": 10,
+            "statusMessage": "Capping noisy output..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-bash.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking command against guardrails..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|MultiEdit|NotebookEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/protect_files.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking protected paths..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|NotebookEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/format-file.sh\"",
+            "timeout": 30,
+            "statusMessage": "Formatting..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/verify-recorder.py\"",
+            "timeout": 10,
+            "statusMessage": "Recording verification..."
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-commit-guard.py\"",
+            "timeout": 15,
+            "statusMessage": "Checking for uncommitted work..."
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/verify-recorder.py\"",
+            "timeout": 10,
+            "statusMessage": "Recording verification..."
+          }
+        ]
+      }
+    ]
+  }
+}

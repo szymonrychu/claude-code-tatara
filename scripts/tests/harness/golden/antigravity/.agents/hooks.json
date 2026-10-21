@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness antigravity --event pre-tool --hook guard-bash",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness antigravity --event pre-tool --hook protect-files",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 plugins/core/hooks/adapter.py --harness antigravity --event stop --hook subagent-commit-guard",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

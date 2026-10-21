@@ -1,0 +1,59 @@
+# python and tool caches
+__pycache__/
+*.pyc
+*.pyc.*
+.pytest_cache/
+.ruff_cache/
+
+# per-user plugin overrides written by scripts/doctor.py
+/.*/settings.local.json
+.venv/
+node_modules/
+.DS_Store
+
+# secrets and local state
+.env
+.env.*
+!.env.example
+.logs/
+.worktrees/
+
+# generated planning and research state
+docs/plans/index.json
+docs/plans/facts.md
+docs/research/
+docs/handoffs/
+
+# component checkouts
+**/.claude/settings.local.json
+
+# claude runtime paths
+.claude/scheduled_tasks.lock
+.claude/scheduled_tasks.json
+.claude/routines/.state/
+.claude/checkpoints/
+.claude/mailbox/
+.claude/agent-registry.json
+.claude/agent-memory-local
+.claude/first-run
+.claude/assistant-daemon-state.json
+
+# workbench config directories (the config dir moves with the harness)
+.claude/worktrees/
+.claude/settings.local.json
+.claude/harness.json
+.github/worktrees/
+.github/settings.local.json
+.github/harness.json
+.cursor/worktrees/
+.cursor/settings.local.json
+.cursor/harness.json
+.codex/worktrees/
+.codex/settings.local.json
+.codex/harness.json
+.gemini/worktrees/
+.gemini/settings.local.json
+.gemini/harness.json
+.agents/worktrees/
+.agents/settings.local.json
+.agents/harness.json

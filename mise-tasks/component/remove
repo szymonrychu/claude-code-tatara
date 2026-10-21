@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Remove a component; refuses on dirty, unpushed or worktree-bearing checkouts (init_engine component remove)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/init_engine/cli.py component remove "$@"

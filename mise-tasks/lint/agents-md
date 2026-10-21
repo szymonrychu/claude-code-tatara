@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#MISE description="Fail when AGENTS.md or AGENTS.md plus CLAUDE.md outgrow the harness instruction limits"
+set -euo pipefail
+root="${WORKBENCH_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+size() { if [ -f "$root/$1" ]; then wc -c <"$root/$1" | tr -d ' '; else echo 0; fi; }
+a=$(size AGENTS.md)
+c=$(size CLAUDE.md)
+rc=0
+if [ "$a" -ge 24000 ]; then
+  echo "AGENTS.md is $a bytes; limit is under 24000" >&2
+  rc=1
+fi
+if [ $((a + c)) -ge 32768 ]; then
+  echo "AGENTS.md + CLAUDE.md is $((a + c)) bytes; limit is under 32768" >&2
+  rc=1
+fi
+exit $rc

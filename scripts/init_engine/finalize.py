@@ -1,0 +1,219 @@
+"""The end of init (design D9, D2, D12, D13): marketplace, packs, harness targets, deploy,
+template history, license, collision override and the one init commit. Idempotent."""
+
+import importlib.util
+import json
+import re
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass, field
+from datetime import date
+from pathlib import Path
+
+from gitops import Refusal, git
+
+TEMPLATE_MARKET = "workbench-template"
+PACKS = ("infra", "observability", "secrets")
+PHASES = ("todo", "in-progress", "done")
+
+
+@dataclass
+class Options:
+    project: str
+    packs: list[str] = field(default_factory=list)
+    harness: list[str] = field(default_factory=list)
+    deploy_command: str | None = None
+    deploy_verify: str | None = None
+    license: str | None = None
+    license_holder: str | None = None
+    license_file: str | None = None
+    user_settings: Path = Path("~/.claude/settings.json")
+
+
+def slug(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def load_wb(root: Path):
+    path = root / "plugins" / "workbench" / "scripts" / "lib" / "workbench.py"
+    if not path.is_file():
+        raise Refusal(f"{path} is missing; cannot resolve the config dir")
+    spec = importlib.util.spec_from_file_location("workbench_lib_for_init", path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def read_json(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError) as e:
+        raise Refusal(f"{path}: {e}") from e
+    if not isinstance(data, dict):
+        raise Refusal(f"{path}: must be a JSON object")
+    return data
+
+
+def write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def validate(opts: Options, root: Path) -> None:
+    if not slug(opts.project):
+        raise Refusal(f"project name {opts.project!r} has no letters or digits")
+    bad = sorted(set(opts.packs) - set(PACKS))
+    if bad:
+        raise Refusal(f"unknown --pack {', '.join(bad)} (allowed: {', '.join(PACKS)})")
+    wb = load_wb(root)
+    bad = sorted(set(opts.harness) - set(wb.HARNESS_TARGETS))
+    if bad:
+        raise Refusal(
+            f"unknown --harness {', '.join(bad)} (allowed: {', '.join(wb.HARNESS_TARGETS)})"
+        )
+    if opts.deploy_verify and not opts.deploy_command:
+        raise Refusal("--deploy-verify needs --deploy-command")
+    if opts.license_file and not Path(opts.license_file).is_file():
+        raise Refusal(f"--license-file {opts.license_file}: no such file")
+    if opts.license_file and opts.license:
+        raise Refusal("--license and --license-file are exclusive")
+
+
+def marketplace_and_settings(root: Path, cfg_dir: Path, opts: Options) -> bool:
+    """Rename the marketplace and set packs. Returns True when this was the first run."""
+    mpath = root / ".claude-plugin" / "marketplace.json"
+    market = read_json(mpath)
+    old = market.get("name", TEMPLATE_MARKET)
+    first = old == TEMPLATE_MARKET
+    new = f"{slug(opts.project)}-workbench" if first else old
+    market["name"] = new
+    write_json(mpath, market)
+
+    spath = cfg_dir / "settings.json"
+    settings = read_json(spath)
+
+    def rename(key: str) -> str:
+        return key[: -len(old)] + new if key.endswith(f"@{old}") else key
+
+    known = settings.get("extraKnownMarketplaces", {})
+    settings["extraKnownMarketplaces"] = {new if k == old else k: v for k, v in known.items()}
+    enabled = {rename(k): v for k, v in settings.get("enabledPlugins", {}).items()}
+    if first or opts.packs:
+        chosen = {f"workbench-{p}@{new}" for p in opts.packs}
+        for key in enabled:
+            if key.startswith("workbench-") and key.endswith(f"@{new}"):
+                enabled[key] = key in chosen
+        for key in chosen:
+            enabled.setdefault(key, True)
+    settings["enabledPlugins"] = enabled
+    write_json(spath, settings)
+    return first
+
+
+def workbench_json(cfg_dir: Path, opts: Options) -> None:
+    if not (opts.harness or opts.deploy_command):
+        return
+    path = cfg_dir / "workbench.json"
+    cfg = read_json(path) if path.is_file() else {}
+    if opts.harness:
+        harness = cfg.setdefault("harness", {})
+        harness["targets"] = list(dict.fromkeys(opts.harness))
+    if opts.deploy_command:
+        cfg["deploy"] = {"command": opts.deploy_command, "verify": opts.deploy_verify or ""}
+    write_json(path, cfg)
+
+
+def clear_template_history(root: Path) -> None:
+    for phase in PHASES:
+        d = root / "docs" / "plans" / phase
+        if d.exists():
+            shutil.rmtree(d)
+        d.mkdir(parents=True)
+        (d / ".gitkeep").write_text("")
+    research = root / "docs" / "research"
+    if research.exists():
+        shutil.rmtree(research)
+    (root / "docs" / "plans" / "facts.md").unlink(missing_ok=True)
+
+
+def generate_harness(root: Path, targets: list[str]) -> None:
+    """Write the recorded harness targets so the init commit already matches lint:harness."""
+    if not targets:
+        return
+    setup = root / "scripts" / "harness" / "setup.py"
+    proc = subprocess.run(
+        [sys.executable, str(setup), "--root", str(root), *targets],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise Refusal(f"harness-setup failed: {(proc.stderr or proc.stdout).strip()}")
+
+
+def default_holder(root: Path) -> str:
+    proc = git("var", "GIT_AUTHOR_IDENT", cwd=root, check=False)
+    m = re.match(r"^(.*?) <", proc.stdout)
+    if proc.returncode != 0 or not m or not m.group(1).strip():
+        raise Refusal("--license-holder is required (no git user.name to default to)")
+    return m.group(1).strip()
+
+
+def license_file(root: Path, opts: Options, first: bool) -> None:
+    target = root / "LICENSE"
+    if opts.license_file:
+        shutil.copyfile(opts.license_file, target)
+    elif opts.license == "none":
+        target.unlink(missing_ok=True)
+    elif opts.license == "mit" or (first and opts.license is None):
+        holder = opts.license_holder or default_holder(root)
+        if not target.is_file():
+            raise Refusal("LICENSE is missing; cannot keep MIT")
+        text = re.sub(
+            r"^Copyright \(c\) .*$",
+            f"Copyright (c) {date.today().year} {holder}",
+            target.read_text(),
+            count=1,
+            flags=re.MULTILINE,
+        )
+        target.write_text(text)
+
+
+def collision_override(root: Path, opts: Options, market: str) -> None:
+    """Run doctor's own collision rule so init and doctor cannot drift apart."""
+    path = root / "scripts" / "doctor.py"
+    if not path.is_file():
+        raise Refusal(f"{path} is missing; cannot run the collision check")
+    spec = importlib.util.spec_from_file_location("doctor_for_init", path)
+    doctor = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = doctor
+    spec.loader.exec_module(doctor)
+    try:
+        keys = doctor.collisions(opts.user_settings.expanduser(), market)
+        if keys:
+            doctor.write_overrides(root, keys)
+    except doctor.Broken as e:
+        raise Refusal(str(e)) from e
+
+
+def finalize(root: Path, opts: Options) -> None:
+    root = root.resolve()
+    validate(opts, root)
+    wb = load_wb(root)
+    try:
+        cfg_dir = wb.config_dir(root)
+    except wb.ConfigError as e:
+        raise Refusal(str(e)) from e
+    first = marketplace_and_settings(root, cfg_dir, opts)
+    workbench_json(cfg_dir, opts)
+    if first:
+        clear_template_history(root)
+    license_file(root, opts, first)
+    market = read_json(root / ".claude-plugin" / "marketplace.json")["name"]
+    collision_override(root, opts, market)
+    generate_harness(root, list(dict.fromkeys(opts.harness)))
+    git("add", "-A", cwd=root)
+    if git("diff", "--cached", "--quiet", cwd=root, check=False).returncode != 0:
+        git("commit", "-m", f"chore(workbench): initialise {opts.project}", cwd=root)
+        print(f"committed: chore(workbench): initialise {opts.project}")

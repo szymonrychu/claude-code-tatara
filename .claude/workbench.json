@@ -1,0 +1,3 @@
+{
+  "refRunners": {"plugins/workbench/workflows/tests/*.test.mjs": "node --test --test-name-pattern {name} {file}"}
+}

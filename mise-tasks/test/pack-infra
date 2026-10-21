@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the workbench-infra pack tests"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+pytest plugins/workbench-infra/tests

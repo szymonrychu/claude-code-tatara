@@ -1,0 +1,9 @@
+{
+  "name": "fixture-market",
+  "owner": {"name": "fixture"},
+  "plugins": [
+    {"name": "core", "source": "./plugins/core", "version": "1.0.0"},
+    {"name": "extra", "source": "./plugins/extra", "version": "1.0.0"},
+    {"name": "off", "source": "./plugins/off", "version": "1.0.0"}
+  ]
+}

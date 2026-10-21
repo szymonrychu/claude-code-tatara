@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Run the workbench-observability pack tests"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+# importlib mode keys module names off the full path, so same-named test
+# modules across skill dirs cannot collide.
+pytest --import-mode=importlib plugins/workbench-observability

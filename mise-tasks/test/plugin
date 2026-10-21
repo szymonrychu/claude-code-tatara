@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the plugin test suite"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+mise run --cd plugins/workbench test
