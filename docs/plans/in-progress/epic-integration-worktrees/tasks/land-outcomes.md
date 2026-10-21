@@ -12,8 +12,8 @@ model: sonnet
 estimate: 50
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-outcomes
+branch: epic-integration-worktrees--land-outcomes
 verified_head: ""
 run: ""
 provides: []

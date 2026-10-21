@@ -12,8 +12,8 @@ model: sonnet
 estimate: 70
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--single-hyphen-names
+branch: epic-integration-worktrees--single-hyphen-names
 verified_head: ""
 run: ""
 provides: []

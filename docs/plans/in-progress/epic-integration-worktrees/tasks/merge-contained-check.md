@@ -12,8 +12,8 @@ model: sonnet
 estimate: 45
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--merge-contained-check
+branch: epic-integration-worktrees--merge-contained-check
 verified_head: ""
 run: ""
 provides: []

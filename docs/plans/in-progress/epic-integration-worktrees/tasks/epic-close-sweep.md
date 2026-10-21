@@ -12,8 +12,8 @@ model: sonnet
 estimate: 90
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-sweep
+branch: epic-integration-worktrees--epic-close-sweep
 verified_head: ""
 run: ""
 provides: []

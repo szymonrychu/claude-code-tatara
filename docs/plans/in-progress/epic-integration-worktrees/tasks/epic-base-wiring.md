@@ -12,8 +12,8 @@ model: sonnet
 estimate: 85
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-base-wiring
+branch: epic-integration-worktrees--epic-base-wiring
 verified_head: ""
 run: ""
 provides: []

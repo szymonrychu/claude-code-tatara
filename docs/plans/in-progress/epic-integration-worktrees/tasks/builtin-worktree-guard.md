@@ -12,8 +12,8 @@ model: sonnet
 estimate: 60
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--builtin-worktree-guard
+branch: epic-integration-worktrees--builtin-worktree-guard
 verified_head: ""
 run: ""
 provides: []

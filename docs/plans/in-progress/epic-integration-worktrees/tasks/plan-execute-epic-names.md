@@ -12,8 +12,8 @@ model: sonnet
 estimate: 40
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--plan-execute-epic-names
+branch: epic-integration-worktrees--plan-execute-epic-names
 verified_head: ""
 run: ""
 provides: []

@@ -12,8 +12,8 @@ model: opus
 estimate: 90
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-in-run
+branch: epic-integration-worktrees--land-in-run
 verified_head: ""
 run: ""
 provides: []

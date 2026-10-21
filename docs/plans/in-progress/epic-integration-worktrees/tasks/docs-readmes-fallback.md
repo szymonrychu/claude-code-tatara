@@ -12,8 +12,8 @@ model: sonnet
 estimate: 55
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-readmes-fallback
+branch: epic-integration-worktrees--docs-readmes-fallback
 verified_head: ""
 run: ""
 provides: []

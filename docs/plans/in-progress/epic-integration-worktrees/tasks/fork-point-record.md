@@ -12,8 +12,8 @@ model: sonnet
 estimate: 35
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-record
+branch: epic-integration-worktrees--fork-point-record
 verified_head: ""
 run: ""
 provides: []

@@ -12,8 +12,8 @@ model: sonnet
 estimate: 45
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--name-lookup-parsers
+branch: epic-integration-worktrees--name-lookup-parsers
 verified_head: ""
 run: ""
 provides: []

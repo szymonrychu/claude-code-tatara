@@ -12,8 +12,8 @@ model: sonnet
 estimate: 60
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-diffs
+branch: epic-integration-worktrees--fork-point-diffs
 verified_head: ""
 run: ""
 provides: []

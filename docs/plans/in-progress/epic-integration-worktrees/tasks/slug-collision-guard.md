@@ -12,8 +12,8 @@ model: sonnet
 estimate: 50
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--slug-collision-guard
+branch: epic-integration-worktrees--slug-collision-guard
 verified_head: ""
 run: ""
 provides: []
