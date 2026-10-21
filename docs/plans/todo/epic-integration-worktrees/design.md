@@ -7,9 +7,10 @@ epic one integration worktree. `ticket.py move <epic> in-progress` creates the i
 `<configdir>/worktrees/<epic>` on branch `<epic>` (component mode: `<configdir>/worktrees/<epic>/<repo>`
 per repo). Task trees are `<epic>-<task>`, fork from `<epic>` and land back on it inside the
 plan-execute run, so verifier and reviewer diffs are taken against `<epic>` and never carry a
-dependency's text. When the epic passes review and the full suite, `<epic>` is rebased onto main and
-main is fast-forwarded (meta mode) or merged through the MR (component mode), and `ticket.py move
-<epic> done` removes every task and integration tree and branch. Template only.
+dependency's text. When the epic passes review and every done task is on `<epic>`, `ticket.py close` rebases
+`<epic>` onto main, runs the full suite on the rebased tip and only then fast-forwards main (meta mode;
+component mode merges through the MR), and `ticket.py move <epic> done` removes every task and
+integration tree and branch, with merged checks that survive the rebase. Template only.
 
 ## Intent and why
 
@@ -131,9 +132,11 @@ a name cannot be split back into epic and task: every consumer reads the epic fr
 location and frontmatter, and the one lookup `ticket_names(root)` maps every epic slug and every
 `<epic>-<task>` of every epic to its ticket. `new-epic` refuses a slug equal to any existing
 `<epic>-<task>`; `new-task` refuses a task whose `<epic>-<task>` equals any epic slug or another
-epic's `<epic>-<task>`. Legacy `<x>--<y>` trees are still recognised by reap so existing workbenches
-can clean them. Alternative: keep `--` (rejected: the user wrote single hyphen). (my call, D-c)
-Serves A2.
+epic's `<epic>-<task>`. Names on disk count too (interrogate verdict I): every local branch and every
+directory under `<configdir>/worktrees/`, legacy `<epic>--<task>` trees and branches included, so a new
+ticket never inherits a stale tree or branch. Legacy `<x>--<y>` trees are still recognised by reap so
+existing workbenches can clean them. Alternative: keep `--` (rejected: the user wrote single hyphen).
+(my call, D-c) Serves A2, V-I.
 
 ### D4: plan-execute lands each task on `<epic>` inside the run; dependents merge `<epic>`
 
@@ -148,31 +151,51 @@ On success the task's verification head becomes the landed head and the return l
 dependency branch; a cross-repo dependency still "lands with the integration". `args.baseRef` is
 the epic branch, so the verifier `--base` and the reviewer merge-base diff exclude dependency text.
 Escalated tasks do not land; the orchestrator lands them after a ruling through `continue`'s MERGE
-lines (`--base <epic>`), the same merger path. Alternative: keep landing outside the run (rejected:
-dependents would still carry dependency text). (my call, D-d; gate question Q1) Serves A2.
+lines (`--base <epic>`), the same merger path. The continue gate lists EVERY done task not yet on
+`<epic>`, not only dependencies of open tasks, so an accepted task with no dependents still lands
+before the close (verdict E). The land step treats a task already contained in `<epic>` with a passing
+verify as landed, never `land-failed` (verdict C); it tells the merger that a rebase drops a
+dependent's merge-of-`<epic>` commit, so it resolves unambiguous re-conflicts and otherwise fails with
+the files named (verdict H); and it lands a recorded legacy tree under its recorded name (D13). Diff
+bases after landing come from the fork point (D14). Alternative: keep landing outside the run
+(rejected: dependents would still carry dependency text). (my call, D-d; gate question Q1) Serves A2,
+V-C, V-E, V-H.
 
 ### D5: Epic close merges `<epic>` to main, then `move done` removes every tree and branch
 
-Meta mode: after the pass verdict and the full suite on the integration tree, a `worktree-merger`
-runs `merge.py --name <epic> --base main --keep`, which rebases `<epic>` onto main (main may have moved
-with `chore(ticket)` commits) and fast-forwards main in the main checkout, where main is checked out;
-then the full suite runs on main; then `ticket.py move <epic> done` checks every task branch is merged
-into `<epic>` and `<epic>` into main, and removes every task tree and branch and the integration tree
-and branch. No `-landed` marker branches: tasks are ancestors of `<epic>`, `<epic>` of main. Meta
-mode, with or without an `origin` remote, ends at the fast-forwarded local main and the record; this
+Meta mode, in this order (interrogate verdict D, E), main never moving onto an untested tip:
+1. Every done task is landed on `<epic>`. `ticket.py continue` prints a MERGE line for each one that is
+   not, and `ticket.py close` refuses while any is not.
+2. `ticket.py close <epic> --verify '<full suite and lint>'` (new `ticket_cmds/close_cmd.py`) calls
+   merge.py's close mode. It rebases `<epic>` onto main inside the integration tree (main always moved
+   through `chore(ticket)` commits) and runs the full suite and lint on the rebased tip there.
+3. Only when that passes does it fast-forward main in the main checkout, where main is checked out.
+4. It runs the full suite on main.
+5. It records `close.json` with main's pre-fast-forward SHA.
+6. `ticket.py move <epic> done` checks that every task branch is contained in `<epic>` and `<epic>` in
+   main (ancestry, else patch equivalence, D9), then removes every task tree and branch and the
+   integration tree and branch.
+A rebase conflict goes to a `worktree-merger` in the integration tree, then close runs again. No
+`-landed` marker branches: tasks are contained in `<epic>`, `<epic>` in main. The close is a ticket.py
+command rather than a merger agent alone, because the refusal in step 1 and the summary in step 5 need
+the tickets. Meta mode, with or without an `origin` remote, ends at the fast-forwarded local main and the record; this
 replaces the meta-mode PR path, and pushing main stays with the user. Component
 mode keeps today's MR path from the integration branch; `move done` runs after the MRs merge and
 checks `<epic>` against `origin/<tracked>`. Alternative: merge commits into main (rejected: hides a
-moved base). (my call, D-e; gate question Q2) Serves A3.
+moved base). (my call, D-e; gate question Q2) Serves A3, V-D, V-E.
 
 ### D6: merge.py lands into whichever worktree has the base checked out
 
 `merge_back` finds the worktree where `<base>` is checked out (`git worktree list --porcelain`): the
 integration tree for `--base <epic>`, the main checkout for `--base main`. It rebases onto `<base>`,
-fast-forwards there, prunes empty directories there, runs suites and the new `--verify <cmd>` there
-(under `suite-lock.sh`), and deletes a cleaned branch from there. It never runs `git checkout` in the
-main checkout; a base checked out in no worktree is refused with the command that fixes it. (my call,
-D-f) Serves A3 and A2.
+runs the new `--verify <cmd>` in the rebased tree under `suite-lock.sh` BEFORE anything moves, and only
+on a green verify fast-forwards the target, prunes empty directories and runs suites there; a failed
+verify never advances the base, and a base that moved in between is rebased onto again and reverified
+(at most 3 attempts) (interrogate verdict B). A tree already contained in `<base>` (ancestor or
+patch-equivalent) merges nothing but still runs `--verify` in the target tree and reports it (verdict
+C). The summary carries `baseBefore`, the base's pre-fast-forward SHA (verdict D). A cleaned branch is
+deleted from the target tree. It never runs `git checkout` in the main checkout; a base checked out in
+no worktree is refused with the command that fixes it. (my call, D-f) Serves A3, A2, V-B, V-C, V-D.
 
 ### D7: One lifecycle in every doc and the fallback; template only
 
@@ -193,7 +216,12 @@ Serves A2.
 In-run landing uses `--keep`, so remediation and the epic-close audit still read each task's tree and
 branch. The sweep deletes a branch only after it verified that branch is contained in its target
 (task branch in `<epic>`, `<epic>` in the trunk), using `git branch -D` so the source checkout's HEAD
-does not matter; a failed check leaves tree and branch and lists the reason. (my call) Serves A3.
+does not matter; a failed check leaves tree and branch and lists the reason. Every merged check (the
+continue gate, the move done gate, `Sweep.tree`, merge.py's post-merge check) goes through one
+`merge.contained`: ancestry first, then patch equivalence (`git cherry <target> <head>` all `-`),
+because after the close rebases `<epic>` onto a moved main no task branch or task-tree HEAD is an
+ancestor of `<epic>` (interrogate verdict A). Anything still not equivalent is listed as left with the
+reason. (my call) Serves A3, V-A.
 
 ### D10: Non-epic runs, the legacy `.worktrees/` marker and the cross-epic overlap check stay as they are
 
@@ -207,6 +235,26 @@ Gate answer Q1 (user, 2026-10-21: yes): inside an epic run plan-execute lands ea
 
 ### D12: Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close
 Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close rebases <epic> onto main and fast-forwards main in the main checkout after the pass verdict and the full suite on the integration tree, runs the full suite on main, then move done removes every task and integration tree and branch; component mode keeps the MR path and cleans up after the MRs merge. (user decision)
+
+### D13: Epics already in progress upgrade in place
+
+An epic claimed before this change has legacy `<epic>--<task>` trees and no `<epic>` branch.
+`ticket.py worktrees <epic> --integration` creates its integration tree through the same
+`ensure_integration_trees` step the claim uses. `cmd_worktrees` keeps the recorded worktree and branch
+of a live tree whatever its name. plan-execute accepts a recorded legacy `<epic>--<id>` tree, and the
+land step and the MERGE lines use the recorded name. The legacy trees then land on `<epic>` like any
+other. Alternative: require such epics to finish on the old flow (rejected: a plugin update would strand
+them, and this epic itself is one). (interrogate verdict F) Serves A2, V-F.
+
+### D14: Diffs after landing are taken from the recorded fork point
+
+Once a task has landed, `merge-base(HEAD, <epic>)` is the task's own HEAD and the diff is empty. The
+land step records the `<epic>` SHA the task was rebased onto (merge.py `baseBefore`) as its fork
+point. plan-execute uses it for every later reviewer, verifier and TDD diff of that task (remediation,
+audit re-review, forward-merge re-verify). `apply-run` persists it as `fork_point` and `ticket.py args`
+passes it back as `forkPoint`. Before landing, the diff stays `merge-base(HEAD, <baseRef>)`.
+Alternative: recompute it from git (rejected: not recoverable once `<epic>` moves on). (interrogate
+verdict G) Serves A2, V-G.
 
 ## Research
 
@@ -257,26 +305,30 @@ Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close rebases <epic> onto
 |---|---|
 | D1 plain git worktrees, guard tests | builtin-worktree-guard, docs-worktree-refs |
 | D2 integration tree path and creation at claim | integration-tree-create, common-worktree-path-py, common-worktree-path-sh, epic-base-wiring |
-| D3 `<epic>-<task>` names and collision prevention | single-hyphen-names, name-lookup-parsers, slug-collision-guard, plan-execute-epic-names |
-| D4 in-run landing, dependents merge `<epic>` | land-in-run, forward-merge-via-epic, epic-base-wiring |
-| D5 epic close and full cleanup | epic-close-sweep, docs-flow-phases |
-| D6 merge.py target-worktree mode | merge-target-worktree |
+| D3 `<epic>-<task>` names and collision prevention | single-hyphen-names, name-lookup-parsers, slug-collision-guard, plan-execute-epic-names, docs-worktree-refs |
+| D4 in-run landing, dependents merge `<epic>` | land-in-run, land-outcomes, forward-merge-via-epic, epic-base-wiring, epic-close-command, merge-target-worktree |
+| D5 epic close and full cleanup | epic-close-command, epic-close-sweep, merge-target-worktree, docs-flow-phases, docs-readmes-fallback |
+| D6 merge.py target-worktree mode | merge-target-worktree, merge-contained-check |
 | D7 one lifecycle in every doc | docs-flow-phases, docs-worktree-refs, docs-readmes-fallback |
 | D8 mixed epic refused at claim | integration-tree-create |
-| D9 landed trees kept, guarded branch deletion | land-in-run, epic-close-sweep |
+| D9 landed trees kept, guarded branch deletion | land-in-run, merge-contained-check, epic-base-wiring, epic-close-sweep, epic-close-command |
 | D10 non-epic runs and legacy markers unchanged | land-in-run, name-lookup-parsers |
 | D11 Gate answer Q1 (user, 2026-10-21: yes): inside an epic run p | land-in-run, forward-merge-via-epic, epic-base-wiring |
 | D12 Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close | epic-close-sweep, docs-flow-phases |
+| D13 epics already in progress upgrade in place | epic-base-wiring, integration-tree-create, single-hyphen-names, plan-execute-epic-names, land-outcomes, docs-flow-phases, docs-readmes-fallback, docs-worktree-refs |
+| D14 diffs after landing from the recorded fork point | fork-point-diffs, fork-point-record, forward-merge-via-epic, docs-flow-phases, docs-worktree-refs |
 
 ## Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
 | ticket-name-lookup | name-lookup-parsers | slug-collision-guard, epic-close-sweep | `plugins/workbench/skills/start-development/scripts/ticket.py` |
-| integration-tree | integration-tree-create | epic-base-wiring, epic-close-sweep | `plugins/workbench/skills/worktree-create/scripts/create.py` |
-| merge-target-worktree | merge-target-worktree | epic-close-sweep, land-in-run | `plugins/workbench/skills/worktree-merge/scripts/merge.py` |
+| integration-tree | integration-tree-create | epic-base-wiring, epic-close-sweep, epic-close-command | `plugins/workbench/skills/worktree-create/scripts/create.py` |
+| merge-target-worktree | merge-target-worktree | merge-contained-check, epic-close-sweep, epic-close-command, land-in-run | `plugins/workbench/skills/worktree-merge/scripts/merge.py` |
 | epic-run-args | epic-base-wiring | land-in-run | `plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py` |
-| land-step | land-in-run | forward-merge-via-epic | `plugins/workbench/workflows/plan-execute.js` |
+| land-step | land-in-run | land-outcomes, fork-point-diffs, forward-merge-via-epic | `plugins/workbench/workflows/plan-execute.js` |
+| contained-check | merge-contained-check | epic-base-wiring, epic-close-sweep, epic-close-command, land-outcomes | `plugins/workbench/skills/worktree-merge/scripts/merge.py` |
+| fork-point | fork-point-diffs | fork-point-record, forward-merge-via-epic | `plugins/workbench/workflows/plan-execute.js` |
 
 No cross-epic contract: no related epic shares these files (`ticket.py contract list` is empty).
 
@@ -289,9 +341,14 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
 - plan-execute.js: landings serialised; a dependent never starts before its dependencies landed; a
   ruling-released task lands first; non-epic runs unchanged (existing tests stay green untouched).
 - Collision rules in `new-epic` and `new-task`, and that no code splits a name on `-` or `--`.
+- merge.py: `--verify` runs before every fast-forward, the re-rebase loop is bounded, and no path advances a base on a red or stale verify.
+- `ticket.py close`: the refusal while a done task is off `<epic>`, the order rebase, verify, fast-forward, verify on main, and `close.json` carrying main's pre-fast-forward SHA.
+- `merge.contained`: patch equivalence is used only after ancestry fails, merge commits are ignored, and a non-equivalent commit is always listed with its reason.
+- Fork points: every diff site in plan-execute.js goes through `diffBase(t)`.
 
 ## Left to the builder
 
+- The re-rebase cap in merge.py is 3 attempts and `close.json` holds at least the listed keys (my call).
 - Helper names and module layout inside ticket.py, create.py and merge.py, within the contracts above.
 - The exact guard-test matching rule, as long as the forbidding sentences pass and a fixture line that
   instructs the built-in fails.
@@ -319,6 +376,7 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
   the explicit merged check (D9); the commits stay reachable from `<epic>` and main.
 - `git worktree remove` (never `--force`) of clean, merged trees during `move done` and `reap`.
 - Rebase of task branches onto `<epic>` and of `<epic>` onto main: local, unpushed branches only.
+- The fast-forward of local main by `ticket.py close`: only after the full suite passed on the rebased `<epic>` tip (interrogate verdict D); main's pre-fast-forward SHA is recorded in `close.json`, so the previous main stays named and reachable.
 - No force push, no history rewrite of a shared branch, no data deletion.
 
 ## Builder check answers
@@ -329,3 +387,22 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
 - The collision guard checks new names against existing epic slugs, every `<epic>-<task>` name, and legacy `<epic>--<task>` trees and branches still on disk. (my call)
 - Landing always runs the task's own `verify` in the integration tree, whatever its review path (process-only or triage-rejected included). (answered by D4)
 - `land-failed` escalates the task and its dependents end `dependency-failed` for that run. Recovery: the orchestrator resolves the conflict through `worktree-merger` (or rules on it), and the relaunch from `ticket.py continue` lands the task through the same merger path before its dependents run. (my call)
+
+## Interrogate verdict
+
+Interrogate panel (fable, opus, sonnet), 2026-10-21. Every Act-on item is delivered as requirement
+text and at least one acceptance condition in the task that owns the behaviour; ledger items V-A to
+V-I track them. No existing acceptance condition was dropped. merge-target-worktree AC4 and AC5 were
+reworded by item B: before B, the verify ran after the fast-forward and a failure kept the merge.
+
+| Item | Raised by | Verdict | Delivered by |
+|---|---|---|---|
+| A | fable, opus, sonnet (fable reproduced it) | After the close rebases `<epic>` onto a moved main, task branches and task-tree HEADs are no longer ancestors, so every merged check falls back to patch equivalence (`git cherry` all `-`); anything not equivalent is left with the reason | D9; merge-contained-check AC1-AC4; epic-base-wiring AC8; epic-close-sweep AC8, AC9; epic-close-command AC6 |
+| B | fable, opus, sonnet | merge.py verifies the rebased task tree before fast-forwarding `<epic>`, fast-forwards only on green, re-rebases and re-verifies if `<epic>` moved; a failed verify never advances `<epic>` | D6; merge-target-worktree AC4, AC5, AC9 |
+| C | fable, opus, sonnet | The nothing-to-merge path still runs `--verify` in the integration tree and reports it; forward-merge never reports `land-failed` for a dependent already in `<epic>` | D6, D4; merge-contained-check AC5, AC6; land-outcomes AC1; forward-merge-via-epic AC5 |
+| D | sonnet, opus | Close order: land every done task, rebase `<epic>` onto main in the integration tree, full suite and lint on the rebased tip, only then fast-forward main, then the full suite on main; the summary records main's pre-ff SHA; docs carry the order | D5; merge-target-worktree AC10; epic-close-command AC4, AC5; docs-flow-phases AC7; docs-readmes-fallback AC6 |
+| E | opus | In landing mode the continue gate emits a MERGE line for every done task not in `<epic>`, and the close refuses while one is not | D4, D5; epic-close-command AC1, AC2, AC3; docs-flow-phases AC7 |
+| F | opus | Upgrade path for in-progress epics with legacy `<epic>--<task>` trees and no `<epic>` branch: `worktrees --integration`, legacy records kept, plan-execute accepts the legacy tree | D13; integration-tree-create AC10; epic-base-wiring AC2, AC9, AC10; single-hyphen-names AC5; plan-execute-epic-names AC1, AC6; land-outcomes AC4; docs-worktree-refs AC7 |
+| G | sonnet | Reviewer and verifier diffs after landing come from the recorded fork point, not `merge-base(HEAD, <epic>)` | D14; fork-point-diffs AC1-AC5; fork-point-record AC1-AC3; forward-merge-via-epic AC6; docs-worktree-refs AC7 |
+| H | sonnet | The land step tells the merger to resolve re-conflicts from a dropped merge-of-`<epic>` commit when unambiguous, else `land-failed` naming the files | D4; land-outcomes AC2, AC3; merge-target-worktree AC11 |
+| I | sonnet | slug-collision-guard gets an explicit AC for legacy `<epic>--<task>` trees and branches on disk | D3; slug-collision-guard AC7 |

@@ -78,3 +78,5 @@ In an epic run the integration branch advances task by task as each lands, depen
 - A subagent's `cd` does not persist between Bash calls, so the land prompt is one `cd <mainCheckout> && python3 ...` command with absolute paths.
 - The hooks treat the integration tree as an agent tree; if the merger resolves a conflict in the task tree it reruns the task verify there before re-running merge.py, or the commit guard fires once on the stale record.
 - `model: opus` because this changes the run's scheduling core (release, rulings, escalation).
+- merge.py verifies the rebased task tip before it fast-forwards `<epic>` (merge-target-worktree, interrogate verdict B), so a `land-failed` task never advanced `<epic>`.
+- The contained, re-conflict and legacy-name outcomes of the land step are land-outcomes; fork points and diff bases after landing are fork-point-diffs.

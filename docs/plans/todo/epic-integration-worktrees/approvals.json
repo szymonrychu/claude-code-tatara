@@ -20,7 +20,9 @@
       "D3",
       "D4",
       "D8",
-      "D10"
+      "D10",
+      "D13",
+      "D14"
     ],
     "tasks": [
       "single-hyphen-names",
@@ -33,7 +35,10 @@
       "merge-target-worktree",
       "plan-execute-epic-names",
       "land-in-run",
-      "forward-merge-via-epic"
+      "forward-merge-via-epic",
+      "land-outcomes",
+      "fork-point-diffs",
+      "fork-point-record"
     ],
     "status": "approved"
   },
@@ -49,7 +54,9 @@
       "merge-target-worktree",
       "epic-close-sweep",
       "land-in-run",
-      "docs-flow-phases"
+      "docs-flow-phases",
+      "merge-contained-check",
+      "epic-close-command"
     ],
     "status": "approved"
   },
@@ -88,6 +95,127 @@
     "tasks": [
       "epic-close-sweep",
       "docs-flow-phases"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-A",
+    "text": "Interrogate verdict A: after the close rebases <epic> onto main, every merged check (continue gate, move done gate, Sweep) falls back to patch equivalence when ancestry fails; anything not equivalent is left with the reason; move done then removes every tree and branch.",
+    "decisions": [
+      "D9"
+    ],
+    "tasks": [
+      "merge-contained-check",
+      "epic-base-wiring",
+      "epic-close-sweep",
+      "epic-close-command"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-B",
+    "text": "Interrogate verdict B: merge.py runs the task --verify in the rebased task tree before fast-forwarding <epic>, fast-forwards only on green, re-rebases and re-verifies if <epic> moved; a failed verify never advances <epic>.",
+    "decisions": [
+      "D6"
+    ],
+    "tasks": [
+      "merge-target-worktree"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-C",
+    "text": "Interrogate verdict C: the nothing-to-merge path still runs --verify in the integration tree and reports it; forward-merge-via-epic never reports land-failed for a dependent whose tip is already in <epic>.",
+    "decisions": [
+      "D6",
+      "D4"
+    ],
+    "tasks": [
+      "merge-contained-check",
+      "land-outcomes",
+      "forward-merge-via-epic"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-D",
+    "text": "Interrogate verdict D: epic close order is land every done task on <epic>, rebase <epic> onto main in the integration tree, full suite and lint on the rebased tip, only then fast-forward main, then the full suite on main; the close summary records main's pre-ff SHA; docs carry this order.",
+    "decisions": [
+      "D5"
+    ],
+    "tasks": [
+      "merge-target-worktree",
+      "epic-close-command",
+      "docs-flow-phases",
+      "docs-readmes-fallback"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-E",
+    "text": "Interrogate verdict E: in landing mode the continue gate emits a MERGE line for every done task not yet in <epic>, and the close refuses while a done task is not in <epic>.",
+    "decisions": [
+      "D4",
+      "D5"
+    ],
+    "tasks": [
+      "epic-close-command",
+      "docs-flow-phases"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-F",
+    "text": "Interrogate verdict F: epics already in progress with legacy <epic>--<task> trees and no <epic> branch upgrade through ticket.py worktrees --integration; cmd_worktrees keeps a live legacy tree's record; plan-execute accepts a recorded legacy tree.",
+    "decisions": [
+      "D13"
+    ],
+    "tasks": [
+      "integration-tree-create",
+      "epic-base-wiring",
+      "single-hyphen-names",
+      "plan-execute-epic-names",
+      "land-outcomes",
+      "docs-flow-phases",
+      "docs-readmes-fallback",
+      "docs-worktree-refs"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-G",
+    "text": "Interrogate verdict G: reviewer and verifier diffs after a task has landed (remediation, audit re-review, forward-merge re-verify) are taken from the task's recorded fork point, not merge-base(HEAD, <epic>).",
+    "decisions": [
+      "D14"
+    ],
+    "tasks": [
+      "fork-point-diffs",
+      "fork-point-record",
+      "forward-merge-via-epic",
+      "docs-worktree-refs"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-H",
+    "text": "Interrogate verdict H: the land step instructs the merger to resolve re-conflicts that appear when a rebase drops a dependent's merge-of-<epic> commit, resolving unambiguous ones and otherwise failing land-failed with the conflicting files named.",
+    "decisions": [
+      "D4"
+    ],
+    "tasks": [
+      "land-outcomes",
+      "merge-target-worktree"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "V-I",
+    "text": "Interrogate verdict I: slug-collision-guard has an explicit acceptance condition for legacy <epic>--<task> trees and branches still on disk.",
+    "decisions": [
+      "D3"
+    ],
+    "tasks": [
+      "slug-collision-guard"
     ],
     "status": "approved"
   }

@@ -5,11 +5,11 @@ repo: workbench
 value: "A delivered epic leaves no worktree or branch behind, and nothing unmerged is ever removed"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/epic-worktrees-remove/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]
 verify: "mise run test && mise run lint"
-depends_on: [epic-base-wiring, merge-target-worktree]
+depends_on: [epic-base-wiring, merge-target-worktree, merge-contained-check]
 owns: []
-uses: [ticket-name-lookup, integration-tree, merge-target-worktree]
+uses: [ticket-name-lookup, integration-tree, merge-target-worktree, contained-check]
 model: sonnet
-estimate: 80
+estimate: 90
 actual: ""
 review: ""
 worktree: ""
@@ -23,10 +23,11 @@ provides: []
 
 ## Requirement
 
-Close an epic by checking the whole integration chain and removing every epic and task tree and branch (user decision U3, design D5, D9).
+Close an epic by checking the whole integration chain and removing every epic and task tree and branch (user decision U3, design D5, D9; interrogate verdict A).
 
 - `ticket.py move <epic> done` keeps today's gates (stage review, last verdict pass, every task done and verified). It then requires every task branch (frontmatter `branch`, else `worktree_name`) to be merged into the epic branch of its source checkout (`_task_merged(src, branch, verified_head, <epic>)`). It also requires every integration branch to be merged into the trunk: meta mode the local `--base` (default `main`), component mode `origin/<tracked>` after a fetch. Each failure is one problem line naming the branch and the target, and nothing moves.
 - After the move the sweep removes, in order, every task tree and its branch (target `<epic>`), then every integration tree at `<configdir>/worktrees/<epic>[/<repo>]` and branch `<epic>` (target the trunk). A legacy `.worktrees/<epic>/<repo>` tree is still swept as today. A branch is deleted only after the sweep's own `merged_into(branch, target)` check passed, with `git branch -D` so the source checkout's HEAD does not matter. Dirty or unmerged trees are left and listed with their reason. No `-landed` marker branches are created.
+- Every merged check here goes through `merge.contained` (merge-contained-check): ancestry first, then patch equivalence (`git cherry <target> <head>` all `-`). This covers the move done gate (`_task_merged`), `Sweep.tree` for the tree HEAD and the branch, and the guarded delete. It matters because the close rebases `<epic>` onto a main that moved through `chore(ticket)` commits, after which no task branch or task-tree HEAD is an ancestor of `<epic>` (verdict A). Anything still not contained is listed under `left` with the reason `contained` gives, and its tree and branch stay.
 - `ticket.py reap --epic <epic>` (done epic) uses the same targets. `ticket.py reap --epic <epic> --task <task>` (any phase) removes one task tree and branch when merged into `<epic>`.
 - The summary JSON lists every removed tree and branch and every left item with its reason.
 - `merge.cleanup` gains the guarded delete (the explicit target check, then `-D`), used by the sweep.
@@ -42,6 +43,8 @@ Close an epic by checking the whole integration chain and removing every epic an
 - AC5: a dirty or unmerged tree is left and listed with its reason [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_close.py::test_sweep_leaves_dirty_or_unmerged_trees]
 - AC6: reap of one task removes its tree and branch once merged into the epic branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py::test_reap_task_merged_into_epic_branch]
 - AC7: the epic-worktrees-remove skill names the integration tree cleanup [evidence: command:grep -q 'integration' plugins/workbench/skills/epic-worktrees-remove/SKILL.md]
+- AC8: with main gaining a commit after the fork, the close by merge.py then move done removes every task and integration tree and branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_close.py::test_main_moved_after_fork_close_then_move_done_removes_all]
+- AC9: a task branch with a commit that has no equivalent in the epic branch is left with the contained reason [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_close.py::test_sweep_lists_non_equivalent_branch_with_reason]
 
 ## Files
 
@@ -55,7 +58,7 @@ Close an epic by checking the whole integration chain and removing every epic an
 
 ## Interfaces
 
-- Uses `ticket.ticket_names`, `ticket.integration_trees`, `ticket.integration_branch`, `merge.target_tree`.
+- Uses `ticket.ticket_names`, `ticket.integration_trees`, `ticket.integration_branch`, `merge.target_tree`, `merge.contained`.
 - `Sweep.epic(root, epic_dir)` and `Sweep.task(...)` (existing, changed targets); `merge.cleanup(..., target=...)` guarded delete.
 
 ## Expected outcome
@@ -73,3 +76,4 @@ Close an epic by checking the whole integration chain and removing every epic an
 - Branch deletion is the only irreversible step here; it runs only after the explicit merged check, and the commits stay reachable from `<epic>` and main (design Irreversible operations).
 - A task branch is deleted before its integration branch; both checks are against refs, so the order of tree removal does not matter for correctness.
 - The sweep never uses `git worktree remove --force`.
+- The close itself is `ticket.py close` (epic-close-command, which runs after this task); the tests here close with `merge.py --name <epic> --base main --keep` directly.

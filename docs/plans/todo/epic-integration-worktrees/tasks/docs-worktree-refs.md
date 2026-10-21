@@ -5,11 +5,11 @@ repo: workbench
 value: "The worktree and ticket references match the new names, tree and landing"
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
-depends_on: [slug-collision-guard, land-in-run, epic-base-wiring, common-worktree-path-sh]
+depends_on: [slug-collision-guard, land-in-run, epic-base-wiring, common-worktree-path-sh, epic-close-command, fork-point-record]
 owns: []
 uses: []
 model: sonnet
-estimate: 45
+estimate: 55
 actual: ""
 review: ""
 worktree: ""
@@ -23,7 +23,7 @@ provides: []
 
 ## Requirement
 
-Describe naming, the integration tree, landing and cleanup in the worktree reference docs (design D1, D3, D7; user decisions U1, U2).
+Describe naming, the integration tree, landing and cleanup in the worktree reference docs (design D1, D3, D7, D13, D14; user decisions U1, U2; interrogate verdict F, G, I).
 
 - `references/worktrees.md`:
   - names: `<epic>-<task>`, at most 57 characters;
@@ -34,7 +34,8 @@ Describe naming, the integration tree, landing and cleanup in the worktree refer
   - `move done` removes every tree and branch.
 - `references/tickets.md`:
   - Naming table: per-task worktree and branch `<epic>-<task>`, at most 57 characters (28 + 1 + 28); the integration branch and tree `<epic>` at `<configdir>/worktrees/<epic>[/<repo>]`;
-  - the collision rule of new-epic, new-task and rename;
+  - the collision rule of new-epic, new-task and rename, including names whose tree or branch (legacy double-hyphen form included) is still on disk;
+  - `ticket.py close <epic> --verify <cmd>` and its `close.json` summary, `ticket.py worktrees <epic> --integration` for an epic claimed before this change, and the task frontmatter field `fork_point`;
   - the continue MERGE line `MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>`;
   - the `worktree_name` cap 57.
 - `references/hooks.md` (6-7): the guarded paths are `<configdir>/worktrees/<name>` for task and integration trees, plus the legacy `.worktrees/`.
@@ -50,6 +51,7 @@ Describe naming, the integration tree, landing and cleanup in the worktree refer
 - AC4: the implementer agent keeps the EnterWorktree guard [evidence: command:grep -q 'Do not call the built-in EnterWorktree' plugins/workbench/agents/implementer.md plugins/workbench/skills/worktree-create/SKILL.md]
 - AC5: no double-hyphen task name remains in the worktree reference docs [evidence: command:! grep -n '<epic>--<task>' plugins/workbench/skills/start-development/references/worktrees.md plugins/workbench/skills/start-development/references/tickets.md plugins/workbench/skills/start-development/references/hooks.md plugins/workbench/agents/implementer.md plugins/workbench/skills/worktree-create/SKILL.md]
 - AC6: the worktree-create skill names task trees with one hyphen [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_run.py::test_worktree_create_skill_uses_epic_task_naming]
+- AC7: tickets.md documents the close command, the integration upgrade flag and the fork_point field [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_files.py::test_tickets_doc_close_upgrade_and_fork_point]
 
 ## Files
 
@@ -78,3 +80,4 @@ A reader of worktrees.md and tickets.md finds one consistent naming and lifecycl
 ## Notes
 
 - `plan-execute-implementer.test.mjs:64` pins `Do not call the built-in EnterWorktree` in implementer.md; keep it.
+- AC5 forbids the literal double-hyphen name in these docs: describe legacy trees as "legacy double-hyphen trees", never by the literal form.

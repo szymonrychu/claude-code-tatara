@@ -9,7 +9,7 @@ depends_on: [epic-close-sweep]
 owns: []
 uses: [ticket-name-lookup]
 model: sonnet
-estimate: 40
+estimate: 50
 actual: ""
 review: ""
 worktree: ""
@@ -23,11 +23,12 @@ provides: []
 
 ## Requirement
 
-Prevent branch-name collisions at ticket creation (design D3), since `<epic>-<task>` cannot be split back into its parts.
+Prevent branch-name collisions at ticket creation (design D3; interrogate verdict I), since `<epic>-<task>` cannot be split back into its parts.
 
 - `ticket.py new-epic` refuses a slug equal to any existing `<epic>-<task>` (from `ticket_names`, all phases) with exit 1, writes and commits nothing, and prints `ticket.py: epic slug <slug> collides with the branch of task <task> in epic <epic>`; `--force` does not override it.
 - `ticket.py new-task` refuses a task whose `<epic>-<task>` equals any epic slug or another epic's `<epic>-<task>` (all phases), exit 1, nothing written, the message names the clashing ticket.
 - `ticket.py rename` applies the same rules to the new slug and to every `<new>-<task>` of the renamed epic.
+- Names on disk count too (verdict I, matching the builder-check answer). The taken names are the tickets' names (`ticket_names`, all phases) plus every local branch of the source checkouts and every directory under `<configdir>/worktrees/`, legacy `<epic>--<task>` trees and branches included. The refused cases are: a new epic slug or a new `<epic>-<task>` equal to such a branch or directory, and a new task whose legacy name `<epic>--<task>` is still a tree or branch on disk with no ticket of its own (it would be swept as the new ticket's tree). Each refusal names the tree or branch, exits 1, writes and commits nothing, and `--force` never overrides it.
 - `ticket.py check --title` reports the same clash as a failure line.
 - Existing slug-uniqueness and near-duplicate behaviour is unchanged.
 
@@ -39,6 +40,7 @@ Prevent branch-name collisions at ticket creation (design D3), since `<epic>-<ta
 - AC4: --force does not override a branch collision [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_naming.py::test_force_does_not_override_branch_collision]
 - AC5: rename refuses a slug whose names would collide [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_naming.py::test_rename_refuses_colliding_slug]
 - AC6: check --title lists the collision as a failure [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_naming.py::test_check_title_reports_branch_collision]
+- AC7: new-epic and new-task refuse a name whose tree or branch, legacy double-hyphen form included, is still on disk [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_naming.py::test_refuses_name_of_legacy_tree_or_branch_on_disk]
 
 ## Files
 

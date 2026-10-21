@@ -54,17 +54,22 @@ Make every merged check in merge.py survive a rewritten base, and make the nothi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `merge.contained(repo: Path, head: str, target: str) -> tuple[bool, str]` (new; the `contained-check` part, consumed by epic-base-wiring, epic-close-sweep, epic-close-command and land-outcomes).
+- `merge.merged_into(repo, branch, base) -> bool` (existing; now `contained(...)[0]`).
+- `merge_back(...)` nothing-to-merge return gains `contained`, `containedBy`, `verification`, `baseBefore`, `baseAfter`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After `<epic>` was rebased onto a moved main, every task branch and task-tree HEAD of the epic counts as merged into `<epic>` by patch equivalence, and a task already on `<epic>` is still verified in the integration tree when it is landed again.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/worktree-merge/tests/test_merge_contained.py` with the six AC tests (a fixture repo where `<epic>` is rebased onto a main that gained a commit after the fork); run `cd plugins/workbench && pytest skills/worktree-merge/tests/test_merge_contained.py -q`; expect failures on the patch-equivalence and nothing-to-merge cases.
+- Green: add `contained`, route `merged_into` through it, and add the verify to the nothing-to-merge path through the target-tree helper from merge-target-worktree.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only worktree-merge && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `ticket._task_merged` already falls back to `git cherry` when the branch is gone (ticket.py:1220-1228); after this task both of its paths agree.
+- `git cherry` sets `max_parents = 1`, so merge commits are never listed; a branch whose only extra commit is a merge of the target is contained.
+- The nothing-to-merge verify runs in the target tree, which carries the same commit as the task tree when the task is an ancestor; when the task is only patch-equivalent the target tree is the one that will be tested at close, so it is the right place.

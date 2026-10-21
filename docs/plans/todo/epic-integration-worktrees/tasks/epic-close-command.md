@@ -57,17 +57,23 @@ One command closes an epic into main in the order the interrogate verdict fixes,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New subcommand `ticket.py close <epic> --verify <cmd> [--base main]`, registered by `ticket_cmds/close_cmd.py` through the existing command-module loader (no ticket.py change).
+- New file `<epic dir>/close.json` (the close summary).
+- `continue_cmd._merge_gate` (existing, changed: every done task not in `<epic>`).
+- Uses `merge.merge_back(..., verify=...)` and its `baseBefore` (the `merge-target-worktree` part), `merge.contained` (the `contained-check` part), `ticket.integration_trees` and `ticket.integration_branch` (the `integration-tree` part).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py close <epic> --verify 'mise run test && mise run lint'` on a reviewed, passed meta epic leaves main fast-forwarded to an epic tip that passed the full suite before main moved, with main's previous SHA recorded in close.json; while any done task is not on `<epic>` it refuses and prints the MERGE lines that fix it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/start-development/tests/test_ticket_close_cmd.py` and add the AC1 case to `test_ticket_continue.py`; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_close_cmd.py skills/start-development/tests/test_ticket_continue.py -q`; expect failures.
+- Green: write `close_cmd.py` and widen the continue gate.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only worktree-merge`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Load modules the way `continue_cmd.py` does (`_load`, `_sibling`); reuse the move done gates rather than restating them.
+- The fixture for AC6 adds a commit to main after the fork (as `chore(ticket)` commits do in a real run), so the close rebase rewrites `<epic>` and move done must use patch equivalence.
+- `review: full` because this is the one step that moves main.

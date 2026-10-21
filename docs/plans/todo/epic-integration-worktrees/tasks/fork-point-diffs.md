@@ -52,17 +52,20 @@ Take every diff of a task from its recorded fork point once it has landed. After
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `LAND` schema field `base` and task arg `forkPoint` (the `fork-point` part, consumed by fork-point-record and forward-merge-via-epic).
+- New `diffBase(t)` in plan-execute.js; return fields `landed[].forkPoint` and `tasks[].forkPoint`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After a task lands, every later diff of it (remediation, audit re-review, forward-merge re-verify) shows exactly its own change from the `<epic>` commit it forked or was last rebased from.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs` with the five cases; run `cd plugins/workbench && node --test workflows/tests/plan-execute-fork-point.test.mjs`; expect failures.
+- Green: add `base` to `LAND`, the fork-point state, `diffBase(t)` at every diff site, and the return fields.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- merge.py reports `baseBefore` (merge-target-worktree); the land agent relays it as `base`.
+- `git merge-base HEAD <sha>` is `<sha>` when the fork point is an ancestor of HEAD, so passing the SHA as `--base` to the verifier needs no verifier change.

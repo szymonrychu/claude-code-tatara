@@ -5,11 +5,11 @@ repo: workbench
 value: "The orchestrator's flow docs describe exactly the lifecycle the tools now run"
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/references/phases-5-7.md, plugins/workbench/skills/start-development/references/multi-epic.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-research/tests/test_start_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/skills/start-development/tests/test_start_development_generic.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only start-research && cd ../.. && mise run lint"
-depends_on: [epic-close-sweep, forward-merge-via-epic, common-worktree-path-py, common-worktree-path-sh]
+depends_on: [epic-close-sweep, epic-close-command, forward-merge-via-epic, common-worktree-path-py, common-worktree-path-sh]
 owns: []
 uses: []
 model: sonnet
-estimate: 60
+estimate: 70
 actual: ""
 review: ""
 worktree: ""
@@ -23,7 +23,7 @@ provides: []
 
 ## Requirement
 
-Describe the epic worktree lifecycle in the start-development flow docs (design D5, D7; user decisions U2, U3).
+Describe the epic worktree lifecycle in the start-development flow docs (design D5, D7, D13, D14; user decisions U2, U3; interrogate verdict D, E).
 
 - `plugins/workbench/skills/start-development/SKILL.md`. Modes: meta mode tasks land on the integration branch `<epic>`, and the epic closes by rebase plus fast-forward of the local main, with or without an `origin` remote; that replaces the meta-mode PR path, and pushing main stays with the user. Component mode keeps the MR from the integration branch. Lean path: "work in the integration worktree" names the tree `move in-progress` creates. Phase 4: the claim creates the integration tree, task trees fork from `<epic>`, and the run lands each task. Phases 5-7: the close order below. `test_skill_size.py` stays green.
 - `references/phase-4-execute.md`:
@@ -31,15 +31,19 @@ Describe the epic worktree lifecycle in the start-development flow docs (design 
   - `baseRef` is the epic branch and `mainCheckout` is the main checkout;
   - landing happens in the run, `land-failed` is an escalation reason;
   - escalated tasks land after a ruling through `continue`'s `MERGE ... --base <epic>` lines and a `worktree-merger`.
-- `references/phases-5-7.md` (25-41, 59), the close order:
+  - an epic claimed before this change gets its integration tree from `ticket.py worktrees <epic> --integration`, and its live legacy double-hyphen trees keep running.
+- `references/phases-5-7.md` (25-41, 59), the close order (interrogate verdict D, E); main is never moved onto an untested tip:
   1. the pass verdict;
-  2. the full suite on the integration tree;
-  3. meta mode: a `worktree-merger` runs `merge.py --name <epic> --base main --keep`;
-  4. the full suite on main;
-  5. `ticket.py move <epic> done`, which removes every task and integration tree and branch.
+  2. every done task is on `<epic>`: `ticket.py continue` prints no MERGE line, and that includes a task released by an accept ruling that has no dependents;
+  3. meta mode: `ticket.py close <epic> --verify '<full suite and lint>'`, which does three things in order:
+     - it rebases `<epic>` onto main inside the integration tree and runs the full suite and lint on the rebased tip there;
+     - only when they pass, it fast-forwards main;
+     - it then runs the full suite on main and records main's pre-fast-forward SHA in `close.json`.
+     A rebase conflict goes to a `worktree-merger` in the integration tree, then close runs again;
+  4. `ticket.py move <epic> done`, which removes every task and integration tree and branch.
   Component mode: the phase 6 MR from the integration branch, then `move done` once the MRs merge.
 - `references/multi-epic.md`: each epic has its own integration tree and branch; concurrent epics never share one; each closes into main on its own, rebasing onto whatever main has become.
-- `references/run-handback.md`: the `landed` return field and the `land-failed` reason, and what the orchestrator does with each.
+- `references/run-handback.md`: the `landed` return field (with each task's `forkPoint`) and the `land-failed` reason, and what the orchestrator does with each.
 - Doc needle tests updated in this task: `start-research/tests/test_start_skills_structure.py:518` (Phase 4 names `baseRef`, the epic branch and `mainCheckout`), `test_ticket_flow_docs.py:81` (needles for the integration tree created by the claim and the landing in the run), and `test_start_development_generic.py:24` (the meta-mode sentences now pin the local fast-forward close, and the old "never commits" sentence is gone).
 
 ## Acceptance conditions
@@ -50,6 +54,7 @@ Describe the epic worktree lifecycle in the start-development flow docs (design 
 - AC4: phases-5-7 gives the close order ending in move done removing every tree and branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py::test_close_order_documented]
 - AC5: run-handback names landed and land-failed [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py::test_run_handback_names_landing]
 - AC6: SKILL.md stays within its size budget [evidence: command:cd plugins/workbench && pytest skills/start-development/tests/test_skill_size.py -q]
+- AC7: phases-5-7 says close verifies the rebased epic tip before main moves, refuses while a done task is not on the epic branch, and records main's pre-fast-forward SHA [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py::test_close_order_verifies_rebased_tip_before_main_moves]
 
 ## Files
 

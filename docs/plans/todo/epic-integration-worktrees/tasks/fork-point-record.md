@@ -42,17 +42,19 @@ Persist each task's fork point across runs, so remediation and the epic-close au
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Task frontmatter `fork_point` (a SHA, restricted format scalar) and `derive_tasks` field `forkPoint`; consumes the `fork-point` part from fork-point-diffs.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py apply-run` on a return that landed a task writes its `fork_point`, and the next `ticket.py args` (or audit args) passes it back as `forkPoint`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py` with the three AC tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_fork_point.py -q`; expect failures.
+- Green: write `fork_point` in `cmd_apply_run` and export `forkPoint` in `derive_tasks`.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `_write_task` keeps any frontmatter key; no whitelist changes.
+- `ticket_cmds/args.py` builds tasks from `derive_tasks`, so it needs no change.

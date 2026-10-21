@@ -9,7 +9,7 @@ depends_on: []
 owns: []
 uses: []
 model: sonnet
-estimate: 30
+estimate: 40
 actual: ""
 review: ""
 worktree: ""
@@ -23,9 +23,9 @@ provides: []
 
 ## Requirement
 
-Make the plan-execute epic-run name check expect `<epic>-<id>` (design D3).
+Make the plan-execute epic-run name check expect `<epic>-<id>`, and still accept the recorded legacy tree of an epic claimed before this change (design D3, D13; interrogate verdict F).
 
-- In `plugins/workbench/workflows/plan-execute.js` (316-326) an epic run requires each task worktree to end in `<epic>-<id>` or `<epic>-<id>/<repo>`; the name cap is 57 characters. Errors read `plan-execute: task <id> worktree <wt> must be <epic>-<id>` and `... is <n> chars; the cap is 57`.
+- In `plugins/workbench/workflows/plan-execute.js` (316-326) an epic run requires each task worktree to end in `<epic>-<id>` or `<epic>-<id>/<repo>`; the name cap is 57 characters. It also accepts the legacy `<epic>--<id>` or `<epic>--<id>/<repo>` that `ticket.py worktrees` kept for a live tree of an epic claimed before this change. The legacy separator is a named constant `LEGACY_SEP`, so no `EPIC}--` literal remains, and the legacy cap stays 58. Errors read `plan-execute: task <id> worktree <wt> must be <epic>-<id>` and `... is <n> chars; the cap is 57`.
 - The header comment (line 76) says `<epic>-<id>[/<repo>]`.
 - Updated tests: `plan-execute-epic.test.mjs:59-91` (the message `must be epic-x-a`, a 58-character name throws, exactly 57 passes) and `plan-execute-epic-audit.test.mjs:57,65,215-216` (branches `epic-x-parser`, `epic-x-writer`).
 - Runs without `args.epic` are unchanged.
@@ -33,11 +33,12 @@ Make the plan-execute epic-run name check expect `<epic>-<id>` (design D3).
 
 ## Acceptance conditions
 
-- AC1: an epic run rejects a worktree that does not end in the single-hyphen name [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-must-end-in-epic-hyphen-id]
-- AC2: a 58-character name throws with the cap 57 [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-name-over-57-throws]
+- AC1: an epic run rejects a worktree that ends in neither the single-hyphen name nor the legacy double-hyphen name [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-must-end-in-epic-hyphen-id]
+- AC2: a 58-character single-hyphen name throws with the cap 57 [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-name-over-57-throws]
 - AC3: a 57-character name passes [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-name-of-57-passes]
 - AC4: the epic-close audit prompt lists single-hyphen branches [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs::epic-audit-lists-single-hyphen-branches]
 - AC5: no double-hyphen epic name check remains in plan-execute.js [evidence: command:! grep -n 'EPIC}--' plugins/workbench/workflows/plan-execute.js]
+- AC6: an epic run accepts a task whose recorded worktree is a legacy double-hyphen tree [evidence: test:plugins/workbench/workflows/tests/plan-execute-epic.test.mjs::epic-worktree-legacy-double-hyphen-accepted]
 
 ## Files
 
@@ -51,7 +52,7 @@ Make the plan-execute epic-run name check expect `<epic>-<id>` (design D3).
 
 ## Expected outcome
 
-`ticket.py args` output for an epic whose trees are `<epic>-<task>` passes plan-execute's validation; `<epic>--<task>` trees are rejected.
+`ticket.py args` output for an epic whose trees are `<epic>-<task>` passes plan-execute's validation; a recorded legacy `<epic>--<task>` tree is still accepted, and any other name is rejected.
 
 ## Steps
 

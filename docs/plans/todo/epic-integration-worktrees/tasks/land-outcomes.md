@@ -47,17 +47,20 @@ Handle the three land outcomes that land-in-run's land step leaves open: a task 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses the `land-step` part (land-in-run) and merge.py's `contained`, `containedBy` and `verification` return fields (the `contained-check` part).
+- Changes the land prompt and the land-result handling in plan-execute.js; no new args.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A land never fails merely because the task is already on `<epic>`; a rebase re-conflict is either resolved unambiguously and reverified or escalated with the files named; a task recorded on a legacy `<epic>--<id>` tree lands like any other.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs` on `workflows/tests/harness.mjs` with the four cases; run `cd plugins/workbench && node --test workflows/tests/plan-execute-land-outcomes.test.mjs`; expect failures.
+- Green: handle `contained`, extend the land prompt, take `--name` from the recorded worktree.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The recorded worktree is `t.worktree` from the args; strip a trailing `/<repo>` (the same tail rule as plan-execute-epic-names) before taking the last component.
+- The merger reruns the task verify in the task tree after a conflict fix before rerunning merge.py, or the commit guard fires once on the stale record (land-in-run Notes).
