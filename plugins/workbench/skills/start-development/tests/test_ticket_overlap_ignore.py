@@ -135,7 +135,7 @@ def test_merged_task_overlap_is_ignored(tmp_path):
     g("commit", "-m", "init")
     a, b = two_epics(root, "src/x.py", "")
     tp = next((root / "in-progress" / a / "tasks").glob("*.md"))
-    branch = f"{a}--{tp.stem}"
+    branch = f"{a}-{tp.stem}"
     g("branch", branch)  # at main's head: merged
     r = cli(
         "new-task",

@@ -623,13 +623,16 @@ def test_reap_orphans_and_done_leftovers(repo, root):
     orphan_dirty = stray_tree(repo, "gone-epic--z", merged=True, dirty=True)
     live_tree = stray_tree(repo, f"{live}--w", merged=True)
     plain = stray_tree(repo, "plain-name", merged=True)
+    unknown = stray_tree(repo, "gone-epic-x", merged=True)  # single hyphen, no ticket: not ours
+    live_task = stray_tree(repo, f"{live}-solo", merged=True)  # no such task: not ours
 
     dry = cli("reap", "--dry-run", "--root", root)
     assert dry.returncode == 0, dry.stderr
     d = summary(dry)
     assert d["dryRun"] is True
     assert str(orphan_ok) in d["removed"]
-    for wt in (orphan_ok, orphan_unmerged, orphan_dirty, wt_b, live_tree, plain):
+    kept = (orphan_ok, orphan_unmerged, orphan_dirty, wt_b, live_tree, plain, unknown, live_task)
+    for wt in kept:
         assert wt.is_dir()
     assert "gone-epic--x" in branches(repo)
 
@@ -644,7 +647,8 @@ def test_reap_orphans_and_done_leftovers(repo, root):
     assert "unmerged" in reasons["gone-epic--y"] and orphan_unmerged.is_dir()
     assert "gone-epic--y" in branches(repo)
     assert "dirty" in reasons["gone-epic--z"] and (orphan_dirty / "dirty.txt").is_file()
-    assert live_tree.is_dir() and plain.is_dir()
+    assert live_tree.is_dir() and plain.is_dir() and unknown.is_dir() and live_task.is_dir()
+    assert str(unknown) not in s["removed"] and str(live_task) not in s["removed"]
     assert f"{live}--w" not in reasons and "plain-name" not in reasons
 
 

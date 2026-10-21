@@ -309,7 +309,9 @@ def test_live_worktree_of_non_in_progress_epic_warns(tmp_path):
     root.mkdir(parents=True)
     a = epic(root, "Alpha")
     b = epic(root, "Beta", "in-progress")
-    for n in (f"{a}--t1", f"{b}--t1"):
+    task(root, a, "Tee one")
+    task(root, b, "Tee one")
+    for n in (f"{a}-tee-one", f"{b}-tee-one", a, b):
         subprocess.run(
             ["git", "worktree", "add", "-q", str(tmp_path / n), "-b", n],
             cwd=repo,
@@ -318,7 +320,9 @@ def test_live_worktree_of_non_in_progress_epic_warns(tmp_path):
         )
     r = check(root, "--epic", a)
     assert r.returncode == 0, r.stderr
-    assert "warning" in r.stderr and f"{a}--t1" in r.stderr and f"{b}--t1" not in r.stderr
+    assert "warning" in r.stderr and f"{a}-tee-one" in r.stderr
+    assert f"{b}-tee-one" not in r.stderr and f"'{b}'" not in r.stderr
+    assert f"live worktree '{a}'" in r.stderr
 
 
 def test_new_task_near_duplicate_still_created(root):

@@ -34,6 +34,7 @@ TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
 EPIC_STAGES = ("build", "review")
 SLUG_MAX = 28
 WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
+LEGACY_SEP = "--"  # old <epic>--<task> tree names, kept only so those trees stay reapable
 NEAR_DUP = 0.6
 EXIT_NEAR_DUPLICATE = 3  # new-epic stopped on a live near-duplicate epic; --force overrides
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
@@ -409,6 +410,22 @@ def scan(root: Path) -> list[Ticket]:
     return out
 
 
+def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
+    """Every tree or branch name a ticket owns: `<epic>` -> (epic, None) and
+    `<epic>-<task>` -> (epic, task). `<epic>-<task>` cannot be split, so this lookup is the
+    only way code maps a name back to a ticket."""
+    out: dict[str, tuple[str, str | None]] = {}
+    for t in scan(root):
+        if t.kind == "epic":
+            out[t.slug] = (t.slug, None)
+            continue
+        try:
+            out[worktree_name(t.epic, t.slug)] = (t.epic, t.slug)
+        except TicketError:
+            continue  # too long to ever be created as a tree
+    return out
+
+
 def _words(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", text.lower()))
 
@@ -470,7 +487,7 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     left = [f for f in shared if not workbench.overlap_ignored(f, globs)]
     if not left:
         return []
-    branch = other.meta.get("branch") or f"{other.epic}--{other.slug}"
+    branch = other.meta.get("branch") or worktree_name(other.epic, other.slug)
     try:
         if _task_merged(
             _task_src(root, other.meta), branch, other.meta.get("verified_head", ""), "main"
@@ -567,12 +584,13 @@ def run_check(
                             f"{t.phase} epic {t.epic!r}"
                         )
 
+    names = ticket_names(root)
     for name in _live_worktrees(root):
-        prefix = name.split("--", 1)[0]
-        if "--" in name and prefix in epics and epics[prefix].phase != "in-progress":
+        owner = names.get(name)
+        if owner and epics[owner[0]].phase != "in-progress":
             warns.append(
-                f"warning: live worktree {name!r} belongs to epic {prefix!r} "
-                f"which is in {epics[prefix].phase}, not in-progress"
+                f"warning: live worktree {name!r} belongs to epic {owner[0]!r} "
+                f"which is in {epics[owner[0]].phase}, not in-progress"
             )
     return CheckResult(fails, warns, notes, near_epics)
 
@@ -1516,10 +1534,18 @@ def cmd_reap(a: argparse.Namespace) -> int:
         if t.phase == "done":
             sweep.epic(root, t.path.parent)
     wb = _workbench(root)
-    live = {s for s, t in epics.items() if t.phase == "in-progress"}
+    names = ticket_names(root)
     wt_dir = workbench.worktrees_dir(wb)
     for d in sorted(p for p in wt_dir.iterdir() if p.is_dir()) if wt_dir.is_dir() else []:
-        if "--" not in d.name or d.name.split("--", 1)[0] in live:
+        owner = names.get(d.name)
+        if owner:
+            stale = epics[owner[0]].phase != "in-progress"
+        else:
+            legacy_epic, sep, _ = d.name.partition(LEGACY_SEP)
+            stale = bool(sep) and not (
+                legacy_epic in epics and epics[legacy_epic].phase == "in-progress"
+            )
+        if not stale:
             continue
         sweep.container(d, d.name, wb, wb)
     print(json.dumps({"dryRun": a.dry_run, **sweep.summary()}, indent=2))
