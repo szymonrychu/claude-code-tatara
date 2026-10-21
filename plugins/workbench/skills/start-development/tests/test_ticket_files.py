@@ -407,7 +407,8 @@ def test_worktrees_doc_integration_lifecycle():
 
 def test_tickets_doc_close_upgrade_and_fork_point():
     text = _doc("tickets.md")
-    for needle in ("close <epic> --verify <cmd>", "close.json", "worktrees <epic> --integration", "fork_point"):
+    needles = ("close <epic> --verify <cmd>", "close.json", "worktrees <epic> --integration")
+    for needle in (*needles, "fork_point"):
         assert needle in text, needle
     assert "recorded when the task lands" in text
 
