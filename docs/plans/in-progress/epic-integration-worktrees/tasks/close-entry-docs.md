@@ -1,6 +1,6 @@
 ---
 title: Close entry docs
-status: todo
+status: in-progress
 repo: workbench
 value: "An epic close always passes ticket.py close's gates; no doc offers a way around them"
 files: [plugins/workbench/agents/worktree-merger.md, plugins/workbench/skills/worktree-merge/SKILL.md, plugins/workbench/skills/worktree-merge/tests/test_close_entry_docs.py, plugins/workbench/skills/start-development/scripts/ticket.py]
@@ -12,8 +12,8 @@ model: sonnet
 estimate: 25
 actual: ""
 review: light
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--close-entry-docs
+branch: epic-integration-worktrees--close-entry-docs
 verified_head: ""
 run: ""
 provides: []
