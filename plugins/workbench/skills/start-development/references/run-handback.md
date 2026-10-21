@@ -109,7 +109,7 @@ Read these **when the run returns, before dispatching anything else**:
 - `escalated` with `land-failed` - an epic run with `mainCheckout` could not
   land the released task on the epic branch: merge.py hit a conflict or a red
   verify, or the land agent returned nothing (`land` carries its result). The
-  epic branch stays at its prior head and the task's dependents are
+  epic branch keeps its prior head and the task's dependents are
   `dependency-failed`. Fix the cause in the task tree and land it through the
   continue gate's MERGE line. `landed` lists every task that did land, with
   its epic `head`.

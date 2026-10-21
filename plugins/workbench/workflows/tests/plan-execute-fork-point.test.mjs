@@ -35,7 +35,7 @@ const run = (tasks, land, args = {}) => runWorkflow(SCRIPT, { args: { brief: BRI
 const prompts = (r, role, id) => r.calls.filter((c) => c.opts.label.split(':')[1] === role && c.opts.label.includes(`:${id}`)).map((c) => c.prompt)
 const result = (r, id) => r.result.tasks.find((t) => t.id === id)
 
-test('fork-point-arg-seeds-diff-bases', async () => {
+test('fork-point-arg-seeds-diff-base', async () => {
   const r = await run([task('a', { forkPoint: 'abc1234' })], landed({ contained: true }))
   assert.equal(r.error, undefined)
   const review = prompts(r, 'review', 'a')[0]
@@ -52,7 +52,7 @@ test('fork-point-absent-keeps-merge-base', async () => {
   assert.equal(r.result.landed[0].forkPoint, undefined)
 })
 
-test('fork-point-recorded-from-land-base', async () => {
+test('fork-point-in-landed-return', async () => {
   const r = await run([task('a')], landed())
   assert.deepEqual(r.result.landed, [{ id: 'a', head: 'h', forkPoint: 'base1' }])
   assert.equal(result(r, 'a').forkPoint, 'base1')
@@ -77,4 +77,41 @@ test('fork-point-tdd-recipe-uses-fork-point', async () => {
   const r = await runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC, tasks: [task('a', { forkPoint: 'abc1234' })] }, agent: a })
   const all = r.calls.map((c) => c.prompt).join('\n')
   assert.ok(all.includes('git show abc1234:<path>'), 'recipe names the fork point')
+})
+
+// A gap on task a at the first audit sends it through one remediation round after it landed.
+const gapAgent = (land) => {
+  let audits = 0
+  return async (prompt, opts) => {
+    const role = opts.label.split(':')[1]
+    if (role === 'audit') return ++audits === 1 ? { complete: false, missing: [{ item: 'retry path', taskId: 'a', evidence: 'no retry' }] } : { complete: true, missing: [] }
+    if (role === 'merge') return { merged: true, conflict: false, head: 'm1', verification }
+    return agent(land)(prompt, opts)
+  }
+}
+const runGap = (tasks, land = landed()) => runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC, audit: 'run', tasks }, agent: gapAgent(land) })
+
+test('fork-point-remediation-review-diffs-from-fork-point', async () => {
+  const r = await runGap([task('a')])
+  assert.equal(r.error, undefined)
+  const rem = r.calls.filter((c) => c.opts.label.split(':')[1] === 'review' && /a-r1/.test(c.opts.label))
+  assert.ok(rem.length > 0, 'a remediation review ran')
+  for (const c of rem) {
+    assert.ok(c.prompt.includes('git diff base1..HEAD'), c.prompt)
+    assert.ok(!c.prompt.includes('git merge-base'), c.prompt)
+  }
+})
+
+test('fork-point-verifier-base-after-landing', async () => {
+  const r = await runGap([task('a')])
+  const rem = r.calls.filter((c) => c.opts.label.split(':')[1] === 'verify' && /a-r1/.test(c.opts.label))
+  assert.ok(rem.length > 0, 'a remediation verify ran')
+  for (const c of rem) assert.ok(c.prompt.includes('--base base1 '), c.prompt)
+})
+
+test('fork-point-forward-merge-prompt-names-fork-point', async () => {
+  const r = await runGap([task('a'), task('b', { dependsOn: ['a'] })])
+  const m = r.calls.filter((c) => c.opts.label.split(':')[1] === 'merge')
+  assert.ok(m.length > 0, 'a forward merge ran')
+  assert.ok(m[0].prompt.includes('git diff base1..HEAD'), m[0].prompt)
 })
