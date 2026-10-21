@@ -36,6 +36,7 @@ SLUG_MAX = 28
 WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
 LEGACY_SEP = "--"  # separator of pre-existing <epic>--<task> tree names, matched by reap-all only
 NEAR_DUP = 0.6
+LEGACY_SEP = "--"  # the old `<epic>--<task>` tree and branch separator, still swept on disk
 EXIT_NEAR_DUPLICATE = 3  # new-epic stopped on a live near-duplicate epic; --force overrides
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")
@@ -66,6 +67,76 @@ def worktree_name(epic: str, task: str) -> str:
     if len(name) > WORKTREE_MAX:
         raise TicketError(f"worktree name {name!r} is {len(name)} characters, max {WORKTREE_MAX}")
     return name
+
+
+# ---------------------------------------------------------------- branch-name collisions
+
+
+def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
+    """Every epic slug -> (epic, None) and every `<epic>-<task>` -> (epic, task), all phases.
+    `<epic>-<task>` cannot be split back into its parts, so this is the one name-to-ticket map."""
+    names: dict[str, tuple[str, str | None]] = {}
+    for t in scan(Path(root)):
+        if t.kind == "epic":
+            names[t.slug] = (t.slug, None)
+        else:
+            names[f"{t.epic}-{t.slug}"] = (t.epic, t.slug)
+    return names
+
+
+def _disk_names(root: Path) -> dict[str, str]:
+    """Names taken on disk -> what holds them: local branches of the source checkouts and
+    directories under <configdir>/worktrees/. Empty outside a git checkout."""
+    try:
+        wb = _workbench(root)
+        found: dict[str, str] = {}
+        code = wb / "code"
+        srcs = [wb] + (sorted(p for p in code.iterdir() if p.is_dir()) if code.is_dir() else [])
+        for src in srcs:
+            r = _git(src, "for-each-ref", "--format=%(refname:short)", "refs/heads")
+            for b in r.stdout.split() if r.returncode == 0 else []:
+                found.setdefault(b, f"branch {b}")
+        wt_dir = workbench.worktrees_dir(wb)
+        for d in sorted(p for p in wt_dir.iterdir() if p.is_dir()) if wt_dir.is_dir() else []:
+            found[d.name] = f"tree {d.name}"
+        return found
+    except Exception:  # not in a git checkout: nothing on disk to collide with
+        return {}
+
+
+def name_clashes(
+    root: Path, wanted: list[tuple[str, str | None, str | None]], own_epic: str | None = None
+) -> list[str]:
+    """Failure lines for names that would clash. `wanted` is (name, epic, task): task None means
+    the name is an epic slug. Tickets of `own_epic` are skipped (a rename frees its old names)."""
+    taken = {
+        n: v for n, v in ticket_names(root).items() if own_epic is None or v[0] != own_epic
+    }
+    disk = _disk_names(root)
+    out: list[str] = []
+    for name, epic, task in wanted:
+        what = f"epic slug {name}" if task is None else f"task branch {name}"
+        hit = taken.get(name)
+        if hit is not None:
+            other = hit[1]
+            if task is None and other is None:
+                continue  # an equal epic slug is reported as "already exists"
+            if task is not None and other is not None and hit[0] == epic:
+                continue  # the same task slug in the same epic is reported as "already exists"
+            if other is None:
+                out.append(f"{what} collides with epic slug {name}")
+            else:
+                out.append(f"{what} collides with the branch of task {other} in epic {hit[0]}")
+        elif name in disk:
+            out.append(f"{what} collides with existing {disk[name]}")
+        if task is not None:
+            legacy = LEGACY_SEP.join((epic or "", task))
+            if legacy in disk:
+                out.append(
+                    f"task branch {name} would be swept with legacy {disk[legacy]} "
+                    f"(old {legacy} name)"
+                )
+    return out
 
 
 # ---------------------------------------------------------------- frontmatter
@@ -543,6 +614,10 @@ def run_check(
             for t in tickets:
                 if t.kind == "task" and t.epic == epic and t.slug == new_slug:
                     fails.append(f"task slug {new_slug!r} already exists in epic {epic!r}")
+        if epic is None:
+            fails += name_clashes(root, [(new_slug, None, None)])
+        else:
+            fails += name_clashes(root, [(f"{epic}-{new_slug}", epic, new_slug)])
         kind = "epic" if epic is None else "task"
         extra = goals if epic is None else ""
         for t in tickets:
@@ -1501,6 +1576,11 @@ def cmd_rename(a: argparse.Namespace) -> int:
     epics = _epics(root)
     if new != name and new in epics:
         raise TicketError(f"epic slug {new!r} already exists in {epics[new].phase}")
+    if new != name:
+        wanted = [(new, None, None)] + [(f"{new}-{p.stem}", new, p.stem) for p, _ in tasks]
+        clashes = name_clashes(root, wanted, own_epic=name)
+        if clashes:
+            raise TicketError("; ".join(clashes))
     old_title = str(epics[name].meta.get("title", name))
     if new == name and old_title == a.title:
         print(epic_dir)
