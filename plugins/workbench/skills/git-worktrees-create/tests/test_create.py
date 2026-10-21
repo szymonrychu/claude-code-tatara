@@ -71,7 +71,7 @@ def test_creates_new_branch_off_tracked_default(workbench):
     result = _run_script(root, "feature-new", "repo1")
 
     assert result.returncode == 0, result.stdout + result.stderr
-    wt_path = root / ".worktrees" / "feature-new" / "repo1"
+    wt_path = root / ".claude" / "worktrees" / "feature-new" / "repo1"
     assert wt_path.is_dir()
     assert (wt_path / "README.md").is_file()
 
@@ -100,7 +100,7 @@ def test_reuses_existing_remote_branch(workbench):
     result = _run_script(root, "feature-existing", "repo1")
 
     assert result.returncode == 0, result.stdout + result.stderr
-    wt_path = root / ".worktrees" / "feature-existing" / "repo1"
+    wt_path = root / ".claude" / "worktrees" / "feature-existing" / "repo1"
     assert wt_path.is_dir()
     assert (wt_path / "extra.txt").is_file()
 
@@ -132,7 +132,7 @@ def test_unknown_repo_reports_failure(workbench):
     assert "nope" in result.stdout
     assert "failed" in result.stdout.lower()
 
-    wt_path = root / ".worktrees" / "feature-new" / "nope"
+    wt_path = root / ".claude" / "worktrees" / "feature-new" / "nope"
     assert not wt_path.exists()
 
 
@@ -142,7 +142,7 @@ def test_multi_repo_continues_on_error(workbench):
     result = _run_script(root, "feature-new", "repo1,nope")
 
     assert result.returncode == 1
-    wt_path = root / ".worktrees" / "feature-new" / "repo1"
+    wt_path = root / ".claude" / "worktrees" / "feature-new" / "repo1"
     assert wt_path.is_dir()
     assert "repo1" in result.stdout
     assert "nope" in result.stdout

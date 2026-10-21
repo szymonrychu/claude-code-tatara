@@ -1,11 +1,11 @@
 ---
 name: git-worktrees-commit
-description: "Commit changes across repo worktrees under .worktrees/<branch>/<repo>, with per-repo semantic commit titles you compose. Use to commit or wrap up work in a workbench worktree."
+description: "Commit changes across repo worktrees under <configdir>/worktrees/<branch>/<repo>, with per-repo semantic commit titles you compose. Use to commit or wrap up work in a workbench worktree."
 ---
 
 # git-worktrees-commit
 
-Commits changes inside `.worktrees/<branch>/<repo>` for one or more repos.
+Commits changes inside `<configdir>/worktrees/<branch>/<repo>` for one or more repos.
 This is a **two-phase** flow: the script never writes the commit message
 itself, it only shows diffs and performs git plumbing. You (the agent) read
 the diff and write the title.
@@ -58,7 +58,7 @@ Behavior:
 
 ## Notes
 
-- Repos are resolved as `.worktrees/<branch>/<repo>`; the worktree must
+- Repos are resolved as `<configdir>/worktrees/<branch>/<repo>`; the worktree must
   already exist (see `git-worktrees-create`). A missing worktree dir is a
   per-repo `failed`, not an abort.
 - `--repos` accepts comma-separated or repeated flags.

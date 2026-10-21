@@ -3,7 +3,7 @@ name: git-worktrees-create
 description: "Create git worktrees for a branch across code/ submodules. Use to start a new branch, check an existing branch into a worktree, or spin up an isolated workspace."
 ---
 
-Creates `.worktrees/<branch>/<repo>` for each requested submodule under
+Creates `<configdir>/worktrees/<branch>/<repo>` for each requested submodule under
 `code/`. If `<branch>` already exists (locally or on the remote) it is
 checked out into the worktree; otherwise it is created fresh off the repo's
 tracked default branch (from `.gitmodules`, default `main`).
@@ -18,7 +18,7 @@ tracked default branch (from `.gitmodules`, default `main`).
    ```
 3. The script, per repo:
    - fetches `origin`
-   - checks out `<branch>` into `.worktrees/<branch>/<repo>` if it exists
+   - checks out `<branch>` into `<configdir>/worktrees/<branch>/<repo>` if it exists
      locally or on the remote; otherwise creates it off
      `origin/<tracked-branch>`
    - skips (status `skipped`) if a worktree already exists at that path

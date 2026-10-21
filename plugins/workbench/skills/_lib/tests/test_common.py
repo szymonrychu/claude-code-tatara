@@ -96,9 +96,8 @@ def test_tracked_branch_default(workbench):
 
 
 def test_worktree_path(workbench):
-    assert (
-        common.worktree_path("my-branch", "foo") == workbench / ".worktrees" / "my-branch" / "foo"
-    )
+    expected = workbench / ".claude" / "worktrees" / "my-branch" / "foo"
+    assert common.worktree_path("my-branch", "foo") == expected
 
 
 def test_run_success(workbench):

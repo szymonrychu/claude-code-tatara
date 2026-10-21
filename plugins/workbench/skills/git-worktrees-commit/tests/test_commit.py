@@ -22,7 +22,7 @@ def workbench(tmp_path, monkeypatch):
     (root / ".gitmodules").write_text(GITMODULES)
     (root / "code" / "foo").mkdir(parents=True)
 
-    repo_dir = root / ".worktrees" / "my-branch" / "foo"
+    repo_dir = root / ".claude" / "worktrees" / "my-branch" / "foo"
     repo_dir.mkdir(parents=True)
     subprocess.run(["git", "init", "-q"], cwd=repo_dir, check=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_dir, check=True)
