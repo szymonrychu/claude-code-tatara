@@ -170,7 +170,7 @@ def test_readme_names_epic_task_trees_and_integration():
     assert "<epic>-<task>" in text
     assert "integration worktree" in text
     assert "--<task>" not in text
-    assert "reaches main" in text
+    assert "epic reached main" in text
 
 
 def test_readme_documents_the_template():
