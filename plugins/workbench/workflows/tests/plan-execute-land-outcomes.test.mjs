@@ -36,7 +36,7 @@ const run = (tasks, land) => runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC
 const landPrompt = (r) => r.calls.find((c) => c.opts.label.split(':')[1] === 'land').prompt
 const result = (r, id) => r.result.tasks.find((t) => t.id === id)
 
-test('land-outcomes-contained-counts-as-landed', async () => {
+test('land-contained-task-counts-as-landed', async () => {
   const contained = () => ({ landed: false, contained: true, head: 'task-head', conflict: false, verification, notes: 'nothing to merge' })
   const r = await run([task('a'), task('b', { dependsOn: ['a'] })], contained)
   assert.equal(r.error, undefined)
@@ -59,18 +59,19 @@ test('land-outcomes-prompt-contained-head', async () => {
   assert.match(p, /task (tree|worktree) HEAD/i)
 })
 
-test('land-outcomes-prompt-reconflict-rules', async () => {
+test('land-prompt-resolves-rebase-reconflicts', async () => {
   const r = await run([task('a')], () => ({ landed: true, head: 'h', conflict: false, verification, notes: '' }))
   const p = landPrompt(r)
   assert.match(p, /drops its merge-of-epic-x commit/)
   assert.match(p, /both sides carry the same change/)
   assert.match(p, /exactly the dependency text already on epic-x/)
+  assert.match(p, /git .*rebase epic-x/)
   assert.match(p, /rebase --abort/)
   assert.match(p, /every conflicting file/)
   assert.match(p, /once/)
 })
 
-test('land-outcomes-reconflict-escalation-names-files', async () => {
+test('land-conflict-escalation-names-files', async () => {
   const failed = () => ({ landed: false, conflict: true, head: '', verification: { ...verification, passed: false }, notes: 'conflict: src/a.py, src/b.py' })
   const r = await run([task('a')], failed)
   const e = r.result.escalated.find((x) => x.id === 'a')
@@ -79,7 +80,7 @@ test('land-outcomes-reconflict-escalation-names-files', async () => {
   assert.equal(e.land.conflict, true)
 })
 
-test('land-outcomes-legacy-name', async () => {
+test('land-uses-recorded-legacy-tree-name', async () => {
   const r = await run([task('a', { worktree: '/wt/epic-x--a' })], () => ({ landed: true, head: 'h', conflict: false, verification, notes: '' }))
   assert.ok(landPrompt(r).includes('--name epic-x--a --base epic-x '), landPrompt(r))
   const c = await run([task('a', { worktree: '/wt/epic-x--a/api' })], () => ({ landed: true, head: 'h', conflict: false, verification, notes: '' }))
