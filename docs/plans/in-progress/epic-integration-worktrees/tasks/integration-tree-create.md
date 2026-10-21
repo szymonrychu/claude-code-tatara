@@ -1,6 +1,6 @@
 ---
 title: Integration tree create
-status: todo
+status: in-progress
 repo: workbench
 value: "Claiming an epic gives it its own integration worktree, the base every task forks from"
 files: [plugins/workbench/skills/worktree-create/scripts/create.py, plugins/workbench/skills/worktree-create/tests/test_create.py, plugins/workbench/skills/worktree-create/tests/test_fast_forward.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_integration.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]

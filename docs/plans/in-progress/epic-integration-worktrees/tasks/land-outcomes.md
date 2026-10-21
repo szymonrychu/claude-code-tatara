@@ -1,6 +1,6 @@
 ---
 title: Land outcomes
-status: todo
+status: in-progress
 repo: workbench
 value: "A task already on the epic branch, a rebase re-conflict and a legacy tree each land or fail with a named cause"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs]

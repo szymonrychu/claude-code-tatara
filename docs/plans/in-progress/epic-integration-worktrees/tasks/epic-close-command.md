@@ -1,6 +1,6 @@
 ---
 title: Epic close command
-status: todo
+status: in-progress
 repo: workbench
 value: "main only ever moves to an epic tip that passed the full suite, after every done task landed"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/close_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_close_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py]

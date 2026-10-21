@@ -1,6 +1,6 @@
 ---
 title: Epic base wiring
-status: todo
+status: in-progress
 repo: workbench
 value: "Task trees, the continue gate and the run all use the epic branch as their base"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py, plugins/workbench/skills/start-development/tests/test_ticket_args.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
