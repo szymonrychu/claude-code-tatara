@@ -498,6 +498,24 @@ def test_move_done_uses_frontmatter_worktree_path(repo, root):
     assert not new.exists() and name not in branches(repo)
 
 
+def test_worktrees_creates_single_hyphen_trees(repo, root):
+    ep = started(repo, root, tasks=("alpha",))
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
+    m = meta(task_path(root, ep, "alpha"))
+    assert wt.is_dir() and Path(m["worktree"]) == wt
+    assert m["branch"] == f"{ep}-alpha" and f"{ep}-alpha" in branches(repo)
+    assert f"{ep}--alpha" not in branches(repo)
+
+
+def test_move_done_fallback_branch_single_hyphen(repo, root):
+    ep = reviewed(repo, root, tasks=("alpha",), merge=False)
+    set_meta(task_path(root, ep, "alpha"), branch="")
+    commit_all(repo)
+    r = cli("move", ep, "done", "--root", root)
+    assert r.returncode == 1 and f"branch '{ep}-alpha' is not merged" in r.stderr
+    assert f"{ep}--alpha" not in r.stderr
+
+
 # ---------------------------------------------------------------- component mode
 
 

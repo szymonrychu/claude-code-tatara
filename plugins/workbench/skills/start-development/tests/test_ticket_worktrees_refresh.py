@@ -179,6 +179,22 @@ def test_worktrees_todo_becomes_in_progress(repo, root):
     assert ticket.load(p.read_text(), p).meta["status"] == "in-progress"
 
 
+def test_worktrees_keeps_live_legacy_tree_record(repo, root):
+    ep = mk_epic(root)
+    p = mk_task(root, ep, "Old")
+    commit_all(repo)
+    legacy = repo / ".claude" / "worktrees" / f"{ep}--old"
+    git(repo, "worktree", "add", "-b", f"{ep}--old", str(legacy), "main")
+    doc = ticket.load(p.read_text(), p)
+    doc.meta.update(worktree=str(legacy), branch=f"{ep}--old")
+    p.write_text(ticket.dump(doc))
+    commit_all(repo)
+    assert cli("worktrees", ep, "--root", root).returncode == 0
+    m = ticket.load(p.read_text(), p).meta
+    assert m["worktree"] == str(legacy) and m["branch"] == f"{ep}--old"
+    assert not tree(repo, ep, "old").exists()
+
+
 def test_workbench_repo_tree_is_live(tmp_path):
     """A tree of code/<repo> is not in the docs root's worktree list but is still live."""
     wb = tmp_path / "wb"

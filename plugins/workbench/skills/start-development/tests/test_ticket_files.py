@@ -80,7 +80,7 @@ def test_slug_cli_prints_capped_slug(root):
     assert len(out) <= 28 and not out.endswith("-")
 
 
-def test_worktree_name(t):
+def test_worktree_name_single_hyphen_cap_57(t):
     assert t.worktree_name("epic", "task") == "epic-task"
     a, b = "a" * 28, "b" * 28
     assert len(t.worktree_name(a, b)) == 57 == t.WORKTREE_MAX
