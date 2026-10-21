@@ -30,6 +30,20 @@ human's checkout. When `<base>` is checked out in no worktree it raises
 for an integration branch, or check out <base> in the main checkout`, with nothing
 rebased or merged.
 
+Containment: `merged_into` (used by merge_back's post-merge check, `ticket.py` continue and
+move done gates, and the Sweep) first tests ancestry, then falls back to patch equivalence
+(`git cherry <target> <head>` printing only `-` lines). This is needed because the epic
+close rebases `<epic>` onto a moved main, after which no task branch is an ancestor of it.
+`git cherry` skips merge commits, so a merge of `<epic>` into a dependent never counts
+against it. Otherwise it reports `<n> commit(s) of <head> have no equivalent in <target>`.
+
+**Nothing to merge.** When the named tree's HEAD is already contained in `<base>` (ancestor
+or patch-equivalent) nothing is merged, but `--verify <cmd>` still runs, in the target tree
+under `suite-lock.sh`. The result carries `merged: 0`, `contained: true`,
+`containedBy: ancestor|patch-equivalent`, `verification` and `baseBefore == baseAfter`. A
+failing verify exits 4 with the 15-line tail, moves nothing and keeps the tree. Without
+`--verify` the path behaves as before, plus `contained` and `containedBy`.
+
 What it does, in order, stopping at the first failure:
 
 1. **Refuses a dirty worktree.** Uncommitted changes mean the agent did not

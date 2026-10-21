@@ -34,10 +34,27 @@ def commits_ahead(wt: Path, base: str) -> list[str]:
     return [ln for ln in r.stdout.strip().splitlines() if ln]
 
 
+def contained(repo: Path, head: str, target: str) -> tuple[bool, str]:
+    """Whether every commit of head is already in target, and why.
+
+    Ancestry first; failing that, patch equivalence (git cherry), which survives a
+    rebase of target. git cherry skips merge commits, so a merge of target into head
+    never counts against it.
+    """
+    r = run(["git", "rev-list", "--count", f"{target}..{head}"], cwd=repo, check=False)
+    if r.returncode == 0 and r.stdout.strip() == "0":
+        return True, "ancestor"
+    c = run(["git", "cherry", target, head], cwd=repo, check=False)
+    lines = c.stdout.splitlines()
+    if c.returncode == 0 and all(ln.startswith("-") for ln in lines):
+        return True, "patch-equivalent"
+    n = sum(1 for ln in lines if ln.startswith("+"))
+    return False, f"{n} commit(s) of {head} have no equivalent in {target}"
+
+
 def merged_into(repo: Path, branch: str, base: str) -> bool:
-    """True when every commit on branch is already contained in base."""
-    r = run(["git", "rev-list", "--count", f"{base}..{branch}"], cwd=repo, check=False)
-    return r.returncode == 0 and r.stdout.strip() == "0"
+    """True when every commit on branch is already contained in base (see contained)."""
+    return contained(repo, branch, base)[0]
 
 
 def _only_empty_dirs(d: Path) -> bool:
@@ -261,11 +278,31 @@ def merge_back(
 
     target = target_tree(src, base)
     ahead = commits_ahead(wt, base)
-    if not ahead:
-        notes = ["nothing to merge (no commits ahead of base)"]
-        if not keep:
+    is_in, by = contained(wt, "HEAD", base)
+    if is_in:
+        notes = [f"nothing to merge ({by}: every commit is already in {base})"]
+        sha = run(["git", "rev-parse", base], cwd=target, check=False).stdout.strip()
+        verification = {"command": verify, "passed": True, "tail": []}
+        if verify:
+            passed, tail = _run_verify(verify, target)
+            verification = {"command": verify, "passed": passed, "tail": tail}
+            if not passed:
+                notes.append(f"--verify failed; {base} not advanced, {name} kept")
+        cleaned = False
+        if not keep and verification["passed"]:
             notes += cleanup(src, wt, name, target)
-        return {"name": name, "merged": 0, "cleaned": not keep, "notes": notes}
+            cleaned = True
+        return {
+            "name": name,
+            "merged": 0,
+            "contained": True,
+            "containedBy": by,
+            "cleaned": cleaned,
+            "notes": notes,
+            "baseBefore": sha,
+            "baseAfter": sha,
+            "verification": verification,
+        }
 
     notes = [f"{len(ahead)} commit(s) to merge", f"landing in {target}"]
 
