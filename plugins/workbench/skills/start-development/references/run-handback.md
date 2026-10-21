@@ -111,8 +111,10 @@ Read these **when the run returns, before dispatching anything else**:
   verify, or the land agent returned nothing (`land` carries its result). The
   epic branch keeps its prior head and the task's dependents are
   `dependency-failed`. Fix the cause in the task tree and land it through the
-  continue gate's MERGE line. `landed` lists every task that did land, with
-  its epic `head`.
+  continue gate's MERGE line (`MERGE ... --base <epic>`, handed to a `worktree-merger`). `landed` lists
+  every task that did land, with its epic `head` and the task's `forkPoint` (the epic head it forked
+  from). Read it to confirm each done task is on `<epic>` before close; an escalated task absent from
+  `landed` lands after your ruling through `continue`.
 - `escalated` with `verify-agent-died` - the independent verifier returned
   nothing, so the task has no verification on its HEAD. Re-run the task's
   `verify` through a fresh agent on the committed HEAD; never accept the

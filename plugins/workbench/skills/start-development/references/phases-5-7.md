@@ -20,21 +20,31 @@ The epic review: the whole change, after every task is delivered, before the epi
    `workbench-infra` pack is enabled, `tf-planner` / `helmfile-differ`; an unlisted destroy stops the run.
 6. **Gaps go back.** Place every `processGaps` entry; drop wrong findings, recorded. Real ones: new
    tasks, `ticket.py stage <epic> build` (`stage build` is always allowed), phase 4, then step 1.
-7. **Verdict.** `ticket.py review <epic> --verdict pass --notes-file <notes>` when all is clean, else
-   `--verdict fail` and step 6; the last `Verdict:` line counts. Then `epic-move` (`ticket.py move <epic> done`):
-   it needs the pass, every task done, verified and merged into `--base`, and removes only merged,
-   clean worktrees, listing any it left; `epic-worktrees-remove` (`ticket.py reap --epic <epic>`) removes every remaining worktree of the epic.
+7. **Verdict and close.** `ticket.py review <epic> --verdict pass --notes-file <notes>` when all is
+   clean, else `--verdict fail` and step 6; the last `Verdict:` line counts. Main is never moved onto
+   an untested tip; close in this order:
+   1. the pass verdict;
+   2. every done task is on `<epic>`: `ticket.py continue` prints no MERGE line, including a task
+      released by an accept ruling that has no dependents;
+   3. meta mode: `ticket.py close <epic> --verify '<full suite and lint>'`. It rebases `<epic>` onto
+      main inside the integration tree and runs the suite and lint on the rebased tip there; only when
+      they pass it fast-forwards main; it then runs the full suite on main and records main's
+      pre-fast-forward SHA in `close.json`. A rebase conflict goes to a `worktree-merger` in the
+      integration tree, then run close again;
+   4. `ticket.py move <epic> done` (`epic-move`), which removes every task and integration tree and branch; `epic-worktrees-remove`
+      (`ticket.py reap --epic <epic>`) removes every remaining worktree of the epic.
 
-Meta mode with no `origin` remote ends here: edits handed to the user to commit, then the phase 7
-record. With an `origin` remote it continues into phase 6 and lands like a component.
+   Component mode: the phase 6 MR from the integration branch, then `move done` once the MRs merge.
+
+Meta mode ends at the local fast-forward (pushing main stays with the user), then the phase 7 record.
 
 ## Phase 6 - Merge
 
-Per epic: `epic-move` to done closes it (Phase 5, step 7), `epic-worktrees-remove` sweeps leftover
-merged worktrees, and the record is at `ticket.py path <epic> record`.
+Per epic: `epic-move` to done closes it (Phase 5, step 7) and `epic-worktrees-remove` sweeps leftover
+worktrees, and the record is at `ticket.py path <epic> record`.
 
-1. **Wrap.** Component mode only. Every task worktree must already be merged and cleaned up by a
-   `worktree-merger` agent; one still standing never landed - resolve that first. Then
+1. **Wrap.** Component mode only. Every task worktree must already be landed on `<epic>` (by the run or a
+   `worktree-merger` agent); one still standing never landed - resolve that first. Then
    `git-worktrees-commit` (per-repo semantic titles you compose), `git-worktrees-push`, and the
    `pullrequests-update` (cross-linked "Complementary MRs/PRs"). `pullrequests-update` and
    `pullrequests-watch` pick the host per repo from `remote get-url origin`, never assumed, per

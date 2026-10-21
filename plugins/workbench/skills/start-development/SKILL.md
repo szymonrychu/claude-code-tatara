@@ -27,10 +27,10 @@ is conditional on that choice. Work the phases in order and create a todo per ph
 
 - **Component mode** - the task changes code in `code/` submodules; full flow through merge, deploy.
 - **Meta mode** - the task changes the workbench superrepo itself (`.claude/`, `docs/`, root
-  configs, `CLAUDE.md`, `MEMORY.md`, `ROADMAP.md`) and no submodule. When the metarepo has an
-  `origin` remote, meta work commits on a branch and lands like a component (PR or MR on that
-  origin, then the record); with no `origin` remote it never commits, ending at reviewed,
-  test-green edits plus the record.
+  configs, `CLAUDE.md`, `MEMORY.md`, `ROADMAP.md`) and no submodule. Meta mode tasks land on the
+  integration branch `<epic>`, and the epic closes by rebase plus fast-forward of the local main,
+  with or without an `origin` remote (`ticket.py close`); that replaces the PR path, and pushing main
+  stays with the user. Component mode keeps the MR from the integration branch.
 
 A task spanning both runs as two passes, meta first unless a dependency says otherwise.
 
@@ -62,7 +62,7 @@ deliver the entire agreed scope, and stop for anything destructive.
 1. **1L recon.** Refresh submodules, confirm the tree is clean and green, and read the files in
    scope yourself; one subagent for a specific question, not a fan-out.
 2. **The gate.** One message with the design and the plan, the full gate below sized down.
-3. **4L implement.** Work in the integration worktree directly, or dispatch a single `workbench:implementer`
+3. **4L implement.** Work in the integration worktree (the tree `move in-progress` creates) directly, or dispatch a single `workbench:implementer`
    agent with the full requirement text. No worktree per task, no `workbench:plan-execute` workflow,
    no `worktree-merger`.
 4. **5L verify.** The repo's own lint and tests, real output quoted, plus `start-review` over the
@@ -118,8 +118,9 @@ destroy.
 
 ## Phase 4 - Execute
 
-Claim the epic (`ticket.py move <epic> in-progress`), create worktrees for the epic's repo subset
-(`ticket.py worktrees <epic>`), then run the epic through `workbench:plan-execute`, never by
+Claim the epic (`ticket.py move <epic> in-progress`), which creates the integration tree and branch
+`<epic>`; task trees (`ticket.py worktrees <epic>`) fork from `<epic>` and the run lands each done
+task on it. Then run the epic through `workbench:plan-execute`, never by
 hand-dispatched implementers: one run per epic through a named copy built by `ticket.py args`. The
 Workflow args block, review tiers and gate tags, relaunch commands, handback fields and the
 `planText` rule are in `references/phase-4-execute.md`; the return is read per
@@ -136,8 +137,9 @@ on END read the return per references/run-handback.md. Relaunch with
 Full detail: `references/phases-5-7.md`.
 - **Phase 5.** `ticket.py stage <epic> review`, whole-diff review, one `auditOnly` plan-execute run,
   the one full-suite run, security and infra checks, then `ticket.py review <epic> --verdict ...`
-  and `ticket.py move <epic> done`.
-- **Phase 6.** Component mode: commit, push, update PRs, watch (`references/merge-hosts.md`), merge
+  then the close order: `ticket.py continue` prints no MERGE line, meta mode `ticket.py close <epic>
+  --verify '<suite and lint>'` (rebase onto main, verify, fast-forward main), `ticket.py move <epic> done`.
+- **Phase 6.** Component mode: the MR from the integration branch; commit, push, update PRs, watch (`references/merge-hosts.md`), merge
   each PR the moment it is ready, watch the deploy, check post-deploy health.
 - **Phase 7.** Dispatch `record-writer`; send the user ONE closing message, three lines at most.
 

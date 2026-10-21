@@ -81,8 +81,30 @@ def test_phase_four_runs_per_epic():
             "integration branch",
             "epic slug",
             "ticket.py apply-run",
+            "`move in-progress` creates",
+            "integration tree",
+            "land-failed",
+            "ticket.py worktrees <epic> --integration",
+            "--base <epic>",
         ],
     )
+
+
+def test_close_order_and_landing_docs():
+    t = flat((SD / "references" / "phases-5-7.md").read_text())
+    for needle in (
+        "prints no MERGE line",
+        "ticket.py close <epic> --verify",
+        "rebases `<epic>` onto main",
+        "fast-forwards main",
+        "pre-fast-forward SHA",
+        "`close.json`",
+        "ticket.py move <epic> done",
+    ):
+        assert needle in t, needle
+    assert "landed" in flat((SD / "references" / "run-handback.md").read_text())
+    assert "forkPoint" in flat((SD / "references" / "run-handback.md").read_text())
+    assert "own integration tree" in flat((SD / "references" / "multi-epic.md").read_text())
 
 
 def test_phases_six_and_seven_close_the_epic():

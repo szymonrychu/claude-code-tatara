@@ -18,11 +18,14 @@ FLAT = re.sub(r"\s+", " ", TEXT)
 
 
 def test_meta_mode_origin_rule():
-    assert "has an `origin` remote" in FLAT
-    assert "lands like a component" in FLAT
-    assert "with no `origin` remote it never commits" in FLAT
-    assert "Meta mode with no `origin` remote ends here" in FLAT
-    assert "With an `origin` remote it continues into phase 6" in FLAT
+    assert "Meta mode tasks land on the integration branch `<epic>`" in FLAT
+    assert "rebase plus fast-forward of the local main" in FLAT
+    assert "with or without an `origin` remote" in FLAT
+    assert "pushing main stays with the user" in FLAT
+    assert "ticket.py close <epic> --verify" in FLAT
+    assert "never commits" not in FLAT
+    assert "ends at reviewed, test-green edits" not in FLAT
+    assert "Meta mode with no `origin` remote ends here" not in FLAT
 
 
 def test_health_step_conditional():

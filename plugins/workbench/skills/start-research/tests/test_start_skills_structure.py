@@ -516,6 +516,8 @@ def test_execute_names_the_verifier_and_red_evidence():
         "forward-merge-failed",
         "verify-agent-died",
         "baseRef",
+        "mainCheckout",
+        "epic branch",
         "verification.head",
     ):
         assert term in phase4, f"Phase 4 does not name {term!r}"

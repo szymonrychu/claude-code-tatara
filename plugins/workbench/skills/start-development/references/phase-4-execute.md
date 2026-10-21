@@ -4,16 +4,17 @@ Detail for phase 4 of `SKILL.md`: grouping, the Workflow args block, review tier
 
 ## Phase 4 - Execute
 
-**Per epic.** `epic-move` (`ticket.py move <epic> in-progress`) claims it. **Component mode:** invoke
-`git-worktrees-create` with the epic slug as the branch name across only the epic's repo subset;
-that integration branch is named by the epic slug, task branches merge into it, and the MR comes off
-it. **Meta mode:** a branch of the superrepo when it has an `origin` remote, else its tree directly.
+**Per epic.** `epic-move` (`ticket.py move <epic> in-progress`) claims it, and `move in-progress` creates
+the integration tree and branch `<epic>` (no hand-run `git-worktrees-create`). Component mode: the MR comes
+off the integration branch. Meta mode: tasks land on `<epic>` and the epic closes into the local main
+(`references/phases-5-7.md`). An epic claimed before this change gets its integration tree from
+`ticket.py worktrees <epic> --integration`, and its live legacy double-hyphen trees keep running.
 
 **Group the plan into execution units before creating any worktree**: disjoint file sets, a
 `dependsOn` where a unit builds on another's code, all in ONE workflow run. Concatenate requirement
 text verbatim when merging items; grouping may never drop an acceptance condition. Then `ticket.py
-worktrees <epic>` calls `worktree-create` once per open task (named by epic and task slug) and
-records each path in the task file, so it reaches the run through `ticket.py tasks`. Naming,
+worktrees <epic>` calls `worktree-create` once per open task (a `<epic>-<task>` branch forked from
+`<epic>`) and records each path in the task file, so it reaches the run through `ticket.py tasks`. Naming,
 `--assess` sizing of the `worktree-merger` and the sub-subagent rules are in
 `references/worktrees.md`. Never merge a worktree yourself. Sub-subagents do not get worktrees.
 Nesting is allowed where it delivers faster at the same quality.
@@ -42,11 +43,16 @@ Workflow({
     existing: [ { name, where }, ... ],   // Plan inputs `reuse`, as name + file:symbol
     doNotBuild: [ { name, reason }, ... ], // Plan inputs `do-not-build`, as item + what provides it
     lenses: ['correctness', 'requirements-coverage'],
-    baseRef: 'main',   // the ref task branches forked from; the verifier diffs against it
+    baseRef: '<epic>',   // the epic branch task branches forked from; the verifier diffs against it
+    mainCheckout: '<main checkout path>',   // the run lands each released task on the epic branch from here
     verifierAgent: 'workbench:verifier',   // null runs the verifier as a plain prompt role
   },
 })
 ```
+
+Landing happens in the run: each released task is merged onto `<epic>`, and `land-failed` is an
+escalation reason. An escalated task lands after your ruling through `continue`'s `MERGE ... --base <epic>`
+lines, which you hand to a `worktree-merger`.
 
 On return, `ticket.py apply-run <epic> <return.json>` writes results back into the task files;
 discovered work becomes new tasks in the same epic.

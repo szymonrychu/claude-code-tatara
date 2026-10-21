@@ -11,3 +11,8 @@ Before planning parallel epics:
 - Launch one plan-execute run per runnable epic concurrently, and the next runnable epic when a run lands
   (re-run `ticket.py roadmap` after each landing).
 - plan-execute stays one epic per run; never merge two epics into one run.
+
+## Integration trees
+
+Each epic has its own integration tree and branch `<epic>`; concurrent epics never share one. Each closes
+into main on its own (`ticket.py close`), rebasing onto whatever main has become.
