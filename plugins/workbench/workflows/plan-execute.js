@@ -2403,20 +2403,44 @@ function mergePrompt(d, impl, branch) {
   ].join('\n')
 }
 
+// Lands a task again through the land step without moving its recorded fork point: the diff of
+// everything it changed still starts where it first forked from the epic branch (D14).
+async function relandTask(t, r) {
+  const id = t.rootId || t.id
+  const prior = FORK_POINTS.get(id)
+  const out = await landTask(t, r)
+  if (prior === undefined) FORK_POINTS.delete(id)
+  else {
+    FORK_POINTS.set(id, prior)
+    const entry = LANDED.findLast((x) => x.id === id)
+    if (entry) entry.forkPoint = prior
+  }
+  return out
+}
+
+// With LANDING a remediated dependency R is landed again first (rebased onto the epic branch, the
+// epic branch fast-forwarded, verified in the integration tree); each live same-repo dependent then
+// merges the epic branch rather than R's branch, re-verifies, and is landed again. A failed landing
+// leaves the task land-failed in `latest`; the escalation sweep reports it.
 async function forwardMerge(latest, remediated) {
   const live = (id) => {
     const r = latest.get(id)
     return r && r.impl && !ESCALATE.includes(r.reason) && r.reason !== 'blocked'
   }
   for (const R of topo(remediated)) {
-    const rr = latest.get(R)
+    let rr = latest.get(R)
     if (!(rr && rr.clean && verified(rr.impl))) continue
     const from = byId.get(R)
-    const branch = rr.impl.branch
+    if (LANDING) {
+      rr = await relandTask(rr.task, rr)
+      latest.set(R, rr)
+      if (rr.reason === 'land-failed') continue
+    }
+    const branch = LANDING ? BASE_REF : rr.impl.branch
     const dependents = TASK_IDS.filter((D) => D !== R && byId.get(D).repo === from.repo && ancestors(D).has(R) && live(D))
     for (const D of topo(dependents)) {
       const d = byId.get(D)
-      const dr = latest.get(D)
+      let dr = latest.get(D)
       const result = await safeAgent(d, 'merge', mergePrompt(d, dr.impl, branch), {
         label: label('merge', d),
         phase: 'Merge',
@@ -2427,6 +2451,10 @@ async function forwardMerge(latest, remediated) {
         forwardMerged.push({ into: D, from: R, branch, head: result.head })
         dr.impl = { ...dr.impl, verification: { ...result.verification, head: result.head } }
         log(`${D}: merged ${R}'s remediation (${branch}) forward, verified at ${result.head}`)
+        if (LANDING) {
+          dr = await relandTask(dr.task, dr)
+          latest.set(D, dr)
+        }
       } else {
         escalated.push({ id: D, reason: 'forward-merge-failed', findings: [], merge: result || null })
         log(`${D}: forward merge of ${branch} failed - escalating`)

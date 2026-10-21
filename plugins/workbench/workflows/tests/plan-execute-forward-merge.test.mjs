@@ -173,3 +173,95 @@ test('the merge prompt installs missing dependencies before the command', async 
   assert.ok(p.includes('node_modules'))
   assert.ok(p.indexOf('node_modules') < p.indexOf('Run exactly this command'))
 })
+
+// ---- landing mode: forward merges go through the epic branch (D4, D14; verdicts C, G)
+const EPIC = { name: 'epic-x', epic: 'epic-x', baseRef: 'epic-x', mainCheckout: '/repo', audit: 'run' }
+const ltask = (id, extra = {}) => task(id, { worktree: `/wt/epic-x-${id}`, short: id, ...extra })
+const lverification = { command: 'pytest', passed: true, evidence: '3 passed' }
+const landedOk = { landed: true, head: 'lh', base: 'base1', conflict: false, verification: lverification, notes: '' }
+
+function landAgent({ land = () => landedOk, merge = () => okMerge } = {}) {
+  let audits = 0
+  return async (prompt, opts) => {
+    const [, role, rest] = opts.label.split(':')
+    const short = rest.split(/[#+]/)[0]
+    if (role === 'impl' || role === 'fix') return deliverable(short.replace(/-r1$/, ''))
+    if (role === 'verify') return okVerify
+    if (role === 'review') return { clean: true, findings: [], filesRead: ['src/a.py'] }
+    if (role === 'false-finding') return { verdicts: [] }
+    if (role === 'triage') return { repeated: [] }
+    if (role === 'merge') return merge(short)
+    if (role === 'land') return land(short, prompt)
+    if (role === 'audit') return ++audits === 1 ? { complete: false, missing: [{ item: 'retry path', taskId: 'a', evidence: 'no retry' }] } : { complete: true, missing: [] }
+    throw new Error(`unexpected agent ${opts.label}`)
+  }
+}
+const lrun = (tasks, agent, args = {}) => runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC, ...args, tasks }, agent })
+const lchain = () => [ltask('a'), ltask('b', { dependsOn: ['a'] })]
+const labels = (r, role) => ofRole(r, role).map((c) => c.opts.label)
+
+test('landing: remediated dependency lands again, then dependents merge the epic branch and land again', async () => {
+  const r = await lrun(lchain(), landAgent())
+  assert.equal(r.error, undefined)
+  const m = ofRole(r, 'merge')
+  assert.equal(m.length, 1)
+  assert.ok(m[0].prompt.includes('git merge --no-edit epic-x'), m[0].prompt)
+  assert.ok(!m[0].prompt.includes('b-a-r1') && !m[0].prompt.includes('epic-x-a-r1'))
+  assert.deepEqual(r.result.forwardMerged.map((f) => [f.into, f.from, f.branch]), [['b', 'a', 'epic-x']])
+  const lands = labels(r, 'land')
+  const iMerge = r.calls.findIndex((c) => c === m[0])
+  const landsAfter = r.calls.slice(iMerge).filter((c) => c.opts.label.split(':')[1] === 'land').map((c) => c.opts.label)
+  assert.deepEqual(landsAfter, ['epic-x:land:b'])
+  const landsBefore = r.calls.slice(0, iMerge).filter((c) => c.opts.label.split(':')[1] === 'land').map((c) => c.opts.label)
+  assert.ok(landsBefore.length > 0 && landsBefore.at(-1) === 'epic-x:land:a-r1', lands.join(','))
+})
+
+test('landing: a failed landing of the remediated dependency merges no dependent', async () => {
+  let aLands = 0
+  const land = (short) => {
+    if (short === 'a-r1') return { ...landedOk, landed: false, head: '', verification: { ...lverification, passed: false } }
+    aLands++
+    return landedOk
+  }
+  const r = await lrun(lchain(), landAgent({ land }))
+  assert.equal(ofRole(r, 'merge').length, 0)
+  assert.ok(r.result.escalated.some((e) => e.id === 'a' && e.reason === 'land-failed'))
+  assert.deepEqual(r.result.forwardMerged, [])
+})
+
+test('landing: a dependent whose merge fails ends forward-merge-failed and is not landed again', async () => {
+  const merge = () => ({ merged: false, conflict: true, head: '', verification: { command: 'x', passed: false, evidence: 'c' } })
+  const r = await lrun(lchain(), landAgent({ merge }))
+  assert.ok(r.result.escalated.some((e) => e.id === 'b' && e.reason === 'forward-merge-failed'))
+  assert.equal(labels(r, 'land').filter((l) => l.endsWith(':b')).length, 1)
+})
+
+test('landing: a dependent already contained in the epic branch counts as landed, never land-failed', async () => {
+  let bLands = 0
+  const agent = landAgent({
+    land: (short) => {
+      if (short === 'b' && ++bLands === 2) return { landed: false, contained: true, head: 'bh', base: '', conflict: false, verification: lverification, notes: 'nothing to merge' }
+      return landedOk
+    },
+  })
+  const r = await lrun(lchain(), agent)
+  assert.ok(!r.result.escalated.some((e) => e.reason === 'land-failed'), JSON.stringify(r.result.escalated))
+  assert.equal(bLands, 2)
+})
+
+test('landing: re-landed tasks keep their original fork point for later diffs', async () => {
+  const root = (short) => short.replace(/-r1$/, '')
+  const agent = landAgent({ land: (short) => ({ ...landedOk, base: `base-${root(short)}-${short}` }) })
+  const r = await lrun(lchain(), agent)
+  assert.equal(r.result.tasks.find((t) => t.id === 'b').forkPoint, 'base-b-b')
+  assert.equal(r.result.tasks.find((t) => t.id === 'a').forkPoint, 'base-a-a-r1')
+  assert.ok(ofRole(r, 'merge')[0].prompt.includes('git diff base-b-b..HEAD'))
+  assert.ok(r.result.landed.filter((l) => l.id === 'b').every((l) => l.forkPoint === 'base-b-b'), JSON.stringify(r.result.landed))
+})
+
+test('without a main checkout the forward merge still merges the remediation branch and lands nothing', async () => {
+  const r = await lrun(lchain(), landAgent(), { mainCheckout: undefined })
+  assert.equal(r.error, undefined)
+  assert.equal(ofRole(r, 'land').length, 0)
+  assert.ok(ofRole(r, 'merge')[0].prompt.includes('git merge --no-edit b-a'))
+})
