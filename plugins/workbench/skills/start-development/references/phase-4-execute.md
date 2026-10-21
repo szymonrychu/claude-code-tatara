@@ -51,7 +51,7 @@ Workflow({
 ```
 
 Landing happens in the run: each released task is merged onto `<epic>`, and `land-failed` is an
-escalation reason. An escalated task lands after your ruling through `continue`'s `MERGE ... --base <epic>`
+escalation reason. Your ruling on an escalated task lands it through `continue`'s `MERGE ... --base <epic>`
 lines, which you hand to a `worktree-merger`.
 
 On return, `ticket.py apply-run <epic> <return.json>` writes results back into the task files;

@@ -126,7 +126,7 @@ def test_run_handback_names_landing():
     t = flat((SD / "references" / "run-handback.md").read_text())
     for needle in (
         "`landed` lists every task that did land, with its epic `head` and the task's `forkPoint`",
-        "an escalated task absent from `landed` lands after your ruling through `continue`",
+        "an escalated task absent from `landed` is landed by your ruling, through `continue`",
         "`MERGE ... --base <epic>`",
         "land-failed",
     ):
