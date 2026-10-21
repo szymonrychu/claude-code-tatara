@@ -44,16 +44,18 @@ Close the two phase 5 review findings (scratchpad epic-review.md and scope-audit
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket_cmds/close_cmd.py` (`ticket.py close`) is the close; unchanged here.
+- `ticket.py:LEGACY_SEP` keeps its value `"--"`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Both merger docs send the epic close through `ticket.py close`; `LEGACY_SEP` is defined once.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_close_entry_docs.py`; run `cd plugins/workbench && pytest skills/worktree-merge/tests/test_close_entry_docs.py -q`; expect failures.
+- Green: rewrite both Epic close sections; drop the duplicate `LEGACY_SEP`.
+- Run the task's verify command; expect all green.
 
 ## Notes
 
