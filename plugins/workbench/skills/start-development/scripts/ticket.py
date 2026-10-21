@@ -34,9 +34,9 @@ TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
 EPIC_STAGES = ("build", "review")
 SLUG_MAX = 28
 WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
-LEGACY_SEP = "--"  # separator of pre-existing <epic>--<task> tree names, matched by reap-all only
 NEAR_DUP = 0.6
-LEGACY_SEP = "--"  # the old `<epic>--<task>` tree and branch separator, still swept on disk
+# the old `<epic>--<task>` separator, used by the collision guard, worktree lookup and the sweep
+LEGACY_SEP = "--"
 EXIT_NEAR_DUPLICATE = 3  # new-epic stopped on a live near-duplicate epic; --force overrides
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")

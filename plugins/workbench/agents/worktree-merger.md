@@ -88,17 +88,19 @@ Each failure is a decision, not an error to retry harder.
 
 ## Epic close
 
-When dispatched to close an epic, run exactly:
+The epic close has one entry point, run by the orchestrator, never by you:
 
 ```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py" \
-  --name <epic> --base main --keep --verify '<full suite and lint>'
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py" \
+  close <epic> --verify '<full suite and lint>'
 ```
 
-Order: rebase `<epic>` onto main inside the integration tree, run the full suite and
-lint on the rebased tip there, only then fast-forward main in the main checkout and run
-the configured suites there. The integration tree and branch stay in place. Report
-`baseBefore` (main's pre-fast-forward SHA).
+It enforces the done-task gate, the review gate and writes `close.json`. You are
+dispatched for an epic close only to resolve a rebase conflict of `<epic>` onto main
+inside the integration tree: resolve the unambiguous conflicts, continue the rebase,
+rerun the verify, and report. You never fast-forward main yourself and never run a
+merge script against main for an epic. Name `ticket.py close` as the command the
+orchestrator reruns afterwards.
 
 ## Rules
 

@@ -82,15 +82,13 @@ with `--base <epic>`.
 
 ## Epic close
 
-```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py" \
-  --name <epic> --base main --keep --verify '<full suite and lint>'
-```
-
-In order: rebases `<epic>` onto main inside the integration tree; runs the full suite and
-lint on the rebased tip there; only then fast-forwards main in the main checkout and runs
-the configured suites there. The integration tree and branch stay in place.
-`baseBefore` in the result is main's pre-fast-forward SHA.
+The epic close has one entry point, run by the orchestrator: `ticket.py close <epic>
+--verify '<full suite and lint>'` (start-development `scripts/ticket.py`). It enforces
+the done-task gate and the review gate, rebases `<epic>` onto main inside the
+integration tree, runs the full suite and lint there, fast-forwards main, and writes
+`close.json`. This skill never fast-forwards main for an epic. The merger is dispatched
+only to resolve a rebase conflict of `<epic>` onto main in the integration tree; once
+resolved, the orchestrator reruns `ticket.py close`.
 
 ## Rules
 
