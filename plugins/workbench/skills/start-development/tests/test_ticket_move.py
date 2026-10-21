@@ -389,7 +389,7 @@ def test_move_done_refuses_task_not_done_or_unverified(repo, root):
 def test_move_done_refuses_unmerged_branch_and_keeps_everything(repo, root):
     ep = reviewed(repo, root, merge=False)
     r = cli("move", ep, "done", "--root", root)
-    assert r.returncode == 1 and "not merged" in r.stderr and "main" in r.stderr
+    assert r.returncode == 1 and "not merged" in r.stderr and f"into '{ep}'" in r.stderr
     assert (root / "in-progress" / ep).is_dir()
     for t in ("alpha", "beta"):
         assert (repo / ".claude" / "worktrees" / f"{ep}-{t}").is_dir()
@@ -451,7 +451,7 @@ def test_move_done_leaves_tree_whose_head_is_unmerged(repo, root):
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
     s = summary(r)
-    assert s["removed"] == []
+    assert s["removed"] == [str(repo / ".claude" / "worktrees" / ep)]  # only the integration tree
     assert "unmerged" in left_reasons(s)[f"{ep}-alpha"]
     assert wt.is_dir() and "side-work" in branches(repo)
 
@@ -463,7 +463,8 @@ def test_move_done_accepts_branch_already_cleaned_by_worktree_merge(repo, root):
     git(repo, "branch", "-d", f"{ep}-alpha")
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
-    assert summary(r) == {"removed": [], "left": []}
+    integ = str(repo / ".claude" / "worktrees" / ep)
+    assert summary(r) == {"removed": [integ], "branches": [ep], "left": []}
 
 
 def test_move_done_refuses_deleted_branch_whose_head_is_not_on_base(repo, root):
@@ -486,6 +487,7 @@ def test_move_done_uses_frontmatter_worktree_path(repo, root):
     set_meta(p, worktree=str(new))
     commit_all(repo)
     deliver(repo, root, ep, "alpha")
+    git(repo, "merge", "--no-ff", "--no-edit", ep)
     assert cli("stage", ep, "review", "--root", root).returncode == 0
     notes = repo / "n.txt"
     notes.write_text("ok")
@@ -495,7 +497,7 @@ def test_move_done_uses_frontmatter_worktree_path(repo, root):
     )
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
-    assert summary(r)["removed"] == [str(new)]
+    assert summary(r)["removed"] == [str(new), str(repo / ".claude" / "worktrees" / ep)]
     assert not new.exists() and name not in branches(repo)
 
 
@@ -541,15 +543,18 @@ def component_workbench(tmp_path):
     return wb
 
 
-def integration_tree(wb, ep, repo_name, merged_on_origin):
+def integration_tree(wb, ep, repo_name, merged_on_origin, legacy=False):
+    """An integration tree with one commit: the claimed <configdir>/worktrees/<epic>/<repo> (made
+    here when the claim did not), or with legacy=True the old .worktrees/<epic>/<repo>."""
     src = wb / "code" / repo_name
-    claimed = wb / ".claude" / "worktrees" / ep / repo_name  # made by the claim for its repos
-    if claimed.exists():  # swap it for the legacy-located fixture tree this test sweeps
+    claimed = wb / ".claude" / "worktrees" / ep / repo_name
+    if legacy and claimed.exists():
         git(src, "worktree", "remove", str(claimed))
         git(src, "branch", "-d", ep)
-    wt = wb / ".worktrees" / ep / repo_name
-    wt.parent.mkdir(parents=True, exist_ok=True)
-    git(src, "worktree", "add", "-b", ep, str(wt), "main")
+    wt = wb / ".worktrees" / ep / repo_name if legacy else claimed
+    if not wt.exists():
+        wt.parent.mkdir(parents=True, exist_ok=True)
+        git(src, "worktree", "add", "-b", ep, str(wt), "main")
     (wt / "int.py").write_text("i = 1\n")
     git(wt, "add", "int.py")
     git(wt, "commit", "-m", "integration")
@@ -558,7 +563,8 @@ def integration_tree(wb, ep, repo_name, merged_on_origin):
     return wt
 
 
-def test_move_done_component_mode_integration_trees(tmp_path):
+def component_epic(tmp_path, legacy):
+    """A component-mode epic with task alpha landed on its integration branch, review passed."""
     wb = component_workbench(tmp_path)
     root = wb / "docs" / "plans"
     ep = mk_epic(root)
@@ -574,18 +580,36 @@ def test_move_done_component_mode_integration_trees(tmp_path):
     git(wt, "add", "alpha.py")
     git(wt, "commit", "-m", "alpha")
     head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    git(wb / "code" / "proj", "merge", "--no-ff", "--no-edit", f"{ep}-alpha")
+    if not legacy:  # land the task on the claimed integration branch
+        git(
+            wb / ".claude" / "worktrees" / ep / "proj",
+            "merge",
+            "--no-ff",
+            "--no-edit",
+            f"{ep}-alpha",
+        )
+    else:
+        git(wb / "code" / "proj", "merge", "--no-ff", "--no-edit", f"{ep}-alpha")
     set_meta(p, status="done", verified_head=head)
     commit_all(wb)
-    merged = integration_tree(wb, ep, "proj", merged_on_origin=True)
-    unmerged = integration_tree(wb, ep, "other", merged_on_origin=False)
+    return wb, root, ep, wt
+
+
+def pass_review(root, ep, tmp_path):
     assert cli("stage", ep, "review", "--root", root).returncode == 0
     notes = tmp_path / "n.txt"
     notes.write_text("ok")
-    assert (
-        cli("review", ep, "--verdict", "pass", "--notes-file", notes, "--root", root).returncode
-        == 0
-    )
+    r = cli("review", ep, "--verdict", "pass", "--notes-file", notes, "--root", root)
+    assert r.returncode == 0, r.stderr
+
+
+def test_component_integration_tree_swept_after_origin_merge(tmp_path):
+    wb, root, ep, wt = component_epic(tmp_path, legacy=False)
+    pass_review(root, ep, tmp_path)
+    r = cli("move", ep, "done", "--root", root)  # <epic> is not on origin/main yet
+    assert r.returncode == 1 and f"'{ep}' is not merged into 'origin/main'" in r.stderr
+    merged = integration_tree(wb, ep, "proj", merged_on_origin=True)
+    unmerged = integration_tree(wb, ep, "other", merged_on_origin=False)
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
     s = summary(r)
@@ -593,8 +617,21 @@ def test_move_done_component_mode_integration_trees(tmp_path):
     assert not (wb / ".claude" / "worktrees" / f"{ep}-alpha").exists()
     assert f"{ep}-alpha" not in branches(wb / "code" / "proj")
     assert str(merged) in s["removed"] and not merged.exists()
+    assert ep not in branches(wb / "code" / "proj") and ep in s["branches"]
     assert unmerged.is_dir() and ep in branches(wb / "code" / "other")
     assert "origin" in left_reasons(s)["other"]
+
+
+def test_move_done_sweeps_legacy_integration_tree(tmp_path):
+    wb, root, ep, wt = component_epic(tmp_path, legacy=True)
+    merged = integration_tree(wb, ep, "proj", merged_on_origin=True, legacy=True)
+    unmerged = integration_tree(wb, ep, "other", merged_on_origin=False, legacy=True)
+    pass_review(root, ep, tmp_path)
+    r = cli("move", ep, "done", "--root", root)
+    assert r.returncode == 0, r.stderr
+    s = summary(r)
+    assert str(merged) in s["removed"] and not merged.exists()
+    assert unmerged.is_dir() and "origin" in left_reasons(s)["other"]
 
 
 # ---------------------------------------------------------------- reap
@@ -646,7 +683,8 @@ def test_reap_orphans_and_done_leftovers(repo, root):
     assert r.returncode == 0, r.stderr
     s = summary(r)
     integ = repo / ".claude" / "worktrees" / ep  # made at the claim; the done epic's leftover
-    assert sorted(s["removed"]) == sorted([str(orphan_ok), str(wt_b), str(integ)])
+    assert not integ.exists()  # move done already swept the merged integration tree
+    assert sorted(s["removed"]) == sorted([str(orphan_ok), str(wt_b)])
     assert not orphan_ok.exists() and "gone-epic--x" not in branches(repo)
     assert not wt_b.exists() and f"{ep}-beta" not in branches(repo)
     reasons = left_reasons(s)
@@ -662,6 +700,7 @@ def done_epic(repo, root, title, tasks=("alpha", "beta")):
     ep = started(repo, root, tasks, title=title)
     for t in tasks:
         deliver(repo, root, ep, t)
+    git(repo, "merge", "--no-ff", "--no-edit", ep)
     notes = root.parent / "notes.txt"
     notes.write_text("All good.")
     assert cli("stage", ep, "review", "--root", root).returncode == 0

@@ -109,6 +109,11 @@ def branches(repo):
     return git(repo, "branch", "--format=%(refname:short)").stdout.split()
 
 
+def integration_tree(repo, ep) -> Path:
+    """The meta-mode integration tree the claim creates for the epic."""
+    return repo / ".claude" / "worktrees" / ep
+
+
 def deliver(repo, root, ep, task, merge=True):
     """Commit work in the task's real worktree, merge its branch into main, mark it done."""
     p = task_path(root, ep, task)
@@ -118,8 +123,8 @@ def deliver(repo, root, ep, task, merge=True):
     git(wt, "add", f"{task}.py")
     git(wt, "commit", "-m", f"feat: {task}")
     head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    if merge:
-        git(repo, "merge", "--no-ff", "--no-edit", m["branch"])
+    if merge:  # land on the epic's integration branch, as the run's land step does
+        git(integration_tree(repo, ep), "merge", "--no-ff", "--no-edit", m["branch"])
     set_meta(p, status="done", verified_head=head)
     commit_all(repo, f"deliver {task}")
     return wt
@@ -141,6 +146,8 @@ def reviewed(repo, root, tasks=("alpha", "beta"), merge=True, verdict="pass"):
     ep = started(repo, root, tasks)
     for t in tasks:
         deliver(repo, root, ep, t, merge=merge)
+    if merge:  # the epic close: the integration branch lands on main
+        git(repo, "merge", "--no-ff", "--no-edit", ep)
     r = cli("stage", ep, "review", "--root", root)
     assert r.returncode == 0, r.stderr
     notes = root.parent / "notes.txt"

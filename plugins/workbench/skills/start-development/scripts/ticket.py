@@ -1321,15 +1321,60 @@ def _branch_exists(src: Path, branch: str) -> bool:
     )
 
 
-def _task_merged(src: Path, branch: str, verified_head: str, base: str) -> bool:
-    """The task branch is merged into base. A branch worktree-merge already deleted counts as
-    merged when every commit up to its verified_head has an equivalent in base."""
+def _task_contained(src: Path, branch: str, verified_head: str, base: str) -> tuple[bool, str]:
+    """Whether the task is contained in base (ancestry, else patch equivalence), and why not.
+    A branch worktree-merge already deleted is judged by its verified_head."""
+    mm = _merge()
     if _branch_exists(src, branch):
-        return _merge().merged_into(src, branch, base)
+        return mm.contained(src, branch, base)
     if not verified_head:
-        return False
-    r = _git(src, "cherry", base, verified_head)
-    return r.returncode == 0 and all(ln.startswith("-") for ln in r.stdout.splitlines())
+        return False, f"branch {branch!r} is gone and the task has no verified_head"
+    return mm.contained(src, verified_head, base)
+
+
+def _task_merged(src: Path, branch: str, verified_head: str, base: str) -> bool:
+    return _task_contained(src, branch, verified_head, base)[0]
+
+
+def _epic_target(src: Path, epic: str, base: str) -> str:
+    """What a task branch must be merged into: the epic's integration branch when src has it
+    (an epic claimed before integration trees existed has none), else base."""
+    branch = integration_branch(epic)
+    return branch if _branch_exists(src, branch) else base
+
+
+def _trunk(wb: Path, repo: str, base: str) -> tuple[str, bool]:
+    """(ref the integration branch must be in, whether to fetch it): the local base in meta
+    mode, origin/<tracked branch> in component mode."""
+    if not repo:
+        return base, False
+    return f"origin/{_submodule_branch(wb, repo)}", True
+
+
+def _fetch_trunk(src: Path, target: str) -> None:
+    _git(src, "fetch", "origin", target.split("/", 1)[1])
+
+
+def _integration_problems(root: Path, epic_dir: Path, base: str) -> list[str]:
+    """One line per integration branch that is not contained in its trunk."""
+    wb, name = _workbench(root), epic_dir.name
+    try:
+        plan = _integration_plan(root, epic_dir)
+    except TicketError as e:
+        return [str(e)]
+    out = []
+    for repo, _ in plan:
+        src = wb / "code" / repo if repo else wb
+        branch = integration_branch(name)
+        if not _branch_exists(src, branch):
+            continue
+        target, fetch = _trunk(wb, repo, base)
+        if fetch:
+            _fetch_trunk(src, target)
+        ok, why = _merge().contained(src, branch, target)
+        if not ok:
+            out.append(f"integration branch {branch!r} is not merged into {target!r}: {why}")
+    return out
 
 
 def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
@@ -1349,8 +1394,14 @@ def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     problems = _undelivered(tasks)
     for p, m in tasks:
         branch = m.get("branch") or worktree_name(name, p.stem)
-        if not _task_merged(_task_src(root, m), branch, m.get("verified_head", ""), a.base):
-            problems.append(f"task {p.stem!r}: branch {branch!r} is not merged into {a.base!r}")
+        src = _task_src(root, m)
+        target = _epic_target(src, name, a.base)
+        ok, why = _task_contained(src, branch, m.get("verified_head", ""), target)
+        if not ok:
+            problems.append(
+                f"task {p.stem!r}: branch {branch!r} is not merged into {target!r}: {why}"
+            )
+    problems += _integration_problems(root, epic_dir, a.base)
     _refuse(problems)
     dest = _git_mv(epic_dir, "done", root)
     commit_ticket_change(name, "move done", [epic_dir, dest], root)
@@ -1498,23 +1549,25 @@ def _rmdir_if_empty(d: Path) -> None:
 
 
 class Sweep:
-    """Removes merged, clean worktrees through merge.py cleanup(); everything else is listed."""
+    """Removes merged, clean worktrees and their branches through merge.py cleanup(); everything
+    else is listed with its reason. Task trees and branches go before the integration ones."""
 
     def __init__(self, base: str, dry_run: bool) -> None:
         self.base, self.dry_run = base, dry_run
         self.removed: list[str] = []
+        self.branches: list[str] = []
         self.left: list[dict] = []
         self.seen: set[Path] = set()
 
     def summary(self) -> dict:
-        return {"removed": self.removed, "left": self.left}
+        return {"removed": self.removed, "branches": self.branches, "left": self.left}
 
-    def leave(self, wt: Path, reason: str) -> None:
+    def leave(self, wt: Path | str, reason: str) -> None:
         self.left.append({"path": str(wt), "reason": reason})
 
-    def tree(self, wt: Path, src: Path, branch: str, on_origin: bool = False) -> None:
-        """One worktree: removed when clean and merged into base (origin/base for an
-        integration tree), else listed with the reason."""
+    def tree(self, wt: Path, src: Path, branch: str, target: str, fetch: bool = False) -> None:
+        """One worktree: removed, with its branch, when clean and contained in target (ancestry,
+        else patch equivalence); else left and listed with the reason."""
         if not wt.is_dir() or wt.resolve() in self.seen:
             return
         self.seen.add(wt.resolve())
@@ -1525,68 +1578,118 @@ class Sweep:
             return self.leave(wt, f"not a linked worktree of {src}")
         if mm.is_dirty(wt):
             return self.leave(wt, "dirty: uncommitted or untracked changes")
-        target = self.base
-        if on_origin:
-            _git(src, "fetch", "origin", self.base)
-            target = f"origin/{self.base}"
-        if not mm.merged_into(wt, "HEAD", target):
-            return self.leave(wt, f"unmerged: HEAD has commits not in {target}")
-        if _branch_exists(src, branch) and not mm.merged_into(src, branch, target):
-            return self.leave(wt, f"unmerged: branch {branch!r} has commits not in {target}")
+        if fetch:
+            _fetch_trunk(src, target)
+        ok, why = mm.contained(wt, "HEAD", target)
+        if not ok:
+            return self.leave(wt, f"unmerged: {why}")
+        if _branch_exists(src, branch):
+            ok, why = mm.contained(src, branch, target)
+            if not ok:
+                return self.leave(wt, f"unmerged: {why}")
+        head = _git(wt, "symbolic-ref", "--quiet", "--short", "HEAD").stdout.strip() or branch
         if self.dry_run:
             self.removed.append(str(wt))
+            if _branch_exists(src, head):
+                self.branches.append(head)
             return None
-        head = _git(wt, "symbolic-ref", "--quiet", "--short", "HEAD").stdout.strip()
-        notes = mm.cleanup(src, wt, head or branch)
+        notes = mm.cleanup(src, wt, head, merged_into_ref=target)
         if wt.exists():
             return self.leave(wt, "; ".join(notes))
         self.removed.append(str(wt))
         for n in notes:
-            if n.startswith("branch ") and " kept " in n:
+            if n.startswith("deleted branch "):
+                self.branches.append(n[len("deleted branch ") :])
+            elif n.startswith("branch ") and " kept " in n:
                 self.leave(wt, f"worktree removed, {n}")
         return None
 
-    def container(self, d: Path, branch: str, wb: Path, src: Path) -> None:
+    def branch_only(self, src: Path, branch: str, target: str, fetch: bool = False) -> None:
+        """A branch whose tree is already gone: deleted when contained in target, else listed."""
+        if not _branch_exists(src, branch):
+            return
+        if fetch:
+            _fetch_trunk(src, target)
+        ok, why = _merge().contained(src, branch, target)
+        if not ok:
+            return self.leave(f"{src} (branch {branch})", f"unmerged: {why}")
+        if self.dry_run:
+            self.branches.append(branch)
+            return None
+        note = _merge().delete_if_merged(src, branch, target)
+        if note.startswith("deleted branch "):
+            self.branches.append(branch)
+        else:
+            self.leave(f"{src} (branch {branch})", note)
+        return None
+
+    def container(
+        self, d: Path, branch: str, wb: Path, src: Path, target: str | None = None
+    ) -> None:
         """A <config dir>/worktrees/<name> entry: a worktree of src itself, or a component-mode
         directory holding one worktree per code/<repo>."""
+        target = target or self.base
         if (d / ".git").exists():
-            self.tree(d, src, branch)
+            self.tree(d, src, branch, target)
             return
         for sub in sorted(p for p in d.iterdir() if p.is_dir()):
-            self.tree(sub, wb / "code" / sub.name, branch)
+            self.tree(sub, wb / "code" / sub.name, branch, target)
+        if not self.dry_run:
+            _rmdir_if_empty(d)
+
+    def integration(self, d: Path, epic: str, wb: Path) -> None:
+        """An integration entry (<config dir>/worktrees/<epic> or legacy .worktrees/<epic>):
+        the meta tree itself or one tree per repo, each judged against its trunk."""
+        if (d / ".git").exists():
+            self.tree(d, wb, epic, self.base)
+            return
+        for sub in sorted(p for p in d.iterdir() if p.is_dir()):
+            target, fetch = _trunk(wb, sub.name, self.base)
+            self.tree(sub, wb / "code" / sub.name, epic, target, fetch)
         if not self.dry_run:
             _rmdir_if_empty(d)
 
     def task(self, root: Path, epic: str, p: Path, m: dict) -> None:
         """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>-<task>)
-        and its branch, removed when merged into base and clean."""
+        and its branch, removed when contained in the epic branch (else base) and clean."""
         wb = _workbench(root)
         tree = worktree_name(epic, p.stem)
         branch = m.get("branch") or tree
         src = _task_src(root, m)
+        target = _epic_target(src, epic, self.base)
         wt = Path(m["worktree"]) if m.get("worktree") else workbench.worktrees_dir(wb) / tree
         if wt.name == tree:
             if wt.is_dir():
-                self.container(wt, branch, wb, src)
+                self.container(wt, branch, wb, src, target)
+            else:
+                self.branch_only(src, branch, target)
             return
-        self.tree(wt, src, branch)
+        self.tree(wt, src, branch, target)
+        if not wt.is_dir():
+            self.branch_only(src, branch, target)
         if wt.parent.name == tree and not self.dry_run:
             _rmdir_if_empty(wt.parent)
 
     def epic(self, root: Path, epic_dir: Path) -> None:
-        """Task worktrees of the epic (frontmatter `worktree`, else
-        <config dir>/worktrees/<epic>-<task>), then its integration trees
-        .worktrees/<epic>/<repo>."""
+        """Every task tree and branch of the epic (target: the epic branch), then its integration
+        trees at <config dir>/worktrees/<epic>[/<repo>] and legacy .worktrees/<epic>/<repo>, and
+        the integration branches (target: the trunk)."""
         wb = _workbench(root)
         name = epic_dir.name
         for p, m in _tasks_of(epic_dir):
             self.task(root, name, p, m)
-        integ = wb / ".worktrees" / name
-        if integ.is_dir():
-            for sub in sorted(p for p in integ.iterdir() if p.is_dir()):
-                self.tree(sub, wb / "code" / sub.name, name, on_origin=True)
-            if not self.dry_run:
-                _rmdir_if_empty(integ)
+        for d in (workbench.worktrees_dir(wb) / integration_branch(name), wb / ".worktrees" / name):
+            if d.is_dir():
+                self.integration(d, name, wb)
+        try:
+            plan = _integration_plan(root, epic_dir)
+        except TicketError:
+            return
+        for repo, _ in plan:
+            target, fetch = _trunk(wb, repo, self.base)
+            self.branch_only(
+                wb / "code" / repo if repo else wb, integration_branch(name), target, fetch
+            )
 
 
 def cmd_reap(a: argparse.Namespace) -> int:

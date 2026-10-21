@@ -10,7 +10,16 @@ Thin wrapper over `ticket.py`. `<epic>` is the epic slug.
 2. Remove:
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py reap --epic <epic>`
 
-`reap --epic` refuses an epic that is not done, never removes another epic's trees, and keeps
-any unmerged or dirty tree. Report what was removed and what was kept.
+`reap --epic` refuses an epic that is not done and never removes another epic's trees. It removes,
+in order, every task tree and branch (each must be contained in the `<epic>` integration branch),
+then the integration tree at `<configdir>/worktrees/<epic>[/<repo>]` (and a legacy
+`.worktrees/<epic>/<repo>`) with the `<epic>` branch. The integration branch must be contained in
+the trunk: local `--base` (default `main`) in meta mode, `origin/<tracked branch>` after a fetch in
+component mode. "Contained" is ancestry, else patch equivalence (`git cherry` all `-`), so it
+survives the close rebasing `<epic>` onto a moved main. A branch is deleted with `git branch -D`
+only after that check passed; no worktree is ever force-removed. A dirty or not-contained tree
+stays with its branch and is listed under `left` with the reason. The JSON summary lists every
+removed tree (`removed`), every deleted branch (`branches`) and every `left` item. Report all three.
 
-One merged task mid-epic: `ticket.py reap --epic <epic> --task <id>` removes only that task's worktree.
+One merged task mid-epic (any phase): `ticket.py reap --epic <epic> --task <id>` removes only that
+task's worktree and branch, once contained in `<epic>`.

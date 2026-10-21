@@ -20,7 +20,7 @@ def wt_of(repo, ep, t):
     return repo / ".claude" / "worktrees" / f"{ep}-{t}"
 
 
-def test_reap_task_mid_epic(repo, root):
+def test_reap_task_merged_into_epic_branch(repo, root):
     ep = started(repo, root)
     deliver(repo, root, ep, "alpha")
     r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
@@ -29,6 +29,9 @@ def test_reap_task_mid_epic(repo, root):
     assert f"{ep}-alpha" not in branches(repo)
     assert str(wt_of(repo, ep, "alpha")) in json.loads(r.stdout)["removed"]
     assert wt_of(repo, ep, "beta").is_dir()
+    assert json.loads(r.stdout)["branches"] == [f"{ep}-alpha"]
+    assert ep in branches(repo)  # the integration branch stays mid-epic
+    assert (repo / ".claude" / "worktrees" / ep).is_dir()
 
 
 def test_reap_task_refuses_unmerged_or_dirty(repo, root):

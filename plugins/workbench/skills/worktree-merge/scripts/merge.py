@@ -406,21 +406,40 @@ def merge_back(
     }
 
 
-def cleanup(src: Path, wt: Path, name: str, target: Path = None) -> list[str]:
-    """Remove wt, then delete its branch with `git branch -d` run from the target tree,
-    so a branch merged into an integration branch is deleted though main's HEAD lacks it."""
+def delete_if_merged(src: Path, name: str, target: str) -> str:
+    """Guarded delete: `git branch -D name` run in src, only after contained(name, target)
+    passed, so src's HEAD does not matter. Returns the note for the outcome."""
+    ok, why = contained(src, name, target)
+    if not ok:
+        return f"branch {name} kept ({why})"
+    d = run(["git", "branch", "-D", name], cwd=src, check=False)
+    if d.returncode == 0:
+        return f"deleted branch {name}"
+    return f"branch {name} kept ({d.stderr.strip()})"
+
+
+def cleanup(
+    src: Path, wt: Path, name: str, target: Path = None, merged_into_ref: str = None
+) -> list[str]:
+    """Remove wt, then delete its branch. With merged_into_ref the delete is guarded: an
+    explicit contained(name, merged_into_ref) check, then `git branch -D` (see
+    delete_if_merged). Without it, `git branch -d` runs from the target tree, so a branch
+    merged into an integration branch is deleted though main's HEAD lacks it."""
     notes = []
     r = run(["git", "worktree", "remove", str(wt)], cwd=src, check=False)
     if r.returncode != 0:
         notes.append(f"worktree remove failed ({r.stderr.strip()}); left at {wt}")
         return notes
     notes.append(f"removed worktree {wt}")
-    d = run(["git", "branch", "-d", name], cwd=target or src, check=False)
-    notes.append(
-        f"deleted branch {name}"
-        if d.returncode == 0
-        else f"branch {name} kept ({d.stderr.strip()})"
-    )
+    if merged_into_ref:
+        notes.append(delete_if_merged(src, name, merged_into_ref))
+    else:
+        d = run(["git", "branch", "-d", name], cwd=target or src, check=False)
+        notes.append(
+            f"deleted branch {name}"
+            if d.returncode == 0
+            else f"branch {name} kept ({d.stderr.strip()})"
+        )
     run(["git", "worktree", "prune"], cwd=src, check=False)
     return notes
 
