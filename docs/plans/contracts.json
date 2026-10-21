@@ -28,5 +28,15 @@
       "flow-speed-and-token-optimiz"
     ],
     "note": "build_args epic run args; audit-context-and-models adds taskFile"
+  },
+  {
+    "name": "merge-target-worktree",
+    "kind": "cli",
+    "owner": "epic-integration-worktrees",
+    "file": "plugins/workbench/skills/worktree-merge/scripts/merge.py",
+    "consumers": [
+      "flow-speed-and-token-optimiz"
+    ],
+    "note": "merge.py --name --base --repo --keep --no-suites --verify; continue-launch runs it directly"
   }
 ]
