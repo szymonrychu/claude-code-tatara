@@ -13,7 +13,7 @@ estimate: 50
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--slug-collision-guard
-branch: "HEAD (worktree epic-integration-worktrees--slug-collision-guard)"
+branch: epic-integration-worktrees--slug-collision-guard-landed
 verified_head: 72b58a39928b86aff24ddf0f13b43800016c6ad2
 run: epic-integration-worktrees
 provides: [name-clashes]

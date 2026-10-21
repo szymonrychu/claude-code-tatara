@@ -13,7 +13,7 @@ estimate: 25
 actual: ""
 review: light
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--close-entry-docs
-branch: epic-integration-worktrees--close-entry-docs
+branch: epic-integration-worktrees--close-entry-docs-landed
 verified_head: c6f82cd125dc21f376866c469b6583880a728aa1
 run: epic-integration-worktrees
 provides: []

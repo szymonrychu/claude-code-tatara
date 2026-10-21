@@ -13,7 +13,7 @@ estimate: 50
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-outcomes
-branch: epic-integration-worktrees--land-outcomes
+branch: epic-integration-worktrees--land-outcomes-landed
 verified_head: c5a069a2c814c53a0a8ada10af54bdf9313848c4
 run: epic-integration-worktrees
 provides: []

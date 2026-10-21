@@ -13,7 +13,7 @@ estimate: 85
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-command
-branch: "HEAD (worktree epic-integration-worktrees--epic-close-command)"
+branch: epic-integration-worktrees--epic-close-command
 verified_head: e0debe5f11dd7737db06e93373335a740d489b00
 run: epic-integration-worktrees
 provides: []

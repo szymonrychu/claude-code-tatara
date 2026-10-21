@@ -13,7 +13,7 @@ estimate: 60
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-diffs
-branch: epic-integration-worktrees--fork-point-diffs
+branch: epic-integration-worktrees--fork-point-diffs-landed
 verified_head: 739bb65444108908be1ec0387059ae71f9d52db0
 run: epic-integration-worktrees
 provides: []

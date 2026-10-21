@@ -13,7 +13,7 @@ estimate: 60
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--builtin-worktree-guard
-branch: epic-integration-worktrees--builtin-worktree-guard
+branch: epic-integration-worktrees--builtin-worktree-guard-2
 verified_head: 61bcaef2c5435998973842fbad6a5fee53374360
 run: epic-integration-worktrees
 provides: []

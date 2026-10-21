@@ -13,7 +13,7 @@ estimate: 65
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--forward-merge-via-epic
-branch: epic-integration-worktrees--forward-merge-via-epic
+branch: epic-integration-worktrees--forward-merge-via-epic-landed
 verified_head: 7624d1d036f51b01d9c806215f24a9169fd1738c
 run: epic-integration-worktrees
 provides: []

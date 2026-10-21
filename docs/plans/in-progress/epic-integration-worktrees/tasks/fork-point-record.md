@@ -13,7 +13,7 @@ estimate: 35
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-record
-branch: epic-integration-worktrees--fork-point-record
+branch: epic-integration-worktrees--fork-point-record-landed
 verified_head: 7fcb7c5ee698ada342f8e6f72870d84bb079cfa1
 run: epic-integration-worktrees
 provides: []

@@ -13,7 +13,7 @@ estimate: 90
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-sweep
-branch: HEAD
+branch: epic-integration-worktrees--epic-close-sweep
 verified_head: fe94d96b8e939cecca93bb7b7332feb4cf3ae30e
 run: epic-integration-worktrees
 provides: []

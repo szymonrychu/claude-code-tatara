@@ -13,7 +13,7 @@ estimate: 45
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--sweep-guard
-branch: epic-integration-worktrees--sweep-guard
+branch: epic-integration-worktrees--sweep-guard-landed
 verified_head: 0c240451044087f3061aa077b3b95b80e38b43c7
 run: epic-integration-worktrees
 provides: []

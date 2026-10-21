@@ -13,7 +13,7 @@ estimate: 55
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-readmes-fallback
-branch: epic-integration-worktrees--docs-readmes-fallback
+branch: epic-integration-worktrees--docs-readmes-fallback-landed
 verified_head: 60906119073242a54bdd65606893945f5759d255
 run: epic-integration-worktrees
 provides: []
