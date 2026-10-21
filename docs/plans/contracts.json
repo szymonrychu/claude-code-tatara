@@ -1,0 +1,12 @@
+[
+  {
+    "name": "land-step",
+    "kind": "workflow-step",
+    "owner": "epic-integration-worktrees",
+    "file": "plugins/workbench/workflows/plan-execute.js",
+    "consumers": [
+      "flow-speed-and-token-optimiz"
+    ],
+    "note": "in-run landing of released tasks on <epic>; used by verify-scope-wiring, cascade-release, audit-context-and-models"
+  }
+]
