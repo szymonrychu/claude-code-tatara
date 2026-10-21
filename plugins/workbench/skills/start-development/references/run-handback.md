@@ -106,6 +106,13 @@ Read these **when the run returns, before dispatching anything else**:
   verify in the dependent's tree (`merge` carries its result). Dispatch
   `worktree-merger` to land the merge by hand, or re-plan the dependent on top
   of the fixed dependency.
+- `escalated` with `land-failed` - an epic run with `mainCheckout` could not
+  land the released task on the epic branch: merge.py hit a conflict or a red
+  verify, or the land agent returned nothing (`land` carries its result). The
+  epic branch did not advance and the task's dependents are
+  `dependency-failed`. Resolve it in the task tree, then land it through the
+  continue gate's MERGE line. `landed` lists every task that did land, with
+  its epic `head`.
 - `escalated` with `verify-agent-died` - the independent verifier returned
   nothing, so the task has no verification on its HEAD. Re-run the task's
   `verify` through a fresh agent on the committed HEAD; never accept the

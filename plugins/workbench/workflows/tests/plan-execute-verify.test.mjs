@@ -412,3 +412,21 @@ test('the verify schema carries triageUsage', async () => {
   const r = await run({ tasks: [task('T1')] }, fakeAgent())
   assert.ok(ofRole(r, 'verify')[0].opts.schema.properties.triageUsage)
 })
+
+test('verify-and-review-use-epic-base-ref', async () => {
+  const epicTask = task('a', { short: 'a', worktree: '/wt/epic-x-a' })
+  const r = await run({ name: 'epic-x', epic: 'epic-x', baseRef: 'epic-x', mainCheckout: '/repo', tasks: [epicTask] }, async (prompt, opts) => {
+    const role = opts.label.split(':')[1]
+    if (role === 'land') return { landed: true, head: 'land-a', conflict: false, verification: { command: 'pytest', passed: true, evidence: '3 passed' }, notes: '' }
+    return fakeAgent()(prompt, opts)
+  })
+  assert.equal(r.error, undefined)
+  const v = ofRole(r, 'verify')[0].prompt
+  assert.ok(v.includes('--base epic-x '), v)
+  assert.ok(!v.includes('--base main'), v)
+  const rev = ofRole(r, 'review')[0].prompt
+  assert.ok(rev.includes('git diff $(git merge-base HEAD epic-x)..HEAD'), rev)
+  assert.ok(!rev.includes('merge-base HEAD main'), rev)
+  const land = ofRole(r, 'land')[0].prompt
+  assert.ok(land.includes('--base epic-x '), land)
+})

@@ -177,3 +177,32 @@ test('rulingsFile must be the absolute path of rulings.json', async () => {
     assert.equal(r.calls.length, 0)
   }
 })
+
+test('ruled-task-lands-before-dependents', async () => {
+  // An epic run that lands: t1 escalates verified, an accept ruling releases it mid-run,
+  // and it lands on epic-x before t2 starts; t2 then merges epic-x, not t1's branch.
+  const etask = (id, extra = {}) => task(id, { short: id, worktree: `/wt/epic-x-${id}`, ...extra })
+  const events = []
+  const inner = agentFor({ T1: endless }, () => ({ rulings: [accept('t1')] }))
+  const agent = async (prompt, opts) => {
+    const [, role, id] = opts.label.split(':')
+    events.push(`${role}-start:${id}`)
+    if (role === 'land') {
+      await sleep(10)
+      events.push(`land-end:${id}`)
+      return { landed: true, head: `land-${id}`, conflict: false, verification: { command: 'pytest', passed: true, evidence: '3 passed' }, notes: '' }
+    }
+    return inner(prompt, opts)
+  }
+  const args = { brief: BRIEF, name: 'epic-x', epic: 'epic-x', baseRef: 'epic-x', mainCheckout: '/repo', rulingsFile: RULINGS_FILE, tasks: [etask('t1'), etask('t2', { dependsOn: ['t1'] })] }
+  const r = await runWorkflow(SCRIPT, { args, agent })
+  assert.equal(r.error, undefined)
+  const landT1 = events.indexOf('land-end:t1')
+  assert.ok(events.indexOf('rulings-start:run#1') < events.indexOf('land-start:t1'), events.join(' '))
+  assert.ok(landT1 >= 0 && landT1 < events.indexOf('impl-start:t2'), events.join(' '))
+  assert.ok(r.result.landed.some((x) => x.id === 't1' && x.head === 'land-t1'), JSON.stringify(r.result.landed))
+  assert.deepEqual(r.result.escalated.find((x) => x.id === 't1').ruling, { accept: true, reason: 'finding is false: tail shows pass' })
+  const p = r.calls.find((c) => c.opts.label === 'epic-x:impl:t2').prompt
+  assert.ok(p.includes('git merge --no-edit epic-x`'), p)
+  assert.ok(!p.includes('git merge --no-edit b-T1'), p)
+})

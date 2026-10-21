@@ -7,6 +7,7 @@ export const meta = {
     { title: 'Verify', detail: 'a fresh agent re-runs the verification command on the committed HEAD after every implementer and fixer, and scans the diff for debt markers' },
     { title: 'Review', detail: 'review -> fix, at most 3 rounds; repeats and external blockers escalate' },
     { title: 'Scope audit', detail: 'adversarial check that every planned item actually landed' },
+    { title: 'Land', detail: 'with args.epic and args.mainCheckout, each released task lands on the epic branch, one at a time, before its dependents start' },
     { title: 'Merge', detail: 'a clean remediation is merged forward into its same-repo dependents before the re-audit' },
   ],
 }
@@ -85,6 +86,14 @@ export const meta = {
 //                                (`ticket.py rule` writes it). At each wave boundary one haiku agent
 //                                reads it; an accept ruling on a verified escalated task releases its
 //                                dependents mid-run. The return then carries `rulingsIgnored`
+//   mainCheckout: string?        the absolute path of the main checkout (`ticket.py run` emits it).
+//                                With args.epic, and not auditOnly, it turns landing on: every
+//                                released task is landed on args.baseRef (the epic branch) by one
+//                                workbench:worktree-merger agent running merge.py from this checkout,
+//                                one landing at a time, before any dependent counts it as released.
+//                                Dependents then merge args.baseRef once instead of each dependency
+//                                branch. A failed landing ends the task 'land-failed' and fails its
+//                                dependents; the return carries `landed: [{id, head}]`
 // }
 const ARGS = (typeof args !== 'undefined' && args) || {}
 // Workflow agents' shells have no CLAUDE_PLUGIN_ROOT, so every script path is built from this.
@@ -110,6 +119,9 @@ const AUDIT_MODE = ARGS.audit === undefined ? (EPIC ? 'off' : 'run') : ARGS.audi
 const AUDIT_ONLY = Boolean(ARGS.auditOnly === true)
 const EPIC_README = ARGS.epicReadme || ''
 const RULINGS_FILE = ARGS.rulingsFile === undefined ? '' : ARGS.rulingsFile
+const MAIN_CHECKOUT = ARGS.mainCheckout === undefined ? '' : ARGS.mainCheckout
+// In-run landing (D4): only an epic run that names its main checkout, never the epic-close audit.
+const LANDING = Boolean(EPIC && MAIN_CHECKOUT && !AUDIT_ONLY)
 // Every audit runs as this agent type: its method lives in agents/scope-auditor.md,
 // the prompt carries only the inputs.
 const SCOPE_AUDITOR = 'workbench:scope-auditor'
@@ -162,6 +174,9 @@ if (AUDIT_ONLY && !(typeof EPIC_README === 'string' && EPIC_README.trim())) {
 }
 if (ARGS.rulingsFile !== undefined && !(typeof RULINGS_FILE === 'string' && RULINGS_FILE.startsWith('/') && RULINGS_FILE.endsWith('/rulings.json'))) {
   throw new Error('plan-execute: args.rulingsFile must be the absolute path of <epic dir>/rulings.json')
+}
+if (ARGS.mainCheckout !== undefined && !(typeof MAIN_CHECKOUT === 'string' && MAIN_CHECKOUT.startsWith('/'))) {
+  throw new Error('plan-execute: args.mainCheckout must be the absolute path of the main checkout')
 }
 if (!['what', 'how', 'why'].every((k) => typeof BRIEF[k] === 'string' && BRIEF[k].trim())) {
   throw new Error('plan-execute: args.brief needs what, how and why')
@@ -673,6 +688,27 @@ const MERGE = {
   },
 }
 
+// One task landed on the epic branch by merge.py (the land step, D4).
+const LAND = {
+  type: 'object',
+  required: ['landed', 'head', 'conflict', 'verification', 'notes'],
+  properties: {
+    landed: { type: 'boolean', description: 'true only when merge.py exited 0: the epic branch now contains the task' },
+    head: { type: 'string', description: 'the epic branch SHA after the landing (git rev-parse in the task tree)' },
+    conflict: { type: 'boolean', description: 'true when the rebase hit a conflict you did not resolve' },
+    verification: {
+      type: 'object',
+      required: ['command', 'passed', 'evidence'],
+      properties: {
+        command: { type: 'string', description: 'the --verify command merge.py ran' },
+        passed: { type: 'boolean', description: "merge.py's verify line, relayed as is: pass is true" },
+        evidence: { type: 'string', description: 'the real output tail, including the verify line' },
+      },
+    },
+    notes: { type: 'string', description: "merge.py's notes lines, and the conflicted files when conflict is true" },
+  },
+}
+
 const AUDIT = {
   type: 'object',
   required: ['complete', 'missing'],
@@ -794,7 +830,13 @@ function dependencyLines(t) {
   const deps = t.dependsOn || []
   if (!deps.length) return ''
   const lines = ['Dependencies - these tasks finished clean before you started:']
+  // Landing: every same-repo dependency is already on the epic branch, so one merge of it carries all of them.
+  const landed = LANDING ? deps.filter((d) => byId.get(d).repo === t.repo) : []
+  if (landed.length) {
+    lines.push(`- FIRST, before anything else, run \`${mergeCommand(t, BASE_REF)}\`. It merges ${BASE_REF}, the epic branch that carries every landed dependency: ${landed.map((d) => `${d} (${byId.get(d).title})`).join(', ')}. If it does not merge because the toplevel check fails, stop and report; do not merge anywhere else.`)
+  }
   for (const d of deps) {
+    if (landed.includes(d)) continue
     const r = DEP_RESULTS.get(d)
     const dt = byId.get(d)
     const branch = r && r.impl && r.impl.branch
@@ -1960,6 +2002,64 @@ function applyRulings(rulings, settled) {
   }
 }
 
+// ---------------------------------------------------------------- in-run landing (D4)
+// With LANDING, a released task is landed on BASE_REF (the epic branch) before any dependent
+// counts it as released: merge.py rebases its branch onto the epic branch, runs the task verify
+// in the rebased tree, and only then fast-forwards the epic branch in the integration tree.
+// --keep leaves the task tree for remediation and the epic-close audit (D9).
+const LANDED = []
+const landName = (t) => `${EPIC}-${t.rootId || t.id}`
+// A component task's tree is <...>/<epic>-<id>/<repo>; merge.py then needs --repo.
+const componentTree = (t) => t.worktree.replace(/\/+$/, '').split('/').pop() === t.repo
+
+function landPrompt(t, impl) {
+  const flags = [
+    `--name ${landName(t)}`,
+    `--base ${BASE_REF}`,
+    ...(componentTree(t) ? [`--repo ${t.repo}`] : []),
+    '--keep',
+    '--no-suites',
+    `--verify ${shq(verifyCommand(t, impl))}`,
+  ]
+  return [
+    `Land plan task ${t.id} on the epic branch ${BASE_REF}: merge.py rebases its branch onto ${BASE_REF}, runs the task verify in the rebased tree, and only on a pass fast-forwards ${BASE_REF} in the integration tree.`,
+    briefBlock(),
+    valueLine(t),
+    `Task worktree: ${t.worktree}`,
+    `Main checkout: ${MAIN_CHECKOUT}`,
+    '1. Run exactly this one command; a cd does not persist between Bash calls, so it is one line with absolute paths:',
+    `   cd ${shq(MAIN_CHECKOUT)} && python3 ${shq(PLUGIN_ROOT + '/skills/worktree-merge/scripts/merge.py')} ${flags.join(' ')}`,
+    '2. Relay its output: landed is true only when it exited 0. verification.command is the --verify command, verification.passed is its `verify: pass` line, verification.evidence the output tail including that line. notes carries its notes lines.',
+    `3. When it landed, run \`git -C "${repoDir(t)}" rev-parse ${BASE_REF}\` and report the SHA as head; otherwise report head as an empty string.`,
+    `4. On a non-doc rebase conflict, resolve it in the task worktree only when the resolution is unambiguous and keeps both sides' intent, then re-run the task verify there (\`cd "${repoDir(t)}" && ${verifyCommand(t, impl)}\`) before re-running the step 1 command. Otherwise report conflict=true and landed=false, naming the conflicted files in notes.`,
+    `   ${OWN_CHECKOUT_ONLY}`,
+    '   Never run `git checkout` in the main checkout, and never switch a branch in any tree. A failing verify is reported, not fixed.',
+    helperRules('merge'),
+    'Keep the whole report to at most 150 words.',
+  ].join('\n')
+}
+
+// One landing; returns the task's settled result after it: the landed head as the verification
+// head on success, else clean false with reason land-failed and the land result attached.
+async function landTask(t, r) {
+  const res = await safeAgent(t, 'land', landPrompt(t, r.impl), {
+    label: label('land', t),
+    phase: 'Land',
+    schema: LAND,
+    agentType: 'workbench:worktree-merger',
+    model: 'sonnet',
+  })
+  if (res && res.landed === true && res.verification && res.verification.passed === true) {
+    const id = t.rootId || t.id
+    LANDED.push({ id, head: res.head })
+    log(`${t.id}: landed on ${BASE_REF} at ${res.head}`)
+    const prior = r.impl.verification || {}
+    return { ...r, land: res, impl: { ...r.impl, verification: { ...prior, ...res.verification, evidence: res.verification.evidence || prior.evidence, head: res.head } } }
+  }
+  log(`${t.id}: landing on ${BASE_REF} failed${res ? `: ${res.notes || tail(res.verification && res.verification.evidence)}` : ' - the land agent returned nothing'} - escalating`)
+  return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, land: res || null }
+}
+
 // Every task starts the moment its own dependencies are released - per-task edge triggers,
 // never "when the whole wave is done", so the slowest sibling sets no one else's latency.
 // A dependency is released when it settles verified and clean, processOnly, triageRejected
@@ -1968,6 +2068,9 @@ function applyRulings(rulings, settled) {
 // ruling. The file is read once per wave boundary: a task settles verified-not-released
 // while another waits on it, or nothing runs while dependents wait. An idle read that
 // releases none of the waiters fails them, so the run always reaches its end.
+// With LANDING a task that would be released is queued for landing first and counts as
+// released only once it landed; one land agent runs at a time, and a failed landing
+// (reason land-failed) fails its dependents.
 function runTasks(batch) {
   const ids = new Set(batch.map((t) => t.id))
   const depsOf = (t) => (t.dependsOn || []).filter((d) => ids.has(d))
@@ -1975,12 +2078,20 @@ function runTasks(batch) {
   const running = new Set()
   // Neither started nor failed yet.
   const pending = new Set(ids)
-  const released = (d) => {
+  const landFailed = (d) => settled.has(d) && settled.get(d).reason === 'land-failed'
+  // Released before landing: what releases a task in a run that does not land.
+  const releasable = (d) => {
     const r = settled.get(d)
-    return Boolean(r && verified(r.impl) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
+    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
   }
-  // Settled verified, not released: only a ruling can release it.
-  const rulable = (d) => Boolean(RULINGS_FILE) && settled.has(d) && verified(settled.get(d).impl) && !released(d)
+  const landed = new Set()
+  const released = (d) => releasable(d) && (!LANDING || landed.has(d))
+  // Releasable but not landed yet: queued or landing now.
+  const landPending = (d) => LANDING && releasable(d) && !landed.has(d)
+  // Settled verified, not releasable: only a ruling can release it.
+  const rulable = (d) => Boolean(RULINGS_FILE) && settled.has(d) && verified(settled.get(d).impl) && !releasable(d) && !landFailed(d)
+  const landQueue = []
+  let landing = false
   const waitedOn = (d) => batch.some((t) => pending.has(t.id) && depsOf(t).includes(d))
   const waiters = () => batch.filter((t) => pending.has(t.id) && depsOf(t).every((d) => settled.has(d)))
   // Bumps on every settle: an idle read is final only when nothing settled since it began.
@@ -2023,19 +2134,35 @@ function runTasks(batch) {
         pump()
       }, reject)
     }
+    // At most one land agent at a time: the next queued task lands when the last one returned.
+    const land = () => {
+      for (const t of batch) if (landPending(t.id) && !landQueue.includes(t) && landing !== t.id) landQueue.push(t)
+      if (landing || !landQueue.length) return
+      const t = landQueue.shift()
+      landing = t.id
+      landTask(t, settled.get(t.id)).then((r) => {
+        settled.set(t.id, r)
+        DEP_RESULTS.set(t.id, r)
+        if (r.reason !== 'land-failed') landed.add(t.id)
+        landing = false
+        epoch++
+        pump()
+      }, reject)
+    }
     const pump = () => {
+      land()
       for (let moved = true; moved; ) {
         moved = false
         for (const t of waiters()) {
           const deps = depsOf(t)
           if (deps.every(released)) begin(t)
-          else if (deps.some((d) => !released(d) && !rulable(d))) fail(t)
+          else if (deps.some((d) => !released(d) && !rulable(d) && !landPending(d))) fail(t)
           else continue
           moved = true
         }
       }
       if (reading) return
-      const idle = running.size === 0
+      const idle = running.size === 0 && !landing && !landQueue.length
       const held = waiters()
       if (needRead || (idle && held.length && lastReadAt !== epoch)) return read()
       if (idle && held.length) {
@@ -2219,7 +2346,7 @@ function splitAudit(a) {
   return { taskGaps, waveLevel }
 }
 
-const ESCALATE = ['round-cap', 'no-progress', 'gate-repeat', 'handoff-cap', 'review-shallow', 'dependency-failed', 'verify-agent-died', 'impl-agent-died', 'fix-agent-died', 'review-agent-died', 'agent-output-invalid', 'forward-merge-failed']
+const ESCALATE = ['round-cap', 'no-progress', 'gate-repeat', 'handoff-cap', 'review-shallow', 'dependency-failed', 'verify-agent-died', 'impl-agent-died', 'fix-agent-died', 'review-agent-died', 'agent-output-invalid', 'forward-merge-failed', 'land-failed']
 
 // ---------------------------------------------------------------- forward merge
 // Round-1 evidence: audit:scope-r2 found two remediation commits only on their
@@ -2395,6 +2522,7 @@ for (const r of latest.values()) {
       ...(r.unread ? { unread: r.unread } : {}),
       ...(r.waitingOn ? { waitingOn: r.waitingOn } : {}),
       ...(r.agentError ? { agentError: r.agentError } : {}),
+      ...(r.reason === 'land-failed' ? { land: r.land } : {}),
       ...(RULED.has(r.task.rootId || r.task.id) ? { ruling: RULED.get(r.task.rootId || r.task.id) } : {}),
     })
 }
@@ -2451,6 +2579,7 @@ return {
     processOnly: r.processOnly === true,
     triageRejected: r.triageRejected === true,
     ...(RULED.has(r.task.id) ? { ruling: RULED.get(r.task.id) } : {}),
+    ...('land' in r ? { land: r.land } : {}),
     verification: r.impl ? r.impl.verification : null,
     selfVerification: (r.impl && r.impl.selfVerification) || null,
     acsForAudit: ACS_FOR_AUDIT.get(r.task.rootId || r.task.id) || [],
@@ -2472,6 +2601,8 @@ return {
   escalated,
   // with args.rulingsFile: rulings read mid-run for unknown or unverified tasks, each with why
   ...(RULINGS_FILE ? { rulingsIgnored: [...RULINGS_IGNORED.values()] } : {}),
+  // with landing (args.epic and args.mainCheckout): every task landed on the epic branch, in landing order
+  ...(LANDING ? { landed: LANDED } : {}),
   // the verify script's Haiku triage cost (claude -p subprocesses), summed over every task
   triageUsage: [...TRIAGE_USAGE_BY_ROOT.values()].reduce(addUsage, NO_USAGE),
   // fix rounds that ran fixer, verifier and gates only, with no LLM review
