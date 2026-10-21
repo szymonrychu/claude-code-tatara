@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from create import create, fast_forward  # noqa: E402
+from create import create, fast_forward, integration  # noqa: E402
 
 GIT = ["git", "-c", "user.email=t@t", "-c", "user.name=T", "-c", "commit.gpgsign=false"]
 
@@ -72,3 +72,20 @@ def test_fast_forward_results(tmp_path):
     got = {n: fast_forward(p, "main") for n, p in trees.items()}
     assert got == {"tree-a": "updated", "tree-b": "dirty", "tree-c": "ahead", "tree-d": "updated"}
     assert fast_forward(trees["tree-a"], "main") == "current"
+
+
+def test_fast_forward_against_epic_branch_base(tmp_path):
+    r = tmp_path / "proj"
+    r.mkdir()
+    git(r, "init", "-q", "-b", "main")
+    commit(r, "base.txt")
+    epic = Path(integration("my-epic", start=r)["path"])
+    task = Path(create("my-epic-t1", base="my-epic", start=r)["path"])
+    commit(epic, "landed.txt")
+    commit(r, "main-only.txt")
+    assert fast_forward(task, "my-epic") == "updated"
+    assert (task / "landed.txt").exists() and not (task / "main-only.txt").exists()
+    assert fast_forward(task, "my-epic") == "current"
+    commit(task, "mine.txt")
+    commit(epic, "more.txt")
+    assert fast_forward(task, "my-epic") == "ahead"

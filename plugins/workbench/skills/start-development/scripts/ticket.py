@@ -827,6 +827,59 @@ def _task_repo(root: Path, repo: str) -> str | None:
     return None
 
 
+def integration_branch(epic: str) -> str:
+    """The integration branch and tree name of an epic: its slug."""
+    return epic
+
+
+def _submodule_branch(wb: Path, repo: str) -> str:
+    r = _git(wb, "config", "--file", ".gitmodules", "--get", f"submodule.{repo}.branch")
+    return r.stdout.strip() or "main"
+
+
+def _integration_plan(root: Path, epic_dir: Path) -> list[tuple[str, str]]:
+    """(repo, base) per integration tree: ("", main) in meta mode, else one per submodule."""
+    scope = _read_doc(epic_dir / "README.md").meta.get("repos") or []
+    task_repos = [doc.meta.get("repo", "") for doc in map(_read_doc, _task_files(epic_dir))]
+    comp = {r for r in scope if _task_repo(root, r)}
+    outside = False
+    for r in task_repos:
+        if _task_repo(root, r):
+            comp.add(r)
+        else:
+            outside = True
+    if not comp:
+        return [("", "main")]
+    if outside:
+        raise TicketError(
+            f"epic {epic_dir.name} mixes meta and component tasks; split it into two epics"
+        )
+    wb = _workbench(root)
+    return [(r, _submodule_branch(wb, r)) for r in sorted(comp)]
+
+
+def integration_trees(root: Path, epic_dir: Path) -> dict[str, Path]:
+    """Integration tree path per repo ("" for the superrepo); the only place they are computed."""
+    d = _mod().worktrees_dir(_workbench(root)) / integration_branch(epic_dir.name)
+    return {r: (d / r if r else d) for r, _ in _integration_plan(root, epic_dir)}
+
+
+def ensure_integration_trees(root: Path, epic_dir: Path) -> list[dict]:
+    """Create or reuse the epic's integration trees; one create.integration result per tree."""
+    mod = _mod()
+    out = []
+    for repo, base in _integration_plan(root, epic_dir):
+        try:
+            out.append(
+                mod.integration(
+                    integration_branch(epic_dir.name), base=base, repo=repo or None, start=root
+                )
+            )
+        except mod.WorktreeError as e:
+            raise TicketError(str(e)) from e
+    return out
+
+
 def _write_task(path: Path, doc: Doc, changed: list[Path], **updates) -> None:
     """Rewrite the task with updated frontmatter; record it in `changed` only if it differs."""
     meta = dict(doc.meta)
@@ -1212,6 +1265,9 @@ def _move_in_progress(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
             problems.append(f"blocker {b!r} (epic {t.slug!r}) is in {t.phase}, not done")
     problems += run_check(root, epic=name).failures
     _refuse(problems)
+    if _in_git(root):
+        for tree in ensure_integration_trees(root, epic_dir):
+            print(f"integration {tree['path']} ({tree['verb']})")
     dest = _git_mv(epic_dir, "in-progress", root)
     _update_readme(dest, owner=a.owner or _git_user(root), stage="build")
     for path in _task_files(dest):

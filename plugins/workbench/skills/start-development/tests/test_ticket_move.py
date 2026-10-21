@@ -542,6 +542,10 @@ def component_workbench(tmp_path):
 
 def integration_tree(wb, ep, repo_name, merged_on_origin):
     src = wb / "code" / repo_name
+    claimed = wb / ".claude" / "worktrees" / ep / repo_name  # made by the claim for its repos
+    if claimed.exists():  # swap it for the legacy-located fixture tree this test sweeps
+        git(src, "worktree", "remove", str(claimed))
+        git(src, "branch", "-d", ep)
     wt = wb / ".worktrees" / ep / repo_name
     wt.parent.mkdir(parents=True, exist_ok=True)
     git(src, "worktree", "add", "-b", ep, str(wt), "main")
@@ -640,7 +644,8 @@ def test_reap_orphans_and_done_leftovers(repo, root):
     r = cli("reap", "--root", root)
     assert r.returncode == 0, r.stderr
     s = summary(r)
-    assert sorted(s["removed"]) == sorted([str(orphan_ok), str(wt_b)])
+    integ = repo / ".claude" / "worktrees" / ep  # made at the claim; the done epic's leftover
+    assert sorted(s["removed"]) == sorted([str(orphan_ok), str(wt_b), str(integ)])
     assert not orphan_ok.exists() and "gone-epic--x" not in branches(repo)
     assert not wt_b.exists() and f"{ep}-beta" not in branches(repo)
     reasons = left_reasons(s)

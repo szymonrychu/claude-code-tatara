@@ -150,11 +150,70 @@ def create(name: str, base: str = "main", repo: str = None, start: Path = None) 
     return {"name": name, "path": str(dest), "branch": name, "base": base, "notes": notes}
 
 
+def _linked(src: Path) -> dict[Path, str]:
+    """Linked worktrees of src's repository (not the main tree) mapped to their branch."""
+    r = run(["git", "worktree", "list", "--porcelain"], cwd=src, check=False)
+    found: dict[Path, str] = {}
+    cur = None
+    first = True
+    for ln in r.stdout.splitlines():
+        if ln.startswith("worktree "):
+            cur = Path(ln[9:]).resolve()
+            if first:
+                first = False
+            else:
+                found[cur] = ""
+        elif ln.startswith("branch ") and cur in found:
+            found[cur] = ln[7:].removeprefix("refs/heads/")
+    return found
+
+
+def _ref_resolves(repo: Path, ref: str) -> bool:
+    return (
+        run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=repo, check=False).returncode == 0
+    )
+
+
+def integration(epic: str, base: str = "main", repo: str = None, start: Path = None) -> dict:
+    """Create (or reuse) the epic's integration worktree, named and branched <epic>."""
+    root = workbench_root(start)
+    src = root / "code" / repo if repo else root
+    if not (src / ".git").exists():
+        raise WorktreeError(f"not a git checkout: {src}")
+    dest = worktrees_dir(root) / epic
+    if repo:
+        dest = dest / repo
+    info = {"name": epic, "path": str(dest), "branch": epic, "base": base, "notes": []}
+    if dest.exists() or dest.is_symlink():
+        if _linked(src).get(dest.resolve()) == epic:
+            return {**info, "verb": "reused"}
+        raise WorktreeError(
+            f"{dest} exists and is not a worktree of {src} on branch {epic!r}; "
+            "move it aside or remove it, then claim again."
+        )
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if branch_exists(src, epic):
+        cmd = ["git", "worktree", "add", str(dest), epic]
+    else:
+        origin = f"origin/{base}"
+        fork = origin if repo and _ref_resolves(src, origin) else base
+        cmd = ["git", "worktree", "add", "-b", epic, str(dest), fork]
+    r = run(cmd, cwd=src, check=False)
+    if r.returncode != 0:
+        raise WorktreeError(f"git worktree add failed: {r.stderr.strip()}")
+    return {**info, "verb": "created"}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--name", required=True, help="worktree name proposed by the orchestrator")
     ap.add_argument("--base", default="main", help="branch to fork from (default: main)")
     ap.add_argument("--repo", default=None, help="code/ submodule name; omit for the superrepo")
+    ap.add_argument(
+        "--integration",
+        action="store_true",
+        help="create the epic integration tree: --name is the epic slug, branch <epic>",
+    )
     ap.add_argument("--list", action="store_true", help="list names already in use and exit")
     args = ap.parse_args(argv)
 
@@ -162,6 +221,12 @@ def main(argv=None) -> int:
         if args.list:
             for n in existing_names(workbench_root()):
                 print(n)
+            return 0
+        if args.integration:
+            info = integration(args.name, base=args.base, repo=args.repo)
+            print(f"worktree : {info['path']}")
+            print(f"branch   : {info['branch']} (from {info['base']})")
+            print(f"verb     : {info['verb']}")
             return 0
         info = create(args.name, base=args.base, repo=args.repo)
     except WorktreeError as e:

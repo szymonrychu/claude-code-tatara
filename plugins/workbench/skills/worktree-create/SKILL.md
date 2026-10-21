@@ -45,6 +45,21 @@ submodule for a whole branch. This one makes a single tree for a single agent.
    branch was cut. A conflict during that merge leaves the worktree in place and
    fails loudly.
 
+   **Epic integration tree.** `--integration` makes the epic's own tree, the base
+   every task tree forks from and lands on:
+
+   ```sh
+   python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-create/scripts/create.py" \
+     --integration --name <epic> [--base main] [--repo <code/ submodule>]
+   ```
+
+   The tree and its branch are both named `<epic>`; it prints the path, branch,
+   base and verb (`created` or `reused`). An existing tree on branch `<epic>` is
+   reused unchanged; any other occupant of the path is refused, and an existing
+   `<epic>` branch is checked out rather than recreated. With `--repo` it forks
+   from `origin/<base>` when that ref exists. `ticket.py move <epic> in-progress`
+   calls it for you; task trees are named `<epic>-<task>`.
+
 3. **Dispatch the subagent against that path.** Give it the path and tell it to
    work only there, by absolute path: every Bash command starts with `cd` into
    the tree, and every Read, Edit and Write uses an absolute path inside it. Do
