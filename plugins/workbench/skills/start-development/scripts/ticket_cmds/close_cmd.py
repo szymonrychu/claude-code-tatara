@@ -88,7 +88,7 @@ def run(a, t) -> int:
         )
         return VERIFY_EXIT
     # a rerun after a failed main verify keeps the commit main was at before the first close
-    before = prior["baseBefore"] if prior else res["baseBefore"]
+    before = prior["baseBefore"] if rerun else res["baseBefore"]
     if rerun:
         passed, tail = ver["passed"], ver["tail"]
     else:

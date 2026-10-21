@@ -241,6 +241,28 @@ def test_close_rerun_after_failed_main_verify_refreshes_record(repo, root, tmp_p
     assert sha(repo, ep) == first["epicTip"]
 
 
+def test_close_after_main_reset_records_fresh_base_before(repo, root):
+    ep = ready(repo, root)
+    main_before = sha(repo, "main")
+    assert close(root, ep, "false").returncode == 4  # integration verify fails, no record
+    flag = root.parent / "ran-once"
+    assert close(root, ep, f"if [ -e {flag} ]; then exit 1; fi; touch {flag}").returncode == 4
+    assert close_json(root, ep)["baseBefore"] == main_before
+    # main is reset and gains a new commit, so the next close is a real rebase and fast-forward
+    record = (root / "in-progress" / ep / "close.json").read_text()
+    git(repo, "reset", "--hard", main_before)
+    (root / "in-progress" / ep / "close.json").write_text(record)
+    (repo / "extra.txt").write_text("x\n")
+    commit_all(repo, "main extra")
+    fresh = sha(repo, "main")
+    assert fresh != main_before
+    r = close(root, ep)
+    assert r.returncode == 0, r.stdout + r.stderr
+    rec = close_json(root, ep)
+    assert rec["baseBefore"] == fresh
+    assert git(repo, "merge-base", "--is-ancestor", rec["baseAfter"], "main").returncode == 0
+
+
 def test_close_rebase_conflict_exits_1_and_main_stays(repo, root):
     ep = ready(repo, root)
     # main gains a conflicting alpha.py after the fork
