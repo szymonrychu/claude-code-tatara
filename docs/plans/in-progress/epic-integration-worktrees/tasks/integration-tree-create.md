@@ -1,6 +1,6 @@
 ---
 title: Integration tree create
-status: in-progress
+status: todo
 repo: workbench
 value: "Claiming an epic gives it its own integration worktree, the base every task forks from"
 files: [plugins/workbench/skills/worktree-create/scripts/create.py, plugins/workbench/skills/worktree-create/tests/test_create.py, plugins/workbench/skills/worktree-create/tests/test_fast_forward.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_integration.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--integration-tree-create
 branch: epic-integration-worktrees--integration-tree-create
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Integration tree create
@@ -79,3 +81,5 @@ After `ticket.py move <epic> in-progress`, `git worktree list` shows `<configdir
 - Create the trees before `_git_mv` so a failure moves nothing; the claim stays idempotent because existing trees and branches are reused.
 - The integration tree sits beside task trees `<epic>-<task>` under `<configdir>/worktrees/`; `create.validate_name` already refuses a duplicate name.
 - Plain `git worktree add` gets no Claude Code marker, so the built-in sweep never removes it (design D1).
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on name-lookup-parsers

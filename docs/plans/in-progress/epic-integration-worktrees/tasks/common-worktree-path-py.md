@@ -1,6 +1,6 @@
 ---
 title: Common worktree path py
-status: in-progress
+status: done
 repo: workbench
 value: git-worktrees-create and -commit work on the same integration tree the claim creates
 files: [plugins/workbench/skills/_lib/common.py, plugins/workbench/skills/_lib/tests/test_common.py, plugins/workbench/skills/git-worktrees-create/tests/test_create.py, plugins/workbench/skills/git-worktrees-commit/tests/test_commit.py, plugins/workbench/skills/git-worktrees-create/SKILL.md, plugins/workbench/skills/git-worktrees-commit/SKILL.md]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--common-worktree-path-py
 branch: epic-integration-worktrees--common-worktree-path-py
-verified_head: ""
-run: ""
+verified_head: 36c3e72778efec20c81409eee0f273ff6cbd96fe
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Common worktree path py

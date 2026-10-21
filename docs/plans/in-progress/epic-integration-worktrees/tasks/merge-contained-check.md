@@ -1,6 +1,6 @@
 ---
 title: Merge contained check
-status: in-progress
+status: done
 repo: workbench
 value: "Merged checks survive the close rebase, and a task already on the epic branch is still verified"
 files: [plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_contained.py, plugins/workbench/skills/worktree-merge/SKILL.md]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--merge-contained-check
 branch: epic-integration-worktrees--merge-contained-check
-verified_head: ""
-run: ""
+verified_head: f0bf47ba2c859ad5bfa3a907b59b9c75edfe4050
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Merge contained check

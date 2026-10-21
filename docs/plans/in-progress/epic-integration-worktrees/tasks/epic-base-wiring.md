@@ -1,6 +1,6 @@
 ---
 title: Epic base wiring
-status: in-progress
+status: todo
 repo: workbench
 value: "Task trees, the continue gate and the run all use the epic branch as their base"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py, plugins/workbench/skills/start-development/tests/test_ticket_args.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-base-wiring
 branch: epic-integration-worktrees--epic-base-wiring
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Epic base wiring
@@ -80,3 +82,5 @@ After the claim, `ticket.py worktrees <epic>` makes `<epic>-<task>` trees off `<
 - `create.merge_latest` fetches `origin/<epic>` and notes the miss when there is no remote branch; that is expected.
 - The main checkout is `plans_root.parent.parent` in args.py (already computed as `top`).
 - An epic is never re-claimed: `move in-progress` on an in-progress epic is not the upgrade path, which is why the missing-branch message names `--integration`.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on integration-tree-create

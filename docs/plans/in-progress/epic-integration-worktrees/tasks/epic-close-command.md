@@ -1,6 +1,6 @@
 ---
 title: Epic close command
-status: in-progress
+status: todo
 repo: workbench
 value: "main only ever moves to an epic tip that passed the full suite, after every done task landed"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/close_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_close_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py]
@@ -15,8 +15,10 @@ review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-command
 branch: epic-integration-worktrees--epic-close-command
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Epic close command
@@ -77,3 +79,5 @@ One command closes an epic into main in the order the interrogate verdict fixes,
 - Load modules the way `continue_cmd.py` does (`_load`, `_sibling`); reuse the move done gates rather than restating them.
 - The fixture for AC6 adds a commit to main after the fork (as `chore(ticket)` commits do in a real run), so the close rebase rewrites `<epic>` and move done must use patch equivalence.
 - `review: full` because this is the one step that moves main.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-close-sweep

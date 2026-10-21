@@ -1,6 +1,6 @@
 ---
 title: Docs worktree refs
-status: in-progress
+status: todo
 repo: workbench
 value: "The worktree and ticket references match the new names, tree and landing"
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-worktree-refs
 branch: epic-integration-worktrees--docs-worktree-refs
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Docs worktree refs
@@ -81,3 +83,5 @@ A reader of worktrees.md and tickets.md finds one consistent naming and lifecycl
 
 - `plan-execute-implementer.test.mjs:64` pins `Do not call the built-in EnterWorktree` in implementer.md; keep it.
 - AC5 forbids the literal double-hyphen name in these docs: describe legacy trees as "legacy double-hyphen trees", never by the literal form.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on slug-collision-guard, land-in-run, epic-base-wiring, epic-close-command, fork-point-record

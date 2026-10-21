@@ -1,6 +1,6 @@
 ---
 title: Fork point diffs
-status: in-progress
+status: todo
 repo: workbench
 value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-diffs
 branch: epic-integration-worktrees--fork-point-diffs
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Fork point diffs
@@ -69,3 +71,5 @@ After a task lands, every later diff of it (remediation, audit re-review, forwar
 
 - merge.py reports `baseBefore` (merge-target-worktree); the land agent relays it as `base`.
 - `git merge-base HEAD <sha>` is `<sha>` when the fork point is an ancestor of HEAD, so passing the SHA as `--base` to the verifier needs no verifier change.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on land-outcomes

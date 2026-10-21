@@ -1,6 +1,6 @@
 ---
 title: Docs flow phases
-status: in-progress
+status: todo
 repo: workbench
 value: "The orchestrator's flow docs describe exactly the lifecycle the tools now run"
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/references/phases-5-7.md, plugins/workbench/skills/start-development/references/multi-epic.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-research/tests/test_start_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/skills/start-development/tests/test_start_development_generic.py]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-flow-phases
 branch: epic-integration-worktrees--docs-flow-phases
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Docs flow phases
@@ -85,3 +87,5 @@ An orchestrator reading SKILL.md and its references runs claim, worktrees, run w
 
 - Q2's recommended answer is the written rule; if the gate answers otherwise the orchestrator amends this task before the run.
 - Keep SKILL.md short: details belong in the references (test_skill_size.py).
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-close-sweep, epic-close-command, forward-merge-via-epic

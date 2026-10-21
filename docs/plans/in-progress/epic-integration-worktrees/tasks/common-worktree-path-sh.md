@@ -1,6 +1,6 @@
 ---
 title: Common worktree path sh
-status: in-progress
+status: done
 repo: workbench
 value: git-worktrees-push pushes the same integration tree the claim creates
 files: [plugins/workbench/skills/_lib/common.sh, plugins/workbench/skills/_lib/tests/test_common.bats, plugins/workbench/skills/_lib/tests/test_common.sh, plugins/workbench/skills/git-worktrees-push/tests/test_push.bats, plugins/workbench/skills/git-worktrees-push/tests/test_push.sh, plugins/workbench/skills/git-worktrees-push/SKILL.md, plugins/workbench/hooks/subagent-commit-guard.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--common-worktree-path-sh
 branch: epic-integration-worktrees--common-worktree-path-sh
-verified_head: ""
-run: ""
+verified_head: 4d8582ea7c39819c0f5069be7ae5f276ed7ce516
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Common worktree path sh

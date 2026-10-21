@@ -1,6 +1,6 @@
 ---
 title: Fork point record
-status: in-progress
+status: todo
 repo: workbench
 value: A later run diffs a landed task from the same fork point the landing recorded
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-record
 branch: epic-integration-worktrees--fork-point-record
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Fork point record
@@ -58,3 +60,5 @@ Persist each task's fork point across runs, so remediation and the epic-close au
 
 - `_write_task` keeps any frontmatter key; no whitelist changes.
 - `ticket_cmds/args.py` builds tasks from `derive_tasks`, so it needs no change.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on slug-collision-guard, fork-point-diffs

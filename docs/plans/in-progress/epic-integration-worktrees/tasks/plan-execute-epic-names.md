@@ -1,6 +1,6 @@
 ---
 title: Plan execute epic names
-status: in-progress
+status: done
 repo: workbench
 value: "The run accepts the new <epic>-<task> trees and rejects the old form"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-epic.test.mjs, plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--plan-execute-epic-names
 branch: epic-integration-worktrees--plan-execute-epic-names
-verified_head: ""
-run: ""
+verified_head: 772697036c84a9d79930eb78a307cb84c37a4add
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Plan execute epic names

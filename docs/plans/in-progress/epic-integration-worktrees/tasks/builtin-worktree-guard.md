@@ -1,6 +1,6 @@
 ---
 title: Builtin worktree guard
-status: in-progress
+status: todo
 repo: workbench
 value: Any future use of the harness built-in worktree feature turns the suite red
 files: [scripts/tests/test_builtin_worktree_guard.py, plugins/workbench/skills/start-development/tests/test_repo_hygiene.py, plugins/workbench/.claude-plugin/plugin.json, .claude-plugin/marketplace.json]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--builtin-worktree-guard
 branch: epic-integration-worktrees--builtin-worktree-guard
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Builtin worktree guard
@@ -70,3 +72,5 @@ Adding any instruction to use EnterWorktree, Agent isolation, `claude --worktree
 - Existing guard pins stay: start-research/tests/test_start_skills_structure.py:257-269, workflows/tests/plan-execute.test.mjs:349-356, plan-execute-implementer.test.mjs:64.
 - plan-execute.js:348 lists `isolation` among agent() options and :1846 says "No isolation option here on purpose"; neither matches the patterns.
 - Runs last so it scans the final wording of every doc task.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on docs-flow-phases, docs-worktree-refs, docs-readmes-fallback

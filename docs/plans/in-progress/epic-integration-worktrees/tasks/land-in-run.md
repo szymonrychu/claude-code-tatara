@@ -1,6 +1,6 @@
 ---
 title: Land in run
-status: in-progress
+status: todo
 repo: workbench
 value: "Dependents build on the epic branch and every review diff shows only the task's own change"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs, plugins/workbench/workflows/tests/plan-execute-rulings.test.mjs]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-in-run
 branch: epic-integration-worktrees--land-in-run
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Land in run
@@ -80,3 +82,5 @@ In an epic run the integration branch advances task by task as each lands, depen
 - `model: opus` because this changes the run's scheduling core (release, rulings, escalation).
 - merge.py verifies the rebased task tip before it fast-forwards `<epic>` (merge-target-worktree, interrogate verdict B), so a `land-failed` task never advanced `<epic>`.
 - The contained, re-conflict and legacy-name outcomes of the land step are land-outcomes; fork points and diff bases after landing are fork-point-diffs.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-base-wiring

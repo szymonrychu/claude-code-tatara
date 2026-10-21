@@ -1,6 +1,6 @@
 ---
 title: Land outcomes
-status: in-progress
+status: todo
 repo: workbench
 value: "A task already on the epic branch, a rebase re-conflict and a legacy tree each land or fail with a named cause"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-outcomes
 branch: epic-integration-worktrees--land-outcomes
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Land outcomes
@@ -64,3 +66,5 @@ A land never fails merely because the task is already on `<epic>`; a rebase re-c
 
 - The recorded worktree is `t.worktree` from the args; strip a trailing `/<repo>` (the same tail rule as plan-execute-epic-names) before taking the last component.
 - The merger reruns the task verify in the task tree after a conflict fix before rerunning merge.py, or the commit guard fires once on the stale record (land-in-run Notes).
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on land-in-run

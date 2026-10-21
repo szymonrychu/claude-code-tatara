@@ -1,6 +1,6 @@
 ---
 title: Epic close sweep
-status: in-progress
+status: todo
 repo: workbench
 value: "A delivered epic leaves no worktree or branch behind, and nothing unmerged is ever removed"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/epic-worktrees-remove/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-sweep
 branch: epic-integration-worktrees--epic-close-sweep
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Epic close sweep
@@ -77,3 +79,5 @@ Close an epic by checking the whole integration chain and removing every epic an
 - A task branch is deleted before its integration branch; both checks are against refs, so the order of tree removal does not matter for correctness.
 - The sweep never uses `git worktree remove --force`.
 - The close itself is `ticket.py close` (epic-close-command, which runs after this task); the tests here close with `merge.py --name <epic> --base main --keep` directly.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-base-wiring

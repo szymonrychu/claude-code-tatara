@@ -1,6 +1,6 @@
 ---
 title: Forward merge via epic
-status: in-progress
+status: todo
 repo: workbench
 value: "A remediated dependency reaches its dependents through the epic branch, never around it"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--forward-merge-via-epic
 branch: epic-integration-worktrees--forward-merge-via-epic
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Forward merge via epic
@@ -64,3 +66,5 @@ A remediation never leaves the integration branch behind a dependent: the depend
 ## Notes
 
 - Epic runs default to `audit: 'off'`, so forward merges in epic runs happen only when an audit runs; the tests set `audit: 'run'`.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on fork-point-diffs

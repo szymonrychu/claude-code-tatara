@@ -1,6 +1,6 @@
 ---
 title: Slug collision guard
-status: in-progress
+status: todo
 repo: workbench
 value: "Two tickets can never produce the same branch, so no task lands on another's tree"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py]
@@ -15,8 +15,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--slug-collision-guard
 branch: epic-integration-worktrees--slug-collision-guard
 verified_head: ""
-run: ""
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Slug collision guard
@@ -66,3 +68,5 @@ No two tickets can ever produce the same branch name; each refusal names the cla
 
 - Exit 3 stays reserved for the near-duplicate stop; a collision is a hard failure (exit 1) that `--force` never overrides.
 - Example clash: epic `foo` task `bar-baz` and epic `foo-bar` task `baz` both give `foo-bar-baz`; epic `foo-bar` equals epic `foo` task `bar`.
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-close-sweep

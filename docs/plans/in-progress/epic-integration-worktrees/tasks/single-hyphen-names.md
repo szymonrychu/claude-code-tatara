@@ -1,6 +1,6 @@
 ---
 title: Single hyphen names
-status: in-progress
+status: done
 repo: workbench
 value: "Task trees and branches carry the name the user asked for, <epic>-<task>"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--single-hyphen-names
 branch: epic-integration-worktrees--single-hyphen-names
-verified_head: ""
-run: ""
+verified_head: 29d1c794f025f8eb5a8444e9efa2cacc9aeee612
+run: epic-integration-worktrees
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Single hyphen names
