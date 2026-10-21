@@ -16,7 +16,7 @@ const task = (id, extra = {}) => ({
   id,
   title: `task ${id}`,
   repo: 'api',
-  worktree: `/wt/epic-x--${id}`,
+  worktree: `/wt/epic-x-${id}`,
   requirement: `requirement for ${id}`,
   value: 'worth it',
   files: [`src/${id}-a.py`, `src/${id}-b.py`, `tests/test_${id}.py`],
@@ -54,7 +54,7 @@ const closing = (extra = {}) => ({
   tasks: [
     task('parser', {
       short: 'parser',
-      branch: 'epic-x--parser',
+      branch: 'epic-x-parser',
       verifiedHead: 'aaa111',
       ac: [
         { id: 'AC1', text: 'parses every card', evidence: { kind: 'test', ref: 'tests/test_parser.py::test_all' } },
@@ -62,7 +62,7 @@ const closing = (extra = {}) => ({
       ],
       acsForAudit: ['AC2'],
     }),
-    task('writer', { short: 'writer', branch: 'epic-x--writer', verifiedHead: 'bbb222' }),
+    task('writer', { short: 'writer', branch: 'epic-x-writer', verifiedHead: 'bbb222' }),
   ],
   ...extra,
 })
@@ -212,8 +212,8 @@ test('the audit-only prompt carries the README, tasks with branch and verified h
   const r = await run(closing({ approvals: [{ id: 'A', text: 'cards parse', tasks: ['parser', 'writer'] }] }))
   const p = r.calls[0].prompt
   assert.ok(p.includes(`Epic README (its Goals and Non-goals are the definition of done): ${README}`))
-  assert.ok(p.includes('- parser: task parser | worktree /wt/epic-x--parser | branch epic-x--parser | verified head aaa111'))
-  assert.ok(p.includes('- writer: task writer | worktree /wt/epic-x--writer | branch epic-x--writer | verified head bbb222'))
+  assert.ok(p.includes('- parser: task parser | worktree /wt/epic-x-parser | branch epic-x-parser | verified head aaa111'))
+  assert.ok(p.includes('- writer: task writer | worktree /wt/epic-x-writer | branch epic-x-writer | verified head bbb222'))
   assert.ok(p.includes('=== ACCEPTANCE CONDITIONS ==='))
   assert.ok(p.includes('| parser | AC1 | parses every card | test: tests/test_parser.py::test_all | verifier settled |'))
   assert.ok(p.includes('| parser | AC2 | reads like the old one | judgement | open: judge it |'))

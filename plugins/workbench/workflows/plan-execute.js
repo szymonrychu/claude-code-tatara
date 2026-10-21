@@ -73,7 +73,7 @@ export const meta = {
 //   audit:       'run'|'off'?    the per-run scope audit and its remediation (default 'run',
 //                                or 'off' with args.epic); 'off' dispatches neither
 //                                With args.epic: args.name must equal it, every task's short equals
-//                                its id, and its worktree ends in <epic>--<id>[/<repo>]; the return
+//                                its id, and its worktree ends in <epic>-<id>[/<repo>]; the return
 //                                carries `epic`.
 //   auditOnly:   true?           epic close: no implement, verify or review. One audit over the
 //                                given tasks (worktree, branch?, verifiedHead?, ac?,
@@ -313,17 +313,28 @@ const deriveShort = (title) =>
   title.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).slice(0, 3).join('-').slice(0, 20).replace(/-+$/, '') || 'task'
 const derived = TASKS.map((t) => t.short || deriveShort(t.title))
 // An epic run names everything after the ticket: run = epic slug, task short = task id,
-// worktree = <epic>--<id> (optionally with the repo subdir), so a tree maps to one ticket.
+// worktree = <epic>-<id> (optionally with the repo subdir), so a tree maps to one ticket.
+// Separator of the pre-single-hyphen trees; ticket.py worktrees keeps a live one's record.
+const LEGACY_SEP = '--'
 if (EPIC) {
   if (!SLUG.test(EPIC) || NAME !== EPIC) throw new Error(`plan-execute: args.name must equal args.epic (${EPIC})`)
   for (const [i, t] of TASKS.entries()) {
     if (derived[i] !== t.id) throw new Error(`plan-execute: task ${t.id} short must equal its id, got ${JSON.stringify(derived[i])}`)
-    const want = `${EPIC}--${t.id}`
-    if (want.length > 58) throw new Error(`plan-execute: task ${t.id} worktree name ${want} is ${want.length} chars; the cap is 58`)
+    const want = `${EPIC}-${t.id}`
+    const legacy = `${EPIC}${LEGACY_SEP}${t.id}`
     const wt = t.worktree.replace(/\/+$/, '')
-    if (![want, `${want}/${t.repo}`].some((tail) => wt === tail || wt.split('/').slice(-tail.split('/').length).join('/') === tail)) {
-      throw new Error(`plan-execute: task ${t.id} worktree ${t.worktree} must be ${want}`)
+    const endsIn = (tail) => wt === tail || wt.split('/').slice(-tail.split('/').length).join('/') === tail
+    const tails = (name) => [name, `${name}/${t.repo}`]
+    if (tails(want).some(endsIn)) {
+      if (want.length > 57) throw new Error(`plan-execute: task ${t.id} worktree name ${want} is ${want.length} chars; the cap is 57`)
+      continue
     }
+    // A live tree of an epic claimed before the single-hyphen names keeps its recorded legacy name.
+    if (tails(legacy).some(endsIn)) {
+      if (legacy.length > 58) throw new Error(`plan-execute: task ${t.id} worktree name ${legacy} is ${legacy.length} chars; the cap is 58`)
+      continue
+    }
+    throw new Error(`plan-execute: task ${t.id} worktree ${t.worktree} must be ${want}`)
   }
 }
 for (const [i, t] of TASKS.entries()) {

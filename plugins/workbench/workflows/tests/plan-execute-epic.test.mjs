@@ -11,7 +11,7 @@ const task = (id, extra = {}) => ({
   id,
   title: `task ${id}`,
   repo: 'api',
-  worktree: `/wt/epic-x--${id}`,
+  worktree: `/wt/epic-x-${id}`,
   requirement: `requirement for ${id}`,
   value: 'worth it',
   short: id,
@@ -23,7 +23,7 @@ const deliverable = (id) => ({
   complete: true,
   summary: 'did it',
   filesChanged: ['src/a.py'],
-  branch: `epic-x--${id}`,
+  branch: `epic-x-${id}`,
   tests: { added: ['tests/test_a.py'], wroteTestFirst: true, red: { command: 'pytest', output: 'FAILED tests/test_a.py::test_x' } },
   verification: { command: 'pytest tests/test_a.py', passed: true, evidence: '3 passed' },
 })
@@ -56,12 +56,12 @@ test('short must equal id, explicit or derived', async () => {
   await rejects({ ...E, tasks: [task('a', { short: undefined })] }, /task a.*short/)
 })
 
-test('worktree must end in <epic>--<id>', async () => {
-  await rejects({ ...E, tasks: [task('a', { worktree: '/wt/a' })] }, /plan-execute: task a worktree \/wt\/a must be epic-x--a/)
+test('worktree-must-end-in-epic-id', async () => {
+  await rejects({ ...E, tasks: [task('a', { worktree: '/wt/a' })] }, /plan-execute: task a worktree \/wt\/a must be epic-x-a/)
 })
 
-test('repo-subdir worktree form passes, labels and return carry the epic', async () => {
-  const r = await run({ ...E, tasks: [task('a', { worktree: '/wt/epic-x--a/api' })] })
+test('repo-subdir-worktree-passes', async () => {
+  const r = await run({ ...E, tasks: [task('a', { worktree: '/wt/epic-x-a/api' })] })
   assert.equal(r.error, undefined)
   assert.equal(r.result.epic, 'epic-x')
   assert.ok(r.calls.some((c) => c.opts.label === 'epic-x:impl:a'))
@@ -74,20 +74,35 @@ test('without epic nothing changes', async () => {
   assert.ok(r.calls.some((c) => c.opts.label.startsWith('pe:impl:')))
 })
 
-test('worktree name over 58 chars throws', async () => {
-  const epic = 'e'.repeat(40)
-  const id = 'i'.repeat(20)
-  assert.equal(`${epic}--${id}`.length, 62)
+test('worktree-name-over-57-throws', async () => {
+  const epic = 'e'.repeat(38)
+  const id = 'i'.repeat(19)
+  assert.equal(`${epic}-${id}`.length, 58)
   await rejects(
-    { name: epic, epic, tasks: [task(id, { worktree: `/wt/${epic}--${id}` })] },
-    /worktree name .* is 62 chars; the cap is 58/,
+    { name: epic, epic, tasks: [task(id, { worktree: `/wt/${epic}-${id}` })] },
+    /worktree name .* is 58 chars; the cap is 57/,
   )
 })
 
-test('worktree name of exactly 58 chars passes', async () => {
+test('worktree-name-of-exactly-57-passes', async () => {
   const epic = 'e'.repeat(38)
   const id = 'i'.repeat(18)
-  assert.equal(`${epic}--${id}`.length, 58)
-  const r = await run({ name: epic, epic, tasks: [task(id, { worktree: `/wt/${epic}--${id}` })] })
+  assert.equal(`${epic}-${id}`.length, 57)
+  const r = await run({ name: epic, epic, tasks: [task(id, { worktree: `/wt/${epic}-${id}` })] })
   assert.equal(r.error, undefined)
+})
+
+test('legacy-double-hyphen-tree-passes', async () => {
+  const r = await run({ ...E, tasks: [task('a', { worktree: '/wt/epic-x--a' }), task('b', { worktree: '/wt/epic-x--b/api' })] })
+  assert.equal(r.error, undefined)
+})
+
+test('legacy-worktree-name-of-58-chars-passes-and-59-throws', async () => {
+  const epic = 'e'.repeat(38)
+  const ok = 'i'.repeat(18)
+  assert.equal(`${epic}--${ok}`.length, 58)
+  const r = await run({ name: epic, epic, tasks: [task(ok, { worktree: `/wt/${epic}--${ok}` })] })
+  assert.equal(r.error, undefined)
+  const id = 'i'.repeat(19)
+  await rejects({ name: epic, epic, tasks: [task(id, { worktree: `/wt/${epic}--${id}` })] }, /is 59 chars; the cap is 58/)
 })
