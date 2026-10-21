@@ -1,6 +1,6 @@
 ---
 title: Name lookup parsers
-status: todo
+status: in-progress
 repo: workbench
 value: "No code guesses an epic from a name, so single-hyphen names can never be misattributed"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_names.py, plugins/workbench/skills/start-development/tests/test_ticket_check.py, plugins/workbench/skills/start-development/tests/test_ticket_overlap_ignore.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py]

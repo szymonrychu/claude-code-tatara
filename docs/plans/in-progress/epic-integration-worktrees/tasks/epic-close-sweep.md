@@ -1,6 +1,6 @@
 ---
 title: Epic close sweep
-status: todo
+status: in-progress
 repo: workbench
 value: "A delivered epic leaves no worktree or branch behind, and nothing unmerged is ever removed"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/epic-worktrees-remove/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]

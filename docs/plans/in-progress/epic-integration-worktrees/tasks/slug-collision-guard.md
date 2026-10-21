@@ -1,6 +1,6 @@
 ---
 title: Slug collision guard
-status: todo
+status: in-progress
 repo: workbench
 value: "Two tickets can never produce the same branch, so no task lands on another's tree"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py]

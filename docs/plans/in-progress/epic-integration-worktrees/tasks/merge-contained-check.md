@@ -1,6 +1,6 @@
 ---
 title: Merge contained check
-status: todo
+status: in-progress
 repo: workbench
 value: "Merged checks survive the close rebase, and a task already on the epic branch is still verified"
 files: [plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_contained.py, plugins/workbench/skills/worktree-merge/SKILL.md]

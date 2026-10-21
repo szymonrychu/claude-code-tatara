@@ -1,6 +1,6 @@
 ---
 title: Land in run
-status: todo
+status: in-progress
 repo: workbench
 value: "Dependents build on the epic branch and every review diff shows only the task's own change"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs, plugins/workbench/workflows/tests/plan-execute-rulings.test.mjs]

@@ -1,6 +1,6 @@
 ---
 title: Merge target worktree
-status: todo
+status: in-progress
 repo: workbench
 value: "Tasks land on the epic branch and epics land on main without ever switching the user's checkout"
 files: [plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_target.py, plugins/workbench/skills/worktree-merge/tests/test_merge_suites.py, plugins/workbench/skills/worktree-merge/tests/test_merge_union.py, plugins/workbench/skills/worktree-merge/SKILL.md, plugins/workbench/agents/worktree-merger.md]

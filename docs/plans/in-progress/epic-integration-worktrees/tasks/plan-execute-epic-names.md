@@ -1,6 +1,6 @@
 ---
 title: Plan execute epic names
-status: todo
+status: in-progress
 repo: workbench
 value: "The run accepts the new <epic>-<task> trees and rejects the old form"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-epic.test.mjs, plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs]

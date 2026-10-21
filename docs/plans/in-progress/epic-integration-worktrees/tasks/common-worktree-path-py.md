@@ -1,6 +1,6 @@
 ---
 title: Common worktree path py
-status: todo
+status: in-progress
 repo: workbench
 value: git-worktrees-create and -commit work on the same integration tree the claim creates
 files: [plugins/workbench/skills/_lib/common.py, plugins/workbench/skills/_lib/tests/test_common.py, plugins/workbench/skills/git-worktrees-create/tests/test_create.py, plugins/workbench/skills/git-worktrees-commit/tests/test_commit.py, plugins/workbench/skills/git-worktrees-create/SKILL.md, plugins/workbench/skills/git-worktrees-commit/SKILL.md]

@@ -2,7 +2,7 @@
 title: Epic integration worktrees
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-21
 ---

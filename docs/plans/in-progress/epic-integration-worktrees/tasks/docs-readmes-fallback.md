@@ -1,6 +1,6 @@
 ---
 title: Docs readmes fallback
-status: todo
+status: in-progress
 repo: workbench
 value: READMEs and the off-Claude fallback run the same epic lifecycle as Claude Code
 files: [README.md, plugins/workbench/README.md, AGENTS.md, scripts/harness/fallbacks/plan-execute/SKILL.md, plugins/workbench/skills/start-development/tests/test_release.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py, scripts/tests/harness/test_fallbacks.py]

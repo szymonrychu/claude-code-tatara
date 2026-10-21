@@ -1,6 +1,6 @@
 ---
 title: Common worktree path sh
-status: todo
+status: in-progress
 repo: workbench
 value: git-worktrees-push pushes the same integration tree the claim creates
 files: [plugins/workbench/skills/_lib/common.sh, plugins/workbench/skills/_lib/tests/test_common.bats, plugins/workbench/skills/_lib/tests/test_common.sh, plugins/workbench/skills/git-worktrees-push/tests/test_push.bats, plugins/workbench/skills/git-worktrees-push/tests/test_push.sh, plugins/workbench/skills/git-worktrees-push/SKILL.md, plugins/workbench/hooks/subagent-commit-guard.py]
