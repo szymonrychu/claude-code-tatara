@@ -1,6 +1,6 @@
 ---
 title: Forward merge via epic
-status: todo
+status: in-progress
 repo: workbench
 value: "A remediated dependency reaches its dependents through the epic branch, never around it"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
