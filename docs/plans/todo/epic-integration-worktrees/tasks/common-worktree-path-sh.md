@@ -49,17 +49,19 @@ Move the shell `worktree_path` to the same config-dir layout as the Python twin 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `worktree_path <branch> <repo>` in `skills/_lib/common.sh` (existing, changed); output equals `common.worktree_path` for the same tree.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`git-worktrees-push --branch <epic> --repos <repo>` pushes from `<configdir>/worktrees/<epic>/<repo>`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the pinned paths in the four test files to the config-dir layout; run `cd plugins/workbench && bats skills/_lib/tests/test_common.bats`; expect the worktree_path test to fail.
+- Green: change `worktree_path` in common.sh.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only _lib && bash scripts/run-tests.sh --only git-worktrees-push`, then `mise run test && mise run lint` (shellcheck runs in lint).
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `workbench.py config-dir` exists (plugins/workbench/scripts/lib/workbench.py:475); call it as `workbench.py config-dir --from <workbench root>`.
+- The hook change is docstring only; `worktree_markers()` still lists `.worktrees/`.

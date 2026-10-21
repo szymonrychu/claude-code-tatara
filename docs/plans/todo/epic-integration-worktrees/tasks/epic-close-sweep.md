@@ -55,17 +55,21 @@ Close an epic by checking the whole integration chain and removing every epic an
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ticket.ticket_names`, `ticket.integration_trees`, `ticket.integration_branch`, `merge.target_tree`.
+- `Sweep.epic(root, epic_dir)` and `Sweep.task(...)` (existing, changed targets); `merge.cleanup(..., target=...)` guarded delete.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py move <epic> done` on a delivered meta epic whose `<epic>` is in main leaves `git worktree list` with only the main checkout and `git branch --list '<epic>*'` empty; anything not provably merged stays and is listed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/start-development/tests/test_ticket_close.py` and update the pinned move and reap tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_close.py -q`; expect failures.
+- Green: change `_move_done`, `Sweep`, `cmd_reap` and `merge.cleanup`.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only worktree-merge`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Branch deletion is the only irreversible step here; it runs only after the explicit merged check, and the commits stay reachable from `<epic>` and main (design Irreversible operations).
+- A task branch is deleted before its integration branch; both checks are against refs, so the order of tree removal does not matter for correctness.
+- The sweep never uses `git worktree remove --force`.

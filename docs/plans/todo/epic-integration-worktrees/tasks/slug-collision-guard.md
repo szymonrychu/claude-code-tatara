@@ -47,17 +47,20 @@ Prevent branch-name collisions at ticket creation (design D3), since `<epic>-<ta
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ticket.ticket_names(root)` (the `ticket-name-lookup` part from name-lookup-parsers).
+- `run_check(...)` gains the collision failures; `cmd_new_epic`, `cmd_new_task`, `cmd_rename` call it or the same helper.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No two tickets can ever produce the same branch name; each refusal names the clashing epic or task and leaves the tree and git history untouched.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/start-development/tests/test_ticket_naming.py` with the six AC tests and run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_naming.py -q`; expect six failures.
+- Green: add the collision rule in `run_check` and the rename path.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root; expect green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Exit 3 stays reserved for the near-duplicate stop; a collision is a hard failure (exit 1) that `--force` never overrides.
+- Example clash: epic `foo` task `bar-baz` and epic `foo-bar` task `baz` both give `foo-bar-baz`; epic `foo-bar` equals epic `foo` task `bar`.

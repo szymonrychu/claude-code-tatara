@@ -1,0 +1,42 @@
+[
+  {
+    "id": "A1",
+    "text": "Skills use git worktree commands instead of the harness built-in worktree feature (U1).",
+    "decisions": ["D1"],
+    "tasks": ["builtin-worktree-guard", "docs-worktree-refs", "docs-readmes-fallback"],
+    "status": "approved"
+  },
+  {
+    "id": "A2",
+    "text": "When an epic starts it creates its own integration worktree named <epic>; task branches are named <epic>-<task>, start from and merge back into the epic integration worktree, and every agent working on a task shares that task's worktree (U2).",
+    "decisions": ["D2", "D3", "D4", "D8", "D10"],
+    "tasks": [
+      "single-hyphen-names",
+      "name-lookup-parsers",
+      "slug-collision-guard",
+      "integration-tree-create",
+      "common-worktree-path-py",
+      "common-worktree-path-sh",
+      "epic-base-wiring",
+      "merge-target-worktree",
+      "plan-execute-epic-names",
+      "land-in-run",
+      "forward-merge-via-epic"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "A3",
+    "text": "Once the epic is delivered and fully tested, its worktree merges back to main, then all epic and task worktrees are cleaned (U3).",
+    "decisions": ["D5", "D6", "D9"],
+    "tasks": ["merge-target-worktree", "epic-close-sweep", "land-in-run", "docs-flow-phases"],
+    "status": "approved"
+  },
+  {
+    "id": "A4",
+    "text": "Every doc and the off-Claude plan-execute fallback describe the same lifecycle; template only, the personal plugin is out of scope (D-g).",
+    "decisions": ["D7"],
+    "tasks": ["docs-flow-phases", "docs-worktree-refs", "docs-readmes-fallback"],
+    "status": "approved"
+  }
+]

@@ -50,17 +50,20 @@ Switch every task worktree and branch name that ticket.py produces from `<epic>-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.worktree_name(epic: str, task: str) -> str` and `ticket.WORKTREE_MAX = 57` (existing, changed).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py worktrees <epic>` creates `<configdir>/worktrees/<epic>-<task>` on branch `<epic>-<task>`; reap and move done find those trees; the start-development suite is green with every produced-name test updated.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the pinned assertions and add the AC tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_files.py -q`; expect failures on the old `--` join and cap.
+- Green: change `worktree_name`, `WORKTREE_MAX` and the producers listed in the requirement.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Slugs contain `-` but never `--` (`slugify`, skills/_lib/common.py:124-136), so a single-hyphen name cannot be split back; never try (name-lookup-parsers adds the lookup).
+- `test_run_status_fixes.py:44,56` use a fixture branch `busy--b1` from frontmatter; it is not produced by `worktree_name` and may stay.
+- The `continue` MERGE line still prints the old form until epic-base-wiring; its assertions in test_ticket_continue.py:178 and test_run_status_fixes.py:101 stay as they are here.

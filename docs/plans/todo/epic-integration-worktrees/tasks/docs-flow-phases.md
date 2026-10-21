@@ -64,17 +64,19 @@ Describe the epic worktree lifecycle in the start-development flow docs (design 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Documentation only; the needles in the three test files pin the wording.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An orchestrator reading SKILL.md and its references runs claim, worktrees, run with in-run landing, close and cleanup in that order, in either mode, without consulting the code.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the needles in the three test files to the new lifecycle and add the AC tests; run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`; expect the needle tests to fail.
+- Green: edit SKILL.md and the four references.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only start-research && cd ../.. && mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Q2's recommended answer is the written rule; if the gate answers otherwise the orchestrator amends this task before the run.
+- Keep SKILL.md short: details belong in the references (test_skill_size.py).

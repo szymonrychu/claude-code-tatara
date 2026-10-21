@@ -158,7 +158,9 @@ runs `merge.py --name <epic> --base main --keep`, which rebases `<epic>` onto ma
 with `chore(ticket)` commits) and fast-forwards main in the main checkout, where main is checked out;
 then the full suite runs on main; then `ticket.py move <epic> done` checks every task branch is merged
 into `<epic>` and `<epic>` into main, and removes every task tree and branch and the integration tree
-and branch. No `-landed` marker branches: tasks are ancestors of `<epic>`, `<epic>` of main. Component
+and branch. No `-landed` marker branches: tasks are ancestors of `<epic>`, `<epic>` of main. Meta
+mode, with or without an `origin` remote, ends at the fast-forwarded local main and the record; this
+replaces the meta-mode PR path, and pushing main stays with the user. Component
 mode keeps today's MR path from the integration branch; `move done` runs after the MRs merge and
 checks `<epic>` against `origin/<tracked>`. Alternative: merge commits into main (rejected: hides a
 moved base). (my call, D-e; gate question Q2) Serves A3.
@@ -213,9 +215,11 @@ right question for cross-epic overlap. (my call) Serves A2.
 
 | Source | Entry | Lands in |
 |---|---|---|
-| map Plan inputs | Naming: ticket.py:36,63-67,473,571,1247,1457-1463,1520; continue_cmd.py:5,122 | single-hyphen-names |
+| map Plan inputs | Naming: ticket.py:36,63-67,1247,1457-1463 | single-hyphen-names |
+| map Plan inputs | Naming parsers and fallbacks: ticket.py:473,571,1520 | name-lookup-parsers |
+| map Plan inputs | Naming: continue_cmd.py:5,122 (MERGE line) | epic-base-wiring |
 | map Plan inputs | Naming: plan-execute.js:76,316-326 | plan-execute-epic-names |
-| map Plan inputs | Naming docs: worktrees.md:6-12, tickets.md:36,61, worktree-create/SKILL.md:22, plugin README.md:202,217 | single-hyphen-names, docs-worktree-refs, docs-readmes-fallback |
+| map Plan inputs | Naming docs: worktrees.md:6-12, tickets.md:36,61, worktree-create/SKILL.md:22, plugin README.md:202,217 | docs-worktree-refs, docs-readmes-fallback |
 | map Plan inputs | Integration lifecycle: `_move_in_progress` creates the integration tree | integration-tree-create |
 | map Plan inputs | `cmd_worktrees --base <epic>`, args.py:99 baseRef, continue_cmd.py:109-123,177 | epic-base-wiring |
 | map Plan inputs | `_move_done`/Sweep/cmd_reap (:1231-1264, 1396-1524) | epic-close-sweep |
@@ -247,20 +251,20 @@ right question for cross-epic overlap. (my call) Serves A2.
 |---|---|
 | D1 plain git worktrees, guard tests | builtin-worktree-guard, docs-worktree-refs |
 | D2 integration tree path and creation at claim | integration-tree-create, common-worktree-path-py, common-worktree-path-sh, epic-base-wiring |
-| D3 `<epic>-<task>` names and collision prevention | single-hyphen-names, slug-collision-guard, plan-execute-epic-names |
+| D3 `<epic>-<task>` names and collision prevention | single-hyphen-names, name-lookup-parsers, slug-collision-guard, plan-execute-epic-names |
 | D4 in-run landing, dependents merge `<epic>` | land-in-run, forward-merge-via-epic, epic-base-wiring |
 | D5 epic close and full cleanup | epic-close-sweep, docs-flow-phases |
 | D6 merge.py target-worktree mode | merge-target-worktree |
 | D7 one lifecycle in every doc | docs-flow-phases, docs-worktree-refs, docs-readmes-fallback |
 | D8 mixed epic refused at claim | integration-tree-create |
 | D9 landed trees kept, guarded branch deletion | land-in-run, epic-close-sweep |
-| D10 non-epic runs and legacy markers unchanged | land-in-run, single-hyphen-names |
+| D10 non-epic runs and legacy markers unchanged | land-in-run, name-lookup-parsers |
 
 ## Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
-| ticket-name-lookup | single-hyphen-names | slug-collision-guard, epic-close-sweep | `plugins/workbench/skills/start-development/scripts/ticket.py` |
+| ticket-name-lookup | name-lookup-parsers | slug-collision-guard, epic-close-sweep | `plugins/workbench/skills/start-development/scripts/ticket.py` |
 | integration-tree | integration-tree-create | epic-base-wiring, epic-close-sweep | `plugins/workbench/skills/worktree-create/scripts/create.py` |
 | merge-target-worktree | merge-target-worktree | epic-close-sweep, land-in-run | `plugins/workbench/skills/worktree-merge/scripts/merge.py` |
 | epic-run-args | epic-base-wiring | land-in-run | `plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py` |
@@ -298,8 +302,8 @@ No cross-epic contract: no related epic shares these files (`ticket.py contract 
   are kept (builtin brief section 2).
 
 ## Open questions
-- Q1: Q1 (D4): inside an epic run, should plan-execute land each clean, verified task on the epic integration branch itself (a worktree-merger dispatch: rebase onto <epic>, fast-forward <epic> in the integration tree, run the task verify there), with dependents merging the updated <epic> and the verifier and reviewer diffing against <epic>, while escalated tasks land only after your ruling? [recommended: yes, land in the run as D4 describes]
-- Q2: Q2 (D5): at meta-mode epic close, should the flow rebase <epic> onto main and fast-forward main in the main checkout (after the pass verdict and the full suite on the integration tree), run the full suite on main, then have move done remove every task and integration tree and branch, replacing the meta-mode PR path, while component mode keeps the MR path and cleans up after the MRs merge? [recommended: yes, local rebase plus fast-forward for meta mode, MR path unchanged for component mode]
+- Q1: (D4) inside an epic run, should plan-execute land each clean, verified task on the epic integration branch itself (a worktree-merger dispatch: rebase onto <epic>, fast-forward <epic> in the integration tree, run the task verify there), with dependents merging the updated <epic> and the verifier and reviewer diffing against <epic>, while escalated tasks land only after your ruling? [recommended: yes, land in the run as D4 describes]
+- Q2: (D5) at meta-mode epic close, should the flow rebase <epic> onto main and fast-forward main in the main checkout (after the pass verdict and the full suite on the integration tree), run the full suite on main, then have move done remove every task and integration tree and branch, replacing the meta-mode PR path, while component mode keeps the MR path and cleans up after the MRs merge? [recommended: yes, local rebase plus fast-forward for meta mode, MR path unchanged for component mode]
 
 ## Irreversible operations in scope
 

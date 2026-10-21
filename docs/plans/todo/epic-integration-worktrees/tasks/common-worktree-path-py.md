@@ -50,17 +50,19 @@ Move the Python `worktree_path` to the config-dir layout so `git-worktrees-creat
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `common.worktree_path(branch: str, repo: str) -> Path` (existing, changed), built on `workbench.worktrees_dir` (plugins/workbench/scripts/lib/workbench.py:192).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`git-worktrees-create --branch <epic> --repos <repo>` and `ticket.py move <epic> in-progress` produce or reuse the same `<configdir>/worktrees/<epic>/<repo>` tree; the shell twin is common-worktree-path-sh.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the pinned paths and add the AC tests; run `cd plugins/workbench && pytest skills/_lib/tests/test_common.py -q` and the two skills' test files; expect failures on `.worktrees/`.
+- Green: change `worktree_path`, importing the workbench lib the way `worktree-create/scripts/create.py` does.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only _lib && bash scripts/run-tests.sh --only git-worktrees-create && bash scripts/run-tests.sh --only git-worktrees-commit`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The `.worktrees/` hook marker and `.gitignore` entry stay for legacy trees (design D10); do not touch them.
+- `git-worktrees-create` keeps forking off `origin/<tracked>`; only the path changes.

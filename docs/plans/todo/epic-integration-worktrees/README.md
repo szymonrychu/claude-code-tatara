@@ -42,7 +42,7 @@ Requested by the user on 2026-10-21:
 
 ## Time
 
-Derived by `ticket.py tasks` and `apply-run` from the task `estimate` and `actual` fields; never edit by hand. Report only, never a budget.
+Estimate: 905 min | Actual: 0 min | Remaining estimate: 905 min
 
 ## Review
 

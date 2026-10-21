@@ -50,17 +50,19 @@ Replace every name parser in ticket.py with one lookup from the tickets (design 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.ticket_names(root: Path) -> dict[str, tuple[str, str | None]]` (new; the `ticket-name-lookup` part, consumed by slug-collision-guard and epic-close-sweep).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Nothing in ticket.py splits a name: the warning, reap-all and the overlap check all go through the tickets, and unknown directories under the worktrees dir are never touched.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/start-development/tests/test_ticket_names.py` and update the pinned tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_names.py skills/start-development/tests/test_ticket_check.py -q`; expect failures.
+- Green: add `ticket_names` (built on `scan(root)`), switch the parsers and the fallback.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `scan(root)` already walks every phase and task file; reuse it.
+- An integration tree `<epic>` (created by integration-tree-create) maps to `(epic, None)`, so the warning covers it too.

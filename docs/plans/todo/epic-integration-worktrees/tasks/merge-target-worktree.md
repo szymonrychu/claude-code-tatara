@@ -57,17 +57,22 @@ Give merge.py a target-worktree mode: it lands into whichever worktree has the b
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `merge.merge_back(name, base="main", repo=None, keep=False, start=None, suites=True, verify=None) -> dict` (existing, gains `verify`); CLI `--verify <cmd>`.
+- `merge.target_tree(src: Path, base: str) -> Path` (new; the `merge-target-worktree` part, consumed by epic-close-sweep and land-in-run).
+- `merge.cleanup(src, wt, name, target=None)` (existing; deletes the branch from `target` when given).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`merge.py --name <epic>-<task> --base <epic> --keep --no-suites --verify '<cmd>'` lands a task into the integration tree and reports the verify result; `merge.py --name <epic> --base main --keep` closes the epic into main; neither touches the branch the main checkout has checked out.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/skills/worktree-merge/tests/test_merge_target.py` with the AC tests and update the pinned main-checkout tests; run `cd plugins/workbench && bash scripts/run-tests.sh --only worktree-merge`; expect failures.
+- Green: add `target_tree`, route the fast-forward, prune, check, suites, `--verify` and branch delete through it, and remove the checkout.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only worktree-merge`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `_rebase_with_union`, `merged_into`, `prune_empty_dirs`, `run_suites`, `SUITE_LOCK` and `cleanup`.
+- `git fetch origin <epic>` fails harmlessly when the epic branch has no remote; keep it a note.
+- Suites stay configured by the source checkout's `.claude/workbench.json`; only where they run changes.

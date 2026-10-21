@@ -57,17 +57,22 @@ Create the epic integration worktree when the epic is claimed (user decision U2,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `create.integration(epic: str, base: str = "main", repo: str | None = None, start: Path | None = None) -> dict` (new; the `integration-tree` part).
+- `ticket.integration_trees(root: Path, epic_dir: Path) -> dict[str, Path]` and `ticket.integration_branch(epic: str) -> str` (new; consumed by epic-base-wiring and epic-close-sweep).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After `ticket.py move <epic> in-progress`, `git worktree list` shows `<configdir>/worktrees/<epic>` on `[<epic>]` (meta) or `<configdir>/worktrees/<epic>/<repo>` per repo (component), and a rerun of the claim on a half-created epic is safe.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three integration tests to `plugins/workbench/skills/worktree-create/tests/test_create.py` and write `plugins/workbench/skills/start-development/tests/test_ticket_integration.py`; run `cd plugins/workbench && pytest skills/worktree-create/tests/test_create.py skills/start-development/tests/test_ticket_integration.py -q` (separately if the module names clash); expect failures.
+- Green: implement `integration()` and the CLI flag, then the claim step in `_move_in_progress`.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only worktree-create && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `create.branch_exists`, `create.workbench_root`, `ticket._task_repo`, `ticket._linked_worktrees`.
+- Create the trees before `_git_mv` so a failure moves nothing; the claim stays idempotent because existing trees and branches are reused.
+- The integration tree sits beside task trees `<epic>-<task>` under `<configdir>/worktrees/`; `create.validate_name` already refuses a duplicate name.
+- Plain `git worktree add` gets no Claude Code marker, so the built-in sweep never removes it (design D1).

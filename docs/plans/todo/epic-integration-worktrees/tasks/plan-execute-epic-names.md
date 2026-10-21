@@ -47,17 +47,18 @@ Make the plan-execute epic-run name check expect `<epic>-<id>` (design D3).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- plan-execute args validation for `args.epic` (existing, changed); no new args.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py args` output for an epic whose trees are `<epic>-<task>` passes plan-execute's validation; `<epic>--<task>` trees are rejected.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rename and update the pinned tests; run `cd plugins/workbench && node --test workflows/tests/plan-execute-epic.test.mjs workflows/tests/plan-execute-epic-audit.test.mjs`; expect failures.
+- Green: change `want` and the cap in plan-execute.js.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- validate-tasks.mjs runs plan-execute without `args.epic`, so the lint is unaffected.

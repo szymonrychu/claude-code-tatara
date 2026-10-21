@@ -63,17 +63,18 @@ Describe naming, the integration tree, landing and cleanup in the worktree refer
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Documentation only; needles in test_ticket_files.py pin the wording.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A reader of worktrees.md and tickets.md finds one consistent naming and lifecycle that matches the code.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update and add the needle tests in `test_ticket_files.py`; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_files.py -q`; expect failures.
+- Green: edit the five docs.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `plan-execute-implementer.test.mjs:64` pins `Do not call the built-in EnterWorktree` in implementer.md; keep it.

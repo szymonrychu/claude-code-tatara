@@ -53,17 +53,20 @@ Pin with tests that no workbench file uses or instructs the harness built-in wor
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Test only plus manifest wording; no runtime change.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Adding any instruction to use EnterWorktree, Agent isolation, `claude --worktree` or a WorktreeCreate/WorktreeRemove hook anywhere in the plugin or its generated harness files turns `mise run test` red.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the test with the matcher self-test first, and remove `isolation` from `AGENT_KEYS`; run `pytest scripts/tests/test_builtin_worktree_guard.py -q`. The self-test fails until the matcher exists; the manifest-wording AC fails until the descriptions change.
+- Green: implement the matcher and change the two descriptions.
+- Run `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Existing guard pins stay: start-research/tests/test_start_skills_structure.py:257-269, workflows/tests/plan-execute.test.mjs:349-356, plan-execute-implementer.test.mjs:64.
+- plan-execute.js:348 lists `isolation` among agent() options and :1846 says "No isolation option here on purpose"; neither matches the patterns.
+- Runs last so it scans the final wording of every doc task.

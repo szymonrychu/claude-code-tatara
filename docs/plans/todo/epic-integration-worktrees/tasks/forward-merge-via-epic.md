@@ -45,17 +45,18 @@ Route forward merges of a remediated dependency through the epic branch (design 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses the `land-step` part from land-in-run; changes `forwardMerge(latest, remediated)` and `mergePrompt(d, impl, branch)` callers.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A remediation never leaves the integration branch behind a dependent: the dependency lands again first, and every dependent rebuilds on the updated `<epic>`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four cases to `plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs`; run `cd plugins/workbench && node --test workflows/tests/plan-execute-forward-merge.test.mjs`; expect the three landing cases to fail.
+- Green: branch `forwardMerge` on landing mode.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Epic runs default to `audit: 'off'`, so forward merges in epic runs happen only when an audit runs; the tests set `audit: 'run'`.

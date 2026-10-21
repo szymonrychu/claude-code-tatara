@@ -59,17 +59,22 @@ Land each task on the epic integration branch inside the plan-execute run, and s
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `merge.py --verify` and target-tree landing (the `merge-target-worktree` part) and the run args `baseRef` and `mainCheckout` (the `epic-run-args` part).
+- New in plan-execute.js: the `LAND` schema, the land step and its serialising queue (the `land-step` part, consumed by forward-merge-via-epic), the return field `landed`, the reason `land-failed` in `ESCALATE`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+In an epic run the integration branch advances task by task as each lands, dependents build on it, and every diff a reviewer or verifier reads is the task's own change against `<epic>`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/workflows/tests/plan-execute-land.test.mjs` on the existing harness (`workflows/tests/harness.mjs`) and the two added cases; run `cd plugins/workbench && node --test workflows/tests/plan-execute-land.test.mjs`; expect failures.
+- Green: add the land step in `runTasks` (between settle and release), the queue, the dependency line and the return field.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `repoDir`, `mergeCommand`, `OWN_CHECKOUT_ONLY`, `verifyCommand`, `shq`, `safeAgent`; follow the forwardMerge pattern for replacing the verification head.
+- A subagent's `cd` does not persist between Bash calls, so the land prompt is one `cd <mainCheckout> && python3 ...` command with absolute paths.
+- The hooks treat the integration tree as an agent tree; if the merger resolves a conflict in the task tree it reruns the task verify there before re-running merge.py, or the commit guard fires once on the stale record.
+- `model: opus` because this changes the run's scheduling core (release, rulings, escalation).

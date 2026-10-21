@@ -59,17 +59,19 @@ Describe the same lifecycle in the READMEs, AGENTS.md and the off-Claude plan-ex
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Documentation only; the fallback is hand-written source emitted by `scripts/harness/skills_emit.py:164-174`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every entry point a human or another harness reads describes claim, fork, in-run landing, close and cleanup the same way as SKILL.md.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the needles in the three test files; run `pytest scripts/tests/harness/test_fallbacks.py -q` and `cd plugins/workbench && pytest skills/start-development/tests/test_release.py -q`; expect failures.
+- Green: edit the four docs.
+- Run `mise run test && mise run lint` from the root (the root suite covers the harness emitter).
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- AGENTS.md outside the `workbench:rules` block is hand-written; never edit the block by hand (AGENTS.md template maintenance).
+- `mise run harness-setup` regenerates emitted harness copies only when a target is enabled; nothing tracked is regenerated here.

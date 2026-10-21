@@ -54,17 +54,22 @@ Wire the epic integration branch in as the base for task trees, the continue mer
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ticket.integration_branch` and `ticket.integration_trees` (the `integration-tree` part).
+- Run args gain `baseRef` (the epic slug) and `mainCheckout` (absolute path): the `epic-run-args` part, consumed by land-in-run.
+- `continue --base` and `worktrees --base` defaults become the epic branch.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After the claim, `ticket.py worktrees <epic>` makes `<epic>-<task>` trees off `<epic>`, `continue` gates on `<epic>`, and `ticket.py args` hands plan-execute the epic branch and the main checkout path.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the AC tests and update the pinned base tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_args.py skills/start-development/tests/test_ticket_run.py -q`; expect failures on `main`.
+- Green: change the defaults in `cmd_worktrees`, `continue_cmd.run` and `register`, and `build_args`.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only start-development`, then `mise run test && mise run lint` from the root.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Fixtures that create task trees now need the integration branch first: call `move in-progress` (which creates it) or create the branch in the fixture.
+- `create.merge_latest` fetches `origin/<epic>` and notes the miss when there is no remote branch; that is expected.
+- The main checkout is `plans_root.parent.parent` in args.py (already computed as `top`).
