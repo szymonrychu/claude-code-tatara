@@ -58,7 +58,7 @@ def ret(repo, alpha_head=True):
     }
     if alpha_head:
         alpha["verification"] = {"head": head}
-    beta = {"id": "beta", "branch": "b-beta", "verified": False, "clean": False}
+    beta = {"id": "beta", "branch": "big-epic-beta", "verified": False, "clean": False}
     return {
         "run": "r1",
         "tasks": [alpha, beta],
@@ -103,8 +103,8 @@ def test_apply_and_accept(repo, root, epic, tmp_path):
     lines = r.stdout.strip().splitlines()
     assert lines[-1] == str(out / f"plan-execute-{epic}.js")
     assert any("heartbeat.py --run <runId>" in x for x in lines)
-    assert (repo / ".claude" / "worktrees" / f"{epic}--beta").is_dir()
-    assert not (repo / ".claude" / "worktrees" / f"{epic}--alpha").exists()
+    assert (repo / ".claude" / "worktrees" / f"{epic}-beta").is_dir()
+    assert not (repo / ".claude" / "worktrees" / f"{epic}-alpha").exists()
     subjects = git(repo, "log", "--format=%s").stdout
     assert f"chore(ticket): {epic} continue" in subjects
     assert git(repo, "status", "--porcelain", "--", "docs").stdout.strip() == ""
@@ -150,13 +150,13 @@ def test_accept_needs_reason(repo, root, epic, tmp_path):
 
 def test_merge_gate_exit_2(repo, root, epic, tmp_path):
     assert cli("worktrees", epic, "--root", root).returncode == 0
-    wt = repo / ".claude" / "worktrees" / f"{epic}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{epic}-alpha"
     (wt / "mine.txt").write_text("m")
     git(wt, "add", "-A")
     git(wt, "commit", "-m", "alpha work")
     head = git(wt, "rev-parse", "HEAD").stdout.strip()
     data = ret(repo)
-    data["tasks"][0]["branch"] = f"{epic}--alpha"
+    data["tasks"][0]["branch"] = f"{epic}-alpha"
     data["tasks"][0]["verification"] = {"head": head}
     rj = write_ret(repo, data)
     out = tmp_path / "out"
@@ -179,7 +179,7 @@ def test_merge_gate_exit_2(repo, root, epic, tmp_path):
     assert not out.exists()
     assert meta(root, epic, "alpha")["status"] == "done"
     # the merger lands the branch, then the rerun is clean and does not duplicate the ruling
-    git(repo, "merge", "--no-edit", f"{epic}--alpha")
+    git(repo, "merge", "--no-edit", f"{epic}-alpha")
     r = cli(
         "continue",
         epic,

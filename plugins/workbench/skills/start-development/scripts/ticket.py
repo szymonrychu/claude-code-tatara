@@ -33,7 +33,7 @@ PHASES = ("todo", "in-progress", "done")
 TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
 EPIC_STAGES = ("build", "review")
 SLUG_MAX = 28
-WORKTREE_MAX = SLUG_MAX + 2 + SLUG_MAX
+WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
 NEAR_DUP = 0.6
 EXIT_NEAR_DUPLICATE = 3  # new-epic stopped on a live near-duplicate epic; --force overrides
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
@@ -61,7 +61,7 @@ def slug(title: str) -> str:
 
 
 def worktree_name(epic: str, task: str) -> str:
-    name = f"{epic}--{task}"
+    name = f"{epic}-{task}"
     if len(name) > WORKTREE_MAX:
         raise TicketError(f"worktree name {name!r} is {len(name)} characters, max {WORKTREE_MAX}")
     return name
@@ -836,7 +836,9 @@ def cmd_worktrees(a: argparse.Namespace) -> int:
         live = doc.meta.get("worktree", "")
         if live and Path(live).is_dir():
             wt, verb = live, "reused"
+            branch = doc.meta.get("branch") or name
         else:
+            branch = name
             repo = _task_repo(root, doc.meta.get("repo", ""))
             existing = workbench.worktrees_dir(_workbench(root)) / name
             if existing.is_dir():
@@ -844,7 +846,7 @@ def cmd_worktrees(a: argparse.Namespace) -> int:
             else:
                 wt, verb = create(name=name, base=a.base, repo=repo, start=root)["path"], "created"
         status = "in-progress" if doc.meta.get("status", "todo") == "todo" else doc.meta["status"]
-        _write_task(path, doc, changed, worktree=wt, branch=name, status=status)
+        _write_task(path, doc, changed, worktree=wt, branch=branch, status=status)
         if refresh:
             if verb == "created" or _tree_live(wt):
                 results.append(f"{path.stem} {create_mod.fast_forward(Path(wt), a.base)}")
@@ -1244,7 +1246,7 @@ def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     tasks = _tasks_of(epic_dir)
     problems = _undelivered(tasks)
     for p, m in tasks:
-        branch = m.get("branch") or f"{name}--{p.stem}"
+        branch = m.get("branch") or worktree_name(name, p.stem)
         if not _task_merged(_task_src(root, m), branch, m.get("verified_head", ""), a.base):
             problems.append(f"task {p.stem!r}: branch {branch!r} is not merged into {a.base!r}")
     _refuse(problems)
@@ -1454,10 +1456,10 @@ class Sweep:
             _rmdir_if_empty(d)
 
     def task(self, root: Path, epic: str, p: Path, m: dict) -> None:
-        """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>--<task>)
+        """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>-<task>)
         and its branch, removed when merged into base and clean."""
         wb = _workbench(root)
-        tree = f"{epic}--{p.stem}"
+        tree = worktree_name(epic, p.stem)
         branch = m.get("branch") or tree
         src = _task_src(root, m)
         wt = Path(m["worktree"]) if m.get("worktree") else workbench.worktrees_dir(wb) / tree
@@ -1471,7 +1473,7 @@ class Sweep:
 
     def epic(self, root: Path, epic_dir: Path) -> None:
         """Task worktrees of the epic (frontmatter `worktree`, else
-        <config dir>/worktrees/<epic>--<task>), then its integration trees
+        <config dir>/worktrees/<epic>-<task>), then its integration trees
         .worktrees/<epic>/<repo>."""
         wb = _workbench(root)
         name = epic_dir.name

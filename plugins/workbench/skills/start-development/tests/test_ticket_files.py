@@ -81,10 +81,10 @@ def test_slug_cli_prints_capped_slug(root):
 
 
 def test_worktree_name(t):
-    assert t.worktree_name("epic", "task") == "epic--task"
+    assert t.worktree_name("epic", "task") == "epic-task"
     a, b = "a" * 28, "b" * 28
-    assert len(t.worktree_name(a, b)) == 58
-    with pytest.raises(t.TicketError):
+    assert len(t.worktree_name(a, b)) == 57 == t.WORKTREE_MAX
+    with pytest.raises(t.TicketError, match=r"58 characters, max 57"):
         t.worktree_name(a + "c", b)
 
 

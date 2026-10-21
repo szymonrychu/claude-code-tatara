@@ -61,7 +61,7 @@ def test_roadmap_open_files_drops_merged(tmp_path):
 def test_merge_line_has_name_and_repo(repo, root, continue_epic, tmp_path):  # noqa: F811
     ep = continue_epic
     assert cli("worktrees", ep, "--root", root).returncode == 0
-    wt = repo / ".claude" / "worktrees" / f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
     (wt / "mine.txt").write_text("m")
     git(wt, "add", "-A")
     git(wt, "commit", "-m", "alpha work")
@@ -71,7 +71,7 @@ def test_merge_line_has_name_and_repo(repo, root, continue_epic, tmp_path):  # n
         "tasks": [
             {
                 "id": "alpha",
-                "branch": f"{ep}--alpha",
+                "branch": f"{ep}-alpha",
                 "verified": True,
                 "clean": False,
                 "stopped": "gate-repeat",

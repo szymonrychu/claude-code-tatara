@@ -115,7 +115,7 @@ def set_status(p, status):
 
 
 def tree(repo, ep, slug):
-    return repo / ".claude" / "worktrees" / f"{ep}--{slug}"
+    return repo / ".claude" / "worktrees" / f"{ep}-{slug}"
 
 
 def test_refresh_updates_clean_skips_done(repo, root):
@@ -140,7 +140,7 @@ def test_refresh_updates_clean_skips_done(repo, root):
     r = cli("worktrees", ep, "--root", root, "--refresh")
     assert r.returncode == 0, r.stderr
     lines = r.stdout.splitlines()
-    assert f"{ep}--clean-one updated" in lines or "clean-one updated" in lines
+    assert f"{ep}-clean-one updated" in lines or "clean-one updated" in lines
     assert any(x.endswith("dirty-one dirty") for x in lines)
     assert any(x.endswith("ahead-one ahead") for x in lines)
     assert not any("done-one" in x for x in lines)
@@ -192,8 +192,8 @@ def test_workbench_repo_tree_is_live(tmp_path):
     (src / "a.py").write_text("x = 1\n")
     git(src, "add", ".")
     git(src, "commit", "-m", "init")
-    wt = wb / ".claude" / "worktrees" / "ep--t" / "proj"
-    git(src, "worktree", "add", "-b", "ep--t", str(wt), "main")
+    wt = wb / ".claude" / "worktrees" / "ep-t" / "proj"
+    git(src, "worktree", "add", "-b", "ep-t", str(wt), "main")
     assert "proj" not in ticket._live_worktrees(wb / "docs" / "plans")
     assert ticket._tree_live(str(wt))
     assert not ticket._tree_live(str(tmp_path / "gone"))

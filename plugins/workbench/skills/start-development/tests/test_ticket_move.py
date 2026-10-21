@@ -391,8 +391,8 @@ def test_move_done_refuses_unmerged_branch_and_keeps_everything(repo, root):
     assert r.returncode == 1 and "not merged" in r.stderr and "main" in r.stderr
     assert (root / "in-progress" / ep).is_dir()
     for t in ("alpha", "beta"):
-        assert (repo / ".claude" / "worktrees" / f"{ep}--{t}").is_dir()
-        assert f"{ep}--{t}" in branches(repo)
+        assert (repo / ".claude" / "worktrees" / f"{ep}-{t}").is_dir()
+        assert f"{ep}-{t}" in branches(repo)
 
 
 def test_move_done_base_option(repo, root):
@@ -422,8 +422,8 @@ def test_move_done_sweep_error_keeps_the_move_and_reports(repo, root, monkeypatc
 
 def test_move_done_moves_and_cleans_merged_clean_trees_only(repo, root):
     ep = reviewed(repo, root)
-    wt_a = repo / ".claude" / "worktrees" / f"{ep}--alpha"
-    wt_b = repo / ".claude" / "worktrees" / f"{ep}--beta"
+    wt_a = repo / ".claude" / "worktrees" / f"{ep}-alpha"
+    wt_b = repo / ".claude" / "worktrees" / f"{ep}-beta"
     (wt_b / "scratch.txt").write_text("uncommitted work")
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
@@ -433,16 +433,16 @@ def test_move_done_moves_and_cleans_merged_clean_trees_only(repo, root):
     assert git(repo, "status", "--porcelain", "--", "docs").stdout.strip() == ""
     s = summary(r)
     assert str(wt_a) in s["removed"]
-    assert not wt_a.exists() and f"{ep}--alpha" not in branches(repo)
+    assert not wt_a.exists() and f"{ep}-alpha" not in branches(repo)
     assert wt_b.is_dir() and (wt_b / "scratch.txt").read_text() == "uncommitted work"
-    assert f"{ep}--beta" in branches(repo)
-    assert "dirty" in left_reasons(s)[f"{ep}--beta"]
+    assert f"{ep}-beta" in branches(repo)
+    assert "dirty" in left_reasons(s)[f"{ep}-beta"]
     assert str(wt_a) not in git(repo, "worktree", "list").stdout
 
 
 def test_move_done_leaves_tree_whose_head_is_unmerged(repo, root):
     ep = reviewed(repo, root, tasks=("alpha",))
-    wt = repo / ".claude" / "worktrees" / f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
     git(wt, "checkout", "-b", "side-work")
     (wt / "more.py").write_text("y = 2\n")
     git(wt, "add", "more.py")
@@ -451,15 +451,15 @@ def test_move_done_leaves_tree_whose_head_is_unmerged(repo, root):
     assert r.returncode == 0, r.stderr
     s = summary(r)
     assert s["removed"] == []
-    assert "unmerged" in left_reasons(s)[f"{ep}--alpha"]
+    assert "unmerged" in left_reasons(s)[f"{ep}-alpha"]
     assert wt.is_dir() and "side-work" in branches(repo)
 
 
 def test_move_done_accepts_branch_already_cleaned_by_worktree_merge(repo, root):
     ep = reviewed(repo, root, tasks=("alpha",))
-    wt = repo / ".claude" / "worktrees" / f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
     git(repo, "worktree", "remove", str(wt))
-    git(repo, "branch", "-d", f"{ep}--alpha")
+    git(repo, "branch", "-d", f"{ep}-alpha")
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
     assert summary(r) == {"removed": [], "left": []}
@@ -467,9 +467,9 @@ def test_move_done_accepts_branch_already_cleaned_by_worktree_merge(repo, root):
 
 def test_move_done_refuses_deleted_branch_whose_head_is_not_on_base(repo, root):
     ep = reviewed(repo, root, tasks=("alpha",), merge=False)
-    wt = repo / ".claude" / "worktrees" / f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
     git(wt, "checkout", "--detach")
-    git(repo, "branch", "--delete", "--force", f"{ep}--alpha")  # test setup only
+    git(repo, "branch", "--delete", "--force", f"{ep}-alpha")  # test setup only
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 1 and "not merged" in r.stderr
 
@@ -477,7 +477,7 @@ def test_move_done_refuses_deleted_branch_whose_head_is_not_on_base(repo, root):
 def test_move_done_uses_frontmatter_worktree_path(repo, root):
     ep = started(repo, root, tasks=("alpha",))
     p = task_path(root, ep, "alpha")
-    name = f"{ep}--alpha"
+    name = f"{ep}-alpha"
     old = Path(meta(p)["worktree"])
     new = repo.parent / "elsewhere" / "moved-alpha"
     new.parent.mkdir()
@@ -546,12 +546,12 @@ def test_move_done_component_mode_integration_trees(tmp_path):
     assert r.returncode == 0, r.stderr
     p = task_path(root, ep, "alpha")
     wt = Path(meta(p)["worktree"])
-    assert wt == wb / ".claude" / "worktrees" / f"{ep}--alpha" / "proj"
+    assert wt == wb / ".claude" / "worktrees" / f"{ep}-alpha" / "proj"
     (wt / "alpha.py").write_text("a = 1\n")
     git(wt, "add", "alpha.py")
     git(wt, "commit", "-m", "alpha")
     head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    git(wb / "code" / "proj", "merge", "--no-ff", "--no-edit", f"{ep}--alpha")
+    git(wb / "code" / "proj", "merge", "--no-ff", "--no-edit", f"{ep}-alpha")
     set_meta(p, status="done", verified_head=head)
     commit_all(wb)
     merged = integration_tree(wb, ep, "proj", merged_on_origin=True)
@@ -567,8 +567,8 @@ def test_move_done_component_mode_integration_trees(tmp_path):
     assert r.returncode == 0, r.stderr
     s = summary(r)
     assert str(wt) in s["removed"] and not wt.exists()
-    assert not (wb / ".claude" / "worktrees" / f"{ep}--alpha").exists()
-    assert f"{ep}--alpha" not in branches(wb / "code" / "proj")
+    assert not (wb / ".claude" / "worktrees" / f"{ep}-alpha").exists()
+    assert f"{ep}-alpha" not in branches(wb / "code" / "proj")
     assert str(merged) in s["removed"] and not merged.exists()
     assert unmerged.is_dir() and ep in branches(wb / "code" / "other")
     assert "origin" in left_reasons(s)["other"]
@@ -593,7 +593,7 @@ def stray_tree(repo, name, *, merged, dirty=False):
 
 def test_reap_orphans_and_done_leftovers(repo, root):
     ep = reviewed(repo, root)
-    wt_b = repo / ".claude" / "worktrees" / f"{ep}--beta"
+    wt_b = repo / ".claude" / "worktrees" / f"{ep}-beta"
     (wt_b / "scratch.txt").write_text("uncommitted work")
     assert cli("move", ep, "done", "--root", root).returncode == 0
     assert wt_b.is_dir()
@@ -621,7 +621,7 @@ def test_reap_orphans_and_done_leftovers(repo, root):
     s = summary(r)
     assert sorted(s["removed"]) == sorted([str(orphan_ok), str(wt_b)])
     assert not orphan_ok.exists() and "gone-epic--x" not in branches(repo)
-    assert not wt_b.exists() and f"{ep}--beta" not in branches(repo)
+    assert not wt_b.exists() and f"{ep}-beta" not in branches(repo)
     reasons = left_reasons(s)
     assert "unmerged" in reasons["gone-epic--y"] and orphan_unmerged.is_dir()
     assert "gone-epic--y" in branches(repo)
@@ -641,10 +641,10 @@ def done_epic(repo, root, title, tasks=("alpha", "beta")):
     assert r.returncode == 0, r.stderr
     notes.unlink()
     for t in tasks:  # a dirty tree survives the sweep that `move done` runs
-        (repo / ".claude" / "worktrees" / f"{ep}--{t}" / "scratch.txt").write_text("wip")
+        (repo / ".claude" / "worktrees" / f"{ep}-{t}" / "scratch.txt").write_text("wip")
     assert cli("move", ep, "done", "--root", root).returncode == 0
     for t in tasks:
-        wt = repo / ".claude" / "worktrees" / f"{ep}--{t}"
+        wt = repo / ".claude" / "worktrees" / f"{ep}-{t}"
         assert wt.is_dir()
         (wt / "scratch.txt").unlink()
     return ep
@@ -653,9 +653,9 @@ def done_epic(repo, root, title, tasks=("alpha", "beta")):
 def test_reap_epic_scopes_to_one_done_epic(repo, root):
     ep = done_epic(repo, root, "First done")
     other = done_epic(repo, root, "Second done", tasks=("gamma",))
-    wt_a = repo / ".claude" / "worktrees" / f"{ep}--alpha"
-    wt_b = repo / ".claude" / "worktrees" / f"{ep}--beta"
-    other_a = repo / ".claude" / "worktrees" / f"{other}--gamma"
+    wt_a = repo / ".claude" / "worktrees" / f"{ep}-alpha"
+    wt_b = repo / ".claude" / "worktrees" / f"{ep}-beta"
+    other_a = repo / ".claude" / "worktrees" / f"{other}-gamma"
     (wt_b / "scratch.txt").write_text("uncommitted")
     orphan = stray_tree(repo, "gone-epic--x", merged=True)
     r = cli("reap", "--epic", ep, "--root", root)
@@ -664,12 +664,12 @@ def test_reap_epic_scopes_to_one_done_epic(repo, root):
     assert s["removed"] == [str(wt_a)] and not wt_a.exists()
     assert "dirty" in left_reasons(s)[wt_b.name] and wt_b.is_dir()
     assert other_a.is_dir() and orphan.is_dir()
-    assert f"{other}--gamma" in branches(repo) and "gone-epic--x" in branches(repo)
+    assert f"{other}-gamma" in branches(repo) and "gone-epic--x" in branches(repo)
 
 
 def test_reap_epic_keeps_unmerged_tree(repo, root):
     ep = done_epic(repo, root, "Late work", tasks=("alpha",))
-    wt = repo / ".claude" / "worktrees" / f"{ep}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{ep}-alpha"
     (wt / "late.txt").write_text("after done\n")
     git(wt, "add", ".")
     git(wt, "commit", "-m", "late work")
@@ -684,7 +684,7 @@ def test_reap_epic_refuses_epic_not_done(repo, root):
     todo = mk_epic(root, "Still todo")
     live = started(repo, root, ("alpha",), title="Running")
     commit_all(repo)
-    wt = repo / ".claude" / "worktrees" / f"{live}--alpha"
+    wt = repo / ".claude" / "worktrees" / f"{live}-alpha"
     for ep, phase in ((todo, "todo"), (live, "in-progress")):
         r = cli("reap", "--epic", ep, "--root", root)
         assert r.returncode == 1
@@ -699,13 +699,13 @@ def test_reap_epic_unknown_slug(repo, root):
 
 def test_reap_epic_dry_run_removes_nothing(repo, root):
     ep = done_epic(repo, root, "Dry done")
-    wt_a = repo / ".claude" / "worktrees" / f"{ep}--alpha"
-    wt_b = repo / ".claude" / "worktrees" / f"{ep}--beta"
+    wt_a = repo / ".claude" / "worktrees" / f"{ep}-alpha"
+    wt_b = repo / ".claude" / "worktrees" / f"{ep}-beta"
     r = cli("reap", "--epic", ep, "--dry-run", "--root", root)
     assert r.returncode == 0, r.stderr
     s = summary(r)
     assert s["dryRun"] is True and sorted(s["removed"]) == sorted([str(wt_a), str(wt_b)])
-    assert wt_a.is_dir() and wt_b.is_dir() and f"{ep}--alpha" in branches(repo)
+    assert wt_a.is_dir() and wt_b.is_dir() and f"{ep}-alpha" in branches(repo)
 
 
 def test_reap_component_integration_trees_of_done_epic(tmp_path):
@@ -849,11 +849,11 @@ def test_tasks_emit_branch_and_verified_head_for_the_epic_close_audit(root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "alpha")
     mk_task(root, ep, "beta")
-    set_meta(p, branch=f"{ep}--alpha", verified_head="abc123", acs_for_audit=["AC1"])
+    set_meta(p, branch=f"{ep}-alpha", verified_head="abc123", acs_for_audit=["AC1"])
     r = cli("tasks", ep, "--root", root)
     assert r.returncode == 0, r.stderr
     out = {t["id"]: t for t in json.loads(r.stdout)}
-    assert out["alpha"]["branch"] == f"{ep}--alpha"
+    assert out["alpha"]["branch"] == f"{ep}-alpha"
     assert out["alpha"]["verifiedHead"] == "abc123"
     assert out["alpha"]["acsForAudit"] == ["AC1"]
     assert out["beta"]["branch"] == ""

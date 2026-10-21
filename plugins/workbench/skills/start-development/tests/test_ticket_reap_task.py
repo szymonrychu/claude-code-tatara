@@ -17,7 +17,7 @@ def root(repo):
 
 
 def wt_of(repo, ep, t):
-    return repo / ".claude" / "worktrees" / f"{ep}--{t}"
+    return repo / ".claude" / "worktrees" / f"{ep}-{t}"
 
 
 def test_reap_task_mid_epic(repo, root):
@@ -26,7 +26,7 @@ def test_reap_task_mid_epic(repo, root):
     r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
     assert r.returncode == 0, r.stderr
     assert not wt_of(repo, ep, "alpha").exists()
-    assert f"{ep}--alpha" not in branches(repo)
+    assert f"{ep}-alpha" not in branches(repo)
     assert str(wt_of(repo, ep, "alpha")) in json.loads(r.stdout)["removed"]
     assert wt_of(repo, ep, "beta").is_dir()
 

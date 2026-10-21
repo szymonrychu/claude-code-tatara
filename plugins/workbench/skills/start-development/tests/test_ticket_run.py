@@ -204,7 +204,7 @@ def test_worktrees_creates_via_create_and_writes_frontmatter(repo, root):
     commit_all(repo)
     r = cli("worktrees", ep, "--root", root)
     assert r.returncode == 0, r.stderr
-    name = f"{ep}--alpha-work"
+    name = f"{ep}-alpha-work"
     wt = repo / ".claude" / "worktrees" / name
     assert wt.is_dir()
     meta = ticket.load(p.read_text(), p).meta
@@ -213,6 +213,22 @@ def test_worktrees_creates_via_create_and_writes_frontmatter(repo, root):
     assert git(repo, "branch", "--list", name).stdout.strip().endswith(name)
     assert git(repo, "log", "-1", "--format=%s").stdout.strip() == f"chore(ticket): {ep} worktrees"
     assert git(repo, "status", "--porcelain", "--", "docs").stdout.strip() == ""
+
+
+def test_worktrees_keeps_live_legacy_double_hyphen_record(repo, root):
+    ep = mk_epic(root)
+    p = mk_task(root, ep, "Alpha work")
+    commit_all(repo)
+    legacy = f"{ep}--alpha-work"
+    wt = repo / ".claude" / "worktrees" / legacy
+    git(repo, "worktree", "add", "-b", legacy, str(wt), "main")
+    ticket._write_task(p, ticket._read_doc(p), [], worktree=str(wt), branch=legacy)
+    commit_all(repo)
+    r = cli("worktrees", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    meta = ticket.load(p.read_text(), p).meta
+    assert meta["worktree"] == str(wt) and meta["branch"] == legacy
+    assert not (repo / ".claude" / "worktrees" / f"{ep}-alpha-work").exists()
 
 
 def test_worktrees_after_move_in_progress_is_status_noop(repo, root):
@@ -232,7 +248,7 @@ def test_worktrees_after_move_in_progress_is_status_noop(repo, root):
     tasks_before = listing()
     r = cli("worktrees", ep, "--root", root)
     assert r.returncode == 0, r.stderr
-    assert (repo / ".claude" / "worktrees" / f"{ep}--alpha-work").is_dir()
+    assert (repo / ".claude" / "worktrees" / f"{ep}-alpha-work").is_dir()
     assert ticket.load(p.read_text(), p).meta["status"] == "in-progress"
     assert listing() == tasks_before
     assert cli("lint", "--root", root).returncode == 0
@@ -265,7 +281,7 @@ def test_worktrees_uses_create_not_a_copy(repo, root, monkeypatch):
 
     monkeypatch.setattr(ticket, "_create", lambda: fake)
     ticket.main(["worktrees", ep, "--root", str(root), "--base", "dev"])
-    assert calls == [(f"{ep}--alpha-work", "dev", None)]
+    assert calls == [(f"{ep}-alpha-work", "dev", None)]
 
 
 def test_worktrees_passes_task_repo_in_workbench(tmp_path):
