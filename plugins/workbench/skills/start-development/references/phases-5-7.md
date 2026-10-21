@@ -25,7 +25,8 @@ The epic review: the whole change, after every task is delivered, before the epi
    an untested tip; close in this order:
    1. the pass verdict;
    2. every done task is on `<epic>`: `ticket.py continue` prints no MERGE line, including a task
-      released by an accept ruling that has no dependents;
+      released by an accept ruling that has no dependents; `ticket.py close` refuses while a done
+      task is not on `<epic>`;
    3. meta mode: `ticket.py close <epic> --verify '<full suite and lint>'`. It rebases `<epic>` onto
       main inside the integration tree and runs the suite and lint on the rebased tip there; only when
       they pass it fast-forwards main; it then runs the full suite on main and records main's

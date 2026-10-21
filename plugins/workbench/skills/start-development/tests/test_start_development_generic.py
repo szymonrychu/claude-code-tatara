@@ -17,7 +17,7 @@ TEXT = sd_text(Path(__file__).resolve().parents[1] / "SKILL.md")
 FLAT = re.sub(r"\s+", " ", TEXT)
 
 
-def test_meta_mode_origin_rule():
+def test_meta_mode_closes_by_local_fast_forward():
     assert "Meta mode tasks land on the integration branch `<epic>`" in FLAT
     assert "rebase plus fast-forward of the local main" in FLAT
     assert "with or without an `origin` remote" in FLAT

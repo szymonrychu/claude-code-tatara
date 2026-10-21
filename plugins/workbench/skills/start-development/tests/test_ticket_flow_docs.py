@@ -81,6 +81,14 @@ def test_phase_four_runs_per_epic():
             "integration branch",
             "epic slug",
             "ticket.py apply-run",
+        ],
+    )
+
+
+def test_flow_docs_integration_tree_and_landing():
+    check(
+        "## Phase 4 - Execute",
+        [
             "`move in-progress` creates",
             "integration tree",
             "land-failed",
@@ -90,21 +98,39 @@ def test_phase_four_runs_per_epic():
     )
 
 
-def test_close_order_and_landing_docs():
+def test_close_order_documented():
     t = flat((SD / "references" / "phases-5-7.md").read_text())
     for needle in (
         "prints no MERGE line",
         "ticket.py close <epic> --verify",
-        "rebases `<epic>` onto main",
-        "fast-forwards main",
-        "pre-fast-forward SHA",
-        "`close.json`",
         "ticket.py move <epic> done",
+        "removes every task and integration tree and branch",
     ):
         assert needle in t, needle
-    assert "landed" in flat((SD / "references" / "run-handback.md").read_text())
-    assert "forkPoint" in flat((SD / "references" / "run-handback.md").read_text())
     assert "own integration tree" in flat((SD / "references" / "multi-epic.md").read_text())
+
+
+def test_close_order_verifies_rebased_tip_before_main_moves():
+    t = flat((SD / "references" / "phases-5-7.md").read_text())
+    for needle in (
+        "rebases `<epic>` onto main",
+        "rebased tip",
+        "only when they pass it fast-forwards main",
+        "`ticket.py close` refuses while a done task is not on `<epic>`",
+        "pre-fast-forward SHA in `close.json`",
+    ):
+        assert needle in t, needle
+
+
+def test_run_handback_names_landing():
+    t = flat((SD / "references" / "run-handback.md").read_text())
+    for needle in (
+        "`landed` lists every task that did land, with its epic `head` and the task's `forkPoint`",
+        "an escalated task absent from `landed` lands after your ruling through `continue`",
+        "`MERGE ... --base <epic>`",
+        "land-failed",
+    ):
+        assert needle in t, needle
 
 
 def test_phases_six_and_seven_close_the_epic():

@@ -504,6 +504,12 @@ def test_gate_questions_carry_recommended_answers():
     assert wording in builder
 
 
+def test_phase4_names_epic_base_ref_and_main_checkout():
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
+    for term in ("baseRef", "mainCheckout", "epic branch"):
+        assert term in phase4, f"Phase 4 does not name {term!r}"
+
+
 def test_execute_names_the_verifier_and_red_evidence():
     phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
     for term in (
@@ -515,8 +521,6 @@ def test_execute_names_the_verifier_and_red_evidence():
         "cannotVerify",
         "forward-merge-failed",
         "verify-agent-died",
-        "baseRef",
-        "mainCheckout",
         "epic branch",
         "verification.head",
     ):
