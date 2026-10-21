@@ -14,7 +14,7 @@ def _epic_close(text: str) -> str:
     return m.group(1)
 
 
-def test_epic_close_names_ticket_close_only():
+def test_epic_close_goes_through_ticket_close():
     for name, text in DOCS.items():
         section = _epic_close(text)
         assert "ticket.py close" in section, name
@@ -26,3 +26,11 @@ def test_epic_close_names_ticket_close_only():
 def test_no_direct_epic_to_main_close_command_anywhere():
     for name, text in DOCS.items():
         assert not re.search(r"--name <epic>[^\n]*\n?[^\n]*--base main", text), name
+
+
+def test_merger_close_role_is_conflict_only():
+    for name, text in DOCS.items():
+        section = " ".join(_epic_close(text).split())
+        assert "rebase conflict" in section, name
+        assert "integration tree" in section, name
+        assert "ticket.py close" in section, name
