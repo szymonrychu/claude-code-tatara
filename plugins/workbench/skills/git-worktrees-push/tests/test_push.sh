@@ -51,7 +51,7 @@ new_workbench() {
 
 make_worktree() {
   local wb="$1" branch="$2" repo="$3" bare="$4" wt
-  wt="$wb/.worktrees/$branch/$repo"
+  wt="$wb/.claude/worktrees/$branch/$repo"
   mkdir -p "$wt"
   git init -q -b "$branch" "$wt"
   git -C "$wt" config user.email "test@example.com"
@@ -86,7 +86,7 @@ assert_status "$status" 0 "successful push exits 0"
 assert_contains "$out" "repo1" "successful push report mentions repo1"
 assert_contains "$out" "ok" "successful push report mentions ok"
 remote_sha="$(git --git-dir="$BARE" rev-parse feature-a 2>/dev/null)"
-wt_sha="$(git -C "$WB/.worktrees/feature-a/repo1" rev-parse HEAD)"
+wt_sha="$(git -C "$WB/.claude/worktrees/feature-a/repo1" rev-parse HEAD)"
 assert_eq "$remote_sha" "$wt_sha" "remote branch matches worktree HEAD after push"
 
 # --- test 2: missing worktree ---

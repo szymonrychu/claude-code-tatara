@@ -11,7 +11,7 @@ setup() {
 
 make_worktree() {
   local branch="$1" repo="$2" wt
-  wt="$WB/.worktrees/$branch/$repo"
+  wt="$WB/.claude/worktrees/$branch/$repo"
   mkdir -p "$wt"
   git init -q -b "$branch" "$wt"
   git -C "$wt" config user.email "test@example.com"
@@ -44,7 +44,7 @@ diverge_remote() {
   run git --git-dir="$BARE" rev-parse feature-a
   [ "$status" -eq 0 ]
   local wt_sha
-  wt_sha="$(git -C "$WB/.worktrees/feature-a/repo1" rev-parse HEAD)"
+  wt_sha="$(git -C "$WB/.claude/worktrees/feature-a/repo1" rev-parse HEAD)"
   [ "$output" = "$wt_sha" ]
 }
 
@@ -64,7 +64,7 @@ diverge_remote() {
   [[ "$output" == *"repo1"*"failed"* ]]
   run git --git-dir="$BARE" rev-parse feature-c
   local wt_sha
-  wt_sha="$(git -C "$WB/.worktrees/feature-c/repo1" rev-parse HEAD)"
+  wt_sha="$(git -C "$WB/.claude/worktrees/feature-c/repo1" rev-parse HEAD)"
   [ "$output" != "$wt_sha" ]
 }
 

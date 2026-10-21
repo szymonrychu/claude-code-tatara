@@ -94,7 +94,7 @@ EOF
   cd "$WB"
   run worktree_path my-branch foo
   [ "$status" -eq 0 ]
-  [ "$output" = "$WB/.worktrees/my-branch/foo" ]
+  [ "$output" = "$(cd "$WB" && pwd -P)/.claude/worktrees/my-branch/foo" ]
 }
 
 @test "report_add and report_print render table" {

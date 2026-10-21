@@ -13,8 +13,9 @@ background task runs" reflex five times out of five, so the rule is mechanical
 now: the turn does not end while the worktree is dirty.
 
 Scope is deliberately narrow - only worktrees an agent was given
-(`<config dir>/worktrees/<name>` from worktree-create, `.worktrees/<branch>/<repo>`
-from git-worktrees-create). The main checkout belongs to the human and is never
+(`<config dir>/worktrees/<name>` from worktree-create, task and integration trees
+under `<config dir>/worktrees/<branch>/<repo>`; `.worktrees/<branch>/<repo>` is the
+legacy layout from git-worktrees-create). The main checkout belongs to the human and is never
 blocked. The guard fires once: a payload with `stop_hook_active` set means the
 agent already got this message, and the turn is allowed to end so nothing can
 wedge.

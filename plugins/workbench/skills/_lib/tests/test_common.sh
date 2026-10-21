@@ -99,7 +99,7 @@ out="$( cd "$WB" && source "$LIB" && tracked_branch bar )"
 assert_eq "$out" "main" "tracked_branch defaults to main"
 
 out="$( cd "$WB" && source "$LIB" && worktree_path my-branch foo )"
-assert_eq "$out" "$WB/.worktrees/my-branch/foo" "worktree_path builds expected path"
+assert_eq "$out" "$(cd "$WB" && pwd -P)/.claude/worktrees/my-branch/foo" "worktree_path builds expected path"
 
 out="$( source "$LIB"; report_add foo ok "up to date"; report_add bar skipped "no changes"; report_print )"
 assert_contains "$out" "foo" "report_print contains repo foo"

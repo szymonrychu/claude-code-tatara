@@ -5,7 +5,7 @@ description: "Push committed worktree branches to origin across code/ repos. Use
 
 # git-worktrees-push
 
-Pushes the branch checked out in `.worktrees/<branch>/<repo>` to `origin` for
+Pushes the branch checked out in `<config dir>/worktrees/<branch>/<repo>` (for example `.claude/worktrees/<branch>/<repo>`) to `origin` for
 each requested repo. Runs after `git-worktrees-commit` has produced local
 commits and before opening or updating a pull request.
 
