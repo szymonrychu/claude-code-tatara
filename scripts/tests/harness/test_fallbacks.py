@@ -89,3 +89,16 @@ def test_no_workflow_scripts_emitted():
     out = render_skills(load_sources(REAL))
     assert not any("workflow" in p.lower() for p in out)
     assert not any(p.endswith((".js", ".mjs")) for p in out)
+
+
+def test_plan_execute_fallback_close_order_verifies_before_main_moves():
+    out = render_skills(load_sources(REAL))
+    text = out[".agents/skills/plan-execute/SKILL.md"]
+    close = text[text.index("## Close") :]
+    rebase = close.index("rebases `<epic>` onto main")
+    suite = close.index("full suite and lint on the")
+    ff = close.index("fast-forwards main only when green")
+    done = close.index("move <epic> done")
+    assert rebase < suite < ff < done
+    assert "pre-fast-forward SHA" in close
+    assert "--<task>" not in text

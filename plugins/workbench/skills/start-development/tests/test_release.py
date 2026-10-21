@@ -165,6 +165,14 @@ def test_readme_describes_1_0_0():
     assert re.search(r"`scope-auditor` \| sonnet \|.*agent type", text)
 
 
+def test_readme_names_epic_task_trees_and_integration():
+    text = (ROOT / "README.md").read_text()
+    assert "<epic>-<task>" in text
+    assert "integration worktree" in text
+    assert "--<task>" not in text
+    assert "reaches main" in text
+
+
 def test_readme_documents_the_template():
     """The README describes the template: skills, packs, hooks as shipped, nothing personal.
 

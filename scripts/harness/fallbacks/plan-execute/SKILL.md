@@ -17,7 +17,7 @@ files, read and written through `ticket.py`, and in one return file you write by
 The claim creates the epic integration worktree and branch `<epic>`; task trees are
 `<epic>-<task>` and land on `<epic>`, never on main. Use plain `git worktree` through
 `ticket.py` and `merge.py`, never the harness's built-in worktree feature. An epic claimed
-before this change (legacy `<epic>--<task>` trees, no `<epic>` branch) runs
+before this change (legacy trees with a doubled separator, no `<epic>` branch) runs
 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py worktrees <epic> --integration`
 first; a recorded legacy tree is still accepted.
 
