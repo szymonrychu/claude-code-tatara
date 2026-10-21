@@ -49,19 +49,19 @@ def rebased(repo):
     return repo, ept, task
 
 
-def test_ancestor(repo):
+def test_contained_ancestor(repo):
     git(repo, "branch", "b")
     assert contained(repo, "b", "main") == (True, "ancestor")
 
 
-def test_patch_equivalent_after_rebase(rebased):
+def test_contained_patch_equivalent_after_rebase(rebased):
     repo, ept, task = rebased
     assert git(repo, "merge-base", "--is-ancestor", "ep-t1", "ep", check=False).returncode != 0
     assert contained(repo, "ep-t1", "ep") == (True, "patch-equivalent")
     assert merged_into(repo, "ep-t1", "ep") is True
 
 
-def test_not_contained_counts_commits(repo):
+def test_not_contained_names_missing_commits(repo):
     git(repo, "checkout", "-qb", "b")
     commit(repo, "a.txt")
     commit(repo, "b.txt")
@@ -73,7 +73,7 @@ def test_not_contained_counts_commits(repo):
     assert merged_into(repo, "b", "main") is False
 
 
-def test_merge_of_target_commit_is_ignored(repo):
+def test_merge_commit_ignored_by_patch_check(repo):
     git(repo, "checkout", "-qb", "b")
     commit(repo, "a.txt")
     git(repo, "checkout", "-q", "main")
@@ -88,7 +88,7 @@ def test_merge_of_target_commit_is_ignored(repo):
     assert contained(repo, "dep", "main")[0] is True
 
 
-def test_nothing_to_merge_verifies_in_target(rebased):
+def test_nothing_to_merge_runs_verify_in_target_tree(rebased):
     repo, ept, task = rebased
     before = rev(repo, "ep")
     info = merge_back("ep-t1", base="ep", start=repo, verify="pwd > ../where.txt", suites=False)
