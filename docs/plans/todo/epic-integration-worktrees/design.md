@@ -205,6 +205,9 @@ right question for cross-epic overlap. (my call) Serves A2.
 ### D11: Gate answer Q1 (user, 2026-10-21: yes): inside an epic run p
 Gate answer Q1 (user, 2026-10-21: yes): inside an epic run plan-execute lands each clean, verified task on the epic integration branch (rebase onto <epic>, fast-forward in the integration tree, task verify there); dependents merge the updated <epic>; verifier and reviewer diff against <epic>; escalated tasks land only after a ruling. (user decision)
 
+### D12: Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close
+Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close rebases <epic> onto main and fast-forwards main in the main checkout after the pass verdict and the full suite on the integration tree, runs the full suite on main, then move done removes every task and integration tree and branch; component mode keeps the MR path and cleans up after the MRs merge. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -263,6 +266,7 @@ Gate answer Q1 (user, 2026-10-21: yes): inside an epic run plan-execute lands ea
 | D9 landed trees kept, guarded branch deletion | land-in-run, epic-close-sweep |
 | D10 non-epic runs and legacy markers unchanged | land-in-run, name-lookup-parsers |
 | D11 Gate answer Q1 (user, 2026-10-21: yes): inside an epic run p | land-in-run, forward-merge-via-epic, epic-base-wiring |
+| D12 Gate answer Q2 (user, 2026-10-21: yes): meta-mode epic close | epic-close-sweep, docs-flow-phases |
 
 ## Contracts
 
