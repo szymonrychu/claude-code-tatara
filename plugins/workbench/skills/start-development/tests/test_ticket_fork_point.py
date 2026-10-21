@@ -30,7 +30,7 @@ def test_fork_point_from_task_entry(repo, root):
     assert meta_of(root, ep, "t-a")["fork_point"] == "aaa111"
 
 
-def test_fork_point_from_landed_entry(repo, root):
+def test_apply_run_records_fork_point(repo, root):
     ep = setup(repo, root, "t-a")
     apply(repo, root, ep, ret(landed=[{"id": "t-a", "forkPoint": "bbb222", "head": "h1"}]))
     assert meta_of(root, ep, "t-a")["fork_point"] == "bbb222"
@@ -42,7 +42,7 @@ def test_task_entry_wins_over_landed(repo, root):
     assert meta_of(root, ep, "t-a")["fork_point"] == "aaa111"
 
 
-def test_recorded_value_kept_when_return_has_none(repo, root):
+def test_apply_run_keeps_fork_point_when_absent(repo, root):
     ep = setup(repo, root, "t-a")
     apply(repo, root, ep, ret({"forkPoint": "aaa111"}))
     apply(repo, root, ep, ret())
@@ -63,3 +63,14 @@ def test_derive_tasks_exports_fork_point(repo, root):
     assert ticket.derive_tasks(d)[0]["forkPoint"] == ""
     apply(repo, root, ep, ret({"forkPoint": "aaa111"}))
     assert ticket.derive_tasks(d)[0]["forkPoint"] == "aaa111"
+
+
+def test_args_carry_fork_point(repo, root):
+    from ticket_cmds.args import build_args
+
+    ep = setup(repo, root, "t-a", "t-b")
+    d = root / "in-progress" / ep
+    apply(repo, root, ep, ret({"forkPoint": "aaa111", "verified": False, "clean": False}))
+    tasks = {x["id"]: x for x in build_args(d)["tasks"]}
+    assert tasks["t-a"]["forkPoint"] == "aaa111"
+    assert tasks["t-b"]["forkPoint"] == ""
