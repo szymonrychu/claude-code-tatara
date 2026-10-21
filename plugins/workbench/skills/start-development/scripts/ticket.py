@@ -837,6 +837,7 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
                 "actual": _minutes(m.get("actual"), path.stem, "actual"),
                 "branch": m.get("branch", ""),
                 "verifiedHead": m.get("verified_head", ""),
+                "forkPoint": m.get("fork_point", ""),
             }
         )
     return out
@@ -1214,6 +1215,11 @@ def cmd_apply_run(a: argparse.Namespace) -> int:
     provides: dict[str, list[str]] = {}
     for p in ret.get("provides", []):
         provides.setdefault(str(p.get("taskId")), []).append(str(p.get("name")))
+    landed_fork = {
+        str(e.get("id") or e.get("taskId")): str(e["forkPoint"])
+        for e in ret.get("landed") or []
+        if isinstance(e, dict) and e.get("forkPoint")
+    }
     changed: list[Path] = []
     for t in ret.get("tasks", []):
         path = files[t["id"]]
@@ -1227,6 +1233,8 @@ def cmd_apply_run(a: argparse.Namespace) -> int:
             doc = Doc(doc.meta, body)
         have = list(doc.meta.get("provides", []))
         have += [n for n in provides.get(t["id"], []) if n not in have]
+        fork = t.get("forkPoint") or landed_fork.get(str(t["id"]))
+        fork_update = {"fork_point": str(fork)} if fork else {}
         _write_task(
             path,
             doc,
@@ -1238,6 +1246,7 @@ def cmd_apply_run(a: argparse.Namespace) -> int:
             acs_for_audit=[str(x) for x in t.get("acsForAudit") or []],
             process_gaps=[_gap_summary(g) for g in t.get("processGaps") or []],
             provides=have,
+            **fork_update,
             **_actual_update(doc.meta, t, run),
         )
         print(f"{t['id']}: {status}")
