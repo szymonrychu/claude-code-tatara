@@ -1737,15 +1737,49 @@ class Sweep:
         if not self.dry_run:
             _rmdir_if_empty(d)
 
+    def _own_branch(
+        self, branch: str, epic: str, tree: str, legacy: str, target: str
+    ) -> bool:
+        """Only the task's own branch is swept: its tree name, its legacy name, or an
+        <epic>-... name; never the integration branch, the base, a trunk or HEAD."""
+        refused = {self.base, target, integration_branch(epic), "HEAD", "main", "master"}
+        if branch in refused or branch.startswith("-"):
+            return False
+        return branch in (tree, legacy) or branch.startswith(f"{epic}-")
+
+    @staticmethod
+    def _own_tree(wt: Path, wb: Path, tree: str, legacy: str) -> bool:
+        """A tree is the task's own when it sits under a worktrees dir and carries the task's
+        tree name (or legacy name, or a <tree>-2 rebased copy), alone or as its parent dir."""
+        roots = [workbench.worktrees_dir(wb).resolve(), (wb / ".worktrees").resolve()]
+        res = wt.resolve()
+        if not any(r in res.parents for r in roots):
+            return False
+        names = (tree, legacy)
+        return any(
+            n == x or re.fullmatch(re.escape(x) + r"-\d+", n)
+            for n in (res.name, res.parent.name)
+            for x in names
+        )
+
     def task(self, root: Path, epic: str, p: Path, m: dict) -> None:
         """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>-<task>)
         and its branch, removed when contained in the epic branch (else base) and clean."""
         wb = _workbench(root)
         tree = worktree_name(epic, p.stem)
+        legacy = f"{epic}{LEGACY_SEP}{p.stem}"
         branch = m.get("branch") or tree
+        if branch == "HEAD":
+            branch = tree
         src = _task_src(root, m)
         target = _epic_target(src, epic, self.base)
+        if not self._own_branch(branch, epic, tree, legacy, target):
+            self.leave(f"{src} (branch {branch})", "not this task's branch")
+            return
         wt = Path(m["worktree"]) if m.get("worktree") else workbench.worktrees_dir(wb) / tree
+        if not self._own_tree(wt, wb, tree, legacy):
+            self.leave(wt, "outside the worktrees dir")
+            return
         if wt.name == tree:
             if wt.is_dir():
                 self.container(wt, branch, wb, src, target)

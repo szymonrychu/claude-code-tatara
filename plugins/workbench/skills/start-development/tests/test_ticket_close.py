@@ -182,3 +182,52 @@ def test_dry_run_lists_integration_branch_once(repo, root):
     sweep.epic(root, ticket.find_epic(ep, root))
     got = sweep.summary()["branches"]
     assert sorted(got) == sorted({ep, f"{ep}-alpha", f"{ep}-beta"})
+
+
+def _hostile(repo, root, **fm):
+    ep = started(repo, root, ("alpha",))
+    p = task_path(root, ep, "alpha")
+    wt = Path(meta(p)["worktree"])
+    set_meta(p, **fm)
+    return ep, wt
+
+
+def test_sweep_never_deletes_trunk_branch_from_frontmatter(repo, root):
+    ep, wt = _hostile(repo, root, branch="main")
+    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
+    assert "main" in branches(repo)
+    assert any(x["reason"] == "not this task's branch" for x in json.loads(r.stdout)["left"])
+
+
+def test_sweep_never_deletes_integration_branch_from_frontmatter(repo, root):
+    ep = started(repo, root, ("alpha",))
+    set_meta(task_path(root, ep, "alpha"), branch=ep)
+    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
+    assert ep in branches(repo)
+    assert any(x["reason"] == "not this task's branch" for x in json.loads(r.stdout)["left"])
+
+
+def test_sweep_head_branch_falls_back_to_tree_name(repo, root):
+    ep, wt = _hostile(repo, root, branch="HEAD")
+    sweep = ticket.Sweep("main", True)
+    sweep.task(root, ep, task_path(root, ep, "alpha"), meta(task_path(root, ep, "alpha")))
+    assert sweep.summary()["branches"] in ([f"{ep}-alpha"], [])
+    assert not any(x["reason"] == "not this task's branch" for x in sweep.left)
+
+
+def test_sweep_refuses_worktree_outside_task_name(repo, root):
+    ep = started(repo, root, ("alpha",))
+    integ = integration_tree(repo, ep)
+    set_meta(task_path(root, ep, "alpha"), worktree=str(integ))
+    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
+    assert Path(integ).is_dir()
+    assert any(x["reason"] == "outside the worktrees dir" for x in json.loads(r.stdout)["left"])
+
+
+def test_sweep_refuses_worktree_outside_worktrees_dir(repo, root, tmp_path):
+    ep = started(repo, root, ("alpha",))
+    out = tmp_path / f"{ep}-alpha"
+    git(repo, "worktree", "add", "-b", "other", str(out))
+    set_meta(task_path(root, ep, "alpha"), worktree=str(out))
+    cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
+    assert out.is_dir()

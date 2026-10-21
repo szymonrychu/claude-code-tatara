@@ -240,3 +240,14 @@ def test_nothing_ahead_cleanup_runs_from_the_target_tree(epic):
     create("ep-t2", base="ep", start=repo)
     merge_back("ep-t2", base="ep", start=repo)
     assert git(repo, "branch", "--list", "ep-t2").stdout.strip() == ""
+
+
+@pytest.mark.parametrize("bad", ["../x", "a/b", "-rf", "a/../b", ".."])
+def test_merge_rejects_unsafe_name_with_exit_2(repo, monkeypatch, capsys, bad):
+    monkeypatch.chdir(repo)
+    calls = []
+    monkeypatch.setattr(merge_mod, "run", lambda *a, **k: calls.append(a) or pytest.fail("git ran"))
+    rc = main([f"--name={bad}", "--base", "main"])
+    assert rc == 2
+    assert "invalid" in capsys.readouterr().err
+    assert calls == []

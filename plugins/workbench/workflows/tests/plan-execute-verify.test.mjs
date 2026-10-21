@@ -428,5 +428,5 @@ test('verify-and-review-use-epic-base-ref', async () => {
   assert.ok(rev.includes('git diff $(git merge-base HEAD epic-x)..HEAD'), rev)
   assert.ok(!rev.includes('merge-base HEAD main'), rev)
   const land = ofRole(r, 'land')[0].prompt
-  assert.ok(land.includes('--base epic-x '), land)
+  assert.ok(land.includes("--base 'epic-x' "), land)
 })

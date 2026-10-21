@@ -110,7 +110,7 @@ test('land-dispatches-merge-into-epic', async () => {
   assert.equal(opts.schema.properties.conflict.type, 'boolean')
   assert.deepEqual(opts.schema.properties.verification.required, ['command', 'passed', 'evidence'])
   assert.equal(opts.schema.properties.notes.type, 'string')
-  const cmd = `cd '${MAIN}' && python3 ${MERGE_PY} --name epic-x-a --base epic-x --keep --no-suites --verify 'pytest tests/test_a.py'`
+  const cmd = `cd '${MAIN}' && python3 ${MERGE_PY} --name 'epic-x-a' --base 'epic-x' --keep --no-suites --verify 'pytest tests/test_a.py'`
   assert.ok(prompt.includes(cmd), prompt)
   assert.ok(!prompt.includes('--repo'), prompt)
   assert.match(prompt, /never run `git checkout`/i)
@@ -122,7 +122,7 @@ test('land-dispatches-merge-into-epic: a component tree passes --repo', async ()
   const r = await run({ ...EPIC, tasks: [task('a', { worktree: '/wt/epic-x-a/api' })] })
   assert.equal(r.error, undefined)
   const prompt = ofRole(r, 'land')[0].prompt
-  assert.ok(prompt.includes(`--name epic-x-a --base epic-x --repo api --keep --no-suites --verify 'pytest tests/test_a.py'`), prompt)
+  assert.ok(prompt.includes(`--name 'epic-x-a' --base 'epic-x' --repo 'api' --keep --no-suites --verify 'pytest tests/test_a.py'`), prompt)
 })
 
 test('land-dependent-merges-epic-branch', async () => {
@@ -268,4 +268,10 @@ test('land-every-role-shares-the-task-tree', async () => {
   const land = ofRole(r, 'land', 'a')[0].prompt
   assert.ok(land.includes(`Main checkout: ${MAIN}`), land)
   assert.ok(land.includes('Task worktree: /wt/epic-x-a'), land)
+})
+
+test('land-quotes-name-base-and-repo', async () => {
+  const r = await run({ ...EPIC, baseRef: 'epic-x', tasks: [task('a', { repo: 'ap i', worktree: '/wt/epic-x-a/ap i' })] })
+  const prompt = ofRole(r, 'land')[0].prompt
+  assert.ok(prompt.includes(`--name 'epic-x-a' --base 'epic-x' --repo 'ap i' --keep`), prompt)
 })

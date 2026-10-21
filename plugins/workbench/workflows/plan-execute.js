@@ -2033,9 +2033,9 @@ const landName = (t) => (componentTree(t) ? treePath(t).split('/').slice(0, -1) 
 
 function landPrompt(t, impl) {
   const flags = [
-    `--name ${landName(t)}`,
-    `--base ${BASE_REF}`,
-    ...(componentTree(t) ? [`--repo ${t.repo}`] : []),
+    `--name ${shq(landName(t))}`,
+    `--base ${shq(BASE_REF)}`,
+    ...(componentTree(t) ? [`--repo ${shq(t.repo)}`] : []),
     '--keep',
     '--no-suites',
     `--verify ${shq(verifyCommand(t, impl))}`,

@@ -481,8 +481,7 @@ def test_move_done_uses_frontmatter_worktree_path(repo, root):
     p = task_path(root, ep, "alpha")
     name = f"{ep}-alpha"
     old = Path(meta(p)["worktree"])
-    new = repo.parent / "elsewhere" / "moved-alpha"
-    new.parent.mkdir()
+    new = old.parent / f"{name}-2"  # a rebased copy, still inside the worktrees dir
     git(repo, "worktree", "move", str(old), str(new))
     set_meta(p, worktree=str(new))
     commit_all(repo)

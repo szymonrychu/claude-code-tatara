@@ -252,6 +252,18 @@ def _run_verify(cmd: str, wt: Path) -> tuple[bool, list[str]]:
 MAX_ATTEMPTS = 3
 
 
+class InvalidName(WorktreeError):
+    pass
+
+
+def check_name(name: str) -> None:
+    """A tree name is one path component: no separator, no `..`, no leading dash."""
+    if not name or "/" in name or ".." in name or name.startswith("-"):
+        raise InvalidName(
+            f"invalid --name {name!r}: must not contain '/' or '..' or start with '-'"
+        )
+
+
 def merge_back(
     name: str,
     base: str = "main",
@@ -261,6 +273,7 @@ def merge_back(
     suites: bool = True,
     verify: str = None,
 ) -> dict:
+    check_name(name)
     root = workbench_root(start)
     src = root / "code" / repo if repo else root
     cfg = load_config(src)  # a bad workbench.json fails here, before any git work
@@ -466,6 +479,7 @@ def main(argv=None) -> int:
     )
     args = ap.parse_args(argv)
     try:
+        check_name(args.name)
         if args.assess:
             a = assess(args.name, base=args.base, repo=args.repo)
             print(
@@ -482,6 +496,9 @@ def main(argv=None) -> int:
             suites=not args.no_suites,
             verify=args.verify,
         )
+    except InvalidName as e:
+        print(f"[ERR] {e}", file=sys.stderr)
+        return 2
     except (WorktreeError, ConfigError) as e:
         print(f"[ERR] {e}", file=sys.stderr)
         return 1

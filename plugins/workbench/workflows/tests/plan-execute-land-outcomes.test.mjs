@@ -87,7 +87,7 @@ test('land-conflict-escalation-names-files', async () => {
 
 test('land-uses-recorded-legacy-tree-name', async () => {
   const r = await run([task('a', { worktree: '/wt/epic-x--a' })], () => ({ landed: true, head: 'h', conflict: false, verification, notes: '' }))
-  assert.ok(landPrompt(r).includes('--name epic-x--a --base epic-x '), landPrompt(r))
+  assert.ok(landPrompt(r).includes("--name 'epic-x--a' --base 'epic-x' "), landPrompt(r))
   const c = await run([task('a', { worktree: '/wt/epic-x--a/api' })], () => ({ landed: true, head: 'h', conflict: false, verification, notes: '' }))
-  assert.ok(landPrompt(c).includes('--name epic-x--a --base epic-x --repo api '), landPrompt(c))
+  assert.ok(landPrompt(c).includes("--name 'epic-x--a' --base 'epic-x' --repo 'api' "), landPrompt(c))
 })
