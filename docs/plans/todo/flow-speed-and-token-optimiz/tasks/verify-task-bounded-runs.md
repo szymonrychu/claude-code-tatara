@@ -51,17 +51,20 @@ Bound every run verify-task makes and stop the third suite run (design D1). `plu
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `verify-task-cli`: the flags `--timeout`, `--targeted`, optional `--cmd`, the sha rule for `--prev-head`, and the result fields `timeout`, `error`, `commandScope`, `tdd.baseCommand`, all in `plugins/workbench/scripts/verify-task.py`. verify-scope-wiring passes them from plan-execute.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No verifier dies at the Bash cap, no orchestrator prose reaches argparse, and a TDD-revert check costs one extra run of the referenced tests instead of two runs of the whole command.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `scripts/tests/test_verify_bounded.py` with AC1-AC5 on throwaway git repos (a `sleep` command for the timeout, a pytest file with a renamed test for the targeted build); run `cd plugins/workbench && pytest scripts/tests/test_verify_bounded.py -q`; expect failures.
+- Green: timeouts, the sha check, the revert change, `--targeted`; update `test_verify_tdd_revert_dirs.py` where it pinned the third run; the verifier.md line.
+- Run the task verify; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Use `subprocess.run(..., timeout=..., start_new_session=True)` and kill the group on `TimeoutExpired` so a child pytest does not survive.
+- The runner resolution for a ref is the one `check_ac` uses (`_runner_cmd`, refRunners via `.claude/workbench.json`); reuse it, do not write a second resolver.
+- Measured: 46 verify-task calls hit the 600 s cap, 4 verifiers died, 5 argparse failures from prose passed as `--prev-head` (brief failure mode 3).

@@ -53,17 +53,21 @@ Carry acceptance conditions to the implementer and resolve renamed test refs by 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `ac-evidence`: the `acEvidence` result field (AC id to `file::name`) in plan-execute.js's implementer schema, and verify-task's `matchedBy` and `resolvedRef` per AC. audit-context-and-models reads `matchedBy` to decide which rows the verifier settled.
+- verify-task flag `--ac-evidence <json file>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An AC whose test was renamed resolves on the first verify instead of costing a fix round; a loose match is visible to the auditor.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `scripts/tests/test_verify_ac_evidence.py` (AC4-AC6, throwaway git repos with pytest files) and `workflows/tests/plan-execute-ac-evidence.test.mjs` (AC1-AC3); run `cd plugins/workbench && pytest scripts/tests/test_verify_ac_evidence.py -q && node --test workflows/tests/plan-execute-ac-evidence.test.mjs`; expect failures.
+- Green: prompts and schema, verifyPrompt, `_test_name_missing` and `check_ac` in verify-task.py, the two agent docs.
+- Run the task verify; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured: 58 of 104 fix rounds carried a ref-missing finding; implPrompt and fixPrompt never received `t.ac` although implementer.md asks for exact refs (brief item 2).
+- Keep exact before substring; the substring step looks only inside the ref's file.
+- Node test titles are single kebab tokens (refRunners `--test-name-pattern {name}`).

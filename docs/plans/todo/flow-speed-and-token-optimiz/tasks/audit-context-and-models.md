@@ -54,17 +54,22 @@ Give the audit task files instead of inlined requirements and move mechanical ro
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ac-evidence` (ac-evidence-map): `matchedBy` per AC decides a settled row.
+- Uses `land-step` (epic integration worktrees): the land agent dispatch whose model changes.
+- Uses `epic-run-args` (epic integration worktrees): `build_args` in `ticket_cmds/args.py`, which gains `taskFile`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The epic audit reads a short prompt and the task files it needs, the mechanical checks run on haiku, and review and judgement rows stay on sonnet.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `workflows/tests/plan-execute-audit-context.test.mjs` (AC2-AC6) and add AC1 to `skills/start-development/tests/test_ticket_args.py`; run both; expect failures.
+- Green: `taskFile` in args.py, the audit prompts and split, the two model changes, the scope-auditor section; update `plan-execute-epic-audit.test.mjs`.
+- Run the task verify; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured: one epic audit was 7.5M raw tokens with every requirement inlined (brief item 10).
+- `acTable()` already marks rows `verifier settled` or `open: judge it`; reuse that split.
+- args.py and the land step were changed by epic integration worktrees; read the landed code first.

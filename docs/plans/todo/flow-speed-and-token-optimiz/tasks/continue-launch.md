@@ -48,17 +48,21 @@ Make `ticket.py continue` a one-shot relaunch and auto-accept the findings that 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `continue-launch-lines`: the auto-accept lines and the `LAUNCH` and `ARM` lines, defined in `ticket_cmds/continue_cmd.py`.
+- Uses `merge-target-worktree` (epic integration worktrees): merge.py's CLI `--name --base --repo --keep --no-suites --verify`, exit 0 merged, 1 error or conflict, 4 verify or suite failure.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After a run returns, one command applies it, accepts what needs no judgement, lands what is clean and prints the one Workflow launch and the one heartbeat arm; only a conflict or a red verify still needs a worktree-merger.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `skills/start-development/tests/test_ticket_continue_launch.py` with AC1-AC6 on the real-git fixtures of `ticket_repo_helpers.py` (an epic branch, task trees, a return JSON); run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_continue_launch.py -q`; expect failures.
+- Green: auto-accept after `_apply`, the `--launch` flag, the merge.py subprocess per gate line, the two final lines.
+- Run the task verify; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- continue_cmd.py was changed by epic integration worktrees (epic-base-wiring, epic-close-command): the merge gate lists every done task not on `<epic>` and the base is the epic branch. Read the landed code first.
+- The recorded tree name is the last path component of the task's `worktree` (strip a trailing `/<repo>` in component mode), the rule the land step uses.
+- Use the existing `_rule` path for auto-accepts so rulings.json and the task body match manual accepts.

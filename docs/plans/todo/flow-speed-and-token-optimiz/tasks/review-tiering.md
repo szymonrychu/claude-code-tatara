@@ -48,17 +48,19 @@ Make review tiers see the task and skip reviews that add nothing (design D9). `p
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reviewTier(t, impl, v, pre)` and the light branch of `reviewUntilClean` in plan-execute.js; verify-task's existing `--requirement` flag.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+About a third of first reviews are skipped where the evidence already settles the task, and a light-tier fix is never left unreviewed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `workflows/tests/plan-execute-tier-scope.test.mjs` with AC1-AC5; run `cd plugins/workbench && node --test workflows/tests/plan-execute-tier-scope.test.mjs`; expect failures.
+- Green: the flag, the skip rule, the scoped re-review; update `plan-execute-tier.test.mjs` and `plan-execute-gate-only-rounds.test.mjs` where they pinned the old rule.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Today `changedOutside` (plan-execute.js) counts reviewer-finding files as named, so a light-tier fix to them is never re-reviewed (brief flow map section 1).
+- `--requirement` is never passed today, so the tier classifier sees "" (verify-task.py `--requirement`).

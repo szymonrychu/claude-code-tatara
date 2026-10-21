@@ -46,17 +46,20 @@ Stop the parking and debt gates from reporting text a merged dependency added (d
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `fork-point` (epic integration worktrees): in epic runs the verifier `--base` and the diff base already come from the epic branch or `diffBase(t)`, so no exclusion is needed there.
+- verify-task flag `--exclude-ref <ref>` (repeatable) and result field `excludedByRef`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A dependent is judged only on the lines it wrote, in every run mode.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `scripts/tests/test_verify_provenance.py` (a repo where branch `dep` adds `AGENTS.md` placeholder lines with a TODO and a parking phrase, branch `task` merges `dep` and adds clean code) and `workflows/tests/plan-execute-provenance.test.mjs`; run both; expect failures.
+- Green: `--exclude-ref` in verify-task.py, the flag in verifyPrompt for non-epic runs.
+- Run the task verify; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured: 9 of 19 root escalations and 2.0M to 4.0M tokens came from gates on forward-merged dependency text (brief failure mode 1).
+- Use `--no-triage` in the tests so no haiku call runs; parking candidates are visible before triage.

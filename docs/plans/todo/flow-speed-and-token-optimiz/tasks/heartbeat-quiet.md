@@ -52,17 +52,20 @@ Make the heartbeat quiet by default (design D3, gate question Q1).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- CLI: `heartbeat.py (--run <id> | --journal <path>) [--interval S] [--report-every S] [--stall-beats N] [--eta] [--no-eta] [--keepalive] ...`; the line formats (`~<pct>% done...`, `STALL <n>m no journal change`, `END ...`) are unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A waiting orchestrator wakes when a run ends or stalls and otherwise at most twice an hour, with no haiku call per beat.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add AC1-AC5 to `skills/heartbeat/tests/test_heartbeat_run.py` and `test_heartbeat.py` (inject the clock and sleep as the existing tests do); run `cd plugins/workbench && bash scripts/run-tests.sh --only heartbeat`; expect failures.
+- Green: the report gate in `main`, the `--eta` flag, the SKILL.md section, the AGENTS.md sentence.
+- Run the task verify; expect green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- If the user answers no to Q1, the orchestrator amends this task to `--report-every 600` before the run; nothing else changes.
+- AGENTS.md line 87 (ground rule 4) is outside the generated `workbench:rules` block; edit only that rule's text.
+- Keep the STALL arithmetic on polls, not on printed lines.

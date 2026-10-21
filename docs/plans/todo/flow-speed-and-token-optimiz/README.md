@@ -39,7 +39,7 @@ Sidequest requested by the user: fix task delivery estimates. Estimate in agent 
 
 ## Time
 
-Derived by `ticket.py tasks` and `apply-run` from the task `estimate` and `actual` fields; never edit by hand. Report only, never a budget.
+Estimate: 92 min | Actual: 0 min | Remaining estimate: 92 min
 
 ## Review
 

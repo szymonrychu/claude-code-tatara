@@ -58,17 +58,21 @@ Build the estimator's one parameter file and its library (design D4, D13). Every
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `estimator-params`: `plugins/workbench/scripts/lib/estimator.json` and the functions `load`, `full_suite`, `task_minutes`, `parallelism`, `epic_estimate`, `refit`, `mdape` in `plugins/workbench/scripts/lib/estimator.py`. estimate-and-actuals imports the module; planner-sizing-rule reads `fullSuitePatterns` from the JSON in node.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One JSON holds every estimator number and the full-suite patterns; the formula, the epic line and the refit are tested against the 94 measured tasks of the 2026-10-20/21 session.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `plugins/workbench/scripts/tests/test_estimator.py` with AC1-AC9 and the fixture; run `cd plugins/workbench && pytest scripts/tests/test_estimator.py -q`; expect failures (no module).
+- Green: write estimator.json, then estimator.py.
+- Run `cd plugins/workbench && pytest scripts/tests/test_estimator.py -q && ruff check scripts`; expect all passed and `All checks passed!`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured data: `/private/tmp/claude-501/-Users-szymonri-Documents-workbench/24dd7e5c-62ee-4970-92ad-0076f6552463/scratchpad/flow-research/F/task_actuals.json` (94 rows; use `task`, `files`, `full`, `agent_min`). If it is missing, return `blocked` with whoCanClear "orchestrator: regenerate it with docs/research/flow-token-optimization/parse_agents.py".
+- The brief's fit (numpy, same data) gave intercept 3.996, exponent 0.2203, factor 6.865 and in-sample MdAPE 0.443 with the rounded parameters.
+- Floor minutes at 1 before the log, as the brief's fit did.
+- Import ticket.py's `load` by path with `importlib` (see how `ticket_cmds/args.py` loads `scripts/lib/workbench.py`); do not copy the frontmatter parser.

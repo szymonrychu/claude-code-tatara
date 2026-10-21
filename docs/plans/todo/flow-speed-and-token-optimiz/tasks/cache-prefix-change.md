@@ -45,17 +45,21 @@ Apply or decline the prompt-cache change according to the recorded probe (design
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `cache-probe-verdict` (cache-probe), as recorded by the orchestrator in design.md `## Cache probe result`.
+- `implPrompt(t)` and `verifyPrompt(t, impl, prev)` in plan-execute.js keep their signatures.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The cache lever ships only when measured to save writes; otherwise the measurement and the no-op are on record and pinned.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: read the verdict; write `workflows/tests/plan-execute-prompt-prefix.test.mjs::prompt-order-follows-probe-verdict` for that verdict; run `cd plugins/workbench && node --test workflows/tests/plan-execute-prompt-prefix.test.mjs`; on `saving` expect a failure, on `none` it passes at once (the test pins existing behaviour; say so in `tests.note`).
+- Green on `saving`: reorder both prompts. On `none`: no code change.
+- Add the MEMORY.md entry; run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The brief estimated -25% to -30% workflow cache-weighted tokens if 60% of each 17-28k prefix became a read; that estimate is the hypothesis the probe tests.
+- Workflow agents start in the main conversation's cwd; the probe's `cwd` column confirms it, so no launch option changes.
+- On `none` this task is a pinned no-op plus the record; that is the delivery D6 approves.

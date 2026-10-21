@@ -59,17 +59,23 @@ Add `ticket.py estimate <epic>` and stamp actuals from the run dir (design D4, D
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `estimator-params` (estimator-model): `estimator.task_minutes`, `estimator.epic_estimate`, imported by path from `plugins/workbench/scripts/lib/estimator.py`.
+- Owns `epic-time-line`: the Time line format and the `estimate` subcommand output, defined in `ticket_cmds/estimate.py` (time_summary in ticket.py calls it).
+- Task frontmatter keys `estimate_by` (`formula` or `override`) and `actual_roles` (quoted scalar).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py estimate <epic>` gives every task realistic agent minutes and the README shows the epic's critical path and expected wall; after a run, `continue --run` fills `actual` and the role split, so the record compares estimate and actual per task.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `skills/start-development/tests/test_ticket_estimate.py` with AC1-AC6 (fixture epics via `ticket_repo_helpers.py`; a fake run dir with `journal.jsonl` and `agent-<id>.jsonl` rows carrying labels like `<epic>:verify:<task>#2`); run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_estimate.py -q`; expect failures.
+- Green: estimate.py, time_summary, new-task, `_run_dir_durations`, `_actual_update`, roadmap.py; update the old-format assertions in test_ticket_run.py and test_ticket_roadmap.py.
+- Run the task verify; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The Workflow runtime forbids the clock in scripts (`workflows/tests/harness.mjs` CLOCK_ERROR, pinned by `plan-execute-duration.test.mjs`), so actuals come from transcript timestamps after the run, never from plan-execute.
+- `heartbeat.py --remaining-min` and the SKILL text read "Remaining estimate"; keep that field name.
+- The command module pattern is `register(sub, t)` (see `ticket_cmds/contract.py`); `test_ticket_cmd_modules.py` checks module loading.
+- ticket.py was reworked by epic integration worktrees (blocker); read the landed code before editing.

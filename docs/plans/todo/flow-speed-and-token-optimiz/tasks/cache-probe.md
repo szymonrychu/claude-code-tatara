@@ -46,17 +46,20 @@ Build the measurement that decides the prompt-cache change (design D6). The prob
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `cache-probe-verdict`: the `CACHE saving|none` line and the `--json` shape of `hook-evidence.py --cache`, in `plugins/workbench/scripts/hook-evidence.py`. cache-prefix-change acts on the verdict the orchestrator records.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One Workflow run plus one command says whether static-first prompts make the second and later agents read the cache instead of writing it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add AC1-AC2 to `workflows/tests/hook-probe.test.mjs` and AC3-AC5 to `scripts/tests/test_hook_evidence.py` (fixture run dirs with fake journal and transcript rows); run `cd plugins/workbench && node --test workflows/tests/hook-probe.test.mjs && pytest scripts/tests/test_hook_evidence.py -q`; expect failures.
+- Green: the cache mode and `--cache`.
+- Run the task verify; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- After this task lands on the epic branch, the orchestrator runs `Workflow({scriptPath: '<integration tree>/plugins/workbench/workflows/hook-probe.js', args: {probe: 'cache'}})`, then `hook-evidence.py --cache <run dir> --json`, and records the JSON and the verdict in design.md under `## Cache probe result` (D6).
+- Measured: per-agent cache writes are 17k to 28k and cross-agent sharing is near zero, even for the static-first reviewPrompt (brief (a) Cache); the probe separates prompt order from launch concurrency by dispatching serially.
+- Node test titles are single kebab tokens.

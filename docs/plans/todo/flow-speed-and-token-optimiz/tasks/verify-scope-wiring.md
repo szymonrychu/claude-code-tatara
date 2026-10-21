@@ -52,17 +52,21 @@ Wire plan-execute to the bounded verifier and schedule verifies (design D1, D12)
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `verify-task-cli` (verify-task-bounded-runs): `--targeted`, optional `--cmd`, sha-only `--prev-head`.
+- Uses `land-step` (epic integration worktrees): the land command line built in plan-execute.js.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every verify in the loop runs targeted tests inside the Bash cap, at most two suites contend per repo, and the longest dependency chains start first.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `workflows/tests/plan-execute-verify-scope.test.mjs` on `workflows/tests/harness.mjs` with AC1-AC7 (fake agents with delays for the concurrency count); run `cd plugins/workbench && node --test workflows/tests/plan-execute-verify-scope.test.mjs`; expect failures.
+- Green: verifyCommand, the prev-head guard, the prompt line, the per-repo queue, the start order; update `plan-execute-verify.test.mjs`.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The script cannot read a clock or a file; the queue is promise-based (see `runTasks` and `pump`).
+- Measured: full-suite verifies were 57 of 206 and 636 agent-minutes; 3-4 concurrent suites are what pinned verifies at 600 s (brief items 1 and 11).
+- plan-execute.js was reworked by epic integration worktrees (land-in-run, fork-point-diffs); read the landed code first.

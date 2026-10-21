@@ -51,17 +51,20 @@ Size tasks by test files and verify runtime and enforce targeted verifies at pla
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `estimator-params` (estimator-model): `fullSuitePatterns` in `plugins/workbench/scripts/lib/estimator.json`, the same list estimator.py reads.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A new plan cannot schedule a full-suite verify inside the task loop, and planners size tasks by what their verify costs, not by a guessed hour.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `workflows/tests/validate-tasks-sizing.test.mjs` (AC1-AC5, fixture epics as the other validate-tasks tests build them) and the two doc tests; run `cd plugins/workbench && node --test workflows/tests/validate-tasks-sizing.test.mjs && pytest skills/start-development/tests/test_planner_agent.py skills/start-development/tests/test_review_flow_docs.py -q`; expect failures.
+- Green: the lint rule, the two docs, the test needles.
+- Run the task verify; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured: full-suite tasks were 32% of tasks and 71% of agent-minutes; 1-3 file tasks take 3-7 minutes with about 150k cost-weighted tokens of fixed cost each (brief items 1 and 9).
+- In-progress epics keep their full-suite verifies as warnings, so `ticket.py amend` and `decide` (which run this lint) still work on them.
+- test_review_flow_docs.py was changed by epic integration worktrees (docs-readmes-fallback); read the landed file first.

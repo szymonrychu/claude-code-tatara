@@ -46,17 +46,21 @@ Release dependents of a task whose only open findings are medium (design D8). `p
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `land-step` (epic integration worktrees): a released task is landed before its dependents begin.
+- Return task field `mediumOnly` (boolean), next to `processOnly` and `triageRejected`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One medium finding at the top of the DAG no longer fails every dependent: the run continues and the orchestrator rules on the finding afterwards.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `workflows/tests/plan-execute-medium-release.test.mjs` with AC1-AC5; run `cd plugins/workbench && node --test workflows/tests/plan-execute-medium-release.test.mjs`; expect failures.
+- Green: `mediumOnly`, the `released` rule, the return field.
+- Run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`; expect all green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Measured: 19 root escalations caused 183 dependency-failed task-runs; runs 2 and 3 each ran one task and blocked 61 and 60 (brief failure mode 2).
+- Severity enum is `critical`, `high`, `medium` (the review schema in plan-execute.js); every script-made gate finding is `high` and carries `gate`.
+- A dependent built on a later-fixed dependency is handled by the blocker's forward-merge via the epic branch and its re-verify.

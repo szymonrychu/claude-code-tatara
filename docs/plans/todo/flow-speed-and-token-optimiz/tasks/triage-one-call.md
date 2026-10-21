@@ -46,17 +46,19 @@ Fold verify-task's three haiku calls into one (design D12).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `triage.run("verify", data, ...)` in `plugins/workbench/scripts/triage.py`; verify-task's `triage_run` injection point (`build(argv, triage_run=...)`) stays the test seam.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Each verify spends one haiku round trip instead of up to three, about a minute less per verify, with the same result fields.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `scripts/tests/test_verify_triage_one_call.py` with a counting fake `triage_run` (AC1-AC3) and add AC4 to `test_triage.py` with a fake runner; run `cd plugins/workbench && pytest scripts/tests/test_verify_triage_one_call.py scripts/tests/test_triage.py -q`; expect failures.
+- Green: the `verify` mode and the single call site in `build`.
+- Run the task verify; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Today `build` calls `triage_run` for `parking`, `ac-plausible` (through `add_plausibility`) and `tier`, each with a 120 s timeout (`lib/claude_json.py`).
+- `add_plausibility` keeps its shortcut that answers obvious matches without a call; only the remaining items go into the combined call.

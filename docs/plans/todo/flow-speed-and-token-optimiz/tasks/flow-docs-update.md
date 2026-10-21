@@ -55,17 +55,20 @@ Document the new estimates, actuals, relaunch and release rules in the flow refe
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `epic-time-line` (estimate-and-actuals) and `continue-launch-lines` (continue-launch): the docs quote their exact line formats.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An orchestrator reading the references runs the one-command relaunch, shows the epic estimate at the gate, and knows which escalations need a ruling.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add AC1-AC5 to `skills/start-development/tests/test_ticket_flow_docs.py`; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_flow_docs.py -q`; expect failures.
+- Green: edit the seven docs.
+- Run the task verify; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- SKILL.md, run-handback.md, phase-4-execute.md and tickets.md were rewritten by epic integration worktrees (docs-flow-phases, docs-worktree-refs); edit the landed text.
+- Quote the line formats from the landed estimate.py and continue_cmd.py, not from this task.
+- Docs only plus a doc test: the red step is the doc test.
