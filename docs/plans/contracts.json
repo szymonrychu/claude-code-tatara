@@ -8,5 +8,15 @@
       "flow-speed-and-token-optimiz"
     ],
     "note": "in-run landing of released tasks on <epic>; used by verify-scope-wiring, cascade-release, audit-context-and-models"
+  },
+  {
+    "name": "fork-point",
+    "kind": "workflow-field",
+    "owner": "epic-integration-worktrees",
+    "file": "plugins/workbench/workflows/plan-execute.js",
+    "consumers": [
+      "flow-speed-and-token-optimiz"
+    ],
+    "note": "diffBase(t) from the recorded fork point; used by gate-provenance"
   }
 ]
