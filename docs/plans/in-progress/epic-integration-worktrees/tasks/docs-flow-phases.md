@@ -1,6 +1,6 @@
 ---
 title: Docs flow phases
-status: in-progress
+status: done
 repo: workbench
 value: "The orchestrator's flow docs describe exactly the lifecycle the tools now run"
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/references/phases-5-7.md, plugins/workbench/skills/start-development/references/multi-epic.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-research/tests/test_start_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/skills/start-development/tests/test_start_development_generic.py]
@@ -13,8 +13,8 @@ estimate: 70
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-flow-phases
-branch: epic-integration-worktrees--docs-flow-phases
-verified_head: ""
+branch: HEAD
+verified_head: e5270eb1649c3fd84ff6b321455fb8ba1986ae98
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []

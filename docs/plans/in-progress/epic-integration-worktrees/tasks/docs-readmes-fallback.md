@@ -1,6 +1,6 @@
 ---
 title: Docs readmes fallback
-status: in-progress
+status: done
 repo: workbench
 value: READMEs and the off-Claude fallback run the same epic lifecycle as Claude Code
 files: [README.md, plugins/workbench/README.md, AGENTS.md, scripts/harness/fallbacks/plan-execute/SKILL.md, plugins/workbench/skills/start-development/tests/test_release.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py, scripts/tests/harness/test_fallbacks.py]
@@ -14,7 +14,7 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-readmes-fallback
 branch: epic-integration-worktrees--docs-readmes-fallback
-verified_head: ""
+verified_head: 60906119073242a54bdd65606893945f5759d255
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []

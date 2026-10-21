@@ -1,6 +1,6 @@
 ---
 title: Builtin worktree guard
-status: in-progress
+status: done
 repo: workbench
 value: Any future use of the harness built-in worktree feature turns the suite red
 files: [scripts/tests/test_builtin_worktree_guard.py, plugins/workbench/skills/start-development/tests/test_repo_hygiene.py, plugins/workbench/.claude-plugin/plugin.json, .claude-plugin/marketplace.json]
@@ -14,11 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--builtin-worktree-guard
 branch: epic-integration-worktrees--builtin-worktree-guard
-verified_head: ""
+verified_head: 61bcaef2c5435998973842fbad6a5fee53374360
 run: epic-integration-worktrees
 provides: []
-acs_for_audit: []
-process_gaps: []
+acs_for_audit: [AC5]
+process_gaps: ["The implementer states the tests were written with the implementation and never seen red, so the TDD rule was not followed. No exception was claimed."]
 ---
 
 # Builtin worktree guard
