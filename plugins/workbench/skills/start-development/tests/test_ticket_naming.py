@@ -16,6 +16,7 @@ def cli(*args, cwd=None):
         [sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, text=True, cwd=cwd
     )
 
+
 MSG = "ticket.py: epic slug foo-bar collides with the branch of task bar in epic foo"
 
 

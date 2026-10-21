@@ -109,9 +109,7 @@ def name_clashes(
 ) -> list[str]:
     """Failure lines for names that would clash. `wanted` is (name, epic, task): task None means
     the name is an epic slug. Tickets of `own_epic` are skipped (a rename frees its old names)."""
-    taken = {
-        n: v for n, v in ticket_names(root).items() if own_epic is None or v[0] != own_epic
-    }
+    taken = {n: v for n, v in ticket_names(root).items() if own_epic is None or v[0] != own_epic}
     disk = _disk_names(root)
     out: list[str] = []
     for name, epic, task in wanted:
