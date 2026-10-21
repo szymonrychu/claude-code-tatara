@@ -696,6 +696,7 @@ const LAND = {
     landed: { type: 'boolean', description: 'true only when merge.py exited 0: the epic branch now contains the task' },
     head: { type: 'string', description: 'the epic branch SHA after the landing (git rev-parse in the task tree)' },
     conflict: { type: 'boolean', description: 'true when the rebase hit a conflict you did not resolve' },
+    contained: { type: 'boolean', description: 'true when merge.py reported contained: true (the task is already in the epic branch); head is then the task tree HEAD' },
     verification: {
       type: 'object',
       required: ['command', 'passed', 'evidence'],
@@ -2008,9 +2009,12 @@ function applyRulings(rulings, settled) {
 // in the rebased tree, and only then fast-forwards the epic branch in the integration tree.
 // --keep leaves the task tree for remediation and the epic-close audit (D9).
 const LANDED = []
-const landName = (t) => `${EPIC}-${t.rootId || t.id}`
 // A component task's tree is <...>/<epic>-<id>/<repo>; merge.py then needs --repo.
-const componentTree = (t) => t.worktree.replace(/\/+$/, '').split('/').pop() === t.repo
+const treePath = (t) => t.worktree.replace(/\/+$/, '')
+const componentTree = (t) => treePath(t).split('/').pop() === t.repo
+// merge.py --name is the task's recorded worktree name (last path component without the /<repo>
+// suffix), so a legacy <epic>--<id> tree recorded before the upgrade lands through the same step.
+const landName = (t) => (componentTree(t) ? treePath(t).split('/').slice(0, -1) : treePath(t).split('/')).pop()
 
 function landPrompt(t, impl) {
   const flags = [
@@ -2031,7 +2035,9 @@ function landPrompt(t, impl) {
     `   cd ${shq(MAIN_CHECKOUT)} && python3 ${shq(PLUGIN_ROOT + '/skills/worktree-merge/scripts/merge.py')} ${flags.join(' ')}`,
     '2. Relay its output: landed is true only when it exited 0. verification.command is the --verify command, verification.passed is its `verify: pass` line, verification.evidence the output tail including that line. notes carries its notes lines.',
     `3. When it landed, run \`git -C "${repoDir(t)}" rev-parse ${BASE_REF}\` and report the SHA as head; otherwise report head as an empty string.`,
-    `4. On a non-doc rebase conflict, resolve it in the task worktree only when the resolution is unambiguous and keeps both sides' intent, then re-run the task verify there (\`cd "${repoDir(t)}" && ${verifyCommand(t, impl)}\`) before re-running the step 1 command. Otherwise report conflict=true and landed=false, naming the conflicted files in notes.`,
+    `   When its output says contained: true (every commit of the task is already in ${BASE_REF}) and its verify line is pass, the task is landed: report landed true, contained true, and head as the task tree HEAD (\`git -C "${repoDir(t)}" rev-parse HEAD\`). It is never a failure.`,
+    `4. A rebase conflict can be a re-conflict: rebasing a dependent onto ${BASE_REF} drops its merge-of-${BASE_REF} commit, so conflicts that merge had resolved can come back. Resolve a conflicted file in the task worktree only when the resolution is unambiguous: both sides carry the same change, or one side's hunk is exactly the dependency text already on ${BASE_REF}. Then commit in the task worktree, re-run the task verify there (\`cd "${repoDir(t)}" && ${verifyCommand(t, impl)}\`), and re-run the step 1 command once.`,
+    '   Otherwise (any ambiguous file, or the second run conflicts again) run `git rebase --abort` in the task worktree and report landed=false, conflict=true, with notes listing every conflicting file.',
     `   ${OWN_CHECKOUT_ONLY}`,
     '   Never run `git checkout` in the main checkout, and never switch a branch in any tree. A failing verify is reported, not fixed.',
     helperRules('merge'),
@@ -2049,7 +2055,8 @@ async function landTask(t, r) {
     agentType: 'workbench:worktree-merger',
     model: 'sonnet',
   })
-  if (res && res.landed === true && res.verification && res.verification.passed === true) {
+  const ok = res && (res.landed === true || res.contained === true) && res.verification && res.verification.passed === true
+  if (ok) {
     const id = t.rootId || t.id
     LANDED.push({ id, head: res.head })
     log(`${t.id}: landed on ${BASE_REF} at ${res.head}`)
