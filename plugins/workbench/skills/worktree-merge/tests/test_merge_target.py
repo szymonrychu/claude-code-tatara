@@ -243,7 +243,7 @@ def test_nothing_ahead_cleanup_runs_from_the_target_tree(epic):
 
 
 @pytest.mark.parametrize("bad", ["../x", "a/b", "-rf", "a/../b", ".."])
-def test_merge_rejects_unsafe_name_with_exit_2(repo, monkeypatch, capsys, bad):
+def test_merge_back_rejects_unsafe_name(repo, monkeypatch, capsys, bad):
     monkeypatch.chdir(repo)
     calls = []
     monkeypatch.setattr(merge_mod, "run", lambda *a, **k: calls.append(a) or pytest.fail("git ran"))
