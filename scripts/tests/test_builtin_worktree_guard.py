@@ -5,7 +5,6 @@ import re
 import subprocess
 from pathlib import Path
 
-import pytest
 from harness.emit import registry
 from harness.sources import load_sources
 
@@ -39,11 +38,18 @@ def line_ok(line: str) -> bool:
 
 
 def hits(rel: str, text: str):
-    is_test = bool(TEST_FILE.search(rel)) and bool(ABSENCE_ASSERT.search(text))
-    for n, line in enumerate(text.splitlines(), 1):
+    is_test = bool(TEST_FILE.search(rel))
+    lines = text.splitlines()
+    for n, line in enumerate(lines, 1):
         for pat in PATTERNS:
-            if re.search(pat, line) and not line_ok(line) and not is_test:
-                yield f"{rel}:{n}: {pat}: {line.strip()}"
+            if not re.search(pat, line) or line_ok(line):
+                continue
+            if is_test and any(
+                ABSENCE_ASSERT.search(prev) and re.search(pat, prev)
+                for prev in lines[max(0, n - 4) : n]
+            ):
+                continue
+            yield f"{rel}:{n}: {pat}: {line.strip()}"
 
 
 def tracked():
@@ -53,13 +59,16 @@ def tracked():
     return [p for p in out if p and (ROOT / p).is_file()]
 
 
-def test_matcher_self_test():
+def test_matcher_flags_use_and_passes_guards():
     assert list(hits("x.md", 'isolation: "worktree"'))
     assert list(hits("x.md", "Use EnterWorktree to enter the tree"))
     assert not list(hits("x.md", "Do not call the built-in EnterWorktree"))
+    # absence exemption is per pattern: asserting one pattern absent does not cover another
+    t = 'assert "EnterWorktree with path" not in text\nuse ExitWorktree here'
+    assert len(list(hits("a/tests/test_x.py", t))) == 1
 
 
-def test_tracked_files_do_not_use_builtin_worktrees():
+def test_no_builtin_worktree_instructions():
     bad = []
     for rel in tracked():
         try:
@@ -67,27 +76,20 @@ def test_tracked_files_do_not_use_builtin_worktrees():
         except UnicodeDecodeError:
             continue
         bad += hits(rel, text)
+    for target in sorted(registry()):
+        out = registry()[target].render(load_sources(ROOT))
+        for rel, text in out.items():
+            bad += hits(f"[{target}] {rel}", text)
     assert not bad, "built-in worktree feature referenced:\n" + "\n".join(bad)
 
 
-@pytest.mark.parametrize("target", sorted(registry()))
-def test_emitted_files_do_not_use_builtin_worktrees(target):
-    out = registry()[target].render(load_sources(ROOT))
-    bad = [h for rel, text in out.items() for h in hits(rel, text)]
-    assert not bad, "built-in worktree feature emitted:\n" + "\n".join(bad)
-
-
-def test_plugin_json_declares_no_worktree_hooks():
+def test_manifest_and_agents_declare_no_builtin_worktree():
     data = json.loads((ROOT / "plugins/workbench/.claude-plugin/plugin.json").read_text())
     assert not re.search(r"Worktree(Create|Remove)", json.dumps(data.get("hooks", {})))
     hooks_json = ROOT / "plugins/workbench/hooks/hooks.json"
     if hooks_json.exists():
         assert not re.search(r"Worktree(Create|Remove)", hooks_json.read_text())
-
-
-def test_agents_declare_no_isolation():
     for f in (ROOT / "plugins/workbench/agents").glob("*.md"):
-        text = f.read_text()
-        m = re.match(r"---\n(.*?)\n---", text, re.S)
+        m = re.match(r"---\n(.*?)\n---", f.read_text(), re.S)
         front = m.group(1) if m else ""
         assert not re.search(r"^isolation\s*:", front, re.M), f.name
