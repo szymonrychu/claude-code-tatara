@@ -1,6 +1,6 @@
 ---
 title: Epic base wiring
-status: in-progress
+status: done
 repo: workbench
 value: "Task trees, the continue gate and the run all use the epic branch as their base"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py, plugins/workbench/skills/start-development/tests/test_ticket_args.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
@@ -14,11 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-base-wiring
 branch: epic-integration-worktrees--epic-base-wiring
-verified_head: ""
+verified_head: 7f26e08446441dd1276e5852db0a9482a7ea720a
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []
-process_gaps: []
+process_gaps: ["Tests written after code; no red run or tests.red evidence for the changed non-test files. Independent verification asked for a revert-and-fail proof."]
 ---
 
 # Epic base wiring

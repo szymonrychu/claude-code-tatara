@@ -1,6 +1,6 @@
 ---
 title: Fork point record
-status: in-progress
+status: todo
 repo: workbench
 value: A later run diffs a landed task from the same fork point the landing recorded
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py]

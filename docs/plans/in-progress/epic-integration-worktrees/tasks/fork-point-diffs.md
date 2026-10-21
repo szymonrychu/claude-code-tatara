@@ -1,6 +1,6 @@
 ---
 title: Fork point diffs
-status: in-progress
+status: todo
 repo: workbench
 value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]

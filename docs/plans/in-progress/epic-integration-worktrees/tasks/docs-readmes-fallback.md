@@ -1,6 +1,6 @@
 ---
 title: Docs readmes fallback
-status: in-progress
+status: todo
 repo: workbench
 value: READMEs and the off-Claude fallback run the same epic lifecycle as Claude Code
 files: [README.md, plugins/workbench/README.md, AGENTS.md, scripts/harness/fallbacks/plan-execute/SKILL.md, plugins/workbench/skills/start-development/tests/test_release.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py, scripts/tests/harness/test_fallbacks.py]
@@ -81,3 +81,5 @@ Every entry point a human or another harness reads describes claim, fork, in-run
 - `mise run harness-setup` regenerates emitted harness copies only when a target is enabled; nothing tracked is regenerated here.
 
 - 2026-10-21 run epic-integration-worktrees: dependency-failed on epic-close-sweep, epic-close-command, forward-merge-via-epic
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on forward-merge-via-epic

@@ -1,6 +1,6 @@
 ---
 title: Docs worktree refs
-status: in-progress
+status: todo
 repo: workbench
 value: "The worktree and ticket references match the new names, tree and landing"
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
@@ -85,3 +85,5 @@ A reader of worktrees.md and tickets.md finds one consistent naming and lifecycl
 - AC5 forbids the literal double-hyphen name in these docs: describe legacy trees as "legacy double-hyphen trees", never by the literal form.
 
 - 2026-10-21 run epic-integration-worktrees: dependency-failed on slug-collision-guard, land-in-run, epic-base-wiring, epic-close-command, fork-point-record
+
+- 2026-10-21 run epic-integration-worktrees: dependency-failed on slug-collision-guard, fork-point-record

@@ -1,6 +1,6 @@
 ---
 title: Name lookup parsers
-status: escalated
+status: done
 repo: workbench
 value: "No code guesses an epic from a name, so single-hyphen names can never be misattributed"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_names.py, plugins/workbench/skills/start-development/tests/test_ticket_check.py, plugins/workbench/skills/start-development/tests/test_ticket_overlap_ignore.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py]
@@ -14,11 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--name-lookup-parsers
 branch: epic-integration-worktrees--name-lookup-parsers
-verified_head: unknown
+verified_head: 97192abc1ba9aa7faeec3d43e698b831248f5bba
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []
-process_gaps: ["Worktree ticket.py is dirty with the merge-base version (verifier's red step left it); restore to HEAD before further verification or merge", "No red-step evidence recorded; verifier must run the merge-base/HEAD swap and paste both tails"]
+process_gaps: []
 ---
 
 # Name lookup parsers

@@ -1,6 +1,6 @@
 ---
 title: Builtin worktree guard
-status: in-progress
+status: todo
 repo: workbench
 value: Any future use of the harness built-in worktree feature turns the suite red
 files: [scripts/tests/test_builtin_worktree_guard.py, plugins/workbench/skills/start-development/tests/test_repo_hygiene.py, plugins/workbench/.claude-plugin/plugin.json, .claude-plugin/marketplace.json]

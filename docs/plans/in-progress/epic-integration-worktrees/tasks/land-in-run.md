@@ -1,6 +1,6 @@
 ---
 title: Land in run
-status: in-progress
+status: done
 repo: workbench
 value: "Dependents build on the epic branch and every review diff shows only the task's own change"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs, plugins/workbench/workflows/tests/plan-execute-rulings.test.mjs]
@@ -14,9 +14,9 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-in-run
 branch: epic-integration-worktrees--land-in-run
-verified_head: ""
+verified_head: 307ed018d5f324b7d090491d3d81acdb10d0e4ed
 run: epic-integration-worktrees
-provides: []
+provides: [land-step, land-prompt]
 acs_for_audit: []
 process_gaps: []
 ---

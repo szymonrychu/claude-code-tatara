@@ -1,6 +1,6 @@
 ---
 title: Epic close command
-status: in-progress
+status: done
 repo: workbench
 value: "main only ever moves to an epic tip that passed the full suite, after every done task landed"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/close_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_close_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py]
@@ -13,8 +13,8 @@ estimate: 85
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-command
-branch: epic-integration-worktrees--epic-close-command
-verified_head: ""
+branch: "HEAD (worktree epic-integration-worktrees--epic-close-command)"
+verified_head: e0debe5f11dd7737db06e93373335a740d489b00
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []

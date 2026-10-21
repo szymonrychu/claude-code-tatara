@@ -1,6 +1,6 @@
 ---
 title: Land outcomes
-status: in-progress
+status: escalated
 repo: workbench
 value: "A task already on the epic branch, a rebase re-conflict and a legacy tree each land or fail with a named cause"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs]
@@ -14,11 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-outcomes
 branch: epic-integration-worktrees--land-outcomes
-verified_head: ""
+verified_head: "not captured (script did not produce a JSON object)"
 run: epic-integration-worktrees
 provides: []
 acs_for_audit: []
-process_gaps: []
+process_gaps: ["No red/green evidence for the new tests was recorded in tests.red or verification.evidence. I ran it myself: against plan-execute.js at 307ed01 (before this task's changes), 4 of the 6 tests fail (contained-counts-as-landed, prompt-contained-head, resolves-rebase-reconflicts, legacy-tree-name). Against HEAD all 6 pass. The tree was restored and is clean.", "Independent verification timed out at 600s (exit 144) and produced no verdict. The full suite needs to run on the integrated branch."]
 ---
 
 # Land outcomes

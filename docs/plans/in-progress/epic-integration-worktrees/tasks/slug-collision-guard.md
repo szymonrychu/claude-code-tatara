@@ -1,6 +1,6 @@
 ---
 title: Slug collision guard
-status: in-progress
+status: escalated
 repo: workbench
 value: "Two tickets can never produce the same branch, so no task lands on another's tree"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py]
@@ -13,10 +13,10 @@ estimate: 50
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--slug-collision-guard
-branch: epic-integration-worktrees--slug-collision-guard
-verified_head: ""
+branch: "HEAD (worktree epic-integration-worktrees--slug-collision-guard)"
+verified_head: unknown
 run: epic-integration-worktrees
-provides: []
+provides: [name-clashes]
 acs_for_audit: []
 process_gaps: []
 ---
