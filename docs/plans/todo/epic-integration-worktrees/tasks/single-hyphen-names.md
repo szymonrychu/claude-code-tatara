@@ -1,0 +1,66 @@
+---
+title: Single hyphen names
+status: todo
+repo: workbench
+value: "Task trees and branches carry the name the user asked for, <epic>-<task>"
+files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py]
+verify: "mise run test && mise run lint"
+depends_on: []
+owns: []
+uses: []
+model: sonnet
+estimate: 60
+actual: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# Single hyphen names
+
+## Requirement
+
+Switch every task worktree and branch name that ticket.py produces from `<epic>--<task>` to `<epic>-<task>` (user decision U2, design D3).
+
+- `worktree_name(epic, task)` in `plugins/workbench/skills/start-development/scripts/ticket.py` returns `f"{epic}-{task}"`. `WORKTREE_MAX` is `SLUG_MAX + 1 + SLUG_MAX` (57), and a longer name raises `TicketError` naming its length and the cap 57.
+- The producers that build a task tree or branch name use `worktree_name` or the task's `branch` frontmatter: `cmd_worktrees`, the `_move_done` fallback (ticket.py:1247) and `Sweep.task` (:1457-1463).
+- Every test that pins the produced `--` name is updated in this task: test_ticket_files.py:84-86 (join and cap 57), test_ticket_move.py (394-395, 425-480, 549-571, 596-708, 852-856), test_ticket_worktrees_refresh.py:118,143,195-196, test_ticket_reap_task.py:20,29, test_ticket_continue.py:106-107,153-159 (tree paths and branch fixtures), test_run_status_fixes.py:64,74 and test_ticket_run.py:207,235,268.
+- Not here: the name parsers and the `_counting_overlaps` fallback (name-lookup-parsers), the `continue` MERGE line (epic-base-wiring), the docs (docs-worktree-refs), the forking base and merge targets.
+
+## Acceptance conditions
+
+- AC1: worktree_name joins epic and task with one hyphen and rejects names over 57 characters [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_files.py::test_worktree_name_single_hyphen_cap_57]
+- AC2: ticket.py worktrees creates and records single-hyphen trees and branches [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_move.py::test_worktrees_creates_single_hyphen_trees]
+- AC3: reap of one task finds its single-hyphen tree and branch [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py::test_reap_task_mid_epic]
+- AC4: move done falls back to the single-hyphen branch name when the frontmatter has none [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_move.py::test_move_done_fallback_branch_single_hyphen]
+
+## Files
+
+- `plugins/workbench/skills/start-development/scripts/ticket.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_files.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_move.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_continue.py`
+- `plugins/workbench/skills/start-development/tests/test_run_status_fixes.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_run.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py`
+- `plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
