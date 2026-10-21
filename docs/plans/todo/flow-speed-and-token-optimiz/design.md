@@ -368,3 +368,13 @@ continue-launch).
 
 none: continue `--launch` runs merge.py with `--keep` on local, unpushed task and epic branches
 only (the blocker's land path); nothing is deleted, force-pushed or released.
+
+## Builder check answers
+
+- verify-task.py `--timeout` is one shared deadline (default 540 s) across every command a single call runs (the main run, the TDD-revert base run and triage), so the verifier's 600 s Bash call never dies; a command that hits the deadline yields `timeout` and the remaining steps are skipped and reported. (my call)
+- Q1 (quiet heartbeat) is a gate question; heartbeat-quiet builds the answer recorded at the gate.
+- The cache probe: after cache-probe lands, the orchestrator runs the probe workflow itself and writes `## Cache probe result` (numbers plus the run dir) into this design.md. cache-prefix-change is excluded from the run that delivers cache-probe and runs in the next one, so it never starts blocked. (my call)
+- A task released as mediumOnly releases its dependents (they merge its task branch as today) but does not land on the epic branch until the orchestrator rules; a "fix" ruling remediates it and forward-merges plus re-verifies the dependents before anything lands. (my call)
+- The land result gets an additive `conflict` status (with the conflicting files) if the integration epic's land-step does not already expose one; this extends the land-step contract additively and is recorded in the contracts table. (my call)
+- `acsForAudit` (per-task return field) and `acTable()` (plan-execute.js epic-close audit) exist today; audit-context-and-models reaches ac-evidence-map transitively through cascade-release, review-tiering and gate-provenance. (answered)
+- The 94-task fixture source now lives at docs/research/flow-token-optimization/data/F/task_actuals.json (local, gitignored); estimator-model commits the derived fixture under plugins/workbench/scripts/tests/fixtures/. (answered)
