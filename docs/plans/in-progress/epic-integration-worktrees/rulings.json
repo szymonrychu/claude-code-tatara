@@ -10,5 +10,11 @@
     "accept": true,
     "reason": "run 4: fork-point-record, docs-worktree-refs clean; forward-merge-via-epic accepted (gate-repeat on the same false-positive parking flag at plan-execute.js:2115, verified 7624d1d); run 3 tasks landed on main f2e2131",
     "at": "2026-10-21T19:10:21Z"
+  },
+  {
+    "task": "sweep-guard",
+    "accept": true,
+    "reason": "sweep-guard accepted: round-cap escalation was only the verifier's --prev-head unknown crash; hand-run verify-task.py on 0c24045 passed (clean, TDD revert red then green, AC1-AC5 met). builtin-worktree-guard landed on main ba81b5e",
+    "at": "2026-10-21T23:00:02Z"
   }
 ]

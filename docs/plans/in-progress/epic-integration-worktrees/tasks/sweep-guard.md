@@ -1,6 +1,6 @@
 ---
 title: Sweep guard
-status: escalated
+status: done
 repo: workbench
 value: "Closing an epic can never delete a trunk branch or a tree that is not the task's own"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_target.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs]
@@ -64,6 +64,10 @@ Close the three findings of the Epic B security review (scratchpad security-revi
 - Red: add the AC1-AC5 tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_close.py skills/worktree-merge/tests/test_merge_target.py -q` and `node --test workflows/tests/plan-execute-land.test.mjs`; expect the new tests to fail.
 - Green: guard `Sweep.task`/`branch_only`, validate the name in `merge_back`, `shq()` the land prompt flags.
 - Run the task's verify command; expect all green.
+
+## Ruling
+
+- 2026-10-21 accepted: sweep-guard accepted: round-cap escalation was only the verifier's --prev-head unknown crash; hand-run verify-task.py on 0c24045 passed (clean, TDD revert red then green, AC1-AC5 met). builtin-worktree-guard landed on main ba81b5e
 
 ## Notes
 
