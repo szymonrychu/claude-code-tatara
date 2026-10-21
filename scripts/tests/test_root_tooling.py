@@ -96,3 +96,14 @@ def test_pyproject_holds_only_ruff_and_pytest():
 def test_task_families_and_markers():
     _aggregators()
     _markers()
+
+
+def test_tasks_call_the_pinned_pytest_binary():
+    # pytest is a pipx tool pinned in .mise.toml, not a module of the mise python,
+    # so `python -m pytest` only works where pytest happens to be importable.
+    offenders = [
+        str(p.relative_to(ROOT))
+        for p in sorted((ROOT / "mise-tasks").rglob("*"))
+        if p.is_file() and re.search(r"python3?\s+-m\s+pytest", p.read_text())
+    ]
+    assert not offenders, offenders

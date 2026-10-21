@@ -2,4 +2,4 @@
 #MISE description="Fail on literal .claude config paths in plugin and script code"
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-exec python3 -m pytest scripts/tests/test_config_dir_literals.py -q
+exec pytest scripts/tests/test_config_dir_literals.py -q
