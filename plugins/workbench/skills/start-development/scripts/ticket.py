@@ -1100,6 +1100,11 @@ def _new_discovered(epic_dir: Path, d: dict, src: Doc | None, run: str, root: Pa
     path = epic_dir / "tasks" / f"{task}.md"
     if path.exists():
         return None
+    clashes = name_clashes(root, [(f"{epic_dir.name}-{task}", epic_dir.name, task)])
+    if clashes:
+        for line in clashes:
+            print(f"ticket.py: discovered task {task!r} not created: {line}", file=sys.stderr)
+        return None
     where, why = str(d.get("where", "")), str(d.get("why", ""))
     doc = _template("task.md")
     files = [where] if where and " " not in where else []

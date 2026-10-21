@@ -257,3 +257,21 @@ def test_discovered_task_has_no_template_text(repo, root):
     ):
         assert text not in body, text
     assert "{{" not in body
+
+
+def test_discovered_task_with_clashing_branch_is_not_created(repo, root):
+    ep = setup(repo, root, "t-one")
+    mk_epic(root, "Big epic extra work")
+    commit_all(repo)
+    r = apply(
+        repo,
+        root,
+        ep,
+        {
+            "run": "r1",
+            "tasks": [{"id": "t-one", "branch": "b", "clean": True, "verified": True}],
+            "discovered": [{"what": "extra work", "where": "a.py", "why": "w"}],
+        },
+    )
+    assert not (root / "in-progress" / ep / "tasks" / "extra-work.md").exists()
+    assert "collides with epic slug big-epic-extra-work" in r.stderr
