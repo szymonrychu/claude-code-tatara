@@ -52,16 +52,18 @@ Deliver:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `update.restore_owned(root)` keeps its signature.
+- CLI flags unchanged; new refusals exit 1 like the existing ones.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Updating from the template cannot delete local untracked or ignored notes, cannot silently fetch from a different source than requested, and asks before running code from a non-default template.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Write test_update_safety.py (reuse init_helpers fixtures) and the skill test; see them fail.
+2. Restrict restore_owned to staged paths; add the url, branch and base checks and the source line; update SKILL.md.
+3. Run the verify command.
 
 ## Notes
 
