@@ -46,3 +46,11 @@ Estimate: 59 agent-min | Critical path: 44 min | Expected wall at P=1.5: 1.5 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-23)
+
+Whole-diff review (sonnet reviewer): every acceptance condition A-E met, no correctness defects.
+Acted on: e2e runtime in the default suite (heavy tests now behind the slow marker and `mise run e2e`, CI job e2e); license-missing refusal regression restored; discovered during the tatara update: refresh now writes the allow file (template-update of a pre-fix workbench works, verified on claude-code-tatara a9dc548); CI workflow test pins the e2e job.
+Dropped: unchecked `git ls-files -sz` in lint/secrets (a failure only yields a false positive, never a hidden leak; reviewer recommended no change).
+Scope audit (scope-auditor): every approval item and FEEDBACK.md section 1-6 landed.
+Rulings: template-marker-skip gate-repeat false positive (skipif is the deliverable); e2e-init-green verifier timeout, hand-verified 7 passed in 2867s; ruff-e501 no change needed (landed in ce694a7).
