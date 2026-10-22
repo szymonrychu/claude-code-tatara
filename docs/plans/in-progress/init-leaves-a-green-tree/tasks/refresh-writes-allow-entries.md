@@ -1,6 +1,6 @@
 ---
 title: refresh writes allow entries
-status: in-progress
+status: done
 repo: workbench
 value: an already-initialised workbench can take the template update without a red personal lint
 files: [scripts/init_engine/cli.py, scripts/tests/init_engine/test_refresh.py, scripts/tests/init_engine/test_update.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-refresh-writes-allow-entries
 branch: init-leaves-a-green-tree-refresh-writes-allow-entries
-verified_head: ""
-run: ""
+verified_head: 8bfd79ad2557a25c7f3c73ca2d9e6027773a3fb7
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # refresh writes allow entries

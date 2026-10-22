@@ -1,6 +1,6 @@
 ---
 title: license missing refusal
-status: in-progress
+status: done
 repo: workbench
 value: "init still refuses a first run with no LICENSE, as before the epic"
 files: [scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-license-missing-refusal
 branch: init-leaves-a-green-tree-license-missing-refusal
-verified_head: ""
-run: ""
+verified_head: b8c4d961156e31aee4df83055a80b29e20456f66
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 8bfd79ad2557a25c7f3c73ca2d9e6027773a3fb7
 ---
 
 # license missing refusal
