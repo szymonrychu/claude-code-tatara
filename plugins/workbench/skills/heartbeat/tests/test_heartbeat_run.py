@@ -106,6 +106,11 @@ def test_beats_use_digest_until_the_record_exists(tmp_path):
     assert "0/1 agents" in p.stdout
 
 
+def test_waiting_line_prints_once_per_report_interval(tmp_path):
+    p = run(tmp_path, "--wait-max", "0.002", "--report-every", "3600")
+    assert p.stdout.count("waiting for run") == 1
+
+
 def test_failed_run_without_result_still_ends(tmp_path):
     layout(tmp_path, {"status": "failed", "durationMs": 5000})
     p = run(tmp_path)

@@ -134,7 +134,7 @@ def test_loop_prints_one_line_per_beat_and_flags_a_stall(tmp_path):
             "4",
             "--stall-beats",
             "3",
-            "--no-eta",
+            "--keepalive",
         ],
         capture_output=True,
         text=True,
@@ -143,6 +143,58 @@ def test_loop_prints_one_line_per_beat_and_flags_a_stall(tmp_path):
     assert len(out) == 4
     assert out[0].startswith("0/1 agents")
     assert out[3].startswith("STALL")
+
+
+def loop(j, *extra):
+    return subprocess.run(
+        HB + ["--journal", str(j), "--interval", "0", *extra],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.splitlines()
+
+
+def test_quiet_by_default_prints_first_digest_then_stall_only(tmp_path):
+    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
+    out = loop(j, "--beats", "5", "--stall-beats", "3")
+    assert out[0].startswith("0/1 agents")
+    assert [line.split()[0] for line in out[1:]] == ["STALL", "STALL"]
+
+
+def test_unchanged_digest_prints_nothing_after_the_first(tmp_path):
+    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
+    assert len(loop(j, "--beats", "3", "--stall-beats", "9", "--report-every", "0")) == 1
+
+
+def test_report_due_needs_a_changed_digest_and_the_interval():
+    d1, d2 = {"started": 1}, {"started": 2}
+    assert heartbeat.report_due(d1, None, 0, 5, 1800)  # first beat after arming
+    assert not heartbeat.report_due(d1, d1, 0, 9999, 1800)  # unchanged
+    assert not heartbeat.report_due(d2, d1, 100, 200, 1800)  # changed, too soon
+    assert heartbeat.report_due(d2, d1, 100, 1900, 1800)  # changed and due
+
+
+def test_no_claude_process_by_default_and_eta_is_opt_in(tmp_path):
+    marker = tmp_path / "called"
+    b = tmp_path / "bin"
+    b.mkdir()
+    c = b / "claude"
+    c.write_text(f'#!/bin/sh\ntouch {marker}\necho \'{{"result": "50% ETA 5m"}}\'\n')
+    c.chmod(c.stat().st_mode | stat.S_IEXEC)
+    env = {**os.environ, "PATH": f"{b}:{os.environ['PATH']}"}
+    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
+    cmd = HB + ["--journal", str(j), "--interval", "0", "--beats", "1"]
+    out = subprocess.run(cmd, capture_output=True, text=True, env=env).stdout
+    assert not marker.exists() and out.startswith("0/1 agents")
+    out = subprocess.run(cmd + ["--no-eta"], capture_output=True, text=True, env=env).stdout
+    assert not marker.exists()
+    out = subprocess.run(cmd + ["--eta"], capture_output=True, text=True, env=env).stdout
+    assert marker.exists() and out.startswith("~50% done/5m left")
+
+
+def test_keepalive_prints_every_beat(tmp_path):
+    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
+    assert len(loop(j, "--beats", "2", "--stall-beats", "9", "--keepalive")) == 2
 
 
 def test_loop_stops_by_itself_when_the_journal_is_gone(tmp_path):
