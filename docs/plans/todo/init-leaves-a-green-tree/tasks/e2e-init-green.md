@@ -4,7 +4,7 @@ status: todo
 repo: workbench
 value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]
-verify: pytest scripts/tests/e2e/test_instantiate.py -q
+verify: mise exec -- pytest scripts/tests/e2e/test_instantiate.py -q
 depends_on: [personal-allow-file, init-writes-allow-entries, secrets-skip-gitlinks, license-every-plugin, template-marker-skip, skill-text-local-bare-move]
 owns: []
 uses: [personal-allow-local, is-initialised]
@@ -32,6 +32,7 @@ e2e tests initialise a template copy (new and adopt) whose project name and adop
 - AC1: new init leaves lint and test green and a clean status [evidence: test:scripts/tests/e2e/test_instantiate.py::test_new_init_leaves_green_tree]
 - AC2: adopt of a repo with a colliding owner and secret-shaped fixture leaves lint and test green [evidence: test:scripts/tests/e2e/test_instantiate.py::test_adopt_leaves_green_tree]
 - AC3: a second component add keeps lint and test green [evidence: test:scripts/tests/e2e/test_instantiate.py::test_second_component_add_stays_green]
+- AC4: the scripts suite run against an initialised copy has no failures [evidence: test:scripts/tests/e2e/test_instantiate.py::test_suite_green_on_initialised_copy]
 
 ## Files
 

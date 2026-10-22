@@ -4,7 +4,7 @@ status: todo
 repo: workbench
 value: init and component-add skills tell the truth about local-bare and the --path move
 files: [plugins/workbench/skills/init/SKILL.md, plugins/workbench/skills/component-add/SKILL.md, plugins/workbench/skills/init/tests/test_init_skills.py]
-verify: pytest plugins/workbench/skills/init/tests/test_init_skills.py -q
+verify: mise exec -- pytest plugins/workbench/skills/init/tests/test_init_skills.py -q
 depends_on: [license-every-plugin]
 owns: []
 uses: []
