@@ -108,5 +108,15 @@
       "agents-helmfile"
     ],
     "note": "oci://harbor.szymonrichert.pl/charts/agent-orchestrator; required Postgres connection values, optional ingress, env, existing-secret hooks; published by agent-orchestrator CI"
+  },
+  {
+    "name": "agent-orchestrator-settings-env",
+    "kind": "schema",
+    "owner": "agent-orchestrator",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/settings.py",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "ORCH_* env names (ORCH_DATABASE_URL, ORCH_MASTER_KEY(_FILE), ORCH_CLUSTERS_NAMESPACE, ORCH_ALLOWED_CIDRS, ORCH_AGENT_IMAGES, ORCH_ANY_MCP_CONFIG_FILE)"
   }
 ]
