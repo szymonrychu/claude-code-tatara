@@ -98,5 +98,15 @@
       "agent-orchestrator"
     ],
     "note": "onStart hook: python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install 'any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0'; writes any-mcp.yaml as JSON (valid YAML) using stdlib only; console script /opt/any-mcp/bin/any-mcp"
+  },
+  {
+    "name": "agent-orchestrator-chart",
+    "kind": "release",
+    "owner": "agent-orchestrator",
+    "file": "code/agent-orchestrator/chart/values.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "oci://harbor.szymonrichert.pl/charts/agent-orchestrator; required Postgres connection values, optional ingress, env, existing-secret hooks; published by agent-orchestrator CI"
   }
 ]
