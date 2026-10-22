@@ -235,6 +235,9 @@ pytest` with no path, `run-tests.sh` without `--only`) and a command equal to on
 workbench.json `suites` entries is full too. estimator.py (Python) and validate-tasks.mjs (node)
 both read that list; there is no second copy. (my call) Serves U2, U1.
 
+### D14: Quiet heartbeat, 30-minute progress
+Yes: the plan-execute heartbeat stays silent while nothing changes and prints progress at most every 30 minutes; END and STALL print at once (STALL after 30 minutes without journal change); AGENTS.md ground rule 4 names that watcher as the exception to the 10-minute bound. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -291,6 +294,7 @@ both read that list; there is no second copy. (my call) Serves U2, U1.
 | D11 audit and planner context by file | audit-context-and-models, planner-sizing-rule |
 | D12 fan-out cap, start order, haiku roles, one triage call | verify-scope-wiring, audit-context-and-models, triage-one-call |
 | D13 one full-suite predicate | estimator-model, planner-sizing-rule |
+| D14 Quiet heartbeat, 30-minute progress | heartbeat-quiet, flow-docs-update |
 
 ## Contracts
 
