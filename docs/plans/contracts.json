@@ -58,5 +58,15 @@
       "agent-orchestrator"
     ],
     "note": ""
+  },
+  {
+    "name": "any-mcp-cli",
+    "kind": "cli",
+    "owner": "any-mcp",
+    "file": "code/any-mcp/src/any_mcp/cli.py",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "console script any-mcp: --config <path> (or ANY_MCP_CONFIG), --plugin, --transport stdio|http, --version, --help exits 0; exit 78 on config errors; stdio default"
   }
 ]
