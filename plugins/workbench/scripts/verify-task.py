@@ -879,7 +879,9 @@ def build(argv: list, triage_run=None) -> tuple:
         import triage
 
         def triage_run(mode, data):
-            return triage.run(mode, data, log=args.triage_log, usage=usage)
+            return triage.run(
+                mode, data, log=args.triage_log, usage=usage, timeout=deadline.remaining()
+            )
 
     notes = ["triage skipped (--no-triage)"] if args.no_triage else []
 

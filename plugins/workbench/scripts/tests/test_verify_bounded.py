@@ -191,7 +191,7 @@ def test_timeout_evidence_is_not_duplicated():
     assert code == 124 and out == "a\nb\n"
 
 
-def test_timeout_is_one_shared_deadline(repo):
+def test_steps_after_deadline_are_skipped(repo):
     branch(repo)
     acs = [{"id": "A1", "text": "t", "evidence": {"kind": "command", "ref": "sleep 30"}}]
     t0 = time.time()
@@ -224,5 +224,46 @@ def test_skips_tdd_revert_after_deadline(repo):
     assert out["clean"] is True
 
 
-def test_default_deadline_is_540():
+def test_default_shared_deadline_is_540():
     assert vt.DEFAULT_TIMEOUT == 540
+
+
+def test_shared_deadline_spans_main_and_tdd_runs(repo):
+    commit(repo, {"lib_a.py": "OLD\n"}, "seed")
+    branch(repo)
+    commit(repo, {"lib_a.py": "NEW\n"})
+    t0 = time.time()
+    out = verify(repo, "sleep 2", "--no-triage", "--tdd-revert", "--timeout", "3")
+    assert time.time() - t0 < 4
+    assert out["passed"] is False
+    assert out["timeout"] is not None
+
+
+def test_triage_is_capped_by_remaining_deadline(repo, monkeypatch):
+    import triage
+
+    seen = {}
+
+    def fake_run(mode, data, *, runner=None, log=None, usage=None, timeout=None):
+        seen["timeout"] = timeout
+        return {"parking": [], "acs": []}
+
+    monkeypatch.setattr(triage, "run", fake_run)
+    branch(repo)
+    commit(repo, {"lib_a.py": "NEW\n"})
+    verify(repo, "true", "--timeout", "100")
+    assert seen["timeout"] is not None and 0 < seen["timeout"] <= 100
+
+
+def test_triage_run_passes_timeout_to_the_model_call(monkeypatch):
+    import triage
+
+    got = {}
+
+    def fake_call(prompt, schema, **kw):
+        got.update(kw)
+        raise triage.claude_json.ClaudeJsonError("stop")
+
+    monkeypatch.setattr(triage.claude_json, "call_with_meta", fake_call)
+    triage.run("parking", ["x"], timeout=7.5)
+    assert got["timeout"] == 7.5
