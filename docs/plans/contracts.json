@@ -6,5 +6,15 @@
     "file": "src/claude_code_wrapper/router.py",
     "consumers": [],
     "note": "router.on_statusline(payload) callback fed by the statusline relay"
+  },
+  {
+    "name": "wrapper-idle-since",
+    "kind": "api",
+    "owner": "claude-code-wrapper-orchestr",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": ""
   }
 ]
