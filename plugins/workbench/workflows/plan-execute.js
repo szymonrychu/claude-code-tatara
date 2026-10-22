@@ -1068,27 +1068,41 @@ const INSTALL_DEPS =
   'Install missing dependencies first: a package.json with no node_modules beside it, or a pyproject.toml ' +
   'with no .venv, gets the repo\'s own setup task if it has one, else the lockfile install (npm ci, ' +
   'pnpm install --frozen-lockfile, yarn install --immutable, uv sync --frozen). Installing is not an edit.'
-const verifyCommand = (t, impl) =>
-  t.verify || (impl.verification && impl.verification.command) || 'the repo\'s targeted tests and lint command'
+// The task's own verify, never the implementer's free-text command (D1): with none, verify-task
+// builds the targeted command from the AC test refs and the changed test files (--targeted).
+const verifyCommand = (t) => t.verify || ''
+// The command the verifier's script last ran for a task: what a land re-runs when the task has no verify.
+const VERIFIED_COMMAND_BY_ID = new Map()
+const landVerify = (t) => verifyCommand(t) || VERIFIED_COMMAND_BY_ID.get(t.id) || ''
+const SHA_RE = /^[0-9a-f]{7,40}$/
 
 const shq = (x) => `'${String(x).replace(/'/g, `'\\''`)}'`
+// The verify-task.py invocation shared by the verifier and a forward-merge re-verify.
+const verifyTaskCommand = (t, worktree, flags = []) =>
+  `python3 ${shq(PLUGIN_ROOT + '/scripts/verify-task.py')} ${[
+    `--worktree ${worktree}`,
+    `--base ${diffBase(t, true)}`,
+    verifyCommand(t) ? `--cmd ${shq(verifyCommand(t))}` : '--targeted',
+    `--markers ${shq(DEBT_MARKERS)}`,
+    `--test-re ${shq(TEST_FILE_RE.source)}`,
+    ...flags,
+  ].join(' ')}`
 const noRed = (impl) => {
   const tests = (impl && impl.tests) || {}
   return tests.wroteTestFirst === false || !(tests.red && String(tests.red.output || '').trim())
 }
 
 // The checks are a script, not an agent's judgement: the agent runs it once and relays its JSON.
+// verify-task bounds each run at 480 s, so the call fits the Bash tool's 600 s maximum (D1).
+const RUN_ONCE = 'Run this command once and only once, in ONE Bash call with `timeout: 600000`:'
 function verifyPrompt(t, impl, prev) {
   const acs = Array.isArray(t.ac) && t.ac.length ? t.ac : null
+  // A previous head that is not a sha is never put on a command line; the tier was still read.
   const flags = [
-    `--worktree "$D"`,
-    `--base ${diffBase(t, true)}`,
-    `--cmd ${shq(verifyCommand(t, impl))}`,
-    `--markers ${shq(DEBT_MARKERS)}`,
-    `--test-re ${shq(TEST_FILE_RE.source)}`,
     ...(acs ? ['--acs "$ACS"'] : []),
     '--install',
-    ...(prev ? [`--prev-head ${prev}`, '--no-tier'] : []),
+    ...(prev && SHA_RE.test(prev) ? [`--prev-head ${shq(prev)}`] : []),
+    ...(prev ? ['--no-tier'] : []),
     ...(noRed(impl) ? ['--tdd-revert'] : []),
   ]
   return [
@@ -1100,10 +1114,10 @@ function verifyPrompt(t, impl, prev) {
       ? [
           '2. Write this acceptance-condition JSON to a temp file outside the worktree (mktemp), exactly as given, and call its path $ACS:',
           JSON.stringify(acs),
-          '3. Run this command once and only once:',
+          `3. ${RUN_ONCE}`,
         ]
-      : ['2. Run this command once and only once:']),
-    `   python3 ${shq(PLUGIN_ROOT + '/scripts/verify-task.py')} ${flags.join(' ')}`,
+      : [`2. ${RUN_ONCE}`]),
+    `   ${verifyTaskCommand(t, '"$D"', flags)}`,
     `${acs ? '4' : '3'}. The script prints one JSON object: relay the JSON verbatim as your result. Change nothing, add nothing, run no other check, write no gloss of your own (at most 0 words of yours). A command is judged by its exit code only: 0 is met and passed, anything else is not; never set passed or met differently from the script.`,
     '',
     'Do not edit, commit, stash, reset or switch branches. If the script cannot run, report passed=false with the error as evidence.',
@@ -1151,26 +1165,48 @@ async function safeAgent(t, role, prompt, opts) {
 const diedReason = (t, died) => (AGENT_ERRORS.has(t.id) ? 'agent-output-invalid' : died)
 const diedExtra = (t) => (AGENT_ERRORS.has(t.id) ? { agentError: AGENT_ERRORS.get(t.id) } : {})
 
+// At most VERIFY_CAP verifier agents run at once per repo (D12): 3-4 concurrent suites in one repo
+// pinned verifies at the 600 s cap. A per-repo FIFO queue; an ending verify hands its slot straight
+// to the next queued one. Only the verifier call holds a slot, so a queued verify always starts.
+const VERIFY_CAP = 2
+const VERIFY_SLOTS = new Map()
+async function withVerifySlot(repo, fn) {
+  if (!VERIFY_SLOTS.has(repo)) VERIFY_SLOTS.set(repo, { active: 0, queue: [] })
+  const slot = VERIFY_SLOTS.get(repo)
+  if (slot.active < VERIFY_CAP) slot.active++
+  else await new Promise((start) => slot.queue.push(start))
+  try {
+    return await fn()
+  } finally {
+    const next = slot.queue.shift()
+    if (next) next()
+    else slot.active--
+  }
+}
+
 // Dispatches the verifier for the deliverable `impl` and returns { impl, findings },
 // where impl.verification is now the verifier's result and the implementer's own
 // claim moves to impl.selfVerification. Null when the verifier returns nothing.
 async function independentVerify(t, impl) {
   bump(VERIFY_BY_ROOT, t.rootId || t.id)
   const prev = PREV_HEAD_BY_ID.get(t.id)
-  let v = await safeAgent(t, 'verify', verifyPrompt(t, impl, prev), {
-    label: `${NAME}:verify:${t.short}#${bump(VERIFY_BY_ID, t.id)}`,
-    phase: 'Verify',
-    schema: VERIFY,
-    model: 'haiku',
-    effort: 'low',
-    ...(VERIFIER_AGENT ? { agentType: VERIFIER_AGENT } : {}),
-  })
+  let v = await withVerifySlot(t.repo, () =>
+    safeAgent(t, 'verify', verifyPrompt(t, impl, prev), {
+      label: `${NAME}:verify:${t.short}#${bump(VERIFY_BY_ID, t.id)}`,
+      phase: 'Verify',
+      schema: VERIFY,
+      model: 'haiku',
+      effort: 'low',
+      ...(VERIFIER_AGENT ? { agentType: VERIFIER_AGENT } : {}),
+    }),
+  )
   // A partial result (the turn cap hit before the report was complete) is no result.
   if (!v || typeof v.head !== 'string' || typeof v.passed !== 'boolean') {
     log(`${t.id}: verify agent returned ${v ? 'a partial result' : 'nothing'}`)
     return null
   }
   PREV_HEAD_BY_ID.set(t.id, v.head)
+  if (v.command) VERIFIED_COMMAND_BY_ID.set(t.id, v.command)
   // The script is the authority (D12): pass and each command AC follow its exit code, never the relay's wording.
   const scriptPassed = Number.isInteger(v.exit) ? v.exit === 0 : v.passed
   if (v.passed !== scriptPassed) log(`${t.id}: verifier passed=${v.passed} contradicts script exit ${v.exit}; the script value wins`)
@@ -2031,14 +2067,14 @@ const componentTree = (t) => treePath(t).split('/').pop() === t.repo
 // suffix), so a legacy <epic>--<id> tree recorded before the upgrade lands through the same step.
 const landName = (t) => (componentTree(t) ? treePath(t).split('/').slice(0, -1) : treePath(t).split('/')).pop()
 
-function landPrompt(t, impl) {
+function landPrompt(t) {
   const flags = [
     `--name ${shq(landName(t))}`,
     `--base ${shq(BASE_REF)}`,
     ...(componentTree(t) ? [`--repo ${shq(t.repo)}`] : []),
     '--keep',
     '--no-suites',
-    `--verify ${shq(verifyCommand(t, impl))}`,
+    `--verify ${shq(landVerify(t))}`,
   ]
   return [
     `Land plan task ${t.id} on the epic branch ${BASE_REF}: merge.py rebases its branch onto ${BASE_REF}, runs the task verify in the rebased tree, and only on a pass fast-forwards ${BASE_REF} in the integration tree.`,
@@ -2052,7 +2088,7 @@ function landPrompt(t, impl) {
     `3. When it landed, run \`git -C "${repoDir(t)}" rev-parse ${BASE_REF}\` and report the SHA as head; otherwise report head as an empty string.`,
     `   Also report base: the baseBefore value merge.py prints (the ${BASE_REF} commit the task was rebased onto and fast-forwarded from); empty when it did not land.`,
     `   Contained: when merge.py exits 0 printing \`merged 0 commit(s)\` and a note that there is nothing to merge because every commit is already in ${BASE_REF}, and its verify line is pass, the task is landed: report landed true, contained true, and head as the task tree HEAD (\`git -C "${repoDir(t)}" rev-parse HEAD\`). It is never a failure.`,
-    `4. A rebase conflict can be a re-conflict: rebasing a dependent onto ${BASE_REF} drops its merge-of-${BASE_REF} commit, so conflicts that merge had resolved can come back. merge.py has already aborted its rebase, so the task worktree is clean. First reproduce the conflict: run \`git -C "${repoDir(t)}" rebase ${BASE_REF}\` in the task worktree and list the conflicted files with \`git -C "${repoDir(t)}" diff --name-only --diff-filter=U\`. Resolve a conflicted file only when the resolution is unambiguous: both sides carry the same change, or one side's hunk is exactly the dependency text already on ${BASE_REF}. For each resolved file run \`git -C "${repoDir(t)}" add <file>\`, then \`git -C "${repoDir(t)}" rebase --continue\` (with GIT_EDITOR=true), repeating until the rebase is finished and no rebase is in progress. Then re-run the task verify there (\`cd "${repoDir(t)}" && ${verifyCommand(t, impl)}\`), and re-run the step 1 command once.`,
+    `4. A rebase conflict can be a re-conflict: rebasing a dependent onto ${BASE_REF} drops its merge-of-${BASE_REF} commit, so conflicts that merge had resolved can come back. merge.py has already aborted its rebase, so the task worktree is clean. First reproduce the conflict: run \`git -C "${repoDir(t)}" rebase ${BASE_REF}\` in the task worktree and list the conflicted files with \`git -C "${repoDir(t)}" diff --name-only --diff-filter=U\`. Resolve a conflicted file only when the resolution is unambiguous: both sides carry the same change, or one side's hunk is exactly the dependency text already on ${BASE_REF}. For each resolved file run \`git -C "${repoDir(t)}" add <file>\`, then \`git -C "${repoDir(t)}" rebase --continue\` (with GIT_EDITOR=true), repeating until the rebase is finished and no rebase is in progress. Then re-run the task verify there (\`cd "${repoDir(t)}" && ${landVerify(t)}\`), and re-run the step 1 command once.`,
     '   Otherwise (any ambiguous file) run `git rebase --abort` in the task worktree and report landed=false, conflict=true, with notes listing every conflicting file. If the re-run of the step 1 command conflicts again, merge.py has aborted its own rebase: run `git rebase --abort` only if a rebase is still in progress, and report landed=false, conflict=true with every conflicting file listed in notes.',
     `   ${OWN_CHECKOUT_ONLY}`,
     '   Never run `git checkout` in the main checkout, and never switch a branch in any tree. A failing verify is reported, not fixed.',
@@ -2064,7 +2100,12 @@ function landPrompt(t, impl) {
 // One landing; returns the task's settled result after it: the landed head as the verification
 // head on success, else clean false with reason land-failed and the land result attached.
 async function landTask(t, r) {
-  const res = await safeAgent(t, 'land', landPrompt(t, r.impl), {
+  // A land with no command to verify would fast-forward unchecked: it fails instead.
+  if (!landVerify(t)) {
+    log(`${t.id}: no task verify and no verifier command to land with - escalating`)
+    return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, land: null }
+  }
+  const res = await safeAgent(t, 'land', landPrompt(t), {
     label: label('land', t),
     phase: 'Land',
     schema: LAND,
@@ -2095,6 +2136,14 @@ async function landTask(t, r) {
 // With LANDING a task that would be released is queued for landing first and counts as
 // released only once it landed; one land agent runs at a time, and a failed landing
 // (reason land-failed) fails its dependents.
+// Transitive dependents of a task's root: the critical-path proxy (plan-execute reads no task size).
+const DEPENDENTS = new Map()
+const dependentCount = (t) => {
+  const id = t.rootId || t.id
+  if (!DEPENDENTS.has(id)) DEPENDENTS.set(id, byId.has(id) ? TASK_IDS.filter((d) => ancestors(d).has(id)).length : 0)
+  return DEPENDENTS.get(id)
+}
+
 function runTasks(batch) {
   const ids = new Set(batch.map((t) => t.id))
   const depsOf = (t) => (t.dependsOn || []).filter((d) => ids.has(d))
@@ -2177,13 +2226,16 @@ function runTasks(batch) {
       land()
       for (let moved = true; moved; ) {
         moved = false
+        const ready = []
         for (const t of waiters()) {
           const deps = depsOf(t)
-          if (deps.every(released)) begin(t)
+          if (deps.every(released)) ready.push(t)
           else if (deps.some((d) => !released(d) && !rulable(d) && !landPending(d))) fail(t)
           else continue
           moved = true
         }
+        // Longest chain first (D12): sort is stable, so ties keep input order.
+        ready.sort((a, b) => dependentCount(b) - dependentCount(a)).forEach(begin)
       }
       if (reading) return
       const idle = running.size === 0 && !landing && !landQueue.length
@@ -2382,7 +2434,26 @@ const escalated = []
 // Dependencies before dependents: an ancestor has strictly fewer ancestors.
 const topo = (ids) => [...ids].sort((a, b) => ancestors(a).size - ancestors(b).size)
 
-function mergePrompt(d, impl, branch) {
+// The re-verify after a forward merge follows the verifier's rule: the task verify, else verify-task --targeted.
+function mergeVerifySteps(d) {
+  if (verifyCommand(d)) {
+    return [
+      `5. Run exactly this command: ${verifyCommand(d)}`,
+      '   Set verification.passed from its real exit status and paste the tail, including the pass/fail',
+      '   summary line, into verification.evidence.',
+    ]
+  }
+  const acs = Array.isArray(d.ac) && d.ac.length ? d.ac : null
+  return [
+    ...(acs ? ['5. Write this acceptance-condition JSON to a temp file outside the worktree (mktemp), exactly as given, and call its path $ACS:', JSON.stringify(acs)] : []),
+    `${acs ? '6' : '5'}. ${RUN_ONCE}`,
+    `   ${verifyTaskCommand(d, `"${repoDir(d)}"`, [...(acs ? ['--acs "$ACS"'] : []), '--no-triage'])}`,
+    '   It prints one JSON object: verification.passed is its passed field, verification.command its command,',
+    '   and verification.evidence its evidence tail, including the pass/fail summary line.',
+  ]
+}
+
+function mergePrompt(d, branch) {
   return [
     `Merge a remediated dependency forward into plan task ${d.id}'s tree, then re-verify it.`,
     briefBlock(),
@@ -2394,9 +2465,7 @@ function mergePrompt(d, impl, branch) {
     '   Do not resolve a conflict by discarding either side; report it.',
     '3. Run `git rev-parse HEAD` and report it as head.',
     `4. ${INSTALL_DEPS}`,
-    `5. Run exactly this command: ${verifyCommand(d, impl)}`,
-    '   Set verification.passed from its real exit status and paste the tail, including the pass/fail',
-    '   summary line, into verification.evidence.',
+    ...mergeVerifySteps(d),
     'Do not edit any file, amend, reset, rebase or switch branches. A command you did not run is passed=false.',
     helperRules('merge'),
     'Keep the whole report to at most 150 words.',
@@ -2441,7 +2510,7 @@ async function forwardMerge(latest, remediated) {
     for (const D of topo(dependents)) {
       const d = byId.get(D)
       let dr = latest.get(D)
-      const result = await safeAgent(d, 'merge', mergePrompt(d, dr.impl, branch), {
+      const result = await safeAgent(d, 'merge', mergePrompt(d, branch), {
         label: label('merge', d),
         phase: 'Merge',
         schema: MERGE,
