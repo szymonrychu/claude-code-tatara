@@ -78,5 +78,15 @@
       "agent-orchestrator"
     ],
     "note": "YAML: server, tools, python_path, plugins[] (name, plugin, namespace, allow, tags, timeout, reload_every, config); unknown keys rejected; VAR expansion"
+  },
+  {
+    "name": "any-mcp-release",
+    "kind": "release",
+    "owner": "any-mcp",
+    "file": "code/any-mcp/pyproject.toml",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "tag v0.1.0: pip install 'any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0'; console script any-mcp"
   }
 ]
