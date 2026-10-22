@@ -40,13 +40,20 @@ assert_status "$status" 1 "brief_path exits non-zero for an empty topic"
 out="$(cd "$WB" && bash "$SCRIPT" "!!!" 2>&1)"; status=$?
 assert_status "$status" 1 "brief_path exits non-zero when slug is empty"
 
-PLAIN="$TMPDIR_ROOT/plain"
-mkdir -p "$PLAIN"
-git -C "$PLAIN" init -q
-top="$(git -C "$PLAIN" rev-parse --show-toplevel)"
-out="$(cd "$PLAIN" && bash "$SCRIPT" "My Topic" 2>&1)"; status=$?
-assert_status "$status" 0 "brief_path works in a plain git repo"
-assert_eq "$out" "$top/docs/research/$today-my-topic.md" "brief_path uses the git toplevel in a plain repo"
+# the script finds the workbench that contains it: the plain-repo fallback exists only in the
+# uninitialised template
+SCRIPT_ROOT="$(cd "$(dirname "$SCRIPT")/../../../../.." && pwd)"
+if [ -d "$SCRIPT_ROOT/code" ] && [ -f "$SCRIPT_ROOT/.gitmodules" ]; then
+  ok "plain-repo fallback skipped: the script lives inside an initialised workbench"
+else
+  PLAIN="$TMPDIR_ROOT/plain"
+  mkdir -p "$PLAIN"
+  git -C "$PLAIN" init -q
+  top="$(git -C "$PLAIN" rev-parse --show-toplevel)"
+  out="$(cd "$PLAIN" && bash "$SCRIPT" "My Topic" 2>&1)"; status=$?
+  assert_status "$status" 0 "brief_path works in a plain git repo"
+  assert_eq "$out" "$top/docs/research/$today-my-topic.md" "brief_path uses the git toplevel in a plain repo"
+fi
 
 echo "----"
 echo "passed: $PASS failed: $FAIL"

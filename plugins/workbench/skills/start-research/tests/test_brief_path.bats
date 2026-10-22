@@ -50,6 +50,12 @@ EOF
 }
 
 @test "brief_path works in a plain git repo" {
+  # the script finds the workbench that contains it, so the plain-repo fallback only exists
+  # in the uninitialised template (no code/ and .gitmodules above the script)
+  root="$(cd "$(dirname "$SCRIPT")/../../../../.." && pwd)"
+  if [ -d "$root/code" ] && [ -f "$root/.gitmodules" ]; then
+    skip "the script lives inside an initialised workbench"
+  fi
   REPO="$BATS_TEST_TMPDIR/plain"
   mkdir -p "$REPO"
   git -C "$REPO" init -q
