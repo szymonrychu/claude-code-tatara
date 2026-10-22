@@ -216,6 +216,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="template URL, used only when no template remote exists",
     )
     u.add_argument("--branch", default="main", help="template branch (default main)")
+    u.add_argument(
+        "--base",
+        metavar="SHA",
+        help="template commit the project was copied from; needed once when no history is shared",
+    )
     u.add_argument("--lint-command", default="mise run lint", help=argparse.SUPPRESS)
     u.set_defaults(func=update.cmd_update)
     c = sub.add_parser("component", help="add or remove a component after init")

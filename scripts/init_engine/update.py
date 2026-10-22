@@ -118,10 +118,63 @@ def tail(proc: subprocess.CompletedProcess) -> str:
     return lines[-1] if lines else "no output"
 
 
+def oldest_root(root: Path) -> tuple[str, int]:
+    """The project's oldest root commit and its committer timestamp."""
+    out = git("log", "--max-parents=0", "--format=%H %ct", "HEAD", cwd=root).stdout.split("\n")
+    roots = [(h, int(t)) for h, t in (line.split() for line in out if line.strip())]
+    return min(roots, key=lambda r: r[1])
+
+
+def candidate_base(root: Path, sha: str, not_after: int) -> str | None:
+    """The newest template commit whose committer date is not newer than `not_after`."""
+    out = git("log", "--format=%H %ct", sha, cwd=root).stdout.split("\n")
+    best: tuple[str, int] | None = None
+    for h, t in (line.split() for line in out if line.strip()):
+        if int(t) <= not_after and (best is None or int(t) > best[1]):
+            best = (h, int(t))
+    return best[0] if best else None
+
+
+def check_base(root: Path, base: str, sha: str, branch: str) -> str:
+    """Resolve --base to a commit that is an ancestor of the fetched template commit."""
+    proc = git("rev-parse", "-q", "--verify", f"{base}^{{commit}}", cwd=root, check=False)
+    if proc.returncode != 0:
+        raise Refusal(f"--base {base} is not a commit")
+    commit = proc.stdout.strip()
+    if git("merge-base", "--is-ancestor", commit, sha, cwd=root, check=False).returncode != 0:
+        raise Refusal(f"--base {base} is not an ancestor of template/{branch} {sha[:12]}")
+    return commit
+
+
 def cmd_update(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     preflight(root)
     sha = fetch_template(root, args.url, args.branch)
+    base = args.base
+    if git("merge-base", "HEAD", sha, cwd=root, check=False).returncode == 0:
+        if base:
+            print("--base ignored: history is shared")
+        return merge_update(root, args, sha)
+    if not base:
+        head, when = oldest_root(root)
+        candidate = candidate_base(root, sha, when)
+        rerun = "mise run init:update -- --base " + (candidate or "<template commit>")
+        if args.branch != "main":
+            rerun += f" --branch {args.branch}"
+        raise Refusal(
+            f"no shared history with template/{args.branch}\n"
+            f"candidate base: {candidate or 'none'}\n{rerun}"
+        )
+    commit = check_base(root, base, sha, args.branch)
+    project_root, _ = oldest_root(root)
+    git("replace", "--graft", project_root, commit, cwd=root)
+    try:
+        return merge_update(root, args, sha)
+    finally:
+        git("replace", "-d", project_root, cwd=root, check=False)
+
+
+def merge_update(root: Path, args: argparse.Namespace, sha: str) -> int:
     short = sha[:12]
     if git("merge-base", "--is-ancestor", sha, "HEAD", cwd=root, check=False).returncode == 0:
         print(f"up to date with template/{args.branch} {short}")
