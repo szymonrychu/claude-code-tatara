@@ -1,6 +1,6 @@
 ---
 title: Full suite split shared
-status: in-progress
+status: done
 repo: workbench
 value: The estimator and the plan lint can no longer disagree on what a full-suite verify is
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/scripts/tests/test_estimator.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--full-suite-split-shared
 branch: flow-speed-and-token-optimiz--full-suite-split-shared
-verified_head: ""
-run: ""
+verified_head: 7937ba8d97fa0c985fafd67ce0b116534273578a
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: [AC3]
+process_gaps: []
 ---
 
 # Full suite split shared
@@ -55,6 +57,10 @@ One splitting rule in two languages, pinned by one shared example list.
 1. Add fullSuiteExamples and the two tests; see the node side fail on the `;` and `||` examples.
 2. Align the node splitter (and the python one for `||`).
 3. Run the verify command.
+
+## Ruling
+
+- 2026-10-22 accepted: run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.
 
 ## Notes
 

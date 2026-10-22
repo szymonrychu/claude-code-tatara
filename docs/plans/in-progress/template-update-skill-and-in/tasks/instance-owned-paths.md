@@ -34,9 +34,9 @@ Move the instance-owned path list into one module and make init's template-histo
 
 ## Acceptance conditions
 
-- AC1: after init, git ls-files docs/plans lists only the three phase .gitkeep files and docs/research and docs/handoffs track nothing, with contracts.json and index.json seeded beforehand [evidence: test:scripts/tests/init_engine/test_finalize.py::test_init_tracks_only_plan_gitkeeps]
-- AC2: clear_template_history follows INSTANCE_OWNED: an extra monkeypatched delete entry is removed and a rewritten entry is left in place [evidence: test:scripts/tests/init_engine/test_finalize.py::test_clear_template_history_follows_owned_list]
-- AC3: after init MEMORY.md and ROADMAP.md hold no template entry and are the fresh init versions [evidence: test:scripts/tests/init_engine/test_finalize.py::test_init_writes_fresh_memory_and_roadmap]
+- AC1: after init, git ls-files docs/plans lists only the three phase .gitkeep files and docs/research and docs/handoffs track nothing, with contracts.json and index.json seeded beforehand [evidence: test:scripts/tests/init_engine/test_finalize.py::test_owned_paths_retired_from_tracked_files]
+- AC2: clear_template_history follows INSTANCE_OWNED: an extra monkeypatched delete entry is removed and a rewritten entry is left in place [evidence: test:scripts/tests/init_engine/test_finalize.py::test_clear_template_history_derives_from_owned_list]
+- AC3: after init MEMORY.md and ROADMAP.md hold no template entry and are the fresh init versions [evidence: test:scripts/tests/init_engine/test_project_files.py::test_docs_reset]
 - AC4: owned.py defines INSTANCE_OWNED and GENERATED_ON_CONFLICT [evidence: symbol:scripts/init_engine/owned.py::INSTANCE_OWNED]
 - AC5: no new docs/plans entry in .gitignore [evidence: command:! grep -E '^/?docs/plans/(todo|in-progress|done|contracts)' .gitignore]
 - AC6: the finalize tests and root lint pass [evidence: command:pytest scripts/tests/init_engine/test_finalize.py -q && ruff check scripts]

@@ -1,6 +1,6 @@
 ---
 title: Shell quote refs
-status: in-progress
+status: done
 repo: workbench
 value: No ref or path from args or an earlier run reaches a verifier shell command unquoted
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-shell-quoting.test.mjs]
@@ -13,10 +13,12 @@ estimate: ""
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--shell-quote-refs
-branch: flow-speed-and-token-optimiz--shell-quote-refs
-verified_head: ""
-run: ""
+branch: HEAD
+verified_head: 4409cc7a71bfda4e014a3fb013684d7ca497ba5f
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: [AC1, AC2, AC3]
+process_gaps: []
 ---
 
 # Shell quote refs
@@ -52,6 +54,10 @@ Hostile or malformed refs and paths in args or run data cannot execute in a veri
 1. Write plan-execute-shell-quoting.test.mjs and see it fail.
 2. Validate forkPoint with SHA_RE; shq the base in the three command builders; shq in repoDir.
 3. Run the verify command.
+
+## Ruling
+
+- 2026-10-22 accepted: run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.
 
 ## Notes
 

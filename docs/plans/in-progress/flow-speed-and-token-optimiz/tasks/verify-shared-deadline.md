@@ -1,6 +1,6 @@
 ---
 title: Verify shared deadline
-status: in-progress
+status: done
 repo: workbench
 value: "A verifier never dies at the 600 s Bash cap: one deadline covers every command a verify call runs"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/agents/verifier.md, plugins/workbench/workflows/plan-execute.js]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-shared-deadline
 branch: flow-speed-and-token-optimiz--verify-shared-deadline
-verified_head: ""
-run: ""
+verified_head: cc58bb40abfa3b3357b353a66a33926094e99848
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Verify shared deadline
@@ -55,6 +57,10 @@ One verify-task.py call never runs longer than its --timeout in total, so the ve
 2. Replace per-command timeouts with a deadline computed once; pass the remaining seconds to each command.
 3. Record skipped steps; update help text, verifier.md and the plan-execute.js comment.
 4. Run the verify command.
+
+## Ruling
+
+- 2026-10-22 accepted: run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.
 
 ## Notes
 
