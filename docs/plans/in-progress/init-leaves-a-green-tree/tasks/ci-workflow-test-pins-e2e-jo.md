@@ -1,6 +1,6 @@
 ---
 title: ci workflow test pins e2e job
-status: todo
+status: in-progress
 repo: workbench
 value: "the template's full suite is green again after the e2e CI job was added"
 files: [scripts/tests/test_ci_workflow.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
+branch: init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
 verified_head: ""
 run: ""
 provides: []
