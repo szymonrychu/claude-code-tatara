@@ -144,7 +144,7 @@
   "minutes": 4.221666666666667
  },
  {
-  "task": "drop-homelab-items",
+  "task": "drop-legacy-items",
   "files": 5,
   "full": 0,
   "minutes": 10.746666666666668
