@@ -10,7 +10,7 @@ owns: []
 uses: [cache-probe-verdict]
 model: sonnet
 estimate: 5
-actual: ""
+actual: 3
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-prefix-change
 branch: flow-speed-and-token-optimiz--cache-prefix-change
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: [AC3]
 process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 estimate_by: formula
+actual_roles: "impl 1, verify 2, review 1, fix 1"
 ---
 
 # Cache prefix change
