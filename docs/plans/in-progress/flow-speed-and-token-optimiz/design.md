@@ -366,7 +366,8 @@ continue-launch).
   before any prompt changes.
 
 ## Open questions
-- Q1: (D3) Should the plan-execute heartbeat stay silent while nothing changes and print progress at most every 30 minutes (END and STALL still at once, STALL after 30 minutes without journal change), with AGENTS.md ground rule 4 naming that watcher as the exception to the 10-minute bound? [recommended: yes: it removes most of the 156 heartbeat wake-ups (about 24% of orchestrator tokens) while END and STALL keep stalls visible]
+
+none: Q1 (D3, quiet heartbeat with 30-minute progress) answered yes at the gate on 2026-10-22, recorded as D14.
 
 ## Irreversible operations in scope
 
