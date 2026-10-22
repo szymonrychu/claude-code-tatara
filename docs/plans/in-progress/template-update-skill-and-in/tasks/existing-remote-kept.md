@@ -5,7 +5,7 @@ repo: workbench
 value: "An update never rewrites the user's template remote"
 files: [scripts/tests/init_engine/test_update.py]
 verify: "pytest scripts/tests/init_engine/test_update.py -q && ruff check scripts"
-depends_on: []
+depends_on: [update-safety, e2e-template-update]
 owns: []
 uses: []
 model: sonnet
