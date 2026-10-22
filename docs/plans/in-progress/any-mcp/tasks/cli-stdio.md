@@ -1,6 +1,6 @@
 ---
 title: CLI stdio
-status: done
+status: escalated
 repo: any-mcp
 value: "any-mcp runs as a well-behaved local stdio MCP server, the default transport"
 files: [src/any_mcp/cli.py, src/any_mcp/__main__.py, src/any_mcp/log.py, tests/test_cli.py, tests/fixtures/stdio_plugin.py]
