@@ -63,7 +63,7 @@ def run(root, tmp_path, stub, *extra, acs=None):
 JUDGE = [{"id": "AC1", "text": "tidy", "evidence": {"kind": "judgement"}}]
 
 
-def test_one_verify_call_carries_every_part(repo, tmp_path):
+def test_one_triage_call_per_verify(repo, tmp_path):
     stub = Stub(
         {
             "parking": [{"file": "m.py", "line": 1, "text": "# fix later maybe", "reason": "d"}],
@@ -79,7 +79,7 @@ def test_one_verify_call_carries_every_part(repo, tmp_path):
     assert out["acs"][0]["plausible"] == "yes" and out["tierHint"] == "full"
 
 
-def test_no_part_needed_means_no_call(repo, tmp_path):
+def test_no_call_when_nothing_to_triage(repo, tmp_path):
     (repo / "m.py").write_text("x = 1\n")
     git(repo, "commit", "-qam", "clean")
     stub = Stub({})
@@ -93,7 +93,7 @@ def test_no_tier_drops_only_the_tier_part(repo, tmp_path):
     assert set(stub.calls[0][1]) == {"parking"}
 
 
-def test_failed_call_falls_back_with_a_note(repo, tmp_path):
+def test_verify_mode_failure_falls_back_with_note(repo, tmp_path):
     stub = Stub({"parking": [], "acs": [], "classifierTier": None, "error": "classifier failed: x"})
     out = run(repo, tmp_path, stub, acs=JUDGE)
     assert len(stub.calls) == 1

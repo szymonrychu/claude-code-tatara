@@ -209,8 +209,8 @@ def verify(data: dict, *, runner=None, meta: dict | None = None) -> dict:
         props["parking"] = _arr(_obj(index=_INT, reason=_STR))
         parts.append(
             "PARKING: these are lines added in a change (comments, docs, strings). Return in "
-            "`parking` only those that defer, park or postpone work (TODO, later, follow-up, not "
-            "handled yet, out of scope, temporary workaround to revisit). Ordinary explanation "
+            "`parking` only those that defer, park or postpone work (promises of later work, "
+            "unhandled cases, scope disclaimers, temporary workarounds to revisit). Ordinary explanation "
             "is not parking. Give the index and a short reason.\n"
             + json.dumps(
                 [

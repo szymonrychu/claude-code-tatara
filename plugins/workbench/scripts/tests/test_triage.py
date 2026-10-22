@@ -333,7 +333,7 @@ V_CANDS = [
 V_ACS = [{"id": "AC1", "text": "doc", "kind": "judgement", "ref": "", "snippet": "s", "met": None}]
 
 
-def test_verify_covers_all_parts_in_one_call():
+def test_verify_mode_answers_all_three_parts():
     fake = Fake(
         {
             "parking": [{"index": 0, "reason": "defers"}],
