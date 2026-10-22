@@ -52,6 +52,10 @@ Medium findings never reach the epic branch unruled, while the run still continu
 2. Split release from landing eligibility for mediumOnly.
 3. Run the verify command.
 
+## Ruling
+
+- 2026-10-22 rejected: Fix round (orchestrator, 2026-10-22). The parking flags at plan-execute.js:859,869,2228,2257,2258 are dismissed: they describe current behaviour. One real high finding to fix: mediumHeldDep (plan-execute.js:871-875) checks only the dependency's own mediumOnly flag. In a chain a(held mediumOnly) -> b(clean, released via behindHeld, unlanded) -> c, c is told to merge the epic branch carrying landed b, but neither a nor b is on it, so c builds without b's code. mergedDependencyBranches (:889) has the same gap. Make the hold transitive: a dependency counts as held when it, or any dependency it was released behind, is held and unlanded. A dependent then merges the task branches of every such unlanded ancestor and never relies on the epic branch for them. Add a test for the two-deep chain a -> b -> c, plus a three-deep one if cheap. Keep the existing seven medium-release tests green.
+
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
