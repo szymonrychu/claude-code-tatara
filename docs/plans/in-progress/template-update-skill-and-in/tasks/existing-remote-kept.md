@@ -1,6 +1,6 @@
 ---
 title: Existing remote kept
-status: todo
+status: in-progress
 repo: workbench
 value: "An update never rewrites the user's template remote"
 files: [scripts/tests/init_engine/test_update.py]
@@ -12,8 +12,8 @@ model: sonnet
 estimate: ""
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--existing-remote-kept
+branch: template-update-skill-and-in--existing-remote-kept
 verified_head: ""
 run: ""
 provides: []
