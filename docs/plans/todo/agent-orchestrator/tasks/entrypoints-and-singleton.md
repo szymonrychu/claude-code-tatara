@@ -29,21 +29,22 @@ Entrypoints (D1, D20).
 
 Commands registered with `cli.register`:
 - `orch migrate`: runs migrations and exits 0.
-- `orch api`: uvicorn `create_app` on `settings.http_host:http_port`.
+- `orch api`: uvicorn `create_app` on `settings.http_host:http_port`, with `proxy_headers=False` and no forwarded-allow-ips so the direct peer is what the source allowlist sees (D22); the uvicorn config comes from `build_uvicorn_config(settings)`.
 - `orch dispatcher`: runs the dispatcher.
 - `orch ingester`: runs the ingester inside `advisory_singleton(dsn, "ingester")`.
 - `orch reconciler`: runs the reconciler inside `advisory_singleton(dsn, "reconciler")` with `LightkubeApi`.
 
 `runtime/singleton.py`:
-- `advisory_singleton(dsn, name)` holds a session-level `pg_advisory_lock` on a dedicated connection, blocking until it is acquired, so a second replica waits as a hot standby.
-- If that connection drops, it sets the stop event and the process exits 3, letting Kubernetes restart it rather than run without the lock.
+- `advisory_singleton(dsn, name, *, heartbeat_seconds, tcp_user_timeout_seconds)` holds a session-level `pg_advisory_lock` on a dedicated connection, blocking until it is acquired, so a second replica waits as a hot standby (D20, D25).
+- The lock connection is opened with libpq keepalives (`keepalives=1`, short `keepalives_idle`, `keepalives_interval`, `keepalives_count`) and `tcp_user_timeout = tcp_user_timeout_seconds * 1000`, so a half-open connection is detected by the kernel instead of hanging.
+- A heartbeat runs every `settings.lock_heartbeat_seconds`: it checks on the lock connection that the advisory lock is still held by this backend. A failed, timed-out or negative heartbeat sets the stop event and the process exits 3, letting Kubernetes restart it rather than run without the lock. The same happens when the connection drops.
 
 `runtime/run.py`:
 - SIGTERM and SIGINT set a stop event; loops finish their iteration.
 - Streams and the pool close within `settings.shutdown_grace_seconds`, and the exit code is 0.
 - Logs are JSON lines on stdout at `settings.log_level`.
 
-README.md gains `## Commands`: each command, what it runs, which settings it needs, and how many replicas it allows.
+README.md gains `## Commands`: each command, what it runs, which settings it needs, and how many replicas it allows, plus the singleton failover behaviour (keepalives, heartbeat, exit 3).
 
 ## Acceptance conditions
 
@@ -54,6 +55,9 @@ README.md gains `## Commands`: each command, what it runs, which settings it nee
 - AC5: orch --help lists api, dispatcher, ingester, reconciler and migrate [evidence: test:tests/test_entrypoints.py::test_cli_registers_all_commands]
 - AC6: orch api serves /healthz [evidence: test:tests/test_entrypoints.py::test_api_command_serves_healthz]
 - AC7: README documents the commands [evidence: doc-section:README.md#Commands]
+- AC8: a lock holder whose connection silently stops (a TCP proxy that drops all traffic) exits 3 within tcp_user_timeout plus one heartbeat [evidence: test:tests/test_entrypoints.py::test_singleton_blackholed_connection_exits_3]
+- AC9: the heartbeat detects a lock lost without a connection error (pg_terminate_backend of the holder is not required) and stops the holder [evidence: test:tests/test_entrypoints.py::test_singleton_heartbeat_detects_lost_lock]
+- AC10: build_uvicorn_config disables proxy headers so X-Forwarded-For cannot spoof the peer [evidence: test:tests/test_entrypoints.py::test_api_uvicorn_config_ignores_proxy_headers]
 
 ## Files
 
@@ -66,7 +70,8 @@ README.md gains `## Commands`: each command, what it runs, which settings it nee
 
 ## Interfaces
 
-- `agent_orchestrator.runtime.singleton:advisory_singleton(dsn, name)` (async context manager)
+- `agent_orchestrator.runtime.singleton:advisory_singleton(dsn, name, *, heartbeat_seconds, tcp_user_timeout_seconds)` (async context manager)
+- `agent_orchestrator.runtime.run:build_uvicorn_config(settings) -> uvicorn.Config`
 - `agent_orchestrator.runtime.run:run_service(coro_factory, settings) -> int`
 
 ## Expected outcome
@@ -75,9 +80,9 @@ README.md gains `## Commands`: each command, what it runs, which settings it nee
 
 ## Steps
 
-- Write tests/test_entrypoints.py with the six named tests; drive SIGTERM through a subprocess `uv run orch dispatcher` with ORCH_DATABASE_URL pointing at the test container; run it; expect failures.
+- Write tests/test_entrypoints.py with the nine named tests; drive SIGTERM through a subprocess `uv run orch dispatcher` with ORCH_DATABASE_URL pointing at the test container; run it; expect failures.
 - Implement runtime/ and register the commands in cli.py.
-- Rerun `uv run pytest tests/test_entrypoints.py -q`; expect `6 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_entrypoints.py -q`; expect `9 passed`; run `mise run lint`.
 
 ## Notes
 

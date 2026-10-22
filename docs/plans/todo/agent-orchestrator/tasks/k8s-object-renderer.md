@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-`render_cluster(cluster, settings, tokens) -> list[dict]` returns, in a stable order, the objects of design D6 for cluster `<slug>` in `settings.namespace`.
+`render_cluster(cluster, settings, tokens) -> list[dict]` returns, in a stable order, the objects of design D6 for cluster `<slug>` in `settings.clusters_namespace` (ORCH_CLUSTERS_NAMESPACE, default agents-clusters; never `settings.namespace`, D26).
 
 Every object carries the labels `agents.szymonrichert.pl/cluster=<slug>` and `app.kubernetes.io/managed-by=agent-orchestrator`.
 
@@ -39,16 +39,17 @@ Objects:
   - imagePullSecrets `[settings.image_pull_secret]`
   - runAsUser and fsGroup 1000
   - image `spec.image` or `settings.agent_image`
-  - env: POD_NAME from fieldRef; `CCW_PEER_URL=http://$(POD_NAME).agent-<slug>.<ns>.svc.<domain>:8080`; CCW_* from the Secret; `CLAUDE_CODE_OAUTH_TOKEN` from Secret `settings.claude_secret_name` key `CLAUDE_CODE_OAUTH_TOKEN`; spec.env
+  - env: POD_NAME from fieldRef; `CCW_PEER_URL=http://$(POD_NAME).agent-<slug>.<clusters_namespace>.svc.<domain>:8080`; CCW_* from the Secret; `CLAUDE_CODE_OAUTH_TOKEN` from Secret `settings.claude_secret_name` key `CLAUDE_CODE_OAUTH_TOKEN` in the clusters namespace (the deploy chart renders that Secret there); spec.env
   - probes /healthz (liveness) and /readyz (readiness)
   - terminationGracePeriodSeconds `settings.agent_termination_grace_seconds`
   - resources from spec
-  - mounts: PVC subPath `<spec.workdir>` at /workdir; PVC `subPathExpr: sessions/$(POD_NAME)` at /sessions; emptyDir at /opt/mise; ConfigMap at /etc/ccw (config.yaml) and /etc/any-mcp (any-mcp.yaml)
+  - mounts: PVC subPath `workdir` (a constant, the shared workspace root) at /workdir; the session workdir is `<spec.workdir>`, so sessions and check Jobs both work in `/workdir/<spec.workdir>` (D27); PVC `subPathExpr: sessions/$(POD_NAME)` at /sessions; emptyDir at /opt/mise; ConfigMap at /etc/ccw (config.yaml) and /etc/any-mcp (any-mcp.yaml)
 - A pod-template annotation holds a hash of the ConfigMap data, so a config change rolls the pods.
 
 The rendered `config.yaml` (D8):
 - server.auth_token `${CCW_AUTH_TOKEN}`
 - paths workdir_root /workdir, sessions_root /sessions
+- claude.passthrough_env: the sorted names of `spec.env`, so the accepted variables reach the claude child (its environment is an allow-list, config.py:189; D22)
 - claude.env: claude_code_oauth_token `${CLAUDE_CODE_OAUTH_TOKEN}`, disable_autoupdater true, claude_autocompact_pct_override (spec.auto_compact_pct or settings.default_auto_compact_pct)
 - claude.model and claude.effort when set
 - claude.mcp_servers.any-mcp: type stdio, command /opt/any-mcp/bin/any-mcp, args `[--config, /etc/any-mcp/any-mcp.yaml]`
@@ -56,7 +57,9 @@ The rendered `config.yaml` (D8):
 - limits.shutdown_timeout_seconds below the grace period
 - when spec.peers: peers enabled, name `${POD_NAME}`, advertise_url `${CCW_PEER_URL}`, token `${CCW_PEER_TOKEN}`, static = the URL of every ordinal 0..replicas-1
 
-Also `labels.py`: `cluster_labels(slug)`, `selector(slug)`, `object_names(slug)`.
+Also `labels.py`: `cluster_labels(slug)`, `selector(slug)`, `object_names(slug)`. Every object name starts with the reserved prefix `agent-<slug>`; `object_names` asserts it (D26).
+
+`workdir_path(spec) -> str` returns `/workdir/<spec.workdir>` and `workdir_mount(spec) -> dict` returns the shared volumeMount; the StatefulSet, the session bootstrap (workdir name `spec.workdir`) and the check Jobs all use them (D27).
 
 ## Acceptance conditions
 
@@ -69,6 +72,10 @@ Also `labels.py`: `cluster_labels(slug)`, `selector(slug)`, `object_names(slug)`
 - AC7: pods pull with regcred and read the OAuth token from the shared Secret [evidence: test:tests/test_render.py::test_pull_secret_and_oauth_secret_ref]
 - AC8: config.yaml registers any-mcp as a stdio MCP server with the mounted config [evidence: test:tests/test_render.py::test_any_mcp_server_entry]
 - AC9: a ConfigMap change changes the pod-template hash annotation [evidence: test:tests/test_render.py::test_config_hash_rolls_pods]
+- AC10: every object is in settings.clusters_namespace, including the peer URLs [evidence: test:tests/test_render.py::test_all_objects_in_clusters_namespace]
+- AC11: claude.passthrough_env lists the spec.env names and the config validates with load_config [evidence: test:tests/test_render.py::test_passthrough_env_lists_spec_env_names]
+- AC12: workdir_path matches the shared mount and the session workdir name [evidence: test:tests/test_render.py::test_workdir_path_matches_mount_and_session_workdir]
+- AC13: every object name uses the reserved agent-<slug> prefix [evidence: test:tests/test_render.py::test_every_object_name_uses_reserved_prefix]
 
 ## Files
 
@@ -81,7 +88,7 @@ Also `labels.py`: `cluster_labels(slug)`, `selector(slug)`, `object_names(slug)`
 
 ## Interfaces
 
-- `agent_orchestrator.k8s.render:render_cluster`, `render_config_yaml` (contract `k8s-render`)
+- `agent_orchestrator.k8s.render:render_cluster`, `render_config_yaml`, `workdir_path`, `workdir_mount` (contract `k8s-render`)
 - `agent_orchestrator.k8s.labels:cluster_labels`, `selector`, `object_names`, `MANAGED_BY`, `CLUSTER_LABEL`
 
 ## Expected outcome
@@ -92,7 +99,7 @@ Given a cluster row, the orchestrator produces the objects of D6 and a wrapper c
 
 - Write tests/test_render.py and the two golden YAML files; run `uv run pytest tests/test_render.py -q`; expect failures.
 - Implement labels.py and render.py.
-- Rerun; expect `9 passed`; run `mise run lint`.
+- Rerun; expect `13 passed`; run `mise run lint`.
 
 ## Notes
 

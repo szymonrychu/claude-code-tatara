@@ -31,6 +31,7 @@ README.md sections:
 - `## API`: every route with method, path, request body, response and error codes, plus a `### Events` table of the SSE event names of both streams, and the versioning rule (additive only within v1).
 - `## Architecture`: the process table of D1; the writer-per-table table with the single-writer interpretation of no shared state; the NOTIFY channels and their payloads; the polling fallbacks.
 - `## Data model`.
+- The `## API` section documents the 403 `forbidden` source-allowlist error (`ORCH_ALLOWED_CIDRS`, direct peer only, health routes exempt), the 409 `cluster_limit` error and the `meta` caps (D22).
 
 OpenAPI:
 - `src/agent_orchestrator/api/openapi.py`: `export() -> str`, deterministic JSON with sorted keys and a trailing newline; `python -m agent_orchestrator.api.openapi` prints it.
@@ -51,6 +52,7 @@ MEMORY.md records the single-writer interpretation, one session per pod, and why
 - AC3: the committed openapi.json equals the export [evidence: test:tests/test_readme_api.py::test_openapi_json_matches_app]
 - AC4: every SSE event name is documented [evidence: test:tests/test_readme_api.py::test_sse_event_types_documented]
 - AC5: README states the single-writer interpretation [evidence: doc-section:README.md#Architecture]
+- AC6: README API documents the forbidden and cluster_limit errors and ORCH_ALLOWED_CIDRS [evidence: test:tests/test_readme_api.py::test_readme_documents_allowlist_and_limits]
 
 ## Files
 
@@ -71,9 +73,9 @@ README is the spec, kept in parity with the code, and `openapi.json` is the sour
 
 ## Steps
 
-- Write tests/test_readme_api.py with the four named tests; run it; expect failures.
+- Write tests/test_readme_api.py with the five named tests; run it; expect failures.
 - Write openapi.py, export openapi.json, and write the README sections, MEMORY.md and ROADMAP.md.
-- Rerun `uv run pytest tests/test_readme_api.py -q`; expect `4 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_readme_api.py -q`; expect `5 passed`; run `mise run lint`.
 
 ## Notes
 

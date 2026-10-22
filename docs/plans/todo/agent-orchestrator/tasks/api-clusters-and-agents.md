@@ -3,7 +3,7 @@ title: api clusters and agents
 status: todo
 repo: agent-orchestrator
 value: "The headless API's cluster and agent surface: define, edit, list, discard and purge clusters and see each agent's live state."
-files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py]
+files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py, src/agent_orchestrator/api/allowlist.py]
 verify: "uv run pytest tests/test_api_clusters.py -q && mise run lint"
 depends_on: [clusters-repository, settings-model]
 owns: [api-app]
@@ -27,6 +27,8 @@ provides: []
 
 The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 
+- Source allowlist (D22, `api/allowlist.py`): middleware that compares the direct socket peer (`scope["client"]`) with `settings.allowed_networks()` and answers any other peer 403 `{"error": {"code": "forbidden", ...}}`. `Forwarded`, `X-Forwarded-For` and `X-Real-IP` are ignored (ingress-nginx is hostNetwork, so ingress traffic arrives from node IPs; pod-CIDR callers are refused). `/healthz` and `/readyz` are exempt. The middleware is installed by `create_app` and cannot be turned off by a request.
+- `POST` and `PATCH` on clusters run `validate_spec(spec, settings)` and map `SpecInvalid` to 422 `invalid_request`; `POST` beyond `settings.max_clusters` active clusters is 409 `cluster_limit`.
 - `create_app(settings, pool=None) -> FastAPI`. The lifespan opens and closes the pool when none is given. OpenAPI lives at `/api/v1/openapi.json`, docs at `/api/v1/docs`.
 - Errors always use `{"error": {"code", "message"}}`:
   - not_found 404, conflict 409
@@ -38,7 +40,7 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
   - DELETE returns 202 and sets desired deleting.
   - `?purge=true` on a cluster already deleted purges it; on a live one it is 409 with code `not_deleted`.
 - `GET /api/v1/clusters/{id}/agents`.
-- `GET /api/v1/meta`: settings defaults (model, effort, replicas, auto_compact_pct, pvc_size, storage class), agent image, models list.
+- `GET /api/v1/meta`: settings defaults (model, effort, replicas, auto_compact_pct, pvc_size, storage class), agent image, the image allowlist, models list, and the caps `max_replicas`, `max_pvc_size`, `max_clusters`.
 - Cluster view: id, slug, spec, desired, status, generation, observed_generation, created_at, deleted_at, and `summary`:
   - `state`: working when any agent is busy, waiting when every ready agent is idle, booting, error or deleting
   - `ready`, `replicas`
@@ -58,7 +60,11 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 - AC7: summary state is working or waiting and context_pct_max is the max over agents [evidence: test:tests/test_api_clusters.py::test_cluster_summary_state_and_gauge_max]
 - AC8: unknown ids are 404 in the wrapper error shape [evidence: test:tests/test_api_clusters.py::test_errors_use_wrapper_shape]
 - AC9: the api package imports no k8s, wrapper or reconciler module [evidence: test:tests/test_api_clusters.py::test_api_never_imports_k8s_or_wrapper]
-- AC10: meta returns the settings defaults [evidence: test:tests/test_api_clusters.py::test_meta_defaults]
+- AC10: meta returns the settings defaults, the image allowlist and the caps [evidence: test:tests/test_api_clusters.py::test_meta_defaults]
+- AC11: a peer outside ORCH_ALLOWED_CIDRS gets 403 forbidden on every route except /healthz and /readyz [evidence: test:tests/test_api_clusters.py::test_foreign_peer_forbidden_except_health]
+- AC12: Forwarded and X-Forwarded-For headers do not change the peer that is checked [evidence: test:tests/test_api_clusters.py::test_forwarded_headers_ignored_by_allowlist]
+- AC13: create and patch reject an image outside the allowlist, reserved env keys and caps with 422 [evidence: test:tests/test_api_clusters.py::test_spec_hardening_enforced_on_create_and_patch]
+- AC14: creating a cluster beyond max_clusters is 409 cluster_limit [evidence: test:tests/test_api_clusters.py::test_cluster_count_cap_409]
 
 ## Files
 
@@ -69,6 +75,7 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 - `src/agent_orchestrator/api/clusters.py`
 - `src/agent_orchestrator/db/views.py`
 - `tests/test_api_clusters.py`
+- `src/agent_orchestrator/api/allowlist.py`
 
 ## Interfaces
 
@@ -82,9 +89,9 @@ Clusters can be defined, edited and discarded through `/api/v1`, and the views c
 
 ## Steps
 
-- Write tests/test_api_clusters.py with the ten named tests (httpx AsyncClient over ASGITransport, pool fixture); run it; expect failures.
+- Write tests/test_api_clusters.py with the fourteen named tests (httpx AsyncClient over ASGITransport, pool fixture); run it; expect failures.
 - Implement errors.py, schemas.py, views.py, clusters.py and app.py.
-- Rerun `uv run pytest tests/test_api_clusters.py -q`; expect `10 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_api_clusters.py -q`; expect `14 passed`; run `mise run lint`.
 
 ## Notes
 

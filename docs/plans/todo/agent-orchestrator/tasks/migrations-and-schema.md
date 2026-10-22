@@ -27,11 +27,11 @@ provides: []
 
 Schema 0001 and the migration runner (design D3, D20).
 
-- Tables, columns and constraints exactly as design.md D3 and design-orchestrator section 2: `clusters` (id uuid pk, slug unique, spec jsonb, generation int, observed_generation int, desired active|deleting, status jsonb, created_at, deleted_at, purged bool), `agents` (id uuid, cluster_id fk cascade, ordinal, pod_name, url, pod_phase, ready, session_id, session_created_at, gone_at; unique (cluster_id, ordinal)), `agent_status` (agent_id pk fk cascade, state unknown|booting|idle|busy|dead, free_since, current_turn_id, context_used_tokens, context_window_tokens, context_pct, last_seq, peers jsonb, updated_at), `messages` (id bigserial, cluster_id fk cascade, target_agent_id, text, status queued|dispatching|sent|failed|cancelled, agent_id, turn_id, attempts, error, created_at, dispatched_at; index (cluster_id, status, id)), `turns` (turn_id pk, agent_id fk cascade, origin, started_at, completed_at, status, final_text, usage jsonb), `events` (id bigserial, cluster_id fk cascade, agent_id, session_id, seq, ts, type, turn_id, data jsonb; unique (agent_id, session_id, seq); indexes (cluster_id, id desc) and (agent_id, id desc)), `commands` (id bigserial, agent_id fk cascade, kind interrupt|compact|restart, status queued|running|done|failed|cancelled, result jsonb, created_at, started_at, finished_at), `checks` (id bigserial, cluster_id fk cascade, command, status queued|running|passed|failed|cancelled, job_name, exit_code, log_tail, created_at, started_at, finished_at). Enumerations are CHECK constraints on text columns.
+- Tables, columns and constraints exactly as design.md D3 and design-orchestrator section 2: `clusters` (id uuid pk, slug unique, spec jsonb, generation int, observed_generation int, desired active|deleting, status jsonb, created_at, deleted_at, purged bool), `agents` (id uuid, cluster_id fk cascade, last_dispatched_at timestamptz null (D23: written only by the dispatch claim; its row change forces the concurrent-claim recheck), ordinal, pod_name, url, pod_phase, ready, session_id, session_created_at, gone_at; unique (cluster_id, ordinal)), `agent_status` (agent_id pk fk cascade, wrapper_idle_since timestamptz null (stored wrapper `idle_since`, informational and never compared with database time), state unknown|booting|idle|busy|dead, free_since, current_turn_id, context_used_tokens, context_window_tokens, context_pct, last_seq, peers jsonb, updated_at), `messages` (id bigserial, cluster_id fk cascade, heartbeat_at timestamptz null (D24: the dispatcher refreshes it while a send is in flight), target_agent_id, text, status queued|dispatching|sent|failed|cancelled, agent_id, turn_id, attempts, error, created_at, dispatched_at; index (cluster_id, status, id)), `turns` (turn_id pk, agent_id fk cascade, origin, started_at, completed_at, status, final_text, usage jsonb), `events` (id bigserial, cluster_id fk cascade, agent_id, session_id, seq, ts, type, turn_id, data jsonb; unique (agent_id, session_id, seq); indexes (cluster_id, id desc) and (agent_id, id desc)), `commands` (id bigserial, agent_id fk cascade, kind interrupt|compact|restart|rebootstrap, status queued|running|done|failed|cancelled, result jsonb, created_at, started_at, finished_at), `checks` (id bigserial, cluster_id fk cascade, command, status queued|running|passed|failed|cancelled, job_name, exit_code, log_tail, created_at, started_at, finished_at). Enumerations are CHECK constraints on text columns. `messages.error` is free text with the documented reasons `dispatcher_lost`, `ambiguous`, `target_gone`, `session_gone`, `unavailable`, `rejected`, `config_error`.
 - `migrate.run_migrations(dsn)`: applies `migrations/NNNN_*.sql` in order, each in its own transaction, under `pg_advisory_lock` on a fixed key, recording `schema_migrations(version, applied_at)`; a rerun applies nothing; two concurrent runs serialise and both succeed.
 - `pool.open_pool(dsn) -> AsyncConnectionPool`; `pool.notify(conn, channel, payload: dict)` (JSON payload); `pool.listen(dsn, channels) -> AsyncIterator[tuple[str, dict]]` on a dedicated connection that reconnects with backoff.
 - `tests/conftest.py`: session-scoped testcontainers Postgres (postgres:18-alpine), migrated once into a template database; function-scoped `dsn` and `pool` fixtures on a fresh database cloned from the template.
-- `tests/factories.py`: `insert_cluster`, `insert_agent`, `set_agent_status`, `insert_message`, `insert_event`, `insert_command`, `insert_check` writing raw SQL rows with sensible defaults, so table-level tests never depend on another task's repository module.
+- `tests/factories.py`: `insert_cluster`, `insert_agent`, `set_agent_status`, `insert_message`, `insert_event`, `insert_command`, `insert_check` writing raw SQL rows with sensible defaults (including `last_dispatched_at`, `heartbeat_at` and `dispatched_at` overrides), so table-level tests never depend on another task's repository module.
 
 ## Acceptance conditions
 
@@ -41,6 +41,7 @@ Schema 0001 and the migration runner (design D3, D20).
 - AC4: a duplicate (agent_id, session_id, seq) event is rejected by the unique constraint [evidence: test:tests/test_migrations.py::test_events_unique_agent_session_seq]
 - AC5: deleting a cluster row cascades to agents, messages, events, turns, commands and checks [evidence: test:tests/test_migrations.py::test_cluster_delete_cascades]
 - AC6: notify and listen round-trip a JSON payload [evidence: test:tests/test_migrations.py::test_notify_listen_roundtrip]
+- AC7: agents.last_dispatched_at, agent_status.wrapper_idle_since and messages.heartbeat_at exist, and commands.kind accepts rebootstrap [evidence: test:tests/test_migrations.py::test_dispatch_columns_and_rebootstrap_kind]
 
 ## Files
 
@@ -64,9 +65,9 @@ A real Postgres in tests carries the full schema; migrations are idempotent and 
 
 ## Steps
 
-- Write tests/conftest.py, tests/factories.py and tests/test_migrations.py with the six named tests; run `uv run pytest tests/test_migrations.py -q`; expect failures.
+- Write tests/conftest.py, tests/factories.py and tests/test_migrations.py with the seven named tests; run `uv run pytest tests/test_migrations.py -q`; expect failures.
 - Write 0001_init.sql, migrate.py and pool.py.
-- Rerun; expect `6 passed`; run `mise run lint`.
+- Rerun; expect `7 passed`; run `mise run lint`.
 
 ## Notes
 

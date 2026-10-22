@@ -32,9 +32,9 @@ The kind e2e (D19, D9).
 - Build the orchestrator image and the test agent image: `e2e/agent-test.Dockerfile` on top of the agent image, with fake_claude.
 - Load both with `kind load`.
 - Make ReadWriteMany PVCs bind: use local-path-provisioner's shared-filesystem mode, or a hostPath StorageClass. Probe which one works.
-- Apply namespace `agents`, `e2e/manifests/postgres.yaml` (a plain postgres:18 Deployment and Service), the master-key Secret and a dummy `agent-orchestrator-claude` Secret.
-- Apply `e2e/manifests/rbac.yaml`: ServiceAccount `agent-orchestrator-reconciler`, and a Role with exactly the verbs of D9 plus its RoleBinding.
-- Apply `e2e/manifests/orchestrator.yaml`: the four Deployments, each with a migrate initContainer; only the reconciler uses the SA.
+- Apply namespaces `agents` and `agents-clusters` (the clusters namespace, `ORCH_CLUSTERS_NAMESPACE`), `e2e/manifests/postgres.yaml` (a plain postgres:18 Deployment and Service), the master-key Secret and a dummy `agent-orchestrator-claude` Secret in `agents-clusters` (secrets are namespace-local; the agent pods read it there).
+- Apply `e2e/manifests/rbac.yaml`: ServiceAccount `agent-orchestrator-reconciler` in `agents`, and a Role in `agents-clusters` with exactly the verbs of D9 (secrets: create, patch, delete only) plus its RoleBinding to that ServiceAccount.
+- Apply `e2e/manifests/orchestrator.yaml`: the four Deployments, each with a migrate initContainer; only the reconciler uses the SA. The settings env sets `ORCH_CLUSTERS_NAMESPACE=agents-clusters`, `ORCH_ALLOWED_CIDRS=127.0.0.0/8` (the port-forward arrives from loopback; pod-network callers are refused) and `ORCH_AGENT_IMAGES` with the test agent image.
 - Port-forward the api, then run `uv run pytest -m e2e tests/e2e`.
 - Delete the kind cluster on exit.
 
@@ -44,7 +44,9 @@ The kind e2e (D19, D9).
 - The first two go to different agents in `free_since` order; the third goes to the agent that freed first.
 - `GET /clusters/{id}/events` returns events of both agents interleaved in id order.
 - Each agent's rendered config registers any-mcp, and `/opt/any-mcp/bin/any-mcp --help` succeeds in an agent pod. The test checks this with kubectl exec; the orchestrator itself never execs.
-- `DELETE` the cluster. Within 120 s no StatefulSet, Service, ConfigMap, Secret, PVC or pod labelled with the cluster remains.
+- `DELETE` the cluster. Within 120 s no StatefulSet, Service, ConfigMap, Secret, PVC or pod labelled with the cluster remains in `agents-clusters`.
+- `kubectl auth can-i` as the reconciler ServiceAccount in `agents-clusters`: `create secrets` yes, `get secrets`, `list secrets` and `create pods/exec` no.
+- A throwaway pod in the cluster calling the api Service gets 403 `forbidden`, while the port-forwarded caller succeeds (D22).
 
 CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2e`.
 
@@ -57,6 +59,9 @@ CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2
 - AC5: the reconciler works with exactly the D9 Role and no pods/exec [evidence: command:! grep -q 'pods/exec' e2e/manifests/rbac.yaml && mise run test:e2e]
 - AC7: mise.toml defines the task `test:e2e` and it runs scripts/e2e.sh [evidence: command:mise tasks | grep -q 'test:e2e' && grep -q 'scripts/e2e.sh' mise.toml]
 - AC6: CI runs the e2e job [evidence: command:grep -q 'mise run test:e2e' .github/workflows/ci.yaml]
+- AC8: the reconciler ServiceAccount can create but not get or list Secrets in the clusters namespace and cannot exec [evidence: test:tests/e2e/test_e2e_kind.py::test_reconciler_role_cannot_read_secrets]
+- AC9: a pod inside the cluster is refused by the api source allowlist while the port-forward works [evidence: test:tests/e2e/test_e2e_kind.py::test_in_cluster_pod_refused_by_allowlist]
+- AC10: the cluster's objects live in the clusters namespace and none in the orchestrator namespace [evidence: test:tests/e2e/test_e2e_kind.py::test_cluster_objects_live_in_clusters_namespace]
 
 ## Files
 
@@ -79,9 +84,9 @@ CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2
 
 ## Steps
 
-- Write tests/e2e/test_e2e_kind.py with the four named tests. Run `mise run test:e2e`; expect failures, since nothing is deployed yet.
+- Write tests/e2e/test_e2e_kind.py with the seven named tests. Run `mise run test:e2e`; expect failures, since nothing is deployed yet.
 - Write kind-config, manifests, rbac and e2e.sh, and add the mise tools.
-- Rerun `mise run test:e2e`; expect `4 passed`.
+- Rerun `mise run test:e2e`; expect `7 passed`.
 - Add the CI job; run `mise run lint`.
 
 ## Notes

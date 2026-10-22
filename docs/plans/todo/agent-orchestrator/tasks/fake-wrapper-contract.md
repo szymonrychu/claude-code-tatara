@@ -34,6 +34,7 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
   - SSE with seq ids, `Last-Event-ID` replay and `: ping`
   - history including `before_seq`, `types`, `prev_seq` and `has_more_before` (contract wrapper-history-backward), and `/v1/peers`
   - bearer auth
+  - session states creating, ready, busy, stopped and failed, each with a controllable transcript flag, and `POST /v1/sessions/{id}/resume` (409 without a transcript)
 - Test controls on FakeWrapper:
   - `complete_turn(turn_id, text)`
   - `emit(type, data)`
@@ -42,6 +43,9 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
   - `skip_seq(n)` to simulate log rotation
   - `set_booting(bool)`
   - counters of received turns
+  - `set_turn_status(code)` makes the next turn submissions answer any status (404, 410, 401, 403, 413, 422, 500, 503)
+  - `delay_turn_response(seconds)` and `reset_connection_after_receive()` simulate a slow or ambiguous send (the turn is recorded as received, the client sees a timeout or a reset)
+  - `set_session_state(state, has_transcript)`
 - `tests/fakes/real_wrapper.py`: starts the image named by `ORCH_TEST_WRAPPER_IMAGE` with `docker run` and `e2e/agent-test.config.yaml`, then waits for /readyz.
 - `e2e/agent-test.Dockerfile` (ARG BASE_IMAGE, default the agent image) copies the wrapper's `tests/fake_claude` from the same wrapper sha and sets it as `claude.binary`. kind-e2e reuses this image.
 - `tests/test_fake_wrapper_contract.py`: a fixture parametrised over `fake` and `real` (the real leg marked `integration`). One suite covers:
@@ -53,6 +57,7 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
   - `/v1/peers`
   - backward history: `before_seq` with `types=user_message,turn_completed` returns ascending events, `prev_seq` is null when `has_more_before` is false, and an unknown type is 400
   - a bad token gives 401 with the error envelope
+  - a stopped session with a transcript resumes through `POST .../resume`, and without a transcript the resume is refused
 
 ## Acceptance conditions
 
@@ -63,6 +68,8 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
 - AC5: the peers view and bearer auth behave like the wrapper [evidence: test:tests/test_fake_wrapper_contract.py::test_peers_view_and_auth]
 - AC6: backward history with types, prev_seq and has_more_before behaves like the wrapper [evidence: test:tests/test_fake_wrapper_contract.py::test_history_backward]
 - AC7: the same suite passes against the real wrapper test image [evidence: command:ORCH_TEST_WRAPPER_IMAGE=agent-orchestrator-agent-test:local uv run pytest tests/test_fake_wrapper_contract.py -m integration -q]
+- AC8: the status, delay and reset controls make submit_turn answer the chosen status, time out, or reset after the turn was recorded [evidence: test:tests/test_fake_wrapper_contract.py::test_fake_status_delay_and_reset_controls]
+- AC9: a stopped session with a transcript resumes and one without is refused, on both legs [evidence: test:tests/test_fake_wrapper_contract.py::test_resume_stopped_session]
 
 ## Files
 

@@ -57,11 +57,11 @@ Every cross-process signal goes through Postgres: `messages`, `commands` and `ch
 
 ### D3: Schema 0001 and table writers
 
-Plain SQL migrations, psycopg 3 async, no ORM. Tables and writers: `clusters` [api; reconciler writes only `status`, `observed_generation`, `deleted_at`], `agents` [reconciler], `agent_status` [ingester], `messages` [api inserts and cancels while queued; dispatcher the rest], `turns` [ingester], `events` [ingester; UNIQUE(agent_id, session_id, seq), global bigserial id used as SSE id and page cursor], `commands` [api inserts; dispatcher claims interrupt and compact, reconciler claims restart], `checks` [api inserts; reconciler the rest]. Events are kept until the cluster is purged and deleted by cascade on purge; no partitioning. Serves A11.
+Plain SQL migrations, psycopg 3 async, no ORM. Tables and writers: `clusters` [api; reconciler writes only `status`, `observed_generation`, `deleted_at`], `agents` [reconciler; `last_dispatched_at` is written by the dispatch claim, D23], `agent_status` [ingester], `messages` [api inserts and cancels while queued; dispatcher the rest], `turns` [ingester], `events` [ingester; UNIQUE(agent_id, session_id, seq), global bigserial id used as SSE id and page cursor], `commands` [api inserts; dispatcher claims interrupt and compact and also inserts `rebootstrap` after a wrapper 404; reconciler claims restart and rebootstrap], `checks` [api inserts; reconciler the rest]. Events are kept until the cluster is purged and deleted by cascade on purge; no partitioning. Serves A11.
 
 ### D4: Round-robin to the agent free the longest
 
-The dispatcher claims the oldest queued message with SKIP LOCKED, then picks the ready, idle agent of that cluster with the oldest `free_since` whose `free_since` is newer than its last dispatch (closing the race between a 202 and the ingester seeing busy), locks it SKIP LOCKED, marks the message `dispatching`, commits, then POSTs the turn: 202 sets `sent` and `turn_id`; 409 returns it to `queued`; 503 or a network error increments `attempts` and returns it to `queued`, or sets `failed` at `max_attempts`. `max_attempts` defaults to 1 (no automatic retry); `POST /messages/{id}/retry` and a Retry button re-queue a failed message (my call, Q5). A `target_agent_id` restricts the pick. Dispatch is FIFO per cluster; completion order is not guaranteed. Serves A6.
+The dispatcher claims the oldest dispatchable queued message of a cluster under a per-cluster advisory lock, then picks the ready, idle agent of that cluster with the oldest `free_since` whose `free_since` is newer than `agents.last_dispatched_at` (closing the race between a 202 and the ingester seeing busy), locks it SKIP LOCKED, writes `last_dispatched_at`, marks the message `dispatching`, commits, then POSTs the turn. Outcomes are mapped by D23 and D24: 202 sets `sent` and `turn_id`; 409 returns it to `queued`; unavailable increments `attempts` and returns it to `queued`, or sets `failed` at `max_attempts`; every non-accept outcome releases the agent. `max_attempts` defaults to 1 (no automatic retry); `POST /messages/{id}/retry` and a Retry button re-queue a failed message (my call, Q5). A `target_agent_id` restricts the pick. Dispatch is FIFO per cluster; completion order is not guaranteed. Serves A6.
 
 ### D5: Store events, do not proxy them
 
@@ -69,7 +69,7 @@ The ingester holds one SSE subscription per agent session with `Last-Event-ID = 
 
 ### D6: Kubernetes model per cluster
 
-Per cluster `<slug>` in namespace `agents`, labelled `agents.szymonrichert.pl/cluster=<slug>` and `app.kubernetes.io/managed-by=agent-orchestrator`: PVC `agent-<slug>-workspace` (RWX, `rook-ceph-rwx`), Secret `agent-<slug>-ccw`, ConfigMap `agent-<slug>-config` (ccw `config.yaml` and `any-mcp.yaml`), headless Service `agent-<slug>` (publishNotReadyAddresses), StatefulSet `agent-<slug>` (Parallel, `imagePullSecrets: [regcred]`, uid/fsGroup 1000, `/healthz` and `/readyz` probes, PVC subPath `workdir` at `/workdir` shared, `subPathExpr: sessions/$(POD_NAME)` at `/sessions` per pod, emptyDir `/opt/mise`, `CLAUDE_CODE_OAUTH_TOKEN` from Secret `agent-orchestrator-claude`). One pod runs one session (`max_sessions: 1`), and a single pod is a cluster of 1 (my call, Q2 and Q3). Reconcile is level-triggered (10 s plus `cluster_changed`): render, server-side apply (field manager `agent-orchestrator`, force), prune labelled objects not desired, upsert `agents` from pods, bootstrap or adopt sessions, set `observed_generation`. Alternatives rejected: bare pods, Deployment (no per-pod DNS), CRD plus operator, volumeClaimTemplates, imperative create and delete. Serves A4, A8.
+Per cluster `<slug>` in the clusters namespace (`ORCH_CLUSTERS_NAMESPACE`, default `agents-clusters`, D26; the orchestrator itself runs in `agents`), labelled `agents.szymonrichert.pl/cluster=<slug>` and `app.kubernetes.io/managed-by=agent-orchestrator`: PVC `agent-<slug>-workspace` (RWX, `rook-ceph-rwx`), Secret `agent-<slug>-ccw`, ConfigMap `agent-<slug>-config` (ccw `config.yaml` and `any-mcp.yaml`), headless Service `agent-<slug>` (publishNotReadyAddresses), StatefulSet `agent-<slug>` (Parallel, `imagePullSecrets: [regcred]`, uid/fsGroup 1000, `/healthz` and `/readyz` probes, PVC subPath `workdir` at `/workdir` shared (sessions and check Jobs both work in `/workdir/<spec.workdir>`, D27), `subPathExpr: sessions/$(POD_NAME)` at `/sessions` per pod, emptyDir `/opt/mise`, `CLAUDE_CODE_OAUTH_TOKEN` from Secret `agent-orchestrator-claude`, which the deploy chart also renders into the clusters namespace). One pod runs one session (`max_sessions: 1`), and a single pod is a cluster of 1 (my call, Q2 and Q3). Reconcile is level-triggered (10 s plus `cluster_changed`): render, server-side apply (field manager `agent-orchestrator`, force), prune labelled objects not desired, upsert `agents` from pods, bootstrap or adopt sessions, set `observed_generation`. Alternatives rejected: bare pods, Deployment (no per-pod DNS), CRD plus operator, volumeClaimTemplates, imperative create and delete. Serves A4, A8.
 
 ### D7: Per-cluster derived tokens
 
@@ -81,7 +81,7 @@ The ConfigMap's `config.yaml` sets `server.auth_token: ${CCW_AUTH_TOKEN}`, `path
 
 ### D9: RBAC limited to the reconciler
 
-A namespaced Role in `agents`, bound only to the reconciler's ServiceAccount: statefulsets, services, configmaps, secrets, persistentvolumeclaims (get, list, watch, create, patch, delete); pods (get, list, watch, delete); jobs (get, list, watch, create, delete); pods/log (get); never pods/exec. The verb list is documented in README.md and exercised by the kind e2e's Role manifest; the production Role is in the deploy epic's chart. Serves A13.
+A namespaced Role in the clusters namespace (D26), bound only to the reconciler's ServiceAccount (which lives in `agents`): statefulsets, services, configmaps, persistentvolumeclaims (get, list, watch, create, patch, delete); secrets (create, patch, delete only: names are deterministic, so the reconciler can never read the orchestrator's or any other Secret); pods (get, list, watch, delete); jobs (get, list, watch, create, delete); pods/log (get); never pods/exec. The verb list is documented in README.md and exercised by the kind e2e's Role manifest; the production Role is in the deploy epic's chart. Serves A13.
 
 ### D10: Checks run as Jobs mounting the cluster PVC
 
@@ -125,11 +125,35 @@ Unit tests for the renderer (golden objects plus ccw config validation), tokens,
 
 ### D20: Singletons, migrations and shutdown
 
-The ingester and reconciler each hold a Postgres advisory lock for their lifetime (a second replica waits as a hot standby and takes over when the lock frees); api and dispatcher scale freely. `orch migrate` runs the SQL files in order under an advisory lock, recording applied versions, idempotently. Every entrypoint stops cleanly on SIGTERM: loops finish the current iteration, open streams close, the pool closes. Serves A11.
+The ingester and reconciler each hold a Postgres advisory lock for their lifetime (a second replica waits as a hot standby and takes over when the lock frees; failover is hardened by D25); api and dispatcher scale freely. `orch migrate` runs the SQL files in order under an advisory lock, recording applied versions, idempotently. Every entrypoint stops cleanly on SIGTERM: loops finish the current iteration, open streams close, the pool closes. Serves A11.
 
 ### D21: New component repo
 
 The code lives in a new submodule `code/agent-orchestrator` with public origin `github.com/szymonrychu/agent-orchestrator`, created by the orchestrator after the gate (repo, `main` branch, Harbor push secrets, submodule pointer) before the run. The component has its own README.md (the spec), MEMORY.md and ROADMAP.md. Serves A13.
+
+### D22: Source allowlist and ClusterSpec hardening
+
+In-cluster callers (LLM-driven agent pods, check Jobs) can reach the api Service and flannel enforces no NetworkPolicy, so the api enforces a source-address allowlist on the direct socket peer: `ORCH_ALLOWED_CIDRS` (default 192.168.1.0/24; ingress-nginx is hostNetwork so ingress traffic arrives from node IPs and the pod CIDR is refused). `Forwarded` and `X-Forwarded-For` are ignored, uvicorn runs without proxy headers, `/healthz` and `/readyz` are exempt, and everything else is 403 `forbidden`. `ClusterSpec` is hardened at the same time: `image` only from a server-side allowlist (`ORCH_AGENT_IMAGES` plus the configured agent image), `env` rejects `CCW_*`, `POD_NAME`, `CLAUDE_*`, `ANTHROPIC_*`, `*_PROXY` and `*_BASE_URL` keys, the renderer sets `claude.passthrough_env` to the accepted env names so they reach the claude child (its environment is an allow-list), `any_mcp_config` is validated against the real any-mcp config model, and replicas, PVC size and cluster count are capped from settings (`ORCH_MAX_REPLICAS`, `ORCH_MAX_PVC_SIZE`, `ORCH_MAX_CLUSTERS`). Rejected: a NetworkPolicy (flannel does not enforce it). Serves A14.
+
+### D23: Dispatch correctness: release, one clock, claim write, FIFO, head-of-line
+
+(a) The reservation is released on every outcome where no turn was accepted: the claim stores the agent's previous `last_dispatched_at` and `release_agent` restores it after 409, unavailable, gone, config error, rejected and requeue; an accepted send keeps it until a newer `free_since`. (b) One clock: Postgres `now()` for every comparison; the ingester sets `free_since` from the database clock at the moment it records a transition into idle, and the wrapper's `idle_since` is stored for display only. (c) The claim transaction writes `agents.last_dispatched_at`, the row change that forces READ COMMITTED to recheck the predicate; the pick reads that column; a forced-interleaving test with two connections proves it. (d) A targeted message whose target is busy is skipped and one whose target is gone fails with `target_gone`. (e) A per-cluster transaction-level advisory lock in the claim keeps per-cluster FIFO under concurrent dispatchers. The wrapper client maps every status (202 sent, 409 busy, 404 or 410 gone, 401 or 403 config error, 413 or 422 rejected, 5xx and connect errors unavailable). Serves A15, A16, A23, A24.
+
+### D24: Send timeout and ambiguous outcomes
+
+The wrapper send timeout (`ORCH_WRAPPER_SEND_TIMEOUT_SECONDS`, 15 s) stays at most half of the dispatching stale cutoff (60 s); the dispatching row heartbeats while a send is in flight, and the stale rule uses `coalesce(heartbeat_at, dispatched_at)`. An ambiguous outcome (read timeout or connection reset after the request was written) is never retried automatically: the message becomes `failed` with reason `ambiguous`, the agent stays reserved, and Retry is the user's explicit choice. Serves A18.
+
+### D25: Singleton failover
+
+The lock connection of the ingester and reconciler uses libpq keepalives and `tcp_user_timeout`, a heartbeat every few seconds (`ORCH_LOCK_HEARTBEAT_SECONDS`) verifies the lock is still held, and loss exits non-zero so Kubernetes restarts the pod; a test blackholes the holder's connection. Serves A17.
+
+### D26: Separate namespace for agent clusters, reserved names, no Secret reads
+
+Agent clusters live in their own namespace (`ORCH_CLUSTERS_NAMESPACE`, default `agents-clusters`, created by the helmfile release of the deploy epic; the orchestrator runs in `agents`), so a cluster slug can never collide with the orchestrator's own objects. Object names use the reserved prefix `agent-<slug>`, the slugs `orchestrator` and `orchestrator-*` are rejected, and the reconciler refuses to apply over, or prune, any object lacking both the managed-by and the cluster label. The reconciler's Role grants secrets only create, patch and delete in that namespace (names are deterministic: no get, list or watch), so it deletes the cluster Secret by name and never lists Secrets. The namespace needs `regcred` and the `agent-orchestrator-claude` Secret (deploy epic). Serves A19, A20.
+
+### D27: Session adoption and one workdir path
+
+Bootstrap adopts only sessions in state creating, ready or busy; stopped or failed sessions with a transcript are resumed through `POST .../resume`; anything else gets a new session; a 404 on a turn submit makes the dispatcher enqueue a `rebootstrap` command so the reconciler clears the agent's session and bootstraps again. Sessions are created with the workdir name `spec.workdir` (the wrapper resolves `/workdir/<name>`), and the renderer exposes `workdir_path(spec)` and `workdir_mount(spec)`, used by the StatefulSet and by check Jobs (which work in `/workdir/<spec.workdir>`), pinned by tests in all three tasks. Serves A21, A22.
 
 ## Research
 
@@ -188,13 +212,19 @@ The code lives in a new submodule `code/agent-orchestrator` with public origin `
 | D19 Testing strategy | fake-wrapper-contract, kind-e2e |
 | D20 Singletons, migrations and shutdown | entrypoints-and-singleton, migrations-and-schema |
 | D21 New component repo | scaffold-repo-and-cli, settings-model |
+| D22 Source allowlist and ClusterSpec hardening | scaffold-repo-and-cli, settings-model, clusters-repository, api-clusters-and-agents, k8s-object-renderer, entrypoints-and-singleton, container-images-ci, readme-api-and-openapi, kind-e2e |
+| D23 Dispatch correctness | migrations-and-schema, dispatch-queue-sql, ingester, wrapper-client-and-sse, fake-wrapper-contract, dispatcher-loop, api-messages-and-commands |
+| D24 Send timeout and ambiguous outcomes | settings-model, migrations-and-schema, dispatch-queue-sql, wrapper-client-and-sse, fake-wrapper-contract, dispatcher-loop, api-messages-and-commands |
+| D25 Singleton failover | settings-model, entrypoints-and-singleton |
+| D26 Separate namespace, reserved names, no Secret reads | settings-model, clusters-repository, k8s-object-renderer, reconciler-loop, check-jobs, kind-e2e |
+| D27 Session adoption and one workdir path | k8s-object-renderer, session-bootstrap, check-jobs, wrapper-client-and-sse, fake-wrapper-contract, dispatch-queue-sql, dispatcher-loop, migrations-and-schema |
 
 ## Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
 | `orch-cli` | scaffold-repo-and-cli | entrypoints-and-singleton, bench-cli | `src/agent_orchestrator/cli.py` |
-| `settings` | settings-model | cluster-token-derivation, k8s-object-renderer, api-clusters-and-agents, entrypoints-and-singleton | `src/agent_orchestrator/settings.py` |
+| `settings` | settings-model | cluster-token-derivation, k8s-object-renderer, api-clusters-and-agents, entrypoints-and-singleton, clusters-repository, dispatcher-loop | `src/agent_orchestrator/settings.py` |
 | `schema-v1` | migrations-and-schema | clusters-repository, dispatch-queue-sql, events-store, reconciler-loop, ingester, api-clusters-and-agents | `src/agent_orchestrator/db/migrations/0001_init.sql` |
 | `pg-fixture` | migrations-and-schema | clusters-repository, dispatch-queue-sql, events-store, reconciler-loop, ingester, dispatcher-loop, api-clusters-and-agents | `tests/conftest.py` |
 | `cluster-spec` | clusters-repository | k8s-object-renderer, api-clusters-and-agents | `src/agent_orchestrator/spec.py` |
@@ -226,7 +256,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 | `wrapper-peers-view` | claude-code-wrapper-orchestr | agent-orchestrator | wrapper-client-and-sse, ingester |
 | `wrapper-history-backward` | claude-code-wrapper-orchestr | agent-orchestrator | fake-wrapper-contract |
 | `any-mcp-cli` | any-mcp | agent-orchestrator | container-images-ci, k8s-object-renderer |
-| `any-mcp-config` | any-mcp | agent-orchestrator | k8s-object-renderer |
+| `any-mcp-config` | any-mcp | agent-orchestrator | k8s-object-renderer, clusters-repository, scaffold-repo-and-cli |
 | `any-mcp-release` | any-mcp | agent-orchestrator | container-images-ci |
 | `agent-orchestrator-settings-env` | agent-orchestrator | agents-k8s-deploy | settings-model |
 | `agent-orchestrator-image` | agent-orchestrator | agents-k8s-deploy | container-images-ci |
@@ -238,7 +268,9 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - ingester: resume by Last-Event-ID, gap rows, idempotent insert, `free_since` only moving on a transition to idle.
 - reconciler-loop: prune must only ever touch objects carrying both labels; a `deleting` cluster deletes the PVC; field manager and force apply.
 - cluster-token-derivation: tokens never logged, never stored, never returned by the API.
-- api: no route reaches Kubernetes or a wrapper; error shape matches the wrapper.
+- api: no route reaches Kubernetes or a wrapper; error shape matches the wrapper; the source allowlist checks the direct peer only (D22).
+- dispatch: every non-accept outcome releases the agent, the claim writes `last_dispatched_at`, the per-cluster advisory lock keeps FIFO, ambiguous sends are never retried (D23, D24).
+- reconciler Role: secrets create, patch, delete only, clusters namespace only (D26).
 - k8s-object-renderer: the rendered ccw config must validate with the pinned wrapper's `load_config`.
 
 ## Left to the builder
@@ -269,6 +301,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [recommended: deny (sessions.ask_user_question: deny)]
 - Q12: Where are the orchestrator and agent images pushed? [recommended: Harbor containers/ (containers/agent-orchestrator and containers/agent-orchestrator-agent, sha7 tags)]
 - Q13: How are the agent-orchestrator-db CNPG backups configured? [recommended: copy the backup configuration of the existing CNPG release in the ai bucket]
+- Q14: Do agent clusters live in their own namespace `agents-clusters` (configurable `ORCH_CLUSTERS_NAMESPACE`, created by the helmfile release, regcred and the Claude Secret provided there) while the orchestrator runs in `agents`? [recommended: yes, for blast radius: the reconciler Role then cannot touch the orchestrator's objects]
 
 ## Irreversible operations in scope
 

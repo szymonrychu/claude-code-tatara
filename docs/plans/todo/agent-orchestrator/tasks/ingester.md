@@ -32,14 +32,14 @@ The ingester (D5). It depends on epic claude-code-wrapper-orchestr.
 Per agent:
 - On attach, GET the snapshot and upsert `agent_status`.
   - State mapping: ready becomes idle, busy stays busy, creating becomes booting, and stopped, failed or dead become dead.
-  - `free_since` is `idle_since` when idle.
+  - `free_since` is the database `now()` at the moment the ingester records a transition into idle (D23: one clock; wrapper timestamps are never compared with database time). The wrapper `idle_since` is stored in `agent_status.wrapper_idle_since` for display only. An attach whose snapshot is idle while the stored state was not idle counts as such a transition.
   - The context columns come from `snapshot.context`, and null clears them.
 - Also on attach, GET `/v1/peers` into `agent_status.peers` (the member list as returned: `enabled`, `self`, `members[{instance, url, sessions, last_seen_at, missed}]`) and set the peer count to `len(members)`, 0 when `enabled` is false. Refresh it on every `session_state` transition into idle.
 - Then stream events with `Last-Event-ID = last_seq` of that session.
 
 Per envelope:
 - Store it with `insert_events`. A seq greater than last_seq+1 first writes `insert_gap`.
-- `session_state`: set state. A transition into idle sets `free_since = data.since` and NOTIFYs `agent_free {cluster_id, agent_id}`. Every state change NOTIFYs `status {cluster_id}`.
+- `session_state`: set state. A transition into idle (stored state was not idle) sets `free_since = now()` (database clock), stores `data.since` in `wrapper_idle_since`, and NOTIFYs `agent_free {cluster_id, agent_id}`. Every state change NOTIFYs `status {cluster_id}`.
 - `context`: set the context columns, then NOTIFY `status`.
 - `user_message`: stored as an `events` row like every other type and rendered by the chat as a user chat row, or a peer chat row when `origin` is `peer`. It uses the wrapper origin vocabulary `client|initial|agent|peer|restart|command` (turns.py:27 plus `restart` and `command`; `command` has `turn_id` null); `restart` rows are rendered as a system continue line. The ingester does not project it into `turns`.
 - `turn_started`, `turn_completed`, `turn_failed`: upsert `turns` (origin, started_at, completed_at, status, final_text, usage).
@@ -56,13 +56,14 @@ On disconnect, reconnect with backoff from 1 s doubling to 30 s, reset by a rece
 - AC2: streamed events are stored and NOTIFY events fires [evidence: test:tests/test_ingester.py::test_events_stored_and_notified]
 - AC3: a reconnect resumes with Last-Event-ID and stores no duplicates [evidence: test:tests/test_ingester.py::test_resume_uses_last_event_id_no_duplicates]
 - AC4: a seq hole writes a gap row [evidence: test:tests/test_ingester.py::test_gap_row_on_seq_hole]
-- AC5: going idle sets free_since from data.since and notifies agent_free [evidence: test:tests/test_ingester.py::test_idle_sets_free_since_and_notifies_agent_free]
+- AC5: going idle sets free_since from the database clock (not data.since), stores data.since as wrapper_idle_since, and notifies agent_free [evidence: test:tests/test_ingester.py::test_idle_sets_free_since_and_notifies_agent_free]
 - AC6: a context event updates the context columns [evidence: test:tests/test_ingester.py::test_context_event_updates_status]
 - AC7: turn events project into turns with final_text and usage [evidence: test:tests/test_ingester.py::test_turn_projection]
 - AC8: a dropped stream reconnects with backoff [evidence: test:tests/test_ingester.py::test_reconnect_backoff_after_disconnect]
 - AC9: a removed agent's stream task is cancelled [evidence: test:tests/test_ingester.py::test_agent_removed_stops_stream]
 - AC10: the peers view and peer count are recorded on attach, and enabled false gives count 0 [evidence: test:tests/test_ingester.py::test_peers_view_recorded]
 - AC11: a user_message event is stored as an events row with its origin and is not projected into turns [evidence: test:tests/test_ingester.py::test_user_message_stored_as_event_row]
+- AC12: a repeated or replayed idle event while already idle does not move free_since [evidence: test:tests/test_ingester.py::test_repeated_idle_does_not_move_free_since]
 
 ## Files
 
@@ -82,9 +83,9 @@ agent_status, turns and events reflect every agent live; the dispatcher wakes wh
 
 ## Steps
 
-- Write tests/test_ingester.py with the eleven named tests against FakeWrapper and the pool fixture; run it; expect failures.
+- Write tests/test_ingester.py with the twelve named tests against FakeWrapper and the pool fixture; run it; expect failures.
 - Implement db/status.py and ingester/loop.py.
-- Rerun `uv run pytest tests/test_ingester.py -q`; expect `11 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_ingester.py -q`; expect `12 passed`; run `mise run lint`.
 
 ## Notes
 

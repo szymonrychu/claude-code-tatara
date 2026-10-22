@@ -33,6 +33,8 @@ The agent image and the image CI (D16, D17). It depends on epics claude-code-wra
 - As root it creates `/opt/any-mcp` with `python -m venv` and installs `any-mcp @ git+https://github.com/szymonrychu/any-mcp@vX.Y.Z`, pinned through `ARG ANY_MCP_REF` to the any-mcp release tag.
 - Then it returns to the wrapper's user `agent`.
 
+Re-pin the `any-mcp` runtime dependency (added by scaffold for spec validation, D22) in pyproject.toml and uv.lock to the same release tag as `ANY_MCP_REF`.
+
 Re-pin the claude-code-wrapper dev dependency in pyproject.toml and uv.lock to the same commit as WRAPPER_SHA, so the renderer's config validation tests the image's wrapper.
 
 `.github/workflows/ci.yaml`:
@@ -52,6 +54,7 @@ README `## Images` names both images and the tag rule.
 - AC5: CI smoke-tests any-mcp in the agent image [evidence: test:tests/test_images.py::test_ci_smoke_tests_any_mcp]
 - AC6: the agent image runs any-mcp [evidence: command:docker build -t agent-orchestrator-agent:test agent-image && docker run --rm --entrypoint /opt/any-mcp/bin/any-mcp agent-orchestrator-agent:test --help]
 - AC7: the renderer's config validation passes on the re-pinned wrapper [evidence: command:uv run pytest tests/test_render.py -q]
+- AC8: the pyproject any-mcp dependency pins the same tag as ANY_MCP_REF [evidence: test:tests/test_images.py::test_pyproject_any_mcp_pin_matches_image_tag]
 
 ## Files
 
@@ -73,9 +76,9 @@ Main CI pushes `containers/agent-orchestrator:<sha7>` and `containers/agent-orch
 
 ## Steps
 
-- Write tests/test_images.py with the five named tests: static parsing of the Dockerfile, ci.yaml (yaml.safe_load) and pyproject. Run it; expect failures.
+- Write tests/test_images.py with the six named tests: static parsing of the Dockerfile, ci.yaml (yaml.safe_load) and pyproject. Run it; expect failures.
 - Write the Dockerfile and CI job and re-pin the dependency (`uv lock`).
-- Rerun `uv run pytest tests/test_images.py -q`; expect `5 passed`.
+- Rerun `uv run pytest tests/test_images.py -q`; expect `6 passed`.
 - Run AC6 and AC7, then `mise run lint`.
 
 ## Notes

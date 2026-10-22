@@ -30,8 +30,8 @@ Checks as Jobs (D10).
 The reconciler claims queued checks (`claim_check`) and creates Job `agent-<slug>-check-<id>`. The Job has:
 - the cluster labels plus `agents.szymonrichert.pl/check=<id>`
 - image `settings.check_image` (default the agent image), `imagePullSecrets: [regcred]`
-- `command: [sh, -c, <command>]`, workingDir /workdir
-- the cluster PVC mounted at /workdir (subPath `spec.workdir`), runAsUser and fsGroup 1000
+- `command: [sh, -c, <command>]`, workingDir `render.workdir_path(spec)` = `/workdir/<spec.workdir>`, the directory the agents' sessions work in (D27)
+- the cluster PVC mounted with the same `render.workdir_mount(spec)` as the agent pods (subPath `workdir` at /workdir), runAsUser and fsGroup 1000; the Job lives in `settings.clusters_namespace` (D26)
 - backoffLimit 0, activeDeadlineSeconds 1800, ttlSecondsAfterFinished 3600
 
 Each tick reads running checks:
@@ -43,11 +43,13 @@ For a deleting cluster, queued checks are cancelled (`cancel_checks`) and its Jo
 
 ## Acceptance conditions
 
-- AC1: a check renders a Job mounting the cluster PVC at /workdir [evidence: test:tests/test_checks.py::test_job_rendered_with_pvc_mount]
+- AC1: a check renders a Job mounting the cluster PVC at /workdir with the shared workdir mount [evidence: test:tests/test_checks.py::test_job_rendered_with_pvc_mount]
 - AC2: a succeeded Job records passed, exit 0 and the log tail [evidence: test:tests/test_checks.py::test_success_records_exit_and_log]
 - AC3: a failed Job records the container exit code [evidence: test:tests/test_checks.py::test_failure_records_exit_code]
 - AC4: a deadline-exceeded Job records failed with timeout [evidence: test:tests/test_checks.py::test_timeout_marks_failed]
 - AC5: discarding a cluster cancels its queued checks and deletes its Jobs [evidence: test:tests/test_checks.py::test_deleting_cluster_cancels_checks]
+- AC6: the Job workingDir equals render.workdir_path(spec) and its mount equals the StatefulSet workdir mount [evidence: test:tests/test_checks.py::test_job_workdir_matches_session_workdir]
+- AC7: the Job is created in the clusters namespace with the cluster labels [evidence: test:tests/test_checks.py::test_job_in_clusters_namespace_labelled]
 
 ## Files
 
@@ -66,9 +68,9 @@ For a deleting cluster, queued checks are cancelled (`cancel_checks`) and its Jo
 
 ## Steps
 
-- Extend FakeKube with job status and pod logs; write tests/test_checks.py with the five named tests; run it; expect failures.
+- Extend FakeKube with job status and pod logs; write tests/test_checks.py with the seven named tests; run it; expect failures.
 - Implement checks.py and call it from the reconcile tick.
-- Rerun `uv run pytest tests/test_checks.py -q`; expect `5 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_checks.py -q`; expect `7 passed`; run `mise run lint`.
 
 ## Notes
 

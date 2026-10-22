@@ -35,6 +35,10 @@ Add `Settings` (pydantic-settings, env prefix `ORCH_`) with these fields and def
 - `http_host` = 0.0.0.0, `http_port` = 8000, `static_dir` (default empty: the SPA is not mounted)
 - `dispatch_poll_seconds` = 2, `reconcile_poll_seconds` = 10, `ingest_refresh_seconds` = 5, `shutdown_grace_seconds` = 20, `log_level` = INFO
 
+- Hardening and cap fields (D22, D26): `clusters_namespace` = agents-clusters (`ORCH_CLUSTERS_NAMESPACE`; configurable, the gate confirms the default; the namespace that holds every agent cluster object, pod, Job and per-pod DNS name, distinct from `namespace`, the orchestrator's own), `allowed_cidrs` (comma-separated CIDR list, default 192.168.1.0/24, `ORCH_ALLOWED_CIDRS`; an unparsable entry is a validation error naming the variable), `agent_images` (comma-separated allowlist for `ClusterSpec.image`, default empty, `ORCH_AGENT_IMAGES`; the effective allowlist always also contains `agent_image`), `max_replicas` = 16 (`ORCH_MAX_REPLICAS`), `max_pvc_size` = 100Gi (`ORCH_MAX_PVC_SIZE`), `max_clusters` = 20 (`ORCH_MAX_CLUSTERS`, counts non-purged clusters).
+- Timing fields (D23, D24, D25): `wrapper_send_timeout_seconds` = 15, `dispatching_stale_seconds` = 60, `dispatching_heartbeat_seconds` = 5, `lock_heartbeat_seconds` = 5, `lock_tcp_user_timeout_seconds` = 15. Validation: `2 * wrapper_send_timeout_seconds <= dispatching_stale_seconds` (the send timeout stays well below the stale cutoff).
+- Helpers `Settings.allowed_networks() -> list[ip_network]` and `Settings.image_allowlist() -> frozenset[str]`.
+
 Invalid or missing values raise one error naming every bad `ORCH_*` variable. README.md gains `## Configuration`: a table of every variable, its default and the commands that read it. These names are the cross-epic contract `agent-orchestrator-settings-env` consumed by the deploy epic's chart.
 
 ## Acceptance conditions
@@ -45,6 +49,10 @@ Invalid or missing values raise one error naming every bad `ORCH_*` variable. RE
 - AC4: a master key shorter than 32 bytes is rejected [evidence: test:tests/test_settings.py::test_master_key_too_short_rejected]
 - AC5: every settings field's env name appears in the README Configuration table [evidence: test:tests/test_settings.py::test_env_names_documented_in_readme]
 - AC6: README documents the configuration [evidence: doc-section:README.md#Configuration]
+- AC7: the cluster namespace, cap and timing fields have the documented defaults and ORCH_CLUSTERS_NAMESPACE overrides the namespace [evidence: test:tests/test_settings.py::test_clusters_namespace_cap_and_timing_defaults]
+- AC8: ORCH_ALLOWED_CIDRS parses to networks and a bad entry is rejected naming the variable [evidence: test:tests/test_settings.py::test_allowed_cidrs_parsed_and_bad_entry_rejected]
+- AC9: the image allowlist always contains agent_image plus ORCH_AGENT_IMAGES [evidence: test:tests/test_settings.py::test_image_allowlist_includes_agent_image]
+- AC10: a send timeout above half the dispatching stale cutoff is rejected [evidence: test:tests/test_settings.py::test_send_timeout_must_be_well_below_stale_cutoff]
 
 ## Files
 
@@ -55,6 +63,7 @@ Invalid or missing values raise one error naming every bad `ORCH_*` variable. RE
 ## Interfaces
 
 - `agent_orchestrator.settings:Settings` (BaseSettings) with the fields above
+- `Settings.allowed_networks()`, `Settings.image_allowlist()`
 - `Settings.require_master_key() -> bytes`, `Settings.require_agent_image() -> str`
 - `agent_orchestrator.settings:load_settings() -> Settings`
 
@@ -64,10 +73,10 @@ Every process loads one Settings object from `ORCH_*` env; README lists every va
 
 ## Steps
 
-- Write tests/test_settings.py with the five named tests (monkeypatch env); run `uv run pytest tests/test_settings.py -q`; expect failures.
+- Write tests/test_settings.py with the nine named tests (monkeypatch env); run `uv run pytest tests/test_settings.py -q`; expect failures.
 - Implement settings.py and the README table.
-- Rerun; expect `5 passed`; run `mise run lint`.
+- Rerun; expect `9 passed`; run `mise run lint`.
 
 ## Notes
 
-The infrastructure registry records contract `agent-orchestrator-settings-env` (owner this epic, consumer agents-k8s-deploy): renaming a variable later breaks the chart. `default_auto_compact_pct` feeds the gauge tick and the rendered `claude.env.claude_autocompact_pct_override` (D13).
+`namespace` is the orchestrator's own namespace (agents); every Kubernetes object the reconciler manages uses `clusters_namespace`. The infrastructure registry records contract `agent-orchestrator-settings-env` (owner this epic, consumer agents-k8s-deploy): renaming a variable later breaks the chart. `default_auto_compact_pct` feeds the gauge tick and the rendered `claude.env.claude_autocompact_pct_override` (D13).

@@ -28,11 +28,11 @@ provides: []
 Message, command and check routes (D4, D11).
 
 Messages:
-- `POST /api/v1/clusters/{id}/messages {text, target_agent_id?}` returns 202 `{message_id, status: queued}`. Unknown cluster is 404. A deleting cluster is 409 `cluster_deleting`. A target agent not in the cluster is 422. Empty text is 422.
+- `POST /api/v1/clusters/{id}/messages {text, target_agent_id?}` returns 202 `{message_id, status: queued}`. Unknown cluster is 404. A deleting cluster is 409 `cluster_deleting`. A target agent not in the cluster is 422; a target agent that is gone is 422 `target_gone` (D23). Empty text is 422.
 - `GET /api/v1/clusters/{id}/messages?status=&limit=` lists messages, newest first; `status` takes a comma list.
 - `GET /api/v1/messages/{id}` returns the message plus `turn {status, started_at, completed_at, final_text}`, joined from turns by turn_id.
 - `DELETE /api/v1/messages/{id}` cancels a queued message (204); otherwise 409 `not_queued`.
-- `POST /api/v1/messages/{id}/retry` re-queues a failed message (202); otherwise 409 `not_failed`.
+- `POST /api/v1/messages/{id}/retry` re-queues a failed message (202), including one that failed with `ambiguous` (the user's explicit choice, D24); otherwise 409 `not_failed`.
 
 Agent commands:
 - `POST /api/v1/agents/{id}/interrupt|compact|restart` returns 202 `{command_id}`. Unknown agent is 404; a gone agent is 409.
@@ -52,6 +52,8 @@ Checks:
 - AC6: interrupt, compact and restart queue commands [evidence: test:tests/test_api_messages.py::test_agent_commands_queue_202]
 - AC7: checks are queued and readable [evidence: test:tests/test_api_messages.py::test_checks_enqueue_and_get]
 - AC8: the message list filters by status [evidence: test:tests/test_api_messages.py::test_list_messages_status_filter]
+- AC9: a gone target agent is rejected with 422 target_gone [evidence: test:tests/test_api_messages.py::test_post_message_to_gone_target_rejected]
+- AC10: a message that failed as ambiguous can be retried and carries its error reason in the view [evidence: test:tests/test_api_messages.py::test_retry_allowed_for_ambiguous_failure]
 
 ## Files
 
@@ -70,9 +72,9 @@ Headless clients and the UI can send, track, cancel and retry messages and drive
 
 ## Steps
 
-- Write tests/test_api_messages.py with the eight named tests; run it; expect failures.
+- Write tests/test_api_messages.py with the ten named tests; run it; expect failures.
 - Implement messages.py and include the router in create_app.
-- Rerun `uv run pytest tests/test_api_messages.py -q`; expect `8 passed`; run `mise run lint`.
+- Rerun `uv run pytest tests/test_api_messages.py -q`; expect `10 passed`; run `mise run lint`.
 
 ## Notes
 
