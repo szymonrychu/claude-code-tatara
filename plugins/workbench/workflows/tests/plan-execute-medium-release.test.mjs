@@ -158,3 +158,28 @@ test('medium-only-task-in-ruled-accept-lands-like-any-released-task', async () =
   assert.equal(r.error, undefined)
   assert.deepEqual(r.result.landed.map((l) => l.id).sort(), ['a', 'b'])
 })
+
+test('held-medium-only-hold-is-transitive: a two-deep chain a -> b -> c merges both unlanded task branches', async () => {
+  const a = task('a', { worktree: '/wt/epic-x-a' })
+  const b = task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })
+  const c = task('c', { worktree: '/wt/epic-x-c', dependsOn: ['b'] })
+  const r = await run([a, b, c], { A: raises(medium) }, EPIC)
+  assert.equal(r.error, undefined)
+  assert.ok(started(r, 'C'), 'c started')
+  assert.ok(merges(r, 'c', 'b-B'), 'c merges the task branch of b')
+  assert.ok(merges(r, 'c', 'b-A'), 'c merges the task branch of the held ancestor a')
+  assert.ok(!merges(r, 'c', 'epic-x'), 'c does not rely on the epic branch for unlanded b')
+  assert.deepEqual(r.result.landed.map((l) => l.id), [], 'nothing lands while a is unruled')
+})
+
+test('held-medium-only-hold-is-transitive: a three-deep chain a -> b -> c -> d merges every unlanded ancestor', async () => {
+  const a = task('a', { worktree: '/wt/epic-x-a' })
+  const b = task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })
+  const c = task('c', { worktree: '/wt/epic-x-c', dependsOn: ['b'] })
+  const d = task('d', { worktree: '/wt/epic-x-d', dependsOn: ['c'] })
+  const r = await run([a, b, c, d], { A: raises(medium) }, EPIC)
+  assert.equal(r.error, undefined)
+  for (const ref of ['b-C', 'b-B', 'b-A']) assert.ok(merges(r, 'd', ref), `d merges ${ref}`)
+  assert.ok(!merges(r, 'd', 'epic-x'), 'd does not rely on the epic branch')
+  assert.deepEqual(r.result.landed.map((l) => l.id), [])
+})
