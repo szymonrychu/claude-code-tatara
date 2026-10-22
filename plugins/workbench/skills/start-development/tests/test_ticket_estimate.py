@@ -37,13 +37,13 @@ def test_new_task_without_estimate_writes_formula_minutes(root):
     assert m["actual_roles"] == ""
 
 
-def test_new_task_with_estimate_is_an_override(root):
+def test_new_task_estimate_by(root):
     ep = mk_epic(root)
     m = task_meta(mk_task(root, ep, "Alpha", extra=["--estimate", "45"]))
     assert m["estimate"] == "45" and m["estimate_by"] == "override"
 
 
-def test_estimate_recomputes_formula_tasks_and_keeps_overrides(repo, root):
+def test_estimate_writes_formula_minutes_and_keeps_overrides(repo, root):
     ep = mk_epic(root)
     a = mk_task(root, ep, "Alpha", files="a.py,b.py,c.py,d.py")
     b = mk_task(root, ep, "Beta", extra=["--estimate", "45"])
@@ -71,7 +71,7 @@ def test_estimate_json_prints_epic_estimate(root):
     assert out["longest"][0]["id"] == "alpha"
 
 
-def test_time_line_format(root):
+def test_time_line_shows_critical_path_and_expected_wall(root):
     ep = mk_epic(root)
     mk_task(root, ep, "Alpha")
     mk_task(root, ep, "Beta")
@@ -85,7 +85,7 @@ def test_time_line_format(root):
     ), time
 
 
-def test_run_dir_durations_split_roles_and_strip_suffixes(tmp_path):
+def test_run_dir_matches_hash_n_labels(tmp_path):
     d = tmp_path / "run"
     write_run_dir(
         d,
@@ -100,7 +100,7 @@ def test_run_dir_durations_split_roles_and_strip_suffixes(tmp_path):
     assert out["alpha"]["roleMs"] == {"impl": 120000, "review": 60000, "verify": 60000}
 
 
-def test_apply_run_writes_actual_roles_and_adds_across_runs(repo, root):
+def test_apply_run_writes_actual_and_roles(repo, root):
     ep = setup_run(repo, root)
     commit_all(repo)
     d = repo / "run"
@@ -139,3 +139,16 @@ def test_apply_run_duration_fallback_without_run_dir(repo, root):
     assert cli("apply-run", ep, rj, "--root", root).returncode == 0
     m = meta_of(root, ep, ret["tasks"][0]["id"])
     assert m["actual"] == "2" and not m.get("actual_roles")
+
+
+def test_estimate_prints_three_longest_path_tasks(root):
+    ep = mk_epic(root)
+    for n in ("Alpha", "Beta", "Gamma", "Delta"):
+        mk_task(root, ep, n)
+    r = cli("estimate", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    last = r.stdout.strip().splitlines()[-1]
+    assert last.startswith("Longest path: ")
+    assert len(last.split("), ")) <= 3
+    out = json.loads(cli("estimate", ep, "--root", root, "--json").stdout)
+    assert {"sum", "cp", "epicWall", "longest"} <= set(out)
