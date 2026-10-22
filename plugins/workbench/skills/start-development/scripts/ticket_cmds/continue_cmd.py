@@ -11,6 +11,7 @@ merge repeats them safely.
 import argparse
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -18,6 +19,7 @@ from pathlib import Path
 PLUGIN_ROOT = Path(__file__).resolve().parents[4]
 HERE = Path(__file__).resolve().parent
 MERGE_EXIT = 2
+MERGE_SCRIPT = PLUGIN_ROOT / "skills" / "worktree-merge" / "scripts" / "merge.py"
 
 
 def _load(name: str, path: Path):
@@ -88,7 +90,29 @@ def _apply(a, t, root, ret, run_dir):
         )
 
 
-def _rule(epic_dir, files, accept, reason, t, root):
+def _auto_accepts(ret, files, t) -> list[tuple[str, str]]:
+    """(task, why) for returned tasks that need no judgement: verified, not yet done, and
+    either processOnly (not review-shallow) or triageRejected."""
+    found = []
+    for x in (ret or {}).get("tasks", []):
+        tid = str(x.get("id"))
+        if tid not in files or not x.get("verified"):
+            continue
+        if t._read_doc(files[tid]).meta.get("status") == "done":
+            continue
+        if x.get("triageRejected"):
+            found.append((tid, "triageRejected"))
+        elif x.get("processOnly") and x.get("stopped") != "review-shallow":
+            found.append((tid, "processOnly"))
+    return found
+
+
+def _auto_accept(ret, epic_dir, files, t, root) -> None:
+    for task, why in _auto_accepts(ret, files, t):
+        _rule(epic_dir, files, [task], f"auto-accepted: {why}", t, root, f"auto-accepted ({why})")
+
+
+def _rule(epic_dir, files, accept, reason, t, root, label="accepted"):
     rule = _sibling("rule")
     today = rule.datetime.datetime.now(rule.datetime.timezone.utc).strftime("%Y-%m-%d")
     seen = {(x["task"], x.get("reason")) for x in rule.read_rulings(epic_dir) if x.get("accept")}
@@ -102,9 +126,40 @@ def _rule(epic_dir, files, accept, reason, t, root):
         if not recorded:
             rule.write_ruling(epic_dir, task, True, reason)
             changed.append(epic_dir / rule.RULINGS)
-        print(f"{task}: accepted")
+        if not recorded or not reason.startswith("auto-accepted"):
+            print(f"{task}: {label}")
     if changed:
         t.commit_ticket_change(epic_dir.name, "continue", sorted(set(changed)), root)
+
+
+def _tree_name(m: dict, fallback: str) -> str:
+    """The recorded tree name: last component of the task's worktree, minus a trailing
+    /<repo> in component mode."""
+    wt = (m.get("worktree") or "").rstrip("/")
+    if not wt:
+        return fallback
+    path = Path(wt)
+    if m.get("repo") and path.name == m["repo"] and path.parent.name:
+        path = path.parent
+    return path.name
+
+
+def _land(epic_dir, lines, t, root) -> None:
+    """Run merge.py for each MERGE line; a failed landing keeps its line in the gate output."""
+    for line in lines:
+        parts = line.split()
+        task, base = parts[1], parts[parts.index("--base") + 1]
+        m = t._read_doc(epic_dir / "tasks" / f"{task}.md").meta
+        name = _tree_name(m, parts[parts.index("--name") + 1])
+        cmd = [sys.executable, str(MERGE_SCRIPT), "--name", name, "--base", base]
+        if t._task_repo(root, m.get("repo", "")):
+            cmd += ["--repo", m["repo"]]
+        cmd += ["--keep", "--no-suites", "--verify", m.get("verify") or "true"]
+        r = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
+        if r.returncode == 0:
+            print(f"{task}: landed")
+        else:
+            sys.stderr.write(r.stdout + r.stderr)
 
 
 def _merge_gate(epic_dir, accept, base, t, root) -> list[str]:
@@ -133,6 +188,10 @@ def _merge_gate(epic_dir, accept, base, t, root) -> list[str]:
     return lines
 
 
+def _open_ids(epic_dir, t) -> set[str]:
+    return {p.stem for p in t._task_files(epic_dir) if t._read_doc(p).meta.get("status") != "done"}
+
+
 def _refresh_facts(root: Path, t) -> None:
     out = root / "facts.md"
     if out.is_file():
@@ -158,8 +217,12 @@ def run(a, t) -> int:
     _verified(ret, files, accept, t)
     _apply(a, t, root, ret, run_dir)
     _rule(epic_dir, files, accept, a.reason, t, root)
+    _auto_accept(ret, epic_dir, files, t, root)
     base = a.base or t.integration_branch(epic_dir.name)
     gate = _merge_gate(epic_dir, accept, base, t, root)
+    if gate and a.launch:
+        _land(epic_dir, gate, t, root)
+        gate = _merge_gate(epic_dir, accept, base, t, root)
     if gate:
         print("\n".join(gate))
         print("merge the tasks above (worktree-merger), then rerun continue", file=sys.stderr)
@@ -167,6 +230,12 @@ def run(a, t) -> int:
     t.cmd_worktrees(argparse.Namespace(root=str(root), epic=a.epic, base=base, refresh=True))
     _refresh_facts(root, t)
     script = _sibling("args").write_args_and_copy(epic_dir, a.out_dir, a.context_pack, t)
+    if a.launch:
+        args_path = Path(a.out_dir) / f"{epic_dir.name}-args.json"
+        hb = PLUGIN_ROOT / "skills" / "heartbeat" / "scripts" / "heartbeat.py"
+        print(f"LAUNCH {script} {args_path}")
+        print(f"ARM python3 {hb} --run <runId> --total {len(_open_ids(epic_dir, t))}")
+        return 0
     print("arm the heartbeat once the run starts: heartbeat.py --run <runId>")
     print(script)
     return 0
@@ -184,5 +253,10 @@ def register(sub, t) -> None:
     sp.add_argument("--reason", default="")
     sp.add_argument("--run", default=None, help="run id: its record supplies the return")
     sp.add_argument("--return", dest="run_return", default=None, help="return.json to apply")
+    sp.add_argument(
+        "--launch",
+        action="store_true",
+        help="land the done tasks with merge.py, then print LAUNCH and ARM lines",
+    )
     sp.add_argument("--context-pack", default=None)
     sp.add_argument("--base", default=None, help="default: the epic's integration branch")
