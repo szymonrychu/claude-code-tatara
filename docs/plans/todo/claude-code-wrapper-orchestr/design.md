@@ -59,6 +59,9 @@ Snapshot `context` and a deduped `context` event; null until the first assistant
 ### D7: delivery conventions (approval A7)
 Fixed in the wrapper itself; targeted verify per task; README note to rebase onto origin/main before the PR. Chain order W1 -> W2 -> W3 -> W5 -> W6 because tasks share events.py and router.py; W4 is independent. (my call: the chain order)
 
+### D8: onStart instance hook
+An onStart instance hook fires once per ccw process start, after the global mise install and before peer join, resume_on_start or any session create, so agent-orchestrator can install any-mcp per pod before claude spawns MCP servers; a blocking deny or an on_error deny failure exits non-zero (gap found at the agent-orchestrator gate: onCreate runs after claude starts, setup_commands run per created session only) (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -88,6 +91,7 @@ Fixed in the wrapper itself; targeted verify per task; README note to rebase ont
 | D5 statusline relay | statusline-relay |
 | D6 context surface | context-in-snapshot-and-sse |
 | D7 delivery conventions | idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse |
+| D8 onStart instance hook | on-start-instance-hook |
 
 ## Contracts
 
