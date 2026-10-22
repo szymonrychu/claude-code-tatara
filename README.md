@@ -72,6 +72,8 @@ agent to run init first.
   table and `code/` tasks are regenerated.
 - **Forge creation only after confirmation:** init never creates a GitHub or
   GitLab repo or pushes without you confirming first.
+- **Template docs removed:** the template's own docs (plans, records, contracts,
+  research, handoffs) are deleted, and `MEMORY.md` and `ROADMAP.md` start fresh.
 - **A single commit:** everything init writes lands in one commit.
 
 ## Repo layout
@@ -318,20 +320,36 @@ hand.
 
 ## Pulling template updates
 
-To pull template updates into an initialised project:
+To pull template updates into an initialised project, run the `template-update`
+skill (`workbench:template-update` in Claude Code), or the engine directly:
 
 ```sh
-git remote add template https://github.com/szymonrychu/workbench
-git fetch template
-git merge template/main
+mise run init:update                  # template from the default URL, branch main
+mise run init:update --url <url> --branch <branch> --base <sha>
 ```
 
-Conflicts will mostly sit in generated blocks (`AGENTS.md`, `MEMORY.md`,
-marketplace and settings files). Resolve them by taking your project side, then
-running `mise run init:refresh`, which re-runs the idempotent project writers
-(AGENTS.md project block, `.mise.toml` code tasks, `docs/architecture.md`), syncs the
-AGENTS.md generated blocks and regenerates the recorded harness targets, without
-touching the sections you filled in. Run `mise run doctor` to check the result.
+`--url` and `--branch` pick another template source; `--base` names the template
+commit your workbench was created from.
+
+What arrives: tooling (`scripts/`, `mise-tasks/`, `.mise.toml`), plugins, rules
+and the generated blocks. What never arrives: the template's plans and records,
+`contracts.json`, `index.json`, `facts.md`, research, handoffs, and the entries
+in your `MEMORY.md` and `ROADMAP.md`. Those stay yours.
+
+The update refuses, and changes nothing, when:
+
+- the workbench is uninitialised;
+- the working tree is dirty;
+- the merge conflicts outside the known template-owned paths (the message gives
+  the manual route: `git remote add template`, `git fetch`, `git merge`, resolve,
+  then `mise run init:refresh`);
+- lint fails after the merge.
+
+When your history shares no commit with the template (a workbench created by
+copying files), pass `--base` so the update can graft the two histories.
+
+It ends in one local merge commit, which is the record of the update, and never
+pushes. Run `mise run doctor` afterwards to check the result.
 
 ## Verification and CI
 
