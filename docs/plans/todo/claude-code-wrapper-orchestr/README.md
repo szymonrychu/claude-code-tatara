@@ -34,7 +34,7 @@ claude-code-wrapper gains the API surface agent-orchestrator needs: context-wind
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 241 agent-min | Critical path: 202 min | Expected wall at P=1.5: 6.7 h (k=2.0) | Actual: 0 min | Remaining estimate: 241 min
 
 ## Review
 
