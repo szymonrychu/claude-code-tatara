@@ -166,6 +166,14 @@ const isProcessFinding = (f) => PROCESS_GATES.includes(f && f.gate)
 // verified() already folds clean in: the verifier's passed is stored as passed && clean.
 const processOnly = (impl, findings) =>
   verified(impl) && !isBlocked(impl) && Array.isArray(findings) && findings.length > 0 && findings.every(isProcessFinding)
+// Medium-only results (design D8): verified, not blocked, and every open finding (one triage
+// did not reject as false) is a reviewer's medium with no gate. It releases its dependents
+// and still escalates for a ruling. Every script-made gate finding is high and carries a gate.
+const openFindings = (findings) => (Array.isArray(findings) ? findings.filter((f) => f.verdict !== 'false') : [])
+const mediumOnly = (impl, findings) => {
+  const open = openFindings(findings)
+  return verified(impl) && !isBlocked(impl) && open.length > 0 && open.every((f) => f.severity === 'medium' && !f.gate)
+}
 // Per-task review tiers, lowest to highest. See reviewTier().
 const TIERS = ['skip', 'light', 'full', 'panel']
 // A changed path matching this is never below full.
@@ -1711,10 +1719,16 @@ async function reviewUntilClean(t, firstImpl, firstPre = [], tier = 'full', impl
         const findings = extra.findings.map((f, i) => ({ ...f, verdict: tr[i].verdict, verdictReason: tr[i].reason }))
         const released = findings.every((f) => isProcessFinding(f) || f.verdict === 'false')
         if (released) log(`${t.id}: verified, every open non-process finding rejected by triage - releasing dependents`)
-        return result(round, { clean: false, reason, ...extra, findings, ...(released ? { triageRejected: true } : {}) })
+        return medium(result(round, { clean: false, reason, ...extra, findings, ...(released ? { triageRejected: true } : {}) }))
       }
     }
-    return result(round, { clean: false, reason, ...extra })
+    return medium(result(round, { clean: false, reason, ...extra }))
+  }
+  // Marks a verified, unblocked stop whose only open findings are medium as mediumOnly.
+  const medium = (r) => {
+    if (r.reason === 'blocked' || r.triageRejected || !mediumOnly(impl, r.findings)) return r
+    log(`${t.id}: verified, only medium findings open - releasing dependents, escalating for a ruling`)
+    return { ...r, mediumOnly: true }
   }
   const review = (prompt, name) =>
     safeAgent(t, 'review', prompt, {
@@ -2081,13 +2095,13 @@ async function landTask(t, r) {
     return { ...r, land: res, impl: { ...r.impl, verification: { ...prior, ...res.verification, evidence: res.verification.evidence || prior.evidence, head: res.head } } }
   }
   log(`${t.id}: landing on ${BASE_REF} failed${res ? `: ${res.notes || tail(res.verification && res.verification.evidence)}` : ' - the land agent returned nothing'} - escalating`)
-  return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, land: res || null }
+  return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, mediumOnly: false, land: res || null }
 }
 
 // Every task starts the moment its own dependencies are released - per-task edge triggers,
 // never "when the whole wave is done", so the slowest sibling sets no one else's latency.
-// A dependency is released when it settles verified and clean, processOnly, triageRejected
-// or accepted by a ruling. A task whose dependency failed is escalated, not run.
+// A dependency is released when it settles verified and clean, processOnly, triageRejected,
+// mediumOnly or accepted by a ruling. A task whose dependency failed is escalated, not run.
 // With args.rulingsFile, a dependent of a verified but unreleased dependency waits for a
 // ruling. The file is read once per wave boundary: a task settles verified-not-released
 // while another waits on it, or nothing runs while dependents wait. An idle read that
@@ -2106,7 +2120,7 @@ function runTasks(batch) {
   // Released before landing: what releases a task in a run that does not land.
   const releasable = (d) => {
     const r = settled.get(d)
-    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
+    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || r.mediumOnly || RULED_ACCEPT.has(d)))
   }
   const landed = new Set()
   const released = (d) => releasable(d) && (!LANDING || landed.has(d))
@@ -2570,6 +2584,7 @@ for (const r of latest.values()) {
       reason: r.reason,
       rounds: r.rounds,
       findings: r.findings || [],
+      ...(r.mediumOnly ? { mediumOnly: true } : {}),
       ...(r.handoff ? { handoff: r.handoff } : {}),
       ...(r.split ? { split: r.split } : {}),
       ...(r.unread ? { unread: r.unread } : {}),
@@ -2632,6 +2647,7 @@ return {
     verified: verified(r.impl),
     processOnly: r.processOnly === true,
     triageRejected: r.triageRejected === true,
+    mediumOnly: r.mediumOnly === true,
     ...(RULED.has(r.task.id) ? { ruling: RULED.get(r.task.id) } : {}),
     ...('land' in r ? { land: r.land } : {}),
     verification: r.impl ? r.impl.verification : null,
