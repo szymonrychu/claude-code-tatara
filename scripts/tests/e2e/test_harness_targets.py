@@ -15,9 +15,6 @@ import tomllib
 sys.path.insert(0, str(Path(__file__).parent))
 from helpers import REPO, git, run  # noqa: E402
 
-sys.path.insert(0, str(REPO / "scripts/init_engine"))
-from project_files import is_initialised  # noqa: E402
-
 sys.path.insert(0, str(REPO / "plugins/workbench/hooks/tests"))
 import harness_payloads as hp  # noqa: E402
 
@@ -46,10 +43,7 @@ def core():
 def project(template, engine, tmp_path) -> Path:
     """A new project: one component, infra and observability packs, a stdio and an HTTP MCP
     server, committed. workbench.json is rewritten in the canonical json layout the generators
-    use, so a setup and clean round trip can be byte-identical.
-    Template-only: init refuses an already initialised workbench's components."""
-    if is_initialised(template):
-        pytest.skip("template-only: the workbench is initialised")
+    use, so a setup and clean round trip can be byte-identical."""
     engine(
         "new", "--name", "demo", "--component", "api:python",
         "--remote", f"local-bare:{tmp_path / 'remotes'}", "--purpose", "A demo project",

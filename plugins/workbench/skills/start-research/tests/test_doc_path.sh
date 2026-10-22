@@ -50,7 +50,7 @@ if [ ! -d "$WB/code/foo/docs" ]; then ok "doc_path leaves the submodule untouche
 # uninitialised template
 SCRIPT_ROOT="$(cd "$(dirname "$SCRIPT")/../../../../.." && pwd)"
 if [ -d "$SCRIPT_ROOT/code" ] && [ -f "$SCRIPT_ROOT/.gitmodules" ]; then
-  ok "plain-repo fallback skipped: the script lives inside an initialised workbench"
+  echo "SKIP (not counted): plain-repo fallback needs the uninitialised template; the script lives inside an initialised workbench"
 else
   PLAIN="$TMPDIR_ROOT/plain"
   mkdir -p "$PLAIN"
