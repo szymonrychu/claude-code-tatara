@@ -98,6 +98,87 @@ agents (30.4M cost-weighted tokens, 1942 agent-minutes) and the orchestrator (19
 - The plugin loads from a versioned cache: changes are live only after the epic reaches main and the
   plugin is updated, so this epic itself runs on the pre-change flow.
 
+
+## Measured baseline and ranked optimizations
+
+Copied from the research brief docs/research/flow-token-optimization.md (gitignored), sections (a) to (c), so the tracked design carries Goals 1 and 2.
+
+Epic: flow-speed-and-token-optimiz. Data: session 24dd7e5c (2026-10-20 10:27Z to 10-21 13:46Z, 27.3 h): 15 plan-execute workflows (592 agents), 44 direct subagents, the orchestrator transcript, 13 run returns, the record of project-agnostic-multi-harne (epic A, 86 tasks) and the live epic-integration-worktrees (epic B, 21 tasks). Scripts in `docs/research/flow-token-optimization/`: parse_agents.py, parse_returns.py, parse_main.py, parse_failures.py + analyze.py (failures.md), fit.py/fit2.py/extra.py (estimator, shares), flow-map.md (code reading with file:line cites). CSVs: scratchpad `flow-research/`.
+
+cw = cost-weighted tokens at standard price ratios to base input: cache read 0.1, cache write 1.25, output 5.
+
+### (a) Measured baseline
+
+| Scope | Agents | Raw tokens | input / output / cache read / cache write | cw | cw share |
+|---|---|---|---|---|---|
+| Workflow agents | 592 | 107.5M | 7k / 0.79M / 93.7M (87%) / 13.7M (13%, all 1h TTL) | 30.4M | 47% |
+| Orchestrator (624 turns) | 1 | 170.2M | 1.6k / 0.28M / 169.1M (99.4%) / 0.77M | 19.3M | 30% |
+| Direct subagents (planners, cartographers, research, panel, mergers) | 44 | 96.1M | 3k / 35k / 91.9M / 4.2M | 14.6M | 23% |
+
+Workflow agents by role (agent-min = summed per-agent wall; total 1942):
+
+| Role | n | Model | Raw | cw share | Agent-min (share) | Wall med / p90 s |
+|---|---|---|---|---|---|---|
+| impl | 118 | sonnet 96, haiku 17, opus 5 | 49.2M | 32.9% | 441 (23%) | 89 / 601 |
+| review | 157 | sonnet 146, haiku 11 | 22.0M | 24.7% | 153 (8%) | 37 / 140 |
+| verify | 206 | haiku | 11.8M | 23.7% | 1072 (55%) | 66 / 1037 |
+| fix | 104 | sonnet 101, opus 3 | 16.4M | 14.4% | 266 (14%) | 51 / 426 |
+| audit, triage | 1, 6 | sonnet, haiku | 7.5M, 0.6M | 3.1%, 1.2% | 7 | - |
+
+Rounds beyond the first (review #2+#3: 43 agents, 49 min; fix #2: 21, 78 min; verify #2+#3: 104, 605 min) are 38% of agent-minutes and 33% of workflow tokens; 84% of tasks had more than one verify, 39% more than one review.
+
+Per task (94 tasks, all rounds and relaunches): agent-minutes median 8.9, mean 20.6, p90 58.7 (full distribution in (d)). A full-suite `verify` is the strongest predictor (r = 0.74): 40.9 min median vs 5.0 targeted; verify alone 26.3 vs 1.4, impl+review+fix 16.7 vs 3.2 because implementers and fixers run the suite too. Per model (cw): sonnet 66%, haiku 29%, opus 5%.
+
+Cache: per-agent cache write median 17k (verify) to 28k (impl), the whole system prompt plus first message on every agent; cross-agent sharing is near zero even for the static-first reviewPrompt (24k). Writes are 57% of workflow cw, reads 31%, output 13%.
+
+Cascades: 19 root escalations (gate-repeat 9, round-cap 6, verify-agent-died 2, review-shallow 1, no-progress 1) caused 183 dependency-failed task-runs and 11 relaunch runs. Runs 2 and 3 each ran one task at the DAG top and blocked 61 and 60 tasks: 154 min wall and 2.5M tokens. Epic A wall, run 1 start to run 13 end: 913 min, of which 210 min (23%) were orchestrator decision gaps.
+
+Orchestrator: 156 heartbeat turns (median interval 9.9 min) = 24.4% of its tokens; 271 notification turns = 46.2%; record 13%; relaunch prep 10.6%; user dialogue 3% (10 human messages). Context peaked at 543k; 42% of the span had no workflow running.
+
+Failure-mode cost (strict / upper attribution; failures.md):
+
+| Mode | Occurrences | Tokens | Agent-min |
+|---|---|---|---|
+| 3 Verifier 600 s Bash cap, deaths, `--prev-head` argparse | 46 capped, 4 deaths, 5 argparse | 5.25M | 743 |
+| 8 Full-suite verify (median call 600 s capped vs 27 s targeted) | 57 of 206 verifiers | 4.8M | 636 |
+| 4 AC ref names a missing or renamed test | 68 verifies, 58 of 104 fix rounds | 3.7M / 15.7M | 117 / 385 |
+| 2 Escalation cascade, relaunch | 183 dependency-failed, 11 relaunches | 4.0M | 108 (+154 wall) |
+| 1 Forward-merged text trips parking/debt gates | 16 fix rounds, 13 gate-repeat stops | 2.0M / 4.0M | 52 / 109 |
+| 6 Dependency-merge conflicts in implementers | 5 impl at 2.5x a clean one | 3.2M excess | 7 |
+| 5 Process-only TDD findings re-raised | 13 fix rounds | 0.9M / 3.2M | 12 / 93 |
+
+Modes 3 and 8 overlap on 46 agents. Merging is scripted inside workflows; its cost is the 15 direct mergers (7.3M raw, p90 55 min) and orchestrator merge turns.
+
+### (b) Where the spend goes
+
+1. Verification wall-clock: 55% of agent-minutes; full-suite tasks are 32% of tasks but 71% of agent-minutes (1377 of 1942), each verify pinned at the 600 s Bash cap, and `--tdd-revert` runs the suite three times.
+2. Rounds beyond the first: 38% of agent-minutes, 33% of workflow tokens; 56% of fix rounds carry a `ref-missing` AC finding, a plan-data defect (the AC names a test that was written under another name), not a code defect; forward-merged gate text and TDD process findings add 29 fix rounds.
+3. Orchestrator wake-ups: heartbeat plus notification turns are 70% of orchestrator tokens (120M raw, about 13M cw, 20% of all spend) for a progress line each; relaunch and record turns add 24%.
+4. Cache writes: 57% of workflow cw; every agent rebuilds its prefix (per-worktree cwd in the system prompt, task-first ordering in implPrompt and verifyPrompt).
+5. Planning and research direct agents: 23% of all cw; two planners 31.7M raw; one epic audit 7.5M raw.
+6. Cascade and relaunch time: epic A took 913 min wall; the critical path at parallelism 3 predicts about 450.
+
+### (c) Ranked optimizations
+
+Savings are against the workflow baseline (30.4M cw, 1942 agent-min, 913 min epic wall). Every item keeps the review loop, independent verification, scope audit and approval ledger; only what each runs, and when, changes.
+
+Quick wins:
+
+1. Verify scoping, single landing suite. plan-execute.js `verifyCommand` :1013 and `targetedVerify` :347: require a targeted `t.verify` (AC test refs plus changed test files), never fall back to the implementer's free-text command; the full suite runs once per landing under the existing merge-gate suite-lock. verify-task.py `tdd_revert` :595: run only AC-referenced tests on base and reuse the :664 result instead of a third run; subprocess timeouts at :47/:65; explicit Bash timeout in verifyPrompt :1023; validate `--prev-head` as a sha. Saving: -35% to -45% agent-minutes (modes 3 and 8; impl/fix self-checks shrink too), -10% workflow tokens, no verifier deaths or argparse rounds. Risk: a regression outside the targeted set is caught at landing, not in the loop; the landing suite and scope audit already cover it.
+2. AC evidence robustness. implPrompt :860 and fixPrompt :964 omit `t.ac` though implementer.md:88 demands exact test refs. Pass the AC list, have the implementer return an `acEvidence` map (AC id to final test name), and let `_test_name_missing` (VT:389) fall back to file-plus-substring, recording `matchedBy`. Saving: 58 of 104 fix rounds carry this; strict -3.7M tokens/-117 min, upper -15.7M/-385 min; expect -10% to -20% tokens, -15% agent-minutes. Risk: a lenient match accepts a wrong test; exact first, substring second, auditor sees matchedBy.
+3. Orchestrator quiet mode and one-shot relaunch. heartbeat.py:53-57 beat 600 s to 1800 s on the 1h cache, `--no-eta` default, no wake on an unchanged digest; one END notification per workflow instead of per-agent hand-backs; `ticket.py continue --launch` (continue_cmd.py:134-161) does continue, MERGE dispatch, Workflow launch and heartbeat arm in one call. Saving: -60% orchestrator tokens (about 12M cw, 18% of all spend), most of the 210 min decision gaps (-20% epic wall). Risk: slower stall detection; keep STALL at 3 quiet beats.
+4. Prompt-cache prefix. Order implPrompt and verifyPrompt static-first like reviewPrompt :907 and launch agents from the main checkout cwd with the worktree path in the prompt, so system prompts are byte-identical per agent type. Saving: if 60% of each 17-28k prefix becomes a read, -25% to -30% workflow cw. Risk: none to quality; the per-worktree-cwd hypothesis is inferred from the write sizes and needs a hook-probe measurement first.
+5. Gate provenance. verify-task.py parking :309 and debt :265 diff against merge-base, so forward-merged dependency lines count as introduced; exclude lines present in a merged dependency branch. Saving: 9 of 19 root escalations, 2.0M to 4.0M tokens plus their cascades. Risk: low; the dependency's own gate judged those lines.
+6. Model per role. Forward-merge :2272, the no-conflict merger path and verifier-settled audit rows to haiku; review stays sonnet. Saving: 2% to 3%.
+
+Structural:
+
+7. Cascade containment and mid-run landing. `released` :1978 fails every transitive dependent on any unresolved finding, and nothing lands until continue. Release when the dependency is verified with only process or medium findings or all ACs met; land released tasks into the epic branch mid-run; auto-accept `triageRejected` and `processOnly` in continue. Saving: 183 dependency-failed task-runs and 11 relaunches; epic wall from 913 toward 450 min (-40%). Risk: a dependent builds on code later fixed; forwardMerge :2254 plus re-verify already handles that.
+8. Review tiering. Pass `--requirement` (VT:636, never passed) so tier hints work; widen `skip` :148-150 to doc-only and test-only diffs with all ACs met; scoped re-review of light-tier fixes to reviewer findings (:1435, never re-reviewed today). Saving: about a third of first reviews, -7% tokens. Risk: moderate; RISK_PATH stays full, the scope audit backstops.
+9. Planner granularity. phases-1-3.md:83 sizes "about an hour"; fixed cost per task is about 150k cw and 1-3 file tasks take 3-7 min. Size by test files and verify runtime; merge sibling tasks under 3 files sharing a test file. Saving: about 20 fewer verify-review cycles, -10% to -15% tokens. Risk: larger diffs, bounded by the 150-line rule.
+10. Audit and planner context by file. Audit prompt :2111 inlines every requirement (7.5M raw); write per-task sections to a file; planners get a section index. Saving: -3% workflow, -30% direct.
+11. Fan-out cap and triage. Cap concurrent verifies per repo at 2 and start ready tasks in critical-path order (runTasks :1971; 3-4 concurrent suites are what pin verifies at 600 s; redundant after item 1). Fold the three haiku calls in VT:677-707 into one: about 1 min per verify.
+
 ## Decisions
 
 ### D1: Targeted verify only, bounded verify-task runs
