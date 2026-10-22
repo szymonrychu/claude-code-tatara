@@ -345,9 +345,8 @@ const { fullSuitePatterns = [] } = readJson(join(PLUGIN, 'scripts', 'lib', 'esti
 const fullSuiteRegexes = fullSuitePatterns.map((p) => new RegExp(p))
 const isFullSuite = (verify) => {
   if (typeof verify !== 'string') return false
-  const parts = verify.split('&&').map((p) => p.trim()).filter(Boolean)
-  if (parts.length && /^cd\s/.test(parts[0])) parts.shift()
-  return parts.some((p) => fullSuiteRegexes.some((re) => re.test(p)) || suites.includes(p)) || suites.includes(verify.trim())
+  const parts = verify.split(/&&|\|\||;/).map((p) => p.trim().replace(/\s+/g, ' ')).filter((p) => p && !/^cd( |$)/.test(p))
+  return parts.some((p) => fullSuiteRegexes.some((re) => re.test(p)) || suites.map((c) => c.trim().replace(/\s+/g, ' ')).includes(p))
 }
 const fullSuiteMsg = (t) => `task ${t.id}: verify '${t.verify}' runs the full suite; name the test files or the component suite (run-tests.sh --only <component>) plus lint, and split the task if that is not enough`
 const fullSuiteFailures = () => tasks.filter((t) => t.status === 'todo' && isFullSuite(t.verify)).map(fullSuiteMsg)

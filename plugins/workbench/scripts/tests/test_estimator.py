@@ -225,3 +225,10 @@ def test_refit_cli_writes_task_params(tmp_path):
         k: v for k, v in before.items() if k != "task"
     }
     assert set(after["task"]) == set(before["task"])
+
+
+def test_full_suite_examples():
+    ex = est.load()["fullSuiteExamples"]
+    assert len(ex) >= 7
+    for e in ex:
+        assert est.full_suite(e["command"]) is e["full"], e["command"]

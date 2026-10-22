@@ -27,10 +27,10 @@ def _norm(s: str) -> str:
 
 
 def full_suite(cmd: str, suites=(), params=None) -> bool:
-    """True when any &&- or ;-separated part of cmd is a whole-suite run."""
+    """True when any &&-, ||- or ;-separated part of cmd is a whole-suite run."""
     pats = [re.compile(p) for p in (params or load())["fullSuitePatterns"]]
     known = {_norm(s) for s in suites}
-    for part in re.split(r"&&|;", cmd or ""):
+    for part in re.split(r"&&|\|\||;", cmd or ""):
         part = _norm(part)
         if not part or re.match(r"^cd( |$)", part):
             continue
