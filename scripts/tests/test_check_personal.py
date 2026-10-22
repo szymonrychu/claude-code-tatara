@@ -148,7 +148,28 @@ def test_custom_denylist_in_root_is_used(tmp_path):
     assert _run(root) == (1, ["bad/a.txt:1: foo"])
 
 
+LOCAL = "scripts/personal-allow.local.json"
+
+
+def test_local_allow_file_accepts_project_vocabulary(tmp_path):
+    local = json.dumps({"allow": [{"path": "docs/a.md", "pattern": _h(TERM)}]})
+    root = _repo(tmp_path, {"docs/a.md": f"{TERM}\n", "b.md": TERM, LOCAL: local}, cfg=_cfg())
+    assert _run(root) == (1, [f"b.md:1: {_h(TERM)}"])
+
+
+def test_local_allow_file_only_adds(tmp_path):
+    files = {"a.md": f"{TERM} foo\n"}
+    cfg = _cfg(patterns=["foo"])
+    root = _repo(tmp_path / "plain", files, cfg=cfg)
+    assert _run(root) == (1, [f"a.md:1: foo", f"a.md:1: {_h(TERM)}"])
+    local = json.dumps({"allow": [{"path": "a.md", "pattern": _h(TERM)}], "patterns": [], "hashes": []})
+    root = _repo(tmp_path / "local", {**files, LOCAL: local}, cfg=cfg)
+    assert _run(root) == (1, ["a.md:1: foo"])
+    assert not (SCRIPT.parent / "personal-allow.local.json").exists()
+
+
 def test_shipped_denylist_is_hashed_only():
+    assert not (SCRIPT.parent / "personal-allow.local.json").exists()
     data = json.loads(DENYLIST.read_text())
     assert len(data["hashes"]) == 19
     assert all(len(h) == 64 and set(h) <= set("0123456789abcdef") for h in data["hashes"])
