@@ -75,7 +75,7 @@ def assert_clean(project, before):
     assert before[1] == "" and before[2] == ""
 
 
-def test_unrelated_refuses_with_candidate(workbench, make_copied, run_cli, tmp_path, at):
+def test_unrelated_history_refused_with_candidate(workbench, make_copied, run_cli, tmp_path, at):
     shas = make_copied()
     at(T3)
     template_commit(workbench, tmp_path, {"tooling.txt": "v3\n"})
@@ -124,7 +124,7 @@ def test_candidate_uses_oldest_root(workbench, make_copied, run_cli, tmp_path, a
     assert f"candidate base: {shas['c1']}" in r.stderr.splitlines()
 
 
-def test_base_grafts_merges_and_cleans_up(workbench, make_copied, run_cli, tmp_path, at):
+def test_base_flag_merges_unrelated_history(workbench, make_copied, run_cli, tmp_path, at):
     shas = make_copied()
     at(T3)
     sha = template_commit(workbench, tmp_path, {"tooling.txt": "v3\n"})
@@ -169,7 +169,7 @@ def test_base_not_a_commit_refused(workbench, make_copied, run_cli, tmp_path, at
         assert_clean(workbench, before)
 
 
-def test_base_not_template_ancestor_refused(workbench, make_copied, run_cli, tmp_path, at):
+def test_base_not_in_template_refused(workbench, make_copied, run_cli, tmp_path, at):
     shas = make_copied()
     at(T3)
     template_commit(workbench, tmp_path, {"tooling.txt": "v3\n"})
