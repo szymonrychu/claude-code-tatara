@@ -127,7 +127,7 @@
     "consumers": [
       "agents-helmfile"
     ],
-    "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> and the wrapper agent image allowlisted via ORCH_AGENT_IMAGES"
+    "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> only (no derived agent image); agents run the claude-code-wrapper image set as agentImage / ORCH_AGENT_IMAGE, any-mcp installed by the rendered onStart hook"
   },
   {
     "name": "wrapper-on-start-hook",
