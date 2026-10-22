@@ -67,11 +67,12 @@ def pytest_collection_modifyitems(config, items):
     files = {i.nodeid.split("::", 1)[0] for i in items}
     # only ids whose file was collected can be judged: a targeted run collects fewer files
     stale = stale_ids(seen, [i for i in TEMPLATE_ONLY if i.split("::", 1)[0] in files])
-    if stale and not (config.option.keyword or config.option.markexpr):
+    by_id = any("::" in a for a in config.args)
+    targeted = config.option.keyword or config.option.markexpr or by_id
+    if stale and not targeted:
         raise pytest.UsageError("TEMPLATE_ONLY names no collected test: " + ", ".join(stale))
     reason = "template-only: the workbench is initialised"
     for item in items:
         if item.nodeid in listed:
             item.add_marker(pytest.mark.template)
-            if initialised:
-                item.add_marker(pytest.mark.skip(reason=reason))
+            item.add_marker(pytest.mark.skipif(initialised, reason=reason))
