@@ -1,6 +1,6 @@
 ---
 title: AC evidence map
-status: in-progress
+status: done
 repo: workbench
 value: "A renamed test no longer costs a fix round; loose matches are shown to the auditor"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/verify-task.py, plugins/workbench/agents/implementer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/scripts/tests/test_verify_ac_evidence.py, plugins/workbench/workflows/tests/plan-execute-ac-evidence.test.mjs]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--ac-evidence-map
 branch: flow-speed-and-token-optimiz--ac-evidence-map
-verified_head: ""
-run: ""
-provides: []
+verified_head: 1f6bbfba60932838ccffaaca3eeee056ee46cefb
+run: flow-speed-and-token-optimiz
+provides: [ac-evidence]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # AC evidence map

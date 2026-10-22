@@ -1,6 +1,6 @@
 ---
 title: Heartbeat quiet
-status: in-progress
+status: done
 repo: workbench
 value: "The waiting orchestrator wakes only on END, STALL or real progress, with no haiku per beat"
 files: [plugins/workbench/skills/heartbeat/scripts/heartbeat.py, plugins/workbench/skills/heartbeat/SKILL.md, plugins/workbench/skills/heartbeat/tests/test_heartbeat.py, plugins/workbench/skills/heartbeat/tests/test_heartbeat_run.py, AGENTS.md]
@@ -13,10 +13,12 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--heartbeat-quiet
-branch: flow-speed-and-token-optimiz--heartbeat-quiet
-verified_head: ""
-run: ""
+branch: HEAD
+verified_head: b28fd1767a9f721420d0ebba9a14678a8e68a12d
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Heartbeat quiet

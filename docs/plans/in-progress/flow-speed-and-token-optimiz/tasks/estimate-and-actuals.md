@@ -1,6 +1,6 @@
 ---
 title: Estimate and actuals
-status: in-progress
+status: done
 repo: workbench
 value: "Every epic shows its critical path, expected wall and measured actuals per task and role"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/estimate.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/roadmap.py, plugins/workbench/skills/start-development/templates/task.md, plugins/workbench/skills/start-development/tests/test_ticket_estimate.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_roadmap.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimate-and-actuals
 branch: flow-speed-and-token-optimiz--estimate-and-actuals
-verified_head: ""
-run: ""
+verified_head: 65c5cb826ba0b06ee7a1101715827f8d252b4c4b
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Estimate and actuals

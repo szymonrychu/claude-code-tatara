@@ -1,6 +1,6 @@
 ---
 title: Cache probe
-status: in-progress
+status: done
 repo: workbench
 value: "A measurement, not a guess, decides whether prompt reordering saves cache writes"
 files: [plugins/workbench/workflows/hook-probe.js, plugins/workbench/workflows/tests/hook-probe.test.mjs, plugins/workbench/scripts/hook-evidence.py, plugins/workbench/scripts/tests/test_hook_evidence.py]
@@ -13,10 +13,12 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe
-branch: flow-speed-and-token-optimiz--cache-probe
-verified_head: ""
-run: ""
-provides: []
+branch: "HEAD (worktree /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe)"
+verified_head: 0a7b69478789916ba7f84cb8d086d3181d16b18d
+run: flow-speed-and-token-optimiz
+provides: [cache-probe-verdict]
+acs_for_audit: []
+process_gaps: ["Probe result still to be run and recorded in design.md (D6), as the implementer noted"]
 ---
 
 # Cache probe

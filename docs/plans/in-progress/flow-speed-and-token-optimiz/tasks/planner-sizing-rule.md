@@ -1,6 +1,6 @@
 ---
 title: Planner sizing rule
-status: in-progress
+status: done
 repo: workbench
 value: New plans cannot schedule full-suite verifies and size tasks by what their verify costs
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/skills/start-development/references/phases-1-3.md, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--planner-sizing-rule
 branch: flow-speed-and-token-optimiz--planner-sizing-rule
-verified_head: ""
-run: ""
+verified_head: b90c434c154199a211e1c0523f47a0634be517f6
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Planner sizing rule

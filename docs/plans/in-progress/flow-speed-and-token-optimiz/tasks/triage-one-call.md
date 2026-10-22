@@ -1,6 +1,6 @@
 ---
 title: Triage one call
-status: in-progress
+status: done
 repo: workbench
 value: One haiku round trip per verify instead of three
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/triage.py, plugins/workbench/scripts/tests/test_triage.py, plugins/workbench/scripts/tests/test_verify_triage_one_call.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--triage-one-call
 branch: flow-speed-and-token-optimiz--triage-one-call
-verified_head: ""
-run: ""
+verified_head: 4e33d73c22ccb4c07e6b9d9c1c74edeb770ed6bc
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: ["Implementer states tests were written after the implementation (no red-first cycle)"]
 ---
 
 # Triage one call

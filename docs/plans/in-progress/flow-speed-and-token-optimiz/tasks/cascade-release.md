@@ -1,6 +1,6 @@
 ---
 title: Cascade release
-status: in-progress
+status: done
 repo: workbench
 value: "A medium finding no longer fails every dependent; the run continues and the ruling comes after"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
@@ -13,10 +13,12 @@ estimate: 5
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cascade-release
-branch: flow-speed-and-token-optimiz--cascade-release
-verified_head: ""
-run: ""
+branch: "HEAD of worktree flow-speed-and-token-optimiz--cascade-release (commit bae1f36)"
+verified_head: bae1f364c7672d48a9c8d4e2826d3431f0902c83
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Cascade release

@@ -1,6 +1,6 @@
 ---
 title: Estimator model
-status: in-progress
+status: done
 repo: workbench
 value: "Realistic agent-minute estimates from one fitted, refittable parameter file"
 files: [plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/tests/test_estimator.py, plugins/workbench/scripts/tests/fixtures/estimator_tasks.json]
@@ -13,10 +13,12 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimator-model
-branch: flow-speed-and-token-optimiz--estimator-model
-verified_head: ""
-run: ""
-provides: []
+branch: worktree-flow-speed-and-token-optimiz--estimator-model
+verified_head: 3a1ea040255888a4a4e5e17169fbb748951481d4
+run: flow-speed-and-token-optimiz
+provides: [estimator-params]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Estimator model

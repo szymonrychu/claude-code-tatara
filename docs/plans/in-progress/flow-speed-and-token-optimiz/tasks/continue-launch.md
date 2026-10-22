@@ -1,6 +1,6 @@
 ---
 title: Continue launch
-status: in-progress
+status: done
 repo: workbench
 value: "One command between runs: apply, auto-accept, land the clean tasks, print the launch"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--continue-launch
 branch: flow-speed-and-token-optimiz--continue-launch
-verified_head: ""
-run: ""
-provides: []
+verified_head: e5ec85e53c596b77938b213c41f305bbfa2b2520
+run: flow-speed-and-token-optimiz
+provides: [continue-launch-lines]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Continue launch

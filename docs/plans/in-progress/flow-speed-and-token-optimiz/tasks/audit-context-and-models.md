@@ -1,6 +1,6 @@
 ---
 title: Audit context and models
-status: in-progress
+status: done
 repo: workbench
 value: The audit reads task files instead of inlined text and mechanical roles run on haiku
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py, plugins/workbench/skills/start-development/tests/test_ticket_args.py, plugins/workbench/agents/scope-auditor.md, plugins/workbench/workflows/tests/plan-execute-audit-context.test.mjs, plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--audit-context-and-models
 branch: flow-speed-and-token-optimiz--audit-context-and-models
-verified_head: ""
-run: ""
+verified_head: f26be92333627e003c2aa0514252c6630d7e9dc0
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Audit context and models

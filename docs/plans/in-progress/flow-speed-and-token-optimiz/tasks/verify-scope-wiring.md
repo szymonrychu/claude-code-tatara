@@ -1,6 +1,6 @@
 ---
 title: Verify scope wiring
-status: in-progress
+status: done
 repo: workbench
 value: "Every verify runs targeted tests, at most two suites contend per repo, long chains start first"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-verify-scope.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs]
@@ -14,9 +14,11 @@ actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-scope-wiring
 branch: flow-speed-and-token-optimiz--verify-scope-wiring
-verified_head: ""
-run: ""
-provides: []
+verified_head: 3653ea8845aa1a8819f00579e2d6227811a44daf
+run: flow-speed-and-token-optimiz
+provides: [verify-slot-queue, verify-task-invocation]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Verify scope wiring

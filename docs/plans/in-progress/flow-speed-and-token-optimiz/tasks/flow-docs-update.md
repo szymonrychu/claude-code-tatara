@@ -1,6 +1,6 @@
 ---
 title: Flow docs update
-status: in-progress
+status: done
 repo: workbench
 value: The references tell the orchestrator how to relaunch in one step and show the epic estimate
 files: [plugins/workbench/skills/start-development/references/task-fields.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/templates/epic.md, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--flow-docs-update
 branch: flow-speed-and-token-optimiz--flow-docs-update
-verified_head: ""
-run: ""
+verified_head: cdc932494d88d916a5632a42e06af2454233e5c9
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Flow docs update

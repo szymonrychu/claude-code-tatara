@@ -1,6 +1,6 @@
 ---
 title: Gate provenance
-status: in-progress
+status: done
 repo: workbench
 value: "Dependents are gated only on the lines they wrote, ending the gate-repeat cascades"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/tests/test_verify_provenance.py, plugins/workbench/workflows/tests/plan-execute-provenance.test.mjs]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--gate-provenance
 branch: flow-speed-and-token-optimiz--gate-provenance
-verified_head: ""
-run: ""
+verified_head: 5af4a66c1a5f15553932f603c678b34af113427a
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Gate provenance
