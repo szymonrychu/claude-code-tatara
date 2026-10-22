@@ -1,0 +1,10 @@
+[
+  {
+    "name": "wrapper-statusline-callback",
+    "kind": "interface",
+    "owner": "claude-code-wrapper-orchestr",
+    "file": "src/claude_code_wrapper/router.py",
+    "consumers": [],
+    "note": "router.on_statusline(payload) callback fed by the statusline relay"
+  }
+]
