@@ -54,3 +54,14 @@ test('no-estimate-warning', () => {
   writeFileSync(p, readFileSync(p, 'utf8').replace(/^verify:/m, 'estimate: 200\nverify:'))
   assert.doesNotMatch(cli(d).stderr, /consider splitting/)
 })
+
+test('fullSuiteExamples in estimator.json classify the same as the estimator', () => {
+  const { fullSuiteExamples } = JSON.parse(readFileSync(new URL('../../scripts/lib/estimator.json', import.meta.url), 'utf8'))
+  assert.ok(fullSuiteExamples.length >= 7)
+  for (const { command, full } of fullSuiteExamples) {
+    const d = epic('README.md')
+    setTask(d, 't-one', command)
+    const r = cli(d)
+    assert.equal(/runs the full suite/.test(r.stderr), full, `${command}: ${r.stderr}`)
+  }
+})

@@ -8,5 +8,14 @@
     "^cargo test$",
     "^(uv run )?pytest( -[-\\w=]+)*$",
     "^bash scripts/run-tests\\.sh$"
+  ],
+  "fullSuiteExamples": [
+    {"command": "mise run test", "full": true},
+    {"command": "cd plugins/x && mise run test", "full": true},
+    {"command": "a; mise run test", "full": true},
+    {"command": "true || mise run test", "full": true},
+    {"command": "cd x; pytest -q tests/test_a.py", "full": false},
+    {"command": "pytest -q", "full": true},
+    {"command": "bash scripts/run-tests.sh --only workflows", "full": false}
   ]
 }
