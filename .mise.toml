@@ -30,6 +30,7 @@ description = "Run test in every component"
 run = [
   "mise run --cd code/claude-code-wrapper test",
   "mise run --cd code/any-mcp test",
+  "mise run --cd code/agent-orchestrator test",
 ]
 
 [tasks."code:lint"]
@@ -37,6 +38,7 @@ description = "Run lint in every component"
 run = [
   "mise run --cd code/claude-code-wrapper lint",
   "mise run --cd code/any-mcp lint",
+  "mise run --cd code/agent-orchestrator lint",
 ]
 
 [tasks."code:fmt"]
@@ -44,5 +46,6 @@ description = "Run fmt in every component"
 run = [
   "mise run --cd code/claude-code-wrapper fmt",
   "mise run --cd code/any-mcp fmt",
+  "mise run --cd code/agent-orchestrator fmt",
 ]
 # workbench:code-tasks:end

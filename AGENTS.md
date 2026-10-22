@@ -31,6 +31,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 |-----------|------|------|-------|
 | claude-code-wrapper | python | HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks | `mise run --cd code/claude-code-wrapper test` |
 | any-mcp | python | MCP server that exposes any API as MCP tools through a plugin system (stdio and streamable HTTP) | `mise run --cd code/any-mcp test` |
+| agent-orchestrator | python | Web UI and headless API orchestrating Kubernetes pods of claude-code-wrapper agents: clusters, round-robin dispatch, chat history (Python backend, React frontend, helm chart) | `mise run --cd code/agent-orchestrator test` |
 
 ## Component hard rules
 

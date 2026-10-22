@@ -6,3 +6,7 @@
 	path = code/any-mcp
 	url = https://github.com/szymonrychu/any-mcp
 	branch = main
+[submodule "agent-orchestrator"]
+	path = code/agent-orchestrator
+	url = https://github.com/szymonrychu/agent-orchestrator
+	branch = main
