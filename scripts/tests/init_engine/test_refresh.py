@@ -83,3 +83,14 @@ def test_refresh_allow_file_idempotent(workbench, run_cli, allow_file):
     assert run_cli("refresh").returncode == 0
     assert allow.read_bytes() == before
     assert lint().returncode == 0
+
+
+def test_refresh_stages_only_allow_file(workbench, run_cli, allow_file):
+    lint, allow = init_zorbax(workbench, run_cli)
+    sh("add", "-A", cwd=workbench)
+    sh("commit", "-qm", "base", cwd=workbench)
+    (workbench / "scratch.txt").write_text("untracked\n")
+    (workbench / "README.md").write_text("edited\n")
+    assert run_cli("refresh").returncode == 0
+    staged = sh("diff", "--cached", "--name-only", cwd=workbench).stdout.split()
+    assert staged == ["scripts/personal-allow.local.json"]
