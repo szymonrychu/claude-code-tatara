@@ -5,7 +5,7 @@ repo: claude-code-wrapper
 value: the wrapper full suite is green with the new hook and event vocabulary
 files: [tests/test_command_vocabulary.py, tests/test_event_log.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/events.py]
 verify: "uv run pytest tests/test_command_vocabulary.py tests/test_event_log.py -q && uv run ruff check . && uv run ruff format --check ."
-depends_on: [history-scan-off-event-loop, statusline-absolute-command, statusline-input-validation]
+depends_on: [history-scan-off-event-loop, statusline-absolute-command, statusline-input-validation, idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse, on-start-instance-hook]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The wrapper full suite is green.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red already seen in the epic full suite (assert 21 == 20; event list diff at context).
+- Reconcile pins or code per the requirement; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

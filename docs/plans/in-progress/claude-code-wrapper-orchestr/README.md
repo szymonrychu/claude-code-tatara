@@ -35,7 +35,7 @@ claude-code-wrapper gains the API surface agent-orchestrator needs: context-wind
 
 ## Time
 
-Estimate: 57 agent-min | Critical path: 35 min | Expected wall at P=1.5: 1.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 15 min
+Estimate: 63 agent-min | Critical path: 41 min | Expected wall at P=1.5: 1.4 h (k=2.0) | Actual: 0 min | Remaining estimate: 21 min
 
 ## Review
 

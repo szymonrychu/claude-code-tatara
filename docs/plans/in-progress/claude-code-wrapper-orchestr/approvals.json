@@ -80,7 +80,8 @@
       "history-before-seq-and-types",
       "peer-mesh-view-route",
       "statusline-relay",
-      "context-in-snapshot-and-sse"
+      "context-in-snapshot-and-sse",
+      "vocabulary-pins"
     ],
     "status": "approved"
   },
