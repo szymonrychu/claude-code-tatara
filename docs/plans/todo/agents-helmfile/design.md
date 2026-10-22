@@ -45,7 +45,7 @@ One `helmfile.yaml.gotmpl`, the infrastructure `*default` template (values layer
 
 ### D3: LAN-only ingress without auth (A3)
 
-nginx, `letsencrypt-prod`, `whitelist-source-range: 192.168.1.0/24`, read/send timeouts 3600 s, TLS secret `agent-orchestrator-tls`, no auth annotation; `ORCH_ALLOWED_CIDRS=192.168.1.0/24` enforces the same inside the app. external-dns publishes the Cloudflare record (user decision; ingress-nginx sees real LAN IPs, so the whitelist keeps outside clients out). `ORCH_CLUSTERS_NAMESPACE=agents` because the user decided everything lives in namespace `agents`, clusters distinguished by labels.
+nginx, `letsencrypt-prod`, `whitelist-source-range: 192.168.1.0/24`, read/send timeouts 3600 s, TLS secret `agent-orchestrator-tls`, no auth annotation; `ORCH_ALLOWED_CIDRS=192.168.1.0/24` enforces the same inside the app. external-dns publishes the Cloudflare record (user decision; ingress-nginx sees real LAN IPs, so the whitelist keeps outside clients out).
 
 ### D4: SOPS-encrypted secrets from a bootstrap script (A4)
 
@@ -110,7 +110,6 @@ Consumed from the agent-orchestrator epic, registered in docs/plans/contracts.js
 ## Assumptions and unknowns
 
 - The agent-orchestrator epic ships and publishes the chart before orchestrator-release runs (blocker epic); confirmed with `helm show chart`.
-- The agent-orchestrator epic text still names `agents-clusters` as the default clusters namespace and a derived agent image; the user's later decisions (namespace `agents`, onStart any-mcp hook) win, and this repo sets `ORCH_CLUSTERS_NAMESPACE=agents` explicitly. The agent-orchestrator planner must reconcile its tasks (settings default, D16, D26, chart).
 - `helmfile build` renders without fetching charts or decrypting secrets; confirmed by the first test run, otherwise tests parse the YAML directly.
 - The PGP private key is available on the operator machine (needed by `apply`, as in the infrastructure repo).
 
