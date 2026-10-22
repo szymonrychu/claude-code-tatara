@@ -53,7 +53,8 @@
       "template-marker-skip",
       "e2e-init-green",
       "e2e-behind-slow-marker",
-      "ci-workflow-test-pins-e2e-job"
+      "ci-workflow-test-pins-e2e-job",
+      "ci-workflow-test-pins-e2e-jo"
     ],
     "status": "approved"
   },

@@ -41,9 +41,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The full suite is green with the three CI jobs pinned.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- The test currently fails on HEAD (red already seen: assert 3 == 2).
+- Update it to pin check, secrets and e2e by name; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
