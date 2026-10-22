@@ -37,7 +37,8 @@
     ],
     "tasks": [
       "license-every-plugin",
-      "e2e-init-green"
+      "e2e-init-green",
+      "license-missing-refusal"
     ],
     "status": "approved"
   },
@@ -50,7 +51,8 @@
     ],
     "tasks": [
       "template-marker-skip",
-      "e2e-init-green"
+      "e2e-init-green",
+      "e2e-behind-slow-marker"
     ],
     "status": "approved"
   },
