@@ -1,6 +1,6 @@
 ---
 title: CLI stdio
-status: escalated
+status: done
 repo: any-mcp
 value: "any-mcp runs as a well-behaved local stdio MCP server, the default transport"
 files: [src/any_mcp/cli.py, src/any_mcp/__main__.py, src/any_mcp/log.py, tests/test_cli.py, tests/fixtures/stdio_plugin.py]
@@ -74,6 +74,8 @@ Ship the `any-mcp` command with the stdio transport (design D4, D5, D10). This i
 ## Ruling
 
 - 2026-10-22 accepted: fix-agent-died (safety classifier rate-limited) on findings judged false positives by the reviewer itself: NotImplementedError at cli.py:107 is the exception suppressed around loop.add_signal_handler, cli.py:96/97/154 are explanatory comments. Verified on cf2da99: 11 passed, lint clean.
+
+- 2026-10-22 accepted: fix-agent-died on false-positive findings; verified on cf2da99 (11 passed, lint clean)
 
 ## Notes
 

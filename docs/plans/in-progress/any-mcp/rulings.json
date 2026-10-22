@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "fix-agent-died (safety classifier rate-limited) on findings judged false positives by the reviewer itself: NotImplementedError at cli.py:107 is the exception suppressed around loop.add_signal_handler, cli.py:96/97/154 are explanatory comments. Verified on cf2da99: 11 passed, lint clean.",
     "at": "2026-10-22T23:19:40Z"
+  },
+  {
+    "task": "cli-stdio",
+    "accept": true,
+    "reason": "fix-agent-died on false-positive findings; verified on cf2da99 (11 passed, lint clean)",
+    "at": "2026-10-22T23:21:37Z"
   }
 ]
