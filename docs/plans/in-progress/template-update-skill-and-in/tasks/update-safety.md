@@ -5,7 +5,7 @@ repo: workbench
 value: "A template update never deletes a user's local notes and only merges from the source the user named"
 files: [scripts/init_engine/update.py, scripts/tests/init_engine/test_update_safety.py, plugins/workbench/skills/template-update/SKILL.md, plugins/workbench/skills/template-update/tests/test_template_update_skill.py]
 verify: "pytest scripts/tests/init_engine/test_update_safety.py plugins/workbench/skills/template-update/tests/test_template_update_skill.py -q && ruff check scripts plugins/workbench/skills/template-update"
-depends_on: []
+depends_on: [e2e-template-update, template-update-skill, docs-update-flow]
 owns: []
 uses: []
 model: opus

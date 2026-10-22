@@ -5,7 +5,7 @@ repo: workbench
 value: "A verifier never dies at the 600 s Bash cap: one deadline covers every command a verify call runs"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/agents/verifier.md, plugins/workbench/workflows/plan-execute.js]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_bounded.py -q && ruff check scripts"
-depends_on: []
+depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
 owns: []
 uses: []
 model: sonnet

@@ -5,7 +5,7 @@ repo: workbench
 value: No ref or path from args or an earlier run reaches a verifier shell command unquoted
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-shell-quoting.test.mjs]
 verify: "cd plugins/workbench && node --test workflows/tests/plan-execute-shell-quoting.test.mjs && bash scripts/run-tests.sh --only workflows"
-depends_on: [verify-shared-deadline]
+depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change, verify-shared-deadline]
 owns: []
 uses: []
 model: sonnet

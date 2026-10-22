@@ -5,7 +5,7 @@ repo: workbench
 value: continue --launch never lands a task with no check
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_continue_launch.py -q && ruff check skills"
-depends_on: []
+depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
 owns: []
 uses: []
 model: sonnet

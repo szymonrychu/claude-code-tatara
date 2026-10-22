@@ -5,7 +5,7 @@ repo: workbench
 value: A task with open medium findings never lands before the orchestrator rules on it
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
 verify: "cd plugins/workbench && node --test workflows/tests/plan-execute-medium-release.test.mjs && bash scripts/run-tests.sh --only workflows"
-depends_on: [shell-quote-refs]
+depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change, shell-quote-refs]
 owns: []
 uses: []
 model: sonnet

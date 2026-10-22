@@ -5,7 +5,7 @@ repo: workbench
 value: The estimator and the plan lint can no longer disagree on what a full-suite verify is
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/scripts/tests/test_estimator.py]
 verify: "cd plugins/workbench && pytest scripts/tests/test_estimator.py -q && node --test workflows/tests/validate-tasks-sizing.test.mjs && ruff check scripts"
-depends_on: []
+depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
 owns: []
 uses: []
 model: sonnet

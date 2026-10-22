@@ -188,7 +188,7 @@ base is the epic branch or the fork point (blocker D4, D14). Serves U1.
 
 `released(d)` also releases dependents when `d` is verified, not blocked, and every open finding is
 `medium` and not a gate finding (`mediumOnly`); the task still escalates for a ruling and the return
-marks `mediumOnly: true`. A released medium-only task lands like any released task (blocker D4).
+marks `mediumOnly: true`. A released medium-only task releases its dependents but does not land until the orchestrator rules; an accept ruling lands it like any released task (amended 2026-10-22, epic review: the builder check answer wins; delivered by medium-only-hold).
 `ticket.py continue` auto-accepts every verified task the return marks `processOnly` (reason not
 `review-shallow`) or `triageRejected`, recording a ruling with the reason. A relaunch's args never
 contain a done task: only escalated, blocked, dependency-failed and unstarted tasks. Serves Da.
