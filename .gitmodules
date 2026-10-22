@@ -2,3 +2,7 @@
 	path = code/claude-code-wrapper
 	url = git@github.com:szymonrychu/claude-code-wrapper.git
 	branch = main
+[submodule "any-mcp"]
+	path = code/any-mcp
+	url = https://github.com/szymonrychu/any-mcp
+	branch = main

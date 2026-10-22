@@ -30,12 +30,12 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 | Submodule | Lang | Role | Build |
 |-----------|------|------|-------|
 | claude-code-wrapper | python | HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks | `mise run --cd code/claude-code-wrapper test` |
+| any-mcp | python | MCP server that exposes any API as MCP tools through a plugin system (stdio and streamable HTTP) | `mise run --cd code/any-mcp test` |
 
 ## Component hard rules
 
-- Python only.
-- No Kubernetes API dependency in any service.
-- Services talk only through the queue or HTTP APIs; no shared state.
+- Python only, except web frontends (TypeScript).
+- Services talk only through the queue or HTTP APIs; the only shared state is one service's own database, where each table has exactly one writer and queue tables change rows only through status-guarded updates.
 
 ## Highest-risk surface
 

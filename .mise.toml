@@ -29,17 +29,20 @@ run = "ruff format plugins scripts"
 description = "Run test in every component"
 run = [
   "mise run --cd code/claude-code-wrapper test",
+  "mise run --cd code/any-mcp test",
 ]
 
 [tasks."code:lint"]
 description = "Run lint in every component"
 run = [
   "mise run --cd code/claude-code-wrapper lint",
+  "mise run --cd code/any-mcp lint",
 ]
 
 [tasks."code:fmt"]
 description = "Run fmt in every component"
 run = [
   "mise run --cd code/claude-code-wrapper fmt",
+  "mise run --cd code/any-mcp fmt",
 ]
 # workbench:code-tasks:end
