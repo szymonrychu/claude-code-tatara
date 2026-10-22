@@ -35,7 +35,7 @@ any-mcp: an MCP server that does nothing on its own and exposes any API, or grou
 
 ## Time
 
-Estimate: 111 agent-min | Critical path: 75 min | Expected wall at P=2.1: 2.5 h (k=2.0) | Actual: 0 min | Remaining estimate: 111 min
+Estimate: 122 agent-min | Critical path: 75 min | Expected wall at P=2.3: 2.5 h (k=2.0) | Actual: 0 min | Remaining estimate: 122 min
 
 ## Review
 
