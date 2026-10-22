@@ -208,6 +208,60 @@ def collision_override(root: Path, opts: Options, market: str) -> None:
         raise Refusal(str(e)) from e
 
 
+def load_check_personal(root: Path):
+    """The workbench's own check_personal module, or None when it ships no personal lint."""
+    path = root / "scripts" / "check_personal.py"
+    if not path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("check_personal_for_init", path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def allow_vocabulary(root: Path) -> None:
+    """Allow the project's own vocabulary (design D2): stage everything, scan the staged files
+    with check_personal's own digests, record each denylisted digest hit as a project-owned
+    allow entry and stage that file too. Literal pattern hits are never auto-allowed."""
+    cp = load_check_personal(root)
+    if cp is None:
+        return
+    git("add", "-A", cwd=root)
+    cfg_path = root / cp.DENYLIST
+    if not cfg_path.is_file():
+        cfg_path = root / "scripts" / "personal-denylist.json"
+    if not cfg_path.is_file():
+        return
+    cfg = read_json(cfg_path)
+    hashes = set(cfg.get("hashes", []))
+    local = root / cp.LOCAL_ALLOW
+    existing = read_json(local).get("allow", []) if local.is_file() else []
+    rules_all = [
+        (cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in cfg["allow"]
+    ]
+    rules_all += [(cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in existing]
+    staged = git("diff", "--cached", "--name-only", "-z", cwd=root).stdout.split("\0")
+    found: set[str] = set()
+    for rel in filter(None, staged):
+        text = cp._text(root / rel)
+        if text is None:
+            continue
+        rules = [r for r in rules_all if r[0].match(rel)]
+        for line in text.splitlines():
+            for digest in {cp._digest(c) for c in cp._candidates(line)} & hashes:
+                if not cp._allowed(rules, digest, line):
+                    found.add(digest)
+    if not found:
+        return
+    entries = {(a["path"], a.get("pattern"), a.get("line_contains")): a for a in existing}
+    for digest in found:
+        entries[("**", digest, None)] = {"path": "**", "pattern": digest}
+    merged = sorted(entries.values(), key=lambda a: json.dumps(a, sort_keys=True))
+    write_json(local, {"allow": merged})
+    git("add", "--", cp.LOCAL_ALLOW, cwd=root)
+
+
 def finalize(root: Path, opts: Options) -> None:
     root = root.resolve()
     validate(opts, root)
@@ -224,6 +278,7 @@ def finalize(root: Path, opts: Options) -> None:
     market = read_json(root / ".claude-plugin" / "marketplace.json")["name"]
     collision_override(root, opts, market)
     generate_harness(root, list(dict.fromkeys(opts.harness)))
+    allow_vocabulary(root)
     git("add", "-A", cwd=root)
     if git("diff", "--cached", "--quiet", cwd=root, check=False).returncode != 0:
         git("commit", "-m", f"chore(workbench): initialise {opts.project}", cwd=root)
