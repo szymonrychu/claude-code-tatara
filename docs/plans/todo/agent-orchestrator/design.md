@@ -263,6 +263,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q6: Does the frontend start on the current majors (React 19.3, MUI 9.5, Vite 8.3, vitest 5, ESLint 10 flat config) rather than the ros2 versions (React 18, MUI 6, Vite 5, ESLint 8)? [recommended: yes, current majors]
 - Q7: Which helmfile bucket hosts the agent-orchestrator and agent-orchestrator-db releases in namespace agents? [recommended: the existing ai bucket]
 - Q8: How is any-mcp installed into the agent image? [recommended: pip install from a pinned git tag of szymonrychu/any-mcp into an isolated venv at /opt/any-mcp]
+- Q9: What does a cluster row's context gauge show when the cluster has several agents? [recommended: the maximum used percentage over its agents]
 
 ## Irreversible operations in scope
 
