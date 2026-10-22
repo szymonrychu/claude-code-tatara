@@ -54,7 +54,7 @@ function fakeAgent({ changed = ['docs/a.md'], verify = () => ({}), review } = {}
 const run = (t, agent) => runWorkflow(SCRIPT, { args: { brief: BRIEF, tasks: [t] }, agent })
 const calls = (r, name) => r.calls.filter((c) => role(c) === name)
 
-test('first-verify-passes-the-requirement: the first verify passes the shell-quoted requirement; a later verify does not', async () => {
+test('first-verify-passes-the-requirement', async () => {
   const r = await run(
     task('T1', { review: 'light', requirement: "it's the requirement" }),
     fakeAgent({
@@ -69,12 +69,12 @@ test('first-verify-passes-the-requirement: the first verify passes the shell-quo
   assert.doesNotMatch(verifies[1].prompt, /--requirement/)
 })
 
-test('doc-only-diff-with-acs-met-skips-review: a doc-only diff skips the review whatever its size', async () => {
+test('doc-only-diff-with-acs-met-skips-review', async () => {
   const r = await run(task('T1', { ac: AC() }), fakeAgent({ changed: ['docs/a.md', 'README.md'] }))
   assert.equal(calls(r, 'review').length, 0)
 })
 
-test('test-only-diff-with-acs-met-skips-review: a test-only diff skips the review whatever its size', async () => {
+test('test-only-diff-with-acs-met-skips-review', async () => {
   const r = await run(task('T1', { ac: AC('test') }), fakeAgent({ changed: ['tests/test_a.py', 'src/b.test.mjs'] }))
   assert.equal(calls(r, 'review').length, 0)
 })
@@ -84,7 +84,7 @@ test('a large mixed doc-and-code diff stays light', async () => {
   assert.equal(calls(r, 'review').length, 1)
 })
 
-test('risk-path-doc-diff-stays-full: a risk path keeps doc-only and test-only diffs at full', async () => {
+test('risk-path-doc-diff-stays-full', async () => {
   for (const p of ['docs/auth.md', 'tests/test_auth.py']) {
     const r = await run(
       task('T1', { ac: AC() }),
@@ -117,7 +117,7 @@ test('an explicit review value still wins over the doc-only skip, and the tierHi
   assert.equal(calls(r, 'review').length, 2)
 })
 
-test('light-fix-to-reviewer-findings-gets-scoped-re-review: a fix to reviewer findings gets one scoped re-review of only the fixed files', async () => {
+test('light-fix-to-reviewer-findings-gets-scoped-re-review', async () => {
   const r = await run(
     task('T1', { review: 'light' }),
     fakeAgent({
