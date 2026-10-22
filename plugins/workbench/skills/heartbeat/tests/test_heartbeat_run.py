@@ -125,7 +125,7 @@ def _journal(tmp_path, events):
 
 
 def _started(agent_id, label):
-    return {"type": "agent_started", "agent_id": agent_id, "label": label}
+    return {"type": "started", "agentId": agent_id, "label": label}
 
 
 def loop(j, *extra):
