@@ -88,5 +88,15 @@
       "agent-orchestrator"
     ],
     "note": "tag v0.1.0: pip install 'any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0'; console script any-mcp"
+  },
+  {
+    "name": "any-mcp-install",
+    "kind": "release",
+    "owner": "any-mcp",
+    "file": "code/any-mcp/pyproject.toml",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "onStart hook: python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install 'any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0'; writes any-mcp.yaml as JSON (valid YAML) using stdlib only; console script /opt/any-mcp/bin/any-mcp"
   }
 ]
