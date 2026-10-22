@@ -82,6 +82,25 @@ or a script result of unsure): read the code and the evidence and decide. A
 AC id and its text. A task whose row says `(none)` is judged on its
 requirement alone.
 
+## Reading task files
+
+When your prompt lists `task file <path>` per task instead of the requirement
+text, the task file is the source of the requirement. Read only its
+`## Requirement` and `## Acceptance conditions` sections (grep for the heading,
+read down to the next `## `), never the whole file and never the tree of docs
+around it. The AC table rows are still yours to judge; the requirement is
+whatever the task file's Requirement section says.
+
+## Settled-rows mode
+
+When your prompt says settled-rows mode, it carries only the AC rows the
+verifier already settled (every AC of those tasks met, backed by test, symbol,
+command or doc-section evidence). Confirm only that each row's evidence exists
+at the task's verified head in its tree: the test name resolves, the symbol is
+defined, the command is present, the doc section exists. A row whose evidence
+is missing is a `missing` entry on its task naming the AC id. Judge nothing
+else: no ledger, no ancestry, no duplicate sweep, no requirement reading.
+
 ## The ledger by id
 
 When a ledger is given, report every approved item by its id in `approvals`,

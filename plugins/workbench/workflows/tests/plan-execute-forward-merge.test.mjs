@@ -66,7 +66,7 @@ test('a clean remediation is merged into its same-repo dependents, dependencies 
   assert.deepEqual(m.map((c) => c.opts.label), ['pe:merge:task-t2', 'pe:merge:task-t3'])
   for (const c of m) {
     assert.equal(c.opts.phase, 'Merge')
-    assert.equal(c.opts.model, 'sonnet')
+    assert.equal(c.opts.model, 'haiku')
     assert.deepEqual(c.opts.schema.required, ['merged', 'conflict', 'head', 'verification'])
     assert.equal(c.opts.schema.properties.merged.type, 'boolean')
     assert.equal(c.opts.schema.properties.conflict.type, 'boolean')
