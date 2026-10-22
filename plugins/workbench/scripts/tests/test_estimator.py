@@ -147,3 +147,81 @@ def test_cli_refit_plans_root(tmp_path):
     )
     assert r.returncode == 0, r.stderr
     assert json.loads(r.stdout)["mdape"] >= 0
+
+
+def test_full_suite_matches_repo_suites():
+    assert est.full_suite("./ci  all", suites=["./ci all"])
+    assert est.full_suite("cd x && ./ci all", suites=["./ci all"])
+    assert not est.full_suite("./ci all --one", suites=["./ci all"])
+
+
+def test_task_minutes_formula():
+    assert est.task_minutes(4, "pytest tests/test_x.py -q") == 6
+    assert est.task_minutes(4, "mise run test") == 39
+    assert est.task_minutes(0, "ruff check scripts") == 4
+
+
+def test_epic_estimate_epic_a():
+    tasks = [{"id": "c0", "minutes": 325, "depends_on": [], "status": "todo"}]
+    rest, n = 1341 - 325, 61
+    for i in range(n):
+        m = rest // n + (1 if i < rest % n else 0)
+        tasks.append({"id": f"t{i}", "minutes": m, "depends_on": [], "status": "todo"})
+    r = est.epic_estimate(tasks)
+    assert r["sum"] == 1341 and r["cp"] == 325
+    assert r["p"] == 3.0
+    assert round(r["runWall"]) == 447 and round(r["epicWall"]) == 894
+
+
+def test_parallelism_interpolates():
+    assert est.parallelism(10) == 1.5
+    assert est.parallelism(16) == 1.6
+    assert est.parallelism(40) == 3.0
+
+
+def test_fixture_mdape_under_half():
+    rows = json.loads(FIX.read_text())
+    assert len(rows) == 94
+    assert est.mdape(rows, est.load()["task"]) < 0.5
+
+
+def test_refit_reproduces_params():
+    p = est.refit(json.loads(FIX.read_text()))
+    assert abs(p["intercept"] - 4.0) <= 0.2
+    assert abs(p["exponent"] - 0.22) <= 0.03
+    assert abs(p["fullSuiteFactor"] - 6.9) <= 0.5
+
+
+def test_params_come_from_json(tmp_path):
+    cfg = json.loads((LIB / "estimator.json").read_text())
+    base = est.task_minutes(4, "x", params=est.load()["task"])
+    cfg["task"]["intercept"] = 8.0
+    f = tmp_path / "e.json"
+    f.write_text(json.dumps(cfg))
+    assert est.task_minutes(4, "x", params=est.load(f)["task"]) > base
+
+
+def test_refit_cli_writes_task_params(tmp_path):
+    cfg = tmp_path / "estimator.json"
+    cfg.write_text((LIB / "estimator.json").read_text())
+    before = json.loads(cfg.read_text())
+    subprocess.run(
+        [
+            sys.executable,
+            str(LIB / "estimator.py"),
+            "refit",
+            "--fixture",
+            str(FIX),
+            "--write",
+            "--config",
+            str(cfg),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    after = json.loads(cfg.read_text())
+    assert {k: v for k, v in after.items() if k != "task"} == {
+        k: v for k, v in before.items() if k != "task"
+    }
+    assert set(after["task"]) == set(before["task"])
