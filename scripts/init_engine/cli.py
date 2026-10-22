@@ -161,6 +161,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
     if not project_files.is_initialised(root):
         raise Refusal("this workbench is not initialised; run init (new or adopt) first")
     project_files.write_all(root, method="init:refresh", event=args.event)
+    finalize.allow_vocabulary(root, tracked=True)
     proc = subprocess.run(
         [sys.executable, str(root / "scripts" / "harness" / "setup.py"), "--root", str(root)],
         capture_output=True,

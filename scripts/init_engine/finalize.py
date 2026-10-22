@@ -220,10 +220,12 @@ def load_check_personal(root: Path):
     return mod
 
 
-def allow_vocabulary(root: Path) -> None:
+def allow_vocabulary(root: Path, *, tracked: bool = False) -> None:
     """Allow the project's own vocabulary (design D2): stage everything, scan the staged files
     with check_personal's own digests, record each denylisted digest hit as a project-owned
-    allow entry and stage that file too. Literal pattern hits are never auto-allowed."""
+    allow entry and stage that file too. Literal pattern hits are never auto-allowed.
+    With tracked=True every file in the index is scanned, not only the freshly staged ones
+    (refresh on a workbench initialised before the allow file existed)."""
     cp = load_check_personal(root)
     if cp is None:
         return
@@ -241,7 +243,8 @@ def allow_vocabulary(root: Path) -> None:
         (cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in cfg["allow"]
     ]
     rules_all += [(cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in existing]
-    staged = git("diff", "--cached", "--name-only", "-z", cwd=root).stdout.split("\0")
+    scan = ("ls-files", "-z") if tracked else ("diff", "--cached", "--name-only", "-z")
+    staged = git(*scan, cwd=root).stdout.split("\0")
     found: set[str] = set()
     for rel in filter(None, staged):
         text = cp._text(root / rel)
