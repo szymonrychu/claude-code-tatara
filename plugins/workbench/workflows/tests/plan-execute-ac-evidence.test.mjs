@@ -53,7 +53,7 @@ async function run(tasks, b = {}) {
 }
 const ofRole = (r, role) => r.calls.filter((c) => c.opts.label.split(':')[1] === role)
 
-test('impl-prompt-carries-acceptance-conditions', async () => {
+test('impl-and-fix-prompts-carry-the-ac-list', async () => {
   const r = await run([task('a', { ac: AC })])
   assert.equal(r.error, undefined)
   const p = ofRole(r, 'impl')[0].prompt
@@ -84,7 +84,7 @@ test('fix-prompt-carries-acceptance-conditions', async () => {
   assert.ok(fixes[0].prompt.includes('A1: renamed tests resolve [test: tests/test_a.py::test_old]'), fixes[0].prompt)
 })
 
-test('verify-prompt-passes-ac-evidence-file', async () => {
+test('verify-passes-ac-evidence-file', async () => {
   const r = await run([task('a', { ac: AC })])
   const p = ofRole(r, 'verify')[0].prompt
   assert.ok(p.includes('--ac-evidence "$ACE"'), p)
@@ -95,7 +95,7 @@ test('verify-prompt-passes-ac-evidence-file', async () => {
   assert.ok(!ofRole(bare, 'verify')[0].prompt.includes('--ac-evidence'))
 })
 
-test('substring-matched-ac-goes-to-the-auditor', async () => {
+test('substring-match-is-open-for-audit', async () => {
   const acs = [
     { id: 'A1', met: true, how: 'ref passed', matchedBy: 'substring', resolvedRef: 'tests/test_a.py::test_new' },
     { id: 'A2', met: true, how: 'heading found', plausible: 'yes' },

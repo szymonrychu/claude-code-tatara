@@ -70,7 +70,7 @@ def test_ref_name_containing_the_real_name_is_a_substring_match(repo, tmp_path, 
     assert got["A1"]["resolvedRef"] == "tests/test_a.py::test_other"
 
 
-def test_several_substring_candidates_stay_ref_missing(repo, tmp_path, monkeypatch):
+def test_ambiguous_substring_stays_ref_missing(repo, tmp_path, monkeypatch):
     files = {
         "tests/test_a.py": "def test_parses_a():\n    pass\n\n\ndef test_parses_b():\n    pass\n"
     }
@@ -126,3 +126,49 @@ def test_js_substring_candidate(repo, tmp_path, monkeypatch):
 def test_acs_without_evidence_flag_still_work(repo, tmp_path, monkeypatch):
     got = run(repo, tmp_path, monkeypatch, [ac("A1", "x", "test", "tests/test_a.py::test_other")])
     assert got["A1"]["met"] is True
+
+
+def test_resolution_order_and_matched_by(repo, tmp_path, monkeypatch):
+    # acEvidence beats an exact ref that also exists; exact beats substring.
+    got = run(
+        repo, tmp_path, monkeypatch,
+        [
+            ac("A1", "x", "test", "tests/test_a.py::test_other"),
+            ac("A2", "x", "test", "tests/test_a.py::test_other"),
+            ac("A3", "x", "test", "tests/test_a.py::test_parses_input"),
+        ],
+        evidence={
+            "A1": "tests/test_a.py::test_parses_input_strictly",
+            "A3": "tests/test_a.py::test_nope",
+        },
+    )  # fmt: skip
+    assert got["A1"]["matchedBy"] == "acEvidence"
+    assert got["A1"]["resolvedRef"] == "tests/test_a.py::test_parses_input_strictly"
+    assert got["A2"]["matchedBy"] == "exact"
+    assert got["A3"]["matchedBy"] == "substring"
+
+
+def test_renamed_tests_fixture_has_no_ref_missing(repo, tmp_path, monkeypatch):
+    # Modelled on harness-config-migrate#1: several refs name tests later renamed.
+    files = {
+        "tests/test_m.py": (
+            "def test_migrates_config_files():\n    pass\n\n\n"
+            "def test_rejects_unknown_harness():\n    pass\n\n\n"
+            "def test_writes_backup_before_migrating():\n    pass\n"
+        )
+    }
+    got = run(
+        repo, tmp_path, monkeypatch,
+        [
+            ac("AC3", "x", "test", "tests/test_m.py::test_migrate_config"),
+            ac("AC4", "x", "test", "tests/test_m.py::test_unknown_harness_error"),
+            ac("AC5", "x", "test", "tests/test_m.py::test_backup"),
+        ],
+        evidence={
+            "AC4": "tests/test_m.py::test_rejects_unknown_harness",
+            "AC5": "tests/test_m.py::test_writes_backup_before_migrating",
+        },
+        files=files,
+    )  # fmt: skip
+    assert all("refMissing" not in a and a["met"] for a in got.values()), got
+    assert got["AC4"]["matchedBy"] == "acEvidence" and got["AC5"]["matchedBy"] == "acEvidence"
