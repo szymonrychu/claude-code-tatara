@@ -4,58 +4,7 @@ import os
 import subprocess
 import sys
 
-import pytest
-
-LINT = ["--lint-command", "true"]
-
-
-def sh(*args, cwd, check=True):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=check)
-
-
-def write(root, rel, text):
-    p = root / rel
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(text)
-
-
-def upstream_of(project):
-    return project.parent / "upstream.git"
-
-
-@pytest.fixture
-def project(workbench, run_cli, allow_file, tmp_path):
-    """An initialised project sharing history with a bare template upstream."""
-    sh("init", "-b", "main", cwd=workbench)
-    write(workbench, "tooling.txt", "v1\n")
-    write(workbench, "docs/plans/todo/epic.md", "template epic\n")
-    write(workbench, "docs/research/r.md", "template research\n")
-    sh("add", "-A", cwd=workbench)
-    sh("commit", "-m", "template base", cwd=workbench)
-    upstream = tmp_path / "upstream.git"
-    sh("clone", "--bare", str(workbench), str(upstream), cwd=tmp_path)
-    r = run_cli(
-        "new", "--name", "demo", "--component", "api:python", "--remote", "local-bare",
-        "--purpose", "A booking service.",
-    )  # fmt: skip
-    assert r.returncode == 0, r.stderr
-    sh("rm", "-rq", "--cached", "--ignore-unmatch", "docs/research", cwd=workbench)
-    sh("add", "-A", cwd=workbench)
-    sh("commit", "-m", "init project", cwd=workbench, check=False)
-    sh("remote", "add", "template", str(upstream), cwd=workbench)
-    return workbench
-
-
-def template_commit(project, tmp_path, files, name="up"):
-    work = tmp_path / name
-    sh("clone", str(upstream_of(project)), str(work), cwd=tmp_path)
-    for rel, text in files.items():
-        write(work, rel, text)
-    sh("add", "-A", cwd=work)
-    sh("commit", "-m", "template change", cwd=work)
-    sh("push", "origin", "HEAD:main", cwd=work)
-    return sh("rev-parse", "HEAD", cwd=work).stdout.strip()
-
+from helpers import LINT, sh, template_commit, upstream_of, write
 
 TEMPLATE_FILES = {
     "tooling.txt": "v2\n",
