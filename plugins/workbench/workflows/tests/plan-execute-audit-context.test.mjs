@@ -21,7 +21,7 @@ const settledAc = (n) => [{ id: `AC${n}`, text: 'does it', evidence: { kind: 'te
 const closing = (tasks) => ({ brief: BRIEF, name: 'epic-x', epic: 'epic-x', auditOnly: true, epicReadme: README, tasks })
 const audits = (r) => r.calls.filter((c) => c.opts.label.split(':')[1] === 'audit')
 
-test('epic audit prompt lists task files and inlines no requirement text', async () => {
+test('epic-audit-prompt-under-10k-for-21-tasks', async () => {
   const tasks = Array.from({ length: 21 }, (_, i) => task(`t${i}`, { ac: settledAc(i), acsForAudit: ['AC0'] }))
   const r = await runWorkflow(SCRIPT, { args: closing(tasks), agent: async () => ({ complete: true, missing: [] }) })
   const sonnet = audits(r).find((c) => c.opts.model === 'sonnet')
@@ -40,7 +40,7 @@ test('without taskFile the epic audit prompt inlines requirements as before', as
   assert.ok(audits(r)[0].prompt.includes(`a requirement: ${BIG}`))
 })
 
-test('per-run audit prompt lists task files and drops the requirement line', async () => {
+test('audit-reads-task-files-not-inlined-requirements', async () => {
   const r = await runWorkflow(SCRIPT, {
     args: { brief: BRIEF, tasks: [task('t1', { verifiedHead: undefined })], audit: 'run' },
     agent: async (p, o) => {
@@ -57,7 +57,7 @@ test('per-run audit prompt lists task files and drops the requirement line', asy
   assert.ok(!p.includes(BIG.slice(0, 50)))
 })
 
-test('settled rows go to one haiku call, open rows and the ledger to sonnet, results merge', async () => {
+test('settled-rows-go-to-one-haiku-audit', async () => {
   const tasks = [
     task('s1', { ac: settledAc(1) }),
     task('s2', { ac: settledAc(2) }),
@@ -120,7 +120,7 @@ test('land runs on haiku', async () => {
   assert.deepEqual(lands(r).map((c) => c.opts.model), ['haiku'])
 })
 
-test('a land conflict is re-dispatched once on sonnet', async () => {
+test('land-runs-on-haiku-and-retries-conflict-on-sonnet', async () => {
   const r = await runWorkflow(SCRIPT, {
     args: { brief: BRIEF, ...EPIC, tasks: [lt('a')] },
     agent: landAgent((o) => (o.model === 'haiku' ? { landed: false, head: '', conflict: true, verification, notes: 'src/a.py' } : { landed: true, head: 'h', conflict: false, verification, notes: '' })),
@@ -136,4 +136,25 @@ test('a conflict on the sonnet retry too ends land-failed after exactly two disp
   })
   assert.equal(lands(r).length, 2)
   assert.equal(r.result.tasks.find((t) => t.id === 'a').stopped, 'land-failed')
+})
+
+test('forward-merge-runs-on-haiku', async () => {
+  const t = (id, extra = {}) => ({ id, title: `task ${id}`, repo: 'api', worktree: `/wt/${id}`, requirement: 'req', value: 'v', files: [`src/${id}.py`, `tests/test_${id}.py`], verify: 'pytest', ...extra })
+  let audited = 0
+  const r = await runWorkflow(SCRIPT, {
+    args: { brief: BRIEF, tasks: [t('T1'), t('T2', { dependsOn: ['T1'] })] },
+    agent: async (p, o) => {
+      const [, role, rest] = o.label.split(':')
+      const id = (rest || '').split(/[#+]/)[0].replace('task-', '').toUpperCase()
+      if (role === 'impl' || role === 'fix') return { taskId: id, complete: true, summary: 's', filesChanged: ['a'], branch: `b-${id}`, tests: { added: ['t'], wroteTestFirst: true, red: { command: 'c', output: 'FAILED x' } }, verification: { command: 'c', passed: true, evidence: 'ok' } }
+      if (role === 'verify') return { head: 'abc', clean: true, command: 'c', passed: true, evidence: 'ok', debtMarkers: [] }
+      if (role === 'review') return { clean: true, findings: [], filesRead: ['a'] }
+      if (role === 'merge') return { merged: true, conflict: false, head: 'd', verification: { command: 'x', passed: true, evidence: 'ok' } }
+      if (role === 'audit') return ++audited === 1 ? { complete: false, missing: [{ item: 'gap', taskId: 'T1', evidence: 'e' }] } : { complete: true, missing: [] }
+      throw new Error(`unexpected ${o.label}`)
+    },
+  })
+  const merges = r.calls.filter((c) => c.opts.label.split(':')[1] === 'merge')
+  assert.ok(merges.length >= 1)
+  for (const c of merges) assert.equal(c.opts.model, 'haiku')
 })
