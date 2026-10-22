@@ -48,5 +48,15 @@
       "init-leaves-a-green-tree"
     ],
     "note": "personal-allow.local.json shape and reader"
+  },
+  {
+    "name": "is-initialised",
+    "kind": "python-fn",
+    "owner": "init-leaves-a-green-tree",
+    "file": "scripts/init_engine/project_files.py",
+    "consumers": [
+      "init-leaves-a-green-tree"
+    ],
+    "note": "is_initialised(root)"
   }
 ]
