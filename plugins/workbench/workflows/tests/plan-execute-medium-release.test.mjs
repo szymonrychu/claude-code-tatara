@@ -128,14 +128,32 @@ test('unverified-medium-only-never-releases', async () => {
   assert.equal(entry(b, 'T1').mediumOnly, false)
 })
 
-test('medium-only-task-lands-in-epic-run', async () => {
+const merges = (r, id, ref) =>
+  r.calls.some((c) => c.opts.label.split(':')[1] === 'impl' && c.opts.label.split(':')[2].replace(/^task-/, '').toUpperCase() === id.toUpperCase() && c.prompt.includes(`git merge --no-edit ${ref}`))
+
+test('medium-only-task-releases-but-does-not-land-in-epic-run', async () => {
   const a = task('a', { worktree: '/wt/epic-x-a' })
   const b = task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })
   const r = await run([a, b], { A: raises(medium) }, EPIC)
   assert.equal(r.error, undefined)
-  assert.deepEqual(r.result.landed.map((l) => l.id), ['a', 'b'])
-  assert.ok(r.events.indexOf('land:A') < r.events.indexOf('impl:B'), 'a landed before b started')
+  assert.ok(started(r, 'B'), 'b started')
+  assert.ok(!r.events.includes('land:A'), 'a never landed')
+  assert.deepEqual(r.result.landed.map((l) => l.id), ['b'])
+  assert.ok(merges(r, 'b', 'b-A'), 'b merges the task branch of a, not the epic branch')
+  assert.ok(!merges(r, 'b', 'epic-x'), 'b does not merge the epic branch for a')
   assert.equal(entry(r, 'a').mediumOnly, true)
+  assert.ok(!('land' in entry(r, 'a')), 'a carries no land result')
   assert.ok(r.result.escalated.some((e) => e.id === 'a' && e.mediumOnly))
   assert.equal(r.result.finished, false)
+})
+
+test('medium-only-task-in-ruled-accept-lands-like-any-released-task', async () => {
+  const a = task('a', { worktree: '/wt/epic-x-a' })
+  const b = task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })
+  const accept = { task: 'a', accept: true, reason: 'nits only', at: '2026-10-22T10:00:00Z' }
+  const base = agentFor({ A: raises(medium) }, [])
+  const agent = async (prompt, opts) => (opts.label.split(':')[1] === 'rulings' ? { rulings: [accept] } : base(prompt, opts))
+  const r = await runWorkflow(SCRIPT, { args: { brief: BRIEF, tasks: [a, b], rulingsFile: '/rulings.json', ...EPIC }, agent })
+  assert.equal(r.error, undefined)
+  assert.deepEqual(r.result.landed.map((l) => l.id).sort(), ['a', 'b'])
 })

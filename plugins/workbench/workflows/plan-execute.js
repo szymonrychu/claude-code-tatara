@@ -855,15 +855,21 @@ const mergeCommand = (t, branch) =>
 const OWN_CHECKOUT_ONLY =
   '`git merge`, `git commit` and `git reset` run only inside this task\'s own checkout, never in the main checkout or another task\'s tree. If `git rev-parse --show-toplevel` is not that checkout, stop and report instead of running them.'
 
-// The same-repo dependency branches dependencyLines tells the task to merge. An epic run has none:
-// its diff base is the epic branch or the recorded fork point, which already carries the dependencies.
+// The same-repo dependency branches dependencyLines tells the task to merge. An epic run has none,
+// except a held medium-only dependency: its diff base is the epic branch, which does not carry it.
 function mergedDependencyBranches(t) {
-  if (EPIC) return []
   return (t.dependsOn || []).flatMap((d) => {
+    if (EPIC && !mediumHeldDep(d)) return []
     const r = DEP_RESULTS.get(d)
     const branch = r && r.impl && r.impl.branch
     return byId.get(d).repo === t.repo && branch ? [branch] : []
   })
+}
+
+// A medium-only task no ruling accepted: released to its dependents but not on the epic branch.
+const mediumHeldDep = (d) => {
+  const r = DEP_RESULTS.get(d)
+  return Boolean(r && r.mediumOnly && !RULED_ACCEPT.has(d))
 }
 
 function dependencyLines(t) {
@@ -871,7 +877,7 @@ function dependencyLines(t) {
   if (!deps.length) return ''
   const lines = ['Dependencies - these tasks finished clean before you started:']
   // Landing: every same-repo dependency is already on the epic branch, so one merge of it carries all of them.
-  const landed = LANDING ? deps.filter((d) => byId.get(d).repo === t.repo) : []
+  const landed = LANDING ? deps.filter((d) => byId.get(d).repo === t.repo && !mediumHeldDep(d)) : []
   if (landed.length) {
     lines.push(`- FIRST, before anything else, run \`${mergeCommand(t, BASE_REF)}\`. It merges ${BASE_REF}, the epic branch that carries every landed dependency: ${landed.map((d) => `${d} (${byId.get(d).title})`).join(', ')}. If it does not merge because the toplevel check fails, stop and report; do not merge anywhere else.`)
   }
@@ -2219,12 +2225,12 @@ async function landTask(t, r) {
 // Every task starts the moment its own dependencies are released - per-task edge triggers,
 // never "when the whole wave is done", so the slowest sibling sets no one else's latency.
 // A dependency is released when it settles verified and clean, processOnly, triageRejected,
-// mediumOnly or accepted by a ruling. A task whose dependency failed is escalated, not run.
+// accepted by a ruling, or mediumOnly (released to its dependents, escalated, never landed in-run). A task whose dependency failed is escalated, not run.
 // With args.rulingsFile, a dependent of a verified but unreleased dependency waits for a
 // ruling. The file is read once per wave boundary: a task settles verified-not-released
 // while another waits on it, or nothing runs while dependents wait. An idle read that
 // releases none of the waiters fails them, so the run always reaches its end.
-// With LANDING a task that would be released is queued for landing first and counts as
+// With LANDING a clean-or-accepted task is queued for landing first and counts as
 // released only once it landed; one land agent runs at a time, and a failed landing
 // (reason land-failed) fails its dependents.
 // Transitive dependents of a task's root: the critical-path proxy (plan-execute reads no task size).
@@ -2243,13 +2249,19 @@ function runTasks(batch) {
   // Neither started nor failed yet.
   const pending = new Set(ids)
   const landFailed = (d) => settled.has(d) && settled.get(d).reason === 'land-failed'
-  // Released before landing: what releases a task in a run that does not land.
+  // Releasable (and, with LANDING, landable): a clean, processOnly, triageRejected or ruled-accept task.
   const releasable = (d) => {
     const r = settled.get(d)
-    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || r.mediumOnly || RULED_ACCEPT.has(d)))
+    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
+  }
+  // A mediumOnly task releases its dependents (they merge its task branch) but is never queued
+  // for landing until a ruling accepts it (D8, amended 2026-10-22).
+  const mediumHeld = (d) => {
+    const r = settled.get(d)
+    return Boolean(r && r.mediumOnly && verified(r.impl) && !landFailed(d) && !releasable(d))
   }
   const landed = new Set()
-  const released = (d) => releasable(d) && (!LANDING || landed.has(d))
+  const released = (d) => mediumHeld(d) || (releasable(d) && (!LANDING || landed.has(d)))
   // Releasable but not landed yet: queued or landing now.
   const landPending = (d) => LANDING && releasable(d) && !landed.has(d)
   // Settled verified but not releasable; only a ruling can release it.
