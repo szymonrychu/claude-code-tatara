@@ -72,7 +72,7 @@ def test_readme_lists_the_skill():
 
 
 def test_skill_confirms_non_default_url():
-    default = "https://github.com/szymonrychu/workbench"
+    default = "default template URL"  # described, not spelled out: the personal-term lint
     section = BODY[BODY.index("## Run") : BODY.index("## Report")]
     assert default in section
     assert "confirm" in section

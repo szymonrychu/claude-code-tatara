@@ -22,9 +22,8 @@ Ask the user nothing on the normal path. Run:
 Add `-- --url <url>` or `-- --branch <branch>` only when the user named a template URL or
 branch (for example `mise run init:update -- --url <url> --branch next`).
 
-Before running with a `--url` other than the default template URL
-(`https://github.com/szymonrychu/workbench`), show the user that URL and ask them to
-confirm it: the update runs that template's refresh and lint scripts on this machine before
+Before running with a `--url` other than the default template URL (the one the engine
+uses with no `--url`), show the user that URL and ask them to confirm it: the update runs that template's refresh and lint scripts on this machine before
 it commits. Run only on confirmation.
 
 Every run prints `template: <url> <branch> <commit>` before it merges; that is the source
