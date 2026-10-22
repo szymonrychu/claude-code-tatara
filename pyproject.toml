@@ -8,3 +8,6 @@ select = ["E", "F", "I", "UP", "B"]
 testpaths = ["scripts/tests"]
 addopts = "--import-mode=importlib"
 pythonpath = ["scripts"]
+markers = [
+    "template: asserts the uninitialised template state; skipped once the workbench is initialised",
+]
