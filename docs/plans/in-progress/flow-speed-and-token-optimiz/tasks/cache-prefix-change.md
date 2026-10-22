@@ -1,6 +1,6 @@
 ---
 title: Cache prefix change
-status: in-progress
+status: done
 repo: workbench
 value: "The cache lever ships only when measured to save; otherwise the no-op is on record"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-prompt-prefix.test.mjs, MEMORY.md]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-prefix-change
 branch: flow-speed-and-token-optimiz--cache-prefix-change
-verified_head: ""
-run: ""
+verified_head: 0894fff7e69ea51fbcad51628ed425bb531f0465
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: [AC3]
+process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 ---
 
 # Cache prefix change

@@ -39,7 +39,7 @@ Sidequest requested by the user: fix task delivery estimates. Estimate in agent 
 
 ## Time
 
-Estimate: 92 min | Actual: 0 min | Remaining estimate: 5 min
+Estimate: 92 min | Actual: 0 min | Remaining estimate: 0 min
 
 ## Review
 
