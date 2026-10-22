@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-idle-since-in-snapshot/claude-code-wrapper
+branch: claude-code-wrapper-orchestr-idle-since-in-snapshot
 verified_head: ""
 run: ""
 provides: []
