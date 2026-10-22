@@ -1,6 +1,6 @@
 ---
 title: History before_seq and types
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "Chat UI can load newest and scroll back, headless clients can filter"
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, README.md, tests/test_history_backward.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-history-before-seq-and-types/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-history-before-seq-and-types
-verified_head: ""
+verified_head: e6c6e4be81099264628a95b4e3d26e8d443c7991
 run: claude-code-wrapper-orchestr
 provides: []
 acs_for_audit: []

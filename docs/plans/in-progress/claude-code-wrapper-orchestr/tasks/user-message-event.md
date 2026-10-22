@@ -1,6 +1,6 @@
 ---
 title: User message event
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: Chat UI shows every prompt including peer and restart prompts
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_user_message_event.py]
@@ -16,11 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-user-message-event/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-user-message-event
-verified_head: ""
+verified_head: d9c061f9c42ec7fe7afeba4ec13fc127eee5e2c4
 run: claude-code-wrapper-orchestr
 provides: []
 acs_for_audit: []
 process_gaps: []
+fork_point: 7e90a15
 ---
 
 # User message event

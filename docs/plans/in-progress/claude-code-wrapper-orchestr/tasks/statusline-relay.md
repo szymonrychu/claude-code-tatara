@@ -1,6 +1,6 @@
 ---
 title: Statusline relay
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: Wrapper receives real context-window usage from Claude Code
 files: [src/claude_code_wrapper/cli.py, src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/internal_api.py, src/claude_code_wrapper/bootstrap/settings.py, src/claude_code_wrapper/router.py, README.md, tests/test_statusline_relay.py]
@@ -16,11 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-relay/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-statusline-relay
-verified_head: ""
+verified_head: 8fa8c5f8e53c17685750536ccacf4435f2715684
 run: claude-code-wrapper-orchestr
-provides: []
+provides: [wrapper-statusline-callback]
 acs_for_audit: []
 process_gaps: []
+fork_point: e6c6e4be81099264628a95b4e3d26e8d443c7991
 ---
 
 # Statusline relay

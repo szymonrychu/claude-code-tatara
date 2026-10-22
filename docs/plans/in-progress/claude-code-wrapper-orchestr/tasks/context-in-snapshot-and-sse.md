@@ -1,6 +1,6 @@
 ---
 title: Context in snapshot and SSE
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: Orchestrator draws the 0-100 percent context gauge from the wrapper
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_context_surface.py]
@@ -15,8 +15,8 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-context-in-snapshot-and-sse/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-context-in-snapshot-and-sse
-verified_head: ""
+branch: "HEAD (worktree claude-code-wrapper-orchestr-context-in-snapshot-and-sse)"
+verified_head: 25d4cc1897fb1f8e82e8a433ae8fe60572ac05f4
 run: claude-code-wrapper-orchestr
 provides: []
 acs_for_audit: []
