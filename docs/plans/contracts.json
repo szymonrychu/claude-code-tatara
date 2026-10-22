@@ -68,5 +68,15 @@
       "agent-orchestrator"
     ],
     "note": "console script any-mcp: --config <path> (or ANY_MCP_CONFIG), --plugin, --transport stdio|http, --version, --help exits 0; exit 78 on config errors; stdio default"
+  },
+  {
+    "name": "any-mcp-config",
+    "kind": "schema",
+    "owner": "any-mcp",
+    "file": "code/any-mcp/src/any_mcp/config.py",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "YAML: server, tools, python_path, plugins[] (name, plugin, namespace, allow, tags, timeout, reload_every, config); unknown keys rejected; VAR expansion"
   }
 ]
