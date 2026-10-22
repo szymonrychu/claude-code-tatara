@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-template-marker-skip
+branch: init-leaves-a-green-tree-template-marker-skip
 verified_head: ""
 run: ""
 provides: []
