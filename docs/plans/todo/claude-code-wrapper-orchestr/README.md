@@ -11,7 +11,7 @@ created: 2026-10-22
 
 ## Project brief
 
-What: six additive claude-code-wrapper changes (idle_since, user_message event, backward history, GET /v1/peers, statusline relay, context surface), each documented in README.md.
+What: seven additive claude-code-wrapper changes (idle_since, user_message event, backward history, GET /v1/peers, statusline relay, context surface, onStart instance hook), each documented in README.md.
 How: one task per test file in code/claude-code-wrapper, chained where they share events.py/router.py, verified by targeted pytest plus mise run lint (never the full 11-minute suite).
 Why: agent-orchestrator needs idle-longest routing, a context gauge, lazy chat history and a peer view that the wrapper does not expose today.
 
@@ -26,6 +26,7 @@ claude-code-wrapper gains the API surface agent-orchestrator needs: context-wind
 - History pages backwards (before_seq, types filter).
 - A user_message event is emitted for every pasted prompt (user, peer, hook, restart, command origin).
 - GET /v1/peers returns the peer mesh view.
+- hooks.onStart runs once per process start, before peers, resume or any session (agent-orchestrator installs any-mcp with it).
 
 ## Non-goals
 
@@ -34,7 +35,7 @@ claude-code-wrapper gains the API surface agent-orchestrator needs: context-wind
 
 ## Time
 
-Estimate: 36 agent-min | Critical path: 30 min | Expected wall at P=1.5: 1.0 h (k=2.0) | Actual: 0 min | Remaining estimate: 36 min
+Estimate: 42 agent-min | Critical path: 30 min | Expected wall at P=1.5: 1.0 h (k=2.0) | Actual: 0 min | Remaining estimate: 42 min
 
 ## Review
 

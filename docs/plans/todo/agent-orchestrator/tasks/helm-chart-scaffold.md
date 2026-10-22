@@ -70,17 +70,22 @@ Scaffold `chart/agent-orchestrator` with `helm create`, so the chart follows Hel
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `chart/agent-orchestrator/values.yaml` (contract `agent-orchestrator-chart`, consumed by kind-e2e and epic agents-helmfile); later chart tasks add their keys to it
+- `tests/helm_render.py:render`, `render_error`, `lint` (contract `helm-render`)
+- helpers `agent-orchestrator.fullname`, `.labels`, `.selectorLabels`, `.componentLabels`, `.serviceAccountName`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run lint:chart` passes on a helm-create-shaped chart skeleton, and chart tests have one render helper.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart_scaffold.py with the five named tests. AC4 asserts with `git ls-files chart/agent-orchestrator/templates/hpa.yaml`. Run `uv run pytest tests/test_chart_scaffold.py -q` and expect failures.
+- Run `helm create` in a temp dir, copy and adapt the four files, then write ci/lint-values.yaml, tests/helm_render.py and the mise entries.
+- Rerun and expect `5 passed`, then run `mise run lint` and `mise run lint:chart`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The template of record is `helm create` from the pinned Helm. Do not copy the infrastructure charts' layout. brief-infra section 1 shows the house test style: pytest shelling to `helm template` plus yaml asserts (charts/tests/test_<chart>_chart.py), which is reused here.
+
+mise.toml is also edited by scaffold-repo-and-cli (earlier) and kind-e2e (later). Add entries; never rewrite the file.

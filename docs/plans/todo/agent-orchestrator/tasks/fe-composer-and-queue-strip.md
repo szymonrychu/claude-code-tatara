@@ -35,8 +35,9 @@ Composer and queue strip (D4, D14).
 - It clears on 202 and shows the ApiError message in an outlined Alert on failure.
 
 `QueueStrip.tsx`:
-- Lists the cluster's queued and failed messages from `listMessages(status=queued,failed)`, refreshed on `message_status` stream deltas.
-- Each queued message has Cancel; each failed one has Retry and shows its error.
+- Lists the cluster's queued, verifying and failed messages from `listMessages(status=queued,verifying,failed)`, refreshed on `message_status` stream deltas.
+- A queued message waiting out a retry shows `attempt n of max` and its `next_attempt_at`; a verifying one shows `checking delivery`.
+- Each queued message has Cancel; each failed one has Retry and shows its error. Retry on a message failed as `ambiguous` first warns that the turn may already have run.
 - It is hidden when empty.
 
 `ChatView.tsx` mounts the strip above the composer, below the log.
@@ -48,6 +49,7 @@ Composer and queue strip (D4, D14).
 - AC3: send is disabled for empty text and deleting clusters [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'disables send when empty or deleting']
 - AC4: an API error is shown [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'shows api error']
 - AC5: the queue strip cancels queued and retries failed messages [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'queue strip cancels and retries']
+- AC7: the queue strip shows the attempt count, next attempt time and verifying state, and warns before retrying an ambiguous failure [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'queue strip shows retry state']
 - AC6: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
@@ -74,4 +76,4 @@ Messages can be sent round-robin or targeted, and the queue is visible and actio
 
 ## Notes
 
-The ros2 composer is tabs/AgentChatTab.tsx:110-126. No automatic retry happens (D4): Retry is the only re-send path.
+The ros2 composer is tabs/AgentChatTab.tsx:110-126. The dispatcher retries definite non-accepts automatically with backoff and verifies ambiguous sends (D24). The Retry button is the user's explicit re-send of a failed message.

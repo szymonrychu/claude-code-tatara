@@ -29,9 +29,9 @@ Checks as Jobs (D10).
 
 The reconciler claims queued checks (`claim_check`) and creates Job `agent-<slug>-check-<id>`. The Job has:
 - the cluster labels plus `agents.szymonrichert.pl/check=<id>`
-- image `settings.check_image` (default the agent image), `imagePullSecrets: [regcred]`
+- image `settings.check_image` (default the agent image), `imagePullSecrets: [settings.image_pull_secret]` (omitted when empty)
 - `command: [sh, -c, <command>]`, workingDir `render.workdir_path(spec)` = `/workdir/<spec.workdir>`, the directory the agents' sessions work in (D27)
-- the cluster PVC mounted with the same `render.workdir_mount(spec)` as the agent pods (subPath `workdir` at /workdir), runAsUser and fsGroup 1000; the Job lives in `settings.clusters_namespace` (D26)
+- the cluster PVC mounted with the same `render.workdir_mount(spec)` as the agent pods (subPath `workdir` at /workdir), runAsUser and fsGroup 1000; the Job lives in `settings.namespace` (`agents`, the one shared namespace, D26) and carries both cluster labels, so prune and discard find it by selector
 - backoffLimit 0, activeDeadlineSeconds 1800, ttlSecondsAfterFinished 3600
 
 Each tick reads running checks:
@@ -49,7 +49,7 @@ For a deleting cluster, queued checks are cancelled (`cancel_checks`) and its Jo
 - AC4: a deadline-exceeded Job records failed with timeout [evidence: test:tests/test_checks.py::test_timeout_marks_failed]
 - AC5: discarding a cluster cancels its queued checks and deletes its Jobs [evidence: test:tests/test_checks.py::test_deleting_cluster_cancels_checks]
 - AC6: the Job workingDir equals render.workdir_path(spec) and its mount equals the StatefulSet workdir mount [evidence: test:tests/test_checks.py::test_job_workdir_matches_session_workdir]
-- AC7: the Job is created in the clusters namespace with the cluster labels [evidence: test:tests/test_checks.py::test_job_in_clusters_namespace_labelled]
+- AC7: the Job is created in settings.namespace with both cluster labels [evidence: test:tests/test_checks.py::test_job_in_namespace_labelled]
 
 ## Files
 

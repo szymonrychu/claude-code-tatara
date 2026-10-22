@@ -33,16 +33,17 @@ Cluster create, edit and discard (D6, D15).
 - workdir, PVC size (create only)
 - env as key and value rows (secret-looking keys rejected inline)
 - any-mcp config (JSON textarea, validated)
-- max attempts, auto-compact percent, CPU and memory requests and limits
+- max attempts (default 5 from meta: automatic retries), auto-compact percent, CPU and memory requests and limits
+- pre-discard webhook URL (`discard_hook_url`, optional, http or https validated inline)
 
 Submit calls `createCluster` or `patchCluster` and shows server 409 and 422 messages at the field or in an Alert.
 
 `DiscardClusterDialog.tsx`:
 - Built on ConfirmDialog.
-- States that the workspace PVC and its files are deleted.
+- States that everything is deleted: the agents, the workspace PVC and its files, and the cluster's whole chat history. There is no undo and no separate history option (D15).
+- When a pre-discard hook applies (the cluster's `discard_hook_url`, or meta `discard_hook` not `none`), it states that the full history is exported to that hook first, and that a failing hook holds the discard. The cluster row shows `discard_hook_failed` from the status while that happens.
 - Requires typing the slug to enable Discard.
-- Offers `Also delete history`, which purges once the cluster is deleted.
-- Calls `deleteCluster`.
+- Calls `deleteCluster` (no purge parameter).
 
 The Ribbon header gains a `New cluster` button. ClusterRow gains a menu with Edit and Discard.
 
@@ -52,7 +53,8 @@ The Ribbon header gains a `New cluster` button. ClusterRow gains a menu with Edi
 - AC2: invalid slug and secret env keys are rejected inline [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'validates slug and env keys']
 - AC3: editing patches the spec with slug and PVC size locked [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'edit patches spec']
 - AC4: server 409 and 422 errors are shown [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'shows server errors']
-- AC5: discard requires the typed slug and names the PVC deletion [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'discard requires typed slug']
+- AC5: discard requires the typed slug and names the PVC and history deletion [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'discard requires typed slug']
+- AC7: the discard dialog names the pre-discard hook when one applies and the form validates discard_hook_url [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'discard names the export hook']
 - AC6: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files

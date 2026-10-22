@@ -59,7 +59,8 @@
       "reconciler-loop",
       "session-bootstrap",
       "api-clusters-and-agents",
-      "fe-cluster-form"
+      "fe-cluster-form",
+      "discard-hook-and-export"
     ],
     "status": "approved"
   },
@@ -119,14 +120,15 @@
   },
   {
     "id": "A9",
-    "text": "Every new session starts with any-mcp preinstalled.",
+    "text": "Every new session starts with any-mcp preinstalled: no derived agent image; a per-cluster rendered onStart hook pip-installs any-mcp from the pinned git tag into a venv and writes its config before the wrapper starts any session.",
     "decisions": [
       "D8",
       "D16"
     ],
     "tasks": [
+      "settings-model",
       "k8s-object-renderer",
-      "container-images-ci"
+      "kind-e2e"
     ],
     "status": "approved"
   },
@@ -177,7 +179,7 @@
   },
   {
     "id": "A13",
-    "text": "Delivered as a new component code/agent-orchestrator with public GitHub origin szymonrychu/agent-orchestrator, CI, both images pushed to Harbor, least-privilege RBAC and a kind end-to-end test.",
+    "text": "Delivered as a new component code/agent-orchestrator with public GitHub origin szymonrychu/agent-orchestrator, CI, the orchestrator image pushed to Harbor (no derived agent image), least-privilege RBAC and a kind end-to-end test that installs the repo's Helm chart.",
     "decisions": [
       "D9",
       "D17",
@@ -215,9 +217,10 @@
   },
   {
     "id": "A15",
-    "text": "A failed send never wedges round-robin: the reservation is released on every non-accept outcome, the wrapper client maps every HTTP status, and one clock (Postgres now()) is used for all comparisons.",
+    "text": "A failed send never wedges round-robin and is retried automatically: the reservation is released on every non-accept outcome, definite non-accepts (unavailable, gone) are retried with bounded attempts and exponential backoff while busy is requeued at once and config error or rejected fail at once, the wrapper client maps every HTTP status, and one clock (Postgres now()) is used for all comparisons.",
     "decisions": [
-      "D23"
+      "D23",
+      "D24"
     ],
     "tasks": [
       "migrations-and-schema",
@@ -225,7 +228,10 @@
       "wrapper-client-and-sse",
       "fake-wrapper-contract",
       "ingester",
-      "dispatcher-loop"
+      "dispatcher-loop",
+      "clusters-repository",
+      "ambiguous-send-verifier",
+      "fe-composer-and-queue-strip"
     ],
     "status": "approved"
   },
@@ -255,7 +261,7 @@
   },
   {
     "id": "A18",
-    "text": "A slow or ambiguous send is safe: a send timeout well below the dispatching stale cutoff, a heartbeat on the dispatching row, and an ambiguous outcome is never retried automatically (failed with reason ambiguous, Retry is the user's choice).",
+    "text": "A slow or ambiguous send is never sent twice: a send timeout well below the dispatching stale cutoff, a heartbeat on the dispatching row, and an ambiguous outcome (or a stale dispatching row) is checked against the wrapper (did a turn carrying this message id start, via snapshot current_turn_id and the turn records' metadata) before any automatic retry; started means sent, a definite not-started after the settle window is retried with backoff, and no answer by the deadline fails it as ambiguous with Retry as the user's choice.",
     "decisions": [
       "D24"
     ],
@@ -266,13 +272,14 @@
       "fake-wrapper-contract",
       "dispatch-queue-sql",
       "dispatcher-loop",
-      "api-messages-and-commands"
+      "api-messages-and-commands",
+      "ambiguous-send-verifier"
     ],
     "status": "approved"
   },
   {
     "id": "A19",
-    "text": "Agent clusters live in their own namespace (ORCH_CLUSTERS_NAMESPACE, default agents-clusters), object names use a reserved prefix, and the reconciler refuses to apply over or prune any object lacking both the managed-by and cluster labels.",
+    "text": "Everything lives in namespace agents and clusters are told apart by labels (no ORCH_CLUSTERS_NAMESPACE): object names use the reserved agent-<slug> prefix with the slugs orchestrator and orchestrator-* rejected, and the reconciler refuses to apply over or prune any object lacking both the managed-by and cluster labels.",
     "decisions": [
       "D26"
     ],
@@ -282,20 +289,22 @@
       "k8s-object-renderer",
       "reconciler-loop",
       "check-jobs",
-      "kind-e2e"
+      "kind-e2e",
+      "helm-chart-rbac-and-ingress"
     ],
     "status": "approved"
   },
   {
     "id": "A20",
-    "text": "The reconciler cannot read Secrets: secrets verbs are create, patch and delete only, scoped to the clusters namespace; cluster Secrets are deleted by deterministic name and never listed.",
+    "text": "The reconciler cannot read Secrets: secrets verbs are create, patch and delete only, in namespace agents; cluster Secrets are deleted by deterministic name and never listed.",
     "decisions": [
       "D26",
       "D9"
     ],
     "tasks": [
       "reconciler-loop",
-      "kind-e2e"
+      "kind-e2e",
+      "helm-chart-rbac-and-ingress"
     ],
     "status": "approved"
   },
@@ -349,6 +358,55 @@
     "tasks": [
       "dispatch-queue-sql",
       "dispatcher-loop"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "A25",
+    "text": "Discard deletes everything: the cluster's Kubernetes objects, its PVC and its whole chat history (messages, events, turns, commands, checks). An optional pre-discard hook (a command or webhook URL from settings, or a webhook URL from the cluster spec; none by default) receives the cluster's full history export as JSONL before anything is deleted, and a failed hook blocks the deletion.",
+    "decisions": [
+      "D15",
+      "D3"
+    ],
+    "tasks": [
+      "migrations-and-schema",
+      "settings-model",
+      "clusters-repository",
+      "reconciler-loop",
+      "discard-hook-and-export",
+      "api-clusters-and-agents",
+      "fe-cluster-form",
+      "bench-cli",
+      "kind-e2e"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "A26",
+    "text": "AskUserQuestion is disabled in the rendered wrapper config; agents get an appended system prompt instructing them to ask questions in writing as a numbered list, each with a recommended answer.",
+    "decisions": [
+      "D8"
+    ],
+    "tasks": [
+      "k8s-object-renderer"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "A27",
+    "text": "agent-orchestrator ships its own Helm chart chart/agent-orchestrator, started from helm create: the four component Deployments with the migrate initContainer, Service, ServiceAccount, the reconciler Role and RoleBinding, the settings ConfigMap and Secret refs; a Postgres connection is required by default (URL, host/user/password or existingSecret), CNPG is optional (cnpg.enabled false by default), ingress is optional with annotations from values and no homelab defaults; helm lint and helm template unit tests run in CI, which publishes the chart to oci://harbor.szymonrichert.pl/charts with immutable versions.",
+    "decisions": [
+      "D28",
+      "D17",
+      "D9"
+    ],
+    "tasks": [
+      "helm-chart-scaffold",
+      "helm-chart-config-postgres",
+      "helm-chart-deployments",
+      "helm-chart-rbac-and-ingress",
+      "helm-chart-ci-publish",
+      "kind-e2e"
     ],
     "status": "approved"
   }

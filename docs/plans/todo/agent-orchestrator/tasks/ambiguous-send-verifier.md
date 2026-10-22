@@ -65,17 +65,24 @@ README.md gains `## Delivery and retries`. It covers:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.dispatcher.verify:Verifier(pool, settings, wrapper_factory)` with `verify_once() -> int` (messages resolved)
+- `agent_orchestrator.dispatcher.loop:Dispatcher.verify_pending()` delegating to it
+- uses `queue.list_verifying`, `resolve_started`, `resolve_not_started`, `fail_ambiguous` (contract `queue-sql`) and `WrapperClient.get_session`, `list_turns`, `get_turn` (contract `wrapper-client`)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A message whose send timed out or was reset becomes `sent` when its turn started, and is retried with backoff when the wrapper shows it never did. If neither is provable by the deadline, it becomes `failed`/`ambiguous`. It is never pasted twice.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_ambiguous_verify.py with the seven named tests. Use FakeWrapper's `reset_connection_after_receive`, `reset_connection_before_receive` and `set_unreachable` controls, the pool fixture and factories, with small settle and deadline settings. Run `uv run pytest tests/test_ambiguous_verify.py -q` and expect failures.
+- Implement dispatcher/verify.py, wire `verify_pending` in loop.py, and write the README section.
+- Rerun and expect `7 passed`, then run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The wrapper records the turn, including its `metadata`, synchronously in `Router._submit_turn` (claude-code-wrapper router.py:770-806) before it answers 202. A missing record after the settle window therefore means the request never reached the router.
+
+The turns list carries summaries only (turns.py:32-39, SUMMARY_FIELDS), so fetch each candidate's full record with `get_turn`. Never compare wrapper timestamps with database time (D23).
+
+For AC6, run two Verifier instances with asyncio.gather on separate pool connections.

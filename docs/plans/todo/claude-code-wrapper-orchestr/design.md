@@ -103,6 +103,7 @@ An onStart instance hook fires once per ccw process start, after the global mise
 | `wrapper-peers-view` | peer-mesh-view-route | none | `code/claude-code-wrapper/README.md` (consumed by the agent-orchestrator epic) |
 | `wrapper-statusline-callback` | statusline-relay | context-in-snapshot-and-sse | `code/claude-code-wrapper/src/claude_code_wrapper/router.py` |
 | `wrapper-context-surface` | context-in-snapshot-and-sse | none | `code/claude-code-wrapper/README.md` (consumed by the agent-orchestrator epic) |
+| `wrapper-on-start-hook` | on-start-instance-hook | none | `code/claude-code-wrapper/README.md` (consumed by the agent-orchestrator epic) |
 
 ## Review focus
 

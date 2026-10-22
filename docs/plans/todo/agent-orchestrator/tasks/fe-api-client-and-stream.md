@@ -34,7 +34,7 @@ package.json scripts:
 `src/api/schema.d.ts` is generated and committed.
 
 `src/api/client.ts` has typed functions for every route the UI uses:
-- clusters: list, get, create, patch, delete with purge; agents
+- clusters: list, get, create, patch, delete (the discard; no purge parameter); agents
 - messages: post, list, get, cancel, retry
 - agent commands; events page; meta
 - A non-2xx response throws `ApiError {status, code, message}`, parsed from the error shape.

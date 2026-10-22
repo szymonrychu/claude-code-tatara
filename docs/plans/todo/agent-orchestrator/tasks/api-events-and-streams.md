@@ -81,4 +81,4 @@ The UI and headless clients load the newest page, scroll back, and follow live w
 
 ## Notes
 
-FastAPI 0.160 has native SSE (`fastapi.sse.EventSourceResponse`, 15 s ping, sets X-Accel-Buffering). The ingress proxy-read-timeout 3600 is set by the deploy epic.
+FastAPI 0.160 has native SSE (`fastapi.sse.EventSourceResponse`, 15 s ping, sets X-Accel-Buffering). The ingress proxy-read-timeout 3600 is set through the chart's ingress annotations by epic agents-helmfile.

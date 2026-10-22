@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: The chart runs the four orchestrator processes with migrations first and Kubernetes credentials only on the reconciler
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/service.yaml, chart/agent-orchestrator/templates/serviceaccount.yaml, chart/agent-orchestrator/templates/NOTES.txt, chart/agent-orchestrator/templates/tests/test-connection.yaml, tests/test_chart_deployments.py]
 verify: "uv run pytest tests/test_chart_deployments.py -q && mise run lint && mise run lint:chart"
-depends_on: [helm-chart-config-postgres, entrypoints-and-singleton]
+depends_on: [helm-chart-config-postgres]
 owns: []
 uses: [helm-render, agent-orchestrator-chart, orch-cli]
 model: ""
@@ -73,17 +73,19 @@ Other templates:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- values `components.*`, `terminationGracePeriodSeconds`, `serviceAccount.*`, `service.*` (contract `agent-orchestrator-chart`)
+- Deployments `<fullname>-api|dispatcher|ingester|reconciler`, Service `<fullname>`, ServiceAccount `<fullname>-reconciler` (bound by helm-chart-rbac-and-ingress)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` with ci/lint-values.yaml renders the full runnable orchestrator: four Deployments behind one migrate step, one api Service, and Kubernetes credentials only on the reconciler.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart_deployments.py with the seven named tests. Run `uv run pytest tests/test_chart_deployments.py -q` and expect failures.
+- Copy deployment.yaml, service.yaml, serviceaccount.yaml, NOTES.txt and tests/test-connection.yaml from a fresh `helm create` and adapt them, then add the values keys.
+- Rerun and expect `7 passed`, then run `mise run lint` and `mise run lint:chart`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The ingester and reconciler hold advisory locks (D20, D25), so a second replica is a hot standby and replicas above 1 are safe. RollingUpdate is fine for every component. `orch migrate` is idempotent under concurrent initContainers (migrations-and-schema). The image's static dir and `ORCH_STATIC_DIR` come from spa-serving-and-dockerfile's Dockerfile, not from the chart.

@@ -88,17 +88,22 @@ README.md gains `## Helm chart`, covering:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- values `agentImage`, `env`, `postgres.*`, `cnpg.*`, `masterKey.*`, `claude.*` (contract `agent-orchestrator-chart`)
+- template helpers `agent-orchestrator.env` and `agent-orchestrator.databaseUrlEnv` in `templates/_config.tpl`, used by helm-chart-deployments
+- ConfigMap `<fullname>-settings` carrying the `ORCH_*` names of contract `agent-orchestrator-settings-env`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` renders the settings, the Secrets and the database wiring from any one of the four Postgres sources. It fails loudly when there is none.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart_config.py with the eight named tests over `tests/helm_render.py`. Run `uv run pytest tests/test_chart_config.py -q` and expect failures.
+- Write the values keys, _config.tpl, configmap.yaml, secret.yaml, cnpg-cluster.yaml and the README section.
+- Rerun and expect `8 passed`, then run `mise run lint` and `mise run lint:chart`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+agents-helmfile runs its own CNPG release (agent-orchestrator-db) and points `postgres.existingSecret` at `agent-orchestrator-db-app` key `uri`, so cnpg stays off there. Release name `agent-orchestrator` gives the Claude Secret `agent-orchestrator-claude`, the settings default.
+
+Object names derived from `<fullname>` must never take the form `agent-<slug>-ccw`. The reconciler deletes Secrets of that form by name (D26).

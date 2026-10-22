@@ -69,17 +69,21 @@ README `## Helm chart` gains the rbac and ingress values and an example with LAN
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- values `rbac.create`, `ingress.*` (contract `agent-orchestrator-chart`)
+- Role and RoleBinding `<fullname>-reconciler`: the production form of D9, the one the kind e2e installs
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chart grants the reconciler exactly the D9 verbs in its own namespace, never Secret reads. Its ingress is opt-in and fully driven by values.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart_rbac_ingress.py with the six named tests. Run `uv run pytest tests/test_chart_rbac_ingress.py -q` and expect failures.
+- Write role.yaml and rolebinding.yaml, adapt ingress.yaml from `helm create`, and add the values and the README lines.
+- Rerun and expect `6 passed`, then run `mise run lint` and `mise run lint:chart`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The verb list must match README `## Kubernetes permissions` (reconciler-loop). The kind e2e proves the list is sufficient by installing this chart, and FakeKube (reconciler-loop) simulates the same Role.
+
+agents-helmfile sets the ingress through these values: className nginx, host agents.szymonrichert.pl, letsencrypt-prod, whitelist 192.168.1.0/24, proxy timeouts 3600.

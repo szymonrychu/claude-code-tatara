@@ -73,17 +73,23 @@ README.md gains `## Discard`. It covers:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.db.export:export_cluster_history(conn, cluster_id) -> AsyncIterator[str]`
+- `agent_orchestrator.reconciler.discard_hook:run_discard_hook(hook, cluster, lines, timeout) -> HookResult`, `HookResult(ok: bool, reason: str)`
+- `agent_orchestrator.reconciler.loop:Reconciler.pre_discard(cluster) -> bool` (implemented here; the hook point comes from reconciler-loop)
+- uses `Settings.discard_hook()`, `Settings.retry_delay_seconds()` (contract `settings`) and `ClusterSpec.discard_hook_url` (contract `cluster-spec`)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`DELETE /api/v1/clusters/{id}` with a hook configured delivers the full JSONL history to the hook, then deletes the Kubernetes objects, the PVC, the row and the history. A failing hook holds the discard and says why in the cluster status.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_discard_hook.py with the six named tests. Use FakeKube, the pool fixture and factories, a command hook such as `cat > <tmp>/export.jsonl`, and a local httpx MockTransport or uvicorn receiver for the webhook. Run `uv run pytest tests/test_discard_hook.py -q` and expect failures.
+- Implement db/export.py and reconciler/discard_hook.py, wire `pre_discard` in reconciler/loop.py, and write the README section.
+- Rerun and expect `6 passed`, then run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+A command hook comes only from settings (operator-controlled). The API has no auth, and a spec-level command would run inside the reconciler that holds the Kubernetes credentials (D15, my call). The spec carries only a webhook URL, validated as http or https.
+
+The export runs before any deletion, so the history is complete. Agents may still be running while it is read: the cluster is already `deleting`, and the api refuses new messages to it.

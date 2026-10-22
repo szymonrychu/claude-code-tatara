@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_
 verify: "uv run pytest tests/test_reconciler.py -q && mise run lint"
 depends_on: [k8s-object-renderer, dispatch-queue-sql]
 owns: [kube-api, agents-repo]
-uses: [k8s-render, queue-sql, schema-v1, pg-fixture, cluster-spec]
+uses: [k8s-render, queue-sql, schema-v1, pg-fixture, cluster-spec, settings]
 model: opus
 estimate: 6
 estimate_by: formula
@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-The level-triggered reconcile loop (D6, D9).
+The level-triggered reconcile loop (D6, D9, D15, D26).
 
 - `KubeApi` protocol:
   - `apply(obj)`: server-side apply, field manager `agent-orchestrator`, force
@@ -33,34 +33,39 @@ The level-triggered reconcile loop (D6, D9).
   - `list_pods(namespace, selector)`, `delete_pod`
   - `create_job`, `get_job`, `read_pod_log(namespace, name, tail_lines)`
 - `LightkubeApi` implements KubeApi with the lightkube AsyncClient; it uses in-cluster config, else kubeconfig.
-- `tests/fakes/fake_kube.py:FakeKube` is an in-memory KubeApi that simulates the production Role: it raises `Forbidden` for get, list and watch on Secrets and for any call outside the clusters namespace (D26). It records applies and deletes, simulates pods for a StatefulSet (names `<sts>-<i>`, controllable `ready`), and can inject failures for one object.
+- `tests/fakes/fake_kube.py:FakeKube` is an in-memory KubeApi that simulates the production Role: it raises `Forbidden` for get, list and watch on Secrets and for any call outside `settings.namespace` (D26). It can be seeded with the orchestrator's own unlabelled objects (Deployment-owned pods, ConfigMap `agent-orchestrator-settings`, Secret `agent-orchestrator-claude`, the CNPG PVCs) in the same namespace. It records applies and deletes, simulates pods for a StatefulSet (names `<sts>-<i>`, controllable `ready`), and can inject failures for one object.
 - `db/agents.py` (reconciler is the writer):
   - `upsert_agent(conn, cluster_id, ordinal, pod_name, url, pod_phase, ready)`
   - `mark_gone(conn, agent_id)`
   - `set_session(conn, agent_id, session_id, created_at)`, `clear_session`
   - `list_agents(conn, cluster_id)`
   - `upsert_agent` creates the `agent_status` row with state unknown the first time.
-- `Reconciler.reconcile_once()`. For every non-purged cluster that is not yet deleted (level-triggered):
-  - every call targets `settings.clusters_namespace`, never `settings.namespace` (D26)
+- `Reconciler.reconcile_once()`. For every cluster row (level-triggered):
+  - every call targets `settings.namespace` (`agents`), the one namespace shared with the orchestrator's own objects (D26). Lists always carry the cluster selector, so they never return the orchestrator's objects.
   - render the objects; before applying a StatefulSet, Service, ConfigMap or PVC, `get_object` it: when it exists without both labels, refuse to apply over it and record the cluster status error `foreign_object <kind>/<name>` (D26)
   - apply each
   - list labelled StatefulSets, Services, ConfigMaps and PVCs, and delete every one not in the desired set; a deleting cluster's desired set is empty. Only objects carrying both labels are ever deleted.
-  - Secrets are never listed or read (the Role has only create, patch and delete on secrets, D26): the cluster's Secret is applied with the rest and deleted by its deterministic name `agent-<slug>-ccw` (not-found tolerated) when the cluster is deleting or purged
-  - list pods and upsert agents (url = per-pod DNS in the clusters namespace, port `settings.wrapper_port`)
+  - Secrets are never listed or read (the Role has only create, patch and delete on secrets, D26): the cluster's Secret is applied with the rest and deleted by its deterministic name `agent-<slug>-ccw` (not-found tolerated) when the cluster is deleting
+  - list pods by the cluster selector and upsert agents (url = per-pod DNS `<pod>.agent-<slug>.<namespace>.svc.<domain>`, port `settings.wrapper_port`)
   - mark agents gone whose pod vanished with an ordinal at or above replicas
   - write `status {phase: pending|ready|degraded|deleting|error, ready, replicas, message}` and `observed_generation`
-  - when a deleting cluster has no objects left, `mark_deleted`
+  - a deleting cluster (D15) first awaits `self.pre_discard(cluster) -> bool`. It deletes nothing until that returns True. In this task the method returns True; discard-hook-and-export implements it.
+  - when a deleting cluster has no labelled object left, `clusters.purge` deletes the row, and the cascade removes its messages, events, turns, commands and checks. It NOTIFYs `cluster_changed` and `status`.
   - an error in one cluster goes into its status message and never stops the others
-- Restart commands: `claim_command(['restart'])`, then delete that agent's pod and complete the command.
+- Restart commands: `claim_command(['restart'])`, then delete that agent's pod (only a pod carrying the agent's cluster labels) and complete the command.
 - `Reconciler.run(stop)`: reconcile every `settings.reconcile_poll_seconds` and immediately on NOTIFY `cluster_changed`.
-- README.md gains `## Kubernetes permissions`: the verbs of D9 in the clusters namespace (`ORCH_CLUSTERS_NAMESPACE`), with secrets limited to create, patch and delete (no get, list, watch), bound only to the reconciler's ServiceAccount, never pods/exec, and why the clusters live in their own namespace (D26).
+- README.md gains `## Kubernetes permissions`. It covers:
+  - the verbs of D9 in the release namespace (`ORCH_NAMESPACE`, `agents`)
+  - secrets limited to create, patch and delete (no get, list or watch)
+  - binding only to the reconciler's ServiceAccount, and never pods/exec
+  - how one shared namespace stays safe: the reserved `agent-<slug>` prefix, the label guard on apply and prune, and Secrets deleted by name (D26)
 
 ## Acceptance conditions
 
 - AC1: a new cluster applies PVC, Secret, ConfigMap, Service and StatefulSet with the field manager [evidence: test:tests/test_reconciler.py::test_create_applies_five_objects]
 - AC2: scaling down marks the removed ordinals gone [evidence: test:tests/test_reconciler.py::test_scale_down_marks_gone]
 - AC3: prune deletes undesired labelled objects and never touches unlabelled ones [evidence: test:tests/test_reconciler.py::test_prune_removes_undesired_labelled_only]
-- AC4: a deleting cluster loses every object including the PVC, then is marked deleted [evidence: test:tests/test_reconciler.py::test_delete_removes_everything_including_pvc_then_marks_deleted]
+- AC4: a deleting cluster loses every object including the PVC, then its row and history are deleted [evidence: test:tests/test_reconciler.py::test_delete_removes_everything_including_pvc_then_purges_row]
 - AC5: pods are observed into agents with per-pod URLs and readiness [evidence: test:tests/test_reconciler.py::test_observe_pods_upserts_agents]
 - AC6: a restart command deletes the agent's pod and completes [evidence: test:tests/test_reconciler.py::test_restart_command_deletes_pod]
 - AC7: an apply error in one cluster is recorded and other clusters still reconcile [evidence: test:tests/test_reconciler.py::test_error_in_one_cluster_does_not_block_others]
@@ -69,7 +74,8 @@ The level-triggered reconcile loop (D6, D9).
 - AC10: an existing unlabelled object with an object name is not applied over and the cluster status records foreign_object [evidence: test:tests/test_reconciler.py::test_unlabelled_foreign_object_not_applied_over]
 - AC11: the reconciler never gets, lists or watches Secrets: FakeKube raises Forbidden for those verbs and reconcile still succeeds [evidence: test:tests/test_reconciler.py::test_secrets_only_created_patched_deleted]
 - AC12: deleting a cluster deletes its Secret by name and tolerates not-found [evidence: test:tests/test_reconciler.py::test_delete_removes_secret_by_name]
-- AC13: every Kubernetes call targets the clusters namespace and none the orchestrator namespace [evidence: test:tests/test_reconciler.py::test_all_calls_target_clusters_namespace]
+- AC13: every Kubernetes call targets settings.namespace with the cluster selector, and the orchestrator's own unlabelled objects seeded there survive a create, prune and discard [evidence: test:tests/test_reconciler.py::test_shared_namespace_never_touches_orchestrator_objects]
+- AC14: nothing is deleted while pre_discard returns False [evidence: test:tests/test_reconciler.py::test_pre_discard_false_blocks_deletion]
 
 ## Files
 
@@ -85,7 +91,7 @@ The level-triggered reconcile loop (D6, D9).
 
 - `agent_orchestrator.k8s.kube:KubeApi`, `LightkubeApi` (contract `kube-api`); `tests/fakes/fake_kube.py:FakeKube`
 - `agent_orchestrator.db.agents` (contract `agents-repo`)
-- `agent_orchestrator.reconciler.loop:Reconciler(pool, kube, settings, wrapper_factory)` with `reconcile_once()` and `run(stop: asyncio.Event)`
+- `agent_orchestrator.reconciler.loop:Reconciler(pool, kube, settings, wrapper_factory)` with `reconcile_once()`, `pre_discard(cluster) -> bool` and `run(stop: asyncio.Event)`
 
 ## Expected outcome
 
@@ -93,9 +99,9 @@ Cluster rows drive Kubernetes objects and agents rows, idempotently, with discar
 
 ## Steps
 
-- Write tests/fakes/fake_kube.py and tests/test_reconciler.py with the twelve named tests; run `uv run pytest tests/test_reconciler.py -q`; expect failures.
+- Write tests/fakes/fake_kube.py and tests/test_reconciler.py with the thirteen named tests; run `uv run pytest tests/test_reconciler.py -q`; expect failures.
 - Implement kube.py, db/agents.py and reconciler/loop.py.
-- Rerun; expect `12 passed`.
+- Rerun; expect `13 passed`.
 - Add the README section; run `mise run lint`.
 
 ## Notes

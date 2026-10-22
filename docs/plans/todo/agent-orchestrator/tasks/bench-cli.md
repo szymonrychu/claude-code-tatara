@@ -45,7 +45,7 @@ For each arm, in order:
 
 Each (arm, task, repeat) writes one JSONL record: wall seconds from queued to completed, turn status, failed turns, input and output tokens from turn usage, verify passed, exit code.
 
-At the end it prints a summary table per arm (runs, mean and p50 wall, failures, mean tokens, verify pass rate) and discards the bench clusters with purge, unless `--keep`.
+At the end it prints a summary table per arm (runs, mean and p50 wall, failures, mean tokens, verify pass rate) and discards the bench clusters (which deletes their history too, D15), unless `--keep`.
 
 `examples/bench.yaml` has the three arms 1/off, 3/off and 3/on. README.md gains `## Bench`.
 
@@ -56,7 +56,7 @@ At the end it prints a summary table per arm (runs, mean and p50 wall, failures,
 - AC3: JSONL records carry wall time, failures, tokens and verify result [evidence: test:tests/test_bench.py::test_metrics_jsonl_fields]
 - AC4: the summary table aggregates per arm [evidence: test:tests/test_bench.py::test_summary_table]
 - AC5: the chaos step restarts an agent mid-run [evidence: test:tests/test_bench.py::test_chaos_restart_called]
-- AC6: bench clusters are discarded and purged unless --keep [evidence: test:tests/test_bench.py::test_clusters_discarded_unless_keep]
+- AC6: bench clusters are discarded unless --keep [evidence: test:tests/test_bench.py::test_clusters_discarded_unless_keep]
 - AC7: the example spec parses [evidence: command:uv run python -c "from agent_orchestrator.bench.spec import load_spec; load_spec('examples/bench.yaml')"]
 
 ## Files

@@ -2,7 +2,7 @@
 title: api clusters and agents
 status: todo
 repo: agent-orchestrator
-value: "The headless API's cluster and agent surface: define, edit, list, discard and purge clusters and see each agent's live state."
+value: "The headless API's cluster and agent surface: define, edit, list, discard clusters and see each agent's live state."
 files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py, src/agent_orchestrator/api/allowlist.py]
 verify: "uv run pytest tests/test_api_clusters.py -q && mise run lint"
 depends_on: [clusters-repository, settings-model]
@@ -37,11 +37,11 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 - Health: `/healthz` returns 200; `/readyz` returns 200 when the database answers, else 503.
 - `GET /api/v1/clusters`, `POST /api/v1/clusters {slug, spec}` (201).
 - `GET`, `PATCH {spec}` and `DELETE /api/v1/clusters/{id}`:
-  - DELETE returns 202 and sets desired deleting.
-  - `?purge=true` on a cluster already deleted purges it; on a live one it is 409 with code `not_deleted`.
+  - DELETE is the discard (D15): it returns 202 and sets desired deleting; a repeated DELETE on a deleting cluster is also 202. There is no `purge` parameter: the reconciler runs the optional pre-discard hook, deletes every Kubernetes object, then deletes the row and its whole history, after which GET is 404.
+  - PATCH on a deleting cluster is 409 `cluster_deleting`.
 - `GET /api/v1/clusters/{id}/agents`.
-- `GET /api/v1/meta`: settings defaults (model, effort, replicas, auto_compact_pct, pvc_size, storage class), agent image, the image allowlist, models list, and the caps `max_replicas`, `max_pvc_size`, `max_clusters`.
-- Cluster view: id, slug, spec, desired, status, generation, observed_generation, created_at, deleted_at, and `summary`:
+- `GET /api/v1/meta`: settings defaults (model, effort, replicas, auto_compact_pct, pvc_size, storage class, max_attempts), agent image, the image allowlist, models list, the caps `max_replicas`, `max_pvc_size`, `max_clusters`, and `discard_hook` (`none`, `command` or `url`, never the command text or URL itself) so the discard dialog can name it.
+- Cluster view: id, slug, spec, desired, status (including the discard hook state `discard_hook_delivered` or `discard_hook_failed`), generation, observed_generation, created_at, and `summary`:
   - `state`: working when any agent is busy, waiting when every ready agent is idle, booting, error or deleting
   - `ready`, `replicas`
   - `context_pct_max` (max over agents, null when none known)
@@ -55,12 +55,12 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 - AC2: a bad slug or spec is 422 in the error shape [evidence: test:tests/test_api_clusters.py::test_create_rejects_bad_slug_422]
 - AC3: a duplicate slug is 409 [evidence: test:tests/test_api_clusters.py::test_duplicate_slug_409]
 - AC4: PATCH bumps generation [evidence: test:tests/test_api_clusters.py::test_patch_bumps_generation]
-- AC5: DELETE sets deleting; purge on a deleted cluster drops it and its history [evidence: test:tests/test_api_clusters.py::test_delete_then_purge]
+- AC5: DELETE returns 202 and sets deleting, a repeat is 202, ?purge is not accepted, and once the row is gone GET is 404 [evidence: test:tests/test_api_clusters.py::test_delete_is_discard_without_purge]
 - AC6: agents list joins agent_status into the agent view [evidence: test:tests/test_api_clusters.py::test_agents_view_joins_status]
 - AC7: summary state is working or waiting and context_pct_max is the max over agents [evidence: test:tests/test_api_clusters.py::test_cluster_summary_state_and_gauge_max]
 - AC8: unknown ids are 404 in the wrapper error shape [evidence: test:tests/test_api_clusters.py::test_errors_use_wrapper_shape]
 - AC9: the api package imports no k8s, wrapper or reconciler module [evidence: test:tests/test_api_clusters.py::test_api_never_imports_k8s_or_wrapper]
-- AC10: meta returns the settings defaults, the image allowlist and the caps [evidence: test:tests/test_api_clusters.py::test_meta_defaults]
+- AC10: meta returns the settings defaults, the image allowlist, the caps and the discard hook kind without its target [evidence: test:tests/test_api_clusters.py::test_meta_defaults]
 - AC11: a peer outside ORCH_ALLOWED_CIDRS gets 403 forbidden on every route except /healthz and /readyz [evidence: test:tests/test_api_clusters.py::test_foreign_peer_forbidden_except_health]
 - AC12: Forwarded and X-Forwarded-For headers do not change the peer that is checked [evidence: test:tests/test_api_clusters.py::test_forwarded_headers_ignored_by_allowlist]
 - AC13: create and patch reject an image outside the allowlist, reserved env keys and caps with 422 [evidence: test:tests/test_api_clusters.py::test_spec_hardening_enforced_on_create_and_patch]

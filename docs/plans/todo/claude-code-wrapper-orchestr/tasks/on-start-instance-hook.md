@@ -49,7 +49,7 @@ Additive only: no existing event changes order or payload.
 - AC4: a failing blocking action with on_error deny exits non-zero and one with on_error allow lets startup continue [evidence: test:tests/test_on_start_hook.py::test_on_error_deny_exits_and_allow_continues]
 - AC5: a non-blocking onStart action does not delay startup [evidence: test:tests/test_on_start_hook.py::test_non_blocking_does_not_delay_startup]
 - AC6: a command action sees the instance envelope on stdin and runs in the sessions root [evidence: test:tests/test_on_start_hook.py::test_command_gets_instance_envelope_in_sessions_root]
-- AC7: README documents onStart [evidence: doc-section:README.md#onStart]
+- AC7: README documents onStart [evidence: command:grep -qE '^### `?onStart`?$' README.md]
 - AC8: the README API parity test passes with onStart documented [evidence: command:uv run pytest tests/test_readme_api.py -q]
 
 ## Files
@@ -62,17 +62,20 @@ Additive only: no existing event changes order or payload.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.config:HooksConfig.onStart` and `HOOK_EVENTS`, `VETO_EVENTS` including `onStart`
+- `claude_code_wrapper.hooks:INSTANCE_EVENTS` including `onStart`; `fire_instance` returns deny for a failed blocking onStart action with `on_error: deny`, as it does for preJoin
+- README `### \`onStart\`` (contract `wrapper-on-start-hook`, consumed by agent-orchestrator k8s-object-renderer and kind-e2e)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A config with `hooks.onStart: [{type: command, run: "sh /etc/ccw/on-start.sh", blocking: true, on_error: deny, timeout_seconds: 600}]` runs the script once at process start, before the service listens. A failing script stops the process with exit code 1.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_on_start_hook.py with the six named tests. Drive `service._run` through the existing service test helpers (see tests/test_peers_startup.py) with tests/fake_claude, and use command actions that write marker files. Run `uv run pytest tests/test_on_start_hook.py -q` and expect failures.
+- Add onStart to config.py, hooks.py and service.py, and write the README section.
+- Rerun `uv run pytest tests/test_on_start_hook.py tests/test_readme_api.py -q` and expect every test to pass. Then run `uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Requested at the agent-orchestrator gate (its Q8): any-mcp is installed by a rendered onStart script instead of a derived image. The agent pod gets a startupProbe sized to the hook timeout, because the service does not listen until onStart finishes. Reuse `fire_instance` (hooks.py:443) and the HookDispatcher that peer membership uses (peer_membership.py:192); do not build a second dispatcher. The exit code is 1 (my call). The README heading follows the existing style (`### \`onStart\``).
