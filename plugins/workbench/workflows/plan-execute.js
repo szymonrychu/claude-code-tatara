@@ -847,6 +847,17 @@ const mergeCommand = (t, branch) =>
 const OWN_CHECKOUT_ONLY =
   '`git merge`, `git commit` and `git reset` run only inside this task\'s own checkout, never in the main checkout or another task\'s tree. If `git rev-parse --show-toplevel` is not that checkout, stop and report instead of running them.'
 
+// The same-repo dependency branches dependencyLines tells the task to merge. An epic run has none:
+// its diff base is the epic branch or the recorded fork point, which already carries the dependencies.
+function mergedDependencyBranches(t) {
+  if (EPIC) return []
+  return (t.dependsOn || []).flatMap((d) => {
+    const r = DEP_RESULTS.get(d)
+    const branch = r && r.impl && r.impl.branch
+    return byId.get(d).repo === t.repo && branch ? [branch] : []
+  })
+}
+
 function dependencyLines(t) {
   const deps = t.dependsOn || []
   if (!deps.length) return ''
@@ -1124,6 +1135,7 @@ function verifyPrompt(t, impl, prev) {
     ...(prev && SHA_RE.test(prev) ? [`--prev-head ${shq(prev)}`] : []),
     ...(prev ? ['--no-tier'] : []),
     ...(noRed(impl) ? ['--tdd-revert'] : []),
+    ...mergedDependencyBranches(t).map((b) => `--exclude-ref ${shq(b)}`),
   ]
   return [
     `Independently verify plan task ${t.id} on its committed HEAD. You are a checker, not an implementer: a script does the checking.`,

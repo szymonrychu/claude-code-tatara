@@ -182,10 +182,10 @@ def install_deps(cwd: str, extra_roots: list = (), timeout: float | None = None)
 # ---- diff ----
 
 
-def added_lines(cwd: str, base: str) -> list:
+def added_lines(cwd: str, base: str, head: str = "HEAD") -> list:
     """[{file, line, text}] for every line added since `base` (git diff -U0)."""
     out, path, n = [], None, 0
-    for raw in git(cwd, "diff", "-U0", "--no-renames", base, "HEAD").splitlines():
+    for raw in git(cwd, "diff", "-U0", "--no-renames", base, head).splitlines():
         if raw.startswith("+++ "):
             path = None if raw == "+++ /dev/null" else raw[6:]
         elif raw.startswith("@@"):
@@ -239,6 +239,21 @@ def drop_moved(lines: list, removed: list) -> list:
         return len(k) >= _MOVED_MIN and any(k in c for c in removed)
 
     return [x for x in lines if not moved(x)]
+
+
+def ref_added_keys(cwd: str, refs: list, base: str) -> set:
+    """(file, normalized text) of every line each ref adds relative to merge-base(ref, base)."""
+    keys = set()
+    for ref in refs:
+        mb = git(cwd, "merge-base", ref, base).strip()
+        keys |= {(x["file"], _moved_norm(x["text"])) for x in added_lines(cwd, mb, ref)}
+    return keys
+
+
+def drop_excluded(lines: list, keys: set) -> tuple:
+    """(kept, dropped count): lines whose (file, normalized text) a merged dependency added go."""
+    kept = [x for x in lines if (x["file"], _moved_norm(x["text"])) not in keys]
+    return kept, len(lines) - len(kept)
 
 
 def name_status(cwd: str, a: str, b: str = "HEAD") -> list:
@@ -797,6 +812,12 @@ def build(argv: list, triage_run=None) -> tuple:
     ap.add_argument("--ac-evidence", help="JSON file: {AC id: final file::name of its test}")
     ap.add_argument("--prev-head", help="previous round's HEAD, for changedSincePrevious")
     ap.add_argument("--requirement", default="", help="task requirement, for the tier hint")
+    ap.add_argument(
+        "--exclude-ref",
+        action="append",
+        default=[],
+        help="ref of a merged dependency (repeatable): the lines it adds are not gated here",
+    )
     ap.add_argument("--no-triage", action="store_true", help="skip every Haiku call")
     ap.add_argument("--no-tier", action="store_true", help="skip the tier call")
     ap.add_argument("--tdd-revert", action="store_true", help="run the command on the base state")
@@ -850,9 +871,11 @@ def build(argv: list, triage_run=None) -> tuple:
     lines = added_lines(cwd, base)
     stat = diffstat(cwd, base, test_re)
 
+    excluded = {k for k in ref_added_keys(cwd, args.exclude_ref, base) if k[1]}
+    gated, excluded_by_ref = drop_excluded(lines, excluded)
     scan = [
         x
-        for x in drop_moved(lines, removed_keys(cwd, base))
+        for x in drop_moved(gated, removed_keys(cwd, base))
         if not x["file"].startswith("docs/plans/")
     ]
     parking = []
@@ -909,6 +932,7 @@ def build(argv: list, triage_run=None) -> tuple:
         "installed": installed,
         "debtMarkers": find_debt(scan, args.markers, test_re),
         "parking": parking,
+        "excludedByRef": excluded_by_ref,
         "changed": changed,
         "changedSincePrevious": (name_status(cwd, args.prev_head) if args.prev_head else None),
         "diffstat": stat,
