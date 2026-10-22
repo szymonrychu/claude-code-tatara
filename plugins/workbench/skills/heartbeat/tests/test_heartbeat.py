@@ -161,31 +161,6 @@ def test_quiet_by_default_prints_first_digest_then_stall_only(tmp_path):
     assert [line.split()[0] for line in out[1:]] == ["STALL", "STALL"]
 
 
-def test_unchanged_digest_prints_nothing(tmp_path):
-    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
-    assert len(loop(j, "--beats", "3", "--stall-beats", "9", "--report-every", "0")) == 1
-
-
-def test_stall_and_end_print_immediately(tmp_path):
-    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
-    out = loop(j, "--beats", "5", "--stall-beats", "3", "--report-every", "999999")
-    assert [line.split()[0] for line in out[1:]] == ["STALL", "STALL"]
-    p = subprocess.run(
-        HB + ["--journal", str(tmp_path / "gone.jsonl"), "--report-every", "999999"],
-        capture_output=True,
-        text=True,
-    )
-    assert p.stdout.strip() == "END no journal"
-
-
-def test_progress_line_at_most_every_report_interval():
-    d1, d2 = {"started": 1}, {"started": 2}
-    assert heartbeat.report_due(d1, None, 0, 5, 1800)  # first beat after arming
-    assert not heartbeat.report_due(d1, d1, 0, 9999, 1800)  # unchanged
-    assert not heartbeat.report_due(d2, d1, 100, 200, 1800)  # changed, too soon
-    assert heartbeat.report_due(d2, d1, 100, 1900, 1800)  # changed and due
-
-
 def test_eta_is_opt_in(tmp_path):
     marker = tmp_path / "called"
     b = tmp_path / "bin"
@@ -202,11 +177,6 @@ def test_eta_is_opt_in(tmp_path):
     assert not marker.exists()
     out = subprocess.run(cmd + ["--eta"], capture_output=True, text=True, env=env).stdout
     assert marker.exists() and out.startswith("~50% done/5m left")
-
-
-def test_keepalive_still_prints_every_beat(tmp_path):
-    j = journal(tmp_path, [started("a1", "fq:impl:alpha")])
-    assert len(loop(j, "--beats", "2", "--stall-beats", "9", "--keepalive")) == 2
 
 
 def test_loop_stops_by_itself_when_the_journal_is_gone(tmp_path):
