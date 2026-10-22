@@ -36,7 +36,7 @@ The template repo (this workbench) carries its own development docs: epic plans 
 
 ## Time
 
-Estimate: 53 min | Actual: 0 min | Remaining estimate: 53 min
+Estimate: 53 min | Actual: 0 min | Remaining estimate: 5 min
 
 ## Review
 

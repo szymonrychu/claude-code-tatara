@@ -1,6 +1,6 @@
 ---
 title: Update command
-status: in-progress
+status: done
 repo: workbench
 value: "One mise command pulls template tooling into a project without the template's own docs"
 files: [scripts/init_engine/update.py, scripts/init_engine/cli.py, scripts/init_engine/gitops.py, mise-tasks/init/update, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/conftest.py]
@@ -14,9 +14,11 @@ actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-command
 branch: template-update-skill-and-in--update-command
-verified_head: ""
-run: ""
+verified_head: ae39c750d22c36d70bd89e245dc4bd00b2d68e13
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Update command

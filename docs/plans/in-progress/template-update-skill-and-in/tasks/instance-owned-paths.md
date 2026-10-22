@@ -1,6 +1,6 @@
 ---
 title: Instance owned paths
-status: in-progress
+status: done
 repo: workbench
 value: "New workbenches start with no template plans, contracts, research or memory, from one owned-path list"
 files: [scripts/init_engine/owned.py, scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--instance-owned-paths
 branch: template-update-skill-and-in--instance-owned-paths
-verified_head: ""
-run: ""
+verified_head: e0fb748de0937120b442903737d78c5904383dc9
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Instance owned paths

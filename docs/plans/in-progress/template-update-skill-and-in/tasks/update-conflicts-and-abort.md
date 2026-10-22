@@ -1,6 +1,6 @@
 ---
 title: Update conflicts and abort
-status: in-progress
+status: done
 repo: workbench
 value: Generated-file conflicts resolve themselves and any other failure leaves the project exactly as it was
 files: [scripts/init_engine/update.py, scripts/tests/init_engine/test_update_conflicts.py, scripts/tests/init_engine/conftest.py]
@@ -14,9 +14,11 @@ actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-conflicts-and-abort
 branch: template-update-skill-and-in--update-conflicts-and-abort
-verified_head: ""
-run: ""
+verified_head: 7221ebf9b4dcb4a30667bf585ae705bda7a1b83a
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Update conflicts and abort
