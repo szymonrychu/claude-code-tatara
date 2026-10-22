@@ -11,9 +11,9 @@ created: 2026-10-22
 
 ## Project brief
 
-What: 
-How: 
-Why: 
+What: any-mcp, a Python MCP server that exposes any API, or groups of APIs, as MCP tools through plugins; it does nothing on its own.
+How: plugins subclass one ABC (load_tools required, other hooks defaulted); the core owns validation, errors, naming, reload, response budgets and both transports on FastMCP 4.x behind one adapter; shipped as a pip-installable package and git tag v0.1.0.
+Why: users write only the business logic of an API instead of a whole MCP server, and the agent-orchestrator agent image preinstalls any-mcp in every session.
 
 ## Description
 
@@ -35,7 +35,7 @@ any-mcp: an MCP server that does nothing on its own and exposes any API, or grou
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 111 agent-min | Critical path: 75 min | Expected wall at P=2.1: 2.5 h (k=2.0) | Actual: 0 min | Remaining estimate: 111 min
 
 ## Review
 
