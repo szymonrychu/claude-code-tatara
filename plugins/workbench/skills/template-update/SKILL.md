@@ -26,8 +26,10 @@ branch (for example `mise run init:update -- --url <url> --branch next`).
 
 On success, say in a few lines:
 
-- the one commit the engine made: subject and sha;
-- the template sha it merged;
+- the one commit the engine made: the subject from its `committed <subject>` line, and the
+  commit sha from `git rev-parse HEAD` (the engine does not print it);
+- the template sha it merged: the 12-character sha in that subject, or the full sha in the
+  `Template-Commit:` trailer (`git log -1 --format=%B`);
 - every `kept project side:` file the engine printed (instance-owned files whose template
   change was dropped);
 - that nothing was pushed.

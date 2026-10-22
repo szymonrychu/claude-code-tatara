@@ -12,7 +12,7 @@ BODY = (SKILLS / "template-update" / "SKILL.md").read_text()
 README = (SKILLS.parent / "README.md").read_text()
 
 
-def test_frontmatter_and_triggers():
+def test_frontmatter():
     m = re.match(r"---\nname: template-update\ndescription: >\n((?:  .+\n)+)---\n", BODY)
     assert m, "frontmatter"
     desc = " ".join(m.group(1).split())
@@ -25,9 +25,13 @@ def test_frontmatter_and_triggers():
         assert trigger in desc
 
 
-def test_engine_only_through_mise_and_flags_exist():
+def test_engine_only_through_mise_task():
     for bad in ("cli.py", "init_engine", "CLAUDE_PLUGIN_ROOT", "git push"):
         assert bad not in BODY.replace("never push", "")
+    assert "mise run init:update" in BODY
+
+
+def test_flags_exist_in_cli_help():
     helptext = subprocess.run(
         [sys.executable, str(CLI), "update", "--help"], capture_output=True, text=True, check=True
     ).stdout
@@ -39,15 +43,25 @@ def test_engine_only_through_mise_and_flags_exist():
         assert flag in helptext, flag
 
 
-def test_reports_and_refusals():
+def test_asks_only_for_unrelated_history_base():
+    assert "Ask the user nothing on the normal path" in BODY
+    assert "only question" in BODY
+    assert "candidate base" in BODY
+    assert "mise run init:update -- --base <sha>" in BODY
+
+
+def test_reports_commit_and_refusals():
     for needle in (
         "kept project side:",
         "nothing was pushed",
+        "git rev-parse HEAD",
+        "Template-Commit:",
         "init:refresh",
         "template/<branch>",
-        "candidate base",
         "run `init` first",
         "up to date",
+        "Dirty tree",
+        "Lint failure",
     ):
         assert needle in BODY, needle
 
