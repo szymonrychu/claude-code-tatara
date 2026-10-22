@@ -144,17 +144,35 @@ def _tree_name(m: dict, fallback: str) -> str:
     return path.name
 
 
-def _land(epic_dir, lines, t, root) -> None:
-    """Run merge.py for each MERGE line; a failed landing keeps its line in the gate output."""
+def _returned_commands(ret) -> dict[str, str]:
+    """task id -> the verified command recorded in the run return (what landVerify used)."""
+    return {
+        str(x.get("id")): c
+        for x in (ret or {}).get("tasks", [])
+        if (c := (x.get("verification") or {}).get("command"))
+    }
+
+
+def _land(epic_dir, lines, t, root, ret=None) -> None:
+    """Run merge.py for each MERGE line; a failed landing keeps its line in the gate output.
+
+    The landing check is the task's `verify` field, else the command recorded in the run
+    return. With neither, continue does not land the task;
+    its MERGE line goes to the worktree-merger.
+    """
+    returned = _returned_commands(ret)
     for line in lines:
         parts = line.split()
         task, base = parts[1], parts[parts.index("--base") + 1]
         m = t._read_doc(epic_dir / "tasks" / f"{task}.md").meta
+        verify = m.get("verify") or returned.get(task)
+        if not verify:
+            continue
         name = _tree_name(m, parts[parts.index("--name") + 1])
         cmd = [sys.executable, str(MERGE_SCRIPT), "--name", name, "--base", base]
         if t._task_repo(root, m.get("repo", "")):
             cmd += ["--repo", m["repo"]]
-        cmd += ["--keep", "--no-suites", "--verify", m.get("verify") or "true"]
+        cmd += ["--keep", "--no-suites", "--verify", verify]
         r = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
         if r.returncode == 0:
             print(f"{task}: landed")
@@ -221,7 +239,7 @@ def run(a, t) -> int:
     base = a.base or t.integration_branch(epic_dir.name)
     gate = _merge_gate(epic_dir, accept, base, t, root)
     if gate and a.launch:
-        _land(epic_dir, gate, t, root)
+        _land(epic_dir, gate, t, root, ret)
         gate = _merge_gate(epic_dir, accept, base, t, root)
     if gate:
         print("\n".join(gate))
