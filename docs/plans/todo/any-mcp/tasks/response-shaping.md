@@ -53,17 +53,17 @@ Turn a `RawResponse` into a `ToolResult` with the default shaping rules and a si
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.response.shape_default(raw: RawResponse, *, budget_chars: int = 40000, output_schema: Mapping[str, Any] | None = None) -> ToolResult`: the `response-shaper` part, called by the default `Plugin.shape_response`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every response kind has one predictable MCP shape, and no single response can exceed the configured budget.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_response.py`; run `uv run --frozen pytest tests/test_response.py -q`; expect import errors.
+- Implement `src/any_mcp/response.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The JSON text copy exists for clients that ignore `structuredContent` (MCP tools spec, structured content backwards compatibility). The 40000 default sits under Claude Code's 10k-token output warning.

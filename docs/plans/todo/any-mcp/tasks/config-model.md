@@ -51,17 +51,17 @@ Define the any-mcp YAML config file and its loader (design D5). This is the `any
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.config`: `AnyMcpConfig`, `ServerSettings`, `HttpSettings`, `ToolSettings`, `PluginEntry`, `load_config(path: Path | str, *, env: Mapping[str, str] | None = None) -> AnyMcpConfig`, `config_from_plugins(refs: Sequence[str]) -> AnyMcpConfig`, `AnyMcpConfig.base_dir: Path | None`. Raises `any_mcp.errors.ConfigError`. Cross-epic contract `any-mcp-config` (consumer: agent-orchestrator).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One validated config object drives discovery, the registry and the transports; a bad config fails with a message that names exactly what is wrong.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_config.py` using `tmp_path` YAML files; run `uv run --frozen pytest tests/test_config.py -q`; expect import errors.
+- Implement `src/any_mcp/config.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Mirror claude-code-wrapper's config rules (`${VAR}` / `${VAR:-d}` interpolation, unknown keys rejected). `bearer_token` may be a `SecretStr`; never include its value in an error message.

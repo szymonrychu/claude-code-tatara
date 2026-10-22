@@ -57,17 +57,31 @@ Build the plugin contract: `Plugin`, the `@tool` decorator, `PluginContext` and 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `any_mcp.plugin.Plugin` (the `plugin-abc` part), `any_mcp.plugin.tool`, `any_mcp.plugin.NoConfig`.
+- `any_mcp.context.PluginContext(name: str, namespace: str, config: BaseModel, http: httpx.AsyncClient, log: logging.Logger, response_budget_chars: int)`, `.request_reload() -> None`, `._bind_reload(cb: Callable[[], None]) -> None`.
+- Hook signatures exactly as in design D2.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The smallest plugin is:
+
+```python
+from any_mcp import Plugin, tool
+
+class Hello(Plugin):
+    name = "hello"
+
+    @tool
+    async def greet(self, name: str) -> str:
+        """Greet someone by name."""
+        return f"Hello, {name}!"
+```
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_plugin.py` (build a `PluginContext` by hand with `make_client(None, transport=httpx.MockTransport(...))`); run `uv run --frozen pytest tests/test_plugin.py -q`; expect import errors.
+- Implement `src/any_mcp/plugin.py`, `src/any_mcp/context.py` and the exports; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+`__init_subclass__` does the `load_tools` check; skip it for classes that are still abstract (`inspect.isabstract`) or marked `_abstract = True` (needed by `OpenAPIPlugin` subclasses that get tools from config). Build the input model with `pydantic.create_model` from `inspect.signature`, skipping `self`. No pluggy, no sync hooks (prior-art trap 7).

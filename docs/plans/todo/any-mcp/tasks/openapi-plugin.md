@@ -57,17 +57,17 @@ Ship the built-in `OpenAPIPlugin` that turns an OpenAPI document into tools thro
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.openapi.OpenAPIPlugin` (the `openapi-plugin` part) and `OpenAPIPlugin.Config`; helper `operations_to_specs(spec: Mapping[str, Any], *, allow: Sequence[str], tags: Sequence[str]) -> list[ToolSpec]` for subclasses and tests.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A config entry `plugin: any_mcp.openapi:OpenAPIPlugin` with `config: {spec: ./petstore.yaml, allow: [listPets]}` exposes `listPets` as a validated, HTTP-bound tool with no code.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/fixtures/openapi/petstore.yaml` (OpenAPI 3.0: listPets, getPet, createPet, a tagged admin operation) and `tests/fixtures/openapi/recursive.json` (OpenAPI 3.1 with a self-referencing schema and a chained `$ref`), then `tests/test_openapi.py`; run `uv run --frozen pytest tests/test_openapi.py -q`; expect import errors.
+- Implement `src/any_mcp/openapi.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Converted in-house rather than with FastMCP's OpenAPIProvider so every call goes through the plugin hooks and plugins never touch FastMCP (prior-art F8, F10). External refs stay unresolved to avoid SSRF (prior-art O5). FastMCP's docs recommend curated subsets over whole-API mirrors, hence the required filter (prior-art trap 4).

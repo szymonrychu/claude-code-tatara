@@ -51,17 +51,17 @@ Write the big example (a packaged OpenAPI plugin) and the group-of-APIs config, 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Example files only; `PetstorePlugin` subclasses `any_mcp.openapi.OpenAPIPlugin`. The docs-authoring task embeds `examples/petstore/src/petstore_plugin/__init__.py` and `examples/group/any-mcp.yaml` verbatim.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`pip install ./examples/petstore` then a config entry `plugin: petstore` works by entry point; from a checkout `any-mcp --config examples/group/any-mcp.yaml` serves three APIs as one MCP server.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_examples_big.py`; run `uv run --frozen pytest tests/test_examples_big.py -q`; expect failures.
+- Write the example files; rerun (all pass), then `uv run --frozen pytest tests/test_import_boundary.py -q` and `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The group config needs `GITHUB_TOKEN`; the test sets it in the environment. `--list-tools` must not contact the network: the petstore spec is a file and list-tools calls no tool. Exclude `examples/petstore` from the root package build (hatch `packages` already limits the wheel to `src/any_mcp`).

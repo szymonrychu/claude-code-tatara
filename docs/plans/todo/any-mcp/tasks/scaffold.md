@@ -55,17 +55,17 @@ Create the any-mcp component layout inside the `code/any-mcp` repository (create
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.__version__: str`. Console script name `any-mcp` pointing at `any_mcp.cli:main` (the cli-stdio task creates the module). Runtime dependencies are declared here once; later tasks do not edit `pyproject.toml` or `uv.lock` (release excepted).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv sync && mise run lint && mise run test` succeed in `code/any-mcp`; CI is green on the first push.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_package.py` first (parse `pyproject.toml` with `tomllib`, `mise.toml` with `tomllib`, the workflow with `yaml.safe_load`); run `uv run --frozen pytest tests/test_package.py -q` once the lock exists; expect failures until the files match.
+- Create the files, run `uv lock`, then `uv run --frozen pytest tests/test_package.py -q` (expect all pass) and `mise run lint` (expect exit 0).
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Copy the ruff, pytest and mise layout from `code/claude-code-wrapper/pyproject.toml` and `code/claude-code-wrapper/mise.toml`. Do not add `LICENSE` or `.gitignore`: the repository creation adds them. Keep `UV_PYTHON_DOWNLOADS` unset so CI can download Python 3.12.

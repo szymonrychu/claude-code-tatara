@@ -58,17 +58,18 @@ Serve the registry over MCP with FastMCP 4.x from the one module allowed to impo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp._fastmcp_adapter` (the `fastmcp-adapter` part): `class Server` (opaque; `.registry`, `.config`), `build_server(registry: ToolRegistry, config: AnyMcpConfig) -> Server`, `async run_stdio(server: Server) -> None`, `in_memory_client(server: Server) -> AsyncContextManager[InMemoryClient]`, `InMemoryClient.list_tools() -> list[dict]`, `.call_tool(name: str, arguments: Mapping[str, Any] | None = None) -> dict`, `.list_tools_result() -> dict`. Nothing in its public signatures is a FastMCP type.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Any MCP client of either protocol era sees the registry's tools with correct schemas, caching hints and error semantics, and plugins remain unaware of FastMCP.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Probe first: in a test, subclass `fastmcp.tools.base.Tool` with a raw `parameters` dict and serve it through `fastmcp.Client` in memory; record what works.
+- Write `tests/test_adapter.py` and `tests/test_import_boundary.py`; run `uv run --frozen pytest tests/test_adapter.py tests/test_import_boundary.py -q`; expect failures.
+- Implement `src/any_mcp/_fastmcp_adapter.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Docs brief 3.2-3.8: `FastMCP(name, instructions, *, providers, cache_ttl, cache_scope, strict_input_validation, mask_error_details, lifespan, ...)`; custom providers override `_list_tools`/`_get_tool`; FastMCP auto-notifies only inside a request context, and modern-era out-of-request delivery is undocumented, so pin the observed behaviour in AC6's test and keep AC5 independent of it. Fallback if a FastMCP 4.1 surface blocks an AC: `mcp.server.MCPServer` plus `InMemorySubscriptionBus` (prior-art S4), still inside this one module. Tests may import `fastmcp` (the boundary test scans `src` and `examples` only).

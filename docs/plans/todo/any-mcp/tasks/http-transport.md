@@ -53,17 +53,17 @@ Add the streamable HTTP transport (design D10, D11).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Adds `any_mcp._fastmcp_adapter.run_http(server: Server, settings: HttpSettings) -> None` and the `http` transport choice plus `--host`, `--port`, `--path` to `any_mcp.cli.build_parser()` (extends the `any-mcp-cli` contract).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`any-mcp --config x.yaml --transport http --port 9000` is a streamable HTTP MCP server that is safe on localhost by default and never acts as a credential relay.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_http_transport.py`: start the server in-process or as a subprocess on a free port, talk to it with `httpx` (raw `initialize` and `server/discover` POSTs) and with `fastmcp.Client`; run `uv run --frozen pytest tests/test_http_transport.py -q`; expect failures.
+- Implement; rerun (all pass), then `uv run --frozen pytest tests/test_cli.py -q` and `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Streamable HTTP rules (docs brief 1.5): one POST endpoint, `MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name` headers, Origin validation is a MUST, bind 127.0.0.1 locally. The MCP SDK enables DNS-rebinding protection on localhost; reuse it where it covers the Origin rule. Token passthrough is forbidden by the 2026-07-28 security best practices (prior-art P7). Plain static bearer only: OAuth is a non-goal.

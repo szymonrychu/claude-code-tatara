@@ -54,17 +54,17 @@ Make any-mcp a standard installable package with release tooling for the pinned 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Cross-epic contract `any-mcp-release`: tag `v0.1.0` on `main` of `github.com/szymonrychu/any-mcp`, installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, console script `any-mcp` (consumer: the agent-orchestrator agent image).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every install form in the README works from a standard wheel, and pushing tag `v0.1.0` produces a verified GitHub release.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_release.py`; run `uv run --frozen pytest tests/test_release.py -q`; expect failures on the missing CHANGELOG and workflow.
+- Write `CHANGELOG.md` and `.github/workflows/release.yml`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The git install test needs the work committed (it installs `HEAD`); commit before running it. The install tests use the network for dependencies; reuse the uv cache. The tag itself is pushed by the orchestrator after the epic closes on `main` (an irreversible operation listed at the gate); it never moves once pushed.

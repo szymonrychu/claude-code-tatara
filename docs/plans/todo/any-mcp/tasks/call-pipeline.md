@@ -50,17 +50,17 @@ Run one tool call through validation and the plugin hooks, turning every failure
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.pipeline.call_tool(registry: ToolRegistry, name: str, arguments: Mapping[str, Any] | None, *, request_id: str | None = None) -> ToolResult` (the `call-pipeline` part). Raises only `UnknownTool` and `asyncio.CancelledError`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A model calling any any-mcp tool always gets either a result or an `isError` result it can read, never a `-32603`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_pipeline.py` with in-test plugins that record hook calls and raise on demand, behind a started `ToolRegistry`; run `uv run --frozen pytest tests/test_pipeline.py -q`; expect import errors.
+- Implement `src/any_mcp/pipeline.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The low-level MCP SDK never validates arguments and turns exceptions into `-32603` (prior-art S3, traps 2 and 3); this module is why any-mcp does not have that problem. Use `caplog` to assert on log lines, with a secret marker value in arguments and credentials.

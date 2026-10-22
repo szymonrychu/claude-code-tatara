@@ -53,17 +53,17 @@ Aggregate loaded plugins into one global, deterministic tool list with lifecycle
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.registry` (the `tool-registry` part): `@dataclass(frozen=True) ExposedTool(name: str, plugin: LoadedPlugin, spec: ToolSpec, input_schema: dict, listed_schema: dict, output_schema: dict | None)`, `class ToolRegistry(plugins: Sequence[LoadedPlugin], settings: ToolSettings)` with `async start()`, `async stop()`, `tools() -> list[ExposedTool]`, `get(name: str) -> ExposedTool | None`, `async reload(plugin: str | None = None) -> bool`, `add_listener(cb: Callable[[], Awaitable[None]])`, `async run_periodic()`, `request_reload(plugin: str) -> None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Any number of plugins appear as one sorted, collision-free, schema-normalised tool list that reloads safely and reports real changes only.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_registry.py` with in-test plugins whose `load_tools` returns specs from a mutable list and records calls; run `uv run --frozen pytest tests/test_registry.py -q`; expect import errors.
+- Implement `src/any_mcp/registry.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Swap the list atomically (build the new list, then assign) so a concurrent `tools()` never sees a half-reloaded state. Reload correctness must not depend on any notification reaching a client (prior-art trap 5); listeners only let the adapter send one. Per-session tool sets are non-conformant on the 2026-07-28 protocol (docs brief 1.15), hence one global list.

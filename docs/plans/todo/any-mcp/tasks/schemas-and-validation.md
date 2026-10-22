@@ -53,17 +53,18 @@ Normalise tool schemas and names for listing, and validate call arguments agains
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `any_mcp.schema.normalize_schema(schema: Mapping[str, Any], *, root: Mapping[str, Any] | None = None, max_depth: int = 8) -> dict`, `listing_schema(schema: Mapping[str, Any] | None) -> dict`, `exposed_name(namespace: str, tool: str, *, max_length: int = 60) -> str`, `class SchemaError(ConfigError)`: the `schema-tools` part.
+- `any_mcp.validation.validate_arguments(schema: Mapping[str, Any], arguments: Mapping[str, Any] | None) -> dict`: the `arg-validator` part.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every listed tool has a self-contained object schema and a client-safe name; every call is validated before plugin code runs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_schema.py`; run `uv run --frozen pytest tests/test_schema.py -q`; expect import errors.
+- Implement `src/any_mcp/schema.py` and `src/any_mcp/validation.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Prior art: FastMCP could not resolve chained `$ref` -> `$defs` -> `$ref` (fastmcp#1372); test a chain. Claude Code mishandles a root `anyOf` and sometimes sends objects as JSON strings (Stainless lessons, prior-art O4). Cursor caps combined names at 60 characters, hence the default.

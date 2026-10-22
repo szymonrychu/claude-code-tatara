@@ -51,17 +51,21 @@ Give plugin authors an in-memory harness that drives a plugin through the real s
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.testing` (the `plugin-harness` part): `class PluginHarness` with `__init__(plugin: type[Plugin] | str, *, config: Mapping[str, Any] | None = None, name: str | None = None, namespace: str | None = None, transport: httpx.AsyncBaseTransport | None = None, tools: Mapping[str, Any] | None = None)`, `classmethod from_config(path: Path | str, *, transport=None)`, `async list_tools() -> list[dict]`, `async call(tool: str, arguments: Mapping[str, Any] | None = None) -> HarnessResult`, `async reload() -> bool`; `@dataclass(frozen=True) HarnessResult(text: str, structured: Any, is_error: bool)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+```python
+async with PluginHarness(Hello) as h:
+    result = await h.call("greet", {"name": "Ada"})
+    assert result.text == "Hello, Ada!"
+```
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_testing_harness.py`; run `uv run --frozen pytest tests/test_testing_harness.py -q`; expect import errors.
+- Implement `src/any_mcp/testing.py`; rerun (all pass), then `uv run --frozen pytest tests/test_import_boundary.py -q` and `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The prior-art brief asks for "a testing your plugin page with an in-memory client"; this is that client. Keep it importable without pytest.

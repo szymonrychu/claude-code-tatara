@@ -51,17 +51,17 @@ Execute a declarative `HttpBinding` with httpx so a plugin can describe an endpo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.http.make_client(base_url: str | None, *, transport: httpx.AsyncBaseTransport | None = None, timeout: float = 30.0) -> httpx.AsyncClient` and `any_mcp.http.execute_binding(client: httpx.AsyncClient, call: ToolCall, *, headers: Mapping[str, str] = {}, timeout: float | None = None) -> RawResponse`: the `http-executor` part, used by the default `Plugin.call` and by discovery when it builds `ctx.http`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A `ToolSpec` with an `HttpBinding` turns into exactly one well-formed HTTP request, and errors come back as typed exceptions the pipeline maps.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_http_binding.py` with an `httpx.MockTransport` that records each request; run `uv run --frozen pytest tests/test_http_binding.py -q`; expect import errors.
+- Implement `src/any_mcp/http.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Use the `httpx` package declared by scaffold, never FastMCP's HTTP client. Read the version with `importlib.metadata`.

@@ -214,7 +214,7 @@ or `tags` in its config; with neither, loading fails with a message telling the 
 (or `allow: ["*"]`). Config also takes `base_url`, static `headers` and `bearer_token` (env
 expanded), sent through `credentials()`. Swagger 2.0 is a load error. Alternative: wrap FastMCP's
 `OpenAPIProvider` (bypasses the plugin hooks and couples the plugin to FastMCP; fastmcp#1372
-chained-`$ref` bug). (my call.) Serves D.
+chained-`$ref` bug). (my call; open question Q5.) Serves D.
 
 ### D13: A testing harness for plugin authors
 

@@ -50,17 +50,24 @@ Define the plain data types and error types every other module shares (design D2
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `HttpBinding(method: str, path: str, query: tuple[str, ...] = (), headers: Mapping[str, str] = {}, body: str | tuple[str, ...] | None = None, base_url: str | None = None)`. `headers` maps argument name to header name. `body`: `None` no body; `"*"` every argument not used by path, query or headers, as a JSON object; one argument name: that argument's value is the JSON body; a tuple of names: those arguments as a JSON object.
+- `ToolSpec(name: str, description: str, input_schema: Mapping[str, Any] | None = None, input_model: type[BaseModel] | None = None, output_schema: Mapping[str, Any] | None = None, title: str | None = None, tags: frozenset[str] = frozenset(), annotations: Mapping[str, Any] | None = None, http: HttpBinding | None = None, handler: Callable[[ToolCall], Awaitable[Any]] | None = None)`, `.json_schema() -> dict`.
+- `ToolCall(plugin: str, tool: str, exposed_name: str, arguments: Mapping[str, Any], spec: ToolSpec, request_id: str)`, `.with_arguments(arguments) -> ToolCall`.
+- `RawResponse(status: int, headers: Mapping[str, str], body: bytes, content_type: str, value: Any = NO_VALUE)`; `NO_VALUE` sentinel exported.
+- `ToolResult(text: str, structured: Any = None, is_error: bool = False)`.
+- `errors.error_result(exc: BaseException, *, plugin: str, expose_details: bool = False) -> ToolResult`.
+
+These are the `tool-types` and `tool-errors` parts; every later task imports them from `any_mcp.types` and `any_mcp.errors`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`any_mcp.types` and `any_mcp.errors` import with no side effects and carry the full shared vocabulary.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_types.py`; run `uv run --frozen pytest tests/test_types.py -q`; expect import errors.
+- Implement both modules; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Mappings in frozen dataclasses: store them as `types.MappingProxyType` or tuples so instances stay hashable where the registry diffs them; the registry compares `ToolSpec`s by name, description, schemas, tags and annotations.

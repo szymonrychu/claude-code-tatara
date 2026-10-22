@@ -51,17 +51,17 @@ Write the configuration and transport references (design D5, D10, D14).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Reads `any_mcp.config` models and `any_mcp.cli.build_parser()`; documents the cross-epic `any-mcp-config` and `any-mcp-cli` contracts the agent-orchestrator epic consumes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every config key and flag has one documented meaning and default, and a new key or flag without docs fails CI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_docs_reference.py`; run `uv run --frozen pytest tests/test_docs_reference.py -q`; expect failures.
+- Write both pages; rerun (all pass), then `mise run lint`. The docs-readme-concepts task links them from the README.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Claude Code registration forms are from the docs brief section 4 (`claude mcp add`, `.mcp.json` with no `type` means stdio, `--mcp-config`); note that a committed `.claude/settings.json` cannot approve project servers in an untrusted folder.

@@ -51,17 +51,17 @@ Resolve plugin references and instantiate configured plugins with their contexts
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.discovery` (the `plugin-loader` part): `ENTRY_POINT_GROUP = "any_mcp.plugins"`, `resolve_plugin_class(ref: str, *, python_path: Sequence[Path] = ()) -> type[Plugin]`, `@dataclass LoadedPlugin(entry: PluginEntry, plugin: Plugin, namespace: str, timeout: float, reload_every: float | None, ctx: PluginContext)`, `load_plugins(config: AnyMcpConfig, *, http_transport: httpx.AsyncBaseTransport | None = None) -> list[LoadedPlugin]`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A config file or `--plugin` list turns into ready plugin instances, each with its own validated config and HTTP client, before any hook runs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_discovery.py` with plugin modules written under `tmp_path` and entry points monkeypatched on `importlib.metadata.entry_points`; run `uv run --frozen pytest tests/test_discovery.py -q`; expect import errors.
+- Implement `src/any_mcp/discovery.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+`setup()` is not called here; the registry owns the lifecycle. Prior art for entry points plus `module:Class`: simonw/llm and IBM context-forge (prior-art D1, D4).

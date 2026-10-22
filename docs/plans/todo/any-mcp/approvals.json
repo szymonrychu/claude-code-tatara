@@ -1,0 +1,65 @@
+[
+  {
+    "id": "A",
+    "text": "An MCP server that exposes any API, or groups of APIs, and does nothing on its own: plugins extend methods of an abstract base class that are called during tool reload, calls, responses and errors, while the core does the common proxy work.",
+    "decisions": ["D2", "D3", "D6", "D7", "D8", "D9"],
+    "tasks": ["core-types", "http-binding", "response-shaping", "schemas-and-validation", "plugin-abc", "registry", "call-pipeline"],
+    "status": "approved"
+  },
+  {
+    "id": "B",
+    "text": "Runs over stdio locally by default and can also run over streamable HTTP.",
+    "decisions": ["D10"],
+    "tasks": ["cli-stdio", "http-transport", "fastmcp-adapter"],
+    "status": "approved"
+  },
+  {
+    "id": "C",
+    "text": "Well documented: README, concepts, plugin authoring guide covering small and big plugins, testing guide, configuration and transport reference, each with its own acceptance conditions.",
+    "decisions": ["D14"],
+    "tasks": ["docs-readme-concepts", "docs-authoring", "docs-reference"],
+    "status": "approved"
+  },
+  {
+    "id": "D",
+    "text": "Good examples of small and big plugins, runnable and tested: hello, single endpoint, a decorator multi-tool plugin with auth, a packaged OpenAPI plugin and a group-of-APIs config.",
+    "decisions": ["D12", "D13"],
+    "tasks": ["openapi-plugin", "testing-harness", "examples-small-medium", "examples-big-group"],
+    "status": "approved"
+  },
+  {
+    "id": "E",
+    "text": "Plugins are very easy to implement: one class with one required hook, discovered from entry points or module:Class config entries, configured from one YAML file, testable in memory.",
+    "decisions": ["D2", "D4", "D5", "D13"],
+    "tasks": ["plugin-abc", "plugin-discovery", "config-model", "testing-harness"],
+    "status": "approved"
+  },
+  {
+    "id": "F",
+    "text": "Python, uv, ruff, pytest, mise tasks lint and test, GitHub Actions CI; a new component at code/any-mcp with the public GitHub origin szymonrychu/any-mcp created after the gate.",
+    "decisions": ["D17"],
+    "tasks": ["scaffold"],
+    "status": "approved"
+  },
+  {
+    "id": "G",
+    "text": "Built on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC with one adapter module; client tokens are never forwarded downstream; plugin exceptions become structured MCP tool errors; arguments are validated against schemas; correctness never relies on tools/list_changed.",
+    "decisions": ["D1", "D7", "D8", "D11"],
+    "tasks": ["fastmcp-adapter", "call-pipeline", "schemas-and-validation", "registry", "http-transport", "http-binding"],
+    "status": "approved"
+  },
+  {
+    "id": "H",
+    "text": "v1 is tools only; released as the pinned git tag v0.1.0, installable via pip from git and consumed by the agent-orchestrator agent image.",
+    "decisions": ["D15", "D16"],
+    "tasks": ["fastmcp-adapter", "release"],
+    "status": "approved"
+  },
+  {
+    "id": "I",
+    "text": "Installable with pip the same way as claude-code-wrapper: a standard pyproject package with the console script any-mcp, installable via pip install any-mcp, pip install git+https://github.com/szymonrychu/any-mcp, pip install ., pipx install any-mcp and uv tool install any-mcp; any-mcp --version works; the README documents these; a test builds the wheel with uv build --wheel, installs it into a fresh venv and runs any-mcp --version. No PyPI publishing.",
+    "decisions": ["D18"],
+    "tasks": ["scaffold", "cli-stdio", "release", "docs-readme-concepts"],
+    "status": "approved"
+  }
+]

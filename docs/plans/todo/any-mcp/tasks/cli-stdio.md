@@ -58,17 +58,17 @@ Ship the `any-mcp` command with the stdio transport (design D4, D5, D10). This i
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`any_mcp.cli.build_parser() -> argparse.ArgumentParser`, `any_mcp.cli.main(argv: list[str] | None = None) -> int` (console script `any-mcp`), exit codes 0 ok, 2 usage, 78 config. `any_mcp.log.configure(level: str) -> None`. Cross-epic contract `any-mcp-cli` (consumer: agent-orchestrator).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`any-mcp --config any-mcp.yaml` is a well-behaved stdio MCP server for Claude Code and any other client, and fails fast with a one-line reason when misconfigured.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/fixtures/stdio_plugin.py` (an `echo` tool, a failing `boom` tool, a teardown that writes a marker file named by its config) and `tests/test_cli.py` driving `sys.executable -m any_mcp` with newline-delimited JSON-RPC on stdin; run `uv run --frozen pytest tests/test_cli.py -q`; expect failures.
+- Implement `src/any_mcp/cli.py`, `src/any_mcp/__main__.py`, `src/any_mcp/log.py`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+stdio rules (docs brief 1.4): no non-MCP bytes on stdout, no embedded newlines, exit on EOF. The http choice and `--host`/`--port`/`--path` are added by the http-transport task. Exit 78 mirrors claude-code-wrapper.

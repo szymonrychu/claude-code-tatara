@@ -53,17 +53,17 @@ Write the small and medium example plugins, runnable and tested offline (design 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Example files only; they use the public `any_mcp` API (`Plugin`, `tool`, `ToolSpec`, `HttpBinding`, `Deny`) and `any_mcp.testing.PluginHarness`. The docs-authoring task embeds `examples/hello/hello.py` and `examples/single_endpoint/zippopotam.py` verbatim.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`any-mcp --config examples/hello/any-mcp.yaml` works from a checkout, and with `GITHUB_TOKEN` set so does the github_issues example against the real API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_examples_small.py` (add each `examples/<name>` directory to the harness via `python_path` or `from_config`); run `uv run --frozen pytest tests/test_examples_small.py -q`; expect failures.
+- Write the examples; rerun (all pass), then `uv run --frozen pytest tests/test_import_boundary.py -q` and `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Examples are documentation: keep each one short, commented where a reader needs it, and free of FastMCP imports (the boundary test scans `examples/`). Ruff lints `examples/` too.

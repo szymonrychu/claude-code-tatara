@@ -52,17 +52,17 @@ Write the README and the concepts guide (design D14, D18).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+None in code. Pages other docs link to: `README.md`, `docs/concepts.md`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A reader learns what any-mcp is, installs it, and runs a working plugin from the README alone; concepts explains the model behind it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_docs_links.py`; run `uv run --frozen pytest tests/test_docs_links.py -q`; expect failures.
+- Write `README.md` and `docs/concepts.md`; rerun (all pass), then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+This task runs after docs-authoring and docs-reference, so its link test covers every page. Mirror the claude-code-wrapper README Installation layout (`code/claude-code-wrapper/README.md` lines 40-54). No PyPI publishing is in scope; the index form is documented because the package is a standard one.
