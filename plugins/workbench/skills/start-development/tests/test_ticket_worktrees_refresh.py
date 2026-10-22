@@ -81,7 +81,7 @@ def mk_task(
         "--files",
         files,
         "--verify",
-        "pytest -q",
+        "pytest -q tests/test_x.py",
         "--requirement-file",
         rf,
         "--ac-file",

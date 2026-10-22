@@ -99,3 +99,11 @@ def test_agents_row():
 def test_task_template_retirement_rule():
     t = (SD / "templates" / "task.md").read_text()
     assert "git ls-files <path>" in t and "never on the filesystem" in t
+
+
+def test_planner_sizing_and_heading_index():
+    t = " ".join(_text().split())
+    assert "one test file's worth of behaviour, at most 8 files" in t
+    assert "never the full suite" in t
+    assert "ticket.py estimate <epic>" in t
+    assert "grep its `^#` headings first, then read only the sections the plan needs" in t

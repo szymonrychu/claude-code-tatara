@@ -161,7 +161,9 @@ def test_skill_has_no_offer_or_parking_wording():
 def test_phase3_planner_told_to_write_estimate():
     text = " ".join(sd_text(SD_SKILL).split())
     assert "--estimate" in text
-    assert "about an hour" in text
+    assert "one test file's worth of behaviour, at most 8 files" in text
+    assert "ticket.py estimate <epic>" in text
+    assert "about an hour" not in text
 
 
 def test_start_development_line_cap():

@@ -10,7 +10,7 @@ const README = `---\ntitle: Alpha\nblockers: []\nstage: build\nrepos: [api]\ncre
 const DESIGN = `# D\n\n## Decisions\n\n### D1: first\n\ntext\n\n## Decision coverage\n\n| Decision | Tasks |\n|---|---|\n| D1 first | t-one, t-two |\n\n## Contracts\n\n| Part | Owner | Consumers | Where defined |\n|---|---|---|---|\n`
 const LEDGER = [{ id: 'A', text: 'x', decisions: ['D1'], tasks: ['t-one', 't-two'], status: 'approved' }]
 const TASK = (own, shared) =>
-  `---\ntitle: X\nstatus: todo\nrepo: api\nvalue: worth it\nfiles: [${own}, ${shared}]\nverify: pytest\ndepends_on: []\nowns: []\nuses: []\n---\n\n# X\n\n## Requirement\n\nBuild.\n\n## Acceptance conditions\n\n- a1: works [evidence: command:true]\n\n## Files\n\n- ${own}\n- ${shared}\n\n## Expected outcome\n\nx\n\n## Steps\n\n- go\n`
+  `---\ntitle: X\nstatus: todo\nrepo: api\nvalue: worth it\nfiles: [${own}, ${shared}]\nverify: pytest tests/test_x.py\ndepends_on: []\nowns: []\nuses: []\n---\n\n# X\n\n## Requirement\n\nBuild.\n\n## Acceptance conditions\n\n- a1: works [evidence: command:true]\n\n## Files\n\n- ${own}\n- ${shared}\n\n## Expected outcome\n\nx\n\n## Steps\n\n- go\n`
 export const epic = (shared, config) => {
   const wb = mkdtempSync(join(tmpdir(), 'vt-overlap-'))
   const api = join(wb, 'code', 'api')

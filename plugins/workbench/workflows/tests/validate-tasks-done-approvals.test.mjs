@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 const CLI = fileURLToPath(new URL('../validate-tasks.mjs', import.meta.url))
 const README = `---\ntitle: Alpha\nblockers: []\nstage: build\nrepos: [api]\ncreated: 2026-10-17\n---\n\n# Alpha\n\n## Project brief\n\nWhat: a\nHow: b\nWhy: c\n\n## Description\n\nd\n\n## Goals\n\n- g\n\n## Non-goals\n\n- n\n`
 const TASK = (fm = {}) => {
-  const f = { title: 'X', status: 'todo', repo: 'api', value: 'worth it', files: '[src/x.py]', verify: 'pytest', depends_on: '[]', owns: '[]', uses: '[]', ...fm }
+  const f = { title: 'X', status: 'todo', repo: 'api', value: 'worth it', files: '[src/x.py]', verify: 'pytest tests/test_x.py', depends_on: '[]', owns: '[]', uses: '[]', ...fm }
   const head = Object.entries(f).map(([k, v]) => `${k}: ${v}`).join('\n')
   return `---\n${head}\n---\n\n# X\n\n## Requirement\n\nBuild.\n\n## Acceptance conditions\n\n- a1: works [evidence: test:tests/test_x.py::test_a]\n\n## Files\n\n- src/x.py\n\n## Expected outcome\n\nx\n\n## Steps\n\n- go\n`
 }
