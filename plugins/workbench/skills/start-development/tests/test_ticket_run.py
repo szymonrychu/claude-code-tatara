@@ -141,7 +141,8 @@ def test_tasks_field_mapping_and_ac(root):
     (t,) = json.loads(r.stdout)
     assert t["id"] == t["short"] == "alpha-work"
     assert t["title"] == "Alpha work"
-    assert t["repo"] == "proj" and t["value"] == "why" and t["verify"] == "pytest -q tests/test_x.py"
+    assert t["repo"] == "proj" and t["value"] == "why"
+    assert t["verify"] == "pytest -q tests/test_x.py"
     assert t["requirement"] == "Do the thing."
     assert t["files"] == ["a.py", "b.py"]
     assert t["owns"] == ["part-a"] and t["uses"] == ["part-b"]
