@@ -2,6 +2,7 @@
 
 # ruff: noqa: F811
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -92,12 +93,16 @@ def _alpha_commit(repo, epic):
     return git(wt, "rev-parse", "HEAD").stdout.strip()
 
 
-def _done_alpha(repo, root, epic, head):
+def _done_alpha(repo, root, epic, head, verify="true"):
     p = root / "in-progress" / epic / "tasks" / "alpha.md"
     import ticket
 
     doc = ticket.load(p.read_text(), p)
-    doc.meta.update(status="done", verified_head=head, verify="true")
+    doc.meta.update(status="done", verified_head=head)
+    if verify is None:
+        doc.meta.pop("verify", None)
+    else:
+        doc.meta["verify"] = verify
     p.write_text(ticket.dump(doc))
     commit_all(repo)
 
@@ -133,6 +138,44 @@ def test_launch_keeps_merge_line_on_failure(repo, root, epic, tmp_path):
     assert f"MERGE alpha --name {epic}-alpha --base {epic} --repo proj" in r.stdout.splitlines()
     assert "LAUNCH" not in r.stdout
     assert (repo / ".claude" / "worktrees" / f"{epic}-alpha").is_dir()
+
+
+def _ret_with_command(head, command):
+    verification = {"head": head, **({"command": command} if command else {})}
+    return {
+        "tasks": [{"id": "alpha", "verified": True, "clean": True, "verification": verification}]
+    }
+
+
+def test_launch_without_verify_uses_returned_verification_command(repo, root, epic, tmp_path):
+    head = _alpha_commit(repo, epic)
+    _done_alpha(repo, root, epic, head, verify=None)
+    rj = write_ret(repo, _ret_with_command(head, "false"))
+    out = tmp_path / "o"
+    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch", "--return", rj)
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert f"MERGE alpha --name {epic}-alpha" in r.stdout
+
+
+def test_launch_without_verify_lands_with_returned_command(repo, root, epic, tmp_path):
+    head = _alpha_commit(repo, epic)
+    _done_alpha(repo, root, epic, head, verify=None)
+    rj = write_ret(repo, _ret_with_command(head, "true"))
+    out = tmp_path / "o"
+    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch", "--return", rj)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "alpha: landed" in r.stdout
+
+
+def test_launch_without_any_verify_does_not_land(repo, root, epic, tmp_path):
+    head = _alpha_commit(repo, epic)
+    _done_alpha(repo, root, epic, head, verify=None)
+    r = cli("continue", epic, "--root", root, "--out-dir", tmp_path / "o", "--launch")
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert f"MERGE alpha --name {epic}-alpha --base {epic}" in r.stdout
+    assert "landed" not in r.stdout
+    tree = repo / ".claude" / "worktrees" / epic
+    assert subprocess.run(["git", "merge-base", "--is-ancestor", head, "HEAD"], cwd=tree).returncode
 
 
 def test_without_launch_prints_no_launch_lines(repo, root, epic, tmp_path):
