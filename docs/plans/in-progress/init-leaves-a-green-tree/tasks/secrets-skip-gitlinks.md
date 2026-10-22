@@ -1,6 +1,6 @@
 ---
 title: secrets skip gitlinks
-status: todo
+status: in-progress
 repo: workbench
 value: "lint:secrets stops scanning component checkouts that scan themselves"
 files: [mise-tasks/lint/secrets, scripts/tests/test_secret_scanning.py]

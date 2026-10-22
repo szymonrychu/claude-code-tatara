@@ -1,6 +1,6 @@
 ---
 title: template marker skip
-status: todo
+status: in-progress
 repo: workbench
 value: template-only self-tests stop failing in every initialised workbench
 files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py]

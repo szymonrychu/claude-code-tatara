@@ -1,6 +1,6 @@
 ---
 title: personal allow file
-status: todo
+status: in-progress
 repo: workbench
 value: "lint:personal accepts a project's own vocabulary without weakening the template"
 files: [scripts/check_personal.py, scripts/tests/test_check_personal.py, scripts/tests/init_engine/test_update.py]

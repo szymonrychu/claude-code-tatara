@@ -2,7 +2,7 @@
 title: Init leaves a green tree
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-22
 ---

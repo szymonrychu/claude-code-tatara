@@ -1,6 +1,6 @@
 ---
 title: init writes allow entries
-status: todo
+status: in-progress
 repo: workbench
 value: "init and component add leave lint:personal green by recording the project's own vocabulary"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/cli.py, scripts/init_engine/project_files.py, scripts/tests/init_engine/test_new.py, scripts/tests/init_engine/test_adopt.py, scripts/tests/init_engine/test_component.py]

@@ -1,6 +1,6 @@
 ---
 title: license every plugin
-status: todo
+status: in-progress
 repo: workbench
 value: "the chosen holder appears in every LICENSE, not only the root"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/owned.py, scripts/init_engine/update.py, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/test_finalize.py, plugins/workbench-secrets/LICENSE, plugins/workbench/skills/init/SKILL.md]

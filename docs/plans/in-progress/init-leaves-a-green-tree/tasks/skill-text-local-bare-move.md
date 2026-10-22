@@ -1,6 +1,6 @@
 ---
 title: skill text local bare move
-status: todo
+status: in-progress
 repo: workbench
 value: init and component-add skills tell the truth about local-bare and the --path move
 files: [plugins/workbench/skills/init/SKILL.md, plugins/workbench/skills/component-add/SKILL.md, plugins/workbench/skills/init/tests/test_init_skills.py]
