@@ -190,3 +190,16 @@ def test_update_keeps_existing_template_remote(project, run_cli, tmp_path):
     assert r.returncode == 0, r.stderr
     assert (project / "tooling.txt").read_text() == "v2\n"
     assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
+
+
+def test_update_keeps_personal_allow_local(project, run_cli, tmp_path):
+    rel = "scripts/personal-allow.local.json"
+    body = '{"allow": [{"path": "docs/**"}]}\n'
+    write(project, rel, body)
+    sh("add", rel, cwd=project)
+    sh("commit", "-m", "project allow", cwd=project)
+    template_commit(project, tmp_path, TEMPLATE_FILES)
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert (project / rel).read_text() == body
+    assert rel in sh("ls-files", cwd=project).stdout.split()

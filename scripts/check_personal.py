@@ -15,6 +15,11 @@ end) or {"name": ..., "regex": ...} for shapes a literal cannot express. An allo
 entry is {"path": <glob>, "pattern": <optional name or digest>, "line_contains": <optional
 substring>}; "**" crosses directories, "*" does not. Prints "path:line: pattern"
 per hit; exit 1 on any hit, else 0.
+
+A project may add DIR/scripts/personal-allow.local.json, {"allow": [...]} with the
+same entry shape; its entries are appended to the allow list. It can only add
+allowances: patterns and hashes come from the denylist alone. The template ships
+no such file and template-update never touches it.
 """
 
 import argparse
@@ -26,6 +31,7 @@ import sys
 from pathlib import Path
 
 DENYLIST = "scripts/personal-denylist.json"
+LOCAL_ALLOW = "scripts/personal-allow.local.json"
 MAX_WORDS = 4
 _WORD = re.compile(r"[a-z0-9_]+")  # underscore joins: identifiers are not split
 
@@ -104,7 +110,11 @@ def scan(root: Path) -> list[str]:
     cfg = json.loads(cfg_path.read_text())
     patterns = [_compile(p) for p in cfg["patterns"]]
     hashes = set(cfg.get("hashes", []))
-    allow = [(_glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in cfg["allow"]]
+    entries = list(cfg["allow"])
+    local = root / LOCAL_ALLOW
+    if local.is_file():
+        entries += json.loads(local.read_text()).get("allow", [])
+    allow = [(_glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in entries]
     hits = []
     for rel in _tracked(root):
         whole = [a for a in allow if a[0].match(rel) and a[1] is None and a[2] is None]
