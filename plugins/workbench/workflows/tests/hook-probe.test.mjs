@@ -101,3 +101,38 @@ test('a missing or non-worktree path throws', async () => {
   const ok = await run({ worktree: '/r/.worktrees/b/repo' })
   assert.equal(ok.error, undefined)
 })
+
+test('cache-probe-runs-six-serial-agents-without-worktree', async () => {
+  const r = await run({ probe: 'cache' }, async () => ({ ok: true }))
+  assert.equal(r.error, undefined)
+  assert.deepEqual(r.calls.map((c) => c.opts.label), [
+    'probe:cache:static#1', 'probe:cache:static#2', 'probe:cache:static#3',
+    'probe:cache:task#1', 'probe:cache:task#2', 'probe:cache:task#3',
+  ])
+  assert.deepEqual(r.calls.map((c) => c.opts.phase), [
+    ...Array(3).fill('Cache static-first'), ...Array(3).fill('Cache task-first'),
+  ])
+  for (const c of r.calls) {
+    assert.equal(c.opts.agentType, 'workbench:implementer')
+    assert.equal(c.opts.model, 'sonnet')
+    assert.equal(c.opts.effort, 'low')
+  }
+  assert.deepEqual(r.result, { probe: 'cache', labels: r.calls.map((c) => c.opts.label) })
+})
+
+test('cache-probe-prompts-share-a-static-block', async () => {
+  const r = await run({ probe: 'cache' }, async () => ({ ok: true }))
+  const p = r.calls.map((c) => c.prompt)
+  const lastLine = (s) => s.split('\n').pop()
+  const firstLine = (s) => s.split('\n')[0]
+  for (let i = 0; i < 3; i++) {
+    assert.equal(lastLine(p[i]), `Probe ${i + 1}: reply with ok true`)
+    assert.equal(firstLine(p[3 + i]), `Probe ${i + 1}: reply with ok true`)
+  }
+  const stat = p[0].slice(0, p[0].lastIndexOf('\n'))
+  assert.ok(stat.length >= 4000)
+  for (const i of [1, 2]) assert.equal(p[i].slice(0, p[i].lastIndexOf('\n')), stat)
+  const rest = (s) => s.slice(s.indexOf('\n') + 1)
+  assert.equal(rest(p[3]), stat)
+  assert.equal(rest(p[4]), stat)
+})
