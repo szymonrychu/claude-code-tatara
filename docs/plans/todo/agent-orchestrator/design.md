@@ -301,7 +301,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [answer: AskUserQuestion is disabled (ask_user_question deny plus permissions.deny); agents get an appended system prompt telling them to ask questions in writing as a numbered list, each with a recommended answer (changed by the user, D8)]
 - Q12: Where are the orchestrator and agent images pushed? [answer: Harbor containers/ (accepted as recommended); with Q8 only containers/agent-orchestrator:<sha7> is built here]
 - Q13: How are the agent-orchestrator-db CNPG backups configured? [answer: copy the backup configuration of the existing CNPG release (accepted as recommended); the chart's optional cnpg.backup passes it through verbatim]
-- Q14: Do agent clusters live in their own namespace `agents-clusters` (configurable `ORCH_CLUSTERS_NAMESPACE`, created by the helmfile release, regcred and the Claude Secret provided there) while the orchestrator runs in `agents`? [recommended: yes, for blast radius: the reconciler Role then cannot touch the orchestrator's objects]
+- Q14: Do agent clusters live in their own namespace `agents-clusters` (configurable `ORCH_CLUSTERS_NAMESPACE`, created by the helmfile release, regcred and the Claude Secret provided there) while the orchestrator runs in `agents`? [answer: everything in namespace agents, clusters told apart by labels; ORCH_CLUSTERS_NAMESPACE and agents-clusters are removed; the reserved agent-<slug> prefix and the refuse-unlabelled apply and prune guard stay (changed by the user, D26)]
 
 ## Irreversible operations in scope
 
