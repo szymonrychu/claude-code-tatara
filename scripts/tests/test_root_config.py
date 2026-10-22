@@ -117,7 +117,7 @@ def test_template_marker_registered_and_noop_in_template(request):
     conf = _conftest()
     tagged = [i for i in request.session.items if i.get_closest_marker("template")]
     assert all(i.nodeid in conf.TEMPLATE_ONLY for i in tagged)
-    skipped = [i for i in tagged if i.get_closest_marker("skip")]
+    skipped = [i for i in tagged if any(m.args[0] for m in i.iter_markers("skipif"))]
     if conf.is_initialised(ROOT):
         assert len(skipped) == len(tagged)
     else:
