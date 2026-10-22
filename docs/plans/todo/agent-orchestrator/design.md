@@ -267,6 +267,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q10: What is the context gauge's denominator? [recommended: the full model context window (the statusline used_percentage), with a tick at the cluster's auto-compact percentage (default 95, rendered into claude_autocompact_pct_override)]
 - Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [recommended: deny (sessions.ask_user_question: deny)]
 - Q12: Where are the orchestrator and agent images pushed? [recommended: Harbor containers/ (containers/agent-orchestrator and containers/agent-orchestrator-agent, sha7 tags)]
+- Q13: How are the agent-orchestrator-db CNPG backups configured? [recommended: copy the backup configuration of the existing CNPG release in the ai bucket]
 
 ## Irreversible operations in scope
 
