@@ -1,6 +1,6 @@
 ---
 title: Docs update flow
-status: escalated
+status: done
 repo: workbench
 value: "The README tells users to run the skill instead of a manual merge, and the decision is on record"
 files: [README.md, MEMORY.md]
@@ -58,6 +58,10 @@ README.md tells users to run the template-update skill (or `mise run init:update
 - Rewrite README.md `## Pulling template updates` and add the `## What init does` bullet.
 - Append the MEMORY.md entry.
 - Run `python3 scripts/check_personal.py && grep -q init:update README.md`; expect exit 0.
+
+## Ruling
+
+- 2026-10-22 accepted: run 1: all 7 tasks landed on main at d87b383 (plus README -- separator fix and init_helpers rename); docs-update-flow escalated only on an empty verifier evidence field, hand-verified (check_personal rc 0, README grep rc 0). Phase 5 remediation: update-safety.
 
 ## Notes
 
