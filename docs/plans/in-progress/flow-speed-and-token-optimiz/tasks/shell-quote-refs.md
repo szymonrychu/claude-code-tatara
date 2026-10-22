@@ -40,16 +40,18 @@ Deliver: a forkPoint that does not match SHA_RE is ignored (the base ref is used
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `shq` and `SHA_RE` in plan-execute.js are reused, not redefined.
+- `diffBase(t, quoted)` keeps its call sites; quoting happens where the value enters a shell string.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Hostile or malformed refs and paths in args or run data cannot execute in a verifier's shell.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Write plan-execute-shell-quoting.test.mjs and see it fail.
+2. Validate forkPoint with SHA_RE; shq the base in the three command builders; shq in repoDir.
+3. Run the verify command.
 
 ## Notes
 
