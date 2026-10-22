@@ -445,6 +445,41 @@ def _test_name_missing(cwd: str, path: str, name: str) -> bool:
     return not re.search(rf"\b(?:test|it)\(\s*(['\"`]){re.escape(name)}\1", text)
 
 
+def _test_names(cwd: str, path: str) -> list:
+    """The test names a .py/.js/.mjs file defines."""
+    f = Path(cwd, path)
+    if not f.is_file():
+        return []
+    text = f.read_text(errors="replace")
+    if f.suffix == ".py":
+        return re.findall(r"^[ \t]*(?:async\s+)?def (test\w*)\(", text, re.M)
+    if f.suffix in (".js", ".mjs"):
+        return [m[1] for m in re.findall(r"\b(?:test|it)\(\s*(['\"`])(.+?)\1", text)]
+    return []
+
+
+def resolve_test_ref(
+    cwd: str, ac_id: str, ref: str, output: str, changed: list, ace: dict
+) -> tuple:
+    """(ref, rpath, problem, matchedBy) for a `test:` AC: the acEvidence entry for its id when
+    that file defines the name, else the exact ref, else the single test in the ref's file whose
+    name contains the ref's name or is contained in it (D2). No match keeps the exact ref."""
+    entry = ace.get(ac_id)
+    if isinstance(entry, str) and "::" in entry:
+        epath, problem = _resolve_path(cwd, _name_of(entry)[0], changed)
+        if not _test_name_missing(cwd, epath, _name_of(entry)[1]):
+            return epath + entry[len(_name_of(entry)[0]) :], epath, problem, "acEvidence"
+    path, name = _name_of(ref)
+    rpath, problem = _resolve_path(cwd, path, changed)
+    if _passing_line(output, ref) or not _test_name_missing(cwd, rpath, name):
+        return ref, rpath, problem, "exact"
+    plain = bool(name) and "::" not in name and "[" not in name
+    hits = sorted({n for n in _test_names(cwd, rpath) if plain and (name in n or n in name)})
+    if len(hits) == 1:
+        return f"{path}::{hits[0]}", rpath, problem, "substring"
+    return ref, rpath, problem, ""
+
+
 def _runner_cmd(argv: list) -> str:
     """The command a runner executes: a refRunners `bash -c <cmd>` shows as <cmd>."""
     return argv[2] if argv[:2] == ["bash", "-c"] else " ".join(argv)
@@ -458,14 +493,25 @@ def _config_file(cwd: str) -> str:
         return "workbench.json"
 
 
-def check_ac(cwd: str, ac: dict, output: str, changed: list, timeout: float | None = None) -> dict:
+def check_ac(
+    cwd: str,
+    ac: dict,
+    output: str,
+    changed: list,
+    timeout: float | None = None,
+    ace: dict | None = None,
+) -> dict:
     ev = ac.get("evidence") or {}
     kind = ev.get("kind") or ac.get("kind")
     ref = ev.get("ref") or ac.get("ref") or ""
     res = {"id": ac["id"], "kind": kind, "ref": ref, "met": False, "how": "", "snippet": ""}
     if kind == "test":
+        ref, rpath, problem, matched = resolve_test_ref(
+            cwd, ac["id"], ref, output, changed, ace or {}
+        )
+        if matched:
+            res.update(matchedBy=matched, resolvedRef=ref)
         line = _passing_line(output, ref)
-        rpath, problem = _resolve_path(cwd, _name_of(ref)[0], changed)
         runner = workbench.runner_for(rpath + ref[len(_name_of(ref)[0]) :], Path(cwd))
         tname = _name_of(ref)[1]
         if line:
@@ -748,6 +794,7 @@ def build(argv: list, triage_run=None) -> tuple:
     ap.add_argument("--triage-log", help="JSONL file triage.py appends one line per call to")
     ap.add_argument("--install", action="store_true", help="install missing dependencies first")
     ap.add_argument("--acs", help="JSON file: list of {id, text, evidence: {kind, ref}}")
+    ap.add_argument("--ac-evidence", help="JSON file: {AC id: final file::name of its test}")
     ap.add_argument("--prev-head", help="previous round's HEAD, for changedSincePrevious")
     ap.add_argument("--requirement", default="", help="task requirement, for the tier hint")
     ap.add_argument("--no-triage", action="store_true", help="skip every Haiku call")
@@ -820,7 +867,8 @@ def build(argv: list, triage_run=None) -> tuple:
     acs = []
     if args.acs:
         texts = {a["id"]: a.get("text", "") for a in specs}
-        acs = [check_ac(cwd, a, output, changed, args.timeout) for a in specs]
+        ace = json.loads(Path(args.ac_evidence).read_text()) if args.ac_evidence else {}
+        acs = [check_ac(cwd, a, output, changed, args.timeout, ace) for a in specs]
         diff_text = "\n".join(f"{x['file']}:{x['line']}: {x['text']}" for x in lines)
         if args.no_triage:
             for a in acs:

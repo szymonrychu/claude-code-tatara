@@ -88,7 +88,7 @@ Staying in your own tree - this has already cost a run, so it is not advisory:
 - Write the test FIRST and watch it fail for the right reason. A test that passes before
   you write the implementation is testing nothing.
 - Then implement until it passes. Then clean up with the test still green.
-- A test-kind acceptance condition names its evidence as `test:<file>::<name>`: write that test under exactly that name in exactly that file; a test with another name does not count.
+- A test-kind acceptance condition names its evidence as `test:<file>::<name>`: write that test under exactly that name in exactly that file; a test with another name does not count. If a test ends up under another name or file, say so: return `acEvidence`, an object mapping every `test:` AC id to the final `file::name` of the test that proves it. The verifier resolves a renamed ref by that evidence before it looks for the exact ref.
 - Report the test files in `tests.added` and set `tests.wroteTestFirst` honestly. If you
   genuinely could not test something first, set it false and say why in `tests.note` -
   do not claim a red-green cycle you did not run.

@@ -453,6 +453,11 @@ const DELIVERABLE = {
         properties: { id: { type: 'string' }, met: { type: 'boolean' }, ref: { type: 'string', description: 'file:line or test name that shows it' } },
       },
     },
+    acEvidence: {
+      type: 'object',
+      description: 'optional: maps each test: AC id to the final file::name of the test that proves it',
+      additionalProperties: { type: 'string' },
+    },
     verification: {
       type: 'object',
       required: ['command', 'passed', 'evidence'],
@@ -915,6 +920,15 @@ function approvalBlock(t) {
 
 // Per-call inputs only; the method (tree rules, TDD, verify, committing, the
 // deliverable fields, reuse rules, ceiling, report cap) is agents/implementer.md.
+// One line per acceptance condition, so the implementer sees the exact test refs it must satisfy.
+function acBlock(t) {
+  if (!Array.isArray(t.ac) || !t.ac.length) return ''
+  return [
+    'Acceptance conditions (prove each; return acEvidence):',
+    ...t.ac.map((a) => `${a.id}: ${a.text} [${(a.evidence && a.evidence.kind) || a.kind || ''}: ${(a.evidence && a.evidence.ref) || a.ref || ''}]`),
+  ].join('\n')
+}
+
 function implPrompt(t) {
   return [
     `Your worktree: ${t.worktree}`,
@@ -932,6 +946,7 @@ function implPrompt(t) {
     t.files ? `\nFiles the plan expects you to touch:\n${t.files.join('\n')}` : '',
     t.notes ? `\nNotes:\n${t.notes}` : '',
     approvalBlock(t) ? `\n${approvalBlock(t)}` : '',
+    acBlock(t) ? `\n${acBlock(t)}` : '',
     '',
     dependencyLines(t),
     sharedParts(t),
@@ -1038,6 +1053,7 @@ function fixPrompt(t, rev) {
     '',
     `Original task requirement (the fix must still satisfy all of it):\n${t.requirement}`,
     ...(approvalBlock(t) ? ['', approvalBlock(t)] : []),
+    ...(acBlock(t) ? ['', acBlock(t)] : []),
     '',
     sharedParts(t),
     doNotBuildBlock(),
@@ -1095,11 +1111,15 @@ const noRed = (impl) => {
 // The checks are a script, not an agent's judgement: the agent runs it once and relays its JSON.
 // verify-task bounds each run at 480 s, so the call fits the Bash tool's 600 s maximum (D1).
 const RUN_ONCE = 'Run this command once and only once, in ONE Bash call with `timeout: 600000`:'
+// The final test refs the implementer or fixer named per AC; a later result that names none keeps the earlier ones.
+const AC_EVIDENCE_BY_ID = new Map()
 function verifyPrompt(t, impl, prev) {
   const acs = Array.isArray(t.ac) && t.ac.length ? t.ac : null
+  const ace = acs ? AC_EVIDENCE_BY_ID.get(t.id) : null
   // A previous head that is not a sha is never put on a command line; the tier was still read.
   const flags = [
     ...(acs ? ['--acs "$ACS"'] : []),
+    ...(ace ? ['--ac-evidence "$ACE"'] : []),
     '--install',
     ...(prev && SHA_RE.test(prev) ? [`--prev-head ${shq(prev)}`] : []),
     ...(prev ? ['--no-tier'] : []),
@@ -1114,11 +1134,17 @@ function verifyPrompt(t, impl, prev) {
       ? [
           '2. Write this acceptance-condition JSON to a temp file outside the worktree (mktemp), exactly as given, and call its path $ACS:',
           JSON.stringify(acs),
-          `3. ${RUN_ONCE}`,
+          ...(ace
+            ? [
+                '3. Write this JSON to a second temp file outside the worktree (mktemp), exactly as given, and call its path $ACE:',
+                JSON.stringify(ace),
+              ]
+            : []),
+          `${ace ? '4' : '3'}. ${RUN_ONCE}`,
         ]
       : [`2. ${RUN_ONCE}`]),
     `   ${verifyTaskCommand(t, '"$D"', flags)}`,
-    `${acs ? '4' : '3'}. The script prints one JSON object: relay the JSON verbatim as your result. Change nothing, add nothing, run no other check, write no gloss of your own (at most 0 words of yours). A command is judged by its exit code only: 0 is met and passed, anything else is not; never set passed or met differently from the script.`,
+    `${3 + (acs ? 1 : 0) + (ace ? 1 : 0)}. The script prints one JSON object: relay the JSON verbatim as your result. Change nothing, add nothing, run no other check, write no gloss of your own (at most 0 words of yours). A command is judged by its exit code only: 0 is met and passed, anything else is not; never set passed or met differently from the script.`,
     '',
     'Do not edit, commit, stash, reset or switch branches. If the script cannot run, report passed=false with the error as evidence.',
     helperRules('verify'),
@@ -1189,6 +1215,9 @@ async function withVerifySlot(repo, fn) {
 // claim moves to impl.selfVerification. Null when the verifier returns nothing.
 async function independentVerify(t, impl) {
   bump(VERIFY_BY_ROOT, t.rootId || t.id)
+  if (impl && impl.acEvidence && typeof impl.acEvidence === 'object' && !Array.isArray(impl.acEvidence)) {
+    AC_EVIDENCE_BY_ID.set(t.id, { ...(AC_EVIDENCE_BY_ID.get(t.id) || {}), ...impl.acEvidence })
+  }
   const prev = PREV_HEAD_BY_ID.get(t.id)
   let v = await withVerifySlot(t.repo, () =>
     safeAgent(t, 'verify', verifyPrompt(t, impl, prev), {
@@ -1264,7 +1293,7 @@ async function independentVerify(t, impl) {
         evidence: a.how || String(a.id),
         gate: 'ac-unmet',
       })
-    } else if (a.met === null || a.met === undefined || a.plausible === 'no' || a.plausible === 'unsure') {
+    } else if (a.matchedBy === 'substring' || a.met === null || a.met === undefined || a.plausible === 'no' || a.plausible === 'unsure') {
       forAudit.push(String(a.id))
     }
   }
@@ -2444,10 +2473,12 @@ function mergeVerifySteps(d) {
     ]
   }
   const acs = Array.isArray(d.ac) && d.ac.length ? d.ac : null
+  const ace = acs ? AC_EVIDENCE_BY_ID.get(d.id) : null
   return [
     ...(acs ? ['5. Write this acceptance-condition JSON to a temp file outside the worktree (mktemp), exactly as given, and call its path $ACS:', JSON.stringify(acs)] : []),
-    `${acs ? '6' : '5'}. ${RUN_ONCE}`,
-    `   ${verifyTaskCommand(d, `"${repoDir(d)}"`, [...(acs ? ['--acs "$ACS"'] : []), '--no-triage'])}`,
+    ...(ace ? ['6. Write this JSON to a second temp file outside the worktree (mktemp), exactly as given, and call its path $ACE:', JSON.stringify(ace)] : []),
+    `${5 + (acs ? 1 : 0) + (ace ? 1 : 0)}. ${RUN_ONCE}`,
+    `   ${verifyTaskCommand(d, `"${repoDir(d)}"`, [...(acs ? ['--acs "$ACS"'] : []), ...(ace ? ['--ac-evidence "$ACE"'] : []), '--no-triage'])}`,
     '   It prints one JSON object: verification.passed is its passed field, verification.command its command,',
     '   and verification.evidence its evidence tail, including the pass/fail summary line.',
   ]
