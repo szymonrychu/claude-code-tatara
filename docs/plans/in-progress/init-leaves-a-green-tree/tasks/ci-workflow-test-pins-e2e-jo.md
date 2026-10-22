@@ -1,6 +1,6 @@
 ---
 title: ci workflow test pins e2e job
-status: in-progress
+status: done
 repo: workbench
 value: "the template's full suite is green again after the e2e CI job was added"
 files: [scripts/tests/test_ci_workflow.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
 branch: init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
-verified_head: ""
-run: ""
+verified_head: 9d7de6cc5a869fa4377594c7b7c3bcbf2691d141
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: [tests.red and verification.evidence not populated for this test-only task]
 ---
 
 # ci workflow test pins e2e job
