@@ -128,5 +128,15 @@
       "agents-helmfile"
     ],
     "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> and the wrapper agent image allowlisted via ORCH_AGENT_IMAGES"
+  },
+  {
+    "name": "agent-orchestrator-claude-secret",
+    "kind": "schema",
+    "owner": "agents-helmfile",
+    "file": "values/agent-orchestrator-claude.secret.yaml",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "Secret agent-orchestrator-claude in namespace agents, key CLAUDE_CODE_OAUTH_TOKEN"
   }
 ]
