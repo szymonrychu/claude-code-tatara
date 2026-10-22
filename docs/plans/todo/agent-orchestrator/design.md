@@ -261,6 +261,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q4: On discard, are the cluster's Kubernetes objects deleted including the shared PVC and its files, with history kept until an explicit purge? [recommended: yes, discard deletes the PVC after a typed-slug confirm; history (messages, events, turns) is kept until purge]
 - Q5: When a message cannot be delivered (wrapper 503 or a network error), is it retried automatically? [recommended: no automatic retry (max_attempts 1 by default); a failed message shows a Retry button and a retry endpoint]
 - Q6: Does the frontend start on the current majors (React 19.3, MUI 9.5, Vite 8.3, vitest 5, ESLint 10 flat config) rather than the ros2 versions (React 18, MUI 6, Vite 5, ESLint 8)? [recommended: yes, current majors]
+- Q7: Which helmfile bucket hosts the agent-orchestrator and agent-orchestrator-db releases in namespace agents? [recommended: the existing ai bucket]
 
 ## Irreversible operations in scope
 
