@@ -38,5 +38,15 @@
       "flow-speed-and-token-optimiz"
     ],
     "note": "merge.py --name --base --repo --keep --no-suites --verify; continue-launch runs it directly"
+  },
+  {
+    "name": "personal-allow-local",
+    "kind": "file-format",
+    "owner": "init-leaves-a-green-tree",
+    "file": "scripts/check_personal.py",
+    "consumers": [
+      "init-leaves-a-green-tree"
+    ],
+    "note": "personal-allow.local.json shape and reader"
   }
 ]
