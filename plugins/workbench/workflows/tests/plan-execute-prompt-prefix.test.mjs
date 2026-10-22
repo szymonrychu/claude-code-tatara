@@ -29,7 +29,7 @@ const agent = async (prompt, opts) => {
   return {}
 }
 
-test('impl and verify prompts keep the task-first order recorded by the CACHE none probe verdict', async () => {
+test('prompt-order-follows-probe-verdict', async () => {
   const r = await runWorkflow(SCRIPT, { args: { brief: BRIEF, tasks: [task('T1'), task('T2')] }, agent })
   assert.equal(r.error, undefined)
   const first = (role, id) => r.calls.find((c) => c.opts.label.split(':')[1] === role && c.opts.label.includes(`task-${id.toLowerCase()}`))
