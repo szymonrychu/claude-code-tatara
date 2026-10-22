@@ -11,11 +11,11 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
+import owned
 from gitops import Refusal, git
 
 TEMPLATE_MARKET = "workbench-template"
 PACKS = ("infra", "observability", "secrets")
-PHASES = ("todo", "in-progress", "done")
 
 
 @dataclass
@@ -126,16 +126,17 @@ def workbench_json(cfg_dir: Path, opts: Options) -> None:
 
 
 def clear_template_history(root: Path) -> None:
-    for phase in PHASES:
-        d = root / "docs" / "plans" / phase
-        if d.exists():
-            shutil.rmtree(d)
-        d.mkdir(parents=True)
-        (d / ".gitkeep").write_text("")
-    research = root / "docs" / "research"
-    if research.exists():
-        shutil.rmtree(research)
-    (root / "docs" / "plans" / "facts.md").unlink(missing_ok=True)
+    for rel, kind in owned.INSTANCE_OWNED:
+        if kind == "rewritten":
+            continue
+        target = root / rel
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink(missing_ok=True)
+        if kind == "phase":
+            target.mkdir(parents=True)
+            (target / ".gitkeep").write_text("")
 
 
 def generate_harness(root: Path, targets: list[str]) -> None:
