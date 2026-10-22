@@ -41,16 +41,20 @@ def test_auto_accepts_triage_rejected(repo, root, epic, tmp_path):
     assert len(rs) == 1 and rs[0]["reason"] == "auto-accepted: triageRejected"
 
 
-def test_auto_accepts_process_only_not_done(repo, root, epic, tmp_path):
-    # blocked keeps the status off done after apply; processOnly still qualifies
-    data = _ret(repo, stopped="gate-repeat", processOnly=True)
-    data["escalated"] = [{"id": "alpha", "reason": "gate-repeat"}]
+def test_continue_auto_accepts_process_only(repo, root, epic, tmp_path):
+    # a blocked stop keeps the status off done after apply; processOnly still qualifies
+    data = _ret(repo, stopped="blocked", processOnly=True)
     r = _go(repo, root, epic, tmp_path, data)
-    status = meta(root, epic, "alpha")["status"]
-    assert status == "done", r.stdout + r.stderr
+    assert "alpha: auto-accepted (processOnly)" in r.stdout.splitlines(), r.stdout + r.stderr
+    assert meta(root, epic, "alpha")["status"] == "done"
+    rs = [x for x in _rulings(root, epic) if x["task"] == "alpha"]
+    assert len(rs) == 1 and rs[0]["reason"] == "auto-accepted: processOnly"
+    r2 = _go(repo, root, epic, tmp_path, data)
+    assert "alpha: auto-accepted" not in r2.stdout
+    assert len([x for x in _rulings(root, epic) if x["task"] == "alpha"]) == 1
 
 
-def test_never_auto_accepts_unverified_or_review_shallow(repo, root, epic, tmp_path):
+def test_continue_auto_accepts_triage_rejected_only_when_verified(repo, root, epic, tmp_path):
     data = _ret(repo, triageRejected=True, verified=False)
     data["tasks"][0].pop("verification")
     r = _go(repo, root, epic, tmp_path, data)
@@ -89,7 +93,7 @@ def _done_alpha(repo, root, epic, head):
     commit_all(repo)
 
 
-def test_launch_lands_done_task_and_prints_launch_lines(repo, root, epic, tmp_path):
+def test_launch_lands_clean_tasks_itself(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head)
     out = tmp_path / "out"
@@ -98,17 +102,14 @@ def test_launch_lands_done_task_and_prints_launch_lines(repo, root, epic, tmp_pa
     assert "MERGE" not in r.stdout
     lines = r.stdout.strip().splitlines()
     assert lines[-2].startswith("LAUNCH ") and lines[-2].endswith(f" {out / (epic + '-args.json')}")
-    assert (
-        lines[-1].startswith("ARM python3 ")
-        and lines[-1].endswith("/skills/heartbeat/scripts/heartbeat.py --run <runId> --total 1")
-        or "--run" in lines[-1]
-    )
+    assert lines[-1].startswith("ARM python3 ")
+    assert lines[-1].endswith("/skills/heartbeat/scripts/heartbeat.py --run <runId> --total 1")
     assert git(repo / ".claude" / "worktrees" / epic, "merge-base", "--is-ancestor", head, "HEAD")
     args = json.loads((out / f"{epic}-args.json").read_text())
     assert [x["id"] for x in args["tasks"]] == ["beta"]
 
 
-def test_launch_failed_landing_keeps_merge_line(repo, root, epic, tmp_path):
+def test_launch_keeps_merge_line_on_failure(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head)
     p = root / "in-progress" / epic / "tasks" / "alpha.md"
@@ -131,9 +132,20 @@ def test_without_launch_prints_no_launch_lines(repo, root, epic, tmp_path):
     assert "LAUNCH" not in r.stdout and "ARM" not in r.stdout
 
 
-def test_args_never_hold_done_task(repo, root, epic, tmp_path):
+def test_relaunch_args_hold_only_open_tasks(repo, root, epic, tmp_path):
     data = _ret(repo, stopped="gate-repeat", triageRejected=True)
     _go(repo, root, epic, tmp_path, data)
     args = json.loads((tmp_path / "out" / f"{epic}-args.json").read_text())
     assert "alpha" not in [x["id"] for x in args["tasks"]]
     assert "beta" in [x["id"] for x in args["tasks"]]
+
+
+def test_launch_prints_launch_and_arm_lines(repo, root, epic, tmp_path):
+    head = _alpha_commit(repo, epic)
+    _done_alpha(repo, root, epic, head)
+    out = tmp_path / "out"
+    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch")
+    assert r.returncode == 0, r.stdout + r.stderr
+    lines = r.stdout.strip().splitlines()
+    assert [x.split()[0] for x in lines if x.startswith(("LAUNCH", "ARM"))] == ["LAUNCH", "ARM"]
+    assert lines[-2].startswith("LAUNCH ") and lines[-1].startswith("ARM python3 ")

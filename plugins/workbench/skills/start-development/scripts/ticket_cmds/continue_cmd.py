@@ -126,7 +126,8 @@ def _rule(epic_dir, files, accept, reason, t, root, label="accepted"):
         if not recorded:
             rule.write_ruling(epic_dir, task, True, reason)
             changed.append(epic_dir / rule.RULINGS)
-        print(f"{task}: {label}")
+        if not recorded or not reason.startswith("auto-accepted"):
+            print(f"{task}: {label}")
     if changed:
         t.commit_ticket_change(epic_dir.name, "continue", sorted(set(changed)), root)
 
@@ -144,7 +145,7 @@ def _tree_name(m: dict, fallback: str) -> str:
 
 
 def _land(epic_dir, lines, t, root) -> None:
-    """Run merge.py for each MERGE line; a failed landing leaves its line to the next gate."""
+    """Run merge.py for each MERGE line; a failed landing keeps its line in the gate output."""
     for line in lines:
         parts = line.split()
         task, base = parts[1], parts[parts.index("--base") + 1]
