@@ -179,3 +179,14 @@ def test_update_conflict_resolves_in_linked_worktree(project, run_cli, tmp_path)
     r = subprocess.run([*cli, "update", *LINT], cwd=wt, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     assert sh("status", "--porcelain", cwd=wt).stdout == ""
+
+
+def test_update_keeps_existing_template_remote(project, run_cli, tmp_path):
+    url = str(upstream_of(project))
+    assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
+    assert url != "https://github.com/szymonrychu/workbench"
+    template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert (project / "tooling.txt").read_text() == "v2\n"
+    assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
