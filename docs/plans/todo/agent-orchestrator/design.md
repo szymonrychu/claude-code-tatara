@@ -264,6 +264,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q7: Which helmfile bucket hosts the agent-orchestrator and agent-orchestrator-db releases in namespace agents? [recommended: the existing ai bucket]
 - Q8: How is any-mcp installed into the agent image? [recommended: pip install from a pinned git tag of szymonrychu/any-mcp into an isolated venv at /opt/any-mcp]
 - Q9: What does a cluster row's context gauge show when the cluster has several agents? [recommended: the maximum used percentage over its agents]
+- Q10: What is the context gauge's denominator? [recommended: the full model context window (the statusline used_percentage), with a tick at the cluster's auto-compact percentage (default 95, rendered into claude_autocompact_pct_override)]
 
 ## Irreversible operations in scope
 
