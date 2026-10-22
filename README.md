@@ -313,7 +313,9 @@ or a sandbox.
 ## Maintaining the template
 
 Develop the template in an uninitialised clone; `mise run test` and
-`mise run lint` must be green before a change lands. The `workbench:rules`
+`mise run lint` must be green before a change lands. The slow full green-tree
+proofs live behind the `slow` pytest marker and run with `mise run e2e` (their
+own CI job), not in the default `mise run test`. The `workbench:rules`
 block in `AGENTS.md` is generated from `plugins/workbench/rules/`: change the
 rule files, then rebuild with `mise run harness-setup`, never edit the block by
 hand.

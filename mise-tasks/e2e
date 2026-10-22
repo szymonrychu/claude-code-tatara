@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the slow full green-tree e2e proofs (pytest -m slow)"
+set -euo pipefail
+cd "$(dirname "$0")/.."
+pytest scripts/tests -m slow

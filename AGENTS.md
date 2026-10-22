@@ -200,6 +200,8 @@ Applies only when developing the template itself, in an uninitialised workbench.
 Never run init here.
 
 - `mise run test` and `mise run lint` must both be green before any change lands.
+- `mise run e2e` runs the slow full green-tree proofs (`pytest -m slow`, ~48 minutes); the
+  default `mise run test` deselects them and CI runs them as the `e2e` job.
 - The plugin loads from the main checkout, not from a worktree: edits to `plugins/` made in
   a task or integration tree take effect in Claude Code only after the epic merges to main
   and `/reload-plugins` runs.
