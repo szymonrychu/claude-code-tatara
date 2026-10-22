@@ -173,7 +173,7 @@ def _ref(name):
     return flat((SD / "references" / name).read_text())
 
 
-def test_task_fields_document_estimate_actual_verify_review():
+def test_task_fields_document_formula_estimates_and_run_dir_actuals():
     t = _ref("task-fields.md")
     for needle in (
         "scripts/lib/estimator.json",
@@ -192,7 +192,7 @@ def test_task_fields_document_estimate_actual_verify_review():
     assert "Date.now()" not in t
 
 
-def test_tickets_reference_names_estimate_and_continue_launch():
+def test_tickets_reference_documents_estimate_and_continue_launch():
     t = _ref("tickets.md")
     for needle in (
         "`estimate <epic> [--json]`",
@@ -207,7 +207,7 @@ def test_tickets_reference_names_estimate_and_continue_launch():
         assert needle in t, needle
 
 
-def test_run_handback_names_one_step_relaunch():
+def test_run_handback_is_end_only_with_continue_launch():
     t = _ref("run-handback.md")
     for needle in (
         "wakes on END and STALL",
@@ -220,7 +220,7 @@ def test_run_handback_names_one_step_relaunch():
         assert needle in t, needle
 
 
-def test_phase_4_names_release_rule_and_relaunch_scope():
+def test_phase4_documents_medium_only_release_and_relaunch_scope():
     t = _ref("phase-4-execute.md")
     for needle in (
         "clean, processOnly, triageRejected, mediumOnly or ruled accept",
@@ -230,7 +230,7 @@ def test_phase_4_names_release_rule_and_relaunch_scope():
         assert needle in t, needle
 
 
-def test_skill_gate_shows_epic_estimate_and_relaunch_launch():
+def test_gate_shows_epic_estimate_line():
     t = flat((SD / "SKILL.md").read_text())
     assert "ticket.py estimate <epic>" in t
     assert "three longest-path tasks" in t
