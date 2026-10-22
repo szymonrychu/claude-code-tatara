@@ -86,7 +86,9 @@ _Filled by init: the surface where a mistake costs the most, and what must never
    item, its state and what it waits on. Act on the first item that transitions, never the
    batch: independent items get independent action. Bound every wait at 10 minutes, then
    re-enumerate and report concretely. Use a tested watcher script, never a hand-rolled
-   polling loop.
+   polling loop. The heartbeat of a plan-execute run is the bounded watcher for that wait: it
+   prints END and STALL at once and progress at most every 30 minutes, so silence between its
+   lines is not a broken watcher.
 5. **Stay on the assignment and answer short.** Do the task given: no unrelated issues, no
    refactors beyond the task, no extra hardening. Keep answers to a few lines: what
    changed, what is next, anything needing a decision. Detail only when asked. If scope
