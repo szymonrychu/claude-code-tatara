@@ -1,6 +1,6 @@
 ---
 title: Docs README concepts
-status: escalated
+status: done
 repo: any-mcp
 value: "A README that installs and runs any-mcp in a minute, and a concepts guide"
 files: [README.md, docs/concepts.md, tests/test_docs_links.py]
@@ -64,6 +64,10 @@ A reader learns what any-mcp is, installs it, and runs a working plugin from the
 
 - Write `tests/test_docs_links.py`; run `uv run --frozen pytest tests/test_docs_links.py -q`; expect failures.
 - Write `README.md` and `docs/concepts.md`; rerun (all pass), then `mise run lint`.
+
+## Ruling
+
+- 2026-10-22 accepted: gate-repeat on a parking-wording false positive: README.md:11-19 'once published to an index; until then use the git forms' is mandated verbatim by the task requirement (AC8) and pinned by test_readme_install_forms; it states a real condition, defers no work. Verified on b51a318: 5 passed, lint clean.
 
 ## Notes
 

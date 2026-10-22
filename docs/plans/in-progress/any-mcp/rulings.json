@@ -22,5 +22,11 @@
     "accept": true,
     "reason": "gate-repeat on parking-wording false positives: plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. No deferred work. Verified on 78faf4e (3 passed, lint clean) and c967152 (4 passed, lint clean).",
     "at": "2026-10-22T23:54:56Z"
+  },
+  {
+    "task": "docs-readme-concepts",
+    "accept": true,
+    "reason": "gate-repeat on a parking-wording false positive: README.md:11-19 'once published to an index; until then use the git forms' is mandated verbatim by the task requirement (AC8) and pinned by test_readme_install_forms; it states a real condition, defers no work. Verified on b51a318: 5 passed, lint clean.",
+    "at": "2026-10-22T23:59:55Z"
   }
 ]
