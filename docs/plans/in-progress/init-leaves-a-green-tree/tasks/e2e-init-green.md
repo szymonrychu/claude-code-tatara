@@ -1,6 +1,6 @@
 ---
 title: e2e init green
-status: escalated
+status: done
 repo: workbench
 value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]
@@ -54,6 +54,10 @@ New init, adopt with a colliding owner and secret fixture, and a second componen
 
 - Write the failing e2e tests in test_instantiate.py first (red if any other task is missing).
 - Fix any remaining gap they expose in the owning task's files; run green.
+
+## Ruling
+
+- 2026-10-22 accepted: e2e-init-green: verifier timed out (540s deadline vs 48-min file); hand-verified on 27d001e: 'mise exec -- pytest scripts/tests/e2e/test_instantiate.py -q' -> 7 passed in 2867.48s. ruff-e501: no change needed, the wrap landed in ce694a7; no targeted tests apply (pure formatting).
 
 ## Notes
 
