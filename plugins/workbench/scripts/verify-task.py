@@ -885,9 +885,7 @@ def build(argv: list, triage_run=None) -> tuple:
 
     clean_before = is_clean(cwd)
     specs = json.loads(Path(args.acs).read_text()) if args.acs else []
-    installed = (
-        install_deps(cwd, ref_package_roots(cwd, specs), deadline) if args.install else []
-    )
+    installed = install_deps(cwd, ref_package_roots(cwd, specs), deadline) if args.install else []
     base = git(cwd, "merge-base", "HEAD", args.base).strip()
     changed = name_status(cwd, base)
     prune_deleted_dirs(cwd, changed)
