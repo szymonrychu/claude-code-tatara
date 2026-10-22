@@ -158,7 +158,7 @@ def test_skill_has_no_offer_or_parking_wording():
         assert phrase not in text, phrase
 
 
-def test_phase3_planner_told_to_write_estimate():
+def test_phase3_sizing_by_test_files_and_verify_runtime():
     text = " ".join(sd_text(SD_SKILL).split())
     assert "--estimate" in text
     assert "one test file's worth of behaviour, at most 8 files" in text

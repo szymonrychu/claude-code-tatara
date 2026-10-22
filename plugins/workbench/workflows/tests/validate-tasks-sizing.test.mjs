@@ -13,7 +13,7 @@ const setTask = (d, name, verify, status) => {
 }
 const MSG = /task t-one: verify '.*' runs the full suite; name the test files or the component suite \(run-tests\.sh --only <component>\) plus lint, and split the task if that is not enough/
 
-test('a todo task verifying with the full suite fails', () => {
+test('full-suite-verify-on-todo-task-fails', () => {
   const d = epic('README.md')
   setTask(d, 't-one', 'mise run test')
   const r = cli(d)
@@ -27,20 +27,20 @@ test('a leading cd part is skipped', () => {
   assert.match(cli(d).stderr, MSG)
 })
 
-test('a verify equal to a configured suite fails', () => {
+test('repo-suites-entry-counts-as-full', () => {
   const d = epic('README.md', JSON.stringify({ suites: ['npm run everything'] }))
   setTask(d, 't-one', 'npm run everything')
   assert.match(cli(d).stderr, MSG)
 })
 
-test('a targeted verify passes', () => {
+test('targeted-verify-passes', () => {
   const d = epic('README.md')
   setTask(d, 't-one', 'cd plugins/workbench && bash scripts/run-tests.sh --only workflows')
   const r = cli(d)
   assert.doesNotMatch(r.stderr, /runs the full suite/, r.stderr)
 })
 
-test('a non-todo task only warns', () => {
+test('full-suite-verify-on-started-task-warns', () => {
   const d = epic('README.md')
   setTask(d, 't-one', 'mise run test', 'in-progress')
   const r = cli(d)
@@ -48,7 +48,7 @@ test('a non-todo task only warns', () => {
   assert.match(r.stderr, /warning: task t-one: verify '.*' runs the full suite/)
 })
 
-test('the over-90 estimate warning is gone', () => {
+test('no-estimate-warning', () => {
   const d = epic('README.md')
   const p = join(d, 'tasks', 't-one.md')
   writeFileSync(p, readFileSync(p, 'utf8').replace(/^verify:/m, 'estimate: 200\nverify:'))
