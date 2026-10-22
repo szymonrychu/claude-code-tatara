@@ -256,6 +256,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 
 ## Open questions
 - Q1: The tatara rule 'services talk only through the queue or HTTP APIs; no shared state' conflicts with a Postgres-only queue, which is itself a shared table. Is it read as: one writer per table, with queue tables the only multi-writer tables, changed only through state-machine-guarded UPDATEs? [recommended: yes, single-writer interpretation, written into the component README and MEMORY.md]
+- Q2: Does each agent pod run exactly one wrapper session (max_sessions 1)? [recommended: yes, 1 pod = 1 session]
 
 ## Irreversible operations in scope
 
