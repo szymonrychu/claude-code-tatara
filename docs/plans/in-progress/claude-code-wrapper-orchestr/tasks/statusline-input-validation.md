@@ -1,6 +1,6 @@
 ---
 title: statusline input validation
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "malformed statusline input is a 400, never a 500"
 files: [src/claude_code_wrapper/internal_api.py, README.md, tests/test_internal_api.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-input-validation/claude-code-wrapper
+branch: claude-code-wrapper-orchestr-statusline-input-validation
 verified_head: ""
 run: ""
 provides: []

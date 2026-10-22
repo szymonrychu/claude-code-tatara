@@ -1,6 +1,6 @@
 ---
 title: statusline absolute command
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "the context gauge and chained statusline work in pods where ccw is not on PATH, without leaking the hook token"
 files: [src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/bootstrap/settings.py, tests/test_statusline_relay.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-absolute-command/claude-code-wrapper
+branch: claude-code-wrapper-orchestr-statusline-absolute-command
 verified_head: ""
 run: ""
 provides: []
