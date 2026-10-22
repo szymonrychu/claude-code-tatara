@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/k8s/__init__.py, src/agent_orchestrator/k8s/label
 verify: "uv run pytest tests/test_render.py -q && mise run lint"
 depends_on: [clusters-repository, cluster-token-derivation]
 owns: [k8s-render]
-uses: [cluster-spec, cluster-tokens, settings, any-mcp-stdio-cli, agent-orchestrator-claude-secret]
+uses: [cluster-spec, cluster-tokens, settings, any-mcp-cli, any-mcp-config, agent-orchestrator-claude-secret]
 model: ""
 estimate: 6
 estimate_by: formula
@@ -81,17 +81,19 @@ Also `labels.py`: `cluster_labels(slug)`, `selector(slug)`, `object_names(slug)`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.k8s.render:render_cluster`, `render_config_yaml` (contract `k8s-render`)
+- `agent_orchestrator.k8s.labels:cluster_labels`, `selector`, `object_names`, `MANAGED_BY`, `CLUSTER_LABEL`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Given a cluster row, the orchestrator produces the objects of D6 and a wrapper config the pinned wrapper accepts.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_render.py and the two golden YAML files; run `uv run pytest tests/test_render.py -q`; expect failures.
+- Implement labels.py and render.py.
+- Rerun; expect `9 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Validation uses the ccw dev dependency pinned in pyproject (scaffold, re-pinned by container-images-ci). The wrapper globs sessions_root at startup, hence the per-pod subPathExpr (brief-wrapper Unknowns). A peers seed equal to self_url is skipped by the wrapper (peers.py:92), so listing every ordinal is correct. Secret agent-orchestrator-claude is owned by the deploy epic (contract agent-orchestrator-claude-secret). The any-mcp CLI flag `--config` follows contracts any-mcp-cli and any-mcp-config. Check the claude.env field name for CLAUDE_AUTOCOMPACT_PCT_OVERRIDE in code/claude-code-wrapper/src/claude_code_wrapper/claude_env.py.

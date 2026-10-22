@@ -48,12 +48,12 @@ The Ribbon header gains a `New cluster` button. ClusterRow gains a menu with Edi
 
 ## Acceptance conditions
 
-- AC1: creating a cluster posts the full spec [evidence: test:frontend/src/clusters/ClusterForm.test.tsx::creates cluster with full spec]
-- AC2: invalid slug and secret env keys are rejected inline [evidence: test:frontend/src/clusters/ClusterForm.test.tsx::validates slug and env keys]
-- AC3: editing patches the spec with slug and PVC size locked [evidence: test:frontend/src/clusters/ClusterForm.test.tsx::edit patches spec]
-- AC4: server 409 and 422 errors are shown [evidence: test:frontend/src/clusters/ClusterForm.test.tsx::shows server errors]
-- AC5: discard requires the typed slug and names the PVC deletion [evidence: test:frontend/src/clusters/ClusterForm.test.tsx::discard requires typed slug]
-- AC6: design rules still hold [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
+- AC1: creating a cluster posts the full spec [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'creates cluster with full spec']
+- AC2: invalid slug and secret env keys are rejected inline [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'validates slug and env keys']
+- AC3: editing patches the spec with slug and PVC size locked [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'edit patches spec']
+- AC4: server 409 and 422 errors are shown [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'shows server errors']
+- AC5: discard requires the typed slug and names the PVC deletion [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/clusters/ClusterForm.test.tsx -t 'discard requires typed slug']
+- AC6: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
 
@@ -65,17 +65,19 @@ The Ribbon header gains a `New cluster` button. ClusterRow gains a menu with Edi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/clusters/ClusterForm.tsx:ClusterForm({mode, cluster?, onClose})`; `frontend/src/clusters/DiscardClusterDialog.tsx:DiscardClusterDialog({cluster, onClose})`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Clusters can be defined with their config, edited and discarded from the UI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ClusterForm.test.tsx with the five named tests (jsdom, user-event, mocked client). Run it; expect failures.
+- Implement both dialogs and the ribbon entry points.
+- Rerun; expect `5 passed`.
+- Run the designRules test and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Form patterns come from ros2 map/MapsDialog.tsx and poi/PoiPanels.tsx. Spec field rules mirror ClusterSpec (clusters-repository); the server stays the authority.

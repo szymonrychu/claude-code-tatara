@@ -56,12 +56,12 @@ Selecting a row selects the cluster.
 
 ## Acceptance conditions
 
-- AC1: clusters render with state mark, ready/replicas and gauge [evidence: test:frontend/src/ribbon/Ribbon.test.tsx::renders clusters with state count and gauge]
-- AC2: expanding a cluster shows its agents with their own gauges [evidence: test:frontend/src/ribbon/Ribbon.test.tsx::expands to agents with own gauges]
-- AC3: a stream delta updates a row's state and gauge [evidence: test:frontend/src/ribbon/Ribbon.test.tsx::applies stream deltas]
-- AC4: selecting a row selects the cluster [evidence: test:frontend/src/ribbon/Ribbon.test.tsx::selecting a row selects the cluster]
-- AC5: phone layout uses a temporary drawer [evidence: test:frontend/src/ribbon/Ribbon.test.tsx::phone layout uses temporary drawer]
-- AC6: design rules still hold [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
+- AC1: clusters render with state mark, ready/replicas and gauge [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/Ribbon.test.tsx -t 'renders clusters with state count and gauge']
+- AC2: expanding a cluster shows its agents with their own gauges [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/Ribbon.test.tsx -t 'expands to agents with own gauges']
+- AC3: a stream delta updates a row's state and gauge [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/Ribbon.test.tsx -t 'applies stream deltas']
+- AC4: selecting a row selects the cluster [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/Ribbon.test.tsx -t 'selecting a row selects the cluster']
+- AC5: phone layout uses a temporary drawer [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/Ribbon.test.tsx -t 'phone layout uses temporary drawer']
+- AC6: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
 
@@ -76,17 +76,20 @@ Selecting a row selects the cluster.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/ribbon/useClusters.ts:useClusters() -> {clusters, agentsByCluster, selectedId, select}`
+- `frontend/src/layout/Shell.tsx:Shell({aside, children})`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Opening the UI shows every cluster with live state, pod count and context.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write Ribbon.test.tsx with the five named tests (jsdom, mocked client and stream). Run it; expect failures.
+- Implement the files.
+- Rerun; expect `5 passed`.
+- Run the designRules test and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+No permanent left ribbon exists in ros2; the docked-column pattern is layout/MapSidebar.tsx:13,37-52 (brief-ui section 1). State is hand-rolled reducers, no react-query (D12).

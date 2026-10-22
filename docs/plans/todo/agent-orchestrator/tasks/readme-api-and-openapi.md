@@ -63,17 +63,18 @@ MEMORY.md records the single-writer interpretation, one session per pod, and why
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.openapi:export() -> str`; `openapi.json` (contract `openapi-v1`, consumed by the frontend type generator)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+README is the spec, kept in parity with the code, and `openapi.json` is the source of the UI's types.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_readme_api.py with the four named tests; run it; expect failures.
+- Write openapi.py, export openapi.json, and write the README sections, MEMORY.md and ROADMAP.md.
+- Rerun `uv run pytest tests/test_readme_api.py -q`; expect `4 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Modelled on claude-code-wrapper's tests/test_readme_api.py. Any later route change must regenerate openapi.json; spa-serving-and-dockerfile adds the CI drift step for the frontend types.

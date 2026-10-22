@@ -72,17 +72,20 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tests/fakes/fake_wrapper.py:FakeWrapper` (contract `fake-wrapper`): async context manager yielding `.url`, `.token` and the controls above
+- `tests/fakes/real_wrapper.py:RealWrapper` with the same `.url`, `.token`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Loop tests run against a fake whose behaviour matches the real wrapper image on the same suite.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_fake_wrapper_contract.py; run `uv run pytest tests/test_fake_wrapper_contract.py -q`; expect failures.
+- Implement fake_wrapper.py and real_wrapper.py, the Dockerfile and config.
+- Rerun; expect the fake leg to pass.
+- Build the test image: `docker build -f e2e/agent-test.Dockerfile -t agent-orchestrator-agent-test:local e2e`. Run the integration leg (AC6); expect it to pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The real leg needs a wrapper image that contains epic claude-code-wrapper-orchestr. Until container-images-ci builds the agent image, set BASE_IMAGE to `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>` of that epic's merge. The wrapper's fake claude is `tests/fake_claude/fake_claude.py`. No `__init__.py` under tests/fakes: pytest `pythonpath` includes `tests`, so `from fakes.fake_wrapper import FakeWrapper` works.

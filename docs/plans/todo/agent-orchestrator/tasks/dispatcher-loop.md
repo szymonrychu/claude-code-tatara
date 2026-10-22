@@ -58,17 +58,18 @@ A crash between claim commit and send leaves a dispatching row, which the stale 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.dispatcher.loop:Dispatcher(pool, settings, wrapper_factory)` with `drain_once()` and `run(stop)`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Messages posted to a cluster reach the agent free the longest; commands reach the wrapper.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_dispatcher.py with the seven named tests against FakeWrapper instances and the pool fixture; seed agents with tests/factories.py; run it; expect failures.
+- Implement dispatcher/loop.py.
+- Rerun `uv run pytest tests/test_dispatcher.py -q`; expect `7 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The dispatcher never writes agent_status: free_since moves only through the ingester. In AC1 the test plays the ingester's role by setting status rows with factories between sends.

@@ -72,17 +72,20 @@ The FastAPI app factory and the clusters and agents routes (D11, D15, D13).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.app:create_app` (contract `api-app`); routers are included in it, and later tasks add theirs
+- `agent_orchestrator.api.errors:ApiError(status, code, message)`
+- `agent_orchestrator.api.schemas`: `ClusterView`, `ClusterSummary`, `AgentView`, `CreateCluster`, `PatchCluster`, `Meta`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Clusters can be defined, edited and discarded through `/api/v1`, and the views carry everything the ribbon draws.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_api_clusters.py with the ten named tests (httpx AsyncClient over ASGITransport, pool fixture); run it; expect failures.
+- Implement errors.py, schemas.py, views.py, clusters.py and app.py.
+- Rerun `uv run pytest tests/test_api_clusters.py -q`; expect `10 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Error shape mirrors the wrapper (README:1949 of claude-code-wrapper). The API writes only clusters columns it owns (D3).

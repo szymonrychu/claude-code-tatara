@@ -51,17 +51,19 @@ The cluster spec model and the clusters table repository (D3, D6, D15).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.spec:ClusterSpec`, `validate_slug` (contract `cluster-spec`)
+- `agent_orchestrator.db.clusters`: `create`, `get`, `get_by_slug`, `list_clusters`, `update_spec`, `request_delete`, `purge`, `set_status`, `mark_deleted`, `ClusterExists`, `ClusterDeleting`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Clusters can be created, edited, marked for deletion and purged, each change waking the reconciler.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_clusters_repo.py with the seven named tests using the `pool` fixture; run it; expect failures.
+- Implement spec.py and db/clusters.py.
+- Rerun `uv run pytest tests/test_clusters_repo.py -q`; expect `7 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Defaults that come from settings (agent image, model, replicas, auto-compact) are resolved by the renderer and the API meta route, not stored into the spec, so changing a default reaches every cluster on its next reconcile.

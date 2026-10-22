@@ -11,13 +11,13 @@ created: 2026-10-22
 
 ## Project brief
 
-What: 
-How: 
-Why: 
+What: agent-orchestrator, a new component (code/agent-orchestrator, public origin szymonrychu/agent-orchestrator): a web UI and headless /api/v1 that define, run, message and discard clusters of claude-code-wrapper pods on Kubernetes, with a ribbon of live state and context gauges, a smart-loading chat of every agent, round-robin dispatch to the agent free the longest, peer messaging, a shared RWX CephFS workspace, and any-mcp preinstalled in every session.
+How: one Python repo and image with four processes (api, dispatcher, ingester, reconciler) coordinating only through a CNPG Postgres (SKIP LOCKED queues, LISTEN/NOTIFY hints, polling fallback); the reconciler server-side-applies a StatefulSet, headless Service, RWX PVC, ConfigMap and Secret per cluster; the ingester stores every wrapper event; a React 19 / MUI 9 / Vite 8 frontend ported from the ros2 web UI theme uses only the public API; a bench CLI runs the experiment arms; GitHub CI pushes both images to Harbor and runs a kind e2e.
+Why: the user wants to test whether round-robin plus multiple agents plus inter-agent messaging makes agents faster, more robust and more correct, and needs one router whose API tatara and magic-trainer will consume at scale.
 
 ## Description
 
-agent-orchestrator: microservice web UI and headless API for orchestrating Kubernetes pods running claude-code-wrapper. Left ribbon lists active pods or clusters with waiting/working state, running-pod count and a circular 0-100% context gauge; the main view is a lazily loaded chat of agent activity (inputs, outputs, thinking, tool calls). Clusters are defined and discarded from the UI; messages go round-robin to the agent free the longest; cluster agents share an RWX CephFS PVC and can message each other; every session starts with any-mcp preinstalled. The headless API is the unified router for future tatara and magic-trainer use. Theme copied from the ros2 web UI. Design: /private/tmp/claude-501/-Users-szymonri-Documents-claude-code-tatara/21d1a847-8d6b-4ee4-a271-ba52ec27cf3b/scratchpad/orch/design-orchestrator.md.
+agent-orchestrator: microservice web UI and headless API for orchestrating Kubernetes pods running claude-code-wrapper. Left ribbon lists active pods or clusters with waiting/working state, running-pod count and a circular 0-100% context gauge; the main view is a lazily loaded chat of agent activity (inputs, outputs, thinking, tool calls). Clusters are defined and discarded from the UI; messages go round-robin to the agent free the longest; cluster agents share an RWX CephFS PVC and can message each other; every session starts with any-mcp preinstalled. The headless API is the unified router for future tatara and magic-trainer use. Theme copied from the ros2 web UI. Design: design.md in this epic.
 
 ## Goals
 
@@ -37,7 +37,7 @@ agent-orchestrator: microservice web UI and headless API for orchestrating Kuber
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 190 agent-min | Critical path: 65 min | Expected wall at P=3.0: 2.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 190 min
 
 ## Review
 

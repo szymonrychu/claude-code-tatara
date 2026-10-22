@@ -54,17 +54,20 @@ Schema 0001 and the migration runner (design D3, D20).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.db.migrate:run_migrations(dsn: str) -> list[str]` (applied versions)
+- `agent_orchestrator.db.pool:open_pool`, `notify`, `listen`
+- contract `schema-v1` in `db/migrations/0001_init.sql`; contract `pg-fixture` in `tests/conftest.py` (`dsn`, `pool`) and `tests/factories.py`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A real Postgres in tests carries the full schema; migrations are idempotent and safe under concurrent initContainers.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/conftest.py, tests/factories.py and tests/test_migrations.py with the six named tests; run `uv run pytest tests/test_migrations.py -q`; expect failures.
+- Write 0001_init.sql, migrate.py and pool.py.
+- Rerun; expect `6 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Docker is required (testcontainers); it is available locally and on ubuntu-latest. Only this task edits tests/conftest.py and tests/factories.py: put any later fixture in its own test file or under tests/fakes/. Writers per table (D3) are enforced by code ownership, not by database roles.

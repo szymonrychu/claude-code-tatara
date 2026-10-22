@@ -38,8 +38,8 @@ Files to port:
 
 ## Acceptance conditions
 
-- AC1: the design rules hold across the whole src tree [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
-- AC2: the theme is dark with the ported tokens [evidence: test:frontend/src/theme.test.ts::theme uses the dark ported tokens]
+- AC1: the design rules hold across the whole src tree [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
+- AC2: the theme is dark with the ported tokens [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/theme.test.ts -t 'theme uses the dark ported tokens']
 - AC3: lint passes [evidence: command:cd frontend && npm ci --no-audit --no-fund && npm run lint]
 
 ## Files
@@ -55,17 +55,20 @@ Files to port:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/theme.ts`: `theme`, `TOKENS`, `SANS_FONT`, `MONO_FONT` (contract `fe-theme`)
+- `frontend/src/layout/useLayout.ts:useLayout()`; `frontend/src/layout/ConfirmDialog.tsx:ConfirmDialog`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The app renders in the ros2 dark theme, and any rule break fails `npm test`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Copy and adapt designRules.test.ts and theme.test.ts. Run `npx vitest run src/layout/designRules.test.ts src/theme.test.ts`; expect failures.
+- Port theme.ts, designRules.ts, index.css, useLayout.ts and ConfirmDialog.tsx, then wire main.tsx.
+- Rerun; expect both test files to pass.
+- Run `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Brief-ui section 1 lists the token values and the line ranges in theme.ts. MUI 6 to 9 drift (component override keys, palette API) shows up first here. Keep the design rules strict: later tasks must pass them.

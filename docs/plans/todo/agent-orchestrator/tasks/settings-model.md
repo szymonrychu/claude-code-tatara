@@ -54,17 +54,20 @@ Invalid or missing values raise one error naming every bad `ORCH_*` variable. RE
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.settings:Settings` (BaseSettings) with the fields above
+- `Settings.require_master_key() -> bytes`, `Settings.require_agent_image() -> str`
+- `agent_orchestrator.settings:load_settings() -> Settings`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every process loads one Settings object from `ORCH_*` env; README lists every variable.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_settings.py with the five named tests (monkeypatch env); run `uv run pytest tests/test_settings.py -q`; expect failures.
+- Implement settings.py and the README table.
+- Rerun; expect `5 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The infrastructure registry records contract `agent-orchestrator-settings-env` (owner this epic, consumer agents-k8s-deploy): renaming a variable later breaks the chart. `default_auto_compact_pct` feeds the gauge tick and the rendered `claude.env.claude_autocompact_pct_override` (D13).

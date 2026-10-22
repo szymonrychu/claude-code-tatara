@@ -72,17 +72,18 @@ At the end it prints a summary table per arm (runs, mean and p50 wall, failures,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.bench.spec:load_spec(path) -> BenchSpec`; `bench.runner:run_bench(spec, api_url, out, keep) -> list[Record]`; `bench.report:summary(records) -> str`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One command produces comparable metrics for 1 agent, 3 agents, and 3 peered agents.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_bench.py with the six named tests; drive the runner against an `httpx.MockTransport` fake of the API that simulates readiness, turns and checks; run it; expect failures.
+- Implement spec.py, runner.py, report.py, the CLI registration and examples/bench.yaml.
+- Rerun `uv run pytest tests/test_bench.py -q`; expect `6 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+No special prompts (non-goal): prompts are passed through verbatim. Shapes follow openapi.json (contract openapi-v1).

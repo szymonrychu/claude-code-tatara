@@ -68,17 +68,18 @@ Checks:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.db.queue` (contract `queue-sql`): the functions above plus dataclasses `Claim(message, agent)`, `Command`, `Check`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Round-robin and every queue transition are proven against a real Postgres, including two concurrent claimers.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_dispatch_queue.py with the ten named tests; seed rows with tests/factories.py; the concurrency test runs two claimers on separate connections with asyncio.gather; run it; expect failures.
+- Implement db/queue.py.
+- Rerun `uv run pytest tests/test_dispatch_queue.py -q`; expect `10 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Pick SQL from design-orchestrator section 2. The reservation rule closes the race between a 202 and the ingester seeing busy; the wrapper's 409 is the backstop. Reconciler claims restart commands, dispatcher claims interrupt and compact (D3).

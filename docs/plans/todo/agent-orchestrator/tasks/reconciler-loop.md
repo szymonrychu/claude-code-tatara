@@ -76,17 +76,21 @@ The level-triggered reconcile loop (D6, D9).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.k8s.kube:KubeApi`, `LightkubeApi` (contract `kube-api`); `tests/fakes/fake_kube.py:FakeKube`
+- `agent_orchestrator.db.agents` (contract `agents-repo`)
+- `agent_orchestrator.reconciler.loop:Reconciler(pool, kube, settings, wrapper_factory)` with `reconcile_once()` and `run(stop: asyncio.Event)`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Cluster rows drive Kubernetes objects and agents rows, idempotently, with discard removing everything labelled.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/fakes/fake_kube.py and tests/test_reconciler.py with the eight named tests; run `uv run pytest tests/test_reconciler.py -q`; expect failures.
+- Implement kube.py, db/agents.py and reconciler/loop.py.
+- Rerun; expect `8 passed`.
+- Add the README section; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+`wrapper_factory` is accepted now and used by session-bootstrap. Jobs are pruned only for deleting clusters, by check-jobs. lightkube generic resources: use `lightkube.generic_resource` or the typed models in `lightkube.resources`; apply with `field_manager='agent-orchestrator', force=True`.

@@ -70,17 +70,19 @@ CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/e2e.sh` (exit 0 on pass); marker `e2e`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run test:e2e` proves create, round-robin, merged history, any-mcp and discard on a real cluster, locally and in CI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/e2e/test_e2e_kind.py with the four named tests. Run `mise run test:e2e`; expect failures, since nothing is deployed yet.
+- Write kind-config, manifests, rbac and e2e.sh, and add the mise tools.
+- Rerun `mise run test:e2e`; expect `4 passed`.
+- Add the CI job; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Docker is available locally (29.8.2) and kind is installed through mise. The fake claude completes turns deterministically. Make the turn duration configurable in `e2e/agent-test.config.yaml`, so the ordering of the third message is deterministic. The production Role lives in the deploy epic's chart; this manifest proves the verb list is sufficient.

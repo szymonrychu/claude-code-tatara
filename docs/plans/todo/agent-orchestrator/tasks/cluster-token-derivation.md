@@ -49,17 +49,18 @@ Token derivation (D7).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.tokens:derive_tokens`, `tokens_for`, `ClusterTokens(auth: str, peer: str)` (contract `cluster-tokens`)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Reconciler, dispatcher and ingester derive the same per-cluster tokens from one master key.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_tokens.py with the five named tests; run it; expect failures.
+- Implement tokens.py.
+- Rerun `uv run pytest tests/test_tokens.py -q`; expect `5 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The wrapper requires peers.token of at least 16 characters, different from server.auth_token (brief-wrapper section 3).

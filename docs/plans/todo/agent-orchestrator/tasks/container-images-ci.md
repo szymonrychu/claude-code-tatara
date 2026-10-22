@@ -7,7 +7,7 @@ files: [agent-image/Dockerfile, .github/workflows/ci.yaml, tests/test_images.py,
 verify: "uv run pytest tests/test_images.py -q && mise run lint"
 depends_on: [spa-serving-and-dockerfile, k8s-object-renderer]
 owns: [agent-image, agent-orchestrator-image]
-uses: [any-mcp-stdio-cli, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
+uses: [any-mcp-cli, any-mcp-release, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
 model: ""
 estimate: 6
 estimate_by: formula
@@ -64,17 +64,20 @@ README `## Images` names both images and the tag rule.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent-image/Dockerfile` (contract `agent-image`, consumed by kind-e2e and by the agents' StatefulSet via ORCH_AGENT_IMAGE)
+- image names: contract `agent-orchestrator-image` (consumed by the deploy epic's chart)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Main CI pushes `containers/agent-orchestrator:<sha7>` and `containers/agent-orchestrator-agent:<sha7>`; the agent image runs any-mcp.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_images.py with the five named tests: static parsing of the Dockerfile, ci.yaml (yaml.safe_load) and pyproject. Run it; expect failures.
+- Write the Dockerfile and CI job and re-pin the dependency (`uv lock`).
+- Rerun `uv run pytest tests/test_images.py -q`; expect `5 passed`.
+- Run AC6 and AC7, then `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Get the wrapper sha with `git -C ../claude-code-wrapper rev-parse origin/main` after epic claude-code-wrapper-orchestr merges. The any-mcp tag is the one in contract any-mcp-release (planned v0.1.0); confirm it with `git ls-remote --tags https://github.com/szymonrychu/any-mcp`. The isolated venv keeps any-mcp's dependencies (fastmcp, httpx) away from ccw's. A venv copied by an init container breaks its shebangs, hence the derived image. Local AC6 needs Harbor pull access (`docker login harbor.szymonrichert.pl`). The repo secrets are set by the orchestrator at origin creation.

@@ -88,15 +88,5 @@
       "agent-orchestrator"
     ],
     "note": "tag v0.1.0: pip install 'any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0'; console script any-mcp"
-  },
-  {
-    "name": "any-mcp-stdio-cli",
-    "kind": "cli",
-    "owner": "any-mcp",
-    "file": "code/any-mcp/README.md",
-    "consumers": [
-      "agent-orchestrator"
-    ],
-    "note": "any-mcp installable by pip from a pinned git tag vX.Y.Z of github.com/szymonrychu/any-mcp; console script any-mcp; 'any-mcp --config <file>' serves MCP over stdio (logs to stderr, exits on stdin EOF); '--help' exits 0. Consumed by agent-orchestrator container-images-ci (agent image venv /opt/any-mcp) and k8s-object-renderer (claude.mcp_servers.any-mcp stdio entry)."
   }
 ]

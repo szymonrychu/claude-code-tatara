@@ -62,17 +62,20 @@ The multi-stage `Dockerfile`:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.spa:SpaStaticFiles`, `mount_spa(app, static_dir)`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One image serves `/api/v1` and the UI; CI gates every frontend change.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_spa.py with the four named tests using a temporary static dir; run it; expect failures.
+- Implement spa.py and the mount.
+- Rerun `uv run pytest tests/test_spa.py -q`; expect `4 passed`.
+- Write the Dockerfile, .dockerignore and CI job, then run AC5.
+- Run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Modelled on ros2 web_ui's SpaStaticFiles (web_ui/server.py:599). Image pushing is container-images-ci.

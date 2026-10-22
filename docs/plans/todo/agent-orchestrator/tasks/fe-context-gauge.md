@@ -37,11 +37,11 @@ provides: []
 
 ## Acceptance conditions
 
-- AC1: renders the rounded percentage and aria-valuenow [evidence: test:frontend/src/ribbon/ContextGauge.test.tsx::renders rounded percentage]
-- AC2: null renders an unknown empty ring [evidence: test:frontend/src/ribbon/ContextGauge.test.tsx::null renders unknown]
-- AC3: values clamp to 0-100 [evidence: test:frontend/src/ribbon/ContextGauge.test.tsx::clamps values]
-- AC4: the auto-compact tick is drawn and the arc warns past it [evidence: test:frontend/src/ribbon/ContextGauge.test.tsx::draws auto compact tick and warns past it]
-- AC5: design rules still hold [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
+- AC1: renders the rounded percentage and aria-valuenow [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/ContextGauge.test.tsx -t 'renders rounded percentage']
+- AC2: null renders an unknown empty ring [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/ContextGauge.test.tsx -t 'null renders unknown']
+- AC3: values clamp to 0-100 [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/ContextGauge.test.tsx -t 'clamps values']
+- AC4: the auto-compact tick is drawn and the arc warns past it [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/ribbon/ContextGauge.test.tsx -t 'draws auto compact tick and warns past it']
+- AC5: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
 
@@ -50,17 +50,19 @@ provides: []
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/ribbon/ContextGauge.tsx:ContextGauge` (contract `context-gauge`)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A reusable gauge for cluster rows (max over agents) and agent rows.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ContextGauge.test.tsx with the four named tests (jsdom). Run it; expect failures.
+- Implement ContextGauge.tsx.
+- Rerun; expect `4 passed`.
+- Run the designRules test and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+ros2 has no determinate CircularProgress (brief-ui section 2), so this component is new. The denominator is the full model window (wrapper `used_percentage`); the tick comes from the cluster's `auto_compact_pct`.

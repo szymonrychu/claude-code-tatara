@@ -51,17 +51,18 @@ The `events` table repository (D5).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.db.events` (contract `events-repo`): `insert_events`, `insert_gap`, `last_seq`, `page`, `Page`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The ingester can store, and the API can page, one merged timeline per cluster.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_events_store.py with the eight named tests; run it; expect failures.
+- Implement db/events.py.
+- Rerun `uv run pytest tests/test_events_store.py -q`; expect `8 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The NOTIFY payload is ids only, never content (design section 1). Index (cluster_id, id DESC) serves the newest page.

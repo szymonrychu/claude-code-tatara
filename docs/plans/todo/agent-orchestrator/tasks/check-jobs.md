@@ -58,17 +58,18 @@ For a deleting cluster, queued checks are cancelled (`cancel_checks`) and its Jo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.reconciler.checks:render_check_job(cluster, check, settings) -> dict`, `run_checks(pool, kube, settings)`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`POST /clusters/{id}/checks` (api-messages-and-commands) results in a Job whose exit code and log tail land in the checks row.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Extend FakeKube with job status and pod logs; write tests/test_checks.py with the five named tests; run it; expect failures.
+- Implement checks.py and call it from the reconcile tick.
+- Rerun `uv run pytest tests/test_checks.py -q`; expect `5 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+RBAC needs batch/jobs create, delete, get, list, watch and pods/log get (D9). Never pods/exec.

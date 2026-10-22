@@ -66,17 +66,19 @@ README.md gains `## Commands`: each command, what it runs, which settings it nee
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.runtime.singleton:advisory_singleton(dsn, name)` (async context manager)
+- `agent_orchestrator.runtime.run:run_service(coro_factory, settings) -> int`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`orch api|dispatcher|ingester|reconciler|migrate` run as the Deployments of the deploy epic.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_entrypoints.py with the six named tests; drive SIGTERM through a subprocess `uv run orch dispatcher` with ORCH_DATABASE_URL pointing at the test container; run it; expect failures.
+- Implement runtime/ and register the commands in cli.py.
+- Rerun `uv run pytest tests/test_entrypoints.py -q`; expect `6 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Advisory lock keys: a stable 64-bit hash of the name. The api process gets no Kubernetes client (D1). Contract agent-orchestrator-settings-env: the deploy epic's chart sets these commands and env.

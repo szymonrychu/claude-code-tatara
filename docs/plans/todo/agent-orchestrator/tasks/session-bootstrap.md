@@ -52,17 +52,18 @@ Session bootstrap and adoption, run by the reconciler after observing pods (D6).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.reconciler.sessions:bootstrap_sessions(pool, cluster, agents, wrapper_factory, tokens) -> list[str]` (status messages)
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After reconcile, each ready agent row has the wrapper session id the ingester and dispatcher need.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_session_bootstrap.py with the six named tests against FakeWrapper and FakeKube; run it; expect failures.
+- Implement sessions.py and call it from Reconciler.reconcile_once.
+- Rerun `uv run pytest tests/test_session_bootstrap.py -q`; expect `6 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Session create is synchronous (returns when ready) and `max_sessions` is 1, so a duplicate create returns 429; adopt first. The reconciler, not the API, calls wrappers here (D1).

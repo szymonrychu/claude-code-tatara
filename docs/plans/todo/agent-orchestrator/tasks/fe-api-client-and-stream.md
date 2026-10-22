@@ -48,10 +48,10 @@ package.json scripts:
 
 ## Acceptance conditions
 
-- AC1: the stream reconnects with exponential backoff capped at 30 s [evidence: test:frontend/src/api/stream.test.ts::reconnects with capped exponential backoff]
-- AC2: the backoff resets after the first received event [evidence: test:frontend/src/api/stream.test.ts::resets backoff after first event]
-- AC3: a reconnect resumes after the last seen event id [evidence: test:frontend/src/api/stream.test.ts::resumes after last event id]
-- AC4: close stops reconnecting [evidence: test:frontend/src/api/stream.test.ts::close stops reconnecting]
+- AC1: the stream reconnects with exponential backoff capped at 30 s [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/api/stream.test.ts -t 'reconnects with capped exponential backoff']
+- AC2: the backoff resets after the first received event [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/api/stream.test.ts -t 'resets backoff after first event']
+- AC3: a reconnect resumes after the last seen event id [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/api/stream.test.ts -t 'resumes after last event id']
+- AC4: close stops reconnecting [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/api/stream.test.ts -t 'close stops reconnecting']
 - AC5: the generated types match openapi.json [evidence: command:cd frontend && npm ci --no-audit --no-fund && npm run check:api]
 
 ## Files
@@ -64,17 +64,20 @@ package.json scripts:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/api/client.ts` (contract `fe-api`): `listClusters`, `getCluster`, `createCluster`, `patchCluster`, `deleteCluster`, `listAgents`, `postMessage`, `listMessages`, `getMessage`, `cancelMessage`, `retryMessage`, `agentCommand`, `pageEvents`, `getMeta`, `ApiError`
+- `frontend/src/api/stream.ts:openStream`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Components call typed functions and subscribe to resumable streams; a server API change without regeneration fails CI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write src/api/stream.test.ts with the four named tests, using a fake EventSource and fake timers. Run `npx vitest run src/api/stream.test.ts`; expect failures.
+- Add the scripts, run `npm run gen:api`, then write client.ts and stream.ts.
+- Rerun; expect `4 passed`.
+- Run `npm run check:api` and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Port the backoff logic from ros2 agent/agentSocket.ts (1-30 s, reset on first frame), retargeted from WebSocket to EventSource. The server's SSE also honours Last-Event-ID, but a manual reconnect after close() has to pass after_id.

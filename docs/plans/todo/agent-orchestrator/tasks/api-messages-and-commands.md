@@ -62,17 +62,18 @@ Checks:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.messages:router`; schemas `PostMessage`, `MessageView`, `CommandView`, `CheckView`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Headless clients and the UI can send, track, cancel and retry messages and drive agents.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_api_messages.py with the eight named tests; run it; expect failures.
+- Implement messages.py and include the router in create_app.
+- Rerun `uv run pytest tests/test_api_messages.py -q`; expect `8 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The API only inserts and cancels queue rows (D3); all other transitions belong to the dispatcher and reconciler.

@@ -59,17 +59,20 @@ Create the Python project at the root of code/agent-orchestrator.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.cli:main(argv: list[str] | None = None) -> int`
+- `agent_orchestrator.cli:register(name: str, func: Callable[[argparse.Namespace], int], help: str, configure: Callable[[argparse.ArgumentParser], None] | None = None) -> None` (contract `orch-cli`; entrypoints-and-singleton and bench-cli register their commands through it).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv run orch --version` prints the version, `mise run lint` and `uv run pytest tests/test_cli.py -q` pass, and CI runs lint and tests.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_cli.py with the three named tests; run `uv run pytest tests/test_cli.py -q`; expect failures (module not found).
+- Write pyproject.toml, mise.toml, the package and cli.py; run `uv lock` and commit uv.lock.
+- Rerun `uv run pytest tests/test_cli.py -q`; expect `3 passed`.
+- Write ci.yaml and README.md; run `mise run lint`; expect `All checks passed!`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The repo, its GitHub origin and the superrepo submodule pointer are created by the orchestrator before the run; this task fills the empty repo. Declare every dependency now so later tasks never touch pyproject.toml or uv.lock (they would collide at merge). Mirror the wrapper's mise task names (code/claude-code-wrapper/mise.toml).

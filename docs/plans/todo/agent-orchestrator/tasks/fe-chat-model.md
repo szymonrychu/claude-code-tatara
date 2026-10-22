@@ -49,13 +49,13 @@ Operations:
 
 ## Acceptance conditions
 
-- AC1: each event type maps to its item kind [evidence: test:frontend/src/chat/chatModel.test.ts::maps event types to item kinds]
-- AC2: tool calls pair with results by tool_use_id [evidence: test:frontend/src/chat/chatModel.test.ts::pairs tool calls with results]
-- AC3: thinking items start collapsed [evidence: test:frontend/src/chat/chatModel.test.ts::thinking starts collapsed]
-- AC4: peer-origin user messages become peer items [evidence: test:frontend/src/chat/chatModel.test.ts::peer origin becomes peer item]
-- AC5: prepend and append dedupe by event id and keep order [evidence: test:frontend/src/chat/chatModel.test.ts::dedupes and orders on prepend and append]
-- AC6: trimWindow keeps the newest items [evidence: test:frontend/src/chat/chatModel.test.ts::trims to newest]
-- AC7: gap rows render as gap items [evidence: test:frontend/src/chat/chatModel.test.ts::gap rows become gap items]
+- AC1: each event type maps to its item kind [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'maps event types to item kinds']
+- AC2: tool calls pair with results by tool_use_id [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'pairs tool calls with results']
+- AC3: thinking items start collapsed [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'thinking starts collapsed']
+- AC4: peer-origin user messages become peer items [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'peer origin becomes peer item']
+- AC5: prepend and append dedupe by event id and keep order [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'dedupes and orders on prepend and append']
+- AC6: trimWindow keeps the newest items [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'trims to newest']
+- AC7: gap rows render as gap items [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/chatModel.test.ts -t 'gap rows become gap items']
 
 ## Files
 
@@ -64,17 +64,19 @@ Operations:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/chat/chatModel.ts` (contract `chat-model`): `ChatItem` union, `ChatState`, `applyEvents`, `prependHistory`, `trimWindow`, `filterByAgents`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chat log renders from one tested model.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write chatModel.test.ts with the seven named tests. Run `npx vitest run src/chat/chatModel.test.ts`; expect failures.
+- Implement chatModel.ts.
+- Rerun; expect `7 passed`.
+- Run `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Adapted from ros2 agent/agentModel.ts (reduceEvent :331, trimWindow :503, prependHistory :519). That file has no thinking kind, so add it here. Event names follow the wrapper README (brief-wrapper section 1) plus `user_message` from epic claude-code-wrapper-orchestr.

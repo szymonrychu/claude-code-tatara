@@ -71,17 +71,19 @@ On disconnect, reconnect with backoff from 1 s doubling to 30 s, reset by a rece
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.ingester.loop:Ingester(pool, settings, wrapper_factory)` with `run(stop)`
+- `agent_orchestrator.db.status`: `upsert_status`, `set_state`, `set_context`, `set_peers`, `upsert_turn`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agent_status, turns and events reflect every agent live; the dispatcher wakes when an agent frees.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_ingester.py with the ten named tests against FakeWrapper and the pool fixture; run it; expect failures.
+- Implement db/status.py and ingester/loop.py.
+- Rerun `uv run pytest tests/test_ingester.py -q`; expect `10 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Event types and the context fields follow the wrapper README of epic claude-code-wrapper-orchestr. Make backoff delays injectable so tests run fast. Never move free_since except on a transition into idle: the dispatcher's reservation rule depends on it.

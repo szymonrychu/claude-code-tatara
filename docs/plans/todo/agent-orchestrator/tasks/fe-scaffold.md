@@ -46,7 +46,7 @@ Sources:
 
 ## Acceptance conditions
 
-- AC1: App renders the application name [evidence: test:frontend/src/App.test.tsx::renders the application name]
+- AC1: App renders the application name [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/App.test.tsx -t 'renders the application name']
 - AC2: lint passes with zero warnings [evidence: command:cd frontend && npm ci --no-audit --no-fund && npm run lint]
 - AC3: the production build succeeds [evidence: command:cd frontend && npm ci --no-audit --no-fund && npm run build]
 - AC4: dependencies are on the current majors [evidence: command:cd frontend && node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDependencies};if(!/^\D*19\./.test(d.react)||!/^\D*9\./.test(d['@mui/material'])||!/^\D*8\./.test(d.vite)||!/^\D*5\./.test(d.vitest)||!/^\D*10\./.test(d.eslint))process.exit(1)"]
@@ -64,17 +64,19 @@ Sources:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/App.tsx:App` (default export), replaced by the shell in fe-shell-and-ribbon
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`npm ci && npm run lint && npm test && npm run build` pass in frontend/.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write src/App.test.tsx. Run `cd frontend && npx vitest run src/App.test.tsx` once package.json exists; expect a failure, since App does not exist.
+- Write App.tsx, main.tsx and the configs.
+- Rerun; expect `1 passed`.
+- Run `npm run lint` and `npm run build`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Copy vite and tsconfig choices from ros2-lerobot-sverve-platform/nodes/web_ui/frontend, upgraded: that project is on ESLint 8 legacy config, Vite 5, MUI 6 and vitest 1 (brief-ui section 4). Do not copy its .eslintrc.cjs.

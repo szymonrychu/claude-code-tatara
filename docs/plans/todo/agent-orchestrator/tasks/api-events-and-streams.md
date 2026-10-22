@@ -67,17 +67,18 @@ Paging:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.streams:router`; `agent_orchestrator.api.listener:Listener` with `subscribe(channel) -> AsyncIterator[dict]`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI and headless clients load the newest page, scroll back, and follow live without polling the wrappers.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_api_streams.py with the eight named tests; insert events with tests/factories.py plus pool.notify; read SSE through a real uvicorn server on a random port, because ASGITransport buffers streams; run it; expect failures.
+- Implement listener.py and streams.py and include the router.
+- Rerun `uv run pytest tests/test_api_streams.py -q`; expect `8 passed`; run `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+FastAPI 0.160 has native SSE (`fastapi.sse.EventSourceResponse`, 15 s ping, sets X-Accel-Buffering). The ingress proxy-read-timeout 3600 is set by the deploy epic.

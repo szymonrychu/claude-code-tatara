@@ -43,12 +43,12 @@ Composer and queue strip (D4, D14).
 
 ## Acceptance conditions
 
-- AC1: Enter sends to any agent and clears the input [evidence: test:frontend/src/chat/Composer.test.tsx::enter sends to any agent]
-- AC2: choosing an agent sends target_agent_id [evidence: test:frontend/src/chat/Composer.test.tsx::sends to chosen agent]
-- AC3: send is disabled for empty text and deleting clusters [evidence: test:frontend/src/chat/Composer.test.tsx::disables send when empty or deleting]
-- AC4: an API error is shown [evidence: test:frontend/src/chat/Composer.test.tsx::shows api error]
-- AC5: the queue strip cancels queued and retries failed messages [evidence: test:frontend/src/chat/Composer.test.tsx::queue strip cancels and retries]
-- AC6: design rules still hold [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
+- AC1: Enter sends to any agent and clears the input [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'enter sends to any agent']
+- AC2: choosing an agent sends target_agent_id [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'sends to chosen agent']
+- AC3: send is disabled for empty text and deleting clusters [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'disables send when empty or deleting']
+- AC4: an API error is shown [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'shows api error']
+- AC5: the queue strip cancels queued and retries failed messages [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/Composer.test.tsx -t 'queue strip cancels and retries']
+- AC6: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
 
@@ -59,17 +59,19 @@ Composer and queue strip (D4, D14).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/chat/Composer.tsx:Composer({cluster, agents})`; `frontend/src/chat/QueueStrip.tsx:QueueStrip({clusterId})`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Messages can be sent round-robin or targeted, and the queue is visible and actionable.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write Composer.test.tsx with the five named tests (jsdom, user-event, mocked client). Run it; expect failures.
+- Implement Composer, QueueStrip and the ChatView wiring.
+- Rerun; expect `5 passed`.
+- Run the designRules test and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The ros2 composer is tabs/AgentChatTab.tsx:110-126. No automatic retry happens (D4): Retry is the only re-send path.

@@ -52,13 +52,13 @@ The chat view (D14).
 
 ## Acceptance conditions
 
-- AC1: opening a cluster loads the newest page and renders it [evidence: test:frontend/src/chat/ChatLog.test.tsx::loads newest page on open]
-- AC2: reaching the top loads the older page before the oldest id [evidence: test:frontend/src/chat/ChatLog.test.tsx::loads older page on start reached]
-- AC3: live stream events append to the log [evidence: test:frontend/src/chat/ChatLog.test.tsx::appends live events]
-- AC4: switching clusters drops stale responses [evidence: test:frontend/src/chat/ChatLog.test.tsx::drops stale responses after switch]
-- AC5: tool and thinking entries expand on click [evidence: test:frontend/src/chat/ChatLog.test.tsx::expands tool and thinking entries]
-- AC6: agent filter chips hide other agents' rows [evidence: test:frontend/src/chat/ChatLog.test.tsx::filters by agent]
-- AC7: design rules still hold [evidence: test:frontend/src/layout/designRules.test.ts::source files follow the design rules]
+- AC1: opening a cluster loads the newest page and renders it [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'loads newest page on open']
+- AC2: reaching the top loads the older page before the oldest id [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'loads older page on start reached']
+- AC3: live stream events append to the log [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'appends live events']
+- AC4: switching clusters drops stale responses [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'drops stale responses after switch']
+- AC5: tool and thinking entries expand on click [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'expands tool and thinking entries']
+- AC6: agent filter chips hide other agents' rows [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/chat/ChatLog.test.tsx -t 'filters by agent']
+- AC7: design rules still hold [evidence: command:cd frontend && (test -d node_modules || npm ci --no-audit --no-fund) && npx vitest run src/layout/designRules.test.ts -t 'source files follow the design rules']
 
 ## Files
 
@@ -72,17 +72,20 @@ The chat view (D14).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/chat/useClusterChat.ts:useClusterChat(clusterId) -> {items, loadOlder, hasMoreBefore, loading}`
+- `frontend/src/chat/ChatView.tsx:ChatView({cluster, agents})`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Selecting a cluster shows its merged agent activity, newest first in view, older on scroll, live as it happens.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ChatLog.test.tsx with the six named tests (jsdom, mocked client and stream; mock Virtuoso's measurement or render with `initialItemCount`). Run it; expect failures.
+- Implement the files.
+- Rerun; expect `6 passed`.
+- Run the designRules test and `npm run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Port the Virtuoso configuration of ros2 agent/ChatLog.tsx:281-300 and ToolEntry :60-119. Adapt the epoch guard from useAgentChat.ts.
