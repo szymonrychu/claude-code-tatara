@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Merge the template's tooling into this workbench without its own docs (init_engine update)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/init_engine/cli.py update "$@"

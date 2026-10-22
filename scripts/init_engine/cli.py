@@ -13,7 +13,8 @@ import component  # noqa: E402
 import finalize  # noqa: E402
 import project_files  # noqa: E402
 import scaffold  # noqa: E402
-from gitops import Refusal, git  # noqa: E402
+import update  # noqa: E402
+from gitops import DEFAULT_TEMPLATE_URL, Refusal, git  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -159,7 +160,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
     agents = root / "AGENTS.md"
     if not agents.is_file() or project_files.UNINIT_RE.search(agents.read_text()):
         raise Refusal("this workbench is not initialised; run init (new or adopt) first")
-    project_files.write_all(root, method="init:refresh")
+    project_files.write_all(root, method="init:refresh", event=args.event)
     proc = subprocess.run(
         [sys.executable, str(root / "scripts" / "harness" / "setup.py"), "--root", str(root)],
         capture_output=True,
@@ -206,7 +207,17 @@ def build_parser() -> argparse.ArgumentParser:
     add_finalize_flags(a)
     a.set_defaults(func=cmd_adopt)
     rf = sub.add_parser("refresh", help="re-run the writers after merging a template update")
+    rf.add_argument("--event", help=argparse.SUPPRESS)
     rf.set_defaults(func=cmd_refresh)
+    u = sub.add_parser("update", help="merge template tooling into this workbench, minus its docs")
+    u.add_argument(
+        "--url",
+        default=DEFAULT_TEMPLATE_URL,
+        help="template URL, used only when no template remote exists",
+    )
+    u.add_argument("--branch", default="main", help="template branch (default main)")
+    u.add_argument("--lint-command", default="mise run lint", help=argparse.SUPPRESS)
+    u.set_defaults(func=update.cmd_update)
     c = sub.add_parser("component", help="add or remove a component after init")
     csub = c.add_subparsers(dest="action", required=True)
     ca = csub.add_parser("add", help="add a new scaffolded component or adopt one")

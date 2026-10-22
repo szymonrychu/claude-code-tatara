@@ -9,6 +9,8 @@ TEMPLATE_URL_RE = re.compile(
     re.IGNORECASE,
 )
 
+DEFAULT_TEMPLATE_URL = "https://github.com/szymonrychu/workbench"
+
 
 class Refusal(Exception):
     """A condition the engine refuses to proceed on; the message is one line.
