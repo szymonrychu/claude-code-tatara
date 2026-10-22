@@ -210,8 +210,8 @@ def verify(data: dict, *, runner=None, meta: dict | None = None) -> dict:
         parts.append(
             "PARKING: these are lines added in a change (comments, docs, strings). Return in "
             "`parking` only those that defer, park or postpone work (promises of later work, "
-            "unhandled cases, scope disclaimers, temporary workarounds to revisit). Ordinary explanation "
-            "is not parking. Give the index and a short reason.\n"
+            "unhandled cases, scope disclaimers, temporary workarounds to revisit). Ordinary "
+            "explanation is not parking. Give the index and a short reason.\n"
             + json.dumps(
                 [
                     {"index": i, "file": x["file"], "line": x["line"], "text": x["text"]}
