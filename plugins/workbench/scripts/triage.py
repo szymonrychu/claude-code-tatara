@@ -39,7 +39,8 @@ GENERIC_TOKENS = {"test", "tests", "py", "js", "mjs", "sh", "the", "and", "for",
 
 def _ask(prompt: str, schema: dict, runner, meta: dict):
     """One haiku call; fills meta {model, ms, usage}; raises ClaudeJsonError."""
-    data, m = claude_json.call_with_meta(prompt, schema, model=MODEL, runner=runner)
+    kw = {} if meta.get("timeout") is None else {"timeout": meta["timeout"]}
+    data, m = claude_json.call_with_meta(prompt, schema, model=MODEL, runner=runner, **kw)
     meta.update(model=m["model"], ms=m["ms"], usage=m["usage"])
     return data
 
@@ -351,11 +352,21 @@ _FUNCS = {
 }
 
 
-def run(mode: str, data, *, runner=None, log: str | None = None, usage: dict | None = None):
+def run(
+    mode: str,
+    data,
+    *,
+    runner=None,
+    log: str | None = None,
+    usage: dict | None = None,
+    timeout: float | None = None,
+):
     """Run one mode, append one log line when `log` is given, return the output.
 
+    `timeout` caps each model call in seconds (default: claude_json's own).
+
     `usage` ({calls, input_tokens, output_tokens}) accumulates the cost of the call, if one ran."""
-    meta: dict = {}
+    meta: dict = {} if timeout is None else {"timeout": timeout}
     output = _FUNCS[mode](data, runner=runner, meta=meta)
     if usage is not None and meta.get("usage") is not None:
         usage["calls"] += 1

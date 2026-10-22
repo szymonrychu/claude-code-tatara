@@ -75,9 +75,9 @@ test('a clean remediation is merged into its same-repo dependents, dependencies 
     assert.ok(c.prompt.includes('Do not resolve a conflict by discarding either side; report it'))
     assert.ok(c.prompt.includes('at most 150 words'))
   }
-  assert.ok(m[0].prompt.includes('else echo "/wt/T2"; fi)') && m[0].prompt.includes('git merge --no-edit b-T1-r1'))
+  assert.ok(m[0].prompt.includes("else echo '/wt/T2'; fi)") && m[0].prompt.includes('git merge --no-edit b-T1-r1'))
   assert.ok(m[0].prompt.includes('pytest tests/test_T2.py'))
-  assert.ok(m[1].prompt.includes('else echo "/wt/T3"; fi)') && m[1].prompt.includes('git merge --no-edit b-T1-r1'))
+  assert.ok(m[1].prompt.includes("else echo '/wt/T3'; fi)") && m[1].prompt.includes('git merge --no-edit b-T1-r1'))
   assert.ok(m[1].prompt.includes('pytest tests/test_T3.py'))
   // after the remediation, before the re-audit
   const idx = (label) => r.calls.findIndex((c) => c.opts.label === label)
@@ -178,7 +178,8 @@ test('the merge prompt installs missing dependencies before the command', async 
 const EPIC = { name: 'epic-x', epic: 'epic-x', baseRef: 'epic-x', mainCheckout: '/repo', audit: 'run' }
 const ltask = (id, extra = {}) => task(id, { worktree: `/wt/epic-x-${id}`, short: id, ...extra })
 const lverification = { command: 'pytest', passed: true, evidence: '3 passed' }
-const landedOk = { landed: true, head: 'lh', base: 'base1', conflict: false, verification: lverification, notes: '' }
+const bx = (a, b) => 'ba5e' + Buffer.from(`${a}${b}`).toString('hex')
+const landedOk = { landed: true, head: 'lh', base: 'ba5e001', conflict: false, verification: lverification, notes: '' }
 
 function landAgent({ land = () => landedOk, merge = () => okMerge } = {}) {
   let audits = 0
@@ -274,12 +275,12 @@ test('forward-merge-dependent-already-in-epic-not-land-failed', async () => {
 
 test('forward-merge-reverify-diffs-from-fork-point', async () => {
   const root = (short) => short.replace(/-r1$/, '')
-  const agent = landAgent({ land: (short) => ({ ...landedOk, base: `base-${root(short)}-${short}` }) })
+  const agent = landAgent({ land: (short) => ({ ...landedOk, base: bx(root(short), short) }) })
   const r = await lrun(lchain(), agent)
-  assert.equal(r.result.tasks.find((t) => t.id === 'b').forkPoint, 'base-b-b')
-  assert.equal(r.result.tasks.find((t) => t.id === 'a').forkPoint, 'base-a-a-r1')
-  assert.ok(ofRole(r, 'merge')[0].prompt.includes('git diff base-b-b..HEAD'))
-  assert.ok(r.result.landed.filter((l) => l.id === 'b').every((l) => l.forkPoint === 'base-b-b'), JSON.stringify(r.result.landed))
+  assert.equal(r.result.tasks.find((t) => t.id === 'b').forkPoint, bx('b', 'b'))
+  assert.equal(r.result.tasks.find((t) => t.id === 'a').forkPoint, bx('a', 'a-r1'))
+  assert.ok(ofRole(r, 'merge')[0].prompt.includes(`git diff ${bx('b', 'b')}..HEAD`))
+  assert.ok(r.result.landed.filter((l) => l.id === 'b').every((l) => l.forkPoint === bx('b', 'b')), JSON.stringify(r.result.landed))
 })
 
 test('forward-merge-unchanged-without-landing', async () => {

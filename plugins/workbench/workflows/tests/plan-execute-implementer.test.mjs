@@ -141,7 +141,7 @@ test('prompts carry only per-call inputs', async () => {
   const [fix] = ofRole(r, 'fix')
   const both = [
     '/wt/T1',
-    'cd "$(if [ -d "/wt/T1/api" ]',
+    'cd "$(if [ -d \'/wt/T1/api\' ]',
     'T1',
     'What: a plugin',
     'Value of this task: worth it',

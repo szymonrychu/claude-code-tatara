@@ -79,10 +79,10 @@ test('one verifier runs after a clean implementation, with the full prompt', asy
   assert.equal(v[0].opts.model, 'haiku')
   assert.equal(v[0].opts.effort, 'low')
   for (const s of [
-    'else echo "/wt/T1"; fi)',
+    "else echo '/wt/T1'; fi)",
     "python3 '/opt/test-plugin/scripts/verify-task.py'",
     '--worktree',
-    '--base main',
+    "--base 'main'",
     "--cmd 'pytest -q tests/test_T1.py && ruff check'",
     '--install',
     'Do not edit, commit, stash, reset or switch branches',
@@ -107,8 +107,8 @@ test('without t.verify the verifier runs verify-task --targeted, never the imple
 test('args.baseRef replaces main in the merge-base command', async () => {
   const r = await run({ baseRef: 'develop', tasks: [task('T1')] }, fakeAgent())
   const p = ofRole(r, 'verify')[0].prompt
-  assert.ok(p.includes('--base develop'))
-  assert.ok(!p.includes('--base main'))
+  assert.ok(p.includes("--base 'develop'"))
+  assert.ok(!p.includes("--base 'main'"))
 })
 
 test('the task result carries the verifier result and the implementer self-report', async () => {
@@ -425,8 +425,8 @@ test('verify-and-review-use-epic-base-ref', async () => {
   })
   assert.equal(r.error, undefined)
   const v = ofRole(r, 'verify')[0].prompt
-  assert.ok(v.includes('--base epic-x '), v)
-  assert.ok(!v.includes('--base main'), v)
+  assert.ok(v.includes("--base 'epic-x' "), v)
+  assert.ok(!v.includes("--base 'main'"), v)
   const rev = ofRole(r, 'review')[0].prompt
   assert.ok(rev.includes('git diff $(git merge-base HEAD epic-x)..HEAD'), rev)
   assert.ok(!rev.includes('merge-base HEAD main'), rev)

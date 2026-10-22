@@ -25,6 +25,7 @@ import shlex
 import signal
 import subprocess
 import sys
+import time
 import tokenize
 from pathlib import Path
 
@@ -46,9 +47,38 @@ SLASH_COMMENT = re.compile(r"(?://|^\s*/\*+|^\s*\*(?!/))\s*(.*)")
 # ---- process helpers ----
 
 
-DEFAULT_TIMEOUT = 480
+DEFAULT_TIMEOUT = 540
 TIMEOUT_EXIT = 124
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+
+class Deadline:
+    """One wall-clock budget shared by every command a call runs, from construction on."""
+
+    def __init__(self, seconds: float):
+        self.seconds = seconds
+        self.end = time.monotonic() + seconds
+        self.skipped: list = []
+
+    def remaining(self) -> float:
+        return max(0.0, self.end - time.monotonic())
+
+
+def _left(t):
+    """Seconds a command may still run: the deadline's remainder, or a plain number as given."""
+    return t.remaining() if isinstance(t, Deadline) else t
+
+
+def _secs(t):
+    return t.seconds if isinstance(t, Deadline) else t
+
+
+def _expired(t, step: str) -> bool:
+    """True (and `step` recorded in t.skipped) when the shared deadline is already spent."""
+    if isinstance(t, Deadline) and t.remaining() <= 0:
+        t.skipped.append(step)
+        return True
+    return False
 
 
 class Output(str):
@@ -169,10 +199,12 @@ def install_deps(cwd: str, extra_roots: list = (), timeout: float | None = None)
     out = []
     for root, strict in [(Path(cwd), False), *[(Path(r), True) for r in extra_roots]]:
         for c in _install_cmds(root, strict):
-            code = run_argv(c, str(root), timeout)
+            if _expired(timeout, "install: " + " ".join(c)):
+                continue
+            code = run_argv(c, str(root), _left(timeout))
             out.append({"cmd": " ".join(c), "exit": code})
             if code == TIMEOUT_EXIT:
-                out[-1]["timeout"] = {"command": " ".join(c), "seconds": timeout}
+                out[-1]["timeout"] = {"command": " ".join(c), "seconds": _secs(timeout)}
         if _uv_unlocked(Path(root)):
             why = f"no uv.lock in {root}: nothing to sync reproducibly"
             out.append({"cmd": "uv sync --frozen", "skipped": why})
@@ -538,8 +570,10 @@ def check_ac(
                 "add or rename a test to exactly this name and file"
                 + (f" ({problem})" if problem else ""),
             )
+        elif runner and _expired(timeout, f"ac {ac['id']}: {_runner_cmd(runner['argv'])}"):
+            res["how"] = "skipped: shared deadline reached"
         elif runner:
-            code = run_argv(runner["argv"], runner["cwd"], timeout)
+            code = run_argv(runner["argv"], runner["cwd"], _left(timeout))
             where = os.path.relpath(runner["cwd"], Path(cwd).resolve())
             cmd = _runner_cmd(runner["argv"])
             res.update(
@@ -548,7 +582,7 @@ def check_ac(
                 + (f" ({problem})" if problem else ""),
             )
             if code == TIMEOUT_EXIT:
-                res["timeout"] = {"command": cmd, "seconds": timeout}
+                res["timeout"] = {"command": cmd, "seconds": _secs(timeout)}
         else:
             res["how"] = (
                 f"ref not in command output and no runner for {rpath}: "
@@ -577,9 +611,12 @@ def check_ac(
         if not res["met"]:
             res["how"] = "not found in any file the diff adds or changes"
     elif kind == "command":
-        code, out = run_shell(ref, cwd, timeout)
+        if _expired(timeout, f"ac {ac['id']}: {ref}"):
+            res["how"] = "skipped: shared deadline reached"
+            return res
+        code, out = run_shell(ref, cwd, _left(timeout))
         if out.timed_out:
-            res["timeout"] = {"command": ref, "seconds": timeout}
+            res["timeout"] = {"command": ref, "seconds": _secs(timeout)}
         res.update(
             met=code == 0,
             how=f"ran {ref} verbatim: whole command exit {code}",
@@ -760,7 +797,7 @@ def tdd_revert(
         "baseCommand": base_command,
     }
     res["files"] = sorted(c["file"] for c in changes)
-    if not changes:
+    if not changes or _expired(timeout, f"tdd-revert: {base_command}"):
         return res
     modes = _head_modes(cwd)
     made: list = []
@@ -770,10 +807,10 @@ def tdd_revert(
                 Path(cwd, c["file"]).unlink(missing_ok=True)
             else:
                 _put(cwd, base, c["file"], None, made)
-        code, out = run_shell(base_command, cwd, timeout)
+        code, out = run_shell(base_command, cwd, _left(timeout))
         res["failedOnBase"] = code != 0
         if out.timed_out:
-            res["timeout"] = {"command": base_command, "seconds": timeout}
+            res["timeout"] = {"command": base_command, "seconds": _secs(timeout)}
         _restore(cwd, changes, modes, made)
         res["passedOnHead"] = head_exit == 0
         res["ran"] = True
@@ -801,7 +838,10 @@ def build(argv: list, triage_run=None) -> tuple:
         "--timeout",
         type=float,
         default=DEFAULT_TIMEOUT,
-        help=f"seconds each command may run before its process group is killed ({DEFAULT_TIMEOUT})",
+        help="one shared deadline in seconds, measured from the start of the call, across "
+        "the main run, AC ref runs, the tdd-revert base run and triage; the running "
+        "command's process group is killed when it is reached and later steps are listed "
+        f"in `skipped` ({DEFAULT_TIMEOUT})",
     )
     ap.add_argument("--base", required=True, help="ref whose merge-base with HEAD is the base")
     ap.add_argument("--markers", required=True, help="comma-separated debt markers")
@@ -832,21 +872,22 @@ def build(argv: list, triage_run=None) -> tuple:
         test_re = re.compile(args.test_re)
     except re.error as e:
         ap.error(f"--test-re: {e}")
+    deadline = Deadline(args.timeout)
     cwd = str(Path(args.worktree).resolve())
     usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}
     if not args.no_triage and triage_run is None:
         import triage
 
         def triage_run(mode, data):
-            return triage.run(mode, data, log=args.triage_log, usage=usage)
+            return triage.run(
+                mode, data, log=args.triage_log, usage=usage, timeout=deadline.remaining()
+            )
 
     notes = ["triage skipped (--no-triage)"] if args.no_triage else []
 
     clean_before = is_clean(cwd)
     specs = json.loads(Path(args.acs).read_text()) if args.acs else []
-    installed = (
-        install_deps(cwd, ref_package_roots(cwd, specs), args.timeout) if args.install else []
-    )
+    installed = install_deps(cwd, ref_package_roots(cwd, specs), deadline) if args.install else []
     base = git(cwd, "merge-base", "HEAD", args.base).strip()
     changed = name_status(cwd, base)
     prune_deleted_dirs(cwd, changed)
@@ -860,12 +901,14 @@ def build(argv: list, triage_run=None) -> tuple:
             "passed": False,
             "error": "no targeted tests",
         }
-    code, output = run_shell(command, cwd, args.timeout)
-    timeout = (
-        {"command": command, "seconds": args.timeout}
-        if getattr(output, "timed_out", False)
-        else None
-    )
+    timeout = None
+    if _expired(deadline, f"verify: {command}"):
+        code, output = TIMEOUT_EXIT, Output("")
+        timeout = {"command": command, "seconds": args.timeout}
+    else:
+        code, output = run_shell(command, cwd, deadline.remaining())
+        if getattr(output, "timed_out", False):
+            timeout = {"command": command, "seconds": args.timeout}
     lines = added_lines(cwd, base)
     stat = diffstat(cwd, base, test_re)
 
@@ -886,7 +929,7 @@ def build(argv: list, triage_run=None) -> tuple:
     if args.acs:
         texts = {a["id"]: a.get("text", "") for a in specs}
         ace = json.loads(Path(args.ac_evidence).read_text()) if args.ac_evidence else {}
-        acs = [check_ac(cwd, a, output, changed, args.timeout, ace) for a in specs]
+        acs = [check_ac(cwd, a, output, changed, deadline, ace) for a in specs]
         diff_text = "\n".join(f"{x['file']}:{x['line']}: {x['text']}" for x in lines)
         if not args.no_triage:
             asks = plausibility_asks(acs, texts, diff_text)
@@ -900,7 +943,9 @@ def build(argv: list, triage_run=None) -> tuple:
         }
 
     parking, tier, got = [], None, None
-    if parts:
+    if parts and _expired(deadline, "triage"):
+        notes.append("triage skipped: shared deadline reached")
+    elif parts:
         try:
             res = triage_run("verify", parts)
             if res.get("error"):
@@ -918,16 +963,21 @@ def build(argv: list, triage_run=None) -> tuple:
     tdd = None
     if args.tdd_revert:
         base_command = " && ".join(runner_commands(cwd, _spec_test_files(specs), changed))
-        tdd = tdd_revert(cwd, base, base_command or command, test_re, code, args.timeout)
+        tdd = tdd_revert(cwd, base, base_command or command, test_re, code, deadline)
     if tdd and tdd.get("error"):
         notes.append(f"tdd-revert error: {tdd['error']}")
+    timeout = (
+        timeout
+        or next((a["timeout"] for a in acs if a.get("timeout")), None)
+        or (tdd or {}).get("timeout")
+    )
     result = {
         "head": git(cwd, "rev-parse", "HEAD").strip(),
         "clean": clean_before and is_clean(cwd),
         "command": command,
         "commandScope": "targeted" if targeted else "command",
         "exit": code,
-        "passed": code == 0,
+        "passed": code == 0 and timeout is None and not deadline.skipped,
         "evidence": "\n".join(output.splitlines()[-40:]),
         "installed": installed,
         "debtMarkers": find_debt(scan, args.markers, test_re),
@@ -941,6 +991,7 @@ def build(argv: list, triage_run=None) -> tuple:
         "triageUsage": usage,
         "tdd": tdd,
         "timeout": timeout,
+        "skipped": deadline.skipped,
         "note": "; ".join(notes),
     }
     return 0, result
