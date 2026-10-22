@@ -1,6 +1,6 @@
 ---
 title: HTTP transport
-status: todo
+status: in-progress
 repo: any-mcp
 value: "any-mcp also serves streamable HTTP, safe by default and never relaying credentials"
 files: [src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, tests/test_http_transport.py]

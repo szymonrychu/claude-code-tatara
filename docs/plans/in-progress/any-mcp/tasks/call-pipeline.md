@@ -1,6 +1,6 @@
 ---
 title: Call pipeline
-status: todo
+status: in-progress
 repo: any-mcp
 value: Every tool call is validated and every failure is an error result the model can read
 files: [src/any_mcp/pipeline.py, tests/test_pipeline.py]

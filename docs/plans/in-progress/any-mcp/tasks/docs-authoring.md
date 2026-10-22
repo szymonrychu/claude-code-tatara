@@ -1,6 +1,6 @@
 ---
 title: Docs authoring
-status: todo
+status: in-progress
 repo: any-mcp
 value: A plugin authoring guide from small to big plugins whose samples are the tested examples
 files: [docs/plugin-authoring.md, docs/testing-plugins.md, tests/test_docs_snippets.py]

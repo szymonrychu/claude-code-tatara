@@ -1,6 +1,6 @@
 ---
 title: Testing harness
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Plugin authors test a plugin in memory, offline, through the real server"
 files: [src/any_mcp/testing.py, tests/test_testing_harness.py]

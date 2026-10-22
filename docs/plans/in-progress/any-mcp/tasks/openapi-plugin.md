@@ -1,6 +1,6 @@
 ---
 title: OpenAPI plugin
-status: todo
+status: in-progress
 repo: any-mcp
 value: Any OpenAPI 3 API becomes a curated set of tools with config only
 files: [src/any_mcp/openapi.py, tests/test_openapi.py, tests/fixtures/openapi/petstore.yaml, tests/fixtures/openapi/recursive.json]

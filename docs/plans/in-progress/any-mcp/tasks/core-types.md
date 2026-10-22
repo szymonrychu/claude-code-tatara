@@ -1,6 +1,6 @@
 ---
 title: Core types
-status: todo
+status: in-progress
 repo: any-mcp
 value: "One shared vocabulary of tool, call, response and error types for core and plugins"
 files: [src/any_mcp/types.py, src/any_mcp/errors.py, tests/test_types.py]

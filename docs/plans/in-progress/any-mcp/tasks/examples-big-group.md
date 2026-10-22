@@ -1,6 +1,6 @@
 ---
 title: Examples big group
-status: todo
+status: in-progress
 repo: any-mcp
 value: A runnable packaged OpenAPI plugin and a group-of-APIs config users can copy
 files: [examples/petstore/pyproject.toml, examples/petstore/src/petstore_plugin/__init__.py, examples/petstore/src/petstore_plugin/petstore.yaml, examples/petstore/any-mcp.yaml, examples/group/any-mcp.yaml, tests/test_examples_big.py]

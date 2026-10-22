@@ -1,6 +1,6 @@
 ---
 title: Docs reference
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Every config key, flag and transport behaviour has one documented meaning"
 files: [docs/configuration.md, docs/transports.md, tests/test_docs_reference.py]

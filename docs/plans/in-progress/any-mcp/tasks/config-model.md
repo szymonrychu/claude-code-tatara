@@ -1,6 +1,6 @@
 ---
 title: Config model
-status: todo
+status: in-progress
 repo: any-mcp
 value: "One validated YAML file configures the server and every plugin, with clear errors"
 files: [src/any_mcp/config.py, tests/test_config.py]

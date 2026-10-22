@@ -1,6 +1,6 @@
 ---
 title: Scaffold
-status: todo
+status: in-progress
 repo: any-mcp
 value: "A working any-mcp repo with locked deps, lint, tests and CI from the first commit"
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yml, src/any_mcp/__init__.py, tests/test_package.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: Examples small medium
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Runnable, tested small and medium plugins users can copy"
 files: [examples/hello/hello.py, examples/hello/any-mcp.yaml, examples/single_endpoint/zippopotam.py, examples/single_endpoint/any-mcp.yaml, examples/github_issues/github_issues.py, examples/github_issues/any-mcp.yaml, tests/test_examples_small.py]

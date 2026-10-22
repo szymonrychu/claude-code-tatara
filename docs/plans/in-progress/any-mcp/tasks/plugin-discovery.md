@@ -1,6 +1,6 @@
 ---
 title: Plugin discovery
-status: todo
+status: in-progress
 repo: any-mcp
 value: Plugins load from installed packages or plain files named in the config
 files: [src/any_mcp/discovery.py, tests/test_discovery.py]

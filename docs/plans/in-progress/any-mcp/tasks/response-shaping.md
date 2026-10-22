@@ -1,6 +1,6 @@
 ---
 title: Response shaping
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Every API response becomes a predictable, size-bounded MCP result without plugin code"
 files: [src/any_mcp/response.py, tests/test_response.py]

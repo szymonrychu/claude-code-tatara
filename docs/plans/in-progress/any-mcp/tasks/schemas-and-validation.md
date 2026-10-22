@@ -1,6 +1,6 @@
 ---
 title: Schemas and validation
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Client-safe tool names and schemas, and no unvalidated argument ever reaches a plugin"
 files: [src/any_mcp/schema.py, src/any_mcp/validation.py, tests/test_schema.py]

@@ -1,6 +1,6 @@
 ---
 title: Input-required core
-status: todo
+status: in-progress
 repo: any-mcp
 value: "A plugin can ask the client for more input mid-call with one optional hook, and plugins that ignore it are unchanged"
 files: [src/any_mcp/types.py, src/any_mcp/plugin.py, src/any_mcp/pipeline.py, src/any_mcp/__init__.py, tests/test_input_required.py]

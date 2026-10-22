@@ -1,6 +1,6 @@
 ---
 title: FastMCP adapter
-status: todo
+status: in-progress
 repo: any-mcp
 value: MCP clients of both protocol eras see the tools while plugins stay free of FastMCP
 files: [src/any_mcp/_fastmcp_adapter.py, tests/test_adapter.py, tests/test_import_boundary.py]

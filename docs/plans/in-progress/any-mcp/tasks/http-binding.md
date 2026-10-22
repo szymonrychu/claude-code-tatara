@@ -1,6 +1,6 @@
 ---
 title: HTTP binding
-status: todo
+status: in-progress
 repo: any-mcp
 value: Plugins describe an endpoint declaratively and write no HTTP code
 files: [src/any_mcp/http.py, tests/test_http_binding.py]

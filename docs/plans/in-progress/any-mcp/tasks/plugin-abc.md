@@ -1,6 +1,6 @@
 ---
 title: Plugin ABC
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Writing a plugin is one class with one method; every other hook has a working default"
 files: [src/any_mcp/plugin.py, src/any_mcp/context.py, src/any_mcp/__init__.py, tests/test_plugin.py]

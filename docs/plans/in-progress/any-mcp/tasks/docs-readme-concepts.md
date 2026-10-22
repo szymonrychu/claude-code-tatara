@@ -1,6 +1,6 @@
 ---
 title: Docs README concepts
-status: todo
+status: in-progress
 repo: any-mcp
 value: "A README that installs and runs any-mcp in a minute, and a concepts guide"
 files: [README.md, docs/concepts.md, tests/test_docs_links.py]

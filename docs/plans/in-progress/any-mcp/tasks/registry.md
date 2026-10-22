@@ -1,6 +1,6 @@
 ---
 title: Registry
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Many plugins appear as one sorted, collision-free tool list that reloads safely"
 files: [src/any_mcp/registry.py, tests/test_registry.py]
