@@ -339,3 +339,10 @@ def test_clear_template_history_derives_from_owned_list(tmp_path, monkeypatch):
     assert not (tmp_path / "b.txt").exists() and not (tmp_path / "c").exists()
     assert (tmp_path / "keep.md").read_text() == "k"
     assert (tmp_path / "docs/research/r.md").exists()
+
+
+def test_license_missing_refuses_on_first_run(workbench, run_cli, allow_file):
+    (workbench / "LICENSE").unlink()
+    r = run_cli(*NEW, "--license-holder", "Acme")
+    assert r.returncode == 1
+    assert "LICENSE is missing" in r.stderr

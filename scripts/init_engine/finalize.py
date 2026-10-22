@@ -174,7 +174,7 @@ def license_file(root: Path, opts: Options, first: bool) -> None:
         return
     if opts.license == "none":
         root_license.unlink(missing_ok=True)
-    elif opts.license == "mit" and not root_license.is_file():
+    elif (opts.license == "mit" or (first and opts.license is None)) and not root_license.is_file():
         raise Refusal("LICENSE is missing; cannot keep MIT")
     if opts.license == "mit" or (first and opts.license in (None, "none")):
         holder = opts.license_holder or default_holder(root)
