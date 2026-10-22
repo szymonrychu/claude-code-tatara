@@ -41,6 +41,11 @@ Estimate: 63 agent-min | Critical path: 41 min | Expected wall at P=1.5: 1.4 h (
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 
+Verdict: pass (2026-10-23)
+
+Whole-diff review (sonnet): all ACs met; acted on statusline absolute command (medium) and statusline numeric validation (medium). Security pass: no critical/high; acted on history scan off the event loop with a bounded read, statusline input validation + body cap, hook token stripped from the chained statusline command, README trust-model note on user_message content; dropped onStart full-env (operator-configured, matches preJoin/postJoin). Scope audit: every approval item A1-A8 landed. Full suite on the epic tip: 1594 passed, lint clean.
+Rulings: idle-since land-failed was suite-lock contention (accepted, verified 9961bc9; process gap: tests after code); vocabulary-pins gate-repeat was a stale pytest .pyc (hand-verified 31 passed on 4d1989e).
+
 ## Delivery notes
 
 Another Claude session (claude-code-wrapper-58) actively develops code/claude-code-wrapper from a different clone. Before the PR, rebase this branch onto origin/main and re-run the six targeted verifies; README.md and events.py/router.py are the likely conflict points.
