@@ -22,19 +22,23 @@ def forward_merged(repo):
     commit(repo, {"own.py": "x = 1  # TODO own debt\n"})
 
 
-def test_exclude_ref_drops_dependency_text_from_debt_and_parking(repo):
+def test_without_exclude_ref_dependency_lines_are_gated(repo):
     forward_merged(repo)
-    tri = Triage()
-    plain = verify(repo, "true", "--no-tier", triage=tri)
+    plain = verify(repo, "true", "--no-tier", triage=Triage())
     assert {d["file"] for d in plain["debtMarkers"]} == {"AGENTS.md", "own.py"}
     assert [p["file"] for p in plain["parking"]] == ["AGENTS.md"]
+    assert plain["excludedByRef"] == 0
+
+
+def test_dependency_lines_are_not_gated_with_exclude_ref(repo):
+    forward_merged(repo)
     got = verify(repo, "true", "--no-tier", "--exclude-ref", "dep", triage=Triage())
     assert [d["file"] for d in got["debtMarkers"]] == ["own.py"]
     assert got["parking"] == []
     assert got["excludedByRef"] == 3
 
 
-def test_a_line_the_dependent_adds_is_still_gated(repo):
+def test_own_debt_is_still_reported(repo):
     forward_merged(repo)
     commit(repo, {"AGENTS.md": f"# a\n{DEP_TODO}\nlater we split this\nTODO new\n"})
     got = verify(repo, "true", "--no-triage", "--exclude-ref", "dep")

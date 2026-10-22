@@ -45,7 +45,7 @@ async function run(args, tasks) {
 }
 const verifyPrompts = (r, id) => r.calls.filter((c) => c.opts.label.split(':')[1] === 'verify' && c.opts.label.includes(`:${id}`)).map((c) => c.prompt)
 
-test('verify-prompt-excludes-merged-dependency-branches', async () => {
+test('non-epic-verify-excludes-dependency-branches', async () => {
   const r = await run({}, [task('a'), task('x'), task('b', { dependsOn: ['a', 'x'] }), task('c', { repo: 'web', dependsOn: ['a'] })])
   assert.equal(r.error, undefined)
   const [pb] = verifyPrompts(r, 'b')
@@ -57,7 +57,7 @@ test('verify-prompt-excludes-merged-dependency-branches', async () => {
   assert.ok(!pc.includes('--exclude-ref'), 'a dependency in another repo is not merged into this tree')
 })
 
-test('epic-run-adds-no-exclude-ref', async () => {
+test('epic-verify-passes-no-exclude-ref', async () => {
   const r = await run({ name: 'epic-x', epic: 'epic-x', baseRef: 'epic-x', mainCheckout: '/main' }, [task('a', { worktree: '/wt/epic-x-a' }), task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })])
   assert.equal(r.error, undefined)
   const [pb] = verifyPrompts(r, 'b')
