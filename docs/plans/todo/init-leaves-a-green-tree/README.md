@@ -12,7 +12,7 @@ created: 2026-10-22
 ## Project brief
 
 What: Fix the six init defects in FEEDBACK.md so init and component add leave lint and test green
-How: Project-owned personal allow file written by init, gitlink-free secrets scan, all-LICENSE holder rewrite, a template pytest marker skipped after init, skill text fixes, then template-update claude-code-tatara
+How: Project-owned personal allow file written by init, gitlink-free secrets scan, all-LICENSE holder rewrite, a template pytest marker skipped after init, skill text fixes
 Why: Every new workbench currently starts red, which blocks the TDD and boy-scout flow from the first commit
 
 ## Description
@@ -32,7 +32,6 @@ initialised workbench, and the init skill misdescribes local-bare and the --path
 - --license-holder (or its git-author default) lands in the root LICENSE and every plugins/*/LICENSE.
 - Template-only self-tests skip in an initialised workbench and still run in the template.
 - The init and component-add skills state the local-bare limits and the --path move.
-- claude-code-tatara is updated from the fixed template and its local workarounds are gone, lint and test green.
 
 ## Non-goals
 
@@ -42,7 +41,7 @@ initialised workbench, and the init skill misdescribes local-bare and the --path
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 38 agent-min | Critical path: 23 min | Expected wall at P=1.5: 0.8 h (k=2.0) | Actual: 0 min | Remaining estimate: 38 min
 
 ## Review
 
