@@ -1133,7 +1133,8 @@ function verifyPrompt(t, impl, prev) {
     ...(ace ? ['--ac-evidence "$ACE"'] : []),
     '--install',
     ...(prev && SHA_RE.test(prev) ? [`--prev-head ${shq(prev)}`] : []),
-    ...(prev ? ['--no-tier'] : []),
+    // The tier call runs on the first verify only; it sees the requirement (D9).
+    ...(prev ? ['--no-tier'] : [`--requirement ${shq(t.requirement || '')}`]),
     ...(noRed(impl) ? ['--tdd-revert'] : []),
     ...mergedDependencyBranches(t).map((b) => `--exclude-ref ${shq(b)}`),
   ]
@@ -1540,6 +1541,7 @@ const findingKey = (fs) =>
 // Test files do not need to be read by the reviewer: the tests are not the claim.
 const TEST_FILE_RE = /(^|\/)(tests?\/|test_[^/]*\.py$|[^/]*\.(test|spec)\.[^/]*$|[^/]*_(test|spec)\.[^/]*$)/
 const isTestFile = (f) => TEST_FILE_RE.test(f)
+const DOC_FILE_RE = /\.md$/i
 
 // One path matcher for the read gate and the read-only-tests rule: equal after
 // dropping a leading './', or one is the other under a directory prefix.
@@ -1574,6 +1576,20 @@ function changedOutside(changed, findings) {
     if (!c || !nonEmpty(c.file)) return false
     const f = stripDot(c.file)
     if (isTestFile(f) || named.some((n) => pathMatches(n, f)) || seen.has(f)) return false
+    seen.add(f)
+    return true
+  })
+}
+
+// The changed files a light-tier fix touched among the files its reviewer findings named:
+// the one scoped re-review reads them before the task settles.
+function changedReviewerNamed(changed, reviewerFindings) {
+  const named = reviewerFindings.map((f) => f.file).filter(nonEmpty)
+  const seen = new Set()
+  return (changed || []).filter((c) => {
+    if (!c || !nonEmpty(c.file)) return false
+    const f = stripDot(c.file)
+    if (seen.has(f) || !named.some((n) => pathMatches(n, f))) return false
     seen.add(f)
     return true
   })
@@ -1755,6 +1771,8 @@ async function reviewUntilClean(t, firstImpl, firstPre = [], tier = 'full', impl
   const clearedGates = new Set() // gate findings the classifier ruled documentation: stay dropped on every following round
   // The last LLM review raised nothing (light: its single review has run).
   let reviewSettled = false
+  // Light tier: the one scoped re-review of a fix to reviewer findings has run.
+  let lightRereviewed = false
   // The verifier's view of the last fix: what changed between which heads.
   let lastFix = null
   // The fixer's last deliverable: its summary and declined list are the decline evidence.
@@ -1809,7 +1827,16 @@ async function reviewUntilClean(t, firstImpl, firstPre = [], tier = 'full', impl
     const unknownChange = Boolean(lastFix && !lastFix.known && lastFix.head !== lastFix.prev)
     if (round > 1 && reviewSettled && unknownChange) log(`${t.id}: round ${round} - the verifier reported no changedSincePrevious - full review`)
     const gateOnly = round > 1 && reviewSettled && !unknownChange && preFindings.every(isGate)
-    const outside = gateOnly ? changedOutside(lastFix && lastFix.changed, prev.findings) : []
+    let outside = gateOnly ? changedOutside(lastFix && lastFix.changed, prev.findings) : []
+    if (light && gateOnly && !lightRereviewed && prev.reviewer.length) {
+      const fixedNamed = changedReviewerNamed(lastFix && lastFix.changed, prev.reviewer).filter((c) => !isTestFile(stripDot(c.file)))
+      if (fixedNamed.length) {
+        lightRereviewed = true
+        const have = new Set(outside.map((c) => stripDot(c.file)))
+        outside = [...outside, ...fixedNamed.filter((c) => !have.has(stripDot(c.file)))]
+        log(`${t.id}: light tier - one scoped re-review of the fix to ${fixedNamed.map((c) => c.file).join(', ')}`)
+      }
+    }
     let reviewerFindings = []
     if (gateOnly && !outside.length) {
       reviewsSkippedGateOnly++
@@ -1964,8 +1991,10 @@ function reviewTier(t, impl, v, pre) {
       const r = (v.acs || []).find((x) => x.id === a.id)
       return r && r.met === true && SKIP_EVIDENCE.includes(a.evidence && a.evidence.kind)
     })
+    // A settled doc-only or test-only diff has nothing a reviewer reads for, whatever its size.
+    const settledKind = paths.length > 0 && (paths.every((p) => DOC_FILE_RE.test(p)) || paths.every((p) => TEST_FILE_RE.test(p)))
     if (paths.some((p) => RISK_PATH.test(p))) tier = 'full'
-    else if (pre.length === 0 && acs.length > 0 && acsMet && ds.addedNonTest <= SKIP_MAX_ADDED && ds.files <= SKIP_MAX_FILES) tier = 'skip'
+    else if (pre.length === 0 && acs.length > 0 && acsMet && (settledKind || (ds.addedNonTest <= SKIP_MAX_ADDED && ds.files <= SKIP_MAX_FILES))) tier = 'skip'
     else tier = 'light'
   }
   const hint = TIERS.indexOf(v.tierHint)
