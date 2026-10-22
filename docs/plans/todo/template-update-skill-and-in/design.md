@@ -175,6 +175,9 @@ README.md "Pulling template updates" describes the skill and `mise run init:upda
 and what never does, and the refusal cases; "What init does" states that template docs are
 removed at init. Root MEMORY.md gets a dated entry for D3 to D7. Serves A2, A3.
 
+### D10: docs/handoffs is instance-owned
+Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and the template update never brings it. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -209,6 +212,7 @@ removed at init. Root MEMORY.md gets a dated entry for D3 to D7. Serves A2, A3.
 | D7 lint inside the engine | update-command, update-conflicts-and-abort |
 | D8 template-update skill | template-update-skill |
 | D9 docs point at the skill | docs-update-flow |
+| D10 docs/handoffs is instance-owned | instance-owned-paths |
 
 ## Contracts
 
