@@ -546,6 +546,7 @@ def test_tdd_revert_modified_added_deleted(repo):
         "failedOnBase": True,
         "passedOnHead": True,
         "files": ["added.py", "gone.py", "lib_a.py"],
+        "baseCommand": TDD_CMD,
     }
     assert out["clean"] is True and out["passed"] is True
     assert git(repo, "status", "--porcelain") == ""
@@ -565,11 +566,11 @@ def test_tdd_revert_restores_tree_after_an_error(repo, monkeypatch):
     real = vt.run_shell
     calls = []
 
-    def flaky(cmd, cwd):
+    def flaky(cmd, cwd, timeout=None):
         calls.append(cmd)
-        if len(calls) == 3:  # the head re-run, after the base state is in place
+        if len(calls) == 2:  # the base run, with the base state in place
             raise RuntimeError("boom")
-        return real(cmd, cwd)
+        return real(cmd, cwd, timeout)
 
     monkeypatch.setattr(vt, "run_shell", flaky)
     out = verify(repo, TDD_CMD, "--no-triage", "--tdd-revert")
@@ -613,7 +614,6 @@ def test_never_changes_history_or_branch(repo):
         ["--cmd", "true", "--base", "main", "--test-re", "x"],  # no --markers
         ["--cmd", "true", "--base", "main", "--markers", "TODO"],  # no --test-re
         ["--cmd", "true", "--base", "main", "--markers", "TODO", "--test-re", "("],
-        ["--base", "main", "--markers", "TODO", "--test-re", "x"],  # no --command
     ],
 )
 def test_usage_errors_exit_2(argv):

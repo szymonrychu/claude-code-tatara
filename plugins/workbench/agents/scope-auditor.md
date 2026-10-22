@@ -79,7 +79,9 @@ the task's verified head: confirm its evidence ref still exists. A row marked
 `open: judge it` is one the verifier could not settle (a judgement condition,
 or a script result of unsure): read the code and the evidence and decide. A
 `met: false` acceptance condition is a `missing` entry on its task, naming the
-AC id and its text. A task whose row says `(none)` is judged on its
+AC id and its text. A row the verifier matched loosely (`matchedBy: substring`,
+listed as `open: judge it`) names a test whose name only contains, or is contained in,
+the ref's name: read that test and decide whether it proves the condition. A task whose row says `(none)` is judged on its
 requirement alone.
 
 ## Reading task files
