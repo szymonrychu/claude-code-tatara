@@ -2,7 +2,7 @@
 title: claude-code-wrapper orchestrator support
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [claude-code-wrapper]
 created: 2026-10-22
 ---

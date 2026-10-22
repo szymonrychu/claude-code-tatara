@@ -1,6 +1,6 @@
 ---
 title: Peer mesh view route
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: Orchestrator can read the peer mesh without holding peers.token
 files: [src/claude_code_wrapper/api/peers.py, src/claude_code_wrapper/peer_membership.py, README.md, tests/test_api_peers_view.py]

@@ -1,6 +1,6 @@
 ---
 title: Context in snapshot and SSE
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: Orchestrator draws the 0-100 percent context gauge from the wrapper
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_context_surface.py]

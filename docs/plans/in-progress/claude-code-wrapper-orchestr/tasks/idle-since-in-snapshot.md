@@ -1,6 +1,6 @@
 ---
 title: Idle since in snapshot
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: Orchestrator can route to the agent idle the longest
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, README.md, tests/test_idle_since.py]

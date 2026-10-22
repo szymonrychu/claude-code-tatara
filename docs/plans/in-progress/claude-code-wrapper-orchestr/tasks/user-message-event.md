@@ -1,6 +1,6 @@
 ---
 title: User message event
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: Chat UI shows every prompt including peer and restart prompts
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_user_message_event.py]
