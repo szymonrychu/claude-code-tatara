@@ -1,0 +1,9 @@
+[
+  {"id": "A1", "text": "Snapshot idle_since and session_state since, fixed in claude-code-wrapper.", "decisions": ["D1"], "tasks": ["idle-since-in-snapshot"], "status": "approved"},
+  {"id": "A2", "text": "user_message event for every pasted prompt (user, peer, hook, restart, command).", "decisions": ["D2"], "tasks": ["user-message-event"], "status": "approved"},
+  {"id": "A3", "text": "History pages backwards with before_seq and a types filter.", "decisions": ["D3"], "tasks": ["history-before-seq-and-types"], "status": "approved"},
+  {"id": "A4", "text": "GET /v1/peers returns the peer mesh view.", "decisions": ["D4"], "tasks": ["peer-mesh-view-route"], "status": "approved"},
+  {"id": "A5", "text": "Statusline relay feeding the wrapper.", "decisions": ["D5"], "tasks": ["statusline-relay"], "status": "approved"},
+  {"id": "A6", "text": "Context usage in the snapshot and as an SSE event.", "decisions": ["D6"], "tasks": ["context-in-snapshot-and-sse"], "status": "approved"},
+  {"id": "A7", "text": "Gaps fixed in claude-code-wrapper itself; every task updates README.md; targeted verify only; README notes the rebase onto origin/main before the PR (session claude-code-wrapper-58 develops it concurrently).", "decisions": ["D7"], "tasks": ["idle-since-in-snapshot", "user-message-event", "history-before-seq-and-types", "peer-mesh-view-route", "statusline-relay", "context-in-snapshot-and-sse"], "status": "approved"}
+]
