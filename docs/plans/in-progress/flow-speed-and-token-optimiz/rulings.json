@@ -1,0 +1,8 @@
+[
+  {
+    "task": "cache-prefix-change",
+    "accept": true,
+    "reason": "run 2: cache-prefix-change (CACHE none, recorded no-op, pinning test) landed on main at e7533b8; TDD-skipped accepted: no behaviour change. Phase 5 remediation tasks follow.",
+    "at": "2026-10-22T07:00:06Z"
+  }
+]

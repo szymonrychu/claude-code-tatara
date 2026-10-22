@@ -60,6 +60,10 @@ The cache lever ships only when measured to save writes; otherwise the measureme
 - Green on `saving`: reorder both prompts. On `none`: no code change.
 - Add the MEMORY.md entry; run `cd plugins/workbench && bash scripts/run-tests.sh --only workflows`; expect all green.
 
+## Ruling
+
+- 2026-10-22 accepted: run 2: cache-prefix-change (CACHE none, recorded no-op, pinning test) landed on main at e7533b8; TDD-skipped accepted: no behaviour change. Phase 5 remediation tasks follow.
+
 ## Notes
 
 - The brief estimated -25% to -30% workflow cache-weighted tokens if 60% of each 17-28k prefix became a read; that estimate is the hypothesis the probe tests.
