@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-readme-concepts/any-mcp
+branch: any-mcp-docs-readme-concepts
 verified_head: ""
 run: ""
 provides: []

@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-fastmcp-adapter/any-mcp
+branch: any-mcp-fastmcp-adapter
 verified_head: ""
 run: ""
 provides: []
