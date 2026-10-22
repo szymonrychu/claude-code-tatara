@@ -1,6 +1,6 @@
 ---
 title: template marker skip
-status: escalated
+status: done
 repo: workbench
 value: template-only self-tests stop failing in every initialised workbench
 files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py]
@@ -59,6 +59,10 @@ Template-only tests skip in an initialised workbench, run in the template; the s
 
 - Write failing tests for is_initialised, marker registration and the initialised-copy suite run; run red.
 - Add the helper, replace the copies in cli.py, update.py, doctor.py, register the marker, add the conftest hook, mark the template-only tests; run green, then `mise run lint:root`.
+
+## Ruling
+
+- 2026-10-22 accepted: gate-repeat false positive: conftest.py:78 skipif is the deliverable (template marker skip, D5), not a debt marker; conftest.py:68 is an explanatory comment on the stale-id check, not parking. Verified on 5619cda: 31 passed, lint:root clean.
 
 ## Notes
 

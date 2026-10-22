@@ -1,0 +1,8 @@
+[
+  {
+    "task": "template-marker-skip",
+    "accept": true,
+    "reason": "gate-repeat false positive: conftest.py:78 skipif is the deliverable (template marker skip, D5), not a debt marker; conftest.py:68 is an explanatory comment on the stale-id check, not parking. Verified on 5619cda: 31 passed, lint:root clean.",
+    "at": "2026-10-22T15:15:32Z"
+  }
+]
