@@ -13,7 +13,7 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--template-update-skill
-branch: HEAD
+branch: template-update-skill-and-in--template-update-skill
 verified_head: efddaf2cc90f64aeeab3532c577861fb6808608d
 run: template-update-skill-and-in
 provides: []

@@ -13,7 +13,7 @@ estimate: 8
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-unrelated-history
-branch: worktree-template-update-skill-and-in--update-unrelated-history
+branch: template-update-skill-and-in--update-unrelated-history
 verified_head: a9f002008b61a02e9994fcdc9fc927e539eb704c
 run: template-update-skill-and-in
 provides: []

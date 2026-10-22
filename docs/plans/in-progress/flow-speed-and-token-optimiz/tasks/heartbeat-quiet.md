@@ -13,7 +13,7 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--heartbeat-quiet
-branch: HEAD
+branch: flow-speed-and-token-optimiz--heartbeat-quiet
 verified_head: b28fd1767a9f721420d0ebba9a14678a8e68a12d
 run: flow-speed-and-token-optimiz
 provides: []

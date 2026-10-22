@@ -13,7 +13,7 @@ estimate: ""
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--existing-remote-kept
-branch: "HEAD (worktree template-update-skill-and-in--existing-remote-kept, commit a8d9524)"
+branch: template-update-skill-and-in--existing-remote-kept
 verified_head: a8d952468624aa0afef9b2865629c635253cc411
 run: template-update-skill-and-in
 provides: []

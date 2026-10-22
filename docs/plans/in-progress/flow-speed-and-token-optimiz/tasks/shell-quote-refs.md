@@ -13,7 +13,7 @@ estimate: ""
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--shell-quote-refs
-branch: HEAD
+branch: flow-speed-and-token-optimiz--shell-quote-refs
 verified_head: 4409cc7a71bfda4e014a3fb013684d7ca497ba5f
 run: flow-speed-and-token-optimiz
 provides: []

@@ -13,7 +13,7 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--review-tiering
-branch: HEAD
+branch: flow-speed-and-token-optimiz--review-tiering
 verified_head: e621a7d184cfee12ee4dd472fb3d83eb299fd325
 run: flow-speed-and-token-optimiz
 provides: []

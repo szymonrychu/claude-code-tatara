@@ -13,7 +13,7 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe
-branch: "HEAD (worktree /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe)"
+branch: flow-speed-and-token-optimiz--cache-probe
 verified_head: 0a7b69478789916ba7f84cb8d086d3181d16b18d
 run: flow-speed-and-token-optimiz
 provides: [cache-probe-verdict]

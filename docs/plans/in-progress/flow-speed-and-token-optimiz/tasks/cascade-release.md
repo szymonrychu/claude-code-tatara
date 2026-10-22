@@ -13,7 +13,7 @@ estimate: 5
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cascade-release
-branch: "HEAD of worktree flow-speed-and-token-optimiz--cascade-release (commit bae1f36)"
+branch: flow-speed-and-token-optimiz--cascade-release
 verified_head: bae1f364c7672d48a9c8d4e2826d3431f0902c83
 run: flow-speed-and-token-optimiz
 provides: []

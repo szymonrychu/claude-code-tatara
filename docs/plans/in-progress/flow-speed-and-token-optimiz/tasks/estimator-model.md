@@ -13,7 +13,7 @@ estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimator-model
-branch: worktree-flow-speed-and-token-optimiz--estimator-model
+branch: flow-speed-and-token-optimiz--estimator-model
 verified_head: 3a1ea040255888a4a4e5e17169fbb748951481d4
 run: flow-speed-and-token-optimiz
 provides: [estimator-params]
