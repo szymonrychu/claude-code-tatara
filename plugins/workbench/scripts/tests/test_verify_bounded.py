@@ -265,5 +265,5 @@ def test_triage_run_passes_timeout_to_the_model_call(monkeypatch):
         raise triage.claude_json.ClaudeJsonError("stop")
 
     monkeypatch.setattr(triage.claude_json, "call_with_meta", fake_call)
-    triage.run("parking", ["x"], timeout=7.5)
+    triage.run("tier", {"requirement": "r"}, timeout=7.5)
     assert got["timeout"] == 7.5
