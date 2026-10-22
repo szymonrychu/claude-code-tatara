@@ -165,6 +165,7 @@ def test_renamed_tests_fixture_has_no_ref_missing(repo, tmp_path, monkeypatch):
             ac("AC5", "x", "test", "tests/test_m.py::test_backup"),
         ],
         evidence={
+            "AC3": "tests/test_m.py::test_migrates_config_files",
             "AC4": "tests/test_m.py::test_rejects_unknown_harness",
             "AC5": "tests/test_m.py::test_writes_backup_before_migrating",
         },
