@@ -58,6 +58,10 @@ One verify-task.py call never runs longer than its --timeout in total, so the ve
 3. Record skipped steps; update help text, verifier.md and the plan-execute.js comment.
 4. Run the verify command.
 
+## Ruling
+
+- 2026-10-22 accepted: run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.
+
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
