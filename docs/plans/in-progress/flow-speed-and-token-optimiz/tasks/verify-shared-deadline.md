@@ -1,6 +1,6 @@
 ---
 title: Verify shared deadline
-status: in-progress
+status: done
 repo: workbench
 value: "A verifier never dies at the 600 s Bash cap: one deadline covers every command a verify call runs"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/agents/verifier.md, plugins/workbench/workflows/plan-execute.js]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-shared-deadline
 branch: flow-speed-and-token-optimiz--verify-shared-deadline
-verified_head: ""
-run: ""
+verified_head: cc58bb40abfa3b3357b353a66a33926094e99848
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Verify shared deadline

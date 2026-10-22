@@ -1,6 +1,6 @@
 ---
 title: Shell quote refs
-status: in-progress
+status: done
 repo: workbench
 value: No ref or path from args or an earlier run reaches a verifier shell command unquoted
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-shell-quoting.test.mjs]
@@ -13,10 +13,12 @@ estimate: ""
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--shell-quote-refs
-branch: flow-speed-and-token-optimiz--shell-quote-refs
-verified_head: ""
-run: ""
+branch: HEAD
+verified_head: 4409cc7a71bfda4e014a3fb013684d7ca497ba5f
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: [AC1, AC2, AC3]
+process_gaps: []
 ---
 
 # Shell quote refs
