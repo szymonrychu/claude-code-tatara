@@ -116,10 +116,16 @@ def test_template_history_cleared(workbench, run_cli, allow_file):
     )
 
 
+def plugin_licenses(root):
+    return sorted((root / "plugins").glob("*/LICENSE"))
+
+
+def copyright_line(path):
+    return next(ln for ln in path.read_text().splitlines() if ln.startswith("Copyright (c)"))
+
+
 @pytest.mark.parametrize("option", ["mit", "none", "file"])
 def test_license_options(workbench, run_cli, allow_file, tmp_path, option):
-    plugin_license = workbench / "plugins/workbench/LICENSE"
-    plugin_license.write_text("keep")
     if option == "mit":
         init(run_cli, "--license", "mit", "--license-holder", "Acme Corp")
         text = (workbench / "LICENSE").read_text()
@@ -127,14 +133,43 @@ def test_license_options(workbench, run_cli, allow_file, tmp_path, option):
         assert "Acme Corp" in text
         assert "Szymon" not in text
     elif option == "none":
-        init(run_cli, "--license", "none")
+        init(run_cli, "--license", "none", "--license-holder", "Acme Corp")
         assert not (workbench / "LICENSE").exists()
+        assert plugin_licenses(workbench)
+        for lic in plugin_licenses(workbench):
+            assert "Acme Corp" in lic.read_text()
     else:
         lic = tmp_path / "prop.txt"
         lic.write_text("All rights reserved by Acme.\n")
         init(run_cli, "--license-file", str(lic))
         assert (workbench / "LICENSE").read_text() == "All rights reserved by Acme.\n"
-    assert plugin_license.read_text() == "keep"
+
+
+def test_license_holder_in_every_plugin(workbench, run_cli, allow_file):
+    init(run_cli, "--license-holder", "Acme Corp")
+    root_line = copyright_line(workbench / "LICENSE")
+    assert root_line.endswith("Acme Corp")
+    lics = plugin_licenses(workbench)
+    assert len(lics) >= 2
+    for lic in lics:
+        assert copyright_line(lic) == root_line, lic
+
+
+def test_license_default_holder_fallback(workbench, run_cli, allow_file, monkeypatch):
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "Git Author")
+    init(run_cli)
+    for lic in [workbench / "LICENSE", *plugin_licenses(workbench)]:
+        assert copyright_line(lic).endswith("Git Author"), lic
+
+
+def test_license_file_in_every_plugin(workbench, run_cli, allow_file, tmp_path):
+    src = tmp_path / "prop.txt"
+    src.write_text("All rights reserved by Acme.\n")
+    init(run_cli, "--license-file", str(src))
+    lics = plugin_licenses(workbench)
+    assert lics
+    for lic in [workbench / "LICENSE", *lics]:
+        assert lic.read_text() == "All rights reserved by Acme.\n", lic
 
 
 def test_license_file_missing_refused(workbench, run_cli, allow_file, tmp_path):

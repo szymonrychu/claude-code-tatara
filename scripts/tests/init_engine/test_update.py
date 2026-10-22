@@ -203,3 +203,21 @@ def test_update_keeps_personal_allow_local(project, run_cli, tmp_path):
     assert r.returncode == 0, r.stderr
     assert (project / rel).read_text() == body
     assert rel in sh("ls-files", cwd=project).stdout.split()
+
+
+def test_update_keeps_plugin_license_holder(project, run_cli, tmp_path):
+    rel = "plugins/workbench/LICENSE"
+    text = (project / rel).read_text().replace("Copyright (c) 2026 ", "Copyright (c) 2027 ")
+    write(
+        project,
+        rel,
+        text.replace("2027 ", "2027 Project Holder ", 1).replace(
+            "Project Holder " + "Szymon Richert", "Project Holder"
+        ),
+    )
+    sh("add", rel, cwd=project)
+    sh("commit", "-m", "project holder", cwd=project)
+    template_commit(project, tmp_path, {rel: "MIT License\n\nCopyright (c) upstream holder\n"})
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert "Project Holder" in (project / rel).read_text()

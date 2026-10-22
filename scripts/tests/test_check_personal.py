@@ -161,8 +161,10 @@ def test_local_allow_file_only_adds(tmp_path):
     files = {"a.md": f"{TERM} foo\n"}
     cfg = _cfg(patterns=["foo"], allow=[{"path": "scripts/*.json"}])
     root = _repo(tmp_path / "plain", files, cfg=cfg)
-    assert _run(root) == (1, [f"a.md:1: foo", f"a.md:1: {_h(TERM)}"])
-    local = json.dumps({"allow": [{"path": "a.md", "pattern": _h(TERM)}], "patterns": [], "hashes": []})
+    assert _run(root) == (1, ["a.md:1: foo", f"a.md:1: {_h(TERM)}"])
+    local = json.dumps(
+        {"allow": [{"path": "a.md", "pattern": _h(TERM)}], "patterns": [], "hashes": []}
+    )
     root = _repo(tmp_path / "local", {**files, LOCAL: local}, cfg=cfg)
     assert _run(root) == (1, ["a.md:1: foo"])
     assert not (SCRIPT.parent / "personal-allow.local.json").exists()
