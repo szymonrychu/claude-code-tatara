@@ -1,6 +1,6 @@
 ---
 title: Docs reference
-status: escalated
+status: done
 repo: any-mcp
 value: "Every config key, flag and transport behaviour has one documented meaning"
 files: [docs/configuration.md, docs/transports.md, tests/test_docs_reference.py]
@@ -64,6 +64,10 @@ Every config key and flag has one documented meaning and default, and a new key 
 
 - Write `tests/test_docs_reference.py`; run `uv run --frozen pytest tests/test_docs_reference.py -q`; expect failures.
 - Write both pages; rerun (all pass), then `mise run lint`. The docs-readme-concepts task links them from the README.
+
+## Ruling
+
+- 2026-10-22 accepted: gate-repeat on parking-wording false positives: plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. No deferred work. Verified on 78faf4e (3 passed, lint clean) and c967152 (4 passed, lint clean).
 
 ## Notes
 

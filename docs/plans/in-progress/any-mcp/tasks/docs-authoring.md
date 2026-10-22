@@ -1,6 +1,6 @@
 ---
 title: Docs authoring
-status: escalated
+status: done
 repo: any-mcp
 value: A plugin authoring guide from small to big plugins whose samples are the tested examples
 files: [docs/plugin-authoring.md, docs/testing-plugins.md, tests/test_docs_snippets.py]
@@ -66,6 +66,10 @@ The guide walks from a 10-line plugin to a packaged OpenAPI plugin, and every co
 
 - Write `tests/test_docs_snippets.py`; run `uv run --frozen pytest tests/test_docs_snippets.py -q`; expect failures.
 - Write both pages; rerun (all pass), then `mise run lint`. The docs-readme-concepts task links them from the README.
+
+## Ruling
+
+- 2026-10-22 accepted: gate-repeat on parking-wording false positives: plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. No deferred work. Verified on 78faf4e (3 passed, lint clean) and c967152 (4 passed, lint clean).
 
 ## Notes
 

@@ -10,5 +10,17 @@
     "accept": true,
     "reason": "fix-agent-died on false-positive findings; verified on cf2da99 (11 passed, lint clean)",
     "at": "2026-10-22T23:21:37Z"
+  },
+  {
+    "task": "docs-authoring",
+    "accept": true,
+    "reason": "gate-repeat on parking-wording false positives: plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. No deferred work. Verified on 78faf4e (3 passed, lint clean) and c967152 (4 passed, lint clean).",
+    "at": "2026-10-22T23:54:56Z"
+  },
+  {
+    "task": "docs-reference",
+    "accept": true,
+    "reason": "gate-repeat on parking-wording false positives: plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. No deferred work. Verified on 78faf4e (3 passed, lint clean) and c967152 (4 passed, lint clean).",
+    "at": "2026-10-22T23:54:56Z"
   }
 ]
