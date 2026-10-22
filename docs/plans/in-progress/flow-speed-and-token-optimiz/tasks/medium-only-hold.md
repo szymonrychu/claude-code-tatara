@@ -9,7 +9,7 @@ depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-doc
 owns: []
 uses: []
 model: sonnet
-estimate: ""
+estimate: 5
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--medium-only-hold
@@ -19,6 +19,7 @@ run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: [AC1, AC2, AC3]
 process_gaps: []
+estimate_by: formula
 ---
 
 # Medium only hold

@@ -19,6 +19,7 @@ run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: []
 process_gaps: []
+estimate_by: formula
 ---
 
 # Planner sizing rule

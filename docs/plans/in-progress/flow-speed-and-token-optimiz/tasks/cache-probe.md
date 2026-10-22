@@ -19,6 +19,7 @@ run: flow-speed-and-token-optimiz
 provides: [cache-probe-verdict]
 acs_for_audit: []
 process_gaps: ["Probe result still to be run and recorded in design.md (D6), as the implementer noted"]
+estimate_by: formula
 ---
 
 # Cache probe

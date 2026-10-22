@@ -9,7 +9,7 @@ depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-doc
 owns: []
 uses: []
 model: sonnet
-estimate: ""
+estimate: 6
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--full-suite-split-shared
@@ -19,6 +19,7 @@ run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: [AC3]
 process_gaps: []
+estimate_by: formula
 ---
 
 # Full suite split shared

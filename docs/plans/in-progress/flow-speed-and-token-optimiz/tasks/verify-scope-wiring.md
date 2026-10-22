@@ -19,6 +19,7 @@ run: flow-speed-and-token-optimiz
 provides: [verify-slot-queue, verify-task-invocation]
 acs_for_audit: []
 process_gaps: []
+estimate_by: formula
 ---
 
 # Verify scope wiring
