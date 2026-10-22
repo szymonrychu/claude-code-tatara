@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "land-failed was suite-lock contention (lock held 1200s by the template epic close, pid 79691), not a code failure; task verified on 9961bc9 (11 passed, ruff clean). Process gap recorded: tests written after the implementation (no red run); the tests exercise the behaviour.",
     "at": "2026-10-22T22:37:28Z"
+  },
+  {
+    "task": "vocabulary-pins",
+    "accept": true,
+    "reason": "false gate-repeat: verifier hit a stale pytest assertion-rewrite .pyc (20->21 edit keeps file size, cache reused). Hand-verified on 4d1989e after deleting the .pyc: 'uv run pytest tests/test_command_vocabulary.py tests/test_event_log.py -p no:cacheprovider' -> 31 passed; ruff check and format clean. Red is in the epic full-suite log (assert 21 == 20).",
+    "at": "2026-10-22T23:17:41Z"
   }
 ]

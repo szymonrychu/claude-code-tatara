@@ -1,6 +1,6 @@
 ---
 title: vocabulary pins
-status: escalated
+status: done
 repo: claude-code-wrapper
 value: the wrapper full suite is green with the new hook and event vocabulary
 files: [tests/test_command_vocabulary.py, tests/test_event_log.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/events.py]
@@ -58,6 +58,10 @@ What is true and observable when the task is done.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Ruling
+
+- 2026-10-22 accepted: false gate-repeat: verifier hit a stale pytest assertion-rewrite .pyc (20->21 edit keeps file size, cache reused). Hand-verified on 4d1989e after deleting the .pyc: 'uv run pytest tests/test_command_vocabulary.py tests/test_event_log.py -p no:cacheprovider' -> 31 passed; ruff check and format clean. Red is in the epic full-suite log (assert 21 == 20).
 
 ## Notes
 
