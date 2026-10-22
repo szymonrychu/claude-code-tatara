@@ -1,0 +1,58 @@
+---
+title: Verify shared deadline
+status: todo
+repo: workbench
+value: "A verifier never dies at the 600 s Bash cap: one deadline covers every command a verify call runs"
+files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/agents/verifier.md, plugins/workbench/workflows/plan-execute.js]
+verify: "cd plugins/workbench && pytest scripts/tests/test_verify_bounded.py -q && ruff check scripts"
+depends_on: []
+owns: []
+uses: []
+model: sonnet
+estimate: ""
+actual: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# Verify shared deadline
+
+## Requirement
+
+Epic review finding (2026-10-22): verify-task.py gives each command its own 480 s timeout (verify-task.py:49, :801-806, :863, :889, :921), but the design's builder check answer says `--timeout` is ONE shared deadline (default 540 s) across every command a single call runs, so two runs plus triage finish inside the verifier's 600 s Bash call.
+
+Deliver: `--timeout` is one shared deadline, default 540 s, measured from the start of the call, across the main verify run, every AC ref run, the tdd-revert base run and triage. Each command runs with the time remaining; when the deadline is reached the running command's process group is killed, the result carries `timeout: {command, seconds}` and `passed: false`, and every step not yet run is skipped and listed in a `skipped` array in the JSON. The `--timeout` help text, agents/verifier.md and the plan-execute.js comment next to the 600000 ms Bash timeout describe the shared deadline.
+
+## Acceptance conditions
+
+- AC1: with --timeout 3, a main command sleeping 2 s and a tdd-revert base run sleeping 2 s, the call returns in under 4 s with timeout set and passed false [evidence: test:plugins/workbench/scripts/tests/test_verify_bounded.py::test_shared_deadline_spans_main_and_tdd_runs]
+- AC2: steps not run before the deadline are listed in skipped [evidence: test:plugins/workbench/scripts/tests/test_verify_bounded.py::test_steps_after_deadline_are_skipped]
+- AC3: the default deadline is 540 s and the help text calls it a shared deadline [evidence: test:plugins/workbench/scripts/tests/test_verify_bounded.py::test_default_shared_deadline_is_540]
+
+## Files
+
+- `plugins/workbench/scripts/verify-task.py`
+- `plugins/workbench/scripts/tests/test_verify_bounded.py`
+- `plugins/workbench/agents/verifier.md`
+- `plugins/workbench/workflows/plan-execute.js`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
