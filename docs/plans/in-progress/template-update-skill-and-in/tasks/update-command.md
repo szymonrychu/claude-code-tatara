@@ -12,8 +12,8 @@ model: sonnet
 estimate: 10
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-command
+branch: template-update-skill-and-in--update-command
 verified_head: ""
 run: ""
 provides: []

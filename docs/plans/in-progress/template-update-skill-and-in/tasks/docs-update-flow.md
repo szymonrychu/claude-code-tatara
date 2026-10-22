@@ -12,8 +12,8 @@ model: sonnet
 estimate: 5
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--docs-update-flow
+branch: template-update-skill-and-in--docs-update-flow
 verified_head: ""
 run: ""
 provides: []

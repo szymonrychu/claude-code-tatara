@@ -12,8 +12,8 @@ model: opus
 estimate: 8
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-unrelated-history
+branch: template-update-skill-and-in--update-unrelated-history
 verified_head: ""
 run: ""
 provides: []

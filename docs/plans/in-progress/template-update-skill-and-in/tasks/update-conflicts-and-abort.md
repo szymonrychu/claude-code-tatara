@@ -12,8 +12,8 @@ model: sonnet
 estimate: 8
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-conflicts-and-abort
+branch: template-update-skill-and-in--update-conflicts-and-abort
 verified_head: ""
 run: ""
 provides: []
