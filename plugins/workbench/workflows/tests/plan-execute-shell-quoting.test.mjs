@@ -42,6 +42,9 @@ test('sha-fork-point-and-base-ref-are-shell-quoted', async () => {
   assert.ok(verifyPrompts(r).some((p) => p.includes("--base 'abc1234'")))
   const r2 = await run(task(), { baseRef: 'main; id' })
   assert.ok(verifyPrompts(r2).some((p) => p.includes("--base 'main; id'")))
+  const all2 = r2.calls.map((c) => c.prompt).join('\n')
+  assert.ok(all2.includes("git merge-base HEAD 'main; id'"), 'merge-base form quotes the base ref')
+  assert.ok(!all2.includes('git merge-base HEAD main; id'))
 })
 
 test('repo-dir-quotes-worktree-and-repo', async () => {
