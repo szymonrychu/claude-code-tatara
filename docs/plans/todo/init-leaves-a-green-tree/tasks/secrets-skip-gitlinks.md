@@ -41,17 +41,17 @@ mise-tasks/lint/secrets builds the set of gitlink paths (git ls-files -s entries
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+mise-tasks/lint/secrets: bash 3.2, no associative arrays; keep literal `git ls-files -coz --exclude-standard`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A gitlink checkout holding a secret-shaped fixture does not fail the task; a leak in any non-gitlink file still does.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the two failing tests to test_secret_scanning.py (fixture secret built at run time); run red.
+- Build the gitlink path set from `git ls-files -s` (mode 160000) and skip those in the copy loop; run green, then `mise run lint:secrets`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D3. test_secret_scanning.py:19/:26 pin the no-allowlist policy; do not touch .gitleaks.toml. Precedent for 160000 detection: test_adopt.py:99.

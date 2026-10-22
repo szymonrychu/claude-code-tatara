@@ -5,7 +5,7 @@ repo: workbench
 value: init and component-add skills tell the truth about local-bare and the --path move
 files: [plugins/workbench/skills/init/SKILL.md, plugins/workbench/skills/component-add/SKILL.md, plugins/workbench/skills/init/tests/test_init_skills.py]
 verify: pytest plugins/workbench/skills/init/tests/test_init_skills.py -q
-depends_on: []
+depends_on: [license-every-plugin]
 owns: []
 uses: []
 model: ""
@@ -40,17 +40,17 @@ plugins/workbench/skills/init/SKILL.md step 1 says adopt accepts local-bare[:<di
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+none
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Both SKILL.md files state the local-bare limits and that --path moves the checkout into code/<name>.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the two failing doc assertions to test_init_skills.py; run red.
+- Edit init SKILL.md steps 1 and 3 and component-add SKILL.md; run green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D6. Engine facts: adopt.plan_path accepts local-bare only with --path and no origin; cli.cmd_adopt refuses it with --url; the move is os.rename in adopt.py.

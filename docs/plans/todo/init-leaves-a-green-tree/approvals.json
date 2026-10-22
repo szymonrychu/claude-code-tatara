@@ -1,0 +1,7 @@
+[
+  {"id":"A","text":"personal lint accepts project vocabulary","decisions":["D1","D2","D7"],"tasks":["personal-allow-file","init-writes-allow-entries","e2e-init-green"],"status":"approved"},
+  {"id":"B","text":"secrets lint skips gitlinks","decisions":["D3","D7"],"tasks":["secrets-skip-gitlinks","e2e-init-green"],"status":"approved"},
+  {"id":"C","text":"holder in every LICENSE","decisions":["D4","D7"],"tasks":["license-every-plugin","e2e-init-green"],"status":"approved"},
+  {"id":"D","text":"template-only tests skip after init","decisions":["D5","D7"],"tasks":["template-marker-skip","e2e-init-green"],"status":"approved"},
+  {"id":"E","text":"skill text on local-bare and --path move","decisions":["D6"],"tasks":["skill-text-local-bare-move"],"status":"approved"}
+]

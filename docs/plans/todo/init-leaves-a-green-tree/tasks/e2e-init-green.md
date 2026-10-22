@@ -41,17 +41,17 @@ e2e tests initialise a template copy (new and adopt) whose project name and adop
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+none
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+New init, adopt with a colliding owner and secret fixture, and a second component add each leave lint and test green and git status clean.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the failing e2e tests in test_instantiate.py first (red if any other task is missing).
+- Fix any remaining gap they expose in the owning task's files; run green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D7. Build the secret-shaped fixture at run time; pick a project name and owner whose digests are in the copy's denylist.

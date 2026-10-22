@@ -46,17 +46,17 @@ After init (new and adopt) and component add write their files and before their 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+finalize: a helper that digests the generated files with check_personal._digest/_candidates and writes scripts/personal-allow.local.json via read_json/write_json; called by init, adopt and cli.cmd_component_add before their commit.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After init, adopt and component add the personal lint is green for denylisted project and owner names, and the allow file is in the same commit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the failing tests in test_new.py, test_adopt.py, test_component.py; run red.
+- Implement the helper and call it before each commit; run green, then `mise run lint:personal`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D2. Import check_personal from scripts/ (see finalize.collision_override for the loader pattern). Never auto-allow literal pattern hits. component remove leaves entries.

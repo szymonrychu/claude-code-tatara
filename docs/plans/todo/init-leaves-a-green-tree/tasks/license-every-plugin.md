@@ -44,17 +44,17 @@ finalize.license_file rewrites the Copyright line of the root LICENSE and of eve
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+finalize.license_file(root, opts, first): rewrites root LICENSE and every plugins/*/LICENSE; default_holder(root) is the fallback.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every LICENSE Copyright line carries the same holder after init; --license none removes only the root file.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write failing tests (every plugin LICENSE equals root; default-holder fallback) and update test_license_options; run red.
+- Extend license_file in scripts/init_engine/finalize.py, align plugins/workbench-secrets/LICENSE, edit init SKILL.md; run green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D4. test_pack_infra.py::test_license_and_readme and test_root_stubs.py::test_license_mit_identical must stay green in the template.

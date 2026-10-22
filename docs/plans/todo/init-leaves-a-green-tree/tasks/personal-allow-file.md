@@ -42,17 +42,17 @@ scripts/check_personal.py also reads scripts/personal-allow.local.json (shape {"
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+check_personal.py: scan() also loads scripts/personal-allow.local.json (`{"allow": [{"path", "pattern"}]}`) when it exists; contract personal-allow-local.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+With a matching local allow entry lint:personal passes; without it the same term fails; the template tree is unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the failing tests in test_check_personal.py and test_update.py; run them red.
+- Extend scan() in scripts/check_personal.py to append local allow entries; run green, then `mise run lint:personal`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Design D1. Reuse the existing allow-entry shape. template-update never brings the file because the template does not ship it; pin that.
