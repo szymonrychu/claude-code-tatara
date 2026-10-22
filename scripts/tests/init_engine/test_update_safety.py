@@ -28,7 +28,7 @@ def has_commit(project, sha):
     return sh("cat-file", "-e", f"{sha}^{{commit}}", cwd=project, check=False).returncode == 0
 
 
-def test_update_keeps_ignored_notes_under_owned_paths(project, run_cli, tmp_path):
+def test_update_keeps_ignored_owned_files(project, run_cli, tmp_path):
     notes = {
         "docs/research/mine.md": "my research\n",
         "docs/handoffs/2026-10-22.md": "my handoff\n",
@@ -42,25 +42,26 @@ def test_update_keeps_ignored_notes_under_owned_paths(project, run_cli, tmp_path
         tmp_path,
         {"tooling.txt": "v2\n", "docs/research/more.md": "x\n", "docs/handoffs/t.md": "t\n"},
     )
+    staged = ("docs/research/more.md", "docs/handoffs/t.md")
+
+    aborted = run_cli("update", "--lint-command", "false")
+    assert aborted.returncode == 1
+    for rel, text in notes.items():
+        assert (project / rel).read_text() == text, rel
+    for gone in staged:
+        assert not (project / gone).exists()
+    assert (project / "tooling.txt").read_text() == "v1\n"
+
     r = run_cli("update", *LINT)
     assert r.returncode == 0, r.stderr
     assert (project / "tooling.txt").read_text() == "v2\n"
     for rel, text in notes.items():
         assert (project / rel).read_text() == text, rel
     tracked = sh("ls-files", cwd=project).stdout.split()
-    for gone in ("docs/research/more.md", "docs/handoffs/t.md"):
+    for gone in staged:
         assert gone not in tracked
         assert not (project / gone).exists()
     assert sh("status", "--porcelain", cwd=project).stdout == ""
-
-
-def test_update_lint_abort_keeps_ignored_notes(project, run_cli, tmp_path):
-    write(project, "docs/research/mine.md", "my research\n")
-    forced_template_commit(project, tmp_path, {"tooling.txt": "v2\n", "docs/research/x.md": "x\n"})
-    r = run_cli("update", "--lint-command", "false")
-    assert r.returncode == 1
-    assert (project / "docs/research/mine.md").read_text() == "my research\n"
-    assert not (project / "docs/research/x.md").exists()
 
 
 def test_update_restores_head_version_of_tracked_owned_file(project, run_cli, tmp_path):
@@ -89,7 +90,7 @@ def test_update_refuses_ignored_note_the_template_would_overwrite(project, run_c
     assert not (project / ".git" / "MERGE_HEAD").exists()
 
 
-def test_update_refuses_url_that_differs_from_template_remote(project, run_cli, tmp_path):
+def test_update_refuses_url_mismatch_with_template_remote(project, run_cli, tmp_path):
     sha = forced_template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
     url = sh("remote", "get-url", "template", cwd=project).stdout.strip()
     other = "https://example.invalid/other"
@@ -113,7 +114,7 @@ def test_update_accepts_url_equal_to_template_remote(project, run_cli, tmp_path)
     assert (project / "tooling.txt").read_text() == "v2\n"
 
 
-def test_update_prints_template_url_branch_commit(project, run_cli, tmp_path):
+def test_update_prints_source(project, run_cli, tmp_path):
     sha = forced_template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
     url = sh("remote", "get-url", "template", cwd=project).stdout.strip()
     r = run_cli("update", *LINT)
@@ -130,7 +131,7 @@ def test_update_prints_template_url_branch_commit(project, run_cli, tmp_path):
     "flag",
     ["--branch=-x", "--branch=--upload-pack=touch pwned", "--base=-x", "--base=--all"],
 )
-def test_update_refuses_option_like_branch_or_base(project, run_cli, tmp_path, flag):
+def test_update_refuses_option_like_branch_and_base(project, run_cli, tmp_path, flag):
     sha = forced_template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
     before = state(project)
     r = run_cli("update", flag, *LINT)

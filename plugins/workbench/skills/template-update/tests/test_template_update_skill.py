@@ -71,7 +71,7 @@ def test_readme_lists_the_skill():
     assert "mise run init:update" in README
 
 
-def test_confirms_non_default_url_before_running():
+def test_skill_confirms_non_default_url():
     default = "https://github.com/szymonrychu/workbench"
     section = BODY[BODY.index("## Run") : BODY.index("## Report")]
     assert default in section
