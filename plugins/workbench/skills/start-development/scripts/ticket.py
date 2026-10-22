@@ -27,6 +27,7 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
+import estimator  # noqa: E402
 import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
@@ -381,9 +382,23 @@ def cmd_new_epic(a: argparse.Namespace) -> int:
     return 0
 
 
-def _estimate_arg(value: str | None) -> str:
-    """The planner's `--estimate` minutes for a new task; unset stays empty."""
-    return str(_minutes(value, "new task", "estimate")) if value else ""
+def formula_minutes(root: Path, repo: str, files: list, verify: str) -> int:
+    """The estimator's agent-minutes for a task, with the repo's workbench.json suites."""
+    suites = workbench.config_for_repo(Path(root), repo).get("suites", [])
+    return estimator.task_minutes(len(files), verify, suites)
+
+
+def _estimate_fields(a: argparse.Namespace, root: Path, files: list) -> dict:
+    """`--estimate` is a planner override; without it the formula supplies the minutes."""
+    if a.estimate:
+        return {
+            "estimate": str(_minutes(a.estimate, "new task", "estimate")),
+            "estimate_by": "override",
+        }
+    return {
+        "estimate": str(formula_minutes(root, a.repo, files, a.verify)),
+        "estimate_by": "formula",
+    }
 
 
 def cmd_new_task(a: argparse.Namespace) -> int:
@@ -414,7 +429,7 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         owns=_csv(a.owns),
         uses=_csv(a.uses),
         model=a.model or "",
-        estimate=_estimate_arg(a.estimate),
+        **_estimate_fields(a, root, files),
         review=a.review or "",
     )
     body = _render(
@@ -770,15 +785,29 @@ def _minutes(value, task: str, field: str) -> int:
     return n
 
 
+def epic_rows(epic_dir: Path) -> list[dict]:
+    """The estimator's task rows for an epic: id, minutes, depends_on, status."""
+    return [
+        {
+            "id": p.stem,
+            "minutes": _minutes(m.get("estimate"), p.stem, "estimate"),
+            "depends_on": m.get("depends_on") or [],
+            "status": m.get("status", ""),
+        }
+        for p, m in _tasks_of(epic_dir)
+    ]
+
+
 def time_summary(epic_dir: Path) -> str:
-    """Sum of estimates, sum of actuals and remaining estimate (tasks not done), in minutes."""
-    rows = [(p.stem, m) for p, m in _tasks_of(epic_dir)]
-    est = sum(_minutes(m.get("estimate"), s, "estimate") for s, m in rows)
-    act = sum(_minutes(m.get("actual"), s, "actual") for s, m in rows)
-    left = sum(
-        _minutes(m.get("estimate"), s, "estimate") for s, m in rows if m.get("status") != "done"
+    """Estimate, critical path, expected wall, actuals and remaining estimate, in minutes."""
+    est = estimator.epic_estimate(epic_rows(epic_dir))
+    act = sum(_minutes(m.get("actual"), p.stem, "actual") for p, m in _tasks_of(epic_dir))
+    k = estimator.load()["epic"]["k"]
+    return (
+        f"Estimate: {est['sum']} agent-min | Critical path: {est['cp']} min | "
+        f"Expected wall at P={est['p']}: {est['epicWall'] / 60:.1f} h (k={k}) | "
+        f"Actual: {act} min | Remaining estimate: {est['remaining']} min"
     )
-    return f"Estimate: {est} min | Actual: {act} min | Remaining estimate: {left} min"
 
 
 def update_time_section(epic_dir: Path) -> tuple[Path, bool]:
@@ -1143,18 +1172,62 @@ def _new_discovered(epic_dir: Path, d: dict, src: Doc | None, run: str, root: Pa
     return path
 
 
+ROLE_ORDER = ("impl", "verify", "review", "fix")
+
+
+def _parse_roles(text) -> dict[str, int]:
+    """`actual_roles` ("impl 2, review 1") to {role: minutes}."""
+    out: dict[str, int] = {}
+    for part in str(text or "").split(","):
+        name, _, n = part.strip().partition(" ")
+        if name and n.isdigit():
+            out[name] = int(n)
+    return out
+
+
+def _format_roles(roles: dict[str, int]) -> str:
+    known = [r for r in ROLE_ORDER if r in roles]
+    rest = sorted(set(roles) - set(ROLE_ORDER))
+    return ", ".join(f"{r} {roles[r]}" for r in known + rest)
+
+
+def _ms_minutes(ms) -> int:
+    return max(1, round(ms / 60000))
+
+
 def _actual_update(meta: dict, t: dict, run: str) -> dict:
-    """`actual` minutes from durationMs: added to earlier runs, replaced on a re-apply."""
+    """`actual` and `actual_roles` minutes: added to earlier runs, replaced on a re-apply.
+
+    `actual` is the summed per-role agent time (the estimator's unit); `durationMs` is the
+    fallback when the run has no per-role split.
+    """
+    same = meta.get("run") == run
+    role_ms = {r: ms for r, ms in (t.get("roleMs") or {}).items() if ms and ms > 0}
+    before = _minutes(meta.get("actual"), t["id"], "actual")
+    if role_ms:
+        roles = {r: _ms_minutes(ms) for r, ms in role_ms.items()}
+        total = _ms_minutes(sum(role_ms.values()))
+        if not same:
+            prev = _parse_roles(meta.get("actual_roles"))
+            roles = {r: roles.get(r, 0) + prev.get(r, 0) for r in set(roles) | set(prev)}
+        return {
+            "actual": str(total if same else before + total),
+            "actual_roles": _format_roles(roles),
+        }
     ms = t.get("durationMs")
     if not isinstance(ms, (int, float)) or ms <= 0:
         return {}
-    minutes = max(1, round(ms / 60000))
-    before = _minutes(meta.get("actual"), t["id"], "actual")
-    return {"actual": str(minutes if meta.get("run") == run else before + minutes)}
+    minutes = _ms_minutes(ms)
+    return {"actual": str(minutes if same else before + minutes)}
 
 
-def _run_dir_durations(run_dir: Path) -> dict[str, int]:
-    """Task id -> ms between the first and last transcript timestamp of its agents."""
+def _run_dir_durations(run_dir: Path) -> dict[str, dict]:
+    """Task id -> {durationMs, roleMs} from the run's agent transcript timestamps.
+
+    Labels are `<prefix>:<role>:<task>` with an optional `#<n>` or `+<n>` retry suffix on the
+    task. durationMs spans the first to the last timestamp of all the task's agents; roleMs
+    sums each agent's own span under its role.
+    """
     labels: dict[str, str] = {}
     try:
         lines = (run_dir / "journal.jsonl").read_text().splitlines()
@@ -1172,9 +1245,13 @@ def _run_dir_durations(run_dir: Path) -> dict[str, int]:
             and e.get("label")
         ):
             labels[str(e["agentId"])] = str(e["label"])
-    spans: dict[str, list[float]] = {}
+    stamps: dict[str, list[float]] = {}
+    roles: dict[str, dict[str, int]] = {}
     for agent, label in labels.items():
-        tid = re.sub(r"\+\d+$", "", label.split(":")[-1])
+        parts = label.split(":")
+        tid = re.sub(r"[#+]\d+$", "", parts[-1])
+        role = re.sub(r"[#+]\d+$", "", parts[1]) if len(parts) > 2 else ""
+        mine: list[float] = []
         try:
             rows = (run_dir / f"agent-{agent}.jsonl").read_text().splitlines()
         except OSError:
@@ -1185,8 +1262,16 @@ def _run_dir_durations(run_dir: Path) -> dict[str, int]:
                 ts = datetime.datetime.fromisoformat(raw)
             except (ValueError, KeyError, TypeError):
                 continue
-            spans.setdefault(tid, []).append(ts.timestamp() * 1000)
-    return {t: round(max(v) - min(v)) for t, v in spans.items() if len(v) > 1}
+            mine.append(ts.timestamp() * 1000)
+        stamps.setdefault(tid, []).extend(mine)
+        if role and len(mine) > 1:
+            by_role = roles.setdefault(tid, {})
+            by_role[role] = by_role.get(role, 0) + round(max(mine) - min(mine))
+    return {
+        t: {"durationMs": round(max(v) - min(v)), "roleMs": roles.get(t, {})}
+        for t, v in stamps.items()
+        if len(v) > 1
+    }
 
 
 def cmd_apply_run(a: argparse.Namespace) -> int:
@@ -1199,10 +1284,10 @@ def cmd_apply_run(a: argparse.Namespace) -> int:
         )
     ret = json.loads(Path(a.run_return).read_text())
     if a.run_dir:
-        for t, ms in _run_dir_durations(Path(a.run_dir)).items():
+        for t, spans in _run_dir_durations(Path(a.run_dir)).items():
             for entry in ret.get("tasks", []):
                 if str(entry.get("id")) == t:
-                    entry["durationMs"] = ms
+                    entry.update(spans)
     run = str(ret.get("run") or ret.get("name") or ret.get("runName") or epic_dir.name)
     files = {p.stem: p for p in _task_files(epic_dir)}
     unknown = sorted({str(t.get("id")) for t in ret.get("tasks", [])} - set(files))
@@ -1737,9 +1822,7 @@ class Sweep:
         if not self.dry_run:
             _rmdir_if_empty(d)
 
-    def _own_branch(
-        self, branch: str, epic: str, tree: str, legacy: str, target: str
-    ) -> bool:
+    def _own_branch(self, branch: str, epic: str, tree: str, legacy: str, target: str) -> bool:
         """Only the task's own branch is swept: its tree name, its legacy name, or an
         <epic>-... name; never the integration branch, the base, a trunk or HEAD."""
         refused = {self.base, target, integration_branch(epic), "HEAD", "main", "master"}

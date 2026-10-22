@@ -77,7 +77,8 @@ def build(root) -> dict:
             continue
         mine = [t for t in tickets if t.kind == "task" and t.epic == s]
         done = sum(1 for t in mine if t.meta.get("status") == "done")
-        est = int(re.search(r"Estimate: (\d+) min", _T.time_summary(e.path.parent)).group(1))
+        line = _T.time_summary(e.path.parent)
+        est = int(re.search(r"Estimate: (\d+) agent-min", line).group(1))
         raw = list(e.meta.get("blockers", []))
         unresolved = [b for b in raw if _T.resolve_blocker(b, epics) is None]
         waiting = sorted({b for b in deps[s] if epics[b].phase != "done"} | set(unresolved))
