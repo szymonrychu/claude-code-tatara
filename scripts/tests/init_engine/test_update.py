@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from helpers import LINT, sh, template_commit, upstream_of, write
+from init_helpers import LINT, sh, template_commit, upstream_of, write
 
 TEMPLATE_FILES = {
     "tooling.txt": "v2\n",

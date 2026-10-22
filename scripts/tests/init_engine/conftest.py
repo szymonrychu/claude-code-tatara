@@ -9,7 +9,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from helpers import sh, write  # noqa: E402
+from init_helpers import sh, write  # noqa: E402
 
 
 @pytest.fixture(autouse=True)

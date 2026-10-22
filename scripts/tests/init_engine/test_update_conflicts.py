@@ -4,7 +4,7 @@ import json
 import sys
 from importlib import import_module
 
-from helpers import LINT, sh, template_commit, write
+from init_helpers import LINT, sh, template_commit, write
 
 
 def state(project):

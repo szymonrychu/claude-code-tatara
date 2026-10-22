@@ -6,7 +6,7 @@ import sys
 from importlib import import_module
 
 import pytest
-from helpers import LINT, sh, template_commit, write
+from init_helpers import LINT, sh, template_commit, write
 
 T1 = "2024-01-01T00:00:00+0000"
 T1_5 = "2024-01-15T00:00:00+0000"
