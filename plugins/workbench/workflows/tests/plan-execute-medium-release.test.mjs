@@ -65,7 +65,7 @@ const entry = (r, id) => r.result.tasks.find((t) => t.id === id)
 const T1 = task('T1')
 const T2 = task('T2', { dependsOn: ['T1'] })
 
-test('a medium-only task releases its dependents', async () => {
+test('medium-only-dependency-releases-dependents', async () => {
   const r = await run([T1, T2], { T1: raises(medium, medium) })
   assert.equal(r.error, undefined)
   assert.ok(started(r, 'T2'), 'T2 started')
@@ -77,7 +77,7 @@ test('a medium-only task releases its dependents', async () => {
   assert.equal(entry(r, 'T2').mediumOnly, false)
 })
 
-test('a medium-only task still escalates with its reason and findings, and the run is not finished', async () => {
+test('medium-only-task-still-escalates-with-flag', async () => {
   const r = await run([T1, T2], { T1: raises(medium) }, { approvals: [{ id: 'A', text: 'item A', tasks: ['T1'] }] })
   const e = r.result.escalated.find((x) => x.id === 'T1')
   assert.ok(e, 'T1 escalated')
@@ -97,40 +97,38 @@ test('triage-rejected findings do not count as open: a rejected high beside a re
   assert.equal(entry(r, 'T1').triageRejected, false)
 })
 
-for (const severity of ['high', 'critical']) {
-  test(`a ${severity} finding beside a medium one does not release dependents`, async () => {
+test('high-or-gate-finding-never-releases', async () => {
+  // A high or critical finding beside a medium one blocks the release.
+  for (const severity of ['high', 'critical']) {
     const r = await run([T1, T2], { T1: raises(medium, (l) => finding(severity, `bug ${l}`)) })
-    assert.ok(!started(r, 'T2'), 'T2 not started')
+    assert.ok(!started(r, 'T2'), `${severity}: T2 not started`)
     assert.equal(entry(r, 'T2').stopped, 'dependency-failed')
     assert.equal(entry(r, 'T1').mediumOnly, false)
     assert.ok(r.result.escalated.some((e) => e.id === 'T1' && !e.mediumOnly))
-  })
-}
-
-test('a medium finding that carries a gate does not release dependents', async () => {
+  }
+  // A medium finding that carries a gate blocks it too.
   const r = await run([T1, T2], { T1: raises((l) => finding('medium', `unmet ${l}`, { gate: 'ac-unmet' })) })
-  assert.ok(!started(r, 'T2'), 'T2 not started')
+  assert.ok(!started(r, 'T2'), 'gate: T2 not started')
   assert.equal(entry(r, 'T2').stopped, 'dependency-failed')
   assert.equal(entry(r, 'T1').mediumOnly, false)
 })
 
-test('a blocked task with medium findings does not release dependents', async () => {
-  const blocked = { review: (l) => ({ clean: false, findings: [medium(l)], blocked: { reason: 'needs a credential', whoCanClear: 'the user' } }) }
-  const r = await run([T1, T2], { T1: blocked })
-  assert.ok(!started(r, 'T2'), 'T2 not started')
-  assert.equal(entry(r, 'T1').stopped, 'blocked')
-  assert.equal(entry(r, 'T1').mediumOnly, false)
-})
-
-test('an unverified task with medium findings does not release dependents', async () => {
+test('unverified-medium-only-never-releases', async () => {
+  // An unverified task with medium findings does not release.
   const failing = { ...okVerify, passed: false, exit: 1, evidence: '1 failed' }
-  const r = await run([T1, T2], { T1: { ...raises(medium), verify: failing } })
-  assert.ok(!started(r, 'T2'), 'T2 not started')
-  assert.equal(entry(r, 'T1').verified, false)
-  assert.equal(entry(r, 'T1').mediumOnly, false)
+  const u = await run([T1, T2], { T1: { ...raises(medium), verify: failing } })
+  assert.ok(!started(u, 'T2'), 'unverified: T2 not started')
+  assert.equal(entry(u, 'T1').verified, false)
+  assert.equal(entry(u, 'T1').mediumOnly, false)
+  // Nor does a blocked one.
+  const blocked = { review: (l) => ({ clean: false, findings: [medium(l)], blocked: { reason: 'needs a credential', whoCanClear: 'the user' } }) }
+  const b = await run([T1, T2], { T1: blocked })
+  assert.ok(!started(b, 'T2'), 'blocked: T2 not started')
+  assert.equal(entry(b, 'T1').stopped, 'blocked')
+  assert.equal(entry(b, 'T1').mediumOnly, false)
 })
 
-test('in an epic run a medium-only task lands on the epic branch before its dependent starts', async () => {
+test('medium-only-task-lands-in-epic-run', async () => {
   const a = task('a', { worktree: '/wt/epic-x-a' })
   const b = task('b', { worktree: '/wt/epic-x-b', dependsOn: ['a'] })
   const r = await run([a, b], { A: raises(medium) }, EPIC)
