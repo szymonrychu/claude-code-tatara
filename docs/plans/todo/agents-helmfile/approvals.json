@@ -1,0 +1,37 @@
+[
+  {
+    "id": "A1",
+    "text": "A separate helmfile-like repo agents-helmfile in claude-code-tatara manages namespace agents, with a copied .env, and is applied by local mise tasks (lint, test, diff, apply).",
+    "decisions": ["D1"],
+    "tasks": ["scaffold-repo", "helmfile-base", "mise-tasks"],
+    "status": "approved"
+  },
+  {
+    "id": "A2",
+    "text": "The orchestrator gets a CNPG Postgres (agent-orchestrator-db) in namespace agents with the existing CNPG backup config.",
+    "decisions": ["D2"],
+    "tasks": ["db-release"],
+    "status": "approved"
+  },
+  {
+    "id": "A3",
+    "text": "The orchestrator is installed from its helm chart on namespace agents and exposed only to 192.168.1.0/24, with no auth, at agents.szymonrichert.pl.",
+    "decisions": ["D3"],
+    "tasks": ["orchestrator-release"],
+    "status": "approved"
+  },
+  {
+    "id": "A4",
+    "text": "Secrets (the Claude OAuth token copied from the existing secret, a generated master key) are SOPS-encrypted and never printed or committed unencrypted.",
+    "decisions": ["D4"],
+    "tasks": ["secrets-bootstrap"],
+    "status": "approved"
+  },
+  {
+    "id": "A5",
+    "text": "Every newly scheduled session starts with any-mcp preinstalled, proven by a smoke script (UI answers on the LAN, a 1-replica cluster yields a ready pod whose claude mcp list shows any-mcp).",
+    "decisions": ["D5"],
+    "tasks": ["orchestrator-release", "smoke-script"],
+    "status": "approved"
+  }
+]

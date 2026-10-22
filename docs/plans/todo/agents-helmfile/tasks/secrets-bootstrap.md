@@ -50,17 +50,18 @@ Create the encrypted secrets the two releases need, with a repeatable script, wi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Encrypted keys: `claudeOauthToken`, `masterKey` (values/agent-orchestrator/default.secrets.yaml); `backups.s3.accessKey`, `backups.s3.secretKey` (values/agent-orchestrator-db/default.secrets.yaml).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Two committed, encrypted secrets files exist; running the script again changes nothing; no value appears in any output.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_secrets.py; run it; expect failures (files missing).
+- Write scripts/bootstrap-secrets.sh and run it once with cluster access (`bash scripts/bootstrap-secrets.sh`), reading its exit status only.
+- Rerun `uv run pytest tests/test_secrets.py tests/test_repo_hygiene.py -q` and `mise run lint`; expect `passed`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The guard hook blocks raw sops decrypt to stdout and secrets in transcripts: read ~/Documents/infrastructure/code/helmfile/scripts/sops-secret-helper.sh for the sanctioned way, and never run a command whose output could contain a value. Secret key names the chart reads (`claudeOauthToken`, `masterKey`) may be remapped by orchestrator-release to the chart's key names; keep them stable here.

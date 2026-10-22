@@ -55,17 +55,18 @@ Add release `agent-orchestrator` to `helmfile.yaml.gotmpl`: chart `oci://harbor.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Consumes contracts agent-orchestrator-chart, agent-orchestrator-settings-env, agent-orchestrator-image.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile build` lists release agent-orchestrator with the LAN-only ingress, the ORCH env, the DB Secret reference and encrypted secrets only.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_orchestrator_release.py; run it; expect failures.
+- Run `helm show chart` and `helm show values` on the published chart (needs the Harbor login from .env), then add the release and values/agent-orchestrator/common.yaml (and raw/ secrets manifests when the chart cannot create the Secrets).
+- Rerun both release tests and `mise run lint`; expect `passed`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Ingress precedent: ~/Documents/infrastructure/code/helmfile helmfiles/coding/values/argo-workflows/common.yaml:137-152. The settings contract names the exact ORCH_* variables; the image tags come from the agent-orchestrator CI. Pin versions and tags, never `latest`.

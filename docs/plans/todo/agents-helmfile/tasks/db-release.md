@@ -47,17 +47,18 @@ Add release `agent-orchestrator-db` to `helmfile.yaml.gotmpl`: chart `cnpg/clust
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Provides CNPG Secret `agent-orchestrator-db-app` (keys uri, host, port, dbname, user, password) to orchestrator-release.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile build` lists release agent-orchestrator-db with the CNPG values and backups to its own S3 path.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_db_release.py; run it; expect failures.
+- Add the release to helmfile.yaml.gotmpl and write values/agent-orchestrator-db/common.yaml.
+- Rerun the test, then `mise exec -- helmfile -f helmfile.yaml.gotmpl build`; expect `passed`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Template: ~/Documents/infrastructure/code/helmfile helmfiles/ai/values/buzz-database/common.yaml and helmfiles/media/values/jellystat-database/common.yaml. The app Secret name is CNPG's `<release>-app`.

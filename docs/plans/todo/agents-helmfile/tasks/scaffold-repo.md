@@ -58,17 +58,18 @@ Create the repo skeleton of code/agents-helmfile (public GitHub origin szymonryc
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+none (no shared parts owned).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The repo has working lint and test tasks, a local mode-600 untracked `.env`, and hygiene tests that guard every later commit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_repo_hygiene.py; run `uv run pytest tests/test_repo_hygiene.py -q`; expect failures (no .gitignore yet, gitleaks missing).
+- Write pyproject.toml, mise.toml, .gitignore, .sops.yaml, .gitleaks.toml, .pre-commit-config.yaml; `uv lock`; `cp` the .env and chmod 600 (never print it).
+- Rerun the tests and `mise run lint`; expect `passed` and a clean lint.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Copy from ~/Documents/infrastructure/code/helmfile (`.mise.toml`, `.sops.yaml`, `.gitleaks.toml`, `.pre-commit-config.yaml`). Reading `.env` is forbidden: copy only. The tests assert on `git ls-files`, never the filesystem, for tracked-ness.

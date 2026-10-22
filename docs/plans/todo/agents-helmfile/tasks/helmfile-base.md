@@ -55,17 +55,18 @@ Add the helmfile skeleton for namespace `agents` that the release tasks fill. Co
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Fixtures `helmfile_build` and `layered_values` in tests/conftest.py, used by db-release and orchestrator-release.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile build` renders the (still empty) helmfile, the hook is shellcheck clean and creates the namespace before applying regcred, and the render fixtures exist for the release tasks.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/conftest.py and tests/test_helmfile_base.py; run `uv run pytest tests/test_helmfile_base.py -q`; expect failures (files missing).
+- Create helmfile.yaml.gotmpl, .hook.sh (copy and trim), values/common.yaml; copy raw/regcred.pre.secrets.yaml with `cp`.
+- Rerun the tests and `mise run lint`; expect `passed`. Probe whether `helmfile build` needs network or decryption and write the result into the conftest docstring.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Source: ~/Documents/infrastructure/code/helmfile/.hook.sh and helmfiles/ai/helmfile.yaml.gotmpl header. The hook runs as ./.hook.sh from the repo root, so CURRENT_PWD logic and the `helmfiles/<phase>/values` path must become `values/<release>`.
