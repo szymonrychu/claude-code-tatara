@@ -212,8 +212,8 @@ def build_parser() -> argparse.ArgumentParser:
     u = sub.add_parser("update", help="merge template tooling into this workbench, minus its docs")
     u.add_argument(
         "--url",
-        default=DEFAULT_TEMPLATE_URL,
-        help="template URL, used only when no template remote exists",
+        help=f"template URL (default {DEFAULT_TEMPLATE_URL}); refused when it differs "
+        "from an existing template remote",
     )
     u.add_argument("--branch", default="main", help="template branch (default main)")
     u.add_argument(

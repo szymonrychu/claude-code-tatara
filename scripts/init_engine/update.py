@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -10,7 +9,7 @@ from pathlib import Path
 import owned
 import project_files
 from finalize import TEMPLATE_MARKET, load_wb
-from gitops import Refusal, git
+from gitops import DEFAULT_TEMPLATE_URL, Refusal, git
 
 
 def preflight(root: Path) -> None:
@@ -24,24 +23,80 @@ def preflight(root: Path) -> None:
         raise Refusal("the working tree is not clean: " + "; ".join(dirty))
 
 
-def fetch_template(root: Path, url: str, branch: str) -> str:
-    if git("remote", "get-url", "template", cwd=root, check=False).returncode != 0:
+def check_args(args: argparse.Namespace) -> None:
+    """Refuse a flag value git would read as an option."""
+    for flag, value in (("--url", args.url), ("--branch", args.branch), ("--base", args.base)):
+        if value and value.startswith("-"):
+            raise Refusal(f"{flag} {value!r} starts with '-'")
+
+
+def fetch_template(root: Path, url: str | None, branch: str) -> str:
+    """Fetch `branch` from the template remote; add it from `url` (or the default) if missing.
+
+    An explicit `url` that differs from an existing template remote is refused, never ignored."""
+    current = git("config", "--get", "remote.template.url", cwd=root, check=False)
+    if current.returncode == 0:
+        remote = current.stdout.strip()
+        if url is not None and url != remote:
+            raise Refusal(
+                f"--url {url} differs from the template remote {remote}\n"
+                f"to update from {url}, first run: git remote set-url template {url}"
+            )
+        url = remote
+    else:
+        url = url or DEFAULT_TEMPLATE_URL
         git("remote", "add", "template", url, cwd=root)
     git("fetch", "template", branch, cwd=root)
-    return git("rev-parse", "FETCH_HEAD^{commit}", cwd=root).stdout.strip()
+    sha = git("rev-parse", "FETCH_HEAD^{commit}", cwd=root).stdout.strip()
+    print(f"template: {url} {branch} {sha}")
+    return sha
+
+
+def owned_rels() -> list[str]:
+    return [rel for rel, _kind in owned.INSTANCE_OWNED]
+
+
+def git_paths(root: Path, cmd: str, *args: str) -> set[str]:
+    """The paths under the owned paths that a git listing command prints."""
+    out = git("--literal-pathspecs", cmd, "-z", *args, "--", *owned_rels(), cwd=root).stdout
+    return {p for p in out.split("\0") if p}
+
+
+def check_ignored_collisions(root: Path, sha: str) -> None:
+    """Refuse when the merge would overwrite an ignored local file under an owned path.
+
+    git merge silently overwrites ignored files, so a user's gitignored note at a path the
+    template tracks would be lost before restore_owned could leave it alone."""
+    ignored = git_paths(root, "ls-files", "--others", "--ignored", "--exclude-standard")
+    hit = sorted(ignored & git_paths(root, "ls-tree", "-r", "--name-only", sha))
+    if hit:
+        raise Refusal(
+            "the template tracks paths that are local ignored files here; "
+            "move them aside first: " + "; ".join(hit)
+        )
 
 
 def restore_owned(root: Path) -> None:
-    """Resolve every instance-owned path to the project side (HEAD), dropping template content."""
-    for rel, _kind in owned.INSTANCE_OWNED:
-        git("rm", "-rf", "--cached", "--ignore-unmatch", "-q", "--", rel, cwd=root)
-        target = root / rel
-        if target.is_dir() and not target.is_symlink():
-            shutil.rmtree(target)
-        elif target.exists() or target.is_symlink():
-            target.unlink()
-        if git("ls-tree", "-r", "--name-only", "HEAD", "--", rel, cwd=root).stdout.strip():
-            git("checkout", "HEAD", "--", rel, cwd=root)
+    """Drop the template's content under every instance-owned path, keeping the project's.
+
+    Only what the merge staged is removed: index paths HEAD does not track leave the index
+    and the worktree, and HEAD's version is restored for the rest. Files on disk that HEAD
+    does not track and the merge did not stage (gitignored local notes) are left untouched."""
+    staged = git_paths(root, "ls-files")
+    in_head = git_paths(root, "ls-tree", "-r", "--name-only", "HEAD")
+    dropped = sorted(staged - in_head)
+    if dropped:
+        git("--literal-pathspecs", "rm", "--cached", "-q", "--", *dropped, cwd=root)
+    for rel in dropped:
+        path = root / rel
+        if path.is_symlink() or path.is_file():
+            path.unlink()
+        parent = path.parent
+        while parent != root and parent.is_dir() and not any(parent.iterdir()):
+            parent.rmdir()
+            parent = parent.parent
+    if in_head:
+        git("--literal-pathspecs", "checkout", "HEAD", "--", *sorted(in_head), cwd=root)
 
 
 def abort(root: Path, reason: str) -> Refusal:
@@ -148,6 +203,7 @@ def check_base(root: Path, base: str, sha: str, branch: str) -> str:
 
 def cmd_update(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
+    check_args(args)
     preflight(root)
     sha = fetch_template(root, args.url, args.branch)
     base = args.base
@@ -179,6 +235,7 @@ def merge_update(root: Path, args: argparse.Namespace, sha: str) -> int:
     if git("merge-base", "--is-ancestor", sha, "HEAD", cwd=root, check=False).returncode == 0:
         print(f"up to date with template/{args.branch} {short}")
         return 0
+    check_ignored_collisions(root, sha)
     generated = generated_paths(root)  # from the project's own config, before the merge
     merge = git("merge", "--no-commit", "--no-ff", sha, cwd=root, check=False)
     merging = (
