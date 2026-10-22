@@ -1,6 +1,6 @@
 ---
 title: Idle since in snapshot
-status: escalated
+status: done
 repo: claude-code-wrapper
 value: Orchestrator can route to the agent idle the longest
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, README.md, tests/test_idle_since.py]
@@ -63,6 +63,10 @@ GET /v1/sessions/{id} shows idle_since while ready and null otherwise; session_s
 - Write tests/test_idle_since.py; run `uv run pytest tests/test_idle_since.py -q` and see it fail (no idle_since key).
 - Implement in manager.py snapshot and the router session_state emit; update README.md.
 - Run `uv run pytest tests/test_idle_since.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`; expect all passed.
+
+## Ruling
+
+- 2026-10-22 accepted: land-failed was suite-lock contention (lock held 1200s by the template epic close, pid 79691), not a code failure; task verified on 9961bc9 (11 passed, ruff clean). Process gap recorded: tests written after the implementation (no red run); the tests exercise the behaviour.
 
 ## Notes
 

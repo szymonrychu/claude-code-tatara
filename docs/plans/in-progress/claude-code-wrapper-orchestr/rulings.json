@@ -1,0 +1,8 @@
+[
+  {
+    "task": "idle-since-in-snapshot",
+    "accept": true,
+    "reason": "land-failed was suite-lock contention (lock held 1200s by the template epic close, pid 79691), not a code failure; task verified on 9961bc9 (11 passed, ruff clean). Process gap recorded: tests written after the implementation (no red run); the tests exercise the behaviour.",
+    "at": "2026-10-22T22:37:28Z"
+  }
+]
