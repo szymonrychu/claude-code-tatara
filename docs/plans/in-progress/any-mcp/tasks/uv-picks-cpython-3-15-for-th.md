@@ -1,6 +1,6 @@
 ---
 title: "uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships."
-status: todo
+status: in-progress
 repo: any-mcp
 value: A test environment that differs from the target image can hide 3.12-only failures.
 files: [.python-version, tests/test_package.py]
@@ -14,8 +14,8 @@ estimate_by: ""
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-uv-picks-cpython-3-15-for-th/any-mcp
+branch: any-mcp-uv-picks-cpython-3-15-for-th
 verified_head: ""
 run: ""
 provides: []

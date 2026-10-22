@@ -1,6 +1,6 @@
 ---
 title: "Nothing ever calls aclose() on the per-plugin httpx.AsyncClient that load_plugins creates for each PluginContext.http."
-status: todo
+status: in-progress
 repo: any-mcp
 value: "Each plugin's HTTP client and its connection pool leak at shutdown. The registry does not close them because whoever called load_plugins owns them, and closing them in stop() would break a registry restart or a lifespan that runs more than once."
 files: [src/any_mcp/discovery.py, src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, src/any_mcp/testing.py, tests/test_discovery.py]
@@ -14,8 +14,8 @@ estimate_by: ""
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-nothing-ever-calls-aclose-on/any-mcp
+branch: any-mcp-nothing-ever-calls-aclose-on
 verified_head: ""
 run: ""
 provides: []

@@ -1,6 +1,6 @@
 ---
 title: Input-required adapter
-status: todo
+status: in-progress
 repo: any-mcp
 value: "InputRequiredResult round trips work through a real stdio client and a real HTTP client, with a runnable example plugin"
 files: [src/any_mcp/_fastmcp_adapter.py, examples/confirm_delete.py, tests/test_input_required_transports.py]
