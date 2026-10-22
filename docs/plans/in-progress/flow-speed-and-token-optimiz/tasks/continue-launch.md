@@ -10,7 +10,7 @@ owns: [continue-launch-lines]
 uses: [merge-target-worktree]
 model: sonnet
 estimate: 5
-actual: ""
+actual: 11
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--continue-launch
 branch: flow-speed-and-token-optimiz--continue-launch
@@ -20,6 +20,7 @@ provides: [continue-launch-lines]
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 3, verify 3, review 2, fix 4"
 ---
 
 # Continue launch

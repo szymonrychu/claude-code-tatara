@@ -10,16 +10,17 @@ owns: []
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 6
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--heartbeat-quiet
-branch: flow-speed-and-token-optimiz--heartbeat-quiet
+branch: HEAD
 verified_head: b28fd1767a9f721420d0ebba9a14678a8e68a12d
 run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 2, verify 3, review 1, fix 1"
 ---
 
 # Heartbeat quiet

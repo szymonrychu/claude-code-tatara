@@ -10,7 +10,7 @@ owns: []
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 11
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--triage-one-call
 branch: flow-speed-and-token-optimiz--triage-one-call
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: ["Implementer states tests were written after the implementation (no red-first cycle)"]
 estimate_by: formula
+actual_roles: "impl 2, verify 6, review 2, fix 1"
 ---
 
 # Triage one call

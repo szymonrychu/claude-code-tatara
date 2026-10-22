@@ -10,16 +10,17 @@ owns: [cache-probe-verdict]
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 2
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe
-branch: flow-speed-and-token-optimiz--cache-probe
+branch: "HEAD (worktree /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-probe)"
 verified_head: 0a7b69478789916ba7f84cb8d086d3181d16b18d
 run: flow-speed-and-token-optimiz
 provides: [cache-probe-verdict]
 acs_for_audit: []
 process_gaps: ["Probe result still to be run and recorded in design.md (D6), as the implementer noted"]
 estimate_by: formula
+actual_roles: "impl 1, verify 1, review 1"
 ---
 
 # Cache probe

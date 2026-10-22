@@ -10,7 +10,7 @@ owns: []
 uses: [ac-evidence, land-step, epic-run-args]
 model: sonnet
 estimate: 6
-actual: ""
+actual: 6
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--audit-context-and-models
 branch: flow-speed-and-token-optimiz--audit-context-and-models
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 2, verify 2, review 1, fix 1"
 ---
 
 # Audit context and models

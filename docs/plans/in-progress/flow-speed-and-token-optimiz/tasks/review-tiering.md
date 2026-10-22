@@ -10,16 +10,17 @@ owns: []
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 7
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--review-tiering
-branch: flow-speed-and-token-optimiz--review-tiering
+branch: HEAD
 verified_head: e621a7d184cfee12ee4dd472fb3d83eb299fd325
 run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: []
 process_gaps: ["The independent 'TDD skipped' finding is answered by a red/green run I did on a scratch copy outside the tree. With plan-execute.js at 2050fa1^ (before the feature), plan-execute-tier-scope.test.mjs gave 'ℹ pass 5, ℹ fail 5'. The five failures were first-verify-passes-the-requirement, doc-only-diff-with-acs-met-skips-review, test-only-diff-with-acs-met-skips-review, light-fix-to-reviewer-findings-gets-scoped-re-review, and the light-tier scoped-re-review findings test. With plan-execute.js at HEAD the same file gave 'ℹ pass 10, ℹ fail 0'. This output belongs in tests.red and verification.evidence. The feature and its tests landed in one commit (2050fa1), so git history alone does not show the red step.", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 estimate_by: formula
+actual_roles: "impl 2, verify 2, review 2, fix 1"
 ---
 
 # Review tiering

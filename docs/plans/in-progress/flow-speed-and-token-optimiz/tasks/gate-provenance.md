@@ -10,7 +10,7 @@ owns: []
 uses: [fork-point]
 model: sonnet
 estimate: 6
-actual: ""
+actual: 9
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--gate-provenance
 branch: flow-speed-and-token-optimiz--gate-provenance
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 3, verify 3, review 2, fix 1"
 ---
 
 # Gate provenance

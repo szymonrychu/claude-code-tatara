@@ -10,7 +10,7 @@ owns: []
 uses: [verify-task-cli, land-step]
 model: opus
 estimate: 5
-actual: ""
+actual: 8
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-scope-wiring
 branch: flow-speed-and-token-optimiz--verify-scope-wiring
@@ -20,6 +20,7 @@ provides: [verify-slot-queue, verify-task-invocation]
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 6, verify 1, review 1"
 ---
 
 # Verify scope wiring

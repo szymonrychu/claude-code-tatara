@@ -10,16 +10,17 @@ owns: []
 uses: [land-step]
 model: opus
 estimate: 5
-actual: ""
+actual: 6
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cascade-release
-branch: flow-speed-and-token-optimiz--cascade-release
+branch: "HEAD of worktree flow-speed-and-token-optimiz--cascade-release (commit bae1f36)"
 verified_head: bae1f364c7672d48a9c8d4e2826d3431f0902c83
 run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 3, verify 1, review 1, fix 2"
 ---
 
 # Cascade release

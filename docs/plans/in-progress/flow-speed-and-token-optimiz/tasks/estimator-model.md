@@ -10,16 +10,17 @@ owns: [estimator-params]
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 3
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimator-model
-branch: flow-speed-and-token-optimiz--estimator-model
+branch: worktree-flow-speed-and-token-optimiz--estimator-model
 verified_head: 3a1ea040255888a4a4e5e17169fbb748951481d4
 run: flow-speed-and-token-optimiz
 provides: [estimator-params]
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 1, verify 1, review 1, fix 1"
 ---
 
 # Estimator model

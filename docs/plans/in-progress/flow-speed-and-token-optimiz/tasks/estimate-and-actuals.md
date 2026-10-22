@@ -10,7 +10,7 @@ owns: [epic-time-line]
 uses: [estimator-params]
 model: sonnet
 estimate: 6
-actual: ""
+actual: 10
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimate-and-actuals
 branch: flow-speed-and-token-optimiz--estimate-and-actuals
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 4, verify 4, review 1, fix 1"
 ---
 
 # Estimate and actuals

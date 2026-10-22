@@ -10,7 +10,7 @@ owns: [ac-evidence]
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 11
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--ac-evidence-map
 branch: flow-speed-and-token-optimiz--ac-evidence-map
@@ -20,6 +20,7 @@ provides: [ac-evidence]
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 4, verify 3, review 2, fix 2"
 ---
 
 # AC evidence map

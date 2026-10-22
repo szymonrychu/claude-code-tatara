@@ -10,7 +10,7 @@ owns: [verify-task-cli]
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 12
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-task-bounded-runs
 branch: flow-speed-and-token-optimiz--verify-task-bounded-runs
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 4, verify 5, review 2, fix 1"
 ---
 
 # Verify task bounded runs
