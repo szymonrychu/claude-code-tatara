@@ -1,6 +1,6 @@
 ---
 title: Medium only hold
-status: escalated
+status: done
 repo: workbench
 value: A task with open medium findings never lands before the orchestrator rules on it
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
