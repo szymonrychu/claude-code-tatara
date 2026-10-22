@@ -41,3 +41,13 @@ Estimate: 53 min | Actual: 0 min | Remaining estimate: 0 min
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-22)
+
+Epic review, phase 5, over 0f89dfe..6b4b660 (docs/plans excluded).
+- Epic review (reviewer, sonnet): no findings; single owned list shared by init cleanup and update confirmed.
+- Security review (security-researcher, sonnet): HIGH restore_owned deleted gitignored docs/research and docs/handoffs notes; MEDIUM --url ignored with an existing template remote; LOW option-like --branch/--base; MEDIUM non-default --url runs that template's scripts. All fixed in update-safety (red against pre-fix code: 8 failed; now 17 passed); skill asks before a non-default --url. Hidden --lint-command (test-only) and git add -A after refresh: by design, dismissed.
+- Scope audit (scope-auditor, sonnet): behaviour delivered; three AC refs retargeted to renamed tests; one gap (existing template remote keeps its URL) fixed by existing-remote-kept (pin test, red by mutation).
+- Landing fixes: README init:update flags after --; init_engine helpers renamed init_helpers (shadowed e2e helpers in one pytest run); skill text describes the default URL instead of spelling it (personal-term lint).
+- Full suite: mise run test and mise run lint green on main 6b4b660 (scripts 467 passed, plugin 2817 assertions).
+- Rulings: docs-update-flow accepted (empty verifier evidence, hand-verified); existing-remote-kept accepted (TDD-skipped exception, pin test).
