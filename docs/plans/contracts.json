@@ -128,5 +128,15 @@
       "agents-helmfile"
     ],
     "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> and the wrapper agent image allowlisted via ORCH_AGENT_IMAGES"
+  },
+  {
+    "name": "wrapper-on-start-hook",
+    "kind": "api",
+    "owner": "claude-code-wrapper-orchestr",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "hooks.onStart: instance event fired once per ccw process start before peer join, resume_on_start and any session; blocking deny or on_error deny failure exits 1; envelope like preJoin, runs in the sessions root"
   }
 ]
