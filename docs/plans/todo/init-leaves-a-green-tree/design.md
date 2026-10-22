@@ -72,7 +72,7 @@ digest code. Each digest hit adds `{"path": "**", "pattern": "<digest>"}` to the
 (deduplicated, sorted, written with finalize.write_json); `component remove` leaves entries in
 place. Literal pattern hits (`/Users/`, `192.168.`, ...) are never auto-allowed: init still
 leaves them for the lint to report. Alternative: hash only the project and component names
-(misses the owner in .gitmodules and words in the purpose). (my call) Serves A.
+(misses the owner in .gitmodules and words in the purpose). Project-wide `**` scope confirmed by the user at the gate, 2026-10-22. Serves A.
 
 ### D3: lint:secrets skips gitlinks
 
@@ -89,7 +89,7 @@ and the template's no-allowlist policy). Serves B.
 `--license none` removes only the root LICENSE (plugin licenses stay, rewritten). The template's
 `plugins/workbench-secrets/LICENSE` is aligned with the root holder. `test_license_options` is
 updated, and a test pins every plugins/*/LICENSE == root after init and the default-holder
-fallback. Init SKILL.md says the holder defaults to the git author. Serves C.
+fallback. Init SKILL.md says the holder defaults to the git author. A custom `--license-file` is copied over the root and every plugins/*/LICENSE (user confirmed at the gate, 2026-10-22). template-update keeps the project side of every plugins/*/LICENSE. Serves C.
 
 ### D5: a `template` pytest marker, skipped once initialised
 
