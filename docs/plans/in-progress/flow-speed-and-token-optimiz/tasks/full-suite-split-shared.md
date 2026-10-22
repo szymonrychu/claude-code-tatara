@@ -43,16 +43,18 @@ Deliver: both classify a command the same way: split on `&&`, `||` and `;`, skip
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `estimator.json`: new key `fullSuiteExamples: [{command, full}]`; `fullSuitePatterns` unchanged.
+- `estimator.full_suite(cmd, suites)` and the validate-tasks.mjs predicate keep their signatures.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One splitting rule in two languages, pinned by one shared example list.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Add fullSuiteExamples and the two tests; see the node side fail on the `;` and `||` examples.
+2. Align the node splitter (and the python one for `||`).
+3. Run the verify command.
 
 ## Notes
 
