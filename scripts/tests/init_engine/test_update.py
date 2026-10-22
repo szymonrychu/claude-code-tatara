@@ -57,20 +57,18 @@ def template_commit(project, tmp_path, files, name="up"):
     return sh("rev-parse", "HEAD", cwd=work).stdout.strip()
 
 
-def test_update_merges_tooling_and_drops_template_docs(project, run_cli, tmp_path):
+TEMPLATE_FILES = {
+    "tooling.txt": "v2\n",
+    "docs/plans/todo/new-epic.md": "template epic 2\n",
+    "docs/plans/facts.md": "template facts\n",
+    "docs/research/more.md": "x\n",
+    "MEMORY.md": "template memory\n",
+}
+
+
+def test_update_takes_tooling_drops_owned_paths(project, run_cli, tmp_path):
     memory = (project / "MEMORY.md").read_text()
-    sha = template_commit(
-        project,
-        tmp_path,
-        {
-            "tooling.txt": "v2\n",
-            "docs/plans/todo/new-epic.md": "template epic 2\n",
-            "docs/plans/facts.md": "template facts\n",
-            "docs/research/more.md": "x\n",
-            "MEMORY.md": "template memory\n",
-        },
-    )
-    head = sh("rev-parse", "HEAD", cwd=project).stdout.strip()
+    sha = template_commit(project, tmp_path, TEMPLATE_FILES)
     r = run_cli("update", *LINT)
     assert r.returncode == 0, r.stderr
     assert (project / "tooling.txt").read_text() == "v2\n"
@@ -82,6 +80,15 @@ def test_update_merges_tooling_and_drops_template_docs(project, run_cli, tmp_pat
     assert (project / "MEMORY.md").read_text().startswith(memory.rstrip("\n"))
     assert f"template update {sha[:12]}" in (project / "MEMORY.md").read_text()
     assert sh("status", "--porcelain", cwd=project).stdout == ""
+
+
+def test_update_one_commit_records_template_commit(project, run_cli, tmp_path):
+    sha = template_commit(project, tmp_path, TEMPLATE_FILES)
+    head = sh("rev-parse", "HEAD", cwd=project).stdout.strip()
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert f"template update {sha[:12]}" in (project / "MEMORY.md").read_text()
+    assert sh("status", "--porcelain", cwd=project).stdout == ""
     assert sh("rev-parse", "HEAD^1", cwd=project).stdout.strip() == head
     assert sh("rev-parse", "HEAD^2", cwd=project).stdout.strip() == sha
     msg = sh("log", "-1", "--format=%B", cwd=project).stdout
@@ -90,7 +97,7 @@ def test_update_merges_tooling_and_drops_template_docs(project, run_cli, tmp_pat
     assert f"chore(workbench): template update {sha[:12]}" in r.stdout
 
 
-def test_update_when_current_is_a_noop(project, run_cli, tmp_path):
+def test_update_up_to_date_is_noop(project, run_cli, tmp_path):
     sha = template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
     assert run_cli("update", *LINT).returncode == 0
     head = sh("rev-parse", "HEAD", cwd=project).stdout
@@ -100,19 +107,21 @@ def test_update_when_current_is_a_noop(project, run_cli, tmp_path):
     assert sh("rev-parse", "HEAD", cwd=project).stdout == head
 
 
-def test_update_refuses_dirty_tree_and_lists_paths(project, run_cli):
+def test_update_refuses_dirty_tree(project, run_cli):
+    head = sh("rev-parse", "HEAD", cwd=project).stdout
     write(project, "stray.txt", "x")
     r = run_cli("update", *LINT)
     assert r.returncode == 1
     assert r.stderr.startswith("refused:")
     assert "stray.txt" in r.stderr
-
-
-def test_update_refuses_tracked_change(project, run_cli):
+    (project / "stray.txt").unlink()
     (project / "tooling.txt").write_text("edited\n")
     r = run_cli("update", *LINT)
     assert r.returncode == 1
     assert "tooling.txt" in r.stderr
+    assert (project / "tooling.txt").read_text() == "edited\n"
+    assert sh("rev-parse", "HEAD", cwd=project).stdout == head
+    assert not sh("remote", "get-url", "template", cwd=project, check=False).returncode
 
 
 def test_update_refuses_uninitialised(workbench, run_cli):
@@ -144,7 +153,7 @@ def test_update_adds_missing_remote_from_url_flag(project, run_cli, tmp_path):
     assert (project / "tooling.txt").read_text() == "v2\n"
 
 
-def test_update_default_url_is_the_public_template(project, run_cli, tmp_path, monkeypatch):
+def test_update_adds_default_template_remote(project, run_cli, tmp_path, monkeypatch):
     from importlib import import_module
 
     sys.path.insert(0, str(project / "scripts" / "init_engine"))
@@ -163,6 +172,12 @@ def test_update_default_url_is_the_public_template(project, run_cli, tmp_path, m
     r = run_cli("update", *LINT)
     assert r.returncode == 0, r.stderr
     assert sh("config", "remote.template.url", cwd=project).stdout.strip() == default
+    # and --url is honoured when given
+    sh("reset", "--hard", "HEAD^1", cwd=project)
+    sh("remote", "remove", "template", cwd=project)
+    url = str(upstream_of(project))
+    assert run_cli("update", "--url", url, *LINT).returncode == 0
+    assert sh("config", "remote.template.url", cwd=project).stdout.strip() == url
     assert (project / "tooling.txt").read_text() == "v2\n"
 
 
@@ -195,9 +210,31 @@ def test_refresh_event_flag_is_recorded(project, run_cli):
     assert "template update abc123" in (project / "MEMORY.md").read_text()
 
 
-def test_mise_task_execs_the_engine():
+def test_mise_task_runs_engine_update():
     from pathlib import Path
 
     text = (Path(__file__).resolve().parents[3] / "mise-tasks/init/update").read_text()
     assert 'exec python3 scripts/init_engine/cli.py update "$@"' in text
     assert os.access(Path(__file__).resolve().parents[3] / "mise-tasks/init/update", os.X_OK)
+
+
+def test_update_keeps_existing_template_remote(project, run_cli, tmp_path):
+    template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
+    url = sh("remote", "get-url", "template", cwd=project).stdout.strip()
+    r = run_cli("update", "--url", "https://example.invalid/other", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
+
+
+def test_update_conflict_resolves_in_linked_worktree(project, run_cli, tmp_path):
+    write(project, "docs/plans/todo/mine.md", "project epic\n")
+    sh("add", "-A", cwd=project)
+    sh("commit", "-m", "project epic", cwd=project)
+    template_commit(project, tmp_path, {"docs/plans/todo/epic.md": "changed upstream\n"})
+    sh("branch", "wt", cwd=project)
+    wt = tmp_path / "wt"
+    sh("worktree", "add", str(wt), "wt", cwd=project)
+    cli = [sys.executable, str(project / "scripts/init_engine/cli.py"), "--root", str(wt)]
+    r = subprocess.run([*cli, "update", *LINT], cwd=wt, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert sh("status", "--porcelain", cwd=wt).stdout == ""

@@ -65,7 +65,10 @@ def cmd_update(args: argparse.Namespace) -> int:
         print(f"up to date with template/{args.branch} {short}")
         return 0
     merge = git("merge", "--no-commit", "--no-ff", sha, cwd=root, check=False)
-    if merge.returncode != 0 and not (root / ".git" / "MERGE_HEAD").exists():
+    merging = (
+        git("rev-parse", "-q", "--verify", "MERGE_HEAD", cwd=root, check=False).returncode == 0
+    )
+    if merge.returncode != 0 and not merging:
         raise Refusal(f"git merge failed: {tail(merge)}")
     restore_owned(root)
     if git("ls-files", "-u", cwd=root).stdout.strip():
