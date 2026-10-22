@@ -5,7 +5,7 @@ repo: claude-code-wrapper
 value: "the context gauge and chained statusline work in pods where ccw is not on PATH, without leaking the hook token"
 files: [src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/bootstrap/settings.py, tests/test_statusline_relay.py]
 verify: "uv run pytest tests/test_statusline_relay.py -q && uv run ruff check . && uv run ruff format --check ."
-depends_on: []
+depends_on: [idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse, on-start-instance-hook]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement above holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

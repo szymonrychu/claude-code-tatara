@@ -28,7 +28,8 @@
       "D3"
     ],
     "tasks": [
-      "history-before-seq-and-types"
+      "history-before-seq-and-types",
+      "history-scan-off-event-loop"
     ],
     "status": "approved"
   },
@@ -50,7 +51,9 @@
       "D5"
     ],
     "tasks": [
-      "statusline-relay"
+      "statusline-relay",
+      "statusline-absolute-command",
+      "statusline-input-validation"
     ],
     "status": "approved"
   },
