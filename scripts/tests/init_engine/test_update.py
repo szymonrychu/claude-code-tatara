@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from init_helpers import LINT, sh, template_commit, upstream_of, write
+from init_helpers import LINT, personal_lint, sh, template_commit, upstream_of, write
 
 TEMPLATE_FILES = {
     "tooling.txt": "v2\n",
@@ -190,3 +190,49 @@ def test_update_keeps_existing_template_remote(project, run_cli, tmp_path):
     assert r.returncode == 0, r.stderr
     assert (project / "tooling.txt").read_text() == "v2\n"
     assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
+
+
+def test_update_keeps_personal_allow_local(project, run_cli, tmp_path):
+    rel = "scripts/personal-allow.local.json"
+    body = '{"allow": [{"path": "docs/**"}]}\n'
+    write(project, rel, body)
+    sh("add", rel, cwd=project)
+    sh("commit", "-m", "project allow", cwd=project)
+    template_commit(project, tmp_path, TEMPLATE_FILES)
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert (project / rel).read_text() == body
+    assert rel in sh("ls-files", cwd=project).stdout.split()
+
+
+def test_update_keeps_plugin_license_holder(project, run_cli, tmp_path):
+    rel = "plugins/workbench/LICENSE"
+    text = (project / rel).read_text().replace("Copyright (c) 2026 ", "Copyright (c) 2027 ")
+    write(
+        project,
+        rel,
+        text.replace("2027 ", "2027 Project Holder ", 1).replace(
+            "Project Holder " + "Szymon Richert", "Project Holder"
+        ),
+    )
+    sh("add", rel, cwd=project)
+    sh("commit", "-m", "project holder", cwd=project)
+    template_commit(project, tmp_path, {rel: "MIT License\n\nCopyright (c) upstream holder\n"})
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    assert "Project Holder" in (project / rel).read_text()
+
+
+def test_update_backfills_allow_file(project, run_cli, tmp_path):
+    allow = project / "scripts" / "personal-allow.local.json"
+    if allow.exists():
+        sh("rm", "-q", "-f", "scripts/personal-allow.local.json", cwd=project)
+    lint = personal_lint(project, "demo")
+    sh("add", "-A", cwd=project)
+    sh("commit", "-qm", "pre-fix project", cwd=project)
+    assert lint().returncode == 1
+    template_commit(project, tmp_path, TEMPLATE_FILES)
+    r = run_cli("update", "--lint-command", f"{sys.executable} scripts/check_personal.py --root .")
+    assert r.returncode == 0, r.stderr
+    assert allow.is_file()
+    assert lint().returncode == 0, lint().stdout

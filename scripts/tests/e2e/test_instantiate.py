@@ -3,8 +3,10 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent))
-from helpers import git, run  # noqa: E402
+from helpers import denylist_terms, git, production_env, run, secret_shaped  # noqa: E402
 
 BEGIN = "<!-- workbench:uninitialised:begin -->"
 
@@ -26,9 +28,13 @@ def assert_single_commit_clean(tree: Path, mise) -> None:
     assert r.returncode == 0, (r.stdout, r.stderr)
 
 
-def make_origin_repo(base: Path, name: str) -> Path:
-    """A checkout with an origin, a stash, an untracked .env and a linked worktree."""
-    bare = base / "origins" / f"{name}.git"
+def make_origin_repo(
+    base: Path, name: str, owner: str = "origins", secret: str | None = None
+) -> Path:
+    """A checkout with an origin, a stash, an untracked .env and a linked worktree.
+    `owner` is the directory holding the bare origin, so it appears in the origin URL;
+    `secret` is committed to the checkout as a fixture file."""
+    bare = base / owner / f"{name}.git"
     bare.parent.mkdir(parents=True)
     git("init", "-q", "--bare", "-b", "main", str(bare), cwd=base)
     src = base / "elsewhere" / name
@@ -37,6 +43,8 @@ def make_origin_repo(base: Path, name: str) -> Path:
     (src / "README.md").write_text("hello\n")
     (src / ".gitignore").write_text(".env\n")
     (src / ".mise.toml").write_text('[tasks.test]\nrun = "true"\n')
+    if secret:
+        (src / "fixture.txt").write_text(f"token = {secret}\n")
     git("add", "-A", cwd=src)
     git("commit", "-q", "-m", "init", cwd=src)
     git("remote", "add", "origin", str(bare), cwd=src)
@@ -117,3 +125,78 @@ def test_component_add_remove(template, engine, tmp_path):
     assert not (template / "code/worker").exists()
     assert "worker" not in (template / ".gitmodules").read_text()
     assert_healthy(template, 1)
+
+
+FAST_TESTS = ("scripts/tests/test_root_config.py", "scripts/tests/test_root_tooling.py")
+
+
+def assert_green(tree: Path, mise, full: bool = False) -> None:
+    """lint and tests exit 0 and nothing is left uncommitted. The default check runs the
+    real `mise run lint` plus a reduced pytest target; `full` runs the whole `mise run test`."""
+    commands = [("mise", "run", "lint")]
+    if full:
+        commands.append(("mise", "run", "test"))
+    else:
+        commands.append(
+            ("mise", "exec", "--", "pytest", *FAST_TESTS, "-q", "-p", "no:cacheprovider")
+        )
+    for cmd in commands:
+        r = run(*cmd, cwd=tree, check=False, env=production_env())
+        assert r.returncode == 0, (cmd, r.stdout[-3000:], r.stderr[-3000:])
+        assert git("status", "--porcelain", cwd=tree) == "", cmd
+
+
+def test_new_init_leaves_green_tree(template, engine, mise, tmp_path):
+    denylist_terms(template, "quokkaproj")
+    engine(
+        "new", "--name", "quokkaproj", "--component", "api:python",
+        "--remote", f"local-bare:{tmp_path / 'remotes'}", "--purpose", "quokkaproj demo",
+    )  # fmt: skip
+    assert "quokkaproj" in (template / "AGENTS.md").read_text().lower()
+    assert_green(template, mise)
+
+
+def test_adopt_leaves_green_tree(template, engine, mise, tmp_path):
+    denylist_terms(template, "wombatowner")
+    secret = secret_shaped()
+    src = make_origin_repo(tmp_path, "legacy", owner="wombatowner", secret=secret)
+    engine("adopt", "--path", str(src), "--purpose", "Adopted project")
+    assert "wombatowner" in (template / ".gitmodules").read_text()
+    assert secret in (template / "code/legacy/fixture.txt").read_text()
+    assert_green(template, mise)
+
+
+def test_second_component_add_stays_green(template, engine, mise, tmp_path):
+    denylist_terms(template, "wombatowner", "quokkaproj")
+    src = make_origin_repo(tmp_path, "legacy", owner="wombatowner", secret=secret_shaped())
+    engine("adopt", "--path", str(src), "--purpose", "quokkaproj adopted")
+    assert_green(template, mise)
+    engine(
+        "component", "add", "--component", "worker:python",
+        "--remote", f"local-bare:{tmp_path / 'remotes'}",
+    )  # fmt: skip
+    assert (template / "code/worker/.git").exists()
+    assert_green(template, mise)
+
+
+@pytest.mark.slow
+def test_suite_green_on_initialised_copy(template, engine, tmp_path):
+    engine(
+        "new", "--name", "demo", "--component", "api:python",
+        "--remote", f"local-bare:{tmp_path / 'remotes'}", "--purpose", "demo",
+    )  # fmt: skip
+    # the suite asserts production git behaviour, so it runs without the e2e file-transport grant
+    r = run(
+        sys.executable, "-m", "pytest", "scripts/tests", "-q", "-p", "no:cacheprovider",
+        cwd=template, check=False, env=production_env(),
+    )  # fmt: skip
+    assert r.returncode == 0, r.stdout[-4000:] + r.stderr[-2000:]
+
+
+@pytest.mark.slow
+def test_full_mise_test_green_on_initialised_copy(template, engine, mise, tmp_path):
+    engine(
+        "new", "--name", "demo", "--component", "api:python",
+        "--remote", f"local-bare:{tmp_path / 'remotes'}", "--purpose", "demo",
+    )  # fmt: skip
+    assert_green(template, mise, full=True)

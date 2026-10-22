@@ -162,23 +162,33 @@ def default_holder(root: Path) -> str:
 
 
 def license_file(root: Path, opts: Options, first: bool) -> None:
-    target = root / "LICENSE"
+    """Rewrite the root LICENSE and every plugins/*/LICENSE with one holder.
+
+    --license none removes only the root LICENSE; plugin licenses stay and are rewritten.
+    """
+    root_license = root / "LICENSE"
+    plugin_licenses = sorted((root / "plugins").glob("*/LICENSE"))
     if opts.license_file:
-        shutil.copyfile(opts.license_file, target)
-    elif opts.license == "none":
-        target.unlink(missing_ok=True)
-    elif opts.license == "mit" or (first and opts.license is None):
+        for target in (root_license, *plugin_licenses):
+            shutil.copyfile(opts.license_file, target)
+        return
+    if opts.license == "none":
+        root_license.unlink(missing_ok=True)
+    elif (opts.license == "mit" or (first and opts.license is None)) and not root_license.is_file():
+        raise Refusal("LICENSE is missing; cannot keep MIT")
+    if opts.license == "mit" or (first and opts.license in (None, "none")):
         holder = opts.license_holder or default_holder(root)
-        if not target.is_file():
-            raise Refusal("LICENSE is missing; cannot keep MIT")
-        text = re.sub(
-            r"^Copyright \(c\) .*$",
-            f"Copyright (c) {date.today().year} {holder}",
-            target.read_text(),
-            count=1,
-            flags=re.MULTILINE,
-        )
-        target.write_text(text)
+        for target in (root_license, *plugin_licenses):
+            if target.is_file():
+                target.write_text(
+                    re.sub(
+                        r"^Copyright \(c\) .*$",
+                        f"Copyright (c) {date.today().year} {holder}",
+                        target.read_text(),
+                        count=1,
+                        flags=re.MULTILINE,
+                    )
+                )
 
 
 def collision_override(root: Path, opts: Options, market: str) -> None:
@@ -198,6 +208,64 @@ def collision_override(root: Path, opts: Options, market: str) -> None:
         raise Refusal(str(e)) from e
 
 
+def load_check_personal(root: Path):
+    """The workbench's own check_personal module, or None when it ships no personal lint."""
+    path = root / "scripts" / "check_personal.py"
+    if not path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("check_personal_for_init", path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def allow_vocabulary(root: Path, *, tracked: bool = False) -> None:
+    """Allow the project's own vocabulary (design D2): stage everything, scan the staged files
+    with check_personal's own digests, record each denylisted digest hit as a project-owned
+    allow entry and stage that file too. Literal pattern hits are never auto-allowed.
+    With tracked=True every file in the index is scanned, not only the freshly staged ones
+    (refresh on a workbench initialised before the allow file existed)."""
+    cp = load_check_personal(root)
+    if cp is None:
+        return
+    if not tracked:
+        git("add", "-A", cwd=root)
+    cfg_path = root / cp.DENYLIST
+    if not cfg_path.is_file():
+        cfg_path = root / "scripts" / "personal-denylist.json"
+    if not cfg_path.is_file():
+        return
+    cfg = read_json(cfg_path)
+    hashes = set(cfg.get("hashes", []))
+    local = root / cp.LOCAL_ALLOW
+    existing = read_json(local).get("allow", []) if local.is_file() else []
+    rules_all = [
+        (cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in cfg["allow"]
+    ]
+    rules_all += [(cp._glob(a["path"]), a.get("pattern"), a.get("line_contains")) for a in existing]
+    scan = ("ls-files", "-z") if tracked else ("diff", "--cached", "--name-only", "-z")
+    staged = git(*scan, cwd=root).stdout.split("\0")
+    found: set[str] = set()
+    for rel in filter(None, staged):
+        text = cp._text(root / rel)
+        if text is None:
+            continue
+        rules = [r for r in rules_all if r[0].match(rel)]
+        for line in text.splitlines():
+            for digest in {cp._digest(c) for c in cp._candidates(line)} & hashes:
+                if not cp._allowed(rules, digest, line):
+                    found.add(digest)
+    if not found:
+        return
+    entries = {(a["path"], a.get("pattern"), a.get("line_contains")): a for a in existing}
+    for digest in found:
+        entries[("**", digest, None)] = {"path": "**", "pattern": digest}
+    merged = sorted(entries.values(), key=lambda a: json.dumps(a, sort_keys=True))
+    write_json(local, {"allow": merged})
+    git("add", "--", cp.LOCAL_ALLOW, cwd=root)
+
+
 def finalize(root: Path, opts: Options) -> None:
     root = root.resolve()
     validate(opts, root)
@@ -214,6 +282,7 @@ def finalize(root: Path, opts: Options) -> None:
     market = read_json(root / ".claude-plugin" / "marketplace.json")["name"]
     collision_override(root, opts, market)
     generate_harness(root, list(dict.fromkeys(opts.harness)))
+    allow_vocabulary(root)
     git("add", "-A", cwd=root)
     if git("diff", "--cached", "--quiet", cwd=root, check=False).returncode != 0:
         git("commit", "-m", f"chore(workbench): initialise {opts.project}", cwd=root)

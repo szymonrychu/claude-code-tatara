@@ -13,8 +13,7 @@ from gitops import DEFAULT_TEMPLATE_URL, Refusal, git
 
 
 def preflight(root: Path) -> None:
-    agents = root / "AGENTS.md"
-    if not agents.is_file() or project_files.UNINIT_RE.search(agents.read_text()):
+    if not project_files.is_initialised(root):
         raise Refusal("this workbench is not initialised; run init (new or adopt) first")
     if git("rev-parse", "-q", "--verify", "MERGE_HEAD", cwd=root, check=False).returncode == 0:
         raise Refusal("a merge is in progress; finish or abort it first")
@@ -117,9 +116,12 @@ def generated_paths(root: Path) -> set[str]:
     except (wb.ConfigError, ValueError) as e:
         raise Refusal(f"cannot resolve the config dir: {e}") from e
     cfg_names = {"settings.json", "workbench.json"}
-    return {
+    paths = {
         (cfg / rel).as_posix() if rel in cfg_names else rel for rel in owned.GENERATED_ON_CONFLICT
     }
+    # Plugin licenses carry the same project-chosen holder as the root LICENSE.
+    paths.update(p.relative_to(root).as_posix() for p in (root / "plugins").glob("*/LICENSE"))
+    return paths
 
 
 def resolve_generated(root: Path, generated: set[str]) -> list[str]:

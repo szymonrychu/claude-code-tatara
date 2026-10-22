@@ -157,3 +157,24 @@ def test_invalid_role_shape_refused_before_anything_is_created(workbench, run_cl
 def test_repo_template_markers_exist():
     assert "# workbench:code-tasks:begin" in (REPO / ".mise.toml").read_text()
     assert "workbench:project:begin" in (REPO / "AGENTS.md").read_text()
+
+
+def test_is_initialised(tmp_path):
+    import importlib.util
+    import sys
+
+    sys.path.insert(0, str(REPO / "scripts" / "init_engine"))
+    spec = importlib.util.spec_from_file_location(
+        "project_files_is_init", REPO / "scripts" / "init_engine" / "project_files.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    is_initialised = mod.is_initialised
+
+    assert not is_initialised(tmp_path)  # no AGENTS.md
+    (tmp_path / "AGENTS.md").write_text(
+        "# x\n<!-- workbench:uninitialised:begin -->\n<!-- workbench:uninitialised:end -->\n"
+    )
+    assert not is_initialised(tmp_path)
+    (tmp_path / "AGENTS.md").write_text("# x\n<!-- workbench:project:begin -->\n")
+    assert is_initialised(tmp_path)

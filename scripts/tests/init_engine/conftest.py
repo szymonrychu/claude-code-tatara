@@ -62,6 +62,8 @@ def workbench(tmp_path):
         ".claude/workbench.json",
         ".claude-plugin/marketplace.json",
         "LICENSE",
+        "plugins/workbench/LICENSE",
+        "plugins/workbench-secrets/LICENSE",
         "scripts/doctor.py",
         "plugins/workbench/scripts/lib/workbench.py",
         "docs/plans/todo/.gitkeep",

@@ -16,6 +16,14 @@ from gitops import Refusal, git
 UNINIT_RE = re.compile(
     r"<!-- workbench:uninitialised:begin -->.*?<!-- workbench:uninitialised:end -->\n*", re.S
 )
+
+
+def is_initialised(root: Path) -> bool:
+    """True when `root` has an AGENTS.md without the template's uninitialised block."""
+    agents = Path(root) / "AGENTS.md"
+    return agents.is_file() and not UNINIT_RE.search(agents.read_text())
+
+
 PROJECT_RE = re.compile(
     r"(<!-- workbench:project:begin -->\n)(.*?)(<!-- workbench:project:end -->)", re.S
 )

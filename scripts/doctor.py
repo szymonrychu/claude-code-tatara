@@ -22,8 +22,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "plugins" / "workbench" / "scripts" / "lib"))
 import workbench as wb  # noqa: E402
 
-BEGIN = "<!-- workbench:uninitialised:begin -->"
-END = "<!-- workbench:uninitialised:end -->"
+
+def is_initialised(root: Path) -> bool:
+    """Shared check from init_engine.project_files, loaded from the sibling directory."""
+    engine = str(ROOT / "scripts" / "init_engine")
+    if engine not in sys.path:
+        sys.path.append(engine)
+    from project_files import is_initialised as check
+
+    return check(root)
 
 
 class Broken(Exception):
@@ -90,9 +97,7 @@ def run(root: Path, user_file: Path) -> None:
     if not agents.is_file():
         raise Broken(f"{agents}: AGENTS.md is missing")
     core_doctor(root)
-    text = agents.read_text()
-    state = "uninitialised" if BEGIN in text and END in text else "initialised"
-    print(f"state: {state}")
+    print(f"state: {'initialised' if is_initialised(root) else 'uninitialised'}")
 
     market = _json(root / ".claude-plugin" / "marketplace.json")
     mname = market.get("name", "")

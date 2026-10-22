@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EXACT = re.compile(r"^\d+(\.\d+)*$")
 FILE_TASKS = {
     "mise-tasks/test/plugin": "mise run --cd plugins/workbench test",
-    "mise-tasks/test/scripts": "pytest scripts/tests",
+    "mise-tasks/test/scripts": 'pytest scripts/tests -m "not slow"',
     "mise-tasks/lint/plugin": "mise run --cd plugins/workbench lint",
     "mise-tasks/lint/root": "shellcheck",
 }
@@ -107,3 +107,22 @@ def test_tasks_call_the_pinned_pytest_binary():
         if p.is_file() and re.search(r"python3?\s+-m\s+pytest", p.read_text())
     ]
     assert not offenders, offenders
+
+
+def test_e2e_task_runs_slow_tests():
+    p = ROOT / "mise-tasks/e2e"
+    assert os.access(p, os.X_OK)
+    body = p.read_text()
+    assert body.startswith("#!/usr/bin/env bash")
+    assert re.search(r"^#MISE description=\S", body, re.M)
+    assert "pytest scripts/tests -m slow" in body
+    # outside the test: namespace, so root `test` (depends on test:*) never pulls it in
+    assert not (ROOT / "mise-tasks/test/e2e").exists()
+    assert "e2e" not in _mise()["tasks"].get("test", {}).get("depends", [])
+
+
+def test_ci_runs_e2e_job():
+    text = (ROOT / ".github/workflows/ci.yml").read_text()
+    m = re.search(r"^  e2e:\n(.*?)(?=^  \S|\Z)", text, re.M | re.S)
+    assert m, "no e2e job"
+    assert "run: mise run e2e" in m.group(1)

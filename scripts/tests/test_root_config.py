@@ -98,3 +98,47 @@ def test_gitignore_entries():
     test_gitignore_per_config_dir_and_runtime()
     test_gitignore_has_no_superpowers_and_plugin_gitignore_retired()
     assert "uv.lock" not in _ignore()
+
+
+def _conftest():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "tests_conftest", ROOT / "scripts/tests/conftest.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_template_marker_registered_and_noop_in_template(request):
+    markers = request.config.getini("markers")
+    assert any(m.startswith("template") for m in markers)
+    conf = _conftest()
+    tagged = [i for i in request.session.items if i.get_closest_marker("template")]
+    assert all(i.nodeid in conf.TEMPLATE_ONLY for i in tagged)
+    skipped = [i for i in tagged if any(m.args[0] for m in i.iter_markers("skipif"))]
+    if conf.is_initialised(ROOT):
+        assert len(skipped) == len(tagged)
+    else:
+        assert not skipped  # the marker never skips anything in the uninitialised template
+
+
+def test_template_only_ids_all_exist():
+    conf = _conftest()
+    out = subprocess.run(
+        ["python", "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.splitlines()  # fmt: skip
+    collected = {x for x in out if "::" in x}
+    assert conf.stale_ids(collected, conf.TEMPLATE_ONLY) == []
+    assert conf.stale_ids(collected, ["scripts/tests/test_root_config.py::nope"]) == [
+        "scripts/tests/test_root_config.py::nope"
+    ]
+
+
+def test_slow_marker_registered_and_deselected_by_default(request):
+    markers = request.config.getini("markers")
+    assert any(m.startswith("slow") for m in markers)
+    body = (ROOT / "mise-tasks/test/scripts").read_text()
+    assert 'pytest scripts/tests -m "not slow"' in body
