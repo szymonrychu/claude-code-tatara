@@ -1,6 +1,6 @@
 ---
 title: Docs update flow
-status: todo
+status: in-progress
 repo: workbench
 value: "The README tells users to run the skill instead of a manual merge, and the decision is on record"
 files: [README.md, MEMORY.md]

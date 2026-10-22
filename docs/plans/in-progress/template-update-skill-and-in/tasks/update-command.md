@@ -1,6 +1,6 @@
 ---
 title: Update command
-status: todo
+status: in-progress
 repo: workbench
 value: "One mise command pulls template tooling into a project without the template's own docs"
 files: [scripts/init_engine/update.py, scripts/init_engine/cli.py, scripts/init_engine/gitops.py, mise-tasks/init/update, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/conftest.py]

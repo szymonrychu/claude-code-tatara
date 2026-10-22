@@ -1,6 +1,6 @@
 ---
 title: E2e template update
-status: todo
+status: in-progress
 repo: workbench
 value: The whole init cleanup and update round trip is proven on a real template copy with real lint
 files: [scripts/tests/e2e/test_template_update.py, scripts/init_engine/update.py]

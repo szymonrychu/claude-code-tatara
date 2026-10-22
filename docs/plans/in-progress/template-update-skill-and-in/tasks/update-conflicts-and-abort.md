@@ -1,6 +1,6 @@
 ---
 title: Update conflicts and abort
-status: todo
+status: in-progress
 repo: workbench
 value: Generated-file conflicts resolve themselves and any other failure leaves the project exactly as it was
 files: [scripts/init_engine/update.py, scripts/tests/init_engine/test_update_conflicts.py, scripts/tests/init_engine/conftest.py]

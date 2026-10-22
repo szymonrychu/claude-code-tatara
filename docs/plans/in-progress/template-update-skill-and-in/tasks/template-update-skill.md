@@ -1,6 +1,6 @@
 ---
 title: Template update skill
-status: todo
+status: in-progress
 repo: workbench
 value: "Users update a workbench by asking for it; the skill runs the engine and reports"
 files: [plugins/workbench/skills/template-update/SKILL.md, plugins/workbench/skills/template-update/tests/test_template_update_skill.py, plugins/workbench/README.md]

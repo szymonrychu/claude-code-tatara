@@ -1,6 +1,6 @@
 ---
 title: Instance owned paths
-status: todo
+status: in-progress
 repo: workbench
 value: "New workbenches start with no template plans, contracts, research or memory, from one owned-path list"
 files: [scripts/init_engine/owned.py, scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py]

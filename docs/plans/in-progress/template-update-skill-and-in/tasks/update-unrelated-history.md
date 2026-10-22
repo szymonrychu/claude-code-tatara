@@ -1,6 +1,6 @@
 ---
 title: Update unrelated history
-status: todo
+status: in-progress
 repo: workbench
 value: "Projects copied from the template, with no shared history, can still take updates"
 files: [scripts/init_engine/update.py, scripts/init_engine/cli.py, scripts/tests/init_engine/test_update_unrelated.py]
