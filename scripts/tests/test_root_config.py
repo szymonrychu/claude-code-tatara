@@ -135,3 +135,10 @@ def test_template_only_ids_all_exist():
     assert conf.stale_ids(collected, ["scripts/tests/test_root_config.py::nope"]) == [
         "scripts/tests/test_root_config.py::nope"
     ]
+
+
+def test_slow_marker_registered_and_deselected_by_default(request):
+    markers = request.config.getini("markers")
+    assert any(m.startswith("slow") for m in markers)
+    body = (ROOT / "mise-tasks/test/scripts").read_text()
+    assert 'pytest scripts/tests -m "not slow"' in body

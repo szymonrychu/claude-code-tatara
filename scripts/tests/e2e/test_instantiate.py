@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent))
 from helpers import denylist_terms, git, production_env, run, secret_shaped  # noqa: E402
 
@@ -125,12 +127,23 @@ def test_component_add_remove(template, engine, tmp_path):
     assert_healthy(template, 1)
 
 
-def assert_green(tree: Path, mise) -> None:
-    """lint and test exit 0 and nothing is left uncommitted."""
-    for task in ("lint", "test"):
-        r = run("mise", "run", task, cwd=tree, check=False, env=production_env())
-        assert r.returncode == 0, (task, r.stdout[-3000:], r.stderr[-3000:])
-        assert git("status", "--porcelain", cwd=tree) == "", task
+FAST_TESTS = ("scripts/tests/test_root_config.py", "scripts/tests/test_root_tooling.py")
+
+
+def assert_green(tree: Path, mise, full: bool = False) -> None:
+    """lint and tests exit 0 and nothing is left uncommitted. The default check runs the
+    real `mise run lint` plus a reduced pytest target; `full` runs the whole `mise run test`."""
+    commands = [("mise", "run", "lint")]
+    if full:
+        commands.append(("mise", "run", "test"))
+    else:
+        commands.append(
+            ("mise", "exec", "--", "pytest", *FAST_TESTS, "-q", "-p", "no:cacheprovider")
+        )
+    for cmd in commands:
+        r = run(*cmd, cwd=tree, check=False, env=production_env())
+        assert r.returncode == 0, (cmd, r.stdout[-3000:], r.stderr[-3000:])
+        assert git("status", "--porcelain", cwd=tree) == "", cmd
 
 
 def test_new_init_leaves_green_tree(template, engine, mise, tmp_path):
@@ -166,6 +179,7 @@ def test_second_component_add_stays_green(template, engine, mise, tmp_path):
     assert_green(template, mise)
 
 
+@pytest.mark.slow
 def test_suite_green_on_initialised_copy(template, engine, tmp_path):
     engine(
         "new", "--name", "demo", "--component", "api:python",
@@ -177,3 +191,12 @@ def test_suite_green_on_initialised_copy(template, engine, tmp_path):
         cwd=template, check=False, env=production_env(),
     )  # fmt: skip
     assert r.returncode == 0, r.stdout[-4000:] + r.stderr[-2000:]
+
+
+@pytest.mark.slow
+def test_full_mise_test_green_on_initialised_copy(template, engine, mise, tmp_path):
+    engine(
+        "new", "--name", "demo", "--component", "api:python",
+        "--remote", f"local-bare:{tmp_path / 'remotes'}", "--purpose", "demo",
+    )  # fmt: skip
+    assert_green(template, mise, full=True)
