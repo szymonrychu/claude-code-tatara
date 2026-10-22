@@ -5,9 +5,18 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_ticket_continue import epic, meta, repo, root, write_ret  # noqa: E402,F401
 from test_ticket_run import cli, commit_all, git  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def private_suite_lock(tmp_path, monkeypatch):
+    # --launch lands via merge.py --verify under suite-lock.sh; the runner holds the machine lock
+    monkeypatch.setenv("SUITE_LOCK_DIR", str(tmp_path / "lock"))
+    monkeypatch.delenv("SUITE_LOCK_SLOTS", raising=False)
 
 
 def _head(repo):
