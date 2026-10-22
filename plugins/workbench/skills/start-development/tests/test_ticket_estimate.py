@@ -24,6 +24,8 @@ from test_ticket_run import (  # noqa: E402
     write_run_dir,
 )
 
+VERIFY = "pytest -q tests/test_x.py"  # the verify mk_task passes
+
 
 def task_meta(p):
     return ticket.load(p.read_text(), p).meta
@@ -32,7 +34,7 @@ def task_meta(p):
 def test_new_task_without_estimate_writes_formula_minutes(root):
     ep = mk_epic(root)
     m = task_meta(mk_task(root, ep, "Alpha"))
-    assert m["estimate"] == str(estimator.task_minutes(2, "pytest -q"))
+    assert m["estimate"] == str(estimator.task_minutes(2, VERIFY))
     assert m["estimate_by"] == "formula"
     assert m["actual_roles"] == ""
 
@@ -51,7 +53,7 @@ def test_estimate_writes_formula_minutes_and_keeps_overrides(repo, root):
     commit_all(repo)
     r = cli("estimate", ep, "--root", root)
     assert r.returncode == 0, r.stderr
-    assert task_meta(a)["estimate"] == str(estimator.task_minutes(4, "pytest -q"))
+    assert task_meta(a)["estimate"] == str(estimator.task_minutes(4, VERIFY))
     assert task_meta(a)["estimate_by"] == "formula"
     assert task_meta(b)["estimate"] == "45" and task_meta(b)["estimate_by"] == "override"
     lines = r.stdout.strip().splitlines()
