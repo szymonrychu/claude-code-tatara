@@ -1,0 +1,53 @@
+---
+title: helmfile base
+status: todo
+repo: agents-helmfile
+value: x
+files: [a]
+verify: v
+depends_on: [scaffold-repo]
+owns: []
+uses: []
+model: ""
+estimate: 5
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# helmfile base
+
+## Requirement
+
+
+
+## Acceptance conditions
+
+
+
+## Files
+
+- `a`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
