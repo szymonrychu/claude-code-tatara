@@ -856,7 +856,7 @@ const OWN_CHECKOUT_ONLY =
   '`git merge`, `git commit` and `git reset` run only inside this task\'s own checkout, never in the main checkout or another task\'s tree. If `git rev-parse --show-toplevel` is not that checkout, stop and report instead of running them.'
 
 // The same-repo dependency branches dependencyLines tells the task to merge. An epic run has none,
-// except a held medium-only dependency: its diff base is the epic branch, which does not carry it.
+// except a medium-only dependency awaiting a ruling: its diff base is the epic branch, which does not carry it.
 function mergedDependencyBranches(t) {
   return (t.dependsOn || []).flatMap((d) => {
     if (EPIC && !mediumHeldDep(d)) return []
@@ -866,7 +866,7 @@ function mergedDependencyBranches(t) {
   })
 }
 
-// A medium-only task no ruling accepted: released to its dependents but not on the epic branch.
+// A medium-only task no ruling has accepted yet: its dependents merge its task branch, the epic branch lacks it.
 const mediumHeldDep = (d) => {
   const r = DEP_RESULTS.get(d)
   return Boolean(r && r.mediumOnly && !RULED_ACCEPT.has(d))
@@ -2225,7 +2225,7 @@ async function landTask(t, r) {
 // Every task starts the moment its own dependencies are released - per-task edge triggers,
 // never "when the whole wave is done", so the slowest sibling sets no one else's latency.
 // A dependency is released when it settles verified and clean, processOnly, triageRejected,
-// accepted by a ruling, or mediumOnly (released to its dependents, escalated, never landed in-run). A task whose dependency failed is escalated, not run.
+// accepted by a ruling, or mediumOnly (its dependents start, it is escalated and waits for a ruling to land). A task whose dependency failed is escalated, not run.
 // With args.rulingsFile, a dependent of a verified but unreleased dependency waits for a
 // ruling. The file is read once per wave boundary: a task settles verified-not-released
 // while another waits on it, or nothing runs while dependents wait. An idle read that
@@ -2254,16 +2254,19 @@ function runTasks(batch) {
     const r = settled.get(d)
     return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
   }
-  // A mediumOnly task releases its dependents (they merge its task branch) but is never queued
-  // for landing until a ruling accepts it (D8, amended 2026-10-22).
+  // A mediumOnly task releases its dependents (they merge its task branch) and is queued for
+  // landing only once a ruling accepts it (D8, amended 2026-10-22).
   const mediumHeld = (d) => {
     const r = settled.get(d)
     return Boolean(r && r.mediumOnly && verified(r.impl) && !landFailed(d) && !releasable(d))
   }
   const landed = new Set()
-  const released = (d) => mediumHeld(d) || (releasable(d) && (!LANDING || landed.has(d)))
+  // A clean task built on a medium-only task awaiting a ruling carries that task's commits:
+  // landing it would put them on the epic branch, so it waits for the ruling too.
+  const behindHeld = (d) => depsOf(batch.find((t) => t.id === d) || {}).some((x) => mediumHeld(x) || behindHeld(x))
+  const released = (d) => mediumHeld(d) || (releasable(d) && (!LANDING || landed.has(d) || behindHeld(d)))
   // Releasable but not landed yet: queued or landing now.
-  const landPending = (d) => LANDING && releasable(d) && !landed.has(d)
+  const landPending = (d) => LANDING && releasable(d) && !landed.has(d) && !behindHeld(d)
   // Settled verified but not releasable; only a ruling can release it.
   const rulable = (d) => Boolean(RULINGS_FILE) && settled.has(d) && verified(settled.get(d).impl) && !releasable(d) && !landFailed(d)
   const landQueue = []
