@@ -52,7 +52,8 @@
     "tasks": [
       "template-marker-skip",
       "e2e-init-green",
-      "e2e-behind-slow-marker"
+      "e2e-behind-slow-marker",
+      "ci-workflow-test-pins-e2e-job"
     ],
     "status": "approved"
   },
