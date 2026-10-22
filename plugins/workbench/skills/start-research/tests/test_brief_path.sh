@@ -44,7 +44,7 @@ assert_status "$status" 1 "brief_path exits non-zero when slug is empty"
 # uninitialised template
 SCRIPT_ROOT="$(cd "$(dirname "$SCRIPT")/../../../../.." && pwd)"
 if [ -d "$SCRIPT_ROOT/code" ] && [ -f "$SCRIPT_ROOT/.gitmodules" ]; then
-  ok "plain-repo fallback skipped: the script lives inside an initialised workbench"
+  echo "SKIP (not counted): plain-repo fallback needs the uninitialised template; the script lives inside an initialised workbench"
 else
   PLAIN="$TMPDIR_ROOT/plain"
   mkdir -p "$PLAIN"
