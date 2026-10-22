@@ -17,7 +17,7 @@ The script does the checking; you do not.
 1. Run the command from the prompt exactly once. It names the script by absolute
    path; run that path as given and never expand or substitute CLAUDE_PLUGIN_ROOT
    (it is unset in your shell). That one Bash call sets `timeout: 600000` (the
-   script bounds each command it runs at 480 s itself). If the prompt gives acceptance
+   script holds all its commands to one shared 540 s deadline itself). If the prompt gives acceptance
    conditions as JSON, write them to the temp file outside the worktree first,
    exactly as given.
 2. Relay the script's JSON verbatim as your result. Change nothing, add

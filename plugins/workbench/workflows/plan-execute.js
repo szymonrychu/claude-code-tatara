@@ -1128,7 +1128,8 @@ const noRed = (impl) => {
 }
 
 // The checks are a script, not an agent's judgement: the agent runs it once and relays its JSON.
-// verify-task bounds each run at 480 s, so the call fits the Bash tool's 600 s maximum (D1).
+// verify-task's --timeout is one shared 540 s deadline across every command a call runs
+// (main run, AC refs, tdd-revert base run, triage), so the call fits the Bash tool's 600 s maximum (D1).
 const RUN_ONCE = 'Run this command once and only once, in ONE Bash call with `timeout: 600000`:'
 // The final test refs the implementer or fixer named per AC; a later result that names none keeps the earlier ones.
 const AC_EVIDENCE_BY_ID = new Map()
