@@ -1,7 +1,13 @@
+import hashlib
+import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).parent))
+from init_helpers import personal_lint  # noqa: E402
 
 
 def g(*args, cwd):
@@ -186,3 +192,35 @@ def test_doctor_sees_components(workbench, run_cli, allow_file):
     assert "kind:       metarepo" in d.stdout
     assert "components: 2" in d.stdout
     assert "NO REMOTE" not in d.stdout
+
+
+def allow_entries(root):
+    path = root / "scripts" / "personal-allow.local.json"
+    return json.loads(path.read_text())["allow"] if path.is_file() else []
+
+
+def test_init_allows_project_vocabulary(workbench, run_cli, allow_file):
+    lint = personal_lint(workbench, "zorbaxproj")
+    r = run_cli(
+        "new", "--name", "zorbaxproj", "--component", "api:python", "--remote", "local-bare",
+        "--purpose", "A zorbaxproj service.",
+    )  # fmt: skip
+    assert r.returncode == 0, r.stderr
+    digest = hashlib.sha256(b"zorbaxproj").hexdigest()
+    assert allow_entries(workbench) == [{"path": "**", "pattern": digest}]
+    assert lint().returncode == 0, lint().stdout
+    assert g("status", "--porcelain", cwd=workbench).stdout == ""
+    tracked = g("ls-files", "scripts/personal-allow.local.json", cwd=workbench).stdout
+    assert tracked.strip() == "scripts/personal-allow.local.json"
+
+
+def test_literal_hits_not_auto_allowed(workbench, run_cli, allow_file):
+    lint = personal_lint(workbench, patterns=["litproj"])
+    r = run_cli(
+        "new", "--name", "litproj", "--component", "api:python", "--remote", "local-bare",
+        "--purpose", "A litproj service.",
+    )  # fmt: skip
+    assert r.returncode == 0, r.stderr
+    assert allow_entries(workbench) == []
+    out = lint()
+    assert out.returncode == 1 and "litproj" in out.stdout

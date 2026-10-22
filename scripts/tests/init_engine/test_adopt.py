@@ -372,3 +372,23 @@ def test_mise_task_adopt():
 def test_help_lists_flags(run_cli, flag):
     out = run_cli("adopt", "--help").stdout
     assert flag in out and "--name" in out and "--remote" in out
+
+
+def test_adopt_allows_owner_vocabulary(workbench, run_cli, tmp_path, allow_file):
+    import hashlib
+    import json
+
+    from init_helpers import personal_lint
+
+    lint = personal_lint(workbench, "zorbax-owner")
+    src, _ = make_source(tmp_path)
+    bare = tmp_path / "zorbax-owner" / "proj.git"
+    bare.parent.mkdir()
+    ok("clone", "-q", "--bare", str(tmp_path / "origins" / "proj.git"), str(bare), cwd=tmp_path)
+    r = run_cli("adopt", "--url", str(bare))
+    assert r.returncode == 0, r.stderr
+    assert "zorbax-owner" in (workbench / ".gitmodules").read_text()
+    allow = json.loads((workbench / "scripts/personal-allow.local.json").read_text())["allow"]
+    assert allow == [{"path": "**", "pattern": hashlib.sha256(b"zorbax-owner").hexdigest()}]
+    assert lint().returncode == 0, lint().stdout
+    assert ok("status", "--porcelain", cwd=workbench) == ""

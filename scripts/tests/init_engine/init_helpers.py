@@ -28,3 +28,31 @@ def template_commit(project, tmp_path, files, name="up"):
     sh("commit", "-m", "template change", cwd=work)
     sh("push", "origin", "HEAD:main", cwd=work)
     return sh("rev-parse", "HEAD", cwd=work).stdout.strip()
+
+
+def personal_lint(root, *terms, patterns=()):
+    """Give a temp workbench the real personal lint with a denylist of these hashed terms
+    (and literal patterns); return a callable that runs the lint and returns the process."""
+    import hashlib
+    import json
+    import shutil
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[3]
+    shutil.copy2(repo / "scripts" / "check_personal.py", root / "scripts" / "check_personal.py")
+    hashes = sorted(hashlib.sha256(t.encode()).hexdigest() for t in terms)
+    write(
+        root,
+        "scripts/personal-denylist.json",
+        json.dumps({"patterns": list(patterns), "hashes": hashes, "allow": []}),
+    )
+
+    def run():
+        return subprocess.run(
+            [sys.executable, str(root / "scripts" / "check_personal.py"), "--root", str(root)],
+            capture_output=True,
+            text=True,
+        )
+
+    return run

@@ -141,6 +141,7 @@ def cmd_component_add(args: argparse.Namespace) -> int:
         rc = adopt.adopt_url(root, args.url, args.name, args.origin_is_template)
         method = "component add --url"
     project_files.write_all(root, answers, method=method)
+    finalize.allow_vocabulary(root)
     git("add", "-A", cwd=root)
     label = ", ".join(sorted(code_dirs(root) - before)) or "components"
     if git("diff", "--cached", "--quiet", cwd=root, check=False).returncode != 0:

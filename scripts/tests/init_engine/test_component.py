@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
+from init_helpers import personal_lint
 from test_adopt import make_source, ok
 
 
@@ -183,3 +184,36 @@ def test_component_add_remove_commit(wb, run_cli):
     assert int(ok("rev-list", "--count", "HEAD", cwd=wb)) == int(before) + 2
     assert ok("log", "-1", "--format=%s", cwd=wb) == "chore(workbench): remove component worker"
     assert ok("status", "--porcelain", cwd=wb) == ""
+
+
+def test_component_add_allows_owner_vocabulary(wb, run_cli, tmp_path):
+    import hashlib
+    import json
+
+    lint = personal_lint(wb, "zorbax-owner", "other-owner")
+    ok("add", "-A", cwd=wb)
+    ok("commit", "-q", "-m", "lint", cwd=wb)
+    local = wb / "scripts/personal-allow.local.json"
+    local.write_text(
+        json.dumps(
+            {"allow": [{"path": "**", "pattern": hashlib.sha256(b"other-owner").hexdigest()}]}
+        )
+    )
+    ok("add", "-A", cwd=wb)
+    ok("commit", "-q", "-m", "seed", cwd=wb)
+    dest = tmp_path / "zorbax-owner"
+    for name in ("w1", "w2"):
+        r = run_cli(
+            "component", "add", "--component", f"{name}:python", "--remote", f"local-bare:{dest}"
+        )
+        assert r.returncode == 0, r.stderr
+        assert lint().returncode == 0, lint().stdout
+        assert ok("status", "--porcelain", cwd=wb) == ""
+    allow = json.loads(local.read_text())["allow"]
+    digests = [hashlib.sha256(t).hexdigest() for t in (b"zorbax-owner", b"other-owner")]
+    assert allow == sorted(
+        ({"path": "**", "pattern": d} for d in digests), key=lambda a: json.dumps(a, sort_keys=True)
+    )
+    r = run_cli("component", "remove", "--name", "w1")
+    assert r.returncode == 0, r.stderr
+    assert json.loads(local.read_text())["allow"] == allow
