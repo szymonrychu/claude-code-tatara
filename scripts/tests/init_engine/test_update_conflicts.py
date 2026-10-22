@@ -20,7 +20,7 @@ def assert_untouched(project, before):
     assert before[1] == "" and before[2] != 0
 
 
-def test_generated_conflicts_keep_project_side(project, run_cli, tmp_path):
+def test_generated_conflict_keeps_project_side(project, run_cli, tmp_path):
     write(project, "AGENTS.md", (project / "AGENTS.md").read_text() + "\nproject line\n")
     write(project, ".claude/workbench.json", '{"project": 1}\n')
     sh("add", "-A", cwd=project)
@@ -46,7 +46,7 @@ def test_generated_conflicts_keep_project_side(project, run_cli, tmp_path):
     assert sh("status", "--porcelain", cwd=project).stdout == ""
 
 
-def test_template_marketplace_keys_renamed_project_wins(project):
+def test_template_market_keys_renamed(project):
     sys.path.insert(0, str(project / "scripts" / "init_engine"))
     try:
         update = import_module("update")
@@ -71,7 +71,7 @@ def test_template_marketplace_keys_renamed_project_wins(project):
     assert out["extraKnownMarketplaces"][name] == settings["extraKnownMarketplaces"][name]
 
 
-def test_unknown_conflict_aborts_leaving_no_trace(project, run_cli, tmp_path):
+def test_unknown_conflict_aborts_cleanly(project, run_cli, tmp_path):
     write(project, "tooling.txt", "project\n")
     sh("add", "-A", cwd=project)
     sh("commit", "-m", "project tooling", cwd=project)
@@ -86,7 +86,7 @@ def test_unknown_conflict_aborts_leaving_no_trace(project, run_cli, tmp_path):
     assert (project / "tooling.txt").read_text() == "project\n"
 
 
-def test_lint_failure_prints_last_20_lines_and_aborts(project, run_cli, tmp_path):
+def test_lint_failure_aborts_cleanly(project, run_cli, tmp_path):
     template_commit(project, tmp_path, {"tooling.txt": "v2\n", "added.txt": "a\n"})
     before = state(project)
     r = run_cli("update", "--lint-command", "seq 1 30; exit 3")
@@ -99,7 +99,7 @@ def test_lint_failure_prints_last_20_lines_and_aborts(project, run_cli, tmp_path
     assert not (project / "added.txt").exists()
 
 
-def test_refresh_failure_aborts_leaving_no_trace(project, run_cli, tmp_path):
+def test_refresh_failure_aborts_cleanly(project, run_cli, tmp_path):
     broken = "import sys\nsys.exit('boom')\n"
     template_commit(project, tmp_path, {"scripts/harness/setup.py": broken, "added.txt": "a\n"})
     before = state(project)
@@ -109,3 +109,20 @@ def test_refresh_failure_aborts_leaving_no_trace(project, run_cli, tmp_path):
     assert "boom" in r.stderr
     assert_untouched(project, before)
     assert not (project / "added.txt").exists()
+
+
+def test_update_renames_template_market_keys_end_to_end(project, run_cli, tmp_path):
+    name = json.loads((project / ".claude-plugin/marketplace.json").read_text())["name"]
+    path = project / ".claude/settings.json"
+    settings = json.loads(path.read_text())
+    settings["enabledPlugins"]["workbench-newpack@workbench-template"] = True
+    path.write_text(json.dumps(settings, indent=2) + "\n")
+    sh("add", "-A", cwd=project)
+    sh("commit", "-m", "project settings", cwd=project)
+    template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
+    r = run_cli("update", *LINT)
+    assert r.returncode == 0, r.stderr
+    out = json.loads(path.read_text())
+    assert out["enabledPlugins"][f"workbench-newpack@{name}"] is True
+    assert not [k for k in out["enabledPlugins"] if k.endswith("@workbench-template")]
+    assert sh("status", "--porcelain", cwd=project).stdout == ""
