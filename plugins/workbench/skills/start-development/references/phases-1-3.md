@@ -80,7 +80,7 @@ adds a new subsystem) with `{epic, briefs[], userDecisions[], relatedEpics[]}`. 
 ordered by `dependsOn` except files matching `overlapIgnore` (`references/workbench-config.md`). It writes:
 - one task file per task via `epic-task-create`: `ticket.py new-task --epic <epic> --title "<title>" --repo ... --value ...
   --files ... --verify ...` (plus `--depends-on`, `--owns`, `--uses`, `--model`, `--review`,
-  `--requirement-file`, `--ac-file`, and `--estimate <minutes>`: size each task to about an hour, split it when it runs over 90; report only, never a budget); the task slug is its id everywhere. design.md's `## Research
+  `--requirement-file`, `--ac-file`, and `--estimate <minutes>`: size each task to one test file's worth of behaviour, at most 8 files; give it a targeted verify (named test files or a component suite plus lint, never the full suite); merge sibling tasks under 3 files that share a test file into one; estimates come from `ticket.py estimate <epic>` and `--estimate` is only an override; report only, never a budget); the task slug is its id everywhere. design.md's `## Research
   inputs` maps every `Plan inputs` entry to a task slug or to "rejected: <why>". The task files are
   the plan: no plan doc, no tasks.json to keep in sync;
 - the approval ledger at `<epic dir>/approvals.json` (`references/approvals.md`).

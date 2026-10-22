@@ -64,15 +64,27 @@ class Triage:
     """Stub for triage.run: flags parking lines containing 'later', everything plausible."""
 
     def __init__(self, tier="full", verdict="yes"):
-        self.calls, self.tier, self.verdict = [], tier, verdict
+        self.calls, self.verify_calls, self.tier, self.verdict = [], [], tier, verdict
 
     def __call__(self, mode, data, **_):
-        self.calls.append((mode, data))
-        if mode == "parking":
-            return [{**x, "reason": "defers"} for x in data if "later" in x["text"]]
-        if mode == "ac-plausible":
-            return [{"id": a["id"], "verdict": self.verdict, "reason": "stub"} for a in data]
-        return {"classifierTier": self.tier, "reasons": ["stub"]}
+        """One combined `verify` call; its parts are recorded as sub-calls (parking, ...)."""
+        assert mode == "verify"
+        self.verify_calls.append(data)
+        out = {"parking": [], "acs": [], "classifierTier": None, "error": None}
+        if "parking" in data:
+            self.calls.append(("parking", data["parking"]))
+            out["parking"] = [
+                {**x, "reason": "defers"} for x in data["parking"] if "later" in x["text"]
+            ]
+        if "acs" in data:
+            self.calls.append(("ac-plausible", data["acs"]))
+            out["acs"] = [
+                {"id": a["id"], "verdict": self.verdict, "reason": "stub"} for a in data["acs"]
+            ]
+        if "tier" in data:
+            self.calls.append(("tier", data["tier"]))
+            out["classifierTier"] = self.tier
+        return out
 
 
 def verify(root, command="true", *extra, triage=None, base="main", acs=None):
@@ -546,6 +558,7 @@ def test_tdd_revert_modified_added_deleted(repo):
         "failedOnBase": True,
         "passedOnHead": True,
         "files": ["added.py", "gone.py", "lib_a.py"],
+        "baseCommand": TDD_CMD,
     }
     assert out["clean"] is True and out["passed"] is True
     assert git(repo, "status", "--porcelain") == ""
@@ -565,11 +578,11 @@ def test_tdd_revert_restores_tree_after_an_error(repo, monkeypatch):
     real = vt.run_shell
     calls = []
 
-    def flaky(cmd, cwd):
+    def flaky(cmd, cwd, timeout=None):
         calls.append(cmd)
-        if len(calls) == 3:  # the head re-run, after the base state is in place
+        if len(calls) == 2:  # the base run, with the base state in place
             raise RuntimeError("boom")
-        return real(cmd, cwd)
+        return real(cmd, cwd, timeout)
 
     monkeypatch.setattr(vt, "run_shell", flaky)
     out = verify(repo, TDD_CMD, "--no-triage", "--tdd-revert")
@@ -613,7 +626,6 @@ def test_never_changes_history_or_branch(repo):
         ["--cmd", "true", "--base", "main", "--test-re", "x"],  # no --markers
         ["--cmd", "true", "--base", "main", "--markers", "TODO"],  # no --test-re
         ["--cmd", "true", "--base", "main", "--markers", "TODO", "--test-re", "("],
-        ["--base", "main", "--markers", "TODO", "--test-re", "x"],  # no --command
     ],
 )
 def test_usage_errors_exit_2(argv):
@@ -649,7 +661,7 @@ def test_triage_log_is_passed_to_triage(repo, monkeypatch):
 
     def fake(mode, data, **kw):
         seen.append(kw.get("log"))
-        return {"classifierTier": "light", "reasons": []} if mode == "tier" else []
+        return {"parking": [], "acs": [], "classifierTier": "light", "error": None}
 
     monkeypatch.setattr(triage, "run", fake)
     branch(repo)
@@ -665,7 +677,7 @@ def test_triage_usage_is_summed_into_the_verify_json(repo, monkeypatch):
         kw["usage"]["calls"] += 1
         kw["usage"]["input_tokens"] += 10
         kw["usage"]["output_tokens"] += 3
-        return {"classifierTier": "light", "reasons": []} if mode == "tier" else []
+        return {"parking": [], "acs": [], "classifierTier": "light", "error": None}
 
     monkeypatch.setattr(triage, "run", fake)
     branch(repo)

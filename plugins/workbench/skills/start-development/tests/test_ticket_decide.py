@@ -99,7 +99,7 @@ def epic(repo):
             "--files",
             f"{title}.py",
             "--verify",
-            "pytest -q",
+            "pytest -q tests/test_x.py",
             "--requirement-file",
             root / f"{title}.req",
             "--ac-file",

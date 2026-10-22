@@ -61,7 +61,7 @@ def mk_task(root, epic, title, files=None, extra=()):
         "--files",
         files or f"{title}.py",
         "--verify",
-        "pytest -q",
+        "pytest -q tests/test_x.py",
         "--requirement-file",
         rf,
         "--ac-file",

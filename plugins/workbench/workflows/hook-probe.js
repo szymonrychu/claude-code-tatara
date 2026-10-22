@@ -7,8 +7,39 @@ export const meta = {
     { title: 'Stop guard', detail: 'leave a file uncommitted and end the turn' },
     { title: 'Bash guard', detail: 'run a command guard-bash blocks' },
     { title: 'Agent type', detail: 'dispatch with a plugin agent name as agentType' },
+    { title: 'Cache static-first', detail: 'args.probe=cache: three serial agents, shared static block first' },
+    { title: 'Cache task-first', detail: 'args.probe=cache: the same three with the varying line first' },
   ],
 }
+
+const cacheProbe = async () => {
+  const staticBlock = Array.from(
+    { length: 80 },
+    (_, i) => `Static context line ${i + 1}: this block is identical for every probe agent so the prompt cache can reuse it.`,
+  ).join('\n')
+  const labels = []
+  const dispatch = async (kind, phaseTitle, taskFirst) => {
+    phase(phaseTitle)
+    for (let n = 1; n <= 3; n++) {
+      const label = `probe:cache:${kind}#${n}`
+      const line = `Probe ${n}: reply with ok true`
+      labels.push(label)
+      await agent(taskFirst ? `${line}\n${staticBlock}` : `${staticBlock}\n${line}`, {
+        label,
+        phase: phaseTitle,
+        agentType: 'workbench:implementer',
+        model: 'sonnet',
+        effort: 'low',
+        schema: { type: 'object', required: ['ok'], properties: { ok: { type: 'boolean' } } },
+      })
+    }
+  }
+  await dispatch('static', 'Cache static-first', false)
+  await dispatch('task', 'Cache task-first', true)
+  return { probe: 'cache', labels }
+}
+
+if (args && args.probe === 'cache') return await cacheProbe()
 
 const worktree = args && args.worktree
 if (typeof worktree !== 'string' || !(worktree.includes('.claude/worktrees/') || worktree.includes('.worktrees/'))) {

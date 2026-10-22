@@ -113,3 +113,70 @@ def test_help_prints_usage():
     r = run("--help")
     assert r.returncode == 0
     assert "usage" in r.stdout.lower()
+
+
+def cache_run(tmp_path, static, task):
+    """Build a run dir: journal.jsonl plus one agent transcript per label."""
+    journal = [{"type": "launched"}]
+    rows = [(f"probe:cache:static#{i}", v) for i, v in enumerate(static, 1)]
+    rows += [(f"probe:cache:task#{i}", v) for i, v in enumerate(task, 1)]
+    for n, (label, (create, read)) in enumerate(rows):
+        aid = f"a{n}"
+        journal.append({"type": "started", "agentId": aid, "label": label, "phase": "p"})
+        write(
+            tmp_path / f"agent-{aid}.jsonl",
+            [
+                {"type": "user", "cwd": f"/wt/{aid}", "message": {"content": "x"}},
+                {
+                    "type": "assistant",
+                    "message": {
+                        "usage": {
+                            "cache_creation_input_tokens": create,
+                            "cache_read_input_tokens": read,
+                        }
+                    },
+                },
+                {"type": "assistant", "message": {"usage": {"cache_creation_input_tokens": 1}}},
+            ],
+        )
+    write(tmp_path / "journal.jsonl", journal)
+    return tmp_path
+
+
+def run_cache(path, *extra):
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), "--cache", str(path), *extra], capture_output=True, text=True
+    )
+
+
+def test_cache_saving_verdict(tmp_path):
+    d = cache_run(
+        tmp_path, [(20000, 0), (300, 19000), (200, 19500)], [(20000, 0), (19000, 0), (21000, 0)]
+    )
+    r = run_cache(d)
+    assert r.returncode == 0
+    lines = r.stdout.splitlines()
+    assert lines[0].startswith("probe:cache:static#1")
+    assert "cacheCreation=20000" in lines[0] and "cwd=/wt/a0" in lines[0]
+    assert len(lines) == 7
+    assert lines[-1] == "CACHE saving static=300,200 task=19000,21000"
+
+
+def test_cache_none_verdict_and_json(tmp_path):
+    d = cache_run(tmp_path, [(20000, 0), (18000, 0), (200, 0)], [(20000, 0), (100, 0), (100, 0)])
+    assert run_cache(d).stdout.splitlines()[-1] == "CACHE none static=18000,200 task=100,100"
+    out = json.loads(run_cache(d, "--json").stdout)
+    assert out["verdict"] == "CACHE none static=18000,200 task=100,100"
+    assert out["agents"][0] == {
+        "label": "probe:cache:static#1",
+        "cacheCreation": 20000,
+        "cacheRead": 0,
+        "cwd": "/wt/a0",
+    }
+    assert len(out["agents"]) == 6
+
+
+def test_cache_missing_run_dir_exits_2(tmp_path):
+    r = run_cache(tmp_path / "nope")
+    assert r.returncode == 2
+    assert "no such path" in r.stderr

@@ -365,6 +365,22 @@ continue-launch).
 - Whether static-first prompts produce cross-agent cache reads is unknown; D6's probe settles it
   before any prompt changes.
 
+
+## Cache probe result
+
+Run 2026-10-22, workflow run wf_c93a609a-e42 (hook-probe.js args.probe=cache, run dir ~/.claude/projects/-Users-szymonri-Documents-workbench/<session>/subagents/workflows/wf_c93a609a-e42), read with `hook-evidence.py --cache`:
+
+| Agent | cache_creation_input_tokens | cache_read_input_tokens |
+|---|---|---|
+| static#1 | 21830 | 0 |
+| static#2 | 14855 | 6975 |
+| static#3 | 14855 | 6975 |
+| task#1 | 14855 | 6975 |
+| task#2 | 14855 | 6975 |
+| task#3 | 14855 | 6975 |
+
+Verdict: `CACHE none static=14855,14855 task=14855,14855`. Static-first ordering reads no more cache than task-first: every agent after the first reads the same 6975-token shared prefix and creates the same 14855 tokens, whatever the prompt order. All six ran in cwd /Users/szymonri/Documents/workbench. cache-prefix-change therefore changes no prompt and records the no-op (D6).
+
 ## Open questions
 
 none: Q1 (D3, quiet heartbeat with 30-minute progress) answered yes at the gate on 2026-10-22, recorded as D14.

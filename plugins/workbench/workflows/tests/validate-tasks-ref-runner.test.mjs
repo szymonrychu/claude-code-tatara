@@ -12,7 +12,7 @@ const README = `---\ntitle: Alpha\nblockers: []\nstage: build\nrepos: [api]\ncre
 const DESIGN = `# D\n\n## Decisions\n\n### D1: first\n\ntext\n\n## Decision coverage\n\n| Decision | Tasks |\n|---|---|\n| D1 first | t-one |\n\n## Contracts\n\n| Part | Owner | Consumers | Where defined |\n|---|---|---|---|\n`
 const LEDGER = [{ id: 'A', text: 'x', decisions: ['D1'], tasks: ['t-one'], status: 'approved' }]
 const TASK = (ref) =>
-  `---\ntitle: X\nstatus: todo\nrepo: api\nvalue: worth it\nfiles: [src/x.py]\nverify: pytest\ndepends_on: []\nowns: []\nuses: []\n---\n\n# X\n\n## Requirement\n\nBuild.\n\n## Acceptance conditions\n\n- a1: works [evidence: test:${ref}]\n\n## Files\n\n- src/x.py\n\n## Expected outcome\n\nx\n\n## Steps\n\n- go\n`
+  `---\ntitle: X\nstatus: todo\nrepo: api\nvalue: worth it\nfiles: [src/x.py]\nverify: pytest tests/test_x.py\ndepends_on: []\nowns: []\nuses: []\n---\n\n# X\n\n## Requirement\n\nBuild.\n\n## Acceptance conditions\n\n- a1: works [evidence: test:${ref}]\n\n## Files\n\n- src/x.py\n\n## Expected outcome\n\nx\n\n## Steps\n\n- go\n`
 // A workbench root (code/api checkout) with docs/plans beside it; `files` seeds the checkout.
 const epic = (ref, files = {}, { checkout = true } = {}) => {
   const wb = mkdtempSync(join(tmpdir(), 'vt-runner-'))

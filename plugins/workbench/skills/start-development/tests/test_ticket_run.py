@@ -1,6 +1,7 @@
 """Tests for ticket.py tasks, worktrees and apply-run."""
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -82,7 +83,7 @@ def mk_task(
         "--files",
         files,
         "--verify",
-        "pytest -q",
+        "pytest -q tests/test_x.py",
         "--requirement-file",
         rf,
         "--ac-file",
@@ -140,7 +141,8 @@ def test_tasks_field_mapping_and_ac(root):
     (t,) = json.loads(r.stdout)
     assert t["id"] == t["short"] == "alpha-work"
     assert t["title"] == "Alpha work"
-    assert t["repo"] == "proj" and t["value"] == "why" and t["verify"] == "pytest -q"
+    assert t["repo"] == "proj" and t["value"] == "why"
+    assert t["verify"] == "pytest -q tests/test_x.py"
     assert t["requirement"] == "Do the thing."
     assert t["files"] == ["a.py", "b.py"]
     assert t["owns"] == ["part-a"] and t["uses"] == ["part-b"]
@@ -553,7 +555,8 @@ def test_apply_run_discovered_overlapping_blocker_epic_stays_todo(repo, root):
 
 def set_estimate(root, ep, slug, minutes):
     p = root / ep / "tasks" / f"{slug}.md"
-    p.write_text(p.read_text().replace('estimate: ""', f"estimate: {minutes}", 1))
+    text = re.sub(r"^estimate: .*$", f"estimate: {minutes}", p.read_text(), count=1, flags=re.M)
+    p.write_text(re.sub(r"^estimate_by: .*$", "estimate_by: override", text, count=1, flags=re.M))
 
 
 def readme_time(root, phase, ep):
@@ -580,17 +583,18 @@ def test_tasks_emits_estimate_and_regenerates_time_section(root):
     assert out["alpha"]["estimate"] == 45 and out["beta"]["estimate"] == 30
     assert out["alpha"]["actual"] == 0
     time = readme_time(root, "todo", ep)
-    assert "Estimate: 75 min" in time and "Actual: 0 min" in time
+    assert "Estimate: 75 agent-min" in time and "Actual: 0 min" in time
     assert "Remaining estimate: 75 min" in time
 
 
 def test_tasks_without_estimates_still_work(root):
     ep = mk_epic(root)
-    mk_task(root, ep, "Alpha")
+    task = mk_task(root, ep, "Alpha")
+    task.write_text(re.sub(r"^estimate: .*$", 'estimate: ""', task.read_text(), flags=re.M))
     r = cli("tasks", ep, "--root", root)
     assert r.returncode == 0, r.stderr
     assert json.loads(r.stdout)[0]["estimate"] == 0
-    assert "Estimate: 0 min" in readme_time(root, "todo", ep)
+    assert "Estimate: 0 agent-min" in readme_time(root, "todo", ep)
 
 
 def test_tasks_only_does_not_shrink_the_time_totals(root):
@@ -600,7 +604,7 @@ def test_tasks_only_does_not_shrink_the_time_totals(root):
     set_estimate(root / "todo", ep, "alpha", 45)
     set_estimate(root / "todo", ep, "beta", 30)
     assert cli("tasks", ep, "--root", root, "--only", "alpha").returncode == 0
-    assert "Estimate: 75 min" in readme_time(root, "todo", ep)
+    assert "Estimate: 75 agent-min" in readme_time(root, "todo", ep)
 
 
 def test_apply_run_writes_actual_from_duration_and_updates_time(repo, root):
@@ -618,7 +622,7 @@ def test_apply_run_writes_actual_from_duration_and_updates_time(repo, root):
     assert meta_of(root, ep, "t-proc")["actual"] == "1"
     assert meta_of(root, ep, "t-esc")["actual"] == "1"
     time = readme_time(root, "in-progress", ep)
-    assert "Estimate: 90 min" in time and "Actual: 4 min" in time
+    assert "Estimate: 90 agent-min" in time and "Actual: 4 min" in time
     assert "Remaining estimate: 30 min" in time  # t-done and t-proc are done
     # re-applying the same run replaces the actual instead of adding to it
     assert cli("apply-run", ep, rj, "--root", root).returncode == 0
@@ -628,7 +632,8 @@ def test_apply_run_writes_actual_from_duration_and_updates_time(repo, root):
 def test_new_task_estimate_flag_is_written_and_validated(root):
     ep = mk_epic(root)
     p = mk_task(root, ep, "Alpha", extra=["--estimate", "45"])
-    assert ticket.load(p.read_text(), p).meta["estimate"] == "45"
+    m = ticket.load(p.read_text(), p).meta
+    assert m["estimate"] == "45" and m["estimate_by"] == "override"
     r = cli(
         "new-task",
         "--root",
@@ -674,8 +679,8 @@ def test_apply_run_run_dir_derives_actual_from_transcript_timestamps(repo, root)
         run_dir,
         {
             "a1": ("pe:impl:t-done", ["2026-01-01T10:00:00Z", "2026-01-01T10:01:00Z"]),
-            "a2": ("pe:review+1:t-done", ["2026-01-01T10:02:00Z", "2026-01-01T10:03:00Z"]),
-            "a3": ("pe:impl:t-proc+2", ["2026-01-01T10:00:00Z", "2026-01-01T10:02:00Z"]),
+            "a2": ("pe:review:t-done", ["2026-01-01T10:02:00Z", "2026-01-01T10:03:00Z"]),
+            "a3": ("pe:impl:t-proc#2", ["2026-01-01T10:00:00Z", "2026-01-01T10:02:00Z"]),
             "a4": ("pe:impl:t-esc", ["2026-01-01T10:00:00Z", "2026-01-01T10:09:00Z"]),
         },
         bad=("a4",),
@@ -683,7 +688,8 @@ def test_apply_run_run_dir_derives_actual_from_transcript_timestamps(repo, root)
     rj = repo / "return.json"
     rj.write_text(json.dumps(run_return()))
     assert cli("apply-run", ep, rj, "--root", root, "--run-dir", run_dir).returncode == 0
-    assert meta_of(root, ep, "t-done")["actual"] == "3"
+    # agent-minutes: the summed per-agent spans (impl 1 + review 1), not the 3 min wall span
+    assert meta_of(root, ep, "t-done")["actual"] == "2"
     assert meta_of(root, ep, "t-proc")["actual"] == "2"
     assert not meta_of(root, ep, "t-esc").get("actual")
 

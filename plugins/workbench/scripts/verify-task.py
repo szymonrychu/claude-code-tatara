@@ -21,6 +21,8 @@ import io
 import json
 import os
 import re
+import shlex
+import signal
 import subprocess
 import sys
 import tokenize
@@ -44,17 +46,53 @@ SLASH_COMMENT = re.compile(r"(?://|^\s*/\*+|^\s*\*(?!/))\s*(.*)")
 # ---- process helpers ----
 
 
-def run_shell(cmd: str, cwd: str) -> tuple[int, str]:
-    """`bash -lc cmd` in cwd, stdout and stderr merged."""
-    p = subprocess.run(
+DEFAULT_TIMEOUT = 480
+TIMEOUT_EXIT = 124
+SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+
+class Output(str):
+    """Combined command output; `timed_out` is True when the time limit killed the run."""
+
+    timed_out = False
+
+
+def _popen_bounded(argv: list, cwd: str, timeout: float | None, **kw) -> tuple:
+    """(exit, stdout or None, timed_out). On expiry the whole process group is killed."""
+    p = subprocess.Popen(argv, cwd=cwd, start_new_session=True, **kw)
+    try:
+        out, _ = p.communicate(timeout=timeout)
+        return p.returncode, out, False
+    except subprocess.TimeoutExpired as e:
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        partial = e.output
+        if isinstance(partial, bytes):
+            partial = partial.decode(errors="replace")
+        try:
+            rest, _ = p.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            rest = None
+        # e.output and the post-kill read both hold the full capture on POSIX; keep the longer.
+        return TIMEOUT_EXIT, max(partial or "", rest or "", key=len), True
+
+
+def run_shell(cmd: str, cwd: str, timeout: float | None = None) -> tuple[int, str]:
+    """`bash -lc cmd` in cwd, stdout and stderr merged. Exit 124 (output.timed_out) on expiry."""
+    code, out, timed_out = _popen_bounded(
         ["bash", "-lc", cmd],
-        cwd=cwd,
+        cwd,
+        timeout,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
         errors="replace",
     )
-    return p.returncode, p.stdout
+    res = Output(out or "")
+    res.timed_out = timed_out
+    return code, res
 
 
 def output_tail(out: str, lines: int = 10, chars: int = 1000) -> str:
@@ -62,12 +100,12 @@ def output_tail(out: str, lines: int = 10, chars: int = 1000) -> str:
     return "\n".join(out.rstrip("\n").splitlines()[-lines:])[-chars:]
 
 
-def run_argv(argv: list, cwd: str) -> int:
-    """Exec argv directly (no shell). 127 when the program is missing."""
+def run_argv(argv: list, cwd: str, timeout: float | None = None) -> int:
+    """Exec argv directly (no shell). 127 when the program is missing, 124 on expiry."""
     try:
-        return subprocess.run(
-            argv, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        ).returncode
+        return _popen_bounded(
+            argv, cwd, timeout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )[0]
     except FileNotFoundError:
         return 127
 
@@ -126,12 +164,15 @@ def ref_package_roots(cwd: str, specs: list) -> list:
     return roots
 
 
-def install_deps(cwd: str, extra_roots: list = ()) -> list:
+def install_deps(cwd: str, extra_roots: list = (), timeout: float | None = None) -> list:
     """Install at the worktree root, then once at each distinct ref package root."""
     out = []
     for root, strict in [(Path(cwd), False), *[(Path(r), True) for r in extra_roots]]:
         for c in _install_cmds(root, strict):
-            out.append({"cmd": " ".join(c), "exit": run_argv(c, str(root))})
+            code = run_argv(c, str(root), timeout)
+            out.append({"cmd": " ".join(c), "exit": code})
+            if code == TIMEOUT_EXIT:
+                out[-1]["timeout"] = {"command": " ".join(c), "seconds": timeout}
         if _uv_unlocked(Path(root)):
             why = f"no uv.lock in {root}: nothing to sync reproducibly"
             out.append({"cmd": "uv sync --frozen", "skipped": why})
@@ -141,10 +182,10 @@ def install_deps(cwd: str, extra_roots: list = ()) -> list:
 # ---- diff ----
 
 
-def added_lines(cwd: str, base: str) -> list:
+def added_lines(cwd: str, base: str, head: str = "HEAD") -> list:
     """[{file, line, text}] for every line added since `base` (git diff -U0)."""
     out, path, n = [], None, 0
-    for raw in git(cwd, "diff", "-U0", "--no-renames", base, "HEAD").splitlines():
+    for raw in git(cwd, "diff", "-U0", "--no-renames", base, head).splitlines():
         if raw.startswith("+++ "):
             path = None if raw == "+++ /dev/null" else raw[6:]
         elif raw.startswith("@@"):
@@ -198,6 +239,21 @@ def drop_moved(lines: list, removed: list) -> list:
         return len(k) >= _MOVED_MIN and any(k in c for c in removed)
 
     return [x for x in lines if not moved(x)]
+
+
+def ref_added_keys(cwd: str, refs: list, base: str) -> set:
+    """(file, normalized text) of every line each ref adds relative to merge-base(ref, base)."""
+    keys = set()
+    for ref in refs:
+        mb = git(cwd, "merge-base", ref, base).strip()
+        keys |= {(x["file"], _moved_norm(x["text"])) for x in added_lines(cwd, mb, ref)}
+    return keys
+
+
+def drop_excluded(lines: list, keys: set) -> tuple:
+    """(kept, dropped count): lines whose (file, normalized text) a merged dependency added go."""
+    kept = [x for x in lines if (x["file"], _moved_norm(x["text"])) not in keys]
+    return kept, len(lines) - len(kept)
 
 
 def name_status(cwd: str, a: str, b: str = "HEAD") -> list:
@@ -404,6 +460,41 @@ def _test_name_missing(cwd: str, path: str, name: str) -> bool:
     return not re.search(rf"\b(?:test|it)\(\s*(['\"`]){re.escape(name)}\1", text)
 
 
+def _test_names(cwd: str, path: str) -> list:
+    """The test names a .py/.js/.mjs file defines."""
+    f = Path(cwd, path)
+    if not f.is_file():
+        return []
+    text = f.read_text(errors="replace")
+    if f.suffix == ".py":
+        return re.findall(r"^[ \t]*(?:async\s+)?def (test\w*)\(", text, re.M)
+    if f.suffix in (".js", ".mjs"):
+        return [m[1] for m in re.findall(r"\b(?:test|it)\(\s*(['\"`])(.+?)\1", text)]
+    return []
+
+
+def resolve_test_ref(
+    cwd: str, ac_id: str, ref: str, output: str, changed: list, ace: dict
+) -> tuple:
+    """(ref, rpath, problem, matchedBy) for a `test:` AC: the acEvidence entry for its id when
+    that file defines the name, else the exact ref, else the single test in the ref's file whose
+    name contains the ref's name or is contained in it (D2). No match keeps the exact ref."""
+    entry = ace.get(ac_id)
+    if isinstance(entry, str) and "::" in entry:
+        epath, problem = _resolve_path(cwd, _name_of(entry)[0], changed)
+        if not _test_name_missing(cwd, epath, _name_of(entry)[1]):
+            return epath + entry[len(_name_of(entry)[0]) :], epath, problem, "acEvidence"
+    path, name = _name_of(ref)
+    rpath, problem = _resolve_path(cwd, path, changed)
+    if _passing_line(output, ref) or not _test_name_missing(cwd, rpath, name):
+        return ref, rpath, problem, "exact"
+    plain = bool(name) and "::" not in name and "[" not in name
+    hits = sorted({n for n in _test_names(cwd, rpath) if plain and (name in n or n in name)})
+    if len(hits) == 1:
+        return f"{path}::{hits[0]}", rpath, problem, "substring"
+    return ref, rpath, problem, ""
+
+
 def _runner_cmd(argv: list) -> str:
     """The command a runner executes: a refRunners `bash -c <cmd>` shows as <cmd>."""
     return argv[2] if argv[:2] == ["bash", "-c"] else " ".join(argv)
@@ -417,14 +508,25 @@ def _config_file(cwd: str) -> str:
         return "workbench.json"
 
 
-def check_ac(cwd: str, ac: dict, output: str, changed: list) -> dict:
+def check_ac(
+    cwd: str,
+    ac: dict,
+    output: str,
+    changed: list,
+    timeout: float | None = None,
+    ace: dict | None = None,
+) -> dict:
     ev = ac.get("evidence") or {}
     kind = ev.get("kind") or ac.get("kind")
     ref = ev.get("ref") or ac.get("ref") or ""
     res = {"id": ac["id"], "kind": kind, "ref": ref, "met": False, "how": "", "snippet": ""}
     if kind == "test":
+        ref, rpath, problem, matched = resolve_test_ref(
+            cwd, ac["id"], ref, output, changed, ace or {}
+        )
+        if matched:
+            res.update(matchedBy=matched, resolvedRef=ref)
         line = _passing_line(output, ref)
-        rpath, problem = _resolve_path(cwd, _name_of(ref)[0], changed)
         runner = workbench.runner_for(rpath + ref[len(_name_of(ref)[0]) :], Path(cwd))
         tname = _name_of(ref)[1]
         if line:
@@ -437,7 +539,7 @@ def check_ac(cwd: str, ac: dict, output: str, changed: list) -> dict:
                 + (f" ({problem})" if problem else ""),
             )
         elif runner:
-            code = run_argv(runner["argv"], runner["cwd"])
+            code = run_argv(runner["argv"], runner["cwd"], timeout)
             where = os.path.relpath(runner["cwd"], Path(cwd).resolve())
             cmd = _runner_cmd(runner["argv"])
             res.update(
@@ -445,6 +547,8 @@ def check_ac(cwd: str, ac: dict, output: str, changed: list) -> dict:
                 how=f"re-ran ({runner['source']}, {where}) {cmd}: exit {code}"
                 + (f" ({problem})" if problem else ""),
             )
+            if code == TIMEOUT_EXIT:
+                res["timeout"] = {"command": cmd, "seconds": timeout}
         else:
             res["how"] = (
                 f"ref not in command output and no runner for {rpath}: "
@@ -473,7 +577,9 @@ def check_ac(cwd: str, ac: dict, output: str, changed: list) -> dict:
         if not res["met"]:
             res["how"] = "not found in any file the diff adds or changes"
     elif kind == "command":
-        code, out = run_shell(ref, cwd)
+        code, out = run_shell(ref, cwd, timeout)
+        if out.timed_out:
+            res["timeout"] = {"command": ref, "seconds": timeout}
         res.update(
             met=code == 0,
             how=f"ran {ref} verbatim: whole command exit {code}",
@@ -493,7 +599,8 @@ def check_ac(cwd: str, ac: dict, output: str, changed: list) -> dict:
     return res
 
 
-def add_plausibility(acs: list, texts: dict, diff_text: str, triage_run, notes: list) -> None:
+def plausibility_asks(acs: list, texts: dict, diff_text: str) -> list:
+    """The ACs whose evidence needs a judgement call; obvious matches are answered without one."""
     from triage import _tokens
 
     ask = []
@@ -513,17 +620,60 @@ def add_plausibility(acs: list, texts: dict, diff_text: str, triage_run, notes: 
                     "met": a["met"],
                 }
             )
-    got = {}
-    if ask:
-        try:
-            got = {v["id"]: v["verdict"] for v in triage_run("ac-plausible", ask)}
-        except Exception as e:
-            got = {}
-            notes.append(f"triage ac-plausible failed: {e}")
-    asked = {x["id"] for x in ask}
+    return ask
+
+
+def set_plausibility(acs: list, asked: set, got: dict | None) -> None:
+    """got maps id -> verdict; None means the call failed, so asked ACs stay unjudged (null)."""
     for a in acs:
-        a["plausible"] = got.get(a["id"], "unsure") if a["id"] in asked else None
+        if a["id"] not in asked:
+            a["plausible"] = None
+        else:
+            a["plausible"] = None if got is None else got.get(a["id"], "unsure")
         del a["snippet"]
+
+
+# ---- targeted commands ----
+
+
+def _spec_test_files(specs: list) -> list:
+    """The `file` part of every AC test: ref, in order, deduplicated."""
+    files = []
+    for a in specs:
+        ev = a.get("evidence") or {}
+        if (ev.get("kind") or a.get("kind")) != "test":
+            continue
+        path = _name_of(ev.get("ref") or a.get("ref") or "")[0]
+        if path and path not in files:
+            files.append(path)
+    return files
+
+
+def runner_commands(cwd: str, files: list, changed: list) -> list:
+    """One runner command per test file (check_ac's runner resolution), deduplicated.
+    A runner that starts outside the worktree root is prefixed with `cd <dir> &&`."""
+    top, cmds = Path(cwd).resolve(), []
+    for f in files:
+        rpath, _ = _resolve_path(cwd, f, changed)
+        runner = workbench.runner_for(rpath, Path(cwd))
+        if not runner:
+            continue
+        cmd = _runner_cmd(runner["argv"])
+        where = os.path.relpath(runner["cwd"], top)
+        if where != ".":
+            cmd = f"(cd {shlex.quote(where)} && {cmd})"
+        if cmd not in cmds:
+            cmds.append(cmd)
+    return cmds
+
+
+def targeted_command(cwd: str, specs: list, changed: list, test_re) -> str:
+    """Runner commands of the AC test refs and the changed test files, joined with ` && `."""
+    files = _spec_test_files(specs)
+    for c in changed:
+        if c["status"] != "D" and test_re.search(c["file"]) and c["file"] not in files:
+            files.append(c["file"])
+    return " && ".join(runner_commands(cwd, files, changed))
 
 
 # ---- diffstat and tdd revert ----
@@ -592,9 +742,23 @@ def _restore(cwd: str, changes: list, modes: dict, made: list | None = None) -> 
             pass
 
 
-def tdd_revert(cwd: str, base: str, command: str, test_re) -> dict:
+def tdd_revert(
+    cwd: str,
+    base: str,
+    base_command: str,
+    test_re,
+    head_exit: int,
+    timeout: float | None = None,
+) -> dict:
+    """Run `base_command` on the base state; passedOnHead reuses the main run's exit code."""
     changes = [c for c in name_status(cwd, base) if not test_re.search(c["file"])]
-    res = {"ran": False, "failedOnBase": None, "passedOnHead": None, "files": []}
+    res = {
+        "ran": False,
+        "failedOnBase": None,
+        "passedOnHead": None,
+        "files": [],
+        "baseCommand": base_command,
+    }
     res["files"] = sorted(c["file"] for c in changes)
     if not changes:
         return res
@@ -606,9 +770,12 @@ def tdd_revert(cwd: str, base: str, command: str, test_re) -> dict:
                 Path(cwd, c["file"]).unlink(missing_ok=True)
             else:
                 _put(cwd, base, c["file"], None, made)
-        res["failedOnBase"] = run_shell(command, cwd)[0] != 0
+        code, out = run_shell(base_command, cwd, timeout)
+        res["failedOnBase"] = code != 0
+        if out.timed_out:
+            res["timeout"] = {"command": base_command, "seconds": timeout}
         _restore(cwd, changes, modes, made)
-        res["passedOnHead"] = run_shell(command, cwd)[0] == 0
+        res["passedOnHead"] = head_exit == 0
         res["ran"] = True
     except Exception as e:
         res["error"] = f"{type(e).__name__}: {e}"
@@ -624,7 +791,18 @@ def build(argv: list, triage_run=None) -> tuple:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--cmd", required=True, help="run exactly as given via bash -lc")
+    ap.add_argument("--cmd", help="run exactly as given via bash -lc (default: --targeted)")
+    ap.add_argument(
+        "--targeted",
+        action="store_true",
+        help="build the command from the runners of the AC test refs and changed test files",
+    )
+    ap.add_argument(
+        "--timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT,
+        help=f"seconds each command may run before its process group is killed ({DEFAULT_TIMEOUT})",
+    )
     ap.add_argument("--base", required=True, help="ref whose merge-base with HEAD is the base")
     ap.add_argument("--markers", required=True, help="comma-separated debt markers")
     ap.add_argument("--test-re", required=True, help="regex matching test file paths")
@@ -632,12 +810,24 @@ def build(argv: list, triage_run=None) -> tuple:
     ap.add_argument("--triage-log", help="JSONL file triage.py appends one line per call to")
     ap.add_argument("--install", action="store_true", help="install missing dependencies first")
     ap.add_argument("--acs", help="JSON file: list of {id, text, evidence: {kind, ref}}")
+    ap.add_argument("--ac-evidence", help="JSON file: {AC id: final file::name of its test}")
     ap.add_argument("--prev-head", help="previous round's HEAD, for changedSincePrevious")
     ap.add_argument("--requirement", default="", help="task requirement, for the tier hint")
+    ap.add_argument(
+        "--exclude-ref",
+        action="append",
+        default=[],
+        help="ref of a merged dependency (repeatable): the lines it adds are not gated here",
+    )
     ap.add_argument("--no-triage", action="store_true", help="skip every Haiku call")
     ap.add_argument("--no-tier", action="store_true", help="skip the tier call")
     ap.add_argument("--tdd-revert", action="store_true", help="run the command on the base state")
     args = ap.parse_args(argv)
+    if args.prev_head is not None and not SHA_RE.match(args.prev_head):
+        return 2, {
+            "passed": False,
+            "error": f"prev-head is not a sha: {args.prev_head[:40]}",
+        }
     try:
         test_re = re.compile(args.test_re)
     except re.error as e:
@@ -652,73 +842,97 @@ def build(argv: list, triage_run=None) -> tuple:
 
     notes = ["triage skipped (--no-triage)"] if args.no_triage else []
 
-    def ask(mode: str, data):
-        return None if args.no_triage else triage_run(mode, data)
-
     clean_before = is_clean(cwd)
     specs = json.loads(Path(args.acs).read_text()) if args.acs else []
-    installed = install_deps(cwd, ref_package_roots(cwd, specs)) if args.install else []
+    installed = (
+        install_deps(cwd, ref_package_roots(cwd, specs), args.timeout) if args.install else []
+    )
     base = git(cwd, "merge-base", "HEAD", args.base).strip()
     changed = name_status(cwd, base)
     prune_deleted_dirs(cwd, changed)
-    code, output = run_shell(args.cmd, cwd)
+    targeted = args.targeted or not args.cmd
+    command = targeted_command(cwd, specs, changed, test_re) if targeted else args.cmd
+    if not command:
+        return 0, {
+            "head": git(cwd, "rev-parse", "HEAD").strip(),
+            "command": "",
+            "commandScope": "targeted",
+            "passed": False,
+            "error": "no targeted tests",
+        }
+    code, output = run_shell(command, cwd, args.timeout)
+    timeout = (
+        {"command": command, "seconds": args.timeout}
+        if getattr(output, "timed_out", False)
+        else None
+    )
     lines = added_lines(cwd, base)
     stat = diffstat(cwd, base, test_re)
 
+    excluded = {k for k in ref_added_keys(cwd, args.exclude_ref, base) if k[1]}
+    gated, excluded_by_ref = drop_excluded(lines, excluded)
     scan = [
         x
-        for x in drop_moved(lines, removed_keys(cwd, base))
+        for x in drop_moved(gated, removed_keys(cwd, base))
         if not x["file"].startswith("docs/plans/")
     ]
-    parking = []
+    parts = {}
     if not args.no_triage:
         cands = parking_candidates(cwd, scan)
-        try:
-            parking = triage_run("parking", cands) if cands else []
-        except Exception as e:
-            parking = []
-            notes.append(f"triage parking failed: {e}")
+        if cands:
+            parts["parking"] = cands
 
-    acs = []
+    acs, asks = [], []
     if args.acs:
         texts = {a["id"]: a.get("text", "") for a in specs}
-        acs = [check_ac(cwd, a, output, changed) for a in specs]
+        ace = json.loads(Path(args.ac_evidence).read_text()) if args.ac_evidence else {}
+        acs = [check_ac(cwd, a, output, changed, args.timeout, ace) for a in specs]
         diff_text = "\n".join(f"{x['file']}:{x['line']}: {x['text']}" for x in lines)
-        if args.no_triage:
-            for a in acs:
-                a["plausible"] = None
-                del a["snippet"]
-        else:
-            add_plausibility(acs, texts, diff_text, triage_run, notes)
-
-    tier = None
+        if not args.no_triage:
+            asks = plausibility_asks(acs, texts, diff_text)
+            if asks:
+                parts["acs"] = asks
     if not args.no_triage and not args.no_tier:
-        try:
-            tier = triage_run(
-                "tier",
-                {
-                    "requirement": args.requirement,
-                    "files": [c["file"] for c in changed],
-                    "diffstat": stat,
-                },
-            )["classifierTier"]
-        except Exception as e:
-            tier = None
-            notes.append(f"triage tier failed: {e}")
+        parts["tier"] = {
+            "requirement": args.requirement,
+            "files": [c["file"] for c in changed],
+            "diffstat": stat,
+        }
 
-    tdd = tdd_revert(cwd, base, args.cmd, test_re) if args.tdd_revert else None
+    parking, tier, got = [], None, None
+    if parts:
+        try:
+            res = triage_run("verify", parts)
+            if res.get("error"):
+                raise RuntimeError(res["error"])
+            parking = list(res.get("parking") or [])
+            tier = res.get("classifierTier") if "tier" in parts else None
+            got = {v["id"]: v["verdict"] for v in res.get("acs") or []}
+        except Exception as e:
+            parking, tier, got = [], None, None
+            notes.append(f"triage verify failed: {e}")
+    if "acs" not in parts:
+        got = {}
+    set_plausibility(acs, {x["id"] for x in asks}, got)
+
+    tdd = None
+    if args.tdd_revert:
+        base_command = " && ".join(runner_commands(cwd, _spec_test_files(specs), changed))
+        tdd = tdd_revert(cwd, base, base_command or command, test_re, code, args.timeout)
     if tdd and tdd.get("error"):
         notes.append(f"tdd-revert error: {tdd['error']}")
     result = {
         "head": git(cwd, "rev-parse", "HEAD").strip(),
         "clean": clean_before and is_clean(cwd),
-        "command": args.cmd,
+        "command": command,
+        "commandScope": "targeted" if targeted else "command",
         "exit": code,
         "passed": code == 0,
         "evidence": "\n".join(output.splitlines()[-40:]),
         "installed": installed,
         "debtMarkers": find_debt(scan, args.markers, test_re),
         "parking": parking,
+        "excludedByRef": excluded_by_ref,
         "changed": changed,
         "changedSincePrevious": (name_status(cwd, args.prev_head) if args.prev_head else None),
         "diffstat": stat,
@@ -726,6 +940,7 @@ def build(argv: list, triage_run=None) -> tuple:
         "tierHint": tier,
         "triageUsage": usage,
         "tdd": tdd,
+        "timeout": timeout,
         "note": "; ".join(notes),
     }
     return 0, result

@@ -58,6 +58,10 @@ CLAUDE_CONSTRUCTS: tuple[tuple[re.Pattern, object], ...] = (
     ),
     (re.compile(r"<return\.json>"), RETURN_FILE),
     (
+        re.compile(r"(ticket\.py continue <epic>) --run <id> (--out-dir <dir>)"),
+        rf"\1 \2 --return {RETURN_FILE}",
+    ),
+    (
         re.compile(r"(ticket\.py continue <epic> --out-dir <dir>)(?! --return)"),
         rf"\1 --return {RETURN_FILE}",
     ),

@@ -96,9 +96,12 @@ test('one verifier runs after a clean implementation, with the full prompt', asy
   assert.ok(!v[0].prompt.includes('--tdd-revert'))
 })
 
-test('without t.verify the verifier runs the implementer\'s own command', async () => {
+test('without t.verify the verifier runs verify-task --targeted, never the implementer\'s command', async () => {
   const r = await run({ tasks: [task('T1')] }, fakeAgent())
-  assert.ok(ofRole(r, 'verify')[0].prompt.includes('pytest tests/test_a.py'))
+  const p = ofRole(r, 'verify')[0].prompt
+  assert.ok(p.includes(' --targeted '), p)
+  assert.ok(!p.includes('pytest tests/test_a.py'), p)
+  assert.ok(!p.includes('--cmd'), p)
 })
 
 test('args.baseRef replaces main in the merge-base command', async () => {
@@ -264,11 +267,11 @@ test('the verify prompt passes DEBT_MARKERS and TEST_FILE_RE.source to the scrip
 test('a fix-round verify prompt passes --prev-head with the previous head', async () => {
   const r = await run(
     { tasks: [task('T1')] },
-    fakeAgent({ verify: (n) => (n === 1 ? { ...okVerify, passed: false, evidence: '1 failed' } : { ...okVerify, head: 'def456' }) }),
+    fakeAgent({ verify: (n) => (n === 1 ? { ...okVerify, head: 'abc1234', passed: false, evidence: '1 failed' } : { ...okVerify, head: 'def4567' }) }),
   )
   const v = ofRole(r, 'verify')
   assert.ok(!v[0].prompt.includes('--prev-head'))
-  assert.ok(v[1].prompt.includes('--prev-head abc123'))
+  assert.ok(v[1].prompt.includes("--prev-head 'abc1234'"))
   assert.equal(v[0].opts.schema.properties.changedSincePrevious.type, 'array')
 })
 
@@ -388,12 +391,12 @@ test('missing or relative pluginRoot throws at start, before any agent runs', as
 test('the tier is read once: --no-tier is passed only when a previous head is set', async () => {
   const r = await run(
     { tasks: [task('T1')] },
-    fakeAgent({ verify: (n) => (n === 1 ? { ...okVerify, passed: false, evidence: '1 failed' } : okVerify) }),
+    fakeAgent({ verify: (n) => (n === 1 ? { ...okVerify, head: 'abc1234', passed: false, evidence: '1 failed' } : okVerify) }),
   )
   const v = ofRole(r, 'verify')
   assert.ok(!v[0].prompt.includes('--no-tier'))
   assert.ok(v[1].prompt.includes('--no-tier'))
-  assert.ok(v[1].prompt.includes('--prev-head abc123'))
+  assert.ok(v[1].prompt.includes("--prev-head 'abc1234'"))
 })
 
 test('triageUsage is summed per task and in the run return', async () => {

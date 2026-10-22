@@ -1,12 +1,12 @@
 ---
 name: heartbeat
-description: Progress line (% done + ETA) every 10 minutes while waiting on a workflow run, from one Monitor at near-zero orchestrator effort. Cache keepalive is OFF by default; enable --keepalive only on a 5-minute cache for a known idle gap under the break-even in this skill.
+description: Quiet watcher for a workflow run, from one Monitor at near-zero orchestrator effort - silent while nothing changes, a progress line at most every 30 minutes, STALL and END at once, ETA opt-in with --eta. Cache keepalive is OFF by default; enable --keepalive only on a 5-minute cache for a known idle gap under the break-even in this skill.
 ---
 
 # heartbeat
 
-Keepalive is off by default. Without `--keepalive` the beat is a progress
-report every 600s, whatever the TTL.
+Keepalive is off by default. Without `--keepalive` the script polls every 600s
+but prints only on change (see "Quiet by default"), whatever the TTL.
 
 One `Monitor`, one short line per beat. Each line wakes you for one turn; that
 turn re-reads your cached prefix, which is what keeps a 5-minute cache alive.
@@ -19,7 +19,7 @@ C = your context size, W = tokens you write per hour, r = read rate.
 
 | Cache TTL | Verdict |
 |---|---|
-| 1h (subscription default for the main conversation) | No keepalive: the cache already lasts. Beats run every 600s and only replace the bounded-wait check you owe anyway. |
+| 1h (subscription default for the main conversation) | No keepalive: the cache already lasts. Polls run every 600s and replace the bounded-wait check you owe anyway. |
 | 5m (API key, over plan limit, `FORCE_PROMPT_CACHING_5M`, or `promptCacheTtl: 5m`) | Keepalive pays: a beat costs r*C, a cold cache 1.25*C. With r=0.05 beats every 270s beat a miss for idle gaps up to ~110 min. Past that, stop beating and take the miss. |
 | Switching 1h to 5m+heartbeat | Only when 0.75*W exceeds the beats' r*C*(60/4.5) per idle hour, i.e. W > ~0.9*C per idle hour. An orchestrator rarely writes that much while idle: keep 1h. |
 
@@ -47,10 +47,23 @@ the journal exists (bounded by `--wait-max` minutes, default 10, then
 no stale monitor survives the run. A Monitor past its 30-minute expiry is
 re-armed with the same `--run <id>` command. `--journal <journal.jsonl>` still works for a
 known journal path and is mutually exclusive with `--run`. Add `--keepalive` only when the
-table above says it pays (5m cache, idle gap under the break-even). `--remaining-min` feeds the ETA the epic's remaining estimate in minutes (ticket flow); the ETA reads it instead of the task count, which stays as the fallback when no estimates exist. Add `--no-eta` to skip the haiku
-call (~600 tokens, $0.0002 per beat). Re-arm on expiry if still waiting.
+table above says it pays (5m cache, idle gap under the break-even). `--remaining-min` feeds the ETA the epic's remaining estimate in minutes (ticket flow); the ETA reads it instead of the task count, which stays as the fallback when no estimates exist. Add `--eta` to run the haiku
+call (~600 tokens, $0.0002 per printed line); `--no-eta` is still accepted and changes nothing.
+Re-arm on expiry if still waiting.
 
-Lines: `~78% done/12m left | 12/13 agents | run: impl:flow-wiring`,
+## Quiet by default
+
+Silent while nothing changes. The script polls every `--interval` seconds
+(default 600) and prints a progress line only when the journal digest changed
+and at least `--report-every` seconds (default 1800, so 30 minutes) passed
+since the last printed line; the first changed beat after arming prints.
+STALL (journal size unchanged for `--stall-beats` polls, default 3) and END
+print at once. `waiting for run <id>` prints at most once per report interval.
+The haiku ETA is opt-in with `--eta`; by default no `claude` process starts.
+`--keepalive` prints every beat, because its purpose is the wake.
+Silence between lines is not a broken watcher.
+
+Lines: `12/13 agents | run: impl:flow-wiring` (`~78% done/12m left | ...` with `--eta`),
 `STALL 15m no journal change`, `END no journal`.
 
 ## On each beat - spend nothing

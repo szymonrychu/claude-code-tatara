@@ -195,3 +195,13 @@ def test_args_validate_in_harness(epic, root, tmp_path):
     bad = dict(out, overlapIgnore={"proj": out["overlapIgnore"]})
     r = run_in_harness(bad, tmp_path)
     assert r.returncode != 0 and "overlapIgnore" in r.stderr
+
+
+def test_args_tasks_carry_task_file(epic, root):
+    ep, d, a, b, c = epic
+    out = args_mod.build_args(d)
+    assert out["tasks"], "fixture has open tasks"
+    for t in out["tasks"]:
+        f = Path(t["taskFile"])
+        assert f.is_absolute() and f.is_file() and f.stem == t["id"]
+        assert f == (d / "tasks" / f"{t['id']}.md").resolve()
