@@ -41,7 +41,7 @@ initialised workbench, and the init skill misdescribes local-bare and the --path
 
 ## Time
 
-Estimate: 40 agent-min | Critical path: 25 min | Expected wall at P=1.5: 0.9 h (k=2.0) | Actual: 0 min | Remaining estimate: 40 min
+Estimate: 38 agent-min | Critical path: 23 min | Expected wall at P=1.5: 0.8 h (k=2.0) | Actual: 0 min | Remaining estimate: 38 min
 
 ## Review
 

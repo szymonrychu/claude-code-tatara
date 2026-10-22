@@ -3,15 +3,13 @@ title: template marker skip
 status: todo
 repo: workbench
 value: template-only self-tests stop failing in every initialised workbench
-files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py, scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/test_template_update.py, scripts/tests/init_engine/test_finalize.py, scripts/tests/init_engine/test_refresh.py, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/test_update_conflicts.py, scripts/tests/init_engine/test_update_unrelated.py, scripts/tests/test_agents_md.py, scripts/tests/test_check_personal.py, scripts/tests/test_lint_personal_task.py, scripts/tests/test_marketplace.py, scripts/tests/test_root_stubs.py, scripts/tests/test_root_tooling.py, scripts/tests/test_secret_scanning.py]
-size: large
-sizeReason: "one mechanical marker line per template-only test across 17 test files; splitting leaves red suites between tasks"
+files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py]
 verify: "pytest scripts/tests/test_root_config.py scripts/tests/init_engine/test_project_files.py scripts/tests/test_doctor.py -q && mise run lint:python"
 depends_on: [init-writes-allow-entries, secrets-skip-gitlinks, personal-allow-file, license-every-plugin, skill-text-local-bare-move]
 owns: [is-initialised]
 uses: []
 model: ""
-estimate: 8
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -62,4 +60,4 @@ Template-only tests skip in an initialised workbench, run in the template; the s
 
 ## Notes
 
-Design D5. Test list in the discovery brief section 5. Do not touch owned.INSTANCE_OWNED. The marker must be a no-op in the template.
+Design D5. The marker is applied centrally: conftest.py holds the TEMPLATE_ONLY list of test node ids and adds the template marker to them at collection, so no other test file is edited. Test list in the discovery brief section 5. Do not touch owned.INSTANCE_OWNED. The marker must be a no-op in the template.
