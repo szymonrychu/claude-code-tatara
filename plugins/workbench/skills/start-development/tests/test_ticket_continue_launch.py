@@ -107,7 +107,7 @@ def _done_alpha(repo, root, epic, head, verify="true"):
     commit_all(repo)
 
 
-def test_launch_lands_clean_tasks_itself(repo, root, epic, tmp_path):
+def test_launch_uses_task_verify(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head)
     out = tmp_path / "out"
@@ -157,7 +157,7 @@ def test_launch_without_verify_uses_returned_verification_command(repo, root, ep
     assert f"MERGE alpha --name {epic}-alpha" in r.stdout
 
 
-def test_launch_without_verify_lands_with_returned_command(repo, root, epic, tmp_path):
+def test_launch_lands_with_recorded_verification_command(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head, verify=None)
     rj = write_ret(repo, _ret_with_command(head, "true"))
@@ -167,7 +167,7 @@ def test_launch_without_verify_lands_with_returned_command(repo, root, epic, tmp
     assert "alpha: landed" in r.stdout
 
 
-def test_launch_without_any_verify_does_not_land(repo, root, epic, tmp_path):
+def test_launch_without_any_verify_prints_merge(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head, verify=None)
     r = cli("continue", epic, "--root", root, "--out-dir", tmp_path / "o", "--launch")

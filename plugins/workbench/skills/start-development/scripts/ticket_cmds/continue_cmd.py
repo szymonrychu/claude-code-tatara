@@ -157,7 +157,7 @@ def _land(epic_dir, lines, t, root, ret=None) -> None:
     """Run merge.py for each MERGE line; a failed landing keeps its line in the gate output.
 
     The landing check is the task's `verify` field, else the command recorded in the run
-    return. A task with neither is not landed: its MERGE line stays for the worktree-merger.
+    return. With neither, continue does not land the task and its MERGE line goes to the worktree-merger.
     """
     returned = _returned_commands(ret)
     for line in lines:
