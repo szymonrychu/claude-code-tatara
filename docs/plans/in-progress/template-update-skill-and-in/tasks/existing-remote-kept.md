@@ -37,16 +37,17 @@ Deliver: the test `test_update_keeps_existing_template_remote` in scripts/tests/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- No interface change; test only unless the behaviour is missing.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+update-command AC4 is pinned by a real test.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Write the test and run it; if it passes at once, this is a pinning test of existing behaviour (say so in tests.note).
+2. If it fails, fix update.py.
+3. Run the verify command.
 
 ## Notes
 
