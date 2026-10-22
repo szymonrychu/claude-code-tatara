@@ -599,7 +599,8 @@ def check_ac(
     return res
 
 
-def add_plausibility(acs: list, texts: dict, diff_text: str, triage_run, notes: list) -> None:
+def plausibility_asks(acs: list, texts: dict, diff_text: str) -> list:
+    """The ACs whose evidence needs a judgement call; obvious matches are answered without one."""
     from triage import _tokens
 
     ask = []
@@ -619,16 +620,16 @@ def add_plausibility(acs: list, texts: dict, diff_text: str, triage_run, notes: 
                     "met": a["met"],
                 }
             )
-    got = {}
-    if ask:
-        try:
-            got = {v["id"]: v["verdict"] for v in triage_run("ac-plausible", ask)}
-        except Exception as e:
-            got = {}
-            notes.append(f"triage ac-plausible failed: {e}")
-    asked = {x["id"] for x in ask}
+    return ask
+
+
+def set_plausibility(acs: list, asked: set, got: dict | None) -> None:
+    """got maps id -> verdict; None means the call failed, so asked ACs stay unjudged (null)."""
     for a in acs:
-        a["plausible"] = got.get(a["id"], "unsure") if a["id"] in asked else None
+        if a["id"] not in asked:
+            a["plausible"] = None
+        else:
+            a["plausible"] = None if got is None else got.get(a["id"], "unsure")
         del a["snippet"]
 
 
@@ -841,9 +842,6 @@ def build(argv: list, triage_run=None) -> tuple:
 
     notes = ["triage skipped (--no-triage)"] if args.no_triage else []
 
-    def ask(mode: str, data):
-        return None if args.no_triage else triage_run(mode, data)
-
     clean_before = is_clean(cwd)
     specs = json.loads(Path(args.acs).read_text()) if args.acs else []
     installed = (
@@ -878,42 +876,44 @@ def build(argv: list, triage_run=None) -> tuple:
         for x in drop_moved(gated, removed_keys(cwd, base))
         if not x["file"].startswith("docs/plans/")
     ]
-    parking = []
+    parts = {}
     if not args.no_triage:
         cands = parking_candidates(cwd, scan)
-        try:
-            parking = triage_run("parking", cands) if cands else []
-        except Exception as e:
-            parking = []
-            notes.append(f"triage parking failed: {e}")
+        if cands:
+            parts["parking"] = cands
 
-    acs = []
+    acs, asks = [], []
     if args.acs:
         texts = {a["id"]: a.get("text", "") for a in specs}
         ace = json.loads(Path(args.ac_evidence).read_text()) if args.ac_evidence else {}
         acs = [check_ac(cwd, a, output, changed, args.timeout, ace) for a in specs]
         diff_text = "\n".join(f"{x['file']}:{x['line']}: {x['text']}" for x in lines)
-        if args.no_triage:
-            for a in acs:
-                a["plausible"] = None
-                del a["snippet"]
-        else:
-            add_plausibility(acs, texts, diff_text, triage_run, notes)
-
-    tier = None
+        if not args.no_triage:
+            asks = plausibility_asks(acs, texts, diff_text)
+            if asks:
+                parts["acs"] = asks
     if not args.no_triage and not args.no_tier:
+        parts["tier"] = {
+            "requirement": args.requirement,
+            "files": [c["file"] for c in changed],
+            "diffstat": stat,
+        }
+
+    parking, tier, got = [], None, None
+    if parts:
         try:
-            tier = triage_run(
-                "tier",
-                {
-                    "requirement": args.requirement,
-                    "files": [c["file"] for c in changed],
-                    "diffstat": stat,
-                },
-            )["classifierTier"]
+            res = triage_run("verify", parts)
+            if res.get("error"):
+                raise RuntimeError(res["error"])
+            parking = list(res.get("parking") or [])
+            tier = res.get("classifierTier") if "tier" in parts else None
+            got = {v["id"]: v["verdict"] for v in res.get("acs") or []}
         except Exception as e:
-            tier = None
-            notes.append(f"triage tier failed: {e}")
+            parking, tier, got = [], None, None
+            notes.append(f"triage verify failed: {e}")
+    if "acs" not in parts:
+        got = {}
+    set_plausibility(acs, {x["id"] for x in asks}, got)
 
     tdd = None
     if args.tdd_revert:

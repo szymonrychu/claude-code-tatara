@@ -6,6 +6,8 @@ Modes (input JSON via --input FILE or -, output JSON on stdout, exit 0 on classi
   ac-plausible  [{id, text, kind, ref, snippet, met}] -> [{id, verdict, reason}]
   parking       [{file, line, text}] -> [{file, line, text, reason}]
                 (--with-reason: {lines, reason}; reason set when the classifier failed)
+  verify        {parking?: [..], acs?: [..], tier?: {..}} -> {parking, acs, classifierTier, error}
+                (ONE call covering the parts present; failure: error set, nothing flagged)
   equivalence   {prev: [finding], cur: [finding]} -> {repeated: [{cur, prev}]}
   false-finding {findings: [finding], verification: {how, exit, tail}}
                 -> {verdicts: [{index, verdict: false|real, reason}]}; failure: all real
@@ -31,7 +33,7 @@ from claude_json import ClaudeJsonError  # noqa: E402
 
 TIER_ORDER = ["skip", "light", "full", "panel"]
 MODEL = "haiku"
-MODES = ("tier", "ac-plausible", "parking", "equivalence", "false-finding")
+MODES = ("tier", "ac-plausible", "parking", "verify", "equivalence", "false-finding")
 GENERIC_TOKENS = {"test", "tests", "py", "js", "mjs", "sh", "the", "and", "for", "with"}
 
 
@@ -184,6 +186,86 @@ def parking(lines: list, *, runner=None, meta: dict | None = None) -> list:
     return out
 
 
+_AC_VERDICT = {"type": "string", "enum": ["yes", "no", "unsure"]}
+
+
+def verify(data: dict, *, runner=None, meta: dict | None = None) -> dict:
+    """The parking, ac-plausible and tier questions in ONE haiku call; absent parts cost nothing.
+
+    Returns {parking, acs, classifierTier, error}; classifierTier is None when no tier part was
+    sent. On failure error names it, parking and acs are empty and classifierTier is None."""
+    meta = {} if meta is None else meta
+    cands = data.get("parking") or []
+    acs = data.get("acs") or []
+    tier_in = data.get("tier")
+    shortcut = {
+        a["id"]: {"id": a["id"], "verdict": "yes", "reason": "ref marked met and shares tokens"}
+        for a in acs
+        if _shortcut_yes(a)
+    }
+    rest = [a for a in acs if a["id"] not in shortcut]
+    props, parts = {}, []
+    if cands:
+        props["parking"] = _arr(_obj(index=_INT, reason=_STR))
+        parts.append(
+            "PARKING: these are lines added in a change (comments, docs, strings). Return in "
+            "`parking` only those that defer, park or postpone work (TODO, later, follow-up, not "
+            "handled yet, out of scope, temporary workaround to revisit). Ordinary explanation "
+            "is not parking. Give the index and a short reason.\n"
+            + json.dumps(
+                [
+                    {"index": i, "file": x["file"], "line": x["line"], "text": x["text"]}
+                    for i, x in enumerate(cands)
+                ],
+                indent=1,
+            )
+        )
+    if rest:
+        props["acs"] = _arr(_obj(id=_STR, verdict=_AC_VERDICT, reason=_STR))
+        parts.append(
+            "AC PLAUSIBILITY: for each acceptance criterion judge whether the evidence (kind, "
+            "ref, snippet) plausibly covers the criterion text. Put one result per id in `acs`: "
+            "yes, no or unsure with a short reason.\n"
+            + json.dumps(
+                [{k: a.get(k) for k in ("id", "text", "kind", "ref", "snippet")} for a in rest],
+                indent=1,
+            )
+        )
+    if tier_in is not None:
+        props["classifierTier"] = {"type": "string", "enum": TIER_ORDER}
+        parts.append(
+            "TIER: classify how much review this change needs and put it in `classifierTier`. "
+            "Tiers, lowest to highest: skip (trivial, docs or formatting), light (small contained "
+            "change), full (logic, several files, behaviour change), panel (security, data loss, "
+            "concurrency, migrations, public contracts).\n"
+            f"Requirement:\n{tier_in.get('requirement', '')}\n"
+            f"Files:\n{json.dumps(tier_in.get('files', []))}\n"
+            f"Diffstat:\n{tier_in.get('diffstat', '')}"
+        )
+    out = {"parking": [], "acs": list(shortcut.values()), "classifierTier": None, "error": None}
+    if not props:
+        return out
+    prompt = "Answer every part below in one structured answer.\n\n" + "\n\n".join(parts)
+    schema = _obj(**props)
+    try:
+        got = _ask(prompt, schema, runner, meta)
+    except ClaudeJsonError as e:
+        out["error"] = _fail(meta, e)
+        return out
+    seen = set()
+    for g in got.get("parking", []):
+        i = g["index"]
+        if i < len(cands) and i not in seen:
+            seen.add(i)
+            out["parking"].append(
+                {**{k: cands[i][k] for k in ("file", "line", "text")}, "reason": g["reason"]}
+            )
+    for g in got.get("acs", []):
+        out["acs"].append({"id": g["id"], "verdict": g["verdict"], "reason": g["reason"]})
+    out["classifierTier"] = got.get("classifierTier")
+    return out
+
+
 def _key(f: dict) -> tuple:
     return (f.get("file"), f.get("summary"))
 
@@ -263,6 +345,7 @@ _FUNCS = {
     "tier": tier,
     "ac-plausible": ac_plausible,
     "parking": parking,
+    "verify": verify,
     "equivalence": equivalence,
     "false-finding": false_finding,
 }
