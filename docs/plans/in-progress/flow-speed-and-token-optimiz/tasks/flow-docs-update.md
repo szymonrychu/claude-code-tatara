@@ -12,8 +12,8 @@ model: sonnet
 estimate: 6
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--flow-docs-update
+branch: flow-speed-and-token-optimiz--flow-docs-update
 verified_head: ""
 run: ""
 provides: []

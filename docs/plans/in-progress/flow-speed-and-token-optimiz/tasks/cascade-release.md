@@ -12,8 +12,8 @@ model: opus
 estimate: 5
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cascade-release
+branch: flow-speed-and-token-optimiz--cascade-release
 verified_head: ""
 run: ""
 provides: []

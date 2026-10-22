@@ -12,8 +12,8 @@ model: opus
 estimate: 5
 actual: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-scope-wiring
+branch: flow-speed-and-token-optimiz--verify-scope-wiring
 verified_head: ""
 run: ""
 provides: []
