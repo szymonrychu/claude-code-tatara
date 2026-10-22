@@ -229,7 +229,8 @@ def allow_vocabulary(root: Path, *, tracked: bool = False) -> None:
     cp = load_check_personal(root)
     if cp is None:
         return
-    git("add", "-A", cwd=root)
+    if not tracked:
+        git("add", "-A", cwd=root)
     cfg_path = root / cp.DENYLIST
     if not cfg_path.is_file():
         cfg_path = root / "scripts" / "personal-denylist.json"
