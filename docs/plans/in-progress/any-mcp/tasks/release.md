@@ -1,6 +1,6 @@
 ---
 title: Release
-status: in-progress
+status: todo
 repo: any-mcp
 value: "any-mcp is a standard pip package and tag v0.1.0 is a verified, installable release"
 files: [CHANGELOG.md, .github/workflows/release.yml, tests/test_release.py]
