@@ -30,7 +30,7 @@ const agent = (land) => async (prompt, opts) => {
   if (role === 'audit') return { complete: true, missing: [] }
   throw new Error(`unexpected agent ${opts.label}`)
 }
-const landed = (extra = {}) => () => ({ landed: true, head: 'h', base: 'base1', conflict: false, verification, notes: '', ...extra })
+const landed = (extra = {}) => () => ({ landed: true, head: 'h', base: 'ba5e001', conflict: false, verification, notes: '', ...extra })
 const run = (tasks, land, args = {}) => runWorkflow(SCRIPT, { args: { brief: BRIEF, ...EPIC, ...args, tasks }, agent: agent(land) })
 const prompts = (r, role, id) => r.calls.filter((c) => c.opts.label.split(':')[1] === role && c.opts.label.includes(`:${id}`)).map((c) => c.prompt)
 const result = (r, id) => r.result.tasks.find((t) => t.id === id)
@@ -41,27 +41,27 @@ test('fork-point-arg-seeds-diff-base', async () => {
   const review = prompts(r, 'review', 'a')[0]
   assert.ok(review.includes('git diff abc1234..HEAD'), review)
   assert.ok(!review.includes('git merge-base'), review)
-  assert.ok(prompts(r, 'verify', 'a')[0].includes('--base abc1234 '))
+  assert.ok(prompts(r, 'verify', 'a')[0].includes("--base 'abc1234' "))
 })
 
 test('fork-point-absent-keeps-merge-base', async () => {
   const r = await run([task('a')], landed({ landed: false, contained: true }))
   assert.ok(prompts(r, 'review', 'a')[0].includes('git diff $(git merge-base HEAD epic-x)..HEAD'))
-  assert.ok(prompts(r, 'verify', 'a')[0].includes('--base epic-x '))
+  assert.ok(prompts(r, 'verify', 'a')[0].includes("--base 'epic-x' "))
   assert.equal(result(r, 'a').forkPoint, undefined)
   assert.equal(r.result.landed[0].forkPoint, undefined)
 })
 
 test('fork-point-in-landed-return', async () => {
   const r = await run([task('a')], landed())
-  assert.deepEqual(r.result.landed, [{ id: 'a', head: 'h', forkPoint: 'base1' }])
-  assert.equal(result(r, 'a').forkPoint, 'base1')
+  assert.deepEqual(r.result.landed, [{ id: 'a', head: 'h', forkPoint: 'ba5e001' }])
+  assert.equal(result(r, 'a').forkPoint, 'ba5e001')
 })
 
 test('fork-point-contained-keeps-prior', async () => {
-  const r = await run([task('a', { forkPoint: 'old1' })], landed({ landed: false, contained: true, base: 'new1' }))
-  assert.equal(r.result.landed[0].forkPoint, 'old1')
-  assert.equal(result(r, 'a').forkPoint, 'old1')
+  const r = await run([task('a', { forkPoint: '01d0001' })], landed({ landed: false, contained: true, base: '0e30001' }))
+  assert.equal(r.result.landed[0].forkPoint, '01d0001')
+  assert.equal(result(r, 'a').forkPoint, '01d0001')
 })
 
 test('fork-point-land-schema-and-prompt-carry-base', async () => {
@@ -97,7 +97,7 @@ test('fork-point-remediation-review-diffs-from-fork-point', async () => {
   const rem = r.calls.filter((c) => c.opts.label.split(':')[1] === 'review' && /a-r1/.test(c.opts.label))
   assert.ok(rem.length > 0, 'a remediation review ran')
   for (const c of rem) {
-    assert.ok(c.prompt.includes('git diff base1..HEAD'), c.prompt)
+    assert.ok(c.prompt.includes('git diff ba5e001..HEAD'), c.prompt)
     assert.ok(!c.prompt.includes('git merge-base'), c.prompt)
   }
 })
@@ -106,12 +106,12 @@ test('fork-point-verifier-base-after-landing', async () => {
   const r = await runGap([task('a')])
   const rem = r.calls.filter((c) => c.opts.label.split(':')[1] === 'verify' && /a-r1/.test(c.opts.label))
   assert.ok(rem.length > 0, 'a remediation verify ran')
-  for (const c of rem) assert.ok(c.prompt.includes('--base base1 '), c.prompt)
+  for (const c of rem) assert.ok(c.prompt.includes("--base 'ba5e001' "), c.prompt)
 })
 
 test('fork-point-forward-merge-prompt-names-fork-point', async () => {
   const r = await runGap([task('a'), task('b', { dependsOn: ['a'] })])
   const m = r.calls.filter((c) => c.opts.label.split(':')[1] === 'merge')
   assert.ok(m.length > 0, 'a forward merge ran')
-  assert.ok(m[0].prompt.includes('git diff base1..HEAD'), m[0].prompt)
+  assert.ok(m[0].prompt.includes('git diff ba5e001..HEAD'), m[0].prompt)
 })

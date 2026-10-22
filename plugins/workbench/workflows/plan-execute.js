@@ -118,13 +118,22 @@ const DO_NOT_BUILD = ARGS.doNotBuild || []
 const DESIGN_DOC = ARGS.designDoc || ''
 const PLAN_DOC = ARGS.planDoc || ''
 const BASE_REF = ARGS.baseRef || 'main'
+const SHA_RE = /^[0-9a-f]{7,40}$/
+// Single-quote a value for a shell command.
+const shq = (x) => `'${String(x).replace(/'/g, `'\\''`)}'`
 // A landed task's fork point (by root id): the epic commit it landed from. After landing,
 // merge-base(HEAD, <epic>) is the task's own HEAD, so its diffs are taken from here instead.
 const FORK_POINTS = new Map()
-for (const x of Array.isArray(ARGS.tasks) ? ARGS.tasks : []) if (x && x.forkPoint) FORK_POINTS.set(x.rootId || x.id, String(x.forkPoint))
+for (const x of Array.isArray(ARGS.tasks) ? ARGS.tasks : []) {
+  if (!x || !x.forkPoint) continue
+  if (SHA_RE.test(String(x.forkPoint))) FORK_POINTS.set(x.rootId || x.id, String(x.forkPoint))
+  else log(`${x.id}: forkPoint ignored: not a sha`)
+}
 const forkPointOf = (t) => FORK_POINTS.get(t.rootId || t.id)
 // The one diff base: the fork point when recorded, else the merge-base with the base ref.
-const diffBase = (t, ref = false) => forkPointOf(t) || (ref ? BASE_REF : `$(git merge-base HEAD ${BASE_REF})`)
+// A ref that needs no quoting stays bare in prompt text; anything else is single-quoted.
+const shqRef = (x) => (/^[A-Za-z0-9_.\/-]+$/.test(x) ? x : shq(x))
+const diffBase = (t, ref = false) => (ref ? shq(forkPointOf(t) || BASE_REF) : forkPointOf(t) || `$(git merge-base HEAD ${shqRef(BASE_REF)})`)
 const VERIFIER_AGENT = ARGS.verifierAgent === undefined ? 'workbench:verifier' : ARGS.verifierAgent
 const BRIEF = ARGS.brief || {}
 const APPROVALS = ARGS.approvals || []
@@ -843,8 +852,8 @@ const DEP_RESULTS = new Map()
 // repo at <worktree>/<repo>; a plain repo's worktree IS the repo root. Run 1 stalled
 // on the first layout being assumed for the second, so the emitted shell decides.
 function repoDir(t) {
-  const nested = `${t.worktree}/${t.repo}`
-  return `$(if [ -d "${nested}" ]; then echo "${nested}"; else echo "${t.worktree}"; fi)`
+  const nested = shq(`${t.worktree}/${t.repo}`)
+  return `$(if [ -d ${nested} ]; then echo ${nested}; else echo ${shq(t.worktree)}; fi)`
 }
 
 // cd into the task's checkout, assert it is the git toplevel, then merge. A mismatch
@@ -1109,9 +1118,6 @@ const verifyCommand = (t) => t.verify || ''
 // The command the verifier's script last ran for a task: what a land re-runs when the task has no verify.
 const VERIFIED_COMMAND_BY_ID = new Map()
 const landVerify = (t) => verifyCommand(t) || VERIFIED_COMMAND_BY_ID.get(t.id) || ''
-const SHA_RE = /^[0-9a-f]{7,40}$/
-
-const shq = (x) => `'${String(x).replace(/'/g, `'\\''`)}'`
 // The verify-task.py invocation shared by the verifier and a forward-merge re-verify.
 const verifyTaskCommand = (t, worktree, flags = []) =>
   `python3 ${shq(PLUGIN_ROOT + '/scripts/verify-task.py')} ${[
@@ -2207,7 +2213,10 @@ async function landTask(t, r) {
   const ok = res && (res.landed === true || res.contained === true) && res.verification && res.verification.passed === true
   if (ok) {
     const id = t.rootId || t.id
-    if (res.landed === true && res.base) FORK_POINTS.set(id, String(res.base))
+    if (res.landed === true && res.base) {
+      if (SHA_RE.test(String(res.base))) FORK_POINTS.set(id, String(res.base))
+      else log(`${id}: forkPoint ignored: not a sha`)
+    }
     LANDED.push({ id, head: res.head, ...(FORK_POINTS.has(id) ? { forkPoint: FORK_POINTS.get(id) } : {}) })
     log(`${t.id}: landed on ${BASE_REF} at ${res.head}`)
     const prior = r.impl.verification || {}
