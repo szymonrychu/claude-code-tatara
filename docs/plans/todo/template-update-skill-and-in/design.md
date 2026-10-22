@@ -257,3 +257,11 @@ No cross-epic contracts: no other todo or in-progress epic reads or writes these
 - init cleanup deletes template docs on first init only (existing behaviour, extended to
   contracts.json, index.json and docs/handoffs).
 - No push, no force operation, no remote change except adding a missing `template` remote.
+
+## Builder check answers
+
+- The MEMORY.md "template update <sha>" line needs `refresh` to accept an event: update-command adds a hidden `--event <text>` to `cli.py refresh` (passed to `write_all(event=...)`) and extends `scripts/tests/init_engine/test_refresh.py` for it; tests match the dated line by regex. (my call)
+- The lint gate runs after the refresh and before `git add -A`; the abort path also removes anything lint created. (my call)
+- Abort cleanup: `git merge --abort` plus removal of only the untracked files the run created (the preflight refuses any untracked state, so every untracked file at abort time is the run's); gitignored files are never touched. update-conflicts-and-abort's abort test asserts a pre-existing gitignored file survives. (my call)
+- `--base` candidate when no commit matches (squashed or amended project root): print `candidate base: none` and refuse, as specced. (answered)
+- e2e-template-update may touch `update.py` only to fix a real gap the e2e exposes. (answered)
