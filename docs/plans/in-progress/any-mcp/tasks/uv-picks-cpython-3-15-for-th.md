@@ -3,9 +3,9 @@ title: "uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.
 status: todo
 repo: any-mcp
 value: A test environment that differs from the target image can hide 3.12-only failures.
-files: []
-verify: ""
-depends_on: []
+files: [.python-version, tests/test_package.py]
+verify: "uv run --frozen pytest tests/test_package.py -q && mise run lint"
+depends_on: [scaffold]
 owns: []
 uses: []
 model: ""
@@ -25,35 +25,23 @@ provides: []
 
 ## Requirement
 
-uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships.
-
-Where: pyproject.toml / mise.toml (scaffold-owned)
-
-Why: A test environment that differs from the target image can hide 3.12-only failures.
+uv must build the .venv on Python 3.12, the version mise.toml pins and the agent image ships: add a .python-version file pinning 3.12 (keep requires-python >=3.12), and a test that .python-version and mise.toml agree on 3.12 and that the running interpreter in the test venv is 3.12.
 
 ## Acceptance conditions
 
-- AC1: uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships. at pyproject.toml / mise.toml (scaffold-owned) is resolved [evidence: judgement]
+- AC1: .python-version pins 3.12 and matches mise.toml [evidence: test:tests/test_package.py::test_python_version_pinned_to_312]
+- AC2: the test interpreter is 3.12 [evidence: test:tests/test_package.py::test_interpreter_is_312]
 
 ## Files
 
-
-
-## Interfaces
-
-Keep the interfaces around pyproject.toml / mise.toml (scaffold-owned) unchanged unless resolving it requires otherwise: uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships..
+- `.python-version`
+- `tests/test_package.py`
 
 ## Expected outcome
 
-uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships. at pyproject.toml / mise.toml (scaffold-owned) is resolved, and A test environment that differs from the target image can hide 3.12-only failures. no longer applies.
+Tests run on the same Python as the agent image.
 
 ## Steps
 
-1. Write a failing test that shows: uv picks CPython 3.15 for the .venv even though mise.toml pins python 3.12. There is no .python-version file and requires-python is >=3.12, so tests run on 3.15 rather than the 3.12 the agent image ships..
-2. Fix it at pyproject.toml / mise.toml (scaffold-owned).
-3. Run the task verify command and confirm it passes.
-
-## Notes
-
-Discovered in task `fastmcp-adapter` during run `any-mcp`.
-
+- Write the failing tests; run red.
+- Add .python-version, recreate the venv; run green.

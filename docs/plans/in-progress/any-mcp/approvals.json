@@ -17,7 +17,8 @@
       "schemas-and-validation",
       "plugin-abc",
       "registry",
-      "call-pipeline"
+      "call-pipeline",
+      "nothing-ever-calls-aclose-on"
     ],
     "status": "approved"
   },
@@ -87,7 +88,8 @@
       "D17"
     ],
     "tasks": [
-      "scaffold"
+      "scaffold",
+      "uv-picks-cpython-3-15-for-th"
     ],
     "status": "approved"
   },

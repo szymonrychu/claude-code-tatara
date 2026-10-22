@@ -36,6 +36,7 @@ Write the configuration and transport references (design D5, D10, D14).
 
 ## Acceptance conditions
 
+- AC0: docs/transports.md carries the fastmcp-adapter probe results (Tool API used, the validation-bypass finding, the per-protocol-era notification paths) copied from the _fastmcp_adapter.py module docstring [evidence: doc-section:docs/transports.md#Tool list changes]
 - AC1: every config key path of the config models is documented in configuration.md [evidence: test:tests/test_docs_reference.py::test_every_config_key_documented]
 - AC2: every CLI flag is documented in configuration.md or transports.md [evidence: test:tests/test_docs_reference.py::test_every_cli_flag_documented]
 - AC3: the configuration reference has an Exit codes section [evidence: doc-section:docs/configuration.md#Exit codes]
