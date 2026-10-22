@@ -325,7 +325,7 @@ skill (`workbench:template-update` in Claude Code), or the engine directly:
 
 ```sh
 mise run init:update                  # template from the default URL, branch main
-mise run init:update --url <url> --branch <branch> --base <sha>
+mise run init:update -- --url <url> --branch <branch> --base <sha>
 ```
 
 `--url` and `--branch` pick another template source; `--base` names the template
