@@ -69,13 +69,14 @@ def _popen_bounded(argv: list, cwd: str, timeout: float | None, **kw) -> tuple:
         except ProcessLookupError:
             pass
         partial = e.output
+        if isinstance(partial, bytes):
+            partial = partial.decode(errors="replace")
         try:
             rest, _ = p.communicate(timeout=5)
         except subprocess.TimeoutExpired:
             rest = None
-        if isinstance(partial, bytes):
-            partial = partial.decode(errors="replace")
-        return TIMEOUT_EXIT, (partial or "") + (rest or ""), True
+        # e.output and the post-kill read both hold the full capture on POSIX; keep the longer.
+        return TIMEOUT_EXIT, max(partial or "", rest or "", key=len), True
 
 
 def run_shell(cmd: str, cwd: str, timeout: float | None = None) -> tuple[int, str]:

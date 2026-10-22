@@ -34,7 +34,7 @@ def raw(root, *extra, cmd="true"):
     return vt.build([*argv, *(["--cmd", cmd] if cmd else []), *extra])
 
 
-def test_main_command_timeout_kills_and_reports(repo):
+def test_command_timeout_reports_timeout_field(repo):
     branch(repo)
     t0 = time.time()
     out = verify(repo, "echo started; sleep 30", "--no-triage", "--timeout", "1")
@@ -84,7 +84,7 @@ def test_install_timeout(repo, tmp_path, monkeypatch):
     assert out["installed"][0]["timeout"]["seconds"] == 1.0
 
 
-def test_prev_head_not_a_sha_is_a_json_result(repo):
+def test_non_sha_prev_head_is_a_json_error(repo):
     branch(repo)
     prose = "see the previous round please, it was fine and long"
     code, out = raw(repo, "--prev-head", prose)
@@ -116,7 +116,7 @@ def targeted_repo(repo):
     commit(repo, {"tests/test_a.py": "def test_a():\n    pass\n", "lib.py": "x = 1\n"})
 
 
-def test_targeted_builds_from_changed_test_files(repo):
+def test_targeted_builds_command_from_refs_and_changed_tests(repo):
     targeted_repo(repo)
     out = verify(repo, None, "--no-triage")
     assert out["commandScope"] == "targeted"
@@ -140,7 +140,7 @@ def test_explicit_cmd_scope(repo):
     assert verify(repo, "true", "--no-triage")["commandScope"] == "command"
 
 
-def test_no_targeted_tests_is_a_failed_result(repo):
+def test_targeted_without_tests_fails_with_error(repo):
     branch(repo)
     commit(repo, {"lib.py": "x\n"})
     out = verify(repo, None, "--no-triage")
@@ -148,7 +148,7 @@ def test_no_targeted_tests_is_a_failed_result(repo):
     assert out["commandScope"] == "targeted"
 
 
-def test_tdd_runs_command_at_most_twice_and_reuses_head_exit(repo, monkeypatch):
+def test_tdd_revert_runs_at_most_twice(repo, monkeypatch):
     commit(repo, {"lib_a.py": "OLD\n"}, "seed")
     branch(repo)
     commit(repo, {"lib_a.py": "NEW\n"})
@@ -184,3 +184,8 @@ def test_tdd_base_timeout_is_bounded(repo):
     out = verify(repo, cmd, "--no-triage", "--tdd-revert", "--timeout", "1")
     assert out["tdd"]["timeout"] == {"command": cmd, "seconds": 1.0}
     assert out["tdd"]["failedOnBase"] is True and out["clean"] is True
+
+
+def test_timeout_evidence_is_not_duplicated():
+    code, out = vt.run_shell("echo a; echo b; sleep 30", ".", 1)
+    assert code == 124 and out == "a\nb\n"
