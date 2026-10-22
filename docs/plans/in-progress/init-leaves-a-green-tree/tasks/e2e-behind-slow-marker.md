@@ -1,6 +1,6 @@
 ---
 title: e2e behind slow marker
-status: todo
+status: in-progress
 repo: workbench
 value: "the template's default suite stays fast while the full green-tree proof still runs in CI"
 files: [pyproject.toml, scripts/tests/e2e/test_instantiate.py, .mise.toml, mise-tasks/test/scripts, .github/workflows/ci.yml, scripts/tests/test_root_config.py, scripts/tests/test_root_tooling.py, AGENTS.md]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-e2e-behind-slow-marker
+branch: init-leaves-a-green-tree-e2e-behind-slow-marker
 verified_head: ""
 run: ""
 provides: []
