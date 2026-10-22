@@ -13,8 +13,7 @@ from gitops import DEFAULT_TEMPLATE_URL, Refusal, git
 
 
 def preflight(root: Path) -> None:
-    agents = root / "AGENTS.md"
-    if not agents.is_file() or project_files.UNINIT_RE.search(agents.read_text()):
+    if not project_files.is_initialised(root):
         raise Refusal("this workbench is not initialised; run init (new or adopt) first")
     if git("rev-parse", "-q", "--verify", "MERGE_HEAD", cwd=root, check=False).returncode == 0:
         raise Refusal("a merge is in progress; finish or abort it first")

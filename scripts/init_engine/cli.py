@@ -158,8 +158,7 @@ def cmd_component_remove(args: argparse.Namespace) -> int:
 def cmd_refresh(args: argparse.Namespace) -> int:
     """Re-run the idempotent project writers, then sync the AGENTS.md blocks and harnesses."""
     root = Path(args.root).resolve()
-    agents = root / "AGENTS.md"
-    if not agents.is_file() or project_files.UNINIT_RE.search(agents.read_text()):
+    if not project_files.is_initialised(root):
         raise Refusal("this workbench is not initialised; run init (new or adopt) first")
     project_files.write_all(root, method="init:refresh", event=args.event)
     proc = subprocess.run(
