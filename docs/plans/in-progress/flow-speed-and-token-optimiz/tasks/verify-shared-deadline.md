@@ -42,16 +42,19 @@ Deliver: `--timeout` is one shared deadline, default 540 s, measured from the st
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `verify-task.py --timeout <seconds>`: shared deadline, default 540.
+- Result JSON: `timeout: {command, seconds}` (existing) plus `skipped: [step names]` (new, empty list when nothing was skipped).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One verify-task.py call never runs longer than its --timeout in total, so the verifier's 600 s Bash call always returns a JSON result.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Write the three tests in test_verify_bounded.py and see them fail.
+2. Replace per-command timeouts with a deadline computed once; pass the remaining seconds to each command.
+3. Record skipped steps; update help text, verifier.md and the plan-execute.js comment.
+4. Run the verify command.
 
 ## Notes
 
