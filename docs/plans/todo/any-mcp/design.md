@@ -409,6 +409,7 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
 
 ## Open questions
 - Q1: Build on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC, with one adapter module the only importer of fastmcp? [recommended: yes]
+- Q2: Keep v1 tools-only, with plugin resources and prompts not in the v1 API? [recommended: yes, tools only in v1]
 
 ## Irreversible operations in scope
 
