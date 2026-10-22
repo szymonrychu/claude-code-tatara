@@ -1,6 +1,6 @@
 ---
 title: Call pipeline
-status: in-progress
+status: done
 repo: any-mcp
 value: Every tool call is validated and every failure is an error result the model can read
 files: [src/any_mcp/pipeline.py, tests/test_pipeline.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-call-pipeline/any-mcp
 branch: any-mcp-call-pipeline
-verified_head: ""
-run: ""
+verified_head: 3a3161beb881479beaf6baf3df4e43da144bfa95
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: ["The round-2 fixes were written test-after, against the TDD rule. The new tests do assert the fixed behaviour."]
 ---
 
 # Call pipeline

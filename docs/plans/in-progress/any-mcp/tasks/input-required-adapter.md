@@ -1,6 +1,6 @@
 ---
 title: Input-required adapter
-status: in-progress
+status: todo
 repo: any-mcp
 value: "InputRequiredResult round trips work through a real stdio client and a real HTTP client, with a runnable example plugin"
 files: [src/any_mcp/_fastmcp_adapter.py, examples/confirm_delete.py, tests/test_input_required_transports.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-input-required-adapter/any-mcp
 branch: any-mcp-input-required-adapter
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Input-required adapter
@@ -63,3 +65,5 @@ A plugin that needs a confirmation or a missing parameter asks for it and contin
 ## Notes
 
 If the MRTR result type is missing from the pinned FastMCP, the task raises the question (do not fake the result shape): record the probe output in the adapter docstring and stop for a decision.
+
+- 2026-10-23 run any-mcp: dependency-failed on http-transport

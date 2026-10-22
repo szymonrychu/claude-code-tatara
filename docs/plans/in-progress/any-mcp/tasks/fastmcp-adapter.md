@@ -1,6 +1,6 @@
 ---
 title: FastMCP adapter
-status: in-progress
+status: done
 repo: any-mcp
 value: MCP clients of both protocol eras see the tools while plugins stay free of FastMCP
 files: [src/any_mcp/_fastmcp_adapter.py, tests/test_adapter.py, tests/test_import_boundary.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-fastmcp-adapter/any-mcp
 branch: any-mcp-fastmcp-adapter
-verified_head: ""
-run: ""
-provides: []
+verified_head: 58ff97cb6b61feea251dfb91e643300a9c7ed0e1
+run: any-mcp
+provides: [in-memory-mcp-client, protocol-error]
+acs_for_audit: []
+process_gaps: []
+fork_point: 2782d30fe76cda719a4d2a43b9c46153c54c0a22
 ---
 
 # FastMCP adapter

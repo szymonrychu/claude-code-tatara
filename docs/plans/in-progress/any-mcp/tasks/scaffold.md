@@ -1,6 +1,6 @@
 ---
 title: Scaffold
-status: in-progress
+status: done
 repo: any-mcp
 value: "A working any-mcp repo with locked deps, lint, tests and CI from the first commit"
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yml, src/any_mcp/__init__.py, tests/test_package.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-scaffold/any-mcp
 branch: any-mcp-scaffold
-verified_head: ""
-run: ""
+verified_head: da45c0d319324199f8d736aa8192a84c5f5f69cb
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Scaffold

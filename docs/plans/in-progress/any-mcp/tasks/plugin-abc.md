@@ -1,6 +1,6 @@
 ---
 title: Plugin ABC
-status: in-progress
+status: done
 repo: any-mcp
 value: "Writing a plugin is one class with one method; every other hook has a working default"
 files: [src/any_mcp/plugin.py, src/any_mcp/context.py, src/any_mcp/__init__.py, tests/test_plugin.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-plugin-abc/any-mcp
-branch: any-mcp-plugin-abc
-verified_head: ""
-run: ""
-provides: []
+branch: HEAD
+verified_head: 6f038a3bb72ba71e3c7e4706c4cda44a33c7f605
+run: any-mcp
+provides: [plugin-context, no-config]
+acs_for_audit: []
+process_gaps: ["No red-phase evidence for the bytes fix: the implementer says the new test was not run before the fix (TDD rule)"]
 ---
 
 # Plugin ABC

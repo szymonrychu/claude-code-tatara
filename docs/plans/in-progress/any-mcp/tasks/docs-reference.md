@@ -1,6 +1,6 @@
 ---
 title: Docs reference
-status: in-progress
+status: todo
 repo: any-mcp
 value: "Every config key, flag and transport behaviour has one documented meaning"
 files: [docs/configuration.md, docs/transports.md, tests/test_docs_reference.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-reference/any-mcp
 branch: any-mcp-docs-reference
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Docs reference
@@ -65,3 +67,5 @@ Every config key and flag has one documented meaning and default, and a new key 
 ## Notes
 
 Claude Code registration forms are from the docs brief section 4 (`claude mcp add`, `.mcp.json` with no `type` means stdio, `--mcp-config`); note that a committed `.claude/settings.json` cannot approve project servers in an untrusted folder.
+
+- 2026-10-23 run any-mcp: dependency-failed on http-transport

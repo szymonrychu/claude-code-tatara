@@ -1,6 +1,6 @@
 ---
 title: Schemas and validation
-status: in-progress
+status: done
 repo: any-mcp
 value: "Client-safe tool names and schemas, and no unvalidated argument ever reaches a plugin"
 files: [src/any_mcp/schema.py, src/any_mcp/validation.py, tests/test_schema.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-schemas-and-validation/any-mcp
 branch: any-mcp-schemas-and-validation
-verified_head: ""
-run: ""
-provides: []
+verified_head: ecfba3da606af638502b8943ec1f728050a8df7a
+run: any-mcp
+provides: [schema-tools, arg-validator]
+acs_for_audit: []
+process_gaps: []
+fork_point: d93aa22
 ---
 
 # Schemas and validation

@@ -1,6 +1,6 @@
 ---
 title: Release
-status: in-progress
+status: todo
 repo: any-mcp
 value: "any-mcp is a standard pip package and tag v0.1.0 is a verified, installable release"
 files: [CHANGELOG.md, .github/workflows/release.yml, tests/test_release.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-release/any-mcp
 branch: any-mcp-release
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Release
@@ -72,3 +74,5 @@ Every install form in the README works from a standard wheel, and pushing tag `v
 ## Notes
 
 The git install test needs the work committed (it installs `HEAD`); commit before running it. The install tests use the network for dependencies; reuse the uv cache. The tag itself is pushed by the orchestrator after the epic closes on `main` (an irreversible operation listed at the gate); it never moves once pushed.
+
+- 2026-10-23 run any-mcp: dependency-failed on docs-readme-concepts, input-required-adapter

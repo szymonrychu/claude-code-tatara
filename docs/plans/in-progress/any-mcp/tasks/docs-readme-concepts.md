@@ -1,6 +1,6 @@
 ---
 title: Docs README concepts
-status: in-progress
+status: todo
 repo: any-mcp
 value: "A README that installs and runs any-mcp in a minute, and a concepts guide"
 files: [README.md, docs/concepts.md, tests/test_docs_links.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-readme-concepts/any-mcp
 branch: any-mcp-docs-readme-concepts
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Docs README concepts
@@ -66,3 +68,5 @@ A reader learns what any-mcp is, installs it, and runs a working plugin from the
 ## Notes
 
 This task runs after docs-authoring and docs-reference, so its link test covers every page. Mirror the claude-code-wrapper README Installation layout (`code/claude-code-wrapper/README.md` lines 40-54). No PyPI publishing is in scope; the index form is documented because the package is a standard one.
+
+- 2026-10-23 run any-mcp: dependency-failed on docs-authoring, docs-reference

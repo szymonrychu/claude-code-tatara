@@ -1,6 +1,6 @@
 ---
 title: Docs authoring
-status: in-progress
+status: todo
 repo: any-mcp
 value: A plugin authoring guide from small to big plugins whose samples are the tested examples
 files: [docs/plugin-authoring.md, docs/testing-plugins.md, tests/test_docs_snippets.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-authoring/any-mcp
 branch: any-mcp-docs-authoring
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Docs authoring
@@ -68,3 +70,5 @@ The guide walks from a 10-line plugin to a packaged OpenAPI plugin, and every co
 ## Notes
 
 Follow the simonw/llm plugin tutorial shape (prior-art D1): smallest working thing first, then one concept per section.
+
+- 2026-10-23 run any-mcp: dependency-failed on examples-big-group, input-required-adapter

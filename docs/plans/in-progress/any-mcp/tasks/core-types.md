@@ -1,6 +1,6 @@
 ---
 title: Core types
-status: in-progress
+status: done
 repo: any-mcp
 value: "One shared vocabulary of tool, call, response and error types for core and plugins"
 files: [src/any_mcp/types.py, src/any_mcp/errors.py, tests/test_types.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-core-types/any-mcp
 branch: any-mcp-core-types
-verified_head: ""
-run: ""
-provides: []
+verified_head: 162fcc2a50e939ac2e3dd9c5cd224fe31f818a2f
+run: any-mcp
+provides: [tool-types, tool-errors]
+acs_for_audit: [AC3]
+process_gaps: []
 ---
 
 # Core types

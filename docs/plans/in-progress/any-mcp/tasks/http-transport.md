@@ -1,6 +1,6 @@
 ---
 title: HTTP transport
-status: in-progress
+status: todo
 repo: any-mcp
 value: "any-mcp also serves streamable HTTP, safe by default and never relaying credentials"
 files: [src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, tests/test_http_transport.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-transport/any-mcp
 branch: any-mcp-http-transport
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # HTTP transport
@@ -67,3 +69,5 @@ Adds `any_mcp._fastmcp_adapter.run_http(server: Server, settings: HttpSettings) 
 ## Notes
 
 Streamable HTTP rules (docs brief 1.5): one POST endpoint, `MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name` headers, Origin validation is a MUST, bind 127.0.0.1 locally. The MCP SDK enables DNS-rebinding protection on localhost; reuse it where it covers the Origin rule. Token passthrough is forbidden by the 2026-07-28 security best practices (prior-art P7). Plain static bearer only: OAuth is a non-goal.
+
+- 2026-10-23 run any-mcp: dependency-failed on cli-stdio

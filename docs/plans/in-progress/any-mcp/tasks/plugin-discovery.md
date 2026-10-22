@@ -1,6 +1,6 @@
 ---
 title: Plugin discovery
-status: in-progress
+status: done
 repo: any-mcp
 value: Plugins load from installed packages or plain files named in the config
 files: [src/any_mcp/discovery.py, tests/test_discovery.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-plugin-discovery/any-mcp
-branch: any-mcp-plugin-discovery
-verified_head: ""
-run: ""
-provides: []
+branch: "HEAD (worktree any-mcp-plugin-discovery)"
+verified_head: f3d1086a323ba4837aaee166eba7f4b51ff49411
+run: any-mcp
+provides: [plugin-loader]
+acs_for_audit: [AC3]
+process_gaps: []
 ---
 
 # Plugin discovery

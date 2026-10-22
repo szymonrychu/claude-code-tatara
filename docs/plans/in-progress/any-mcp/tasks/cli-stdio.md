@@ -1,6 +1,6 @@
 ---
 title: CLI stdio
-status: in-progress
+status: escalated
 repo: any-mcp
 value: "any-mcp runs as a well-behaved local stdio MCP server, the default transport"
 files: [src/any_mcp/cli.py, src/any_mcp/__main__.py, src/any_mcp/log.py, tests/test_cli.py, tests/fixtures/stdio_plugin.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-cli-stdio/any-mcp
 branch: any-mcp-cli-stdio
-verified_head: ""
-run: ""
+verified_head: cf2da9985f746f05b97de50e00b1c155c1484fc4
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # CLI stdio

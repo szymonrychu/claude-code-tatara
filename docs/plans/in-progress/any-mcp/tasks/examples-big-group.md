@@ -1,6 +1,6 @@
 ---
 title: Examples big group
-status: in-progress
+status: todo
 repo: any-mcp
 value: A runnable packaged OpenAPI plugin and a group-of-APIs config users can copy
 files: [examples/petstore/pyproject.toml, examples/petstore/src/petstore_plugin/__init__.py, examples/petstore/src/petstore_plugin/petstore.yaml, examples/petstore/any-mcp.yaml, examples/group/any-mcp.yaml, tests/test_examples_big.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-big-group/any-mcp
 branch: any-mcp-examples-big-group
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Examples big group
@@ -65,3 +67,5 @@ Example files only; `PetstorePlugin` subclasses `any_mcp.openapi.OpenAPIPlugin`.
 ## Notes
 
 The group config needs `GITHUB_TOKEN`; the test sets it in the environment. `--list-tools` must not contact the network: the petstore spec is a file and list-tools calls no tool. Exclude `examples/petstore` from the root package build (hatch `packages` already limits the wheel to `src/any_mcp`).
+
+- 2026-10-23 run any-mcp: dependency-failed on openapi-plugin, examples-small-medium

@@ -1,6 +1,6 @@
 ---
 title: HTTP binding
-status: in-progress
+status: done
 repo: any-mcp
 value: Plugins describe an endpoint declaratively and write no HTTP code
 files: [src/any_mcp/http.py, tests/test_http_binding.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-binding/any-mcp
-branch: any-mcp-http-binding
-verified_head: ""
-run: ""
-provides: []
+branch: current worktree branch
+verified_head: d93aa2262b6f913bac7ab107ca6483fe5bd3b484
+run: any-mcp
+provides: [http-executor]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # HTTP binding

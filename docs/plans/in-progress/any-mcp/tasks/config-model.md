@@ -1,6 +1,6 @@
 ---
 title: Config model
-status: in-progress
+status: done
 repo: any-mcp
 value: "One validated YAML file configures the server and every plugin, with clear errors"
 files: [src/any_mcp/config.py, tests/test_config.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-config-model/any-mcp
 branch: any-mcp-config-model
-verified_head: ""
-run: ""
-provides: []
+verified_head: bf625c2976d329d1e1d970d09302ab44200c4be5
+run: any-mcp
+provides: [any-mcp-config]
+acs_for_audit: []
+process_gaps: []
+fork_point: 58062304fb74846de59abb3fda0bb62641ad5449
 ---
 
 # Config model

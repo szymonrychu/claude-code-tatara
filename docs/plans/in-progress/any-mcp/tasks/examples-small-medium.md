@@ -1,6 +1,6 @@
 ---
 title: Examples small medium
-status: in-progress
+status: todo
 repo: any-mcp
 value: "Runnable, tested small and medium plugins users can copy"
 files: [examples/hello/hello.py, examples/hello/any-mcp.yaml, examples/single_endpoint/zippopotam.py, examples/single_endpoint/any-mcp.yaml, examples/github_issues/github_issues.py, examples/github_issues/any-mcp.yaml, tests/test_examples_small.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-small-medium/any-mcp
 branch: any-mcp-examples-small-medium
 verified_head: ""
-run: ""
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Examples small medium
@@ -67,3 +69,5 @@ Example files only; they use the public `any_mcp` API (`Plugin`, `tool`, `ToolSp
 ## Notes
 
 Examples are documentation: keep each one short, commented where a reader needs it, and free of FastMCP imports (the boundary test scans `examples/`). Ruff lints `examples/` too.
+
+- 2026-10-23 run any-mcp: dependency-failed on cli-stdio

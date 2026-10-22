@@ -1,6 +1,6 @@
 ---
 title: Registry
-status: in-progress
+status: done
 repo: any-mcp
 value: "Many plugins appear as one sorted, collision-free tool list that reloads safely"
 files: [src/any_mcp/registry.py, tests/test_registry.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-registry/any-mcp
 branch: any-mcp-registry
-verified_head: ""
-run: ""
+verified_head: 81e3ae51a740f7ea05963022147256ba8d997a36
+run: any-mcp
 provides: []
+acs_for_audit: [AC3]
+process_gaps: []
 ---
 
 # Registry
