@@ -1,6 +1,6 @@
 ---
 title: Docs authoring
-status: in-progress
+status: escalated
 repo: any-mcp
 value: A plugin authoring guide from small to big plugins whose samples are the tested examples
 files: [docs/plugin-authoring.md, docs/testing-plugins.md, tests/test_docs_snippets.py]
@@ -16,10 +16,10 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-authoring/any-mcp
 branch: any-mcp-docs-authoring
-verified_head: ""
+verified_head: 78faf4eeb3e7f8f3de762e26fc196bc49875ed64
 run: any-mcp
 provides: []
-acs_for_audit: []
+acs_for_audit: [AC9]
 process_gaps: []
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Input-required adapter
-status: in-progress
+status: done
 repo: any-mcp
 value: "InputRequiredResult round trips work through a real stdio client and a real HTTP client, with a runnable example plugin"
 files: [src/any_mcp/_fastmcp_adapter.py, examples/confirm_delete.py, tests/test_input_required_transports.py]
@@ -15,8 +15,8 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-input-required-adapter/any-mcp
-branch: any-mcp-input-required-adapter
-verified_head: ""
+branch: "current worktree branch (HEAD 8a45132)"
+verified_head: 8a45132a95d1d4a37fa57236fa4cf7462a2c2ec4
 run: any-mcp
 provides: []
 acs_for_audit: []

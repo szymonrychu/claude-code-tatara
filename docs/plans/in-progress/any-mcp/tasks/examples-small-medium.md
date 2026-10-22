@@ -1,6 +1,6 @@
 ---
 title: Examples small medium
-status: in-progress
+status: done
 repo: any-mcp
 value: "Runnable, tested small and medium plugins users can copy"
 files: [examples/hello/hello.py, examples/hello/any-mcp.yaml, examples/single_endpoint/zippopotam.py, examples/single_endpoint/any-mcp.yaml, examples/github_issues/github_issues.py, examples/github_issues/any-mcp.yaml, tests/test_examples_small.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-small-medium/any-mcp
 branch: any-mcp-examples-small-medium
-verified_head: ""
+verified_head: 2fbcb2701e0cb3ad5e5dc7d348e2345d26c68dc0
 run: any-mcp
 provides: []
 acs_for_audit: []

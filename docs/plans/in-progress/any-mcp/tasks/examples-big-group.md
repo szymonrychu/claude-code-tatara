@@ -1,6 +1,6 @@
 ---
 title: Examples big group
-status: in-progress
+status: done
 repo: any-mcp
 value: A runnable packaged OpenAPI plugin and a group-of-APIs config users can copy
 files: [examples/petstore/pyproject.toml, examples/petstore/src/petstore_plugin/__init__.py, examples/petstore/src/petstore_plugin/petstore.yaml, examples/petstore/any-mcp.yaml, examples/group/any-mcp.yaml, tests/test_examples_big.py]
@@ -16,11 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-big-group/any-mcp
 branch: any-mcp-examples-big-group
-verified_head: ""
+verified_head: 11ffef9e9030b82f7b7d33c3c282e917e9e9ae0b
 run: any-mcp
 provides: []
-acs_for_audit: []
-process_gaps: []
+acs_for_audit: [AC1]
+process_gaps: [No red-first test run was recorded for this task]
 ---
 
 # Examples big group

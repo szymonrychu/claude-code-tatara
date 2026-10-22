@@ -1,6 +1,6 @@
 ---
 title: HTTP transport
-status: in-progress
+status: done
 repo: any-mcp
 value: "any-mcp also serves streamable HTTP, safe by default and never relaying credentials"
 files: [src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, tests/test_http_transport.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-transport/any-mcp
 branch: any-mcp-http-transport
-verified_head: ""
+verified_head: cfe0936dc636a3024bf665e3ef20bfe70d25423b
 run: any-mcp
 provides: []
 acs_for_audit: []

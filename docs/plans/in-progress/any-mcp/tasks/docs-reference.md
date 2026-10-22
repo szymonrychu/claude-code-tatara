@@ -1,6 +1,6 @@
 ---
 title: Docs reference
-status: in-progress
+status: escalated
 repo: any-mcp
 value: "Every config key, flag and transport behaviour has one documented meaning"
 files: [docs/configuration.md, docs/transports.md, tests/test_docs_reference.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-reference/any-mcp
 branch: any-mcp-docs-reference
-verified_head: ""
+verified_head: c967152e0452d4791aa8fe420a58207ecd21d791
 run: any-mcp
 provides: []
 acs_for_audit: []

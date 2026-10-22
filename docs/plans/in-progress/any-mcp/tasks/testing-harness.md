@@ -1,6 +1,6 @@
 ---
 title: Testing harness
-status: escalated
+status: done
 repo: any-mcp
 value: "Plugin authors test a plugin in memory, offline, through the real server"
 files: [src/any_mcp/testing.py, tests/test_testing_harness.py]
@@ -15,8 +15,8 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-testing-harness/any-mcp
-branch: HEAD
-verified_head: f01a60a26fefd8638042c0e1f2fa3bacd6df80e1
+branch: any-mcp-testing-harness
+verified_head: 7e77db37513a859b82807664851dfd74f1ef4fa3
 run: any-mcp
 provides: [plugin-harness]
 acs_for_audit: [AC3]

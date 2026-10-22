@@ -1,6 +1,6 @@
 ---
 title: OpenAPI plugin
-status: escalated
+status: done
 repo: any-mcp
 value: Any OpenAPI 3 API becomes a curated set of tools with config only
 files: [src/any_mcp/openapi.py, tests/test_openapi.py, tests/fixtures/openapi/petstore.yaml, tests/fixtures/openapi/recursive.json]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-openapi-plugin/any-mcp
 branch: any-mcp-openapi-plugin
-verified_head: ""
+verified_head: 5d7213c7b2e773d8785c7628c7841c164ae6a187
 run: any-mcp
 provides: []
 acs_for_audit: []
