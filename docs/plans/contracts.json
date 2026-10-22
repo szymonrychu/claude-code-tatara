@@ -16,5 +16,15 @@
       "agent-orchestrator"
     ],
     "note": ""
+  },
+  {
+    "name": "wrapper-user-message-event",
+    "kind": "api",
+    "owner": "claude-code-wrapper-orchestr",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": ""
   }
 ]
