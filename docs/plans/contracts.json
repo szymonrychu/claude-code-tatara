@@ -46,5 +46,15 @@
       "agent-orchestrator"
     ],
     "note": ""
+  },
+  {
+    "name": "wrapper-context-surface",
+    "kind": "api",
+    "owner": "claude-code-wrapper-orchestr",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": ""
   }
 ]
