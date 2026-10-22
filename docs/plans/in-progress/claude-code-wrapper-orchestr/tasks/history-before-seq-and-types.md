@@ -1,6 +1,6 @@
 ---
 title: History before_seq and types
-status: in-progress
+status: todo
 repo: claude-code-wrapper
 value: "Chat UI can load newest and scroll back, headless clients can filter"
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, README.md, tests/test_history_backward.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-history-before-seq-and-types/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-history-before-seq-and-types
 verified_head: ""
-run: ""
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # History before_seq and types
@@ -60,3 +62,5 @@ Backward pages work with before_seq and types, with prev_seq and has_more_before
 ## Notes
 
 Existing page() takes the ring fast path only when ring[0].seq <= after_seq+1; backward paging must fall back to _read_file when the ring does not cover the range. Rotation drops the oldest half of events.jsonl (events.py:212-225).
+
+- 2026-10-23 run claude-code-wrapper-orchestr: dependency-failed on user-message-event

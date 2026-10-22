@@ -1,6 +1,6 @@
 ---
 title: Statusline relay
-status: in-progress
+status: todo
 repo: claude-code-wrapper
 value: Wrapper receives real context-window usage from Claude Code
 files: [src/claude_code_wrapper/cli.py, src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/internal_api.py, src/claude_code_wrapper/bootstrap/settings.py, src/claude_code_wrapper/router.py, README.md, tests/test_statusline_relay.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-relay/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-statusline-relay
 verified_head: ""
-run: ""
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Statusline relay
@@ -64,3 +66,5 @@ A session's Claude Code runs ccw statusline; the wrapper receives context_window
 ## Notes
 
 Follow hook_relay.py for how the CLI finds the internal API and session id. Best effort post with a short timeout. Statusline JSON fields: context_window.used_percentage, context_window_size, current_usage (code.claude.com/docs/en/statusline); null before the first assistant message and after /compact.
+
+- 2026-10-23 run claude-code-wrapper-orchestr: dependency-failed on history-before-seq-and-types

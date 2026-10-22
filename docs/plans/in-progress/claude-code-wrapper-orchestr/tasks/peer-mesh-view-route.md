@@ -1,6 +1,6 @@
 ---
 title: Peer mesh view route
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: Orchestrator can read the peer mesh without holding peers.token
 files: [src/claude_code_wrapper/api/peers.py, src/claude_code_wrapper/peer_membership.py, README.md, tests/test_api_peers_view.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-peer-mesh-view-route/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-peer-mesh-view-route
-verified_head: ""
-run: ""
+verified_head: 892610075f08ff303a9f9b8481777d143a0c53e7
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Peer mesh view route

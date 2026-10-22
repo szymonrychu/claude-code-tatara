@@ -1,6 +1,6 @@
 ---
 title: On start instance hook
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "Agent clusters can install tools such as any-mcp once per pod start, before any session or MCP server runs"
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/service.py, README.md, tests/test_on_start_hook.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-on-start-instance-hook/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-on-start-instance-hook
-verified_head: ""
-run: ""
-provides: []
+verified_head: 7f04ddc0f40f92c634deb7fac4c9eb243f536e67
+run: claude-code-wrapper-orchestr
+provides: [wrapper-on-start-hook]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # On start instance hook

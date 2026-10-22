@@ -1,6 +1,6 @@
 ---
 title: Idle since in snapshot
-status: in-progress
+status: escalated
 repo: claude-code-wrapper
 value: Orchestrator can route to the agent idle the longest
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, README.md, tests/test_idle_since.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-idle-since-in-snapshot/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-idle-since-in-snapshot
-verified_head: ""
-run: ""
-provides: []
+verified_head: 9961bc9094a8a0bd2a7a92b12a9d6b83eb14661f
+run: claude-code-wrapper-orchestr
+provides: [wrapper-idle-since]
+acs_for_audit: []
+process_gaps: ["No red run: tests were written after the implementation, as the implementer disclosed", Branch not rebased onto origin/main before the PR]
 ---
 
 # Idle since in snapshot

@@ -1,6 +1,6 @@
 ---
 title: User message event
-status: in-progress
+status: todo
 repo: claude-code-wrapper
 value: Chat UI shows every prompt including peer and restart prompts
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_user_message_event.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-user-message-event/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-user-message-event
 verified_head: ""
-run: ""
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # User message event
@@ -72,3 +74,5 @@ After a prompt is pasted the event log holds user_message with turn_id, origin, 
 ## Notes
 
 Emit when the prompt is actually pasted, not on accept. Shares events.py/router.py with other tasks: this is why the chain is ordered. The Stop-hook block (turn_continued, router.py:676) is deliberately not a paste. The `user_message` for slash commands is emitted in the router where `send_command` is called (router.py:1216-1218), after `command_started`. Origin is the turns.py:27 Literal extended by `restart` and `command`; do not widen `TurnRecord.origin`, only the event data.
+
+- 2026-10-23 run claude-code-wrapper-orchestr: dependency-failed on idle-since-in-snapshot

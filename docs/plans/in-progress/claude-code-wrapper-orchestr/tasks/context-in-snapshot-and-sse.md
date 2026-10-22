@@ -1,6 +1,6 @@
 ---
 title: Context in snapshot and SSE
-status: in-progress
+status: todo
 repo: claude-code-wrapper
 value: Orchestrator draws the 0-100 percent context gauge from the wrapper
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_context_surface.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-context-in-snapshot-and-sse/claude-code-wrapper
 branch: claude-code-wrapper-orchestr-context-in-snapshot-and-sse
 verified_head: ""
-run: ""
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Context in snapshot and SSE
@@ -64,3 +66,5 @@ Snapshot context is null, then filled after a statusline update, with one contex
 
 router.py already keeps _last_context for auto-compact (router.py:257, 858); do not conflate it with the statusline values. Compaction emit is router.py:887.
 Statusline field semantics are from the Claude Code statusline doc (brief-docs.md section 5, item 1): used_percentage = (input + cache_creation + cache_read) / context_window_size, output excluded; current_usage and the percentages are null early in the session and current_usage after /compact.
+
+- 2026-10-23 run claude-code-wrapper-orchestr: dependency-failed on statusline-relay
