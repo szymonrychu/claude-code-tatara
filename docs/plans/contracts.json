@@ -118,5 +118,15 @@
       "agents-helmfile"
     ],
     "note": "ORCH_* env names (ORCH_DATABASE_URL, ORCH_MASTER_KEY(_FILE), ORCH_CLUSTERS_NAMESPACE, ORCH_ALLOWED_CIDRS, ORCH_AGENT_IMAGES, ORCH_ANY_MCP_CONFIG_FILE)"
+  },
+  {
+    "name": "agent-orchestrator-image",
+    "kind": "release",
+    "owner": "agent-orchestrator",
+    "file": "code/agent-orchestrator/.github/workflows/ci.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> and the wrapper agent image allowlisted via ORCH_AGENT_IMAGES"
   }
 ]
