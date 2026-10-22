@@ -39,7 +39,7 @@ Sidequest requested by the user: fix task delivery estimates. Estimate in agent 
 
 ## Time
 
-Estimate: 119 agent-min | Critical path: 61 min | Expected wall at P=1.5: 2.6 h (k=2.0) | Actual: 119 min | Remaining estimate: 0 min
+Estimate: 119 agent-min | Critical path: 61 min | Expected wall at P=1.5: 2.6 h (k=2.0) | Actual: 156 min | Remaining estimate: 5 min
 
 ## Review
 

@@ -10,7 +10,7 @@ owns: []
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 12
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-shared-deadline
 branch: flow-speed-and-token-optimiz--verify-shared-deadline
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 3, verify 3, review 4, fix 2"
 ---
 
 # Verify shared deadline

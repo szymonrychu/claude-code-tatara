@@ -10,7 +10,7 @@ owns: []
 uses: []
 model: sonnet
 estimate: 6
-actual: ""
+actual: 3
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--full-suite-split-shared
 branch: flow-speed-and-token-optimiz--full-suite-split-shared
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: [AC3]
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 1, verify 1, review 1, fix 1"
 ---
 
 # Full suite split shared

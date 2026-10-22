@@ -10,16 +10,17 @@ owns: []
 uses: []
 model: sonnet
 estimate: 5
-actual: ""
+actual: 7
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--shell-quote-refs
-branch: flow-speed-and-token-optimiz--shell-quote-refs
+branch: HEAD
 verified_head: 4409cc7a71bfda4e014a3fb013684d7ca497ba5f
 run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: [AC1, AC2, AC3]
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 4, verify 1, review 1, fix 1"
 ---
 
 # Shell quote refs

@@ -10,7 +10,7 @@ owns: []
 uses: []
 model: sonnet
 estimate: 5
-actual: ""
+actual: 7
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--launch-land-verify
 branch: flow-speed-and-token-optimiz--launch-land-verify
@@ -20,6 +20,7 @@ provides: []
 acs_for_audit: []
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 2, verify 3, review 1, fix 2"
 ---
 
 # Launch land verify

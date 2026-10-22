@@ -1,6 +1,6 @@
 ---
 title: Medium only hold
-status: done
+status: escalated
 repo: workbench
 value: A task with open medium findings never lands before the orchestrator rules on it
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
@@ -10,16 +10,17 @@ owns: []
 uses: []
 model: sonnet
 estimate: 5
-actual: ""
+actual: 8
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--medium-only-hold
 branch: flow-speed-and-token-optimiz--medium-only-hold
-verified_head: 6fe6d7ba001735aa25a4bf1aa9d8f55d1b9d9931
+verified_head: 71cf1523f75398fdd907ce910c9206b6a02b2901
 run: flow-speed-and-token-optimiz
 provides: []
 acs_for_audit: [AC1, AC2, AC3]
 process_gaps: []
 estimate_by: formula
+actual_roles: "impl 2, verify 1, review 3, fix 1, false-finding 1"
 ---
 
 # Medium only hold
