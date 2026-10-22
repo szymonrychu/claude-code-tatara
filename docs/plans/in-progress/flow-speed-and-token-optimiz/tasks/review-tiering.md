@@ -1,6 +1,6 @@
 ---
 title: Review tiering
-status: todo
+status: in-progress
 repo: workbench
 value: "Reviews run where they can find something: settled doc and test diffs skip, light fixes get re-read"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-tier-scope.test.mjs, plugins/workbench/workflows/tests/plan-execute-tier.test.mjs, plugins/workbench/workflows/tests/plan-execute-gate-only-rounds.test.mjs]

@@ -1,6 +1,6 @@
 ---
 title: Estimate and actuals
-status: todo
+status: in-progress
 repo: workbench
 value: "Every epic shows its critical path, expected wall and measured actuals per task and role"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/estimate.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/roadmap.py, plugins/workbench/skills/start-development/templates/task.md, plugins/workbench/skills/start-development/tests/test_ticket_estimate.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_roadmap.py]

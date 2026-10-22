@@ -1,6 +1,6 @@
 ---
 title: Cache prefix change
-status: todo
+status: in-progress
 repo: workbench
 value: "The cache lever ships only when measured to save; otherwise the no-op is on record"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-prompt-prefix.test.mjs, MEMORY.md]

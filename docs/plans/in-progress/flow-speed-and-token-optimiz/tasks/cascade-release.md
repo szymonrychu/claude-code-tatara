@@ -1,6 +1,6 @@
 ---
 title: Cascade release
-status: todo
+status: in-progress
 repo: workbench
 value: "A medium finding no longer fails every dependent; the run continues and the ruling comes after"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]

@@ -1,6 +1,6 @@
 ---
 title: Estimator model
-status: todo
+status: in-progress
 repo: workbench
 value: "Realistic agent-minute estimates from one fitted, refittable parameter file"
 files: [plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/tests/test_estimator.py, plugins/workbench/scripts/tests/fixtures/estimator_tasks.json]

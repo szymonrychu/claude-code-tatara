@@ -1,6 +1,6 @@
 ---
 title: Heartbeat quiet
-status: todo
+status: in-progress
 repo: workbench
 value: "The waiting orchestrator wakes only on END, STALL or real progress, with no haiku per beat"
 files: [plugins/workbench/skills/heartbeat/scripts/heartbeat.py, plugins/workbench/skills/heartbeat/SKILL.md, plugins/workbench/skills/heartbeat/tests/test_heartbeat.py, plugins/workbench/skills/heartbeat/tests/test_heartbeat_run.py, AGENTS.md]

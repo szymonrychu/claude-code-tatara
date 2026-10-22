@@ -1,6 +1,6 @@
 ---
 title: Flow docs update
-status: todo
+status: in-progress
 repo: workbench
 value: The references tell the orchestrator how to relaunch in one step and show the epic estimate
 files: [plugins/workbench/skills/start-development/references/task-fields.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/templates/epic.md, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py]

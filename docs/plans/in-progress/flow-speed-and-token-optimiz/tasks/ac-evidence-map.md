@@ -1,6 +1,6 @@
 ---
 title: AC evidence map
-status: todo
+status: in-progress
 repo: workbench
 value: "A renamed test no longer costs a fix round; loose matches are shown to the auditor"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/verify-task.py, plugins/workbench/agents/implementer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/scripts/tests/test_verify_ac_evidence.py, plugins/workbench/workflows/tests/plan-execute-ac-evidence.test.mjs]

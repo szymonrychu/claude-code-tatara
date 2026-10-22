@@ -1,6 +1,6 @@
 ---
 title: Continue launch
-status: todo
+status: in-progress
 repo: workbench
 value: "One command between runs: apply, auto-accept, land the clean tasks, print the launch"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]

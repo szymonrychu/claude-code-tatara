@@ -1,6 +1,6 @@
 ---
 title: Verify scope wiring
-status: todo
+status: in-progress
 repo: workbench
 value: "Every verify runs targeted tests, at most two suites contend per repo, long chains start first"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-verify-scope.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs]

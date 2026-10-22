@@ -1,6 +1,6 @@
 ---
 title: Planner sizing rule
-status: todo
+status: in-progress
 repo: workbench
 value: New plans cannot schedule full-suite verifies and size tasks by what their verify costs
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/skills/start-development/references/phases-1-3.md, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py]

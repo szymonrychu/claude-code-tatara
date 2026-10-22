@@ -1,6 +1,6 @@
 ---
 title: Cache probe
-status: todo
+status: in-progress
 repo: workbench
 value: "A measurement, not a guess, decides whether prompt reordering saves cache writes"
 files: [plugins/workbench/workflows/hook-probe.js, plugins/workbench/workflows/tests/hook-probe.test.mjs, plugins/workbench/scripts/hook-evidence.py, plugins/workbench/scripts/tests/test_hook_evidence.py]

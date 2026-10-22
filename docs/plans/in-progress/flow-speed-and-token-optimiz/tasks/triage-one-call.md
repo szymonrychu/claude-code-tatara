@@ -1,6 +1,6 @@
 ---
 title: Triage one call
-status: todo
+status: in-progress
 repo: workbench
 value: One haiku round trip per verify instead of three
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/triage.py, plugins/workbench/scripts/tests/test_triage.py, plugins/workbench/scripts/tests/test_verify_triage_one_call.py]

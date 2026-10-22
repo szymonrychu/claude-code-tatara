@@ -1,6 +1,6 @@
 ---
 title: Verify task bounded runs
-status: todo
+status: in-progress
 repo: workbench
 value: "No verifier dies at the Bash cap and TDD-revert costs one short run, not two suites"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/scripts/tests/test_verify_tdd_revert_dirs.py, plugins/workbench/scripts/tests/test_verify_task.py, plugins/workbench/agents/verifier.md]

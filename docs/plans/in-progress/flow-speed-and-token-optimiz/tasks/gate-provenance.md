@@ -1,6 +1,6 @@
 ---
 title: Gate provenance
-status: todo
+status: in-progress
 repo: workbench
 value: "Dependents are gated only on the lines they wrote, ending the gate-repeat cascades"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/tests/test_verify_provenance.py, plugins/workbench/workflows/tests/plan-execute-provenance.test.mjs]
