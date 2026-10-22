@@ -51,6 +51,10 @@ update-command AC4 is pinned by a real test.
 2. If it fails, fix update.py.
 3. Run the verify command.
 
+## Ruling
+
+- 2026-10-22 accepted: Accepted 2026-10-22: pin test of existing behaviour, red shown by mutation; TDD-skipped exception (no non-test change). Landed on main.
+
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
