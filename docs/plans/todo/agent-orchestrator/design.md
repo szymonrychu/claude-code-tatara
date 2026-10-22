@@ -290,7 +290,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 ## Open questions
 - Q1: The tatara rule 'services talk only through the queue or HTTP APIs; no shared state' conflicts with a Postgres-only queue, which is itself a shared table. Is it read as: one writer per table, with queue tables the only multi-writer tables, changed only through state-machine-guarded UPDATEs? [answer: yes, single-writer interpretation, written into the component README and MEMORY.md (accepted as recommended)]
 - Q2: Does each agent pod run exactly one wrapper session (max_sessions 1)? [answer: yes, 1 pod = 1 session (accepted as recommended)]
-- Q3: Is a single pod modelled as a cluster with one replica, so there is no separate single-pod type? [recommended: yes, a single pod is a cluster of 1]
+- Q3: Is a single pod modelled as a cluster with one replica, so there is no separate single-pod type? [answer: yes, a single pod is a cluster of 1 (accepted as recommended)]
 - Q4: On discard, are the cluster's Kubernetes objects deleted including the shared PVC and its files, with history kept until an explicit purge? [recommended: yes, discard deletes the PVC after a typed-slug confirm; history (messages, events, turns) is kept until purge]
 - Q5: When a message cannot be delivered (wrapper 503 or a network error), is it retried automatically? [recommended: no automatic retry (max_attempts 1 by default); a failed message shows a Retry button and a retry endpoint]
 - Q6: Does the frontend start on the current majors (React 19.3, MUI 9.5, Vite 8.3, vitest 5, ESLint 10 flat config) rather than the ros2 versions (React 18, MUI 6, Vite 5, ESLint 8)? [recommended: yes, current majors]
