@@ -1,6 +1,6 @@
 ---
 title: e2e init green
-status: todo
+status: in-progress
 repo: workbench
 value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]

@@ -1,6 +1,6 @@
 ---
 title: "ruff E501 errors in scripts/tests/test_secret_scanning.py (e.g. line 193) make `mise run lint` root fail after merging the epic branch"
-status: todo
+status: in-progress
 repo: workbench
 value: "owned by the gitlink-free secrets scan task; lint:root fails until fixed"
 files: ["scripts/tests/test_secret_scanning.py:193"]
@@ -14,8 +14,8 @@ estimate_by: ""
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-ruff-e501-errors-in-scripts
+branch: init-leaves-a-green-tree-ruff-e501-errors-in-scripts
 verified_head: ""
 run: ""
 provides: []
