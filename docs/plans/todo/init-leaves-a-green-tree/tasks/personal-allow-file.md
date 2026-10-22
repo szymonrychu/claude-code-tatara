@@ -4,7 +4,7 @@ status: todo
 repo: workbench
 value: "lint:personal accepts a project's own vocabulary without weakening the template"
 files: [scripts/check_personal.py, scripts/tests/test_check_personal.py, scripts/tests/init_engine/test_update.py]
-verify: "pytest scripts/tests/test_check_personal.py scripts/tests/init_engine/test_update.py -q && mise run lint:personal"
+verify: "mise exec -- pytest scripts/tests/test_check_personal.py scripts/tests/init_engine/test_update.py -q && mise run lint:personal"
 depends_on: []
 owns: [personal-allow-local]
 uses: []

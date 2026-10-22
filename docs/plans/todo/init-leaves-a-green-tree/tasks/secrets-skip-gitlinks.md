@@ -4,7 +4,7 @@ status: todo
 repo: workbench
 value: "lint:secrets stops scanning component checkouts that scan themselves"
 files: [mise-tasks/lint/secrets, scripts/tests/test_secret_scanning.py]
-verify: "pytest scripts/tests/test_secret_scanning.py -q && mise run lint:secrets"
+verify: "mise exec -- pytest scripts/tests/test_secret_scanning.py -q && mise run lint:secrets"
 depends_on: []
 owns: []
 uses: []

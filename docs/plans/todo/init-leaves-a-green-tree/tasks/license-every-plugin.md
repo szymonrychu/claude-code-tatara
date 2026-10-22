@@ -3,9 +3,9 @@ title: license every plugin
 status: todo
 repo: workbench
 value: "the chosen holder appears in every LICENSE, not only the root"
-files: [scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py, plugins/workbench-secrets/LICENSE, plugins/workbench/skills/init/SKILL.md]
-verify: "pytest scripts/tests/init_engine/test_finalize.py scripts/tests/test_root_stubs.py -q && mise run lint:personal"
-depends_on: []
+files: [scripts/init_engine/finalize.py, scripts/init_engine/owned.py, scripts/init_engine/update.py, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/test_finalize.py, plugins/workbench-secrets/LICENSE, plugins/workbench/skills/init/SKILL.md]
+verify: "mise exec -- pytest scripts/tests/init_engine/test_finalize.py scripts/tests/init_engine/test_update.py plugins/workbench-infra/tests/test_pack_infra.py scripts/tests/test_root_stubs.py -q && mise run lint:personal"
+depends_on: [personal-allow-file]
 owns: []
 uses: []
 model: ""
@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-finalize.license_file rewrites the Copyright line of the root LICENSE and of every plugins/*/LICENSE with the same holder (explicit --license-holder, else default_holder, the git author). --license none removes only the root LICENSE; plugin licenses stay and are rewritten. plugins/workbench-secrets/LICENSE in the template is aligned with the root holder. test_license_options is updated; tests pin every plugins/*/LICENSE == root after init and the default-holder fallback. The init SKILL.md says the holder defaults to the git author.
+finalize.license_file rewrites the Copyright line of the root LICENSE and of every plugins/*/LICENSE with the same holder (explicit --license-holder, else default_holder, the git author). --license none removes only the root LICENSE; plugin licenses stay and are rewritten. plugins/workbench-secrets/LICENSE in the template is aligned with the root holder. test_license_options is updated; tests pin every plugins/*/LICENSE == root after init and the default-holder fallback. The init SKILL.md says the holder defaults to the git author. template-update keeps the project side of every plugins/*/LICENSE exactly as it keeps the root LICENSE (owned.GENERATED_ON_CONFLICT or its equivalent), so a holder rewrite never conflicts on update. --license-file <path> copies that file over the root LICENSE and every plugins/*/LICENSE. Pack LICENSE tests stay green under every --license mode.
 
 ## Acceptance conditions
 
@@ -34,12 +34,17 @@ finalize.license_file rewrites the Copyright line of the root LICENSE and of eve
 - AC3: --license none removes only the root LICENSE [evidence: test:scripts/tests/init_engine/test_finalize.py::test_license_options]
 - AC4: the pack LICENSE test passes [evidence: test:plugins/workbench-infra/tests/test_pack_infra.py::test_license_and_readme]
 - AC5: init SKILL.md states the git-author default [evidence: judgement:]
+- AC6: template-update keeps the project holder in every plugins/*/LICENSE without a conflict [evidence: test:scripts/tests/init_engine/test_update.py::test_update_keeps_plugin_license_holder]
+- AC7: --license-file lands in the root and every plugins/*/LICENSE [evidence: test:scripts/tests/init_engine/test_finalize.py::test_license_file_in_every_plugin]
 
 ## Files
 
 - `scripts/init_engine/finalize.py`
 - `scripts/tests/init_engine/test_finalize.py`
 - `plugins/workbench-secrets/LICENSE`
+- `scripts/init_engine/owned.py`
+- `scripts/init_engine/update.py`
+- `scripts/tests/init_engine/test_update.py`
 - `plugins/workbench/skills/init/SKILL.md`
 
 ## Interfaces

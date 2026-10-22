@@ -4,7 +4,7 @@ status: todo
 repo: workbench
 value: "init and component add leave lint:personal green by recording the project's own vocabulary"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/cli.py, scripts/init_engine/project_files.py, scripts/tests/init_engine/test_new.py, scripts/tests/init_engine/test_adopt.py, scripts/tests/init_engine/test_component.py]
-verify: "pytest scripts/tests/init_engine/test_new.py scripts/tests/init_engine/test_adopt.py scripts/tests/init_engine/test_component.py -q && mise run lint:personal"
+verify: "mise exec -- pytest scripts/tests/init_engine/test_new.py scripts/tests/init_engine/test_adopt.py scripts/tests/init_engine/test_component.py -q && mise run lint:personal"
 depends_on: [personal-allow-file, license-every-plugin]
 owns: []
 uses: [personal-allow-local]
