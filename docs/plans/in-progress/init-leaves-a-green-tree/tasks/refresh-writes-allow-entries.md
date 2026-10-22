@@ -5,7 +5,7 @@ repo: workbench
 value: an already-initialised workbench can take the template update without a red personal lint
 files: [scripts/init_engine/cli.py, scripts/tests/init_engine/test_refresh.py, scripts/tests/init_engine/test_update.py]
 verify: "mise exec -- pytest scripts/tests/init_engine/test_refresh.py scripts/tests/init_engine/test_update.py -q && mise run lint:personal"
-depends_on: []
+depends_on: [init-writes-allow-entries, template-marker-skip, license-every-plugin, personal-allow-file, e2e-init-green]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+Refresh and template-update leave lint:personal green on a workbench initialised before the allow file existed.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the three failing tests (refresh allows vocabulary, update backfills, idempotent); run red.
+- Call finalize.allow_vocabulary from cmd_refresh and stage the allow file in its commit; run green, then mise run lint:personal.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
