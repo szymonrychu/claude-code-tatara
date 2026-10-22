@@ -1,6 +1,6 @@
 ---
 title: e2e init green
-status: in-progress
+status: escalated
 repo: workbench
 value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]
@@ -16,9 +16,9 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-e2e-init-green
 branch: init-leaves-a-green-tree-e2e-init-green
-verified_head: ""
+verified_head: 27d001e0d8cbaf0335376f2c75492f90f82cc853
 run: init-leaves-a-green-tree
-provides: []
+provides: [e2e-denylist-and-secret-fixtures]
 acs_for_audit: []
 process_gaps: []
 ---
