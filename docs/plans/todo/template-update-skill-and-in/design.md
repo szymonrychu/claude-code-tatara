@@ -252,7 +252,7 @@ No cross-epic contracts: no other todo or in-progress epic reads or writes these
 
 ## Open questions
 
-- Q1: Should init cleanup and update also own docs/handoffs (gitignored in the template, but carried by a copied template)? [recommended: yes, keep it on the instance-owned list]
+none: Q1 (docs/handoffs instance-owned) answered yes at the gate on 2026-10-22.
 
 ## Irreversible operations in scope
 
