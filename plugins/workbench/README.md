@@ -152,6 +152,7 @@ merge, push, or apply - those stay in the calling thread. The pack agents
 ```
 _lib                            shared python/bash helpers
 init                            turn the template into a new project or adopt existing repos, through the tested engine
+template-update                 update an initialised workbench from the template, keeping its own docs, in one local commit
 component-add, component-remove add a component as a submodule with its origin / remove one only when nothing is lost
 handoff                         write a handoff file so multi-day work resumes in a fresh session
 git-submodules-add, git-submodules-refresh   submodule lifecycle
@@ -176,7 +177,8 @@ research-docs                   a library, framework, provider or platform API i
 `init` is the entry point of a fresh clone: it asks the questions, confirms any forge
 creation, runs the engine through `mise run init:new` or `mise run init:adopt`, generates the
 harness files and fills the project block of `AGENTS.md`. `component-add` and
-`component-remove` wrap `mise run component`.
+`component-remove` wrap `mise run component`. `template-update` wraps `mise run init:update`:
+it fetches the template, merges its tooling, keeps the instance-owned docs and pushes nothing.
 
 `start-development` has one approval gate, up front, after design and plan are
 written; everything after it runs unattended through `workbench:plan-execute` and ends

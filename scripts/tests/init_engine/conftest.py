@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from helpers import sh, write  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -90,3 +93,26 @@ def run_cli(workbench):
         )
 
     return run
+
+
+@pytest.fixture
+def project(workbench, run_cli, allow_file, tmp_path):
+    """An initialised project sharing history with a bare template upstream."""
+    sh("init", "-b", "main", cwd=workbench)
+    write(workbench, "tooling.txt", "v1\n")
+    write(workbench, "docs/plans/todo/epic.md", "template epic\n")
+    write(workbench, "docs/research/r.md", "template research\n")
+    sh("add", "-A", cwd=workbench)
+    sh("commit", "-m", "template base", cwd=workbench)
+    upstream = tmp_path / "upstream.git"
+    sh("clone", "--bare", str(workbench), str(upstream), cwd=tmp_path)
+    r = run_cli(
+        "new", "--name", "demo", "--component", "api:python", "--remote", "local-bare",
+        "--purpose", "A booking service.",
+    )  # fmt: skip
+    assert r.returncode == 0, r.stderr
+    sh("rm", "-rq", "--cached", "--ignore-unmatch", "docs/research", cwd=workbench)
+    sh("add", "-A", cwd=workbench)
+    sh("commit", "-m", "init project", cwd=workbench, check=False)
+    sh("remote", "add", "template", str(upstream), cwd=workbench)
+    return workbench

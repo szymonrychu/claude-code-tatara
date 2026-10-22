@@ -240,3 +240,67 @@ def test_facts_md_cleared(workbench, run_cli, allow_file):
     (workbench / "docs/plans/facts.md").write_text("facts")
     init(run_cli)
     assert not (workbench / "docs/plans/facts.md").exists()
+
+
+def test_owned_paths_retired_from_tracked_files(workbench, run_cli, allow_file):
+    seed_epics(workbench)
+    plans = workbench / "docs/plans"
+    for name in ("contracts.json", "index.json", "facts.md"):
+        (plans / name).write_text("x")
+    (workbench / "docs/handoffs").mkdir()
+    (workbench / "docs/handoffs/h.md").write_text("x")
+    init(run_cli, "--license-holder", "Acme")
+    tracked = g("ls-files", cwd=workbench).stdout.splitlines()
+    for gone in (
+        "docs/plans/contracts.json",
+        "docs/plans/index.json",
+        "docs/plans/facts.md",
+        "docs/research/brief.md",
+        "docs/handoffs/h.md",
+        "docs/plans/todo/another/README.md",
+    ):
+        assert gone not in tracked
+    for phase in ("todo", "in-progress", "done"):
+        assert f"docs/plans/{phase}/.gitkeep" in tracked
+
+
+def test_owned_module_lists_exact_entries():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "init_engine"))
+    import owned
+
+    assert owned.INSTANCE_OWNED == (
+        ("docs/plans/todo", "phase"),
+        ("docs/plans/in-progress", "phase"),
+        ("docs/plans/done", "phase"),
+        ("docs/plans/contracts.json", "delete"),
+        ("docs/plans/index.json", "delete"),
+        ("docs/plans/facts.md", "delete"),
+        ("docs/research", "delete"),
+        ("docs/handoffs", "delete"),
+        ("MEMORY.md", "rewritten"),
+        ("ROADMAP.md", "rewritten"),
+    )
+    assert "AGENTS.md" in owned.GENERATED_ON_CONFLICT
+
+
+def test_clear_template_history_derives_from_owned_list(tmp_path, monkeypatch):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "init_engine"))
+    import finalize
+    import owned
+
+    monkeypatch.setattr(
+        owned,
+        "INSTANCE_OWNED",
+        (("a/phase", "phase"), ("b.txt", "delete"), ("c", "delete"), ("keep.md", "rewritten")),
+    )
+    (tmp_path / "a/phase/x").mkdir(parents=True)
+    (tmp_path / "b.txt").write_text("x")
+    (tmp_path / "c").mkdir()
+    (tmp_path / "keep.md").write_text("k")
+    (tmp_path / "docs/research").mkdir(parents=True)
+    (tmp_path / "docs/research/r.md").write_text("r")
+    finalize.clear_template_history(tmp_path)
+    assert [p.name for p in (tmp_path / "a/phase").iterdir()] == [".gitkeep"]
+    assert not (tmp_path / "b.txt").exists() and not (tmp_path / "c").exists()
+    assert (tmp_path / "keep.md").read_text() == "k"
+    assert (tmp_path / "docs/research/r.md").exists()
