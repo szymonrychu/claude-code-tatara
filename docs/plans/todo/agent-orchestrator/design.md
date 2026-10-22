@@ -265,6 +265,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 - Q8: How is any-mcp installed into the agent image? [recommended: pip install from a pinned git tag of szymonrychu/any-mcp into an isolated venv at /opt/any-mcp]
 - Q9: What does a cluster row's context gauge show when the cluster has several agents? [recommended: the maximum used percentage over its agents]
 - Q10: What is the context gauge's denominator? [recommended: the full model context window (the statusline used_percentage), with a tick at the cluster's auto-compact percentage (default 95, rendered into claude_autocompact_pct_override)]
+- Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [recommended: deny (sessions.ask_user_question: deny)]
 
 ## Irreversible operations in scope
 
