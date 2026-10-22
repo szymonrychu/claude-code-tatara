@@ -1,6 +1,6 @@
 ---
 title: Medium only hold
-status: escalated
+status: done
 repo: workbench
 value: A task with open medium findings never lands before the orchestrator rules on it
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
@@ -57,6 +57,8 @@ Medium findings never reach the epic branch unruled, while the run still continu
 ## Ruling
 
 - 2026-10-22 rejected: Fix round (orchestrator, 2026-10-22). The parking flags at plan-execute.js:859,869,2228,2257,2258 are dismissed: they describe current behaviour. One real high finding to fix: mediumHeldDep (plan-execute.js:871-875) checks only the dependency's own mediumOnly flag. In a chain a(held mediumOnly) -> b(clean, released via behindHeld, unlanded) -> c, c is told to merge the epic branch carrying landed b, but neither a nor b is on it, so c builds without b's code. mergedDependencyBranches (:889) has the same gap. Make the hold transitive: a dependency counts as held when it, or any dependency it was released behind, is held and unlanded. A dependent then merges the task branches of every such unlanded ancestor and never relies on the epic branch for them. Add a test for the two-deep chain a -> b -> c, plus a three-deep one if cheap. Keep the existing seven medium-release tests green.
+
+- 2026-10-22 accepted: Accepted 2026-10-22: verified (9/9 medium-release tests incl. transitive chains, workflows 571); open flags are parking-wording false positives on behaviour-describing comments. Landed on main.
 
 ## Notes
 

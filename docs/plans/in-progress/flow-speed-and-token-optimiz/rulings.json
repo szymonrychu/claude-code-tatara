@@ -34,5 +34,11 @@
     "accept": true,
     "reason": "run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.",
     "at": "2026-10-22T07:36:35Z"
+  },
+  {
+    "task": "medium-only-hold",
+    "accept": true,
+    "reason": "Accepted 2026-10-22: verified (9/9 medium-release tests incl. transitive chains, workflows 571); open flags are parking-wording false positives on behaviour-describing comments. Landed on main.",
+    "at": "2026-10-22T07:56:27Z"
   }
 ]
