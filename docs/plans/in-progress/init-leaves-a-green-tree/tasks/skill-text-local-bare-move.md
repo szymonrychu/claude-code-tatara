@@ -1,6 +1,6 @@
 ---
 title: skill text local bare move
-status: in-progress
+status: done
 repo: workbench
 value: init and component-add skills tell the truth about local-bare and the --path move
 files: [plugins/workbench/skills/init/SKILL.md, plugins/workbench/skills/component-add/SKILL.md, plugins/workbench/skills/init/tests/test_init_skills.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-skill-text-local-bare-move
 branch: init-leaves-a-green-tree-skill-text-local-bare-move
-verified_head: ""
-run: ""
+verified_head: 9577be0393919b2aa6906bf191ca2e0a3b5da8fd
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 39ae4153525326e2c177f11d6c61b52544fe3179
 ---
 
 # skill text local bare move

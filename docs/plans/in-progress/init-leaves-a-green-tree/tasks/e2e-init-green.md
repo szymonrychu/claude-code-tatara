@@ -1,6 +1,6 @@
 ---
 title: e2e init green
-status: in-progress
+status: todo
 repo: workbench
 value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-e2e-init-green
 branch: init-leaves-a-green-tree-e2e-init-green
 verified_head: ""
-run: ""
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # e2e init green
@@ -56,3 +58,5 @@ New init, adopt with a colliding owner and secret fixture, and a second componen
 ## Notes
 
 Design D7. Build the secret-shaped fixture at run time; pick a project name and owner whose digests are in the copy's denylist.
+
+- 2026-10-22 run init-leaves-a-green-tree: dependency-failed on template-marker-skip

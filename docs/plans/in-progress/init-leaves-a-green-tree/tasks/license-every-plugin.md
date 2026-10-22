@@ -1,6 +1,6 @@
 ---
 title: license every plugin
-status: in-progress
+status: done
 repo: workbench
 value: "the chosen holder appears in every LICENSE, not only the root"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/owned.py, scripts/init_engine/update.py, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/test_finalize.py, plugins/workbench-secrets/LICENSE, plugins/workbench/skills/init/SKILL.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-license-every-plugin
 branch: init-leaves-a-green-tree-license-every-plugin
-verified_head: ""
-run: ""
+verified_head: "$(see below)"
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: [AC5]
+process_gaps: []
 ---
 
 # license every plugin

@@ -1,6 +1,6 @@
 ---
 title: template marker skip
-status: in-progress
+status: escalated
 repo: workbench
 value: template-only self-tests stop failing in every initialised workbench
 files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-template-marker-skip
 branch: init-leaves-a-green-tree-template-marker-skip
-verified_head: ""
-run: ""
-provides: []
+verified_head: 5619cda9d76f90d8717064e2dddaac772bfe5bdd
+run: init-leaves-a-green-tree
+provides: [is-initialised]
+acs_for_audit: [AC4]
+process_gaps: []
 ---
 
 # template marker skip

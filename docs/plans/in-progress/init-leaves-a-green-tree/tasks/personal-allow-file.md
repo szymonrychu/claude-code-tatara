@@ -1,6 +1,6 @@
 ---
 title: personal allow file
-status: in-progress
+status: done
 repo: workbench
 value: "lint:personal accepts a project's own vocabulary without weakening the template"
 files: [scripts/check_personal.py, scripts/tests/test_check_personal.py, scripts/tests/init_engine/test_update.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-personal-allow-file
 branch: init-leaves-a-green-tree-personal-allow-file
-verified_head: ""
-run: ""
+verified_head: 191d8ecfd47512fccb20c27e27b6656b4286f39f
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: a74b139
 ---
 
 # personal allow file

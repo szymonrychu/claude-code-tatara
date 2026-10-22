@@ -1,6 +1,6 @@
 ---
 title: init writes allow entries
-status: in-progress
+status: done
 repo: workbench
 value: "init and component add leave lint:personal green by recording the project's own vocabulary"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/cli.py, scripts/init_engine/project_files.py, scripts/tests/init_engine/test_new.py, scripts/tests/init_engine/test_adopt.py, scripts/tests/init_engine/test_component.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-init-writes-allow-entries
 branch: init-leaves-a-green-tree-init-writes-allow-entries
-verified_head: ""
-run: ""
+verified_head: 5d7ad13c4af6f8b19ccfb2c9b5b948fd4e937fd7
+run: init-leaves-a-green-tree
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # init writes allow entries
