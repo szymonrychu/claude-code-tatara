@@ -187,3 +187,45 @@ def test_vanished_file_does_not_fail_scan(tmp_path):
     assert bad.returncode != 0
     assert "leaks found" in bad.stdout + bad.stderr
     assert _fake_token() not in bad.stdout + bad.stderr
+
+
+def _gitlink_repo(tmp_path):
+    """Temp repo with a real nested checkout `code/sub` recorded as a gitlink, plus code/.gitkeep."""
+    task = tmp_path / "mise-tasks" / "lint" / "secrets"
+    task.parent.mkdir(parents=True)
+    shutil.copy(ROOT / "mise-tasks" / "lint" / "secrets", task)
+    shutil.copy(ROOT / ".gitleaks.toml", tmp_path / ".gitleaks.toml")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    sub = tmp_path / "code" / "sub"
+    sub.mkdir(parents=True)
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"]
+    subprocess.run(["git", "init", "-q"], cwd=sub, check=True)
+    (sub / "leak.txt").write_text(f"token = {_fake_token()}\n")
+    subprocess.run(["git", "add", "leak.txt"], cwd=sub, check=True)
+    subprocess.run([*git, "commit", "-qm", "x"], cwd=sub, check=True)
+    sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=sub, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    subprocess.run(
+        ["git", "update-index", "--add", "--cacheinfo", f"160000,{sha},code/sub"],
+        cwd=tmp_path,
+        check=True,
+    )
+    (tmp_path / "code" / ".gitkeep").write_text("")
+    return task
+
+
+def test_lint_task_skips_gitlink_checkouts(tmp_path):
+    task = _gitlink_repo(tmp_path)
+    r = _run_task(task)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert _fake_token() not in r.stdout + r.stderr
+
+
+def test_lint_task_scans_non_gitlink_files_under_code(tmp_path):
+    task = _gitlink_repo(tmp_path)
+    (tmp_path / "code" / "notes.txt").write_text(f"token = {_fake_token()}\n")
+    r = _run_task(task)
+    assert r.returncode != 0, r.stdout + r.stderr
+    assert "leaks found" in r.stdout + r.stderr
+    assert _fake_token() not in r.stdout + r.stderr
