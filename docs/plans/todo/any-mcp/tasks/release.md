@@ -5,9 +5,9 @@ repo: any-mcp
 value: "any-mcp is a standard pip package and tag v0.1.0 is a verified, installable release"
 files: [CHANGELOG.md, .github/workflows/release.yml, tests/test_release.py]
 verify: "uv run --frozen pytest tests/test_release.py -q && mise run lint"
-depends_on: [docs-readme-concepts]
+depends_on: [docs-readme-concepts, input-required-adapter, config-model]
 owns: []
-uses: [any-mcp-cli]
+uses: [any-mcp-cli, any-mcp-config]
 model: sonnet
 estimate: 5
 estimate_by: formula
@@ -27,7 +27,7 @@ provides: []
 
 Make any-mcp a standard installable package with release tooling for the pinned git tag `v0.1.0` (design D16, D18). Publishing to a package index is not part of this task (claude-code-wrapper does not publish either).
 
-- `CHANGELOG.md` with a top entry `## v0.1.0` listing what v0.1.0 delivers (plugin API, discovery, transports, OpenAPI plugin, harness, examples, docs).
+- `CHANGELOG.md` with a top entry `## v0.1.0` listing what v0.1.0 delivers (plugin API, optional input-required hook, discovery, transports, OpenAPI plugin, harness, examples, docs).
 - `.github/workflows/release.yml`: on push of tags `v*.*.*`; fails unless the tag equals `v` plus the `pyproject.toml` version; runs `mise run lint` and `mise run test`; builds the wheel with `uv build --wheel` and installs it into a clean venv; installs `any-mcp @ git+https://github.com/${{ github.repository }}@${{ github.ref_name }}` into another clean venv; runs `any-mcp --version` and `any-mcp --help` from both; creates a GitHub release whose body is the CHANGELOG section of the tag.
 - `tests/test_release.py`:
   - the versions agree: `pyproject.toml`, `importlib.metadata.version("any-mcp")`, the top CHANGELOG entry and the README pinned install tag;
@@ -35,6 +35,8 @@ Make any-mcp a standard installable package with release tooling for the pinned 
   - `uv build --wheel` into a temp dir, install the wheel into a fresh venv (`uv venv` plus `uv pip install --python <venv>`), and `<venv>/bin/any-mcp --version` prints `any-mcp 0.1.0`;
   - `pip install` of `any-mcp @ git+file://<repo>@HEAD` into a fresh venv gives a working `any-mcp --help`;
   - `uv tool install <wheel>` with temporary `UV_TOOL_DIR` and `UV_TOOL_BIN_DIR` puts a working `any-mcp` on that bin dir (`--version` prints the version).
+  - the orchestrator onStart path (design D20): `python -m venv <tmp>/any-mcp` then `<tmp>/any-mcp/bin/pip install "any-mcp @ git+file://<repo>@HEAD"` (stdlib venv and plain pip, no uv), write `any-mcp.yaml` with `json.dumps` (a `plugins` entry for an installed example plugin), then run `<tmp>/any-mcp/bin/any-mcp --config <file> --help` and `<tmp>/any-mcp/bin/python -c` loading the file with `any_mcp.config.load_config`; both succeed.
+  - the README and the CHANGELOG state the exact install line the onStart script uses: `python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, the console script path `/opt/any-mcp/bin/any-mcp`, and that the config file may be JSON.
 
 ## Acceptance conditions
 
@@ -43,6 +45,8 @@ Make any-mcp a standard installable package with release tooling for the pinned 
 - AC3: a wheel built with uv build installs into a fresh venv and any-mcp --version prints any-mcp 0.1.0 [evidence: test:tests/test_release.py::test_wheel_installs_and_reports_version]
 - AC4: installing from git+file at HEAD into a fresh venv gives a working any-mcp --help [evidence: test:tests/test_release.py::test_install_from_git_head]
 - AC5: uv tool install of the wheel puts a working any-mcp on the tool bin dir [evidence: test:tests/test_release.py::test_uv_tool_install]
+- AC6a: the plain venv plus pip install from git at HEAD works as the onStart script would run it, with a json.dumps-written config that the installed any-mcp loads [evidence: test:tests/test_release.py::test_onstart_install_path]
+- AC6b: the README and the CHANGELOG state the pinned onStart install line, the /opt/any-mcp/bin/any-mcp path and the JSON config option [evidence: test:tests/test_release.py::test_pinned_install_line_documented]
 - AC6: the CHANGELOG entry describes every v0.1.0 deliverable in user terms [evidence: judgement]
 - AC7: lint passes [evidence: command:mise run lint]
 
@@ -54,7 +58,7 @@ Make any-mcp a standard installable package with release tooling for the pinned 
 
 ## Interfaces
 
-Cross-epic contract `any-mcp-release`: tag `v0.1.0` on `main` of `github.com/szymonrychu/any-mcp`, installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, console script `any-mcp` (consumer: the agent-orchestrator agent image).
+Cross-epic contract `any-mcp-install` (consumer: the agent-orchestrator onStart hook script): the exact pinned install line and config format above. Cross-epic contract `any-mcp-release`: tag `v0.1.0` on `main` of `github.com/szymonrychu/any-mcp`, installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, console script `any-mcp` (consumer: the agent-orchestrator agent image).
 
 ## Expected outcome
 

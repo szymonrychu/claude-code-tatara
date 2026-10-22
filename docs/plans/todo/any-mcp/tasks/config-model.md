@@ -31,6 +31,7 @@ Define the any-mcp YAML config file and its loader (design D5). This is the `any
 - `PluginEntry.name` matches `^[a-z][a-z0-9_-]{0,19}$`; two entries with the same name are rejected.
 - `load_config(path, *, env=None) -> AnyMcpConfig`: reads YAML; expands `${VAR}` and `${VAR:-default}` in every string value, nested ones included, from `env` (default `os.environ`); a missing variable with no default raises `ConfigError` naming the variable and the key path; records the config file's directory as `base_dir` and resolves `python_path` entries against it.
 - `config_from_plugins(refs) -> AnyMcpConfig`: one entry per `--plugin` reference with defaults; the entry name is the lowercased class name for `module:Class` and the reference itself for an entry-point name.
+- The file may be YAML or JSON (JSON is valid YAML; parse with `yaml.safe_load`, which reads both): the agent-orchestrator onStart script has only the standard library and writes `any-mcp.yaml` with `json.dumps` (design D20). A path ending `.json` is read the same way.
 - Every failure (unreadable file, YAML error, a non-mapping top level, an unknown key, a validation error) raises `ConfigError` whose message names the file and the dotted key path.
 
 ## Acceptance conditions
@@ -42,7 +43,8 @@ Define the any-mcp YAML config file and its loader (design D5). This is the `any
 - AC5: python_path entries resolve against the config file directory, recorded as base_dir [evidence: test:tests/test_config.py::test_python_path_relative_to_config]
 - AC6: config_from_plugins builds one default entry per reference with the specified names [evidence: test:tests/test_config.py::test_config_from_plugins]
 - AC7: unreadable files, YAML errors and non-mapping documents raise ConfigError naming the file [evidence: test:tests/test_config.py::test_invalid_files]
-- AC8: lint passes [evidence: command:mise run lint]
+- AC8: a config written with json.dumps loads identically to its YAML twin, for a .yaml and a .json path [evidence: test:tests/test_config.py::test_json_config_loads]
+- AC9: lint passes [evidence: command:mise run lint]
 
 ## Files
 

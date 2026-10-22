@@ -39,6 +39,8 @@ config format and the release tag are cross-epic contracts.
   and big), testing plugins, configuration reference, transport reference.
 - G7: CI on GitHub Actions (`mise run lint`, `mise run test`) and a release workflow; tag `v0.1.0`
   installs with pip from git and `any-mcp --help` exits 0.
+- G10: a plugin can ask the client for input mid-call through one optional hook (`request_input`, MRTR `InputRequiredResult`), tested over stdio and HTTP and documented with an example (D19).
+- G11: the orchestrator onStart script can install any-mcp from the pinned tag with plain pip and write the config with the standard library only (D20).
 - G8: any-mcp is a standard pyproject package with the console script `any-mcp`, installable the same
   ways as claude-code-wrapper: `pip install any-mcp` (package-index name), `pip install
   git+https://github.com/szymonrychu/any-mcp`, `pip install .`, `pipx install any-mcp`, `uv tool
@@ -49,8 +51,8 @@ config format and the release tag are cross-epic contracts.
 - No business-logic plugins beyond the examples.
 - No auth gateway (no OAuth server, no per-user consent, no token exchange); client tokens are
   never forwarded downstream.
-- No MCP resources or prompts from plugins in v1 (tools only), no MRTR (`InputRequiredResult`)
-  surface for plugins.
+- No MCP resources or prompts from plugins in v1 (tools only). MRTR (`InputRequiredResult`) is
+  in scope as a separate optional hook (D19).
 - No server-initiated sampling, elicitation, roots or MCP logging (deprecated in 2026-07-28).
 - No legacy HTTP+SSE transport.
 
@@ -236,8 +238,8 @@ equal that file. (user decision that docs are deliverables; set my call.) Serves
 
 ### D15: v1 is tools only
 
-Plugins provide tools; no resources, prompts or MRTR in the v1 API, and the server declares only the
-tools capability. (user decision; open questions Q2, Q3.) Serves H.
+Plugins provide tools; no resources or prompts in the v1 API, and the server declares only the
+tools capability. MRTR is the one addition, see D19. (user decision; Q2.) Serves H.
 
 ### D16: Release as a pinned git tag
 
@@ -264,6 +266,14 @@ wheel with `uv build --wheel`, installs it into a fresh venv and runs `any-mcp -
 install from `git+file://` at `HEAD` and with `uv tool install`. Publishing to PyPI is not in scope:
 claude-code-wrapper does not publish either (its workflows have no index upload). (user decision.)
 Serves I.
+
+### D19: InputRequiredResult as a separate optional plugin hook
+
+MCP 2026-07-28 replaced server-initiated elicitation with multi round-trip requests: a tool returns `InputRequiredResult` (with `inputRequests` and an opaque `requestState`) and the client retries the same call with `inputResponses`. any-mcp exposes this as one optional async hook, `Plugin.request_input(call, responses) -> InputRequired | None`, with a working default that returns `None` (never requests input), so a plugin that ignores it is unchanged. `ToolCall` gains `input_responses: Mapping[str, Any]` and `request_state: str | None`; `InputRequired(requests: Mapping[str, InputRequest], state: str | None)` and `InputRequest(kind, message, schema)` are plain dataclasses in `types.py`. The pipeline runs `request_input` after validation and `before_call`; a non-None result short-circuits `credentials`, `call` and `shape_response` and is returned as `ToolResult.input_required`. The adapter converts it to the era's `InputRequiredResult` and passes retry `inputResponses` and `requestState` back into `call_tool`; handshake-era clients, which cannot retry, get an `isError` result saying the tool needs a client with 2026-07-28 support. The server still declares only the tools capability. Tested with a real stdio client and a real HTTP client round trip. Documented in the authoring guide with a runnable example. (user decision, Q3 changed.) Serves A, C.
+
+### D20: Orchestrator onStart install and config format
+
+The orchestrator installs any-mcp at agent start with one onStart hook script: `python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, then writes `any-mcp.yaml`. The script has only the standard library, so it writes the config as JSON, which is valid YAML; `load_config` therefore accepts JSON files (and `.json` paths) and a test loads a `json.dumps` file. The release task pins the install command, the venv path `/opt/any-mcp/bin/any-mcp` and a test that installs with plain `venv` and `pip` (not uv) from `git+file` at HEAD and loads a JSON config with the installed interpreter. (user amendment.) Serves I.
 
 ## Research
 
@@ -344,6 +354,8 @@ Serves I.
 | D16 release tag | release |
 | D17 repo and tooling | scaffold |
 | D18 pip-installable package | scaffold, cli-stdio, release, docs-readme-concepts |
+| D19 input-required hook (MRTR) | input-required-core, input-required-adapter, docs-authoring |
+| D20 orchestrator onStart install and config | config-model, release |
 
 ## Contracts
 
