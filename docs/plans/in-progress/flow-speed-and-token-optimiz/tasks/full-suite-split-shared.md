@@ -1,6 +1,6 @@
 ---
 title: Full suite split shared
-status: todo
+status: in-progress
 repo: workbench
 value: The estimator and the plan lint can no longer disagree on what a full-suite verify is
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/scripts/tests/test_estimator.py]
@@ -12,8 +12,8 @@ model: sonnet
 estimate: ""
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--full-suite-split-shared
+branch: flow-speed-and-token-optimiz--full-suite-split-shared
 verified_head: ""
 run: ""
 provides: []

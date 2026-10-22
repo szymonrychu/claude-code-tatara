@@ -1,6 +1,6 @@
 ---
 title: Launch land verify
-status: todo
+status: in-progress
 repo: workbench
 value: continue --launch never lands a task with no check
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
@@ -12,8 +12,8 @@ model: sonnet
 estimate: ""
 actual: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--launch-land-verify
+branch: flow-speed-and-token-optimiz--launch-land-verify
 verified_head: ""
 run: ""
 provides: []
