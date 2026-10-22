@@ -10,3 +10,7 @@
 	path = code/agent-orchestrator
 	url = https://github.com/szymonrychu/agent-orchestrator
 	branch = main
+[submodule "agents-helmfile"]
+	path = code/agents-helmfile
+	url = https://github.com/szymonrychu/agents-helmfile
+	branch = main

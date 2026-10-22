@@ -31,6 +31,7 @@ run = [
   "mise run --cd code/claude-code-wrapper test",
   "mise run --cd code/any-mcp test",
   "mise run --cd code/agent-orchestrator test",
+  "mise run --cd code/agents-helmfile test",
 ]
 
 [tasks."code:lint"]
@@ -39,6 +40,7 @@ run = [
   "mise run --cd code/claude-code-wrapper lint",
   "mise run --cd code/any-mcp lint",
   "mise run --cd code/agent-orchestrator lint",
+  "mise run --cd code/agents-helmfile lint",
 ]
 
 [tasks."code:fmt"]
@@ -47,5 +49,6 @@ run = [
   "mise run --cd code/claude-code-wrapper fmt",
   "mise run --cd code/any-mcp fmt",
   "mise run --cd code/agent-orchestrator fmt",
+  "mise run --cd code/agents-helmfile fmt",
 ]
 # workbench:code-tasks:end
