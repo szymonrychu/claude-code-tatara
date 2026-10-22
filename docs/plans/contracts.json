@@ -37,7 +37,7 @@
     "consumers": [
       "agent-orchestrator"
     ],
-    "note": ""
+    "note": "consumed by agent-orchestrator task fake-wrapper-contract (before_seq, types, prev_seq, has_more_before)"
   },
   {
     "name": "wrapper-peers-view",

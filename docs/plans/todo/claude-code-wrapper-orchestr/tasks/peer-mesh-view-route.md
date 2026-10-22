@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-`GET /v1/peers` (bearer auth, mounted with the other /v1 routes even when peers are disabled) returns the peer mesh view: `{enabled: false}` when `peers` is not configured, otherwise `{enabled: true, self: {instance, url}, members: [{instance, url, sessions, last_seen_at, missed}]}` from the PeerMembership state (peer_membership.py). It never exposes peers.token and is not HMAC-signed (the existing POST /v1/peers/* routes stay HMAC-only). Implemented in api/peers.py (a bearer router separate from the signed one) with a read accessor on PeerMembership. README.md documents the route and the response (test_readme_api enforces it).
+`GET /v1/peers` (bearer auth) returns the peer mesh view: `{enabled: false}` when `peers` is not enabled, otherwise `{enabled: true, self: {instance, url}, members: [{instance, url, sessions, last_seen_at, missed}]}`. It is mounted unconditionally: api/app.py:79-85 mounts the HMAC `peers.router` only when `cfg.peers.enabled`, so the new bearer route lives in a separate router included in the `v1` router (api/app.py:73-78) regardless, and answers `{enabled: false}` itself when `manager.peers is None` (manager.py:302). Fields come from peers.py: `self` from `PeerService.instance` and `.url` (peer_service.py:78-79); each member from `Member` (peers.py:60-66) fields `instance`, `url`, `sessions` (tuple of `PeerSession` {session_id, name, cwd}, peers.py:53), `missed` and `last_seen` (a monotonic float, converted to ISO `last_seen_at`, null when None); `reachable` is not exposed. It never exposes peers.token and is not HMAC-signed (the existing POST /v1/peers/* routes stay HMAC-only). Implemented in api/peers.py (a bearer router separate from the signed one) with a read accessor on the MemberTable. README.md documents the route and the response (test_readme_api enforces it).
 
 ## Acceptance conditions
 
@@ -57,4 +57,4 @@ GET /v1/peers with the bearer returns the mesh view; peers off returns {enabled:
 
 ## Notes
 
-The signed POST /v1/peers/* routes are mounted only with peers.enabled; the GET must be mounted always. Reuse the bearer dependency in api/auth.py.
+The signed POST /v1/peers/* routes are mounted only with peers.enabled (api/app.py:79-85); the GET must be mounted always. Reuse the bearer dependency in api/auth.py (require_auth, applied to `v1`). Monotonic `last_seen` must be converted to wall-clock using the table clock offset at read time.

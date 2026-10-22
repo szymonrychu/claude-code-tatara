@@ -55,6 +55,7 @@ CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2
 - AC3: any-mcp is preinstalled and registered in every agent [evidence: test:tests/e2e/test_e2e_kind.py::test_any_mcp_preinstalled]
 - AC4: discarding the cluster removes every labelled object including the PVC [evidence: test:tests/e2e/test_e2e_kind.py::test_delete_removes_all_labelled_objects]
 - AC5: the reconciler works with exactly the D9 Role and no pods/exec [evidence: command:! grep -q 'pods/exec' e2e/manifests/rbac.yaml && mise run test:e2e]
+- AC7: mise.toml defines the task `test:e2e` and it runs scripts/e2e.sh [evidence: command:mise tasks | grep -q 'test:e2e' && grep -q 'scripts/e2e.sh' mise.toml]
 - AC6: CI runs the e2e job [evidence: command:grep -q 'mise run test:e2e' .github/workflows/ci.yaml]
 
 ## Files
@@ -85,4 +86,4 @@ CI gains a job `e2e` after `images`, on ubuntu-latest, running `mise run test:e2
 
 ## Notes
 
-Docker is available locally (29.8.2) and kind is installed through mise. The fake claude completes turns deterministically. Make the turn duration configurable in `e2e/agent-test.config.yaml`, so the ordering of the third message is deterministic. The production Role lives in the deploy epic's chart; this manifest proves the verb list is sufficient.
+The scaffold-repo-and-cli task creates a plain `test:e2e` (`uv run pytest -m e2e tests/e2e`); this task owns redefining `[tasks."test:e2e"]` in mise.toml to run `scripts/e2e.sh` (kind cluster up, image load, manifests, pytest, teardown) and adds the `kind` and `kubectl` tools; if mise.toml has no `test:e2e` when this task starts, it adds it. Docker is available locally (29.8.2) and kind is installed through mise. The fake claude completes turns deterministically. Make the turn duration configurable in `e2e/agent-test.config.yaml`, so the ordering of the third message is deterministic. The production Role lives in the deploy epic's chart; this manifest proves the verb list is sufficient.

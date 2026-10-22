@@ -27,7 +27,7 @@ provides: []
 
 Build the plugin contract: `Plugin`, the `@tool` decorator, `PluginContext` and `NoConfig`, and the public package exports (design D2, D3). Plugins import only `any_mcp`.
 
-- `Plugin(ABC)` class attributes: `name: ClassVar[str] = ""`, `Config: ClassVar[type[BaseModel]] = NoConfig`, `reload_every: ClassVar[float | None] = None`, `timeout: ClassVar[float] = 30.0`. Instance attribute `ctx: PluginContext`, set by the core before `setup()`; property `config` returns `ctx.config`.
+- `Plugin(ABC)` class attributes: `name: ClassVar[str] = ""`, `Config: ClassVar[type[BaseModel]] = NoConfig`, `reload_every: ClassVar[float | None] = None` (the default; a plugin entry's config `reload_every` overrides this class attribute, applied by plugin-discovery), `timeout: ClassVar[float] = 30.0`. Instance attribute `ctx: PluginContext`, set by the core before `setup()`; property `config` returns `ctx.config`.
 - Async hooks with these defaults: `setup()` and `teardown()` do nothing; `load_tools()` returns the `ToolSpec`s of the class's `@tool` methods in definition order (inherited ones first); `credentials(call)` returns `{}`; `before_call(call)` returns `call`; `call(call)` runs `spec.handler` and wraps its value with `RawResponse.from_value`, or runs `execute_binding(ctx.http, call, headers=await self.credentials(call))` for `spec.http`, or raises `ConfigError` when the spec has neither; `shape_response(call, raw)` returns `shape_default(raw, budget_chars=ctx.response_budget_chars, output_schema=call.spec.output_schema)`; `on_error(call, exc)` returns `error_result(exc, plugin=ctx.name)`.
 - `load_tools` is the one required hook: defining a concrete subclass that neither overrides `load_tools` nor has a `@tool` method raises `TypeError` naming `load_tools`, at class definition time.
 - Every hook and every `@tool` method is `async`; `@tool` on a plain function raises `TypeError`.
@@ -46,7 +46,8 @@ Build the plugin contract: `Plugin`, the `@tool` decorator, `PluginContext` and 
 - AC7: ctx.request_reload calls the bound callback and plugin.config returns the validated Config instance [evidence: test:tests/test_plugin.py::test_context]
 - AC8: a hello-world plugin of one class and one tool method works end to end through call and shape_response [evidence: test:tests/test_plugin.py::test_hello_world_minimal]
 - AC9: the any_mcp package exports the public names listed in the requirement [evidence: test:tests/test_plugin.py::test_public_exports]
-- AC10: lint passes [evidence: command:mise run lint]
+- AC10: the class attribute reload_every is only a default: a plugin entry's reload_every overrides it, and the attribute is documented as overridable [evidence: test:tests/test_plugin.py::test_reload_every_class_default_overridable_by_config]
+- AC11: lint passes [evidence: command:mise run lint]
 
 ## Files
 

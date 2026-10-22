@@ -7,7 +7,7 @@ files: [tests/fakes/fake_wrapper.py, tests/fakes/real_wrapper.py, tests/test_fak
 verify: "uv run pytest tests/test_fake_wrapper_contract.py -q && mise run lint"
 depends_on: [wrapper-client-and-sse]
 owns: [fake-wrapper]
-uses: [wrapper-client, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
+uses: [wrapper-client, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view, wrapper-history-backward]
 model: ""
 estimate: 6
 estimate_by: formula
@@ -32,7 +32,7 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
   - turns: 202 when idle; 409 while busy; 503 while booting
   - interrupt and commands
   - SSE with seq ids, `Last-Event-ID` replay and `: ping`
-  - history and `/v1/peers`
+  - history including `before_seq`, `types`, `prev_seq` and `has_more_before` (contract wrapper-history-backward), and `/v1/peers`
   - bearer auth
 - Test controls on FakeWrapper:
   - `complete_turn(turn_id, text)`
@@ -51,6 +51,7 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
   - reconnect with Last-Event-ID replays only newer events
   - the snapshot exposes `idle_since` and `context` (possibly null)
   - `/v1/peers`
+  - backward history: `before_seq` with `types=user_message,turn_completed` returns ascending events, `prev_seq` is null when `has_more_before` is false, and an unknown type is 400
   - a bad token gives 401 with the error envelope
 
 ## Acceptance conditions
@@ -60,7 +61,8 @@ A fake claude-code-wrapper and a contract suite that runs against both the fake 
 - AC3: reconnecting with Last-Event-ID replays only newer events [evidence: test:tests/test_fake_wrapper_contract.py::test_last_event_id_replay]
 - AC4: the snapshot exposes idle_since and context [evidence: test:tests/test_fake_wrapper_contract.py::test_snapshot_fields]
 - AC5: the peers view and bearer auth behave like the wrapper [evidence: test:tests/test_fake_wrapper_contract.py::test_peers_view_and_auth]
-- AC6: the same suite passes against the real wrapper test image [evidence: command:ORCH_TEST_WRAPPER_IMAGE=agent-orchestrator-agent-test:local uv run pytest tests/test_fake_wrapper_contract.py -m integration -q]
+- AC6: backward history with types, prev_seq and has_more_before behaves like the wrapper [evidence: test:tests/test_fake_wrapper_contract.py::test_history_backward]
+- AC7: the same suite passes against the real wrapper test image [evidence: command:ORCH_TEST_WRAPPER_IMAGE=agent-orchestrator-agent-test:local uv run pytest tests/test_fake_wrapper_contract.py -m integration -q]
 
 ## Files
 

@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-`GET /v1/sessions/{id}/history` accepts `before_seq=N`, `limit` (max 1000, as today) and `types=a,b` (comma list of event types; unknown type returns 400 invalid_request). With before_seq it returns the events with seq < N, newest page first selected but returned in ascending seq order, plus `prev_seq` (the seq to pass as before_seq for the next older page) and `has_more_before`. `types` filters before paging, also for the forward (after_seq) mode. Combining before_seq with after_seq returns 400 invalid_request. Works for stopped (readonly) sessions and reads the rotated events.jsonl correctly. Implementation lives in EventLog (events.py, a new page_before method beside `page`) and api/events.py. README.md documents the parameters and response fields. Additive: the existing response shape is unchanged without before_seq.
+`GET /v1/sessions/{id}/history` accepts `before_seq=N`, `limit` (max 1000, as today) and `types=a,b` (comma list). `types` is validated against `EVENT_TYPES` (events.py:20), which by then includes the new `user_message` and `context` types; an unknown type returns 400 invalid_request. With before_seq it returns the events with seq < N, the newest page selected but returned in ascending seq order, plus `prev_seq` (the seq to pass as before_seq for the next older page; null when `has_more_before` is false) and `has_more_before`. `types` filters before paging, also for the forward (after_seq) mode. Combining before_seq with after_seq returns 400 invalid_request. Works for stopped (readonly) sessions and reads the rotated events.jsonl correctly. Implementation lives in EventLog (events.py, a new page_before method beside `page` at events.py:236) and api/events.py (history at api/events.py:35). README.md documents the parameters and response fields. Additive: the existing response shape is unchanged without before_seq.
 
 ## Acceptance conditions
 
@@ -34,6 +34,7 @@ provides: []
 - AC3: before_seq with after_seq is 400 and an unknown type is 400 [evidence: test:tests/test_history_backward.py::test_invalid_combinations_are_400]
 - AC4: works on a stopped session and after log rotation [evidence: test:tests/test_history_backward.py::test_stopped_session_and_rotation]
 - AC5: README documents before_seq, types, prev_seq, has_more_before [evidence: test:tests/test_readme_api.py::test_every_public_route_documented]
+- AC6: prev_seq is null when has_more_before is false; types accepts user_message and context and rejects an unknown type with 400 [evidence: test:tests/test_history_backward.py::test_prev_seq_null_and_types_validated_against_event_types]
 
 ## Files
 

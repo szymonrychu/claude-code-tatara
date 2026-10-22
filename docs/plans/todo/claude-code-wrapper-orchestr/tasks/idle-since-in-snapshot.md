@@ -25,14 +25,21 @@ provides: []
 
 ## Requirement
 
-The session snapshot (manager.py snapshot dict, ~line 1429-1453) gains `idle_since`: the ISO timestamp at which the session last became idle (state `ready`), and null in any other state. The `session_state` event data gains `since` (ISO timestamp of the transition). Both are additive; existing fields and events are unchanged. A session that is created and becomes ready has idle_since set at that moment; a turn start clears it; a turn completion sets it again. Stopped sessions loaded from disk report null. README.md documents `idle_since` in the snapshot table and `since` in the session_state event row (tests/test_readme_api.py enforces documented routes and events). The orchestrator uses idle_since to route to the agent free the longest.
+The session snapshot (manager.py snapshot dict, manager.py:1429-1453) gains `idle_since`: the ISO timestamp of the latest transition into the public state `ready`, and null in any other state. `idle_since` is set by every transition into ready: creating -> ready at boot (session.py:496-497), busy -> ready on turn completion (session.py:989 `_set_state(next_state)` and 1037), and the post-restart boot that reaches ready again. A turn start (busy) clears it. Stopped sessions loaded from disk report null.
+
+Every `session_state` event data gains `since` (ISO timestamp of that transition), including the events emitted by `Router.on_state` (router.py:1355) and the restart event in `Router.on_restart` (router.py:1380-1390, whose `state` comes from `session.snapshot()` and may be creating or ready; its `since` is the time of that emit and equals the preceding transition). Both are additive; existing fields and events are unchanged.
+
+Relation to `ready_at`: `ready_at` (session.py:381, set at session.py:496) is the time the latest boot of claude became ready and is not touched by turns; `idle_since` equals it right after boot and then moves forward on each turn completion. They are not merged; `ready_at` stays as is.
+
+README.md documents `idle_since` in the snapshot table and `since` in the session_state event row (tests/test_readme_api.py enforces documented routes and events). The orchestrator uses idle_since to route to the agent free the longest.
 
 ## Acceptance conditions
 
-- AC1: a freshly ready session snapshot has a non-null ISO idle_since [evidence: test:tests/test_idle_since.py::test_ready_session_has_idle_since]
-- AC2: idle_since is null while busy and reset on turn completion [evidence: test:tests/test_idle_since.py::test_idle_since_cleared_when_busy_and_reset_on_completion]
-- AC3: session_state event data carries since [evidence: test:tests/test_idle_since.py::test_session_state_event_carries_since]
-- AC4: README documents idle_since and since [evidence: test:tests/test_readme_api.py::test_every_event_type_documented]
+- AC1: a freshly ready session snapshot has a non-null ISO idle_since equal to the creating -> ready transition [evidence: test:tests/test_idle_since.py::test_ready_session_has_idle_since]
+- AC2: idle_since is null while busy and reset to the completion transition time on turn completion [evidence: test:tests/test_idle_since.py::test_idle_since_cleared_when_busy_and_reset_on_completion]
+- AC3: every session_state event carries since, including the creating -> ready event and the on_restart event [evidence: test:tests/test_idle_since.py::test_session_state_event_carries_since]
+- AC4: after a claude restart that reaches ready, idle_since equals the latest transition into ready and ready_at is the boot time [evidence: test:tests/test_idle_since.py::test_idle_since_after_restart_and_ready_at_relation]
+- AC5: README documents idle_since and since [evidence: test:tests/test_readme_api.py::test_every_event_type_documented]
 
 ## Files
 
@@ -57,4 +64,4 @@ GET /v1/sessions/{id} shows idle_since while ready and null otherwise; session_s
 
 ## Notes
 
-Reuse the existing now_iso helper (timeutil.py). Never run the full suite (11 min). The branch must be rebased on origin/main before the PR.
+Reuse the existing now_iso helper (timeutil.py). Session.on_state is notified only when the public state changes (session.py:412-419), so `since` is stamped there, in one place, from the same clock reading that updates idle_since. Never run the full suite (11 min). The branch must be rebased on origin/main before the PR.

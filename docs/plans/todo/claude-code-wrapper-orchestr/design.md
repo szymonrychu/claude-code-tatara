@@ -30,7 +30,7 @@ The orchestrator routes to the agent idle the longest, draws a 0-100 context gau
 
 ## Constraints
 
-- Python 3.12, FastAPI, uv; lint is `uv run ruff check . && uv run ruff format --check .` (not `mise run lint`, which the repo config lists as a full suite).
+- Python 3.12, FastAPI, uv; lint is `uv run ruff check . && uv run ruff format --check .`, which is exactly `mise run lint` (mise.toml: ruff check + ruff format --check only, not the full suite; `mise run test` is the 11-minute suite).
 - README.md is the spec and is test-enforced (tests/test_readme_api.py).
 - Task verify is targeted: the task's test file plus tests/test_readme_api.py plus lint.
 - Branch must be rebased on origin/main before the PR.
@@ -41,10 +41,10 @@ The orchestrator routes to the agent idle the longest, draws a 0-100 context gau
 Snapshot `idle_since` (ISO, null unless idle) and `session_state.data.since`. Alternative: orchestrator tracks turn_completed itself; rejected, it loses state across reconnects.
 
 ### D2: user_message event (approval A2)
-New event emitted at paste time with origin user|peer|hook|restart|command. `turn_started.text` kept. Alternative: derive from transcript; rejected, not available per brief.
+New event emitted at paste time with origin client|initial|agent|peer (turns.py:27) plus restart|command, command with turn_id null. `turn_started.text` kept. Alternative: derive from transcript; rejected, not available per brief.
 
 ### D3: backward history (approval A3)
-`before_seq`, `types`, `prev_seq`, `has_more_before`; 400 combined with after_seq. The orchestrator stores events itself but the user decided it ships for other headless clients.
+`before_seq`, `types` (validated against EVENT_TYPES), `prev_seq` (null when no more), `has_more_before`; 400 combined with after_seq. The orchestrator stores events itself but the user decided it ships for other headless clients.
 
 ### D4: GET /v1/peers (approval A4)
 Bearer-authenticated mesh view, never exposes peers.token; `{enabled:false}` when peers are off.
@@ -53,6 +53,7 @@ Bearer-authenticated mesh view, never exposes peers.token; `{enabled:false}` whe
 `ccw statusline` posts stdin to `/internal/statusline` and runs the chained user statusLine. Alternative: `/context` command (makes the session busy, screen text); rejected.
 
 ### D6: context surface (approval A6)
+used_tokens = input + cache_creation + cache_read of statusline current_usage, model = statusline model.id, used_percentage computed when null but inputs known. `context` and `user_message` ride the normal ring and rotation (my call); restart-continue emits user_message origin restart (my call).
 Snapshot `context` and a deduped `context` event; null until the first assistant message and reset on compact. No model-window table in the wrapper (the statusline provides the denominator).
 
 ### D7: delivery conventions (approval A7)

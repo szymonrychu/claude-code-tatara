@@ -224,6 +224,7 @@ Registered in `docs/plans/contracts.json` (this superrepo) and `infrastructure/d
 | `wrapper-context-surface` | claude-code-wrapper-orchestr | agent-orchestrator | wrapper-client-and-sse, ingester |
 | `wrapper-user-message-event` | claude-code-wrapper-orchestr | agent-orchestrator | wrapper-client-and-sse, ingester |
 | `wrapper-peers-view` | claude-code-wrapper-orchestr | agent-orchestrator | wrapper-client-and-sse, ingester |
+| `wrapper-history-backward` | claude-code-wrapper-orchestr | agent-orchestrator | fake-wrapper-contract |
 | `any-mcp-cli` | any-mcp | agent-orchestrator | container-images-ci, k8s-object-renderer |
 | `any-mcp-config` | any-mcp | agent-orchestrator | k8s-object-renderer |
 | `any-mcp-release` | any-mcp | agent-orchestrator | container-images-ci |

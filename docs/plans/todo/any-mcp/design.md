@@ -168,7 +168,7 @@ decision for the error and validation rules; shapes my call.) Serves A, G.
 
 ### D8: Reload
 
-`load_tools()` runs at startup, every `reload_every` seconds when set (class attribute or config),
+`load_tools()` runs at startup, every `reload_every` seconds when set (the plugin entry's config `reload_every` overrides the `Plugin` class attribute `reload_every`),
 and after `ctx.request_reload()`. Reloads are serialised under one `asyncio.Lock`; the new list is
 diffed against the old and change listeners fire only on a real change; the adapter then sends the
 tool-list-changed notification FastMCP supports. A reload that raises keeps the previous tools of
