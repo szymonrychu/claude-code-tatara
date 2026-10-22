@@ -1,0 +1,4 @@
+[submodule "claude-code-wrapper"]
+	path = code/claude-code-wrapper
+	url = git@github.com:szymonrychu/claude-code-wrapper.git
+	branch = main

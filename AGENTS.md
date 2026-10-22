@@ -1,13 +1,3 @@
-<!-- workbench:uninitialised:begin -->
-> **This workbench is not initialised.**
-> If the user asks to start a new project or to adopt existing repos, run the `init` skill
-> (`workbench:init` in Claude Code, `init` in other harnesses) and do nothing else first.
-> Any other development request on an uninitialised tree: ask the user whether to run init
-> first.
-> If the user is developing the template itself, follow "Template maintenance" below and
-> never run init.
-<!-- workbench:uninitialised:end -->
-
 # Workbench
 
 ## What this repository is
@@ -33,20 +23,27 @@ branch, land on that submodule's default branch, then commit the moved pointer h
 <!-- workbench:project:begin -->
 ## What this project is building
 
-_Filled by init from the user's answer: one paragraph on the product and who it is for._
+A Python reimplementation of tatara-new: a decentralised set of small microservices connected by a real queue, decoupled from Kubernetes APIs, replacing the monolithic Go codebase; it starts from claude-code-wrapper, with an orchestrator microservice next.
 
 ## Components (code/)
 
 | Submodule | Lang | Role | Build |
 |-----------|------|------|-------|
+| claude-code-wrapper | python | HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks | `mise run --cd code/claude-code-wrapper test` |
 
 ## Component hard rules
 
-_Filled by init: the rules every component must obey, one per line._
+- Python only.
+- No Kubernetes API dependency in any service.
+- Services talk only through the queue or HTTP APIs; no shared state.
 
 ## Highest-risk surface
 
-_Filled by init: the surface where a mistake costs the most, and what must never break there._
+Running interactive Claude sessions: PTY control, hooks and credentials.
+
+## Forge
+
+Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 <!-- workbench:project:end -->
 
 ## Ground rules
@@ -193,16 +190,3 @@ notification reply, heartbeat reply and status is VERY short.
   (a word limit), and read their files rather than their full transcripts.
 - Detail only when the user asks for it, or a decision needs it.
 <!-- workbench:rules:end -->
-
-## Template maintenance
-
-Applies only when developing the template itself, in an uninitialised workbench.
-Never run init here.
-
-- `mise run test` and `mise run lint` must both be green before any change lands.
-- The plugin loads from the main checkout, not from a worktree: edits to `plugins/` made in
-  a task or integration tree take effect in Claude Code only after the epic merges to main
-  and `/reload-plugins` runs.
-- The `workbench:rules` block is produced from `plugins/workbench/rules/`; change the rule
-  files, then rebuild with `mise run harness-setup`, never edit the block by hand.
-- Record non-obvious decisions in `MEMORY.md`.

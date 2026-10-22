@@ -2,4 +2,10 @@
 
 ## Components
 
-This is the uninitialised template: init fills the component map.
+```
+claude-code-tatara/
+  code/
+    claude-code-wrapper/  (python)
+```
+
+- `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks

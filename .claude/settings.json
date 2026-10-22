@@ -1,6 +1,6 @@
 {
   "extraKnownMarketplaces": {
-    "workbench-template": {
+    "claude-code-tatara-workbench": {
       "source": {
         "source": "directory",
         "path": "./"
@@ -8,10 +8,10 @@
     }
   },
   "enabledPlugins": {
-    "workbench@workbench-template": true,
-    "workbench-infra@workbench-template": false,
-    "workbench-observability@workbench-template": false,
-    "workbench-secrets@workbench-template": false
+    "workbench@claude-code-tatara-workbench": true,
+    "workbench-infra@claude-code-tatara-workbench": true,
+    "workbench-observability@claude-code-tatara-workbench": true,
+    "workbench-secrets@claude-code-tatara-workbench": true
   },
   "permissions": {
     "allow": []
