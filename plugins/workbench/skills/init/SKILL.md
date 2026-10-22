@@ -24,6 +24,8 @@ relative `--path` values resolve against where you ran them. Never call a script
 - Remote mode. New: `github`, `gitlab`, `url:<url>` or `local-bare[:<dir>]`; for a forge,
   the owner or group and whether repos are public (default private). Adopt: only
   `local-bare[:<dir>]` or none (adopted repos keep their own origin; forges are for new).
+  Adopt accepts `local-bare[:<dir>]` only with `--path` on a checkout that has no origin,
+  and never with `--url`.
 - Packs to enable: infra, observability, secrets (optional).
 - Harnesses to generate for besides Claude Code: copilot, cursor, codex, gemini,
   antigravity (optional).
@@ -46,6 +48,9 @@ mise run init:new -- --name <project> --component <name>:<lang> --remote <mode> 
 mise run init:adopt -- --path <checkout> --name <component> --project <project> --purpose "<text>" --role <name>=<text>
 mise run init:adopt -- --url <repo-url> --name <component> --project <project>
 ```
+
+`--path` moves the checkout into `code/<name>`; the original path no longer exists
+afterwards, so tell the user before running it.
 
 Repeat `--component`, `--role`, `--hard-rule`, `--pack` and `--harness` as needed. For
 `init:new` add `--confirm-forge` (after step 2), `--forge-owner` and `--public` when
