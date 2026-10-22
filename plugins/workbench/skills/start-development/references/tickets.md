@@ -23,7 +23,7 @@ docs/plans/index.json                    generated, gitignored
 - Legacy `docs/plans/<date>-*` files were removed; only the three phase folders live under `docs/plans/`.
 - `ticket.py path <epic> readme|design|approvals|record|tasks` prints the absolute path inside the
   epic's current phase. Every subcommand that takes an epic accepts its slug or its directory.
-- Time is report-only: the planner writes `estimate` (minutes, about an hour per task) in each task, `apply-run` writes `actual` from `durationMs`, and `ticket.py tasks` regenerates the README `## Time` section. See `task-fields.md`.
+- Time is report-only: the planner writes `estimate` (minutes, from `ticket.py estimate <epic>`; `--estimate` is only an override) in each task, `apply-run` writes `actual` from `durationMs`, and `ticket.py tasks` regenerates the README `## Time` section. See `task-fields.md`.
 
 ## Subcommands added for the run loop and planning
 

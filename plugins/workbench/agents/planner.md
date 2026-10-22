@@ -17,7 +17,7 @@ changes or a subsystem is added.
 `{epic, briefs[], userDecisions[], relatedEpics[]}`:
 
 - `epic`: a slug.
-- `briefs`: absolute file paths to the research briefs. Read them.
+- `briefs`: absolute file paths to the research briefs. Read each by its heading index: grep its `^#` headings first, then read only the sections the plan needs.
 - `userDecisions`: `[{id, text}]`. Binding; do not re-ask them.
 - `relatedEpics`: slugs of epics that share files or contracts.
 
@@ -36,7 +36,7 @@ changes or a subsystem is added.
    `ticket.py graph --todo` and order the tasks against what it shows.
 3. AC refs: a `test:` ref only when `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/lib/workbench.py runner <ref> --repo <dir>`
    resolves it; otherwise a `command:` ref.
-4. The verify hints come from the facts pack.
+4. The verify hints come from the facts pack. Sizing: size each task to one test file's worth of behaviour, at most 8 files; give it a targeted verify (named test files or a component suite plus lint, never the full suite); merge sibling tasks under 3 files that share a test file into one; estimates come from `ticket.py estimate <epic>` and `--estimate` is only an override.
 5. Open questions go to design.md via `ticket.py questions --add`.
 6. Validator loop: run `validate-tasks.mjs --epic` and `ticket.py lint`, fix, repeat until the
    first prints ok and the second passes.

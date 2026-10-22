@@ -21,7 +21,7 @@ field below is read by the workflow, the lint (`validate-tasks.mjs`) or both.
 | `owns` | shared parts (map names) only this task builds |
 | `uses` | shared parts it consumes; one owned by another task requires that task in dependsOn, directly or transitively |
 | `dependsOn` | task ids that must finish clean first |
-| `estimate` | task frontmatter, minutes, written by the planner under the "about an hour" rule (`new-task --estimate`). Report only: it feeds the epic README `Time` section, the heartbeat ETA and the record, never a budget, and nothing in plan-execute reads it. `validate-tasks.mjs --epic` warns (does not fail) when it is over 90, as a split hint next to the 8-file rule |
+| `estimate` | task frontmatter, minutes, from `ticket.py estimate <epic>`; `--estimate` on `new-task` is only an override. Report only: it feeds the epic README `Time` section, the heartbeat ETA and the record, never a budget, and nothing in plan-execute reads it. `validate-tasks.mjs --epic` fails a `todo` task whose `verify` is the full suite (a warning for other statuses); there is no estimate cap |
 | `actual` | task frontmatter, minutes, written by `ticket.py apply-run` from the task's `durationMs` in the plan-execute return (measured around `runOne` with `Date.now()`). Added across runs, replaced when the same run is applied twice. Report only |
 | `overlapIgnore` | `.claude/workbench.json` key, not a task field: files matching it (doc files by default, plus your globs) do not need ordering through `dependsOn` when two tasks touch them |
 | `size` | optional 'large' when a task genuinely needs more than 8 files |

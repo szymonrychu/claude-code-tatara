@@ -28,7 +28,7 @@ const TASK = (over = {}) => {
     ...over.sec,
   }
   const body = Object.entries(sec).filter(([, v]) => v !== null).map(([h, v]) => `## ${h}\n\n${v}\n`).join('\n')
-  const fm = { title: 'X', status: 'todo', repo: 'api', value: 'worth it', files: '[src/x.py]', verify: 'pytest', depends_on: '[]', owns: '[]', uses: '[]', ...over.fm }
+  const fm = { title: 'X', status: 'todo', repo: 'api', value: 'worth it', files: '[src/x.py]', verify: 'pytest tests/test_x.py', depends_on: '[]', owns: '[]', uses: '[]', ...over.fm }
   const head = Object.entries(fm).filter(([, v]) => v !== null).map(([k, v]) => `${k}: ${v}`).join('\n')
   return `---\n${head}\n---\n\n# X\n\n${body}`
 }
@@ -155,12 +155,11 @@ test('--epic cannot be combined with a tasks file or --plan', () => {
 })
 
 
-test('an estimate over 90 minutes warns as a split hint but does not fail', () => {
+test('an estimate over 90 minutes no longer warns and does not fail', () => {
   const r = cli('--epic', epic({ tasks: { 't-one': TASK({ fm: { owns: '[part-a]', estimate: 120 } }), 't-two': TASK({ fm: { uses: '[part-a]', depends_on: '[t-one]', files: '[src/y.py]', estimate: 90 } }) } }))
   assert.equal(r.status, 0, r.stderr)
   assert.match(r.stdout, /^ok: 2 task\(s\)/)
-  assert.match(r.stderr, /warning: task t-one: estimate 120 > 90 minutes; consider splitting/)
-  assert.ok(!/estimate.*t-two|t-two.*estimate/.test(r.stderr))
+  assert.ok(!/estimate|consider splitting/.test(r.stderr), r.stderr)
 })
 
 test('no warning when every estimate is at most 90 or absent', () => {
