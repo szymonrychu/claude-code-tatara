@@ -1,6 +1,6 @@
 ---
 title: vocabulary pins
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: the wrapper full suite is green with the new hook and event vocabulary
 files: [tests/test_command_vocabulary.py, tests/test_event_log.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/events.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-vocabulary-pins/claude-code-wrapper
+branch: claude-code-wrapper-orchestr-vocabulary-pins
 verified_head: ""
 run: ""
 provides: []
