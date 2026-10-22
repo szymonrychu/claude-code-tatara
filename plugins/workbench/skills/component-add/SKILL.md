@@ -16,7 +16,8 @@ the cwd. Never call a script path.
 - New component (name and language) or an existing checkout path or repo URL?
 - Component name if the default is wrong, and its role in one line.
 - Remote mode: `github`, `gitlab`, `url:<url>` or `local-bare[:<dir>]`; owner or group and
-  visibility for a forge.
+  visibility for a forge. For an existing checkout, `local-bare[:<dir>]` is accepted only
+  with `--path` on a checkout that has no origin, and never with `--url`.
 
 ## 2. Confirm forge creation
 
@@ -30,6 +31,9 @@ mise run component:add -- --component <name>:<lang> --remote <mode> --role <name
 mise run component:add -- --path <checkout> --name <name> --role <name>=<text>
 mise run component:add -- --url <repo-url> --name <name> --role <name>=<text>
 ```
+
+`--path` moves the checkout into `code/<name>`; the original path no longer exists
+afterwards, so tell the user before running it.
 
 Add `--confirm-forge`, `--forge-owner` and `--public` when answered. The engine refuses
 when the workbench has staged changes, the name is taken or invalid, or the remote is

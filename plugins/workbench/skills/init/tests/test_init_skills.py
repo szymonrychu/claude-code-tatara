@@ -138,3 +138,23 @@ def test_confirmation_and_harness_setup():
     assert "explicit" in body and "only after" in body.lower()
     assert "init:new" in body[body.index("## 2.") : body.index("## 3.")]
     assert not re.search(r"mise run harness-setup", body)
+
+
+def flat(name):
+    return " ".join(text(name).split())
+
+
+def test_init_skill_states_local_bare_and_move():
+    body = flat("init")
+    assert "only with `--path` on a checkout that has no origin" in body
+    assert "never with `--url`" in body
+    assert "moves the checkout into `code/<name>`" in body
+    assert "original path no longer exists" in body
+
+
+def test_component_add_skill_states_move():
+    body = flat("component-add")
+    assert "only with `--path` on a checkout that has no origin" in body
+    assert "never with `--url`" in body
+    assert "moves the checkout into `code/<name>`" in body
+    assert "original path no longer exists" in body
