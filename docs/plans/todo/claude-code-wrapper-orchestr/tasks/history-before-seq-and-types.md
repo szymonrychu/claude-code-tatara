@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: "Chat UI can load newest and scroll back, headless clients can filter"
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, README.md, tests/test_history_backward.py]
-verify: "uv run pytest tests/test_history_backward.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_history_backward.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [user-message-event]
 owns: [wrapper-history-backward]
 uses: []
 model: ""
-estimate: 39
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -44,17 +44,18 @@ provides: []
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+events.py EventLog.page_before(before_seq, limit, types) -> (events, has_more_before); api/events.py query params. Contract wrapper-history-backward.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Backward pages work with before_seq and types, with prev_seq and has_more_before; invalid combinations are 400.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_history_backward.py; run it and see it fail (param ignored).
+- Add EventLog.page_before in events.py and wire before_seq/types in api/events.py; update README.md.
+- Run `uv run pytest tests/test_history_backward.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Existing page() takes the ring fast path only when ring[0].seq <= after_seq+1; backward paging must fall back to _read_file when the ring does not cover the range. Rotation drops the oldest half of events.jsonl (events.py:212-225).

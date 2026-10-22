@@ -11,9 +11,9 @@ created: 2026-10-22
 
 ## Project brief
 
-What: 
-How: 
-Why: 
+What: six additive claude-code-wrapper changes (idle_since, user_message event, backward history, GET /v1/peers, statusline relay, context surface), each documented in README.md.
+How: one task per test file in code/claude-code-wrapper, chained where they share events.py/router.py, verified by targeted pytest plus mise run lint (never the full 11-minute suite).
+Why: agent-orchestrator needs idle-longest routing, a context gauge, lazy chat history and a peer view that the wrapper does not expose today.
 
 ## Description
 
@@ -34,8 +34,12 @@ claude-code-wrapper gains the API surface agent-orchestrator needs: context-wind
 
 ## Time
 
-Estimate: 241 agent-min | Critical path: 202 min | Expected wall at P=1.5: 6.7 h (k=2.0) | Actual: 0 min | Remaining estimate: 241 min
+Estimate: 36 agent-min | Critical path: 30 min | Expected wall at P=1.5: 1.0 h (k=2.0) | Actual: 0 min | Remaining estimate: 36 min
 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+## Delivery notes
+
+Another Claude session (claude-code-wrapper-58) actively develops code/claude-code-wrapper from a different clone. Before the PR, rebase this branch onto origin/main and re-run the six targeted verifies; README.md and events.py/router.py are the likely conflict points.

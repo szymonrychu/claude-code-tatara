@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: Orchestrator draws the 0-100 percent context gauge from the wrapper
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_context_surface.py]
-verify: "uv run pytest tests/test_context_surface.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_context_surface.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [statusline-relay]
 owns: [wrapper-context-surface]
 uses: [wrapper-statusline-callback]
 model: ""
-estimate: 41
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -45,17 +45,18 @@ Expose context usage. The snapshot gains `context: {used_tokens, window_tokens, 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+manager.py snapshot gains context {used_tokens, window_tokens, used_percentage, model, source, updated_at} | null; events.py gains context. Contracts wrapper-context-surface (owns), wrapper-statusline-callback (uses).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Snapshot context is null, then filled after a statusline update, with one context event per distinct change, and null again after compaction.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_context_surface.py driving router.on_statusline; run it and see it fail.
+- Store the latest context in the router, expose it in manager.py snapshot, add the context event type with dedupe, reset on compacted; update README.md.
+- Run `uv run pytest tests/test_context_surface.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+router.py already keeps _last_context for auto-compact (router.py:257, 858); do not conflate it with the statusline values. Compaction emit is router.py:887.

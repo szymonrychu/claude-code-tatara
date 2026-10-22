@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: Orchestrator can read the peer mesh without holding peers.token
 files: [src/claude_code_wrapper/api/peers.py, src/claude_code_wrapper/peer_membership.py, README.md, tests/test_api_peers_view.py]
-verify: "uv run pytest tests/test_api_peers_view.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_api_peers_view.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [wrapper-peers-view]
 uses: []
 model: ""
-estimate: 39
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -43,17 +43,18 @@ provides: []
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+api/peers.py bearer route GET /v1/peers; peer_membership.py snapshot accessor. Contract wrapper-peers-view.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+GET /v1/peers with the bearer returns the mesh view; peers off returns {enabled: false}.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_api_peers_view.py; run it and see it fail (404).
+- Add a bearer router in api/peers.py and a read accessor on PeerMembership; update README.md.
+- Run `uv run pytest tests/test_api_peers_view.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The signed POST /v1/peers/* routes are mounted only with peers.enabled; the GET must be mounted always. Reuse the bearer dependency in api/auth.py.

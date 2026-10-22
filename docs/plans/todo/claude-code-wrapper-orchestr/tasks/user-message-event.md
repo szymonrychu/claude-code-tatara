@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: Chat UI shows every prompt including peer and restart prompts
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_user_message_event.py]
-verify: "uv run pytest tests/test_user_message_event.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_user_message_event.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [idle-since-in-snapshot]
 owns: [wrapper-user-message-event]
 uses: []
 model: ""
-estimate: 39
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -43,17 +43,18 @@ A new SSE/history event type `user_message` with data `{turn_id, origin, text, f
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+events.py EVENT_TYPES gains user_message; data {turn_id, origin, text, files}. Contract wrapper-user-message-event.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After a prompt is pasted the event log holds user_message with turn_id, origin, text, files; turn_started is unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_user_message_event.py with the fake claude; run it and see it fail (unknown event type).
+- Add user_message to events.py EVENT_TYPES; emit in router.py at paste time (router.py:810 is where turn_started is emitted); update README.md.
+- Run `uv run pytest tests/test_user_message_event.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Emit when the prompt is actually pasted, not on accept. Shares events.py/router.py with other tasks: this is why the chain is ordered.

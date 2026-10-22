@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: Wrapper receives real context-window usage from Claude Code
 files: [src/claude_code_wrapper/cli.py, src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/internal_api.py, src/claude_code_wrapper/bootstrap/settings.py, src/claude_code_wrapper/router.py, README.md, tests/test_statusline_relay.py]
-verify: "uv run pytest tests/test_statusline_relay.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_statusline_relay.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [history-before-seq-and-types]
 owns: [wrapper-statusline-callback]
 uses: []
 model: ""
-estimate: 44
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -48,17 +48,18 @@ Statusline relay, the source of context-window usage. (1) A new CLI subcommand `
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+cli.py: ccw statusline; internal_api.py: POST /internal/statusline; router.py: on_statusline(payload). Contract wrapper-statusline-callback.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A session's Claude Code runs ccw statusline; the wrapper receives context_window values at /internal/statusline and the user's own statusLine output is unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_statusline_relay.py (CLI with a stub internal server, chain command, settings render); run it and see it fail.
+- Add statusline.py and the ccw statusline subcommand in cli.py, the internal route, the settings.py install and chain, the router on_statusline callback; update README.md.
+- Run `uv run pytest tests/test_statusline_relay.py tests/test_readme_api.py tests/test_readme_config.py -q && uv run ruff check . && uv run ruff format --check .`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Follow hook_relay.py for how the CLI finds the internal API and session id. Best effort post with a short timeout. Statusline JSON fields: context_window.used_percentage, context_window_size, current_usage (code.claude.com/docs/en/statusline); null before the first assistant message and after /compact.

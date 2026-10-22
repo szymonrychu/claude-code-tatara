@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: Orchestrator can route to the agent idle the longest
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, README.md, tests/test_idle_since.py]
-verify: "uv run pytest tests/test_idle_since.py tests/test_readme_api.py -q && mise run lint"
+verify: "uv run pytest tests/test_idle_since.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [wrapper-idle-since]
 uses: []
 model: ""
-estimate: 39
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -43,17 +43,18 @@ The session snapshot (manager.py snapshot dict, ~line 1429-1453) gains `idle_sin
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+manager.py snapshot dict (~1429-1453) gains idle_since; router.py session_state data gains since. Contract wrapper-idle-since.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+GET /v1/sessions/{id} shows idle_since while ready and null otherwise; session_state events carry since.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_idle_since.py; run `uv run pytest tests/test_idle_since.py -q` and see it fail (no idle_since key).
+- Implement in manager.py snapshot and the router session_state emit; update README.md.
+- Run `uv run pytest tests/test_idle_since.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .`; expect all passed.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Reuse the existing now_iso helper (timeutil.py). Never run the full suite (11 min). The branch must be rebased on origin/main before the PR.
