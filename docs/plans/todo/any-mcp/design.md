@@ -410,7 +410,7 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
 ## Open questions
 - Q1: Build on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC, with one adapter module the only importer of fastmcp? [answer: yes: FastMCP 4 behind own ABC]
 - Q2: Keep v1 tools-only, with plugin resources and prompts not in the v1 API? [answer: yes: tools only (no resources or prompts)]
-- Q3: Keep MRTR (InputRequiredResult) out of the v1 plugin API? [recommended: yes]
+- Q3: Keep MRTR (InputRequiredResult) out of the v1 plugin API? [answer: CHANGED: InputRequiredResult (MCP 2026-07-28 multi-round-trip) IS in v1 as a separate optional plugin hook with a default that never requests input, wired through the FastMCP adapter and call pipeline, documented in the authoring guide with an example, tested over stdio and HTTP]
 - Q4: Make the first release tag v0.1.0? [recommended: yes, v0.1.0]
 - Q5: Make the OpenAPI plugin refuse to load without an allow or tags filter, so mirroring a whole API needs an explicit allow of every operation? [recommended: yes]
 
