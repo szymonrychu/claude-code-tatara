@@ -1737,9 +1737,7 @@ class Sweep:
         if not self.dry_run:
             _rmdir_if_empty(d)
 
-    def _own_branch(
-        self, branch: str, epic: str, tree: str, legacy: str, target: str
-    ) -> bool:
+    def _own_branch(self, branch: str, epic: str, tree: str, legacy: str, target: str) -> bool:
         """Only the task's own branch is swept: its tree name, its legacy name, or an
         <epic>-... name; never the integration branch, the base, a trunk or HEAD."""
         refused = {self.base, target, integration_branch(epic), "HEAD", "main", "master"}
