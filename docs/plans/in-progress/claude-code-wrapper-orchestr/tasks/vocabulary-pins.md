@@ -1,6 +1,6 @@
 ---
 title: vocabulary pins
-status: in-progress
+status: escalated
 repo: claude-code-wrapper
 value: the wrapper full suite is green with the new hook and event vocabulary
 files: [tests/test_command_vocabulary.py, tests/test_event_log.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/events.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-vocabulary-pins/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-vocabulary-pins
-verified_head: ""
-run: ""
+branch: "HEAD (worktree claude-code-wrapper-orchestr-vocabulary-pins), commit 4d1989e"
+verified_head: 4d1989edeb1f30843536f0ab583b5d2d5484c445
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: ["No recorded red run for the 20 to 21 pin change. The pre-change failure is in full-suite.log, but tests.red is empty."]
 ---
 
 # vocabulary pins
