@@ -40,7 +40,7 @@ Release dependents of a task whose only open findings are medium (design D8). `p
 - AC2: the medium-only task still escalates and its return entry carries mediumOnly true [evidence: test:plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs::medium-only-task-still-escalates-with-flag]
 - AC3: a high or gate finding never releases dependents [evidence: test:plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs::high-or-gate-finding-never-releases]
 - AC4: an unverified or blocked task with medium findings never releases [evidence: test:plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs::unverified-medium-only-never-releases]
-- AC5: in an epic run a medium-only task is landed before its dependents start [evidence: test:plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs::medium-only-task-lands-in-epic-run]
+- AC5: in an epic run a medium-only task releases its dependents and is not landed until a ruling accepts it (D8 as amended 2026-10-22, delivered by medium-only-hold) [evidence: test:plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs::medium-only-task-releases-but-does-not-land-in-epic-run]
 - AC6: the existing release tests still pass [evidence: command:cd plugins/workbench && node --test workflows/tests/plan-execute-triage-release.test.mjs workflows/tests/plan-execute-process-only.test.mjs]
 
 ## Files

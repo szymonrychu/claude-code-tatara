@@ -39,7 +39,7 @@ Make `ticket.py continue` a one-shot relaunch and auto-accept the findings that 
 
 - AC1: continue auto-accepts a verified processOnly task with a ruling and prints the line once across reruns [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_continue_auto_accepts_process_only]
 - AC2: continue auto-accepts a verified triageRejected task and never an unverified or review-shallow one [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_continue_auto_accepts_triage_rejected_only_when_verified]
-- AC3: --launch lands each clean done task through merge.py and prints no MERGE line for it [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_launch_lands_clean_tasks_itself]
+- AC3: --launch lands each clean done task through merge.py and prints no MERGE line for it [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_launch_uses_task_verify]
 - AC4: a failed landing keeps its MERGE line, exits 2 and leaves the task tree and the epic branch intact [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_launch_keeps_merge_line_on_failure]
 - AC5: --launch ends with one LAUNCH line and one ARM line [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_launch_prints_launch_and_arm_lines]
 - AC6: the relaunch args hold no done task and every escalated, dependency-failed and unstarted one [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py::test_relaunch_args_hold_only_open_tasks]

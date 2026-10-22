@@ -34,11 +34,11 @@ Build the measurement that decides the prompt-cache change (design D6). The prob
 
 ## Acceptance conditions
 
-- AC1: cache mode dispatches three static-first agents then three task-first agents, one at a time [evidence: test:plugins/workbench/workflows/tests/hook-probe.test.mjs::cache-mode-dispatches-three-static-then-three-task-first]
-- AC2: the static-first prompts share an identical block of at least 4000 characters [evidence: test:plugins/workbench/workflows/tests/hook-probe.test.mjs::cache-mode-static-block-is-identical]
-- AC3: hook-evidence prints CACHE saving when the second and third static-first agents create under 5000 tokens [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_verdict_saving]
-- AC4: hook-evidence prints CACHE none otherwise [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_verdict_none]
-- AC5: the JSON output lists creation, read and cwd per agent [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_json_lists_cwd_per_agent]
+- AC1: cache mode dispatches three static-first agents then three task-first agents, one at a time [evidence: test:plugins/workbench/workflows/tests/hook-probe.test.mjs::cache-probe-runs-six-serial-agents-without-worktree]
+- AC2: the static-first prompts share an identical block of at least 4000 characters [evidence: test:plugins/workbench/workflows/tests/hook-probe.test.mjs::cache-probe-prompts-share-a-static-block]
+- AC3: hook-evidence prints CACHE saving when the second and third static-first agents create under 5000 tokens [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_saving_verdict]
+- AC4: hook-evidence prints CACHE none otherwise [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_none_verdict_and_json]
+- AC5: the JSON output lists creation, read and cwd per agent [evidence: test:plugins/workbench/scripts/tests/test_hook_evidence.py::test_cache_none_verdict_and_json]
 - AC6: the existing hook-probe and hook-evidence tests still pass [evidence: command:cd plugins/workbench && node --test workflows/tests/hook-probe.test.mjs && pytest scripts/tests/test_hook_evidence.py -q]
 
 ## Files
