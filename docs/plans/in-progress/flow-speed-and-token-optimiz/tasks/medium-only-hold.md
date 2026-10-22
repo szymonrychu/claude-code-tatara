@@ -40,16 +40,17 @@ Deliver: a mediumOnly task releases its dependents (they merge its task branch, 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `releasable(d)` keeps releasing dependents for mediumOnly; landing eligibility excludes mediumOnly unless RULED_ACCEPT has it.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Medium findings never reach the epic branch unruled, while the run still continues past them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Add the AC tests and see AC1 fail.
+2. Split release from landing eligibility for mediumOnly.
+3. Run the verify command.
 
 ## Notes
 
