@@ -40,16 +40,17 @@ Deliver: `ticket.py continue --launch` never passes `true` as the landing verify
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `continue_cmd._land` takes the run return's per-task verification command into account; its output lines (`<task>: landed`, `MERGE ...`) keep their format.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every landing that continue --launch performs runs a real verify command; tasks it cannot verify go to the worktree-merger.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Write the three tests and see AC1 and AC2 fail.
+2. Thread the run return's verification.command into _land; print MERGE when there is no command.
+3. Run the verify command.
 
 ## Notes
 
