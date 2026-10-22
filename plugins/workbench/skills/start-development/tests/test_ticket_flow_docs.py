@@ -167,3 +167,76 @@ def test_readme_names_epic_skills():
     readme = (ROOT / "README.md").read_text()
     for name in ("epic-create", "epic-task-create", "epic-move", "epic-worktrees-remove"):
         assert name in readme, name
+
+
+def _ref(name):
+    return flat((SD / "references" / name).read_text())
+
+
+def test_task_fields_document_estimate_actual_verify_review():
+    t = _ref("task-fields.md")
+    for needle in (
+        "scripts/lib/estimator.json",
+        "`estimate_by`",
+        "`formula` or `override`",
+        "apply-run --run-dir <dir>`",
+        "ticket.py continue --run <id>`",
+        "gives scripts no clock",
+        "`actual_roles`",
+        "targeted",
+        "a full-suite `verify` fails the lint on a `todo` task",
+        "doc-only and test-only",
+        "scoped re-review",
+    ):
+        assert needle in t, needle
+    assert "Date.now()" not in t
+
+
+def test_tickets_reference_names_estimate_and_continue_launch():
+    t = _ref("tickets.md")
+    for needle in (
+        "`estimate <epic> [--json]`",
+        "`continue <epic> --out-dir <dir> --run <id> --launch`",
+        "auto-accepts",
+        "lands the done tasks",
+        "`LAUNCH` line",
+        "`ARM` line",
+        "Expected wall at P=",
+        "Critical path:",
+    ):
+        assert needle in t, needle
+
+
+def test_run_handback_names_one_step_relaunch():
+    t = _ref("run-handback.md")
+    for needle in (
+        "wakes on END and STALL",
+        "ticket.py continue <epic> --run <id> --out-dir <dir> --launch",
+        "the one Workflow call from the `LAUNCH` line",
+        "the one Monitor from the `ARM` line",
+        "auto-accepted processOnly and triageRejected tasks are not judged again",
+        "mediumOnly escalations are ruled like any escalation, their dependents already ran",
+    ):
+        assert needle in t, needle
+
+
+def test_phase_4_names_release_rule_and_relaunch_scope():
+    t = _ref("phase-4-execute.md")
+    for needle in (
+        "clean, processOnly, triageRejected, mediumOnly or ruled accept",
+        "never a done task",
+        "continue <epic> --run <id> --out-dir <dir> --launch",
+    ):
+        assert needle in t, needle
+
+
+def test_skill_gate_shows_epic_estimate_and_relaunch_launch():
+    t = flat((SD / "SKILL.md").read_text())
+    assert "ticket.py estimate <epic>" in t
+    assert "three longest-path tasks" in t
+    assert "continue <epic> --run <id> --out-dir <dir> --launch" in t
+
+
+def test_templates_name_time_line_and_actual_roles():
+    assert "Expected wall at P=" in flat((SD / "templates" / "epic.md").read_text())
+    assert "`actual_roles`" in flat((SD / "templates" / "record.md").read_text())

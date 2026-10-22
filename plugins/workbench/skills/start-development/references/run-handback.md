@@ -33,7 +33,11 @@ Read these **when the run returns, before dispatching anything else**:
   `<epic dir>/rulings.json` at each wave boundary; a ruling for an
   unknown or unverified task is ignored and listed in `rulingsIgnored`; a ruling on a clean task is applied. Such a task is
   still `escalated` and `finished` stays false.
-- Relaunch: `ticket.py continue <epic> --out-dir <dir> [--run <runId> | --return <return.json>]
+- Wake and relaunch: the heartbeat wakes on END and STALL. On END run
+  `ticket.py continue <epic> --run <id> --out-dir <dir> --launch`, then make the one Workflow call from the `LAUNCH` line and
+  arm the one Monitor from the `ARM` line. Note: auto-accepted processOnly and triageRejected tasks are not judged again;
+  mediumOnly escalations are ruled like any escalation, their dependents already ran.
+- Relaunch by hand: `ticket.py continue <epic> --out-dir <dir> [--run <runId> | --return <return.json>]
   [--accept <ids> --reason ...]` applies the last return, records your rulings, refreshes
   the trees and writes the next run's args and named copy. Use it instead of rebuilding the
   args by hand; `ticket.py rule` records rulings alone, also while a run is in flight.

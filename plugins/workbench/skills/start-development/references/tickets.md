@@ -23,7 +23,7 @@ docs/plans/index.json                    generated, gitignored
 - Legacy `docs/plans/<date>-*` files were removed; only the three phase folders live under `docs/plans/`.
 - `ticket.py path <epic> readme|design|approvals|record|tasks` prints the absolute path inside the
   epic's current phase. Every subcommand that takes an epic accepts its slug or its directory.
-- Time is report-only: the planner writes `estimate` (minutes, from `ticket.py estimate <epic>`; `--estimate` is only an override) in each task, `apply-run` writes `actual` from `durationMs`, and `ticket.py tasks` regenerates the README `## Time` section. See `task-fields.md`.
+- Time is report-only: `ticket.py estimate <epic>` writes `estimate` (formula minutes, `estimate_by: formula`; `--estimate` is only an override), `apply-run --run-dir` and `continue --run` write `actual` and `actual_roles` from the run dir, and `ticket.py tasks` regenerates the README `## Time` section. See `task-fields.md`.
 
 ## Subcommands added for the run loop and planning
 
@@ -36,6 +36,13 @@ Each lives in its own module under `skills/start-development/scripts/ticket_cmds
   `continue` then prints one line per task, `MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>`, and writes no args file.
   The orchestrator dispatches `workbench:worktree-merger` with those `--name` and `--repo` values, then reruns `continue`
   (the earlier steps are idempotent).
+- `estimate`: `estimate <epic> [--json]` recomputes every task's formula minutes and rewrites the README Time line
+  (`Estimate: ... | Critical path: ... | Expected wall at P=<p>: <h> h (k=<k>) | Actual: ... | Remaining estimate: ...`),
+  then prints `Longest path:` with the tasks on the critical path. The gate shows that line and the three longest-path tasks.
+- `continue <epic> --out-dir <dir> --run <id> --launch`: one step. It applies the return, auto-accepts processOnly and
+  triageRejected escalations, lands the done tasks itself with `merge.py`, refreshes the trees, writes the args and prints
+  a `LAUNCH <script> <args>` line and an `ARM python3 heartbeat.py --run <runId> --total <n>` line. The `LAUNCH` line is the one
+  Workflow call, the `ARM` line the one Monitor. Without `--launch` it still prints MERGE lines for the orchestrator to dispatch.
 - `contract`: `contract add|use|list` keeps `docs/plans/contracts.json`.
 - `graph --todo` checks todo and in-progress epics for blocker cycles and contract order.
 - `roadmap`: `roadmap [--json]` lists the epics by phase.

@@ -59,8 +59,10 @@ discovered work becomes new tasks in the same epic.
 
 To wait on the run, arm `heartbeat.py --run <id>` (one Monitor; keepalive off by default; costs in
 skills/heartbeat/SKILL.md); on END read the return per references/run-handback.md.
-**Relaunch:** `ticket.py continue <epic> --out-dir <dir> --accept <ids>` applies the return, records
-rulings and rebuilds the args; `ticket.py rule <epic> --accept|--reject <ids> --reason ...` accepts
+**Release rule:** a task releases its dependents when it ends clean, processOnly, triageRejected, mediumOnly or ruled accept.
+**Relaunch:** `ticket.py continue <epic> --run <id> --out-dir <dir> --launch` applies the return, auto-accepts processOnly and
+triageRejected tasks, lands the done tasks and prints the `LAUNCH` and `ARM` lines; the relaunch re-runs only escalated tasks and
+their unlanded dependents, never a done task. Add `--accept <ids> --reason ...` to record rulings; `ticket.py rule <epic> --accept|--reject <ids> --reason ...` accepts
 mid-run; `ticket.py reap --epic <epic> --task <id>` after a task merges; `ticket.py amend` for a
 mid-epic scope change; `ticket.py facts` after merges. Parallel epics: `references/multi-epic.md`. Read `approvals`,
 `escalated`, `blocked`, `waveLevel`, `duplicates`, `provides`, `processGaps`, `declined`,
