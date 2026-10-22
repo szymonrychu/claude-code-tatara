@@ -1,6 +1,6 @@
 ---
 title: Existing remote kept
-status: in-progress
+status: done
 repo: workbench
 value: "An update never rewrites the user's template remote"
 files: [scripts/tests/init_engine/test_update.py]
@@ -13,10 +13,12 @@ estimate: ""
 actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--existing-remote-kept
-branch: template-update-skill-and-in--existing-remote-kept
-verified_head: ""
-run: ""
+branch: "HEAD (worktree template-update-skill-and-in--existing-remote-kept, commit a8d9524)"
+verified_head: a8d952468624aa0afef9b2865629c635253cc411
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: ["No red phase recorded; exception is a pin of existing behaviour, with no non-test file changed", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 ---
 
 # Existing remote kept
