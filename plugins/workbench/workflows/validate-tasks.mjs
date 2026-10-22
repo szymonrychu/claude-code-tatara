@@ -15,7 +15,6 @@ import { fileURLToPath } from 'node:url'
 import { lintAc } from './ac-lint.mjs'
 import { runWorkflow } from './tests/harness.mjs'
 
-const MAX_ESTIMATE_MIN = 90
 const USAGE = 'usage: node validate-tasks.mjs <tasks.json> [--existing <existing.json>] [--do-not-build <dnb.json>] [--plan <plan.md>] [--approvals <approvals.json>] [--design <design.md>]\n       node validate-tasks.mjs --epic <epic dir>'
 const fail = (msg, code = 1) => {
   console.error(msg)
@@ -187,6 +186,13 @@ const frontmatterKeys = (md) => {
   }
   return out
 }
+// derive_tasks does not carry the lifecycle status; the task file frontmatter does.
+if (epicMode) {
+  for (const t of tasks) {
+    const f = join(epicDir, 'tasks', `${t.id}.md`)
+    t.status = (existsSync(f) && frontmatterKeys(readFileSync(f, 'utf8')).get('status')) || 'todo'
+  }
+}
 // A section is empty when it is blank, an unfilled `{{placeholder}}`, or the template's own guidance.
 const sectionEmpty = (text, templateText) => {
   const t = text.trim()
@@ -324,13 +330,28 @@ const script = fileURLToPath(new URL('./plan-execute.js', import.meta.url))
 // from the recorded calls, not from the probe's own throw.
 // --epic: the per-repo overlapIgnore (built-in doc globs plus the repo's config) goes to the harness run.
 const overlapIgnore = []
+const suites = []
 if (epicMode) {
   for (const repo of new Set(tasks.map((t) => t.repo).filter(Boolean))) {
     const r = spawnSync('python3', [WORKBENCH_PY, 'config', '--plans-root', plansRoot, '--repo-name', repo], { encoding: 'utf8' })
     if (r.status !== 0) fail(`workbench config for ${repo}: ${(r.stderr.trim().split('\n')[0] || 'failed')}`)
-    for (const g of JSON.parse(r.stdout).overlapIgnore || []) if (!overlapIgnore.includes(g)) overlapIgnore.push(g)
+    const cfg = JSON.parse(r.stdout)
+    for (const g of cfg.overlapIgnore || []) if (!overlapIgnore.includes(g)) overlapIgnore.push(g)
+    for (const c of cfg.suites || []) if (!suites.includes(c)) suites.push(c)
   }
 }
+// D10/D11: a task verifies with named test files or a component suite plus lint, never the full suite.
+const { fullSuitePatterns = [] } = readJson(join(PLUGIN, 'scripts', 'lib', 'estimator.json'))
+const fullSuiteRegexes = fullSuitePatterns.map((p) => new RegExp(p))
+const isFullSuite = (verify) => {
+  if (typeof verify !== 'string') return false
+  const parts = verify.split('&&').map((p) => p.trim()).filter(Boolean)
+  if (parts.length && /^cd\s/.test(parts[0])) parts.shift()
+  return parts.some((p) => fullSuiteRegexes.some((re) => re.test(p)) || suites.includes(p)) || suites.includes(verify.trim())
+}
+const fullSuiteMsg = (t) => `task ${t.id}: verify '${t.verify}' runs the full suite; name the test files or the component suite (run-tests.sh --only <component>) plus lint, and split the task if that is not enough`
+const fullSuiteFailures = () => tasks.filter((t) => t.status === 'todo' && isFullSuite(t.verify)).map(fullSuiteMsg)
+const fullSuiteWarnings = () => tasks.filter((t) => t.status !== 'todo' && isFullSuite(t.verify)).map((t) => `warning: ${fullSuiteMsg(t)}`)
 const harness = async (extra = {}) => {
   const r = await runWorkflow(script, { args: { tasks, existing, doNotBuild, overlapIgnore, name: 'lint', brief: { what: '(lint)', how: '(lint)', why: '(lint)' }, ...extra }, agent })
   return r.calls.length && !r.error ? { ...r, error: new Error('VALIDATION_OK') } : r
@@ -344,14 +365,14 @@ if (epicMode) {
   const designMd = existsSync(designFile) ? readFileSync(designFile, 'utf8') : undefined
   const ledgerRun = ledger && !deriveError && passed(error) ? await harness({ approvals: ledger.map(({ id, text, tasks: ts }) => ({ id, text, tasks: ts })) }) : null
   const errs = [
+    ...fullSuiteFailures(),
     ...(deriveError || passed(error) ? [] : [error ? error.message : 'plan-execute finished without reaching an agent']),
     ...lintEpic(designMd),
     ...(ledger ? lintApprovals(ledger, designMd) : []),
     ...(ledgerRun && !passed(ledgerRun.error) ? [ledgerRun.error ? ledgerRun.error.message : 'plan-execute finished without reaching an agent'] : []),
   ]
   if (errs.length) fail(errs.join('\n'))
-  // Split hint next to the 8-file rule; a warning, never a failure.
-  for (const t of tasks) if (t.estimate > MAX_ESTIMATE_MIN) console.error(`warning: task ${t.id}: estimate ${t.estimate} > ${MAX_ESTIMATE_MIN} minutes; consider splitting`)
+  for (const w of fullSuiteWarnings()) console.error(w)
   console.log(`ok: ${tasks.length} task(s), epic checked, approvals checked${designMd === undefined ? '' : ', design checked'}`)
 } else if (passed(error)) {
   const designMd = designPath ? readText(designPath) : undefined

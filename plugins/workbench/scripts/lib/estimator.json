@@ -1,0 +1,12 @@
+{
+  "task": {"intercept": 4.0, "exponent": 0.22, "fullSuiteFactor": 6.9},
+  "epic": {"parallelism": {"low": {"tasks": 15, "p": 1.5}, "high": {"tasks": 30, "p": 3.0}}, "k": 2.0},
+  "fullSuitePatterns": [
+    "^mise run test$",
+    "^(make|npm|pnpm|yarn) test$",
+    "^go test \\./\\.\\.\\.$",
+    "^cargo test$",
+    "^(uv run )?pytest( -[-\\w=]+)*$",
+    "^bash scripts/run-tests\\.sh$"
+  ]
+}

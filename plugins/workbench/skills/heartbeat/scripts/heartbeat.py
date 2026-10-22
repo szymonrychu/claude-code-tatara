@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Heartbeat for a waiting orchestrator: one short line per beat, run under Monitor.
+"""Heartbeat for a waiting orchestrator, run under Monitor. Quiet by default.
 
 Each printed line is a Monitor event, which wakes the orchestrator for one turn.
-That turn re-reads the cached prompt prefix, so on a 5-minute cache TTL a beat
-every 270s keeps the cache warm through an idle wait. On a 1-hour TTL the cache
-needs no help, so the beat only reports progress at the bounded-wait interval.
+The script polls every --interval seconds but prints a progress line only when
+the journal digest changed and --report-every seconds passed since the last
+printed line. STALL and END print at once. With --keepalive every beat prints,
+because on a 5-minute cache TTL the wake itself keeps the cache warm.
 
-Optional: one haiku call per beat (~600 tokens) estimates % done and ETA from a
-digest of a plan-execute journal.jsonl.
+Optional (--eta): one haiku call per printed line (~600 tokens) estimates % done
+and ETA from a digest of a plan-execute journal.jsonl.
 
 Usage (from Monitor, timeout_ms 1800000, re-arm on expiry):
   heartbeat.py (--run <runId> | --journal <journal.jsonl>) [--total N] [--remaining-min M]
-               [--ttl auto|5m|1h] [--interval S] [--stall-beats N] [--no-eta]
+               [--ttl auto|5m|1h] [--interval S] [--report-every S] [--stall-beats N]
+               [--eta] [--keepalive]
 """
 
 import argparse
@@ -55,6 +57,13 @@ def default_interval(ttl, keepalive=False):
     # a 5m TTL, beat inside the TTL with margin. Otherwise report at the
     # 10-minute bounded-wait interval the global rules already require.
     return 270 if keepalive and ttl == "5m" else 600
+
+
+def report_due(d, last_d, last_t, now, report_every):
+    """A progress line prints when the digest changed and the report interval passed."""
+    if last_d is None:
+        return True
+    return d != last_d and now - last_t >= report_every
 
 
 def projects_root(override=None):
@@ -177,7 +186,11 @@ def parse(argv=None):
     ap.add_argument("--interval", type=float)
     ap.add_argument("--stall-beats", type=int, default=3)
     ap.add_argument("--beats", type=int, default=0, help="stop after N beats (0 = until killed)")
-    ap.add_argument("--no-eta", action="store_true")
+    ap.add_argument(
+        "--report-every", type=float, default=1800, help="seconds between progress lines"
+    )
+    ap.add_argument("--eta", action="store_true", help="haiku pct done and ETA per printed line")
+    ap.add_argument("--no-eta", action="store_true", help="accepted, no effect (ETA is opt-in)")
     ap.add_argument("--keepalive", action="store_true", help="beat every 270s on a 5m cache")
     return ap.parse_args(argv)
 
@@ -192,6 +205,7 @@ def main(argv=None):
     a = parse(argv)
     interval = resolve_interval(a)
     t0, last_size, still, n = time.time(), -1, 0, 0
+    last_d, last_t, last_wait = None, 0.0, None
     while not a.beats or n < a.beats:
         n += 1
         if a.run:
@@ -207,7 +221,10 @@ def main(argv=None):
                         flush=True,
                     )
                     return 2
-                print(f"waiting for run {a.run}", flush=True)
+                now = time.monotonic()
+                if a.keepalive or last_wait is None or now - last_wait >= a.report_every:
+                    last_wait = now
+                    print(f"waiting for run {a.run}", flush=True)
                 if not a.beats or n < a.beats:
                     time.sleep(interval)
                 continue
@@ -224,17 +241,20 @@ def main(argv=None):
             print(f"STALL {round(still * interval / 60)}m no journal change", flush=True)
         else:
             d = digest(j)
-            est = (
-                None
-                if a.no_eta
-                else estimate(
-                    d,
-                    a.total,
-                    elapsed_min=round((time.time() - t0) / 60),
-                    remaining_min=a.remaining_min,
+            now = time.monotonic()
+            if a.keepalive or report_due(d, last_d, last_t, now, a.report_every):
+                est = (
+                    estimate(
+                        d,
+                        a.total,
+                        elapsed_min=round((time.time() - t0) / 60),
+                        remaining_min=a.remaining_min,
+                    )
+                    if a.eta
+                    else None
                 )
-            )
-            print(beat_line(d, est), flush=True)
+                print(beat_line(d, est), flush=True)
+                last_d, last_t = d, now
         if not a.beats or n < a.beats:
             time.sleep(interval)
     return 0

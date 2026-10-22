@@ -94,7 +94,8 @@ One message, in this order:
    that deliver it. Approving this message approves every entry by id; an item you strike leaves the
    ledger, the design and the plan - it is never kept as later.
 2. The epic README and design doc paths, the summary and the project brief (what, how, why).
-3. The task table (id, title, value, files, owns/uses/dependsOn, model).
+3. The task table (id, title, value, files, owns/uses/dependsOn, model) and the epic estimate line from
+   `ticket.py estimate <epic>` with the three longest-path tasks.
 4. The research lenses that ran and the ones skipped, with the reason.
 5. The builder check's remaining questions, one batch, preference calls only, numbered, each with a
    recommended answer, worded so that "yes" accepts it.
@@ -130,7 +131,7 @@ Workflow args block, review tiers and gate tags, relaunch commands, handback fie
 `ticket.py apply-run <epic> <return.json>` writes results back into the task files; discovered work
 becomes new tasks in the same epic. To wait on the run, arm `heartbeat.py --run <id>` (one Monitor);
 on END read the return per references/run-handback.md. Relaunch with
-`ticket.py continue <epic> --out-dir <dir> --accept <ids>`. Never merge a worktree yourself.
+`ticket.py continue <epic> --run <id> --out-dir <dir> --launch` (then the `LAUNCH` and `ARM` lines). Never merge a worktree yourself.
 
 ## Phases 5-7 - Verify, merge, record
 

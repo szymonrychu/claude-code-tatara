@@ -28,7 +28,7 @@ Findings that altered a decision or a task, with the citation and the change it 
 
 ## Cost
 
-Agents by role, continuations, audits, and wall-clock. Then a table of estimate vs actual minutes per task (`estimate` and `actual` from the task files) with the README `Time` totals; report only, never a budget.
+Agents by role, continuations, audits, and wall-clock. Then a table of estimate vs actual minutes per task (`estimate`, `actual` and `actual_roles` from the task files) with the README `Time` totals; report only, never a budget.
 
 ## MRs and deploy
 
