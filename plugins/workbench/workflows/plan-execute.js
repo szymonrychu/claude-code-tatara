@@ -166,6 +166,14 @@ const isProcessFinding = (f) => PROCESS_GATES.includes(f && f.gate)
 // verified() already folds clean in: the verifier's passed is stored as passed && clean.
 const processOnly = (impl, findings) =>
   verified(impl) && !isBlocked(impl) && Array.isArray(findings) && findings.length > 0 && findings.every(isProcessFinding)
+// Medium-only results (design D8): verified, not blocked, and every open finding (one triage
+// did not reject as false) is a reviewer's medium with no gate. It releases its dependents
+// and still escalates for a ruling. Every script-made gate finding is high and carries a gate.
+const openFindings = (findings) => (Array.isArray(findings) ? findings.filter((f) => f.verdict !== 'false') : [])
+const mediumOnly = (impl, findings) => {
+  const open = openFindings(findings)
+  return verified(impl) && !isBlocked(impl) && open.length > 0 && open.every((f) => f.severity === 'medium' && !f.gate)
+}
 // Per-task review tiers, lowest to highest. See reviewTier().
 const TIERS = ['skip', 'light', 'full', 'panel']
 // A changed path matching this is never below full.
@@ -1711,10 +1719,16 @@ async function reviewUntilClean(t, firstImpl, firstPre = [], tier = 'full', impl
         const findings = extra.findings.map((f, i) => ({ ...f, verdict: tr[i].verdict, verdictReason: tr[i].reason }))
         const released = findings.every((f) => isProcessFinding(f) || f.verdict === 'false')
         if (released) log(`${t.id}: verified, every open non-process finding rejected by triage - releasing dependents`)
-        return result(round, { clean: false, reason, ...extra, findings, ...(released ? { triageRejected: true } : {}) })
+        return medium(result(round, { clean: false, reason, ...extra, findings, ...(released ? { triageRejected: true } : {}) }))
       }
     }
-    return result(round, { clean: false, reason, ...extra })
+    return medium(result(round, { clean: false, reason, ...extra }))
+  }
+  // Marks a verified, unblocked stop whose only open findings are medium as mediumOnly.
+  const medium = (r) => {
+    if (r.reason === 'blocked' || r.triageRejected || !mediumOnly(impl, r.findings)) return r
+    log(`${t.id}: verified, only medium findings open - releasing dependents, escalating for a ruling`)
+    return { ...r, mediumOnly: true }
   }
   const review = (prompt, name) =>
     safeAgent(t, 'review', prompt, {
@@ -2064,13 +2078,20 @@ function landPrompt(t, impl) {
 // One landing; returns the task's settled result after it: the landed head as the verification
 // head on success, else clean false with reason land-failed and the land result attached.
 async function landTask(t, r) {
-  const res = await safeAgent(t, 'land', landPrompt(t, r.impl), {
-    label: label('land', t),
-    phase: 'Land',
-    schema: LAND,
-    agentType: 'workbench:worktree-merger',
-    model: 'sonnet',
-  })
+  const dispatch = (model) =>
+    safeAgent(t, 'land', landPrompt(t, r.impl), {
+      label: label('land', t),
+      phase: 'Land',
+      schema: LAND,
+      agentType: 'workbench:worktree-merger',
+      model,
+    })
+  // The mechanical land runs on haiku; a reported conflict is re-dispatched once on sonnet.
+  let res = await dispatch('haiku')
+  if (res && res.conflict === true && res.landed !== true) {
+    log(`${t.id}: land agent reported a conflict on haiku - re-dispatching once on sonnet`)
+    res = (await dispatch('sonnet')) || res
+  }
   const ok = res && (res.landed === true || res.contained === true) && res.verification && res.verification.passed === true
   if (ok) {
     const id = t.rootId || t.id
@@ -2081,13 +2102,13 @@ async function landTask(t, r) {
     return { ...r, land: res, impl: { ...r.impl, verification: { ...prior, ...res.verification, evidence: res.verification.evidence || prior.evidence, head: res.head } } }
   }
   log(`${t.id}: landing on ${BASE_REF} failed${res ? `: ${res.notes || tail(res.verification && res.verification.evidence)}` : ' - the land agent returned nothing'} - escalating`)
-  return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, land: res || null }
+  return { ...r, clean: false, reason: 'land-failed', processOnly: false, triageRejected: false, mediumOnly: false, land: res || null }
 }
 
 // Every task starts the moment its own dependencies are released - per-task edge triggers,
 // never "when the whole wave is done", so the slowest sibling sets no one else's latency.
-// A dependency is released when it settles verified and clean, processOnly, triageRejected
-// or accepted by a ruling. A task whose dependency failed is escalated, not run.
+// A dependency is released when it settles verified and clean, processOnly, triageRejected,
+// mediumOnly or accepted by a ruling. A task whose dependency failed is escalated, not run.
 // With args.rulingsFile, a dependent of a verified but unreleased dependency waits for a
 // ruling. The file is read once per wave boundary: a task settles verified-not-released
 // while another waits on it, or nothing runs while dependents wait. An idle read that
@@ -2106,7 +2127,7 @@ function runTasks(batch) {
   // Released before landing: what releases a task in a run that does not land.
   const releasable = (d) => {
     const r = settled.get(d)
-    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || RULED_ACCEPT.has(d)))
+    return Boolean(r && verified(r.impl) && !landFailed(d) && (r.clean || r.processOnly || r.triageRejected || r.mediumOnly || RULED_ACCEPT.has(d)))
   }
   const landed = new Set()
   const released = (d) => releasable(d) && (!LANDING || landed.has(d))
@@ -2206,7 +2227,7 @@ function describeDelivered(rs) {
       const d = r.impl
       return [
         `Task ${r.task.id}: ${r.task.title}`,
-        `  requirement: ${r.task.requirement}`,
+        TASK_FILES ? '' : `  requirement: ${r.task.requirement}`,
         `  value: ${r.task.value}`,
         `  claimed complete: ${d ? d.complete : 'NO RESULT'}`,
         `  summary: ${d ? d.summary : '(none)'}`,
@@ -2257,6 +2278,16 @@ const ancestryPairs = () => {
   return pairs.length ? ['Same-repo dependencies to check for ancestry (dependency -> dependent): ' + pairs.join(', ')] : []
 }
 
+// When every task carries its task file, an audit prompt names the files and inlines no
+// requirement text (D11); the auditor reads the Requirement and AC sections itself.
+const TASK_FILES = TASKS.length > 0 && TASKS.every((t) => typeof t.taskFile === 'string' && t.taskFile)
+const taskFileLines = (extra) => [
+  '=== TASKS ===',
+  'Read each task file\'s `## Requirement` and `## Acceptance conditions` sections (only those sections, not the whole file or other docs):',
+  ...TASKS.map((t) => `- ${t.id}: ${t.title} | tree ${t.worktree} | task file ${t.taskFile}`),
+  ...(extra ? TASKS.flatMap((t) => extra(t)) : []),
+]
+
 // Inputs only: the method (what to look for, how to read, the duplicate sweep,
 // the ancestry check) is the scope-auditor agent's.
 function auditPrompt(rs, gaps) {
@@ -2274,6 +2305,7 @@ function auditPrompt(rs, gaps) {
     '',
     ...scope,
     ...ledgerBlock(),
+    ...(TASK_FILES ? ['', ...taskFileLines()] : []),
     '',
     '=== WHAT WAS REPORTED DELIVERED ===',
     describeDelivered(rs),
@@ -2288,12 +2320,22 @@ function auditPrompt(rs, gaps) {
   ].join('\n')
 }
 
+// A task whose every AC the verifier settled: each AC met, backed by test, symbol, command or
+// doc-section evidence, none matched by substring, and none left in acsForAudit (D12).
+const SETTLED_KINDS = ['test', 'symbol', 'command', 'doc-section']
+const settledTask = (t) =>
+  Array.isArray(t.ac) &&
+  t.ac.length > 0 &&
+  !(t.acsForAudit || []).length &&
+  t.ac.every((a) => a.met !== false && a.matchedBy !== 'substring' && a.evidence && SETTLED_KINDS.includes(a.evidence.kind))
+
 // One row per acceptance condition; a task without any gets one empty row. An id
 // in acsForAudit is one the verifier could not settle, so the auditor judges it.
-function acTable() {
+// `only` narrows the rows to the settled tasks (true) or the rest (false).
+function acTable(only) {
   const cell = (s) => String(s == null ? '' : s).replace(/\|/g, '/').replace(/\s+/g, ' ').trim()
   const evidence = (e) => (!e ? '' : e.ref ? `${e.kind}: ${e.ref}` : e.kind || '')
-  const rows = TASKS.flatMap((t) => {
+  const rows = TASKS.filter((t) => only === undefined || settledTask(t) === only).flatMap((t) => {
     const open = new Set((t.acsForAudit || []).map(String))
     const acs = Array.isArray(t.ac) ? t.ac : []
     if (!acs.length) return [`| ${t.id} | (none) | | | |`]
@@ -2303,7 +2345,9 @@ function acTable() {
 }
 
 // The epic-close audit (auditOnly): inputs only, like auditPrompt.
-function epicAuditPrompt() {
+// With `split` the verifier-settled rows go to settledAuditPrompt and are left out here.
+function epicAuditPrompt(split) {
+  const taskLine = (t) => `- ${t.id}: ${t.title} | worktree ${t.worktree} | branch ${t.branch || '(none)'} | verified head ${t.verifiedHead || '(none)'}`
   return [
     `Audit epic ${EPIC || NAME} at close: is every goal, acceptance condition and approved item delivered in the task trees?`,
     briefBlock(),
@@ -2311,11 +2355,12 @@ function epicAuditPrompt() {
     '',
     `Epic README (its Goals and Non-goals are the definition of done): ${EPIC_README}`,
     '',
-    '=== TASKS ===',
-    ...TASKS.map((t) => `- ${t.id}: ${t.title} | worktree ${t.worktree} | branch ${t.branch || '(none)'} | verified head ${t.verifiedHead || '(none)'}`),
-    ...TASKS.map((t) => `  ${t.id} requirement: ${t.requirement}`),
+    ...(TASK_FILES
+      ? taskFileLines((t) => [`  ${t.id} branch ${t.branch || '(none)'}, verified head ${t.verifiedHead || '(none)'}`])
+      : ['=== TASKS ===', ...TASKS.map(taskLine), ...TASKS.map((t) => `  ${t.id} requirement: ${t.requirement}`)]),
     '',
-    ...acTable(),
+    ...(split ? ['Acceptance conditions of tasks the verifier fully settled are confirmed by a separate auditor; only the rows below are yours.'] : []),
+    ...acTable(split ? false : undefined),
     ...ledgerBlock(),
     ...ancestryPairs(),
     '',
@@ -2323,6 +2368,35 @@ function epicAuditPrompt() {
     ...duplicateSweepBlock(),
     'Each evidence entry is at most 80 words.',
   ].join('\n')
+}
+
+// The settled rows only: the haiku auditor confirms each row's evidence exists at the landed head.
+function settledAuditPrompt() {
+  const settled = TASKS.filter(settledTask)
+  return [
+    `Settled-rows mode, epic ${EPIC || NAME}: the verifier already settled every acceptance condition of the tasks below. Confirm only that each row's evidence (test, symbol, command or doc section) exists at the task's verified head in its tree. A row whose evidence is missing is a \`missing\` entry on its task; do nothing else.`,
+    briefBlock(),
+    '',
+    ...(TASK_FILES ? ['Task files (read only the `## Acceptance conditions` section):'] : []),
+    ...settled.map((t) => `- ${t.id}: tree ${t.worktree} | branch ${t.branch || '(none)'} | verified head ${t.verifiedHead || '(none)'}${t.taskFile ? ` | task file ${t.taskFile}` : ''}`),
+    '',
+    ...acTable(true),
+    '',
+    'Every `missing` entry names the plan task it belongs to. Legal taskId values: ' + settled.map((t) => t.id).join(', '),
+    'Each evidence entry is at most 80 words.',
+  ].join('\n')
+}
+
+// The epic-close audit: settled rows on one haiku call, everything else on sonnet; the results merge.
+async function runEpicAudit() {
+  if (!TASKS.some(settledTask)) return safeAgent(null, 'audit', epicAuditPrompt(), auditOpts('epic'))
+  const [main, settled] = await Promise.all([
+    safeAgent(null, 'audit', epicAuditPrompt(true), auditOpts('epic')),
+    safeAgent(null, 'audit', settledAuditPrompt(), { ...auditOpts('settled'), model: 'haiku', effort: 'low' }),
+  ])
+  if (!main) return null
+  const lost = settled ? [] : [{ item: 'settled-row audit did not run', evidence: 'haiku auditor returned nothing', taskId: null }]
+  return { ...main, complete: main.complete === true && !!settled && settled.complete === true, missing: [...(main.missing || []), ...((settled && settled.missing) || []), ...lost] }
 }
 
 // Every audit dispatch: the scope-auditor agent type, on sonnet (a read-and-compare
@@ -2445,7 +2519,7 @@ async function forwardMerge(latest, remediated) {
         label: label('merge', d),
         phase: 'Merge',
         schema: MERGE,
-        model: 'sonnet',
+        model: 'haiku',
       })
       if (result && result.merged === true && result.conflict !== true && result.verification && result.verification.passed === true) {
         forwardMerged.push({ into: D, from: R, branch, head: result.head })
@@ -2470,7 +2544,7 @@ async function forwardMerge(latest, remediated) {
 if (AUDIT_ONLY) {
   log(`Epic-close audit of ${TASKS.length} task(s)`)
   phase('Scope audit')
-  const a = await safeAgent(null, 'audit', epicAuditPrompt(), auditOpts('epic'))
+  const a = await runEpicAudit()
   if (!a) {
     return {
       auditOnly: true,
@@ -2570,6 +2644,7 @@ for (const r of latest.values()) {
       reason: r.reason,
       rounds: r.rounds,
       findings: r.findings || [],
+      ...(r.mediumOnly ? { mediumOnly: true } : {}),
       ...(r.handoff ? { handoff: r.handoff } : {}),
       ...(r.split ? { split: r.split } : {}),
       ...(r.unread ? { unread: r.unread } : {}),
@@ -2632,6 +2707,7 @@ return {
     verified: verified(r.impl),
     processOnly: r.processOnly === true,
     triageRejected: r.triageRejected === true,
+    mediumOnly: r.mediumOnly === true,
     ...(RULED.has(r.task.id) ? { ruling: RULED.get(r.task.id) } : {}),
     ...('land' in r ? { land: r.land } : {}),
     verification: r.impl ? r.impl.verification : null,

@@ -64,7 +64,11 @@ def build_args(epic_dir, context_pack=None, t=None) -> dict:
     status = {p.stem: t._read_doc(p).meta.get("status", "todo") for p in t._task_files(epic_dir)}
     done_ids = {x["id"] for x in all_tasks if status.get(x["id"]) == "done"}
     open_ = [
-        dict(x, dependsOn=[d for d in x["dependsOn"] if d not in done_ids])
+        dict(
+            x,
+            dependsOn=[d for d in x["dependsOn"] if d not in done_ids],
+            taskFile=str((epic_dir / "tasks" / f"{x['id']}.md").resolve()),
+        )
         for x in all_tasks
         if x["id"] not in done_ids
     ]

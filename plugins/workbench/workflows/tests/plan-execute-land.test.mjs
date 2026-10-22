@@ -103,7 +103,7 @@ test('land-dispatches-merge-into-epic', async () => {
   assert.equal(opts.label, 'epic-x:land:a')
   assert.equal(opts.phase, 'Land')
   assert.equal(opts.agentType, 'workbench:worktree-merger')
-  assert.equal(opts.model, 'sonnet')
+  assert.equal(opts.model, 'haiku')
   assert.deepEqual(opts.schema.required, ['landed', 'head', 'conflict', 'verification', 'notes'])
   assert.equal(opts.schema.properties.landed.type, 'boolean')
   assert.equal(opts.schema.properties.head.type, 'string')
