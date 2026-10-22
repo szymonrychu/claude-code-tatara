@@ -35,8 +35,8 @@ Read these **when the run returns, before dispatching anything else**:
   still `escalated` and `finished` stays false.
 - Wake and relaunch: the heartbeat wakes on END and STALL. On END run
   `ticket.py continue <epic> --run <id> --out-dir <dir> --launch`, then make the one Workflow call from the `LAUNCH` line and
-  arm the one Monitor from the `ARM` line. Note: auto-accepted processOnly and triageRejected tasks are not judged again;
-  mediumOnly escalations are ruled like any escalation, their dependents already ran.
+  arm the one Monitor from the `ARM` line (auto-accepted processOnly and triageRejected tasks are not judged again;
+  mediumOnly escalations are ruled like any escalation, their dependents already ran).
 - Relaunch by hand: `ticket.py continue <epic> --out-dir <dir> [--run <runId> | --return <return.json>]
   [--accept <ids> --reason ...]` applies the last return, records your rulings, refreshes
   the trees and writes the next run's args and named copy. Use it instead of rebuilding the
