@@ -322,3 +322,48 @@ def test_cli_bad_json_exit_2(tmp_path):
 @pytest.mark.parametrize("mode", ["tier", "ac-plausible", "parking", "equivalence"])
 def test_cli_knows_every_mode(mode):
     assert cli(mode, "--help").returncode == 0
+
+
+# ---- verify (one call for parking + ac-plausible + tier) ----
+
+V_CANDS = [
+    {"file": "a.py", "line": 1, "text": "# later"},
+    {"file": "a.py", "line": 2, "text": "# explains"},
+]
+V_ACS = [{"id": "AC1", "text": "doc", "kind": "judgement", "ref": "", "snippet": "s", "met": None}]
+
+
+def test_verify_mode_answers_all_three_parts():
+    fake = Fake(
+        {
+            "parking": [{"index": 0, "reason": "defers"}],
+            "acs": [{"id": "AC1", "verdict": "no", "reason": "r"}],
+            "classifierTier": "panel",
+        }
+    )
+    out = triage.verify({"parking": V_CANDS, "acs": V_ACS, "tier": TIER_IN}, runner=fake, meta={})
+    assert len(fake.calls) == 1
+    assert out["parking"] == [{**V_CANDS[0], "reason": "defers"}]
+    assert out["acs"] == [{"id": "AC1", "verdict": "no", "reason": "r"}]
+    assert out["classifierTier"] == "panel" and out["error"] is None
+
+
+def test_verify_schema_covers_only_present_parts():
+    fake = Fake({"classifierTier": "light"})
+    out = triage.verify({"tier": TIER_IN}, runner=fake, meta={})
+    schema = json.loads(fake.calls[0][0][fake.calls[0][0].index("--json-schema") + 1])
+    assert list(schema["properties"]) == ["classifierTier"]
+    assert out["parking"] == [] and out["acs"] == []
+
+
+def test_verify_no_parts_makes_no_call():
+    fake = Fake({})
+    out = triage.verify({}, runner=fake, meta={})
+    assert fake.calls == [] and out["classifierTier"] is None
+
+
+def test_verify_failure_sets_error_and_flags_nothing():
+    fake = Fake(None, code=1, err="boom")
+    out = triage.verify({"parking": V_CANDS, "tier": TIER_IN}, runner=fake, meta={})
+    assert "classifier failed" in out["error"]
+    assert out["parking"] == [] and out["classifierTier"] is None

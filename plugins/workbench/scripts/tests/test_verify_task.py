@@ -64,15 +64,27 @@ class Triage:
     """Stub for triage.run: flags parking lines containing 'later', everything plausible."""
 
     def __init__(self, tier="full", verdict="yes"):
-        self.calls, self.tier, self.verdict = [], tier, verdict
+        self.calls, self.verify_calls, self.tier, self.verdict = [], [], tier, verdict
 
     def __call__(self, mode, data, **_):
-        self.calls.append((mode, data))
-        if mode == "parking":
-            return [{**x, "reason": "defers"} for x in data if "later" in x["text"]]
-        if mode == "ac-plausible":
-            return [{"id": a["id"], "verdict": self.verdict, "reason": "stub"} for a in data]
-        return {"classifierTier": self.tier, "reasons": ["stub"]}
+        """One combined `verify` call; its parts are recorded as sub-calls (parking, ...)."""
+        assert mode == "verify"
+        self.verify_calls.append(data)
+        out = {"parking": [], "acs": [], "classifierTier": None, "error": None}
+        if "parking" in data:
+            self.calls.append(("parking", data["parking"]))
+            out["parking"] = [
+                {**x, "reason": "defers"} for x in data["parking"] if "later" in x["text"]
+            ]
+        if "acs" in data:
+            self.calls.append(("ac-plausible", data["acs"]))
+            out["acs"] = [
+                {"id": a["id"], "verdict": self.verdict, "reason": "stub"} for a in data["acs"]
+            ]
+        if "tier" in data:
+            self.calls.append(("tier", data["tier"]))
+            out["classifierTier"] = self.tier
+        return out
 
 
 def verify(root, command="true", *extra, triage=None, base="main", acs=None):
@@ -649,7 +661,7 @@ def test_triage_log_is_passed_to_triage(repo, monkeypatch):
 
     def fake(mode, data, **kw):
         seen.append(kw.get("log"))
-        return {"classifierTier": "light", "reasons": []} if mode == "tier" else []
+        return {"parking": [], "acs": [], "classifierTier": "light", "error": None}
 
     monkeypatch.setattr(triage, "run", fake)
     branch(repo)
@@ -665,7 +677,7 @@ def test_triage_usage_is_summed_into_the_verify_json(repo, monkeypatch):
         kw["usage"]["calls"] += 1
         kw["usage"]["input_tokens"] += 10
         kw["usage"]["output_tokens"] += 3
-        return {"classifierTier": "light", "reasons": []} if mode == "tier" else []
+        return {"parking": [], "acs": [], "classifierTier": "light", "error": None}
 
     monkeypatch.setattr(triage, "run", fake)
     branch(repo)
