@@ -1,7 +1,7 @@
 ---
 title: Flow speed and token optimization
 blockers: [Epic integration worktrees]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-21
