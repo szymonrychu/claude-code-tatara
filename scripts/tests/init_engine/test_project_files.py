@@ -173,7 +173,7 @@ def test_is_initialised(tmp_path):
 
     assert not is_initialised(tmp_path)  # no AGENTS.md
     (tmp_path / "AGENTS.md").write_text(
-        "# x\n<!-- workbench:uninitialised:begin -->\nbanner\n<!-- workbench:uninitialised:end -->\n"
+        "# x\n<!-- workbench:uninitialised:begin -->\n<!-- workbench:uninitialised:end -->\n"
     )
     assert not is_initialised(tmp_path)
     (tmp_path / "AGENTS.md").write_text("# x\n<!-- workbench:project:begin -->\n")

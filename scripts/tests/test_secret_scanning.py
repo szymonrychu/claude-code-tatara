@@ -190,7 +190,7 @@ def test_vanished_file_does_not_fail_scan(tmp_path):
 
 
 def _gitlink_repo(tmp_path):
-    """Temp repo with a real nested checkout `code/sub` recorded as a gitlink, plus code/.gitkeep."""
+    """Temp repo with a nested checkout `code/sub` as a gitlink, plus code/.gitkeep."""
     task = tmp_path / "mise-tasks" / "lint" / "secrets"
     task.parent.mkdir(parents=True)
     shutil.copy(ROOT / "mise-tasks" / "lint" / "secrets", task)
