@@ -1,6 +1,6 @@
 ---
 title: History before_seq and types
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "Chat UI can load newest and scroll back, headless clients can filter"
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, README.md, tests/test_history_backward.py]

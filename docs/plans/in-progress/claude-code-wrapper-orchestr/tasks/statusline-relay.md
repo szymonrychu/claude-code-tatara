@@ -1,6 +1,6 @@
 ---
 title: Statusline relay
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: Wrapper receives real context-window usage from Claude Code
 files: [src/claude_code_wrapper/cli.py, src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/internal_api.py, src/claude_code_wrapper/bootstrap/settings.py, src/claude_code_wrapper/router.py, README.md, tests/test_statusline_relay.py]
