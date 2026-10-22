@@ -1,6 +1,6 @@
 ---
 title: E2e template update
-status: in-progress
+status: done
 repo: workbench
 value: The whole init cleanup and update round trip is proven on a real template copy with real lint
 files: [scripts/tests/e2e/test_template_update.py, scripts/init_engine/update.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--e2e-template-update
 branch: template-update-skill-and-in--e2e-template-update
-verified_head: ""
-run: ""
+verified_head: 1be9a6d434dd1cda928369c68cfede426be62d33
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # E2e template update

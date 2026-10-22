@@ -1,6 +1,6 @@
 ---
 title: Update unrelated history
-status: in-progress
+status: done
 repo: workbench
 value: "Projects copied from the template, with no shared history, can still take updates"
 files: [scripts/init_engine/update.py, scripts/init_engine/cli.py, scripts/tests/init_engine/test_update_unrelated.py]
@@ -13,10 +13,12 @@ estimate: 8
 actual: ""
 review: full
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-unrelated-history
-branch: template-update-skill-and-in--update-unrelated-history
-verified_head: ""
-run: ""
+branch: worktree-template-update-skill-and-in--update-unrelated-history
+verified_head: a9f002008b61a02e9994fcdc9fc927e539eb704c
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Update unrelated history

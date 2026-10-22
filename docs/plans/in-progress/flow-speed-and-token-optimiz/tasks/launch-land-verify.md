@@ -1,6 +1,6 @@
 ---
 title: Launch land verify
-status: in-progress
+status: done
 repo: workbench
 value: continue --launch never lands a task with no check
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
@@ -14,9 +14,11 @@ actual: ""
 review: ""
 worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--launch-land-verify
 branch: flow-speed-and-token-optimiz--launch-land-verify
-verified_head: ""
-run: ""
+verified_head: 560074c9936fc356abc5ae8091fa3c6bede921f8
+run: flow-speed-and-token-optimiz
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # Launch land verify
@@ -51,6 +53,10 @@ Every landing that continue --launch performs runs a real verify command; tasks 
 1. Write the three tests and see AC1 and AC2 fail.
 2. Thread the run return's verification.command into _land; print MERGE when there is no command.
 3. Run the verify command.
+
+## Ruling
+
+- 2026-10-22 accepted: run 3: verify-shared-deadline, launch-land-verify, full-suite-split-shared and shell-quote-refs verified clean (landing on main via c2-land). medium-only-hold rejected for one fix round: transitive hold through a chain.
 
 ## Notes
 

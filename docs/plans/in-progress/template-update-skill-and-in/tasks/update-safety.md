@@ -1,6 +1,6 @@
 ---
 title: Update safety
-status: todo
+status: done
 repo: workbench
 value: "A template update never deletes a user's local notes and only merges from the source the user named"
 files: [scripts/init_engine/update.py, scripts/tests/init_engine/test_update_safety.py, plugins/workbench/skills/template-update/SKILL.md, plugins/workbench/skills/template-update/tests/test_template_update_skill.py]
@@ -12,11 +12,13 @@ model: opus
 estimate: ""
 actual: ""
 review: ""
-worktree: ""
-branch: ""
-verified_head: ""
-run: ""
+worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-safety
+branch: template-update-skill-and-in--update-safety
+verified_head: 322a9eed6457410b23d312f78c2f8fc4db7d0b91
+run: template-update-skill-and-in
 provides: []
+acs_for_audit: [AC4]
+process_gaps: []
 ---
 
 # Update safety

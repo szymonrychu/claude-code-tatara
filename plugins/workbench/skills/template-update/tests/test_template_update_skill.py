@@ -45,7 +45,7 @@ def test_flags_exist_in_cli_help():
 
 def test_asks_only_for_unrelated_history_base():
     assert "Ask the user nothing on the normal path" in BODY
-    assert "only question" in BODY
+    assert "only other question" in BODY
     assert "candidate base" in BODY
     assert "mise run init:update -- --base <sha>" in BODY
 
@@ -69,3 +69,13 @@ def test_reports_commit_and_refusals():
 def test_readme_lists_the_skill():
     assert re.search(r"^template-update\s+\S", README, re.M)
     assert "mise run init:update" in README
+
+
+def test_skill_confirms_non_default_url():
+    default = "default template URL"  # described, not spelled out: the personal-term lint
+    section = BODY[BODY.index("## Run") : BODY.index("## Report")]
+    assert default in section
+    assert "confirm" in section
+    assert "refresh and lint scripts" in section
+    for needle in ("git remote set-url template", "template: <url> <branch> <commit>"):
+        assert needle in BODY, needle

@@ -22,6 +22,13 @@ Ask the user nothing on the normal path. Run:
 Add `-- --url <url>` or `-- --branch <branch>` only when the user named a template URL or
 branch (for example `mise run init:update -- --url <url> --branch next`).
 
+Before running with a `--url` other than the default template URL (the one the engine
+uses with no `--url`), show the user that URL and ask them to confirm it: the update runs that template's refresh and lint scripts on this machine before
+it commits. Run only on confirmation.
+
+Every run prints `template: <url> <branch> <commit>` before it merges; that is the source
+actually used.
+
 ## Report
 
 On success, say in a few lines:
@@ -44,12 +51,17 @@ The engine refuses before changing anything, or aborts cleanly. Relay it, do not
   `template/<branch>` by hand, resolve, then `mise run init:refresh`.
 - Lint failure: show the tail of the output and stop.
 - Already up to date: say so; there is no commit.
+- `--url` differs from the existing `template` remote: show both URLs and the engine's
+  `git remote set-url template <url>` line; changing the remote is the user's call.
+- A `--branch` or `--base` value starting with `-`: relay the refusal.
+- Local ignored files the template would overwrite (for example a note in `docs/research`):
+  list them and ask the user to move them aside.
 
 ## Unrelated history
 
 When the workbench shares no history with the template, the engine prints a `candidate base`
-and the rerun line. Show the candidate to the user and ask them to confirm it. This is the
-only question this skill asks. On confirmation, rerun:
+and the rerun line. Show the candidate to the user and ask them to confirm it. Besides the
+non-default `--url` confirmation, this is the only other question this skill asks. On confirmation, rerun:
 
     mise run init:update -- --base <sha>
 

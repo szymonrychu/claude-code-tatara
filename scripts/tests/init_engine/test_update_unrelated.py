@@ -206,7 +206,7 @@ def test_base_exception_drops_replace(workbench, make_copied, tmp_path, at, monk
 
     monkeypatch.setattr(update, "resolve_generated", boom)
     args = argparse.Namespace(
-        root=str(workbench), url="unused", branch="main", lint_command="true", base=shas["c2"]
+        root=str(workbench), url=None, branch="main", lint_command="true", base=shas["c2"]
     )
     with pytest.raises(RuntimeError, match="boom"):
         update.cmd_update(args)

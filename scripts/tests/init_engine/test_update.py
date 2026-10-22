@@ -167,14 +167,6 @@ def test_mise_task_runs_engine_update():
     assert os.access(Path(__file__).resolve().parents[3] / "mise-tasks/init/update", os.X_OK)
 
 
-def test_update_keeps_existing_template_remote(project, run_cli, tmp_path):
-    template_commit(project, tmp_path, {"tooling.txt": "v2\n"})
-    url = sh("remote", "get-url", "template", cwd=project).stdout.strip()
-    r = run_cli("update", "--url", "https://example.invalid/other", *LINT)
-    assert r.returncode == 0, r.stderr
-    assert sh("remote", "get-url", "template", cwd=project).stdout.strip() == url
-
-
 def test_update_conflict_resolves_in_linked_worktree(project, run_cli, tmp_path):
     write(project, "docs/plans/todo/mine.md", "project epic\n")
     sh("add", "-A", cwd=project)
