@@ -1,6 +1,6 @@
 ---
 title: history scan off event loop
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: backward history paging cannot stall the service
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, tests/test_history_backward.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-history-scan-off-event-loop/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-history-scan-off-event-loop
-verified_head: ""
-run: ""
+branch: "HEAD (worktree claude-code-wrapper-orchestr-history-scan-off-event-loop)"
+verified_head: d41dd76a6710d1ffe7121ad1817075acdd6ec3ce
+run: claude-code-wrapper-orchestr
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # history scan off event loop
