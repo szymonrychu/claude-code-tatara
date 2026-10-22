@@ -27,7 +27,7 @@ relative `--path` values resolve against where you ran them. Never call a script
 - Packs to enable: infra, observability, secrets (optional).
 - Harnesses to generate for besides Claude Code: copilot, cursor, codex, gemini,
   antigravity (optional).
-- License: `mit` (and the holder), `none`, or a license file to copy.
+- License: `mit` (and the holder, which defaults to the git author; it is written into the root LICENSE and every plugins/*/LICENSE), `none`, or a license file to copy.
 - Hard rules every component obeys, and the highest-risk surface (optional).
 - A deploy command and a command that verifies it (optional).
 

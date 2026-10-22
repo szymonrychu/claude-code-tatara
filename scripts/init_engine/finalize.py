@@ -162,23 +162,33 @@ def default_holder(root: Path) -> str:
 
 
 def license_file(root: Path, opts: Options, first: bool) -> None:
-    target = root / "LICENSE"
+    """Rewrite the root LICENSE and every plugins/*/LICENSE with one holder.
+
+    --license none removes only the root LICENSE; plugin licenses stay and are rewritten.
+    """
+    root_license = root / "LICENSE"
+    plugin_licenses = sorted((root / "plugins").glob("*/LICENSE"))
     if opts.license_file:
-        shutil.copyfile(opts.license_file, target)
-    elif opts.license == "none":
-        target.unlink(missing_ok=True)
-    elif opts.license == "mit" or (first and opts.license is None):
+        for target in (root_license, *plugin_licenses):
+            shutil.copyfile(opts.license_file, target)
+        return
+    if opts.license == "none":
+        root_license.unlink(missing_ok=True)
+    elif opts.license == "mit" and not root_license.is_file():
+        raise Refusal("LICENSE is missing; cannot keep MIT")
+    if opts.license == "mit" or (first and opts.license in (None, "none")):
         holder = opts.license_holder or default_holder(root)
-        if not target.is_file():
-            raise Refusal("LICENSE is missing; cannot keep MIT")
-        text = re.sub(
-            r"^Copyright \(c\) .*$",
-            f"Copyright (c) {date.today().year} {holder}",
-            target.read_text(),
-            count=1,
-            flags=re.MULTILINE,
-        )
-        target.write_text(text)
+        for target in (root_license, *plugin_licenses):
+            if target.is_file():
+                target.write_text(
+                    re.sub(
+                        r"^Copyright \(c\) .*$",
+                        f"Copyright (c) {date.today().year} {holder}",
+                        target.read_text(),
+                        count=1,
+                        flags=re.MULTILINE,
+                    )
+                )
 
 
 def collision_override(root: Path, opts: Options, market: str) -> None:
