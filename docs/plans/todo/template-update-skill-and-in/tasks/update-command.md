@@ -33,12 +33,6 @@ Add the engine command `update` and the mise task `init:update` for the clean, s
 - Commit with `git add -A` and `git commit`: subject `chore(workbench): template update <12-char sha>`, body trailer `Template-Commit: <full sha>`; HEAD^2 is the template commit; `git status --porcelain` is empty afterwards. Print the commit line.
 - Lint gate (design D7): after the refresh and before the commit, run the lint command (default `mise run lint`; hidden `--lint-command <cmd>` on `update`, help suppressed like `--user-settings`, run through the shell from the workbench root); commit only on exit 0. Conflict handling beyond owned paths and the failure-abort paths are update-conflicts-and-abort's; this task refuses (exit 1) on a non-zero lint or refresh after `git merge --abort`.
 
-Interfaces: `update.update(root: Path, url: str | None, branch: str) -> int`; exit codes 0 ok or up to date, 1 refusal, 2 usage. `gitops.DEFAULT_TEMPLATE_URL`. These are the `init-update-command` contract consumed by later tasks.
-
-Steps: write `scripts/tests/init_engine/test_update.py` first. Fixture: add `upstream_pair` to `scripts/tests/init_engine/conftest.py` (later update tests reuse it): take the `workbench` fixture, `git init` and commit it as the template, clone it to `<tmp>/upstream`, run `new` in the workbench, then change upstream (a plugin file, a new epic under `docs/plans/done/x/README.md`, a MEMORY.md line, a modified `docs/plans/contracts.json`, a force-added `docs/research/b.md`) and commit. Run `pytest scripts/tests/init_engine/test_update.py -q`; expect failures on the missing subcommand. Implement until green.
-
-Notes: the default-URL test maps the default URL to the local upstream with `GIT_CONFIG_COUNT`/`url.<upstream>.insteadOf=https://github.com/szymonrychu/workbench`, so no network is used. The unit fixture stubs `scripts/harness/setup.py`, so refresh runs offline. Unit tests pass `--lint-command true`; the e2e test exercises the real `mise run lint`. Retirement assertions use `git ls-files`.
-
 ## Acceptance conditions
 
 - AC1: update refuses an uninitialised workbench with exit 1 and changes nothing [evidence: test:scripts/tests/init_engine/test_update.py::test_update_refuses_uninitialised]
@@ -62,17 +56,16 @@ Notes: the default-URL test maps the default URL to the local upstream with `GIT
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`update.update(root: Path, url: str | None, branch: str) -> int`; exit codes 0 ok or up to date, 1 refusal, 2 usage. `gitops.DEFAULT_TEMPLATE_URL`. These are the `init-update-command` contract consumed by later tasks.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run init:update` in a clean, initialised project with shared template history ends in one merge commit `chore(workbench): template update <sha>` that carries the template's tooling and none of its owned docs; refusals change nothing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Write `scripts/tests/init_engine/test_update.py` first. Fixture: add `upstream_pair` to `scripts/tests/init_engine/conftest.py` (later update tests reuse it): take the `workbench` fixture, `git init` and commit it as the template, clone it to `<tmp>/upstream`, run `new` in the workbench, then change upstream (a plugin file, a new epic under `docs/plans/done/x/README.md`, a MEMORY.md line, a modified `docs/plans/contracts.json`, a force-added `docs/research/b.md`) and commit. Run `pytest scripts/tests/init_engine/test_update.py -q`; expect failures on the missing subcommand. Implement until green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The default-URL test maps the default URL to the local upstream with `GIT_CONFIG_COUNT`/`url.<upstream>.insteadOf=https://github.com/szymonrychu/workbench`, so no network is used. The unit fixture stubs `scripts/harness/setup.py`, so refresh runs offline. Unit tests pass `--lint-command true`; the e2e test exercises the real `mise run lint`. Retirement assertions use `git ls-files`.

@@ -30,12 +30,6 @@ Move the instance-owned path list into one module and make init's template-histo
 - Behaviour stays first-init only (`finalize.py` `if first:`); a rerun keeps the project's epics and research (existing `test_rerun_keeps_epics_and_research` stays green).
 - `.gitignore` gets no new docs/plans entry (user decision A1).
 
-Interfaces: `owned.INSTANCE_OWNED: tuple[tuple[str, str], ...]`, `owned.GENERATED_ON_CONFLICT: tuple[str, ...]` (config-dir entries marked so the caller can resolve them; builder's choice of representation). `finalize.clear_template_history(root: Path) -> None` keeps its signature.
-
-Steps: test first in `scripts/tests/init_engine/test_finalize.py`: seed tracked `docs/plans/contracts.json`, `docs/plans/index.json`, an epic under each phase, `docs/research/brief.md`, `docs/handoffs/h.md` and a template MEMORY.md entry, commit them, run `new`, then assert `git ls-files docs/plans` is exactly the three `.gitkeep` files and `git ls-files docs/research docs/handoffs` is empty. Run `pytest scripts/tests/init_engine/test_finalize.py -q`; expect the contracts.json assertion to fail first. Then implement.
-
-Notes: the unit `workbench` fixture (`scripts/tests/init_engine/conftest.py`) has no git history; `init(run_cli, ...)` in test_finalize.py creates it. Retirement assertions use `git ls-files`, never the filesystem. The single-source test monkeypatches `owned.INSTANCE_OWNED` (import `owned` and `finalize` with `scripts/init_engine` on sys.path, as cli.py does) and calls `clear_template_history` directly on a temp dir.
-
 ## Acceptance conditions
 
 - AC1: after init, git ls-files docs/plans lists only the three phase .gitkeep files and docs/research and docs/handoffs track nothing, with contracts.json and index.json seeded beforehand [evidence: test:scripts/tests/init_engine/test_finalize.py::test_init_tracks_only_plan_gitkeeps]
@@ -53,17 +47,16 @@ Notes: the unit `workbench` fixture (`scripts/tests/init_engine/conftest.py`) ha
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+`owned.INSTANCE_OWNED: tuple[tuple[str, str], ...]`, `owned.GENERATED_ON_CONFLICT: tuple[str, ...]` (config-dir entries marked so the caller can resolve them; builder's choice of representation). `finalize.clear_template_history(root: Path) -> None` keeps its signature.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A freshly initialised workbench tracks no template doc under docs/plans, docs/research or docs/handoffs, and `scripts/init_engine/owned.py` is the only place those paths are named.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Test first in `scripts/tests/init_engine/test_finalize.py`: seed tracked `docs/plans/contracts.json`, `docs/plans/index.json`, an epic under each phase, `docs/research/brief.md`, `docs/handoffs/h.md` and a template MEMORY.md entry, commit them, run `new`, then assert `git ls-files docs/plans` is exactly the three `.gitkeep` files and `git ls-files docs/research docs/handoffs` is empty. Run `pytest scripts/tests/init_engine/test_finalize.py -q`; expect the contracts.json assertion to fail first. Then implement.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The unit `workbench` fixture (`scripts/tests/init_engine/conftest.py`) has no git history; `init(run_cli, ...)` in test_finalize.py creates it. Retirement assertions use `git ls-files`, never the filesystem. The single-source test monkeypatches `owned.INSTANCE_OWNED` (import `owned` and `finalize` with `scripts/init_engine` on sys.path, as cli.py does) and calls `clear_template_history` directly on a temp dir.

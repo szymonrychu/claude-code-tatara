@@ -34,12 +34,6 @@ Replace the manual-merge e2e with an end-to-end run of `mise run init:update` on
   - exactly one new commit, subject `chore(workbench): template update <sha>`, `git status --porcelain` empty;
   - `scripts/doctor.py` reports `metarepo` and `components: 1`, and `mise run lint` exits 0.
 
-Interfaces: uses the `init-update-command` contract through `mise run init:update` only.
-
-Steps: write the two tests; run `pytest scripts/tests/e2e/test_template_update.py -q`. The engine tasks have landed, so the tests may pass at once: say so in `tests.note` (they pin delivered behaviour end to end); if they fail, the failure is a real gap in the engine and gets fixed in update.py within this task.
-
-Notes: fixtures `template`, `engine`, `mise` in `scripts/tests/e2e/conftest.py` and `helpers.git/run`. The engine's lint gate runs the real `mise run lint` inside the project here, which is the "lint green" proof. Retirement assertions use `git ls-files`.
-
 ## Acceptance conditions
 
 - AC1: after init on the real template copy, git ls-files shows only the three plan .gitkeep files and no research or handoffs, and MEMORY.md is fresh [evidence: test:scripts/tests/e2e/test_template_update.py::test_init_leaves_no_template_docs]
@@ -54,17 +48,16 @@ Notes: fixtures `template`, `engine`, `mise` in `scripts/tests/e2e/conftest.py` 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses the `init-update-command` contract through `mise run init:update` only.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The e2e suite proves init cleanup on the real template tree and a full `mise run init:update` round trip with real lint, replacing the manual-merge test.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Write the two tests; run `pytest scripts/tests/e2e/test_template_update.py -q`. The engine tasks have landed, so the tests may pass at once: say so in `tests.note` (they pin delivered behaviour end to end); if they fail, the failure is a real gap in the engine and gets fixed in update.py within this task.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Fixtures `template`, `engine`, `mise` in `scripts/tests/e2e/conftest.py` and `helpers.git/run`. The engine's lint gate runs the real `mise run lint` inside the project here, which is the "lint green" proof. Retirement assertions use `git ls-files`.

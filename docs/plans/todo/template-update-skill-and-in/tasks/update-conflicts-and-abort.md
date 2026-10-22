@@ -32,12 +32,6 @@ Handle conflicts, the lint gate and every abort path of `update` (design D4, D7)
 - Lint failure (gate added by update-command): abort exactly as above, print the last 20 lines of lint output, exit 1.
 - A failing refresh subprocess aborts the same way.
 
-Interfaces: uses `owned.GENERATED_ON_CONFLICT` and the `init-update-command` contract (including the hidden `--lint-command`).
-
-Steps: write `scripts/tests/init_engine/test_update_conflicts.py` first, reusing the `upstream_pair` fixture from `scripts/tests/init_engine/conftest.py`. Conflict cases: upstream and project edit the same line of AGENTS.md's project block region; upstream adds `enabledPlugins["workbench-new@workbench-template"]`; upstream and project edit the same line of a plain tracked file (for example `docs/enterprise.md`). Run `pytest scripts/tests/init_engine/test_update_conflicts.py -q`; expect red. Implement until green, then rerun test_update.py.
-
-Notes: the abort may remove untracked files safely only because the preflight refused any untracked state; keep that invariant explicit in a comment. Assert state with `git rev-parse HEAD`, `git status --porcelain` and `git rev-parse -q --verify MERGE_HEAD`.
-
 ## Acceptance conditions
 
 - AC1: a conflict in AGENTS.md resolves to the project side, the project answers survive, and the output names kept project side: AGENTS.md [evidence: test:scripts/tests/init_engine/test_update_conflicts.py::test_generated_conflict_keeps_project_side]
@@ -55,17 +49,16 @@ Notes: the abort may remove untracked files safely only because the preflight re
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses `owned.GENERATED_ON_CONFLICT` and the `init-update-command` contract (including the hidden `--lint-command`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Conflicts in generated files resolve to the project side and are named in the output; any other conflict, a red lint or a failed refresh leaves HEAD, index, worktree and MERGE_HEAD exactly as before the run.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Write `scripts/tests/init_engine/test_update_conflicts.py` first, reusing the `upstream_pair` fixture from `scripts/tests/init_engine/conftest.py`. Conflict cases: upstream and project edit the same line of AGENTS.md's project block region; upstream adds `enabledPlugins["workbench-new@workbench-template"]`; upstream and project edit the same line of a plain tracked file (for example `docs/enterprise.md`). Run `pytest scripts/tests/init_engine/test_update_conflicts.py -q`; expect red. Implement until green, then rerun test_update.py.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The abort may remove untracked files safely only because the preflight refused any untracked state; keep that invariant explicit in a comment. Assert state with `git rev-parse HEAD`, `git status --porcelain` and `git rev-parse -q --verify MERGE_HEAD`.

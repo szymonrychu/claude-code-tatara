@@ -30,12 +30,6 @@ Support projects with no shared history with the template (design D5).
 - The resulting commit's second parent is the real template commit, so the next update with a newer template commit needs no `--base`.
 - `--base` given when a merge base already exists: ignore it with one stdout note `--base ignored: history is shared`.
 
-Interfaces: adds `--base` to the `init-update-command` contract (`cli.py update --base <sha>`).
-
-Steps: write `scripts/tests/init_engine/test_update_unrelated.py` first. Fixture: build the upstream as `upstream_pair` does, then make the project by copying the upstream tree without `.git` (the README "copy it into a new directory" route) and running `new`. Run `pytest scripts/tests/init_engine/test_update_unrelated.py -q`; expect red. Implement until green.
-
-Notes: `git replace --graft` is honoured by `git merge-base` and `git merge` by default; never set `GIT_NO_REPLACE_OBJECTS`. Clean-state assertions use `git rev-parse HEAD`, `git status --porcelain`, `git replace -l`.
-
 ## Acceptance conditions
 
 - AC1: with no shared history and no --base, update exits 1, changes nothing and prints the candidate base and the --base rerun line [evidence: test:scripts/tests/init_engine/test_update_unrelated.py::test_unrelated_history_refused_with_candidate]
@@ -52,17 +46,16 @@ Notes: `git replace --graft` is honoured by `git merge-base` and `git merge` by 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Adds `--base` to the `init-update-command` contract (`cli.py update --base <sha>`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A project copied from the template without history gets a refusal naming the candidate base; with `--base` it takes the update in one merge commit, no replace ref remains, and later updates need no flag.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Write `scripts/tests/init_engine/test_update_unrelated.py` first. Fixture: build the upstream as `upstream_pair` does, then make the project by copying the upstream tree without `.git` (the README "copy it into a new directory" route) and running `new`. Run `pytest scripts/tests/init_engine/test_update_unrelated.py -q`; expect red. Implement until green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+`git replace --graft` is honoured by `git merge-base` and `git merge` by default; never set `GIT_NO_REPLACE_OBJECTS`. Clean-state assertions use `git rev-parse HEAD`, `git status --porcelain`, `git replace -l`.

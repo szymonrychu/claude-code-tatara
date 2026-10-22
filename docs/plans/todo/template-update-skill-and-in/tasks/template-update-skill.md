@@ -31,12 +31,6 @@ Add the `template-update` skill (design D8, D5).
 - Unrelated history: show the candidate base the engine printed, ask the user to confirm it (the only question), then rerun `mise run init:update -- --base <sha>`.
 - `plugins/workbench/README.md` Skills list gains a `template-update` line, and the paragraph after it mentions that it wraps `mise run init:update`.
 
-Interfaces: uses the `init-update-command` contract: `update` flags `--url`, `--branch`, `--base`.
-
-Steps: write `plugins/workbench/skills/template-update/tests/test_template_update_skill.py` first, mirroring `plugins/workbench/skills/init/tests/test_init_skills.py`: frontmatter shape, no `cli.py`/`init_engine`/`CLAUDE_PLUGIN_ROOT` in the body, every `--flag` on a `mise run init:update -- ...` line exists in `cli.py update --help`, the base question is the only question, the report names commit, sha and `kept project side`, and the body says it never pushes. Run `cd plugins/workbench && bash scripts/run-tests.sh --only template-update`; expect red (no SKILL.md). Write the skill and the README line until green.
-
-Notes: `ROOT` for the CLI path is `Path(__file__).resolve().parents[4]` from the skill tests dir (check against init's test, which uses `SKILLS.parents[2]`). The plugin README test is `plugins/workbench/skills/start-development/tests/test_release.py::test_readme_documents_the_template`.
-
 ## Acceptance conditions
 
 - AC1: SKILL.md frontmatter is name template-update with a folded description [evidence: test:plugins/workbench/skills/template-update/tests/test_template_update_skill.py::test_frontmatter]
@@ -55,17 +49,16 @@ Notes: `ROOT` for the CLI path is `Path(__file__).resolve().parents[4]` from the
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses the `init-update-command` contract: `update` flags `--url`, `--branch`, `--base`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`workbench:template-update` exists, is listed in the plugin README, runs only `mise run init:update`, asks at most the unrelated-history base question and reports the commit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+Write `plugins/workbench/skills/template-update/tests/test_template_update_skill.py` first, mirroring `plugins/workbench/skills/init/tests/test_init_skills.py`: frontmatter shape, no `cli.py`/`init_engine`/`CLAUDE_PLUGIN_ROOT` in the body, every `--flag` on a `mise run init:update -- ...` line exists in `cli.py update --help`, the base question is the only question, the report names commit, sha and `kept project side`, and the body says it never pushes. Run `cd plugins/workbench && bash scripts/run-tests.sh --only template-update`; expect red (no SKILL.md). Write the skill and the README line until green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Resolve the CLI path as init's test does: `SKILLS = Path(__file__).resolve().parents[2]`, `ROOT = SKILLS.parents[2]`, `CLI = ROOT / "scripts" / "init_engine" / "cli.py"`. The plugin README test is `plugins/workbench/skills/start-development/tests/test_release.py::test_readme_documents_the_template`.

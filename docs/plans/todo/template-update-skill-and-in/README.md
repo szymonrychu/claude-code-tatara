@@ -36,7 +36,7 @@ The template repo (this workbench) carries its own development docs: epic plans 
 
 ## Time
 
-Derived by `ticket.py tasks` and `apply-run` from the task `estimate` and `actual` fields; never edit by hand. Report only, never a budget.
+Estimate: 53 min | Actual: 0 min | Remaining estimate: 53 min
 
 ## Review
 

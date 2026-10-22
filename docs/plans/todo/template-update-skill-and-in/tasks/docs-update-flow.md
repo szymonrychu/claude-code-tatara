@@ -29,10 +29,6 @@ Point the docs at the new flow (design D9).
 - README.md `## What init does`: one bullet saying init removes the template's own docs (plans, records, contracts, research, handoffs) and starts MEMORY.md and ROADMAP.md fresh.
 - Root MEMORY.md: one dated entry (2026-10-22 or the landing date) headed `template update` recording D3 (git merge with owned-path restore over a copier-style sync, and why), D5 (graft for unrelated histories), D6 (merge commit as the record), D7 (lint inside the engine), and that `scripts/init_engine/owned.py` is the one owned-path list.
 
-Docs only: the TDD exception "a comment or doc edit" applies; say so in `tests.note`.
-
-Notes: README.md must keep passing the personal-reference lint (`python3 scripts/check_personal.py`); the template URL is already allowed there. MEMORY.md is also edited by flow-speed-and-token-optimiz/cache-prefix-change; append a separate entry, never rewrite others.
-
 ## Acceptance conditions
 
 - AC1: README.md has the Pulling template updates section [evidence: doc-section:README.md#Pulling template updates]
@@ -48,17 +44,19 @@ Notes: README.md must keep passing the personal-reference lint (`python3 scripts
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+None beyond the files listed; no public signature changes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+README.md tells users to run the template-update skill (or `mise run init:update`) and what it keeps out; MEMORY.md records the mechanism decision.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Doc edit only (TDD exception: a comment or doc edit); say so in `tests.note`.
+- Rewrite README.md `## Pulling template updates` and add the `## What init does` bullet.
+- Append the MEMORY.md entry.
+- Run `python3 scripts/check_personal.py && grep -q init:update README.md`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+README.md must keep passing the personal-reference lint (`python3 scripts/check_personal.py`); the template URL is already allowed there. MEMORY.md is also edited by flow-speed-and-token-optimiz/cache-prefix-change; append a separate entry, never rewrite others.
