@@ -1,6 +1,6 @@
 ---
 title: contract test 5xx mapping
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the full suite is green with the approved 5xx mapping
 files: [tests/test_fake_wrapper_contract.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-contract-test-5xx-mapping/agent-orchestrator
 branch: agent-orchestrator-contract-test-5xx-mapping
-verified_head: ""
-run: ""
+verified_head: 54bd9178ff979d70b3f52fa7fc47e1595f8656a5
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # contract test 5xx mapping
