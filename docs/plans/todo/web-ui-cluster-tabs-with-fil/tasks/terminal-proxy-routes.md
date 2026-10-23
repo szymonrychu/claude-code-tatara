@@ -48,6 +48,7 @@ README: a `###` section per route; `terminal_limit` (409), `terminal_not_found` 
 - AC6: README, openapi.json and schema.d.ts match the app [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 - AC7: terminal contract cases are collected under the integration marker [evidence: command:uv run pytest -q -p no:cacheprovider -m integration --collect-only tests/test_fake_wrapper_contract.py]
 - AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check .]
+- AC9: invalid_size passes through as 422 [evidence: test:tests/test_api_terminals.py::test_invalid_size_passes_through]
 
 ## Files
 
@@ -82,3 +83,6 @@ A headless client can create, list and delete shells on any agent of a cluster t
 - `tests/test_api_files.py` stays in the verify because both tasks edit `api/workspace.py` and `fake_wrapper.py`.
 - The fake's WebSocket route must check the bearer header like the real wrapper (denial 401) so the relay test proves the token is sent.
 - `schema.d.ts` is generated; never hand-edit it.
+- Builder check ruling 3: Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
+
+- 2026-10-23 amended: builder check rulings 3 add acceptance conditions AC9-AC9
