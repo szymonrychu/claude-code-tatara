@@ -1,0 +1,31 @@
+[
+  {
+    "id": "A",
+    "text": "Model and Effort are dropdowns in the cluster form, fed by /meta (models: claude-opus-5-5 default, claude-sonnet-5-5, claude-haiku-5-5, claude-fable-5-1; efforts low..max).",
+    "decisions": [],
+    "tasks": [
+      "meta-form-defaults",
+      "form-dropdowns-and-gauge-tic"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "B",
+    "text": "Every other form field shows its default when not provided, like Max attempts; cpu 500m/4 and memory 1Gi/8Gi are real defaults applied to agent pods.",
+    "decisions": [],
+    "tasks": [
+      "meta-form-defaults",
+      "form-dropdowns-and-gauge-tic"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "C",
+    "text": "The ribbon context gauge's auto-compact tick sits on the ring.",
+    "decisions": [],
+    "tasks": [
+      "form-dropdowns-and-gauge-tic"
+    ],
+    "status": "approved"
+  }
+]

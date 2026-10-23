@@ -32,7 +32,7 @@ User request (2026-10-23): in the cluster form, Model and Effort must be dropdow
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 12 agent-min | Critical path: 12 min | Expected wall at P=1.5: 0.4 h (k=2.0) | Actual: 0 min | Remaining estimate: 12 min
 
 ## Review
 

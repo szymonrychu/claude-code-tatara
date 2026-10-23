@@ -3,7 +3,7 @@ title: form dropdowns and gauge tick
 status: todo
 repo: agent-orchestrator
 value: "the form shows what a cluster will get, and the gauge tick sits on the ring"
-files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/clusters/formModel.ts, frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
+files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
 verify: "cd frontend && npx vitest run src/clusters src/ribbon && npm run lint"
 depends_on: [meta-form-defaults]
 owns: []
@@ -38,7 +38,7 @@ ClusterForm (frontend/src/clusters/ClusterForm.tsx): Model and Effort are select
 
 - `frontend/src/clusters/ClusterForm.tsx`
 - `frontend/src/clusters/ClusterForm.test.tsx`
-- `frontend/src/clusters/formModel.ts`
+- `frontend/src/clusters/clusterSpecForm.ts`
 - `frontend/src/ribbon/ContextGauge.tsx`
 - `frontend/src/ribbon/ContextGauge.test.tsx`
 
@@ -48,9 +48,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
