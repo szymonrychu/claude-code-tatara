@@ -129,6 +129,9 @@ Q9: clicking a file opens a read-only preview in the filesystem panel: text up t
 ### D25: Q10 event-driven refresh, no inotify
 Q10: the tree re-fetches directories touched by the cluster event stream plus a manual refresh button; no inotify. (user decision)
 
+### D26: Q13 add @mui/icons-material
+Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -221,6 +224,7 @@ Q10: the tree re-fetches directories touched by the cluster event stream plus a 
 | D23 Q8 everything, lazy, 2000 entries with more | wrapper-file-api, file-proxy-routes, fe-filesystem-panel |
 | D24 Q9 read-only preview | wrapper-file-api, fe-filesystem-panel |
 | D25 Q10 event-driven refresh, no inotify | fe-filesystem-panel |
+| D26 Q13 add @mui/icons-material | fe-deps-and-storage, fe-top-bar, fe-panel-workspace, fe-filesystem-panel |
 
 ## Contracts
 
