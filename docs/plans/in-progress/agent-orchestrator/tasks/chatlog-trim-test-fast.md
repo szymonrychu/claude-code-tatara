@@ -1,6 +1,6 @@
 ---
 title: chatlog trim test fast
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: frontend CI is green on slow runners
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/ChatLog.test.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-chatlog-trim-test-fast/agent-orchestrator
 branch: agent-orchestrator-chatlog-trim-test-fast
-verified_head: ""
-run: ""
+verified_head: 5c862fc2504154c0de11a0d808f64d0e3338352e
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # chatlog trim test fast
