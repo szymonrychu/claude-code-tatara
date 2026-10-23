@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: proof that a headless client can browse files and run shells on a real wrapper
 files: [tests/test_e2e_workspace.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-websocket-api]
 owns: []
 uses: [wrapper-files-api, wrapper-terminals-api]
 model: ""
-estimate: 32
+estimate: 5
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -41,7 +41,7 @@ Every wait is bounded (the module's own `wait_until` style), so a hang fails wit
 - AC1: files are listed and read and an escape is refused through the real service [evidence: test:tests/test_e2e_workspace.py::test_files_over_real_service]
 - AC2: a terminal runs in the workdir with scrubbed env, resizes, pongs, replays on reattach and is gone after delete [evidence: test:tests/test_e2e_workspace.py::test_terminal_over_real_service]
 - AC3: an unauthenticated upgrade is denied [evidence: test:tests/test_e2e_workspace.py::test_terminal_upgrade_needs_bearer]
-- AC4: the module and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py && mise run lint]
+- AC4: the module and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -49,17 +49,19 @@ Every wait is bounded (the module's own `wait_until` style), so a hang fails wit
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Consumes the parts `wrapper-files-api` and `wrapper-terminals-api` exactly as the README documents them; adds no product code.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A headless client can browse the workdir and run a shell on a real wrapper with nothing but the documented API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_e2e_workspace.py` (config built like `tests/test_e2e_lifecycle.py`, the `websockets` client already locked through `uvicorn[standard]`); run `uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py`.
+- If a test fails because the product deviates from the README, fix the product in its module under this task only when the README is right; otherwise record it as discovered.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Tests never use a real claude; the fake claude bin from `tests/conftest.py` is enough to bring a session up. Do not edit `tests/conftest.py`.
+- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies; CI on main is green); never a verify target.

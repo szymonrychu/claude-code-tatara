@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: "the wrapper can run, share, reap and close login shells in a session workdir with secrets scrubbed"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/config.py, src/claude_code_wrapper/manager.py, README.md, tests/test_terminals.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [pty-resize-and-raw-ring, wrapper-file-api]
 owns: [terminal-registry]
 uses: [pty-resize, ring-raw-snapshot, wrapper-path-confinement]
 model: opus
-estimate: 41
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -50,7 +50,7 @@ Config (`LimitsConfig`, each with a `## Configuration reference` row and its def
 - AC7: the reaper closes a detached terminal after the idle delay and never an attached one [evidence: test:tests/test_terminals.py::test_reaper_respects_attachment]
 - AC8: destroying the session and manager shutdown close its terminals [evidence: test:tests/test_terminals.py::test_closed_on_destroy_and_shutdown]
 - AC9: the config keys are documented with their defaults [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_config.py tests/test_config.py]
-- AC10: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && mise run lint]
+- AC10: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -62,17 +62,26 @@ Config (`LimitsConfig`, each with a `## Configuration reference` row and its def
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.terminals.TerminalRegistry` with `create`, `list`, `get`, `close`, `attach`, `close_all`; `TerminalInfo`, `Attachment` (`queue`, `detach()`, `write()`, `resize()`), errors `TerminalLimit`, `TerminalNotFound` (owns part `terminal-registry`, consumed by terminal-websocket-api).
+- Uses `PtyProcess.resize` and `Ring.raw` (parts `pty-resize`, `ring-raw-snapshot`) and `files.resolve_in_workdir` (part `wrapper-path-confinement`).
+- `LimitsConfig.terminals_max`, `terminal_scrollback_bytes`, `terminal_idle_reap_seconds`, `terminal_max_frame_bytes`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The manager can start, fan out, resize, reap and close login shells in a session workdir, with secrets scrubbed and a hard per-pod cap, ready for the HTTP and WebSocket layer.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_terminals.py` (AC1-AC8). Build a `SessionManager` with a stub or the `world` fixture only if needed; a registry constructed with a fake `workdir_of(session_id)` callable and an explicit `service_env` keeps it fast. Use a tiny reap delay in tests. Run `uv run pytest -q -p no:cacheprovider tests/test_terminals.py`: fails (ImportError).
+- Implement `terminals.py`, the config keys and the manager wiring (destroy and shutdown); rerun: passes.
+- Add the README config rows; run `uv run pytest -q -p no:cacheprovider tests/test_readme_config.py tests/test_config.py`: passes.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Concurrency is the risk: `PtyProcess` has one `on_output` callback, called on the loop; fan out from it with `queue.put_nowait` per subscriber and treat `QueueFull` as overflow. Never await inside the callback.
+- Snapshot and subscribe in the same synchronous block (no await between) so replay and live output join exactly.
+- `CCW_HOOK_TOKEN` is per session and normally absent from `service_env`; scrub it anyway (defence in depth, user Q6; the same uid can still read `/proc`, which the trust model accepts).
+- The shell is a login shell so `/etc/profile.d/mise-shims.sh` puts the mise tools on PATH in the image (Dockerfile:81).
+- Tests run real children: use `/bin/sh` (present everywhere) and short `wait_until` bounds.
+- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies; CI on main is green); never a verify target. Do not edit `tests/conftest.py`.

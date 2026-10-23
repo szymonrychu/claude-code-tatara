@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: clients get interactive shells on an agent pod over an authenticated WebSocket
 files: [src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/api/auth.py, src/claude_code_wrapper/api/app.py, README.md, tests/test_api_terminals.py, tests/test_api_auth.py, tests/test_readme_api.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-registry]
 owns: [wrapper-terminals-api]
 uses: [terminal-registry]
 model: opus
-estimate: 44
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -45,7 +45,7 @@ Expose the terminal registry over HTTP and a WebSocket (design D2, D3), test-fir
 - AC5: an oversized frame closes 1009 and shell exit sends the exit frame then closes 1000 [evidence: test:tests/test_api_terminals.py::test_frame_cap_and_exit]
 - AC6: detach leaves the shell alive and a second attach replays what was printed meanwhile [evidence: test:tests/test_api_terminals.py::test_reattach_replays]
 - AC7: every WebSocket route is documented in the README [evidence: test:tests/test_readme_api.py::test_every_websocket_route_documented]
-- AC8: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py && mise run lint]
+- AC8: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -59,17 +59,23 @@ Expose the terminal registry over HTTP and a WebSocket (design D2, D3), test-fir
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.api.auth.require_auth(conn: HTTPConnection) -> None`.
+- Routes above (owns part `wrapper-terminals-api`, cross-repo contract `wrapper-terminals-api`, consumed by agent-orchestrator tasks terminal-proxy-routes and terminal-ws-relay): body fields, frame protocol and close codes are the contract.
+- Uses `TerminalRegistry` (part `terminal-registry`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A client with the bearer token can create a shell in a session workdir, attach over WebSocket, type, resize, detach and reattach with scrollback, and delete it; every route is in the README.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_api_auth.py::test_websocket_requires_bearer` and `tests/test_api_terminals.py` (Starlette `TestClient.websocket_connect`, a real registry over `tmp_path` and `/bin/sh`), and `tests/test_readme_api.py::test_every_websocket_route_documented`; run `uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py`: new tests fail.
+- Retype `require_auth`, add `api/terminals.py` and register it; write the README sections; rerun: passes.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Probe result from discovery: with `Request` typing, a WebSocket route under `v1` fails with `TypeError: require_auth() missing ... 'request'`; `HTTPConnection` works for both, and an `ApiError` raised during the handshake becomes a denial response.
+- HTTP exception handlers do not apply inside an accepted WebSocket: errors there are close codes or the JSON control frames above.
+- Run the send loop (queue to socket) and the receive loop (socket to PTY) as two tasks; when either ends, cancel the other and detach, so no task leaks per connection.
+- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container; never a verify target.

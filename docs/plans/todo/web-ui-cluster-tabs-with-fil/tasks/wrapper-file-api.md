@@ -4,12 +4,12 @@ status: todo
 repo: claude-code-wrapper
 value: any client can browse and read a session workdir safely over the wrapper API
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/config.py, README.md, tests/test_api_files.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [wrapper-path-confinement, wrapper-files-api]
 uses: []
 model: ""
-estimate: 42
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -50,7 +50,7 @@ README (`code/claude-code-wrapper/README.md`): one `### \`GET /v1/sessions/{id}/
 - AC6: a request without the bearer token is 401, an unknown session or path is 404 [evidence: test:tests/test_api_files.py::test_auth_and_not_found]
 - AC7: README documents both routes, the error codes and the config keys, enforced by the README tests [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py]
 - AC8: the confinement helper exists and is the only path resolver of the file routes [evidence: symbol:src/claude_code_wrapper/files.py::resolve_in_workdir]
-- AC9: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py && mise run lint]
+- AC9: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -63,17 +63,25 @@ README (`code/claude-code-wrapper/README.md`): one `### \`GET /v1/sessions/{id}/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.files.resolve_in_workdir(workdir: str, rel: str) -> pathlib.Path` (owns part `wrapper-path-confinement`), plus listing and reading helpers in the same module.
+- Routes `GET /v1/sessions/{id}/files` and `GET /v1/sessions/{id}/files/content` (owns part `wrapper-files-api`, cross-repo contract `wrapper-files-api`, consumed by agent-orchestrator task file-proxy-routes): field names above are the contract.
+- `LimitsConfig.files_max_entries`, `LimitsConfig.file_preview_max_bytes`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -H 'Authorization: Bearer ...' http://pod:8080/v1/sessions/<id>/files` lists the workdir; `.../files/content?path=README.md` returns its text; nothing outside the workdir is ever readable.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_api_files.py` with a stub manager (pattern of `tests/test_api_auth.py`: `TestClient` plus a stub whose `get(sid)` returns `{"workdir": str(tmp_path / "wd")}`), covering AC1-AC6; run `uv run pytest -q -p no:cacheprovider tests/test_api_files.py`: fails (404 routes).
+- Implement `files.py`, `api/files.py`, register the router in `api/app.py`, add the config keys; rerun: passes.
+- Update the README sections; run `uv run pytest -q -p no:cacheprovider tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py`: passes.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Confinement precedent: `workdir.py:safe_write_files` (realpath root, `is_relative_to`). Do not move or change it; the new helper is read-side.
+- Read with a bounded read (`size` from `os.stat` first; never `read()` an unbounded file); do the blocking filesystem work in `asyncio.to_thread` so a slow CephFS stat does not stall the loop.
+- `mtime` as UTC ISO-8601 with milliseconds, like other wrapper timestamps.
+- Wrapper rules: plain ASCII, `uv run` always, never write service files into a session workdir (tests create their own fixture files in `tmp_path`).
+- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies); not a verify target.
