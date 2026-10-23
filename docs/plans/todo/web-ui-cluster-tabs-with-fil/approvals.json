@@ -111,5 +111,16 @@
       "fe-retire-ribbon"
     ],
     "status": "approved"
+  },
+  {
+    "id": "D",
+    "text": "Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents strip in the chat panel header, merged with the agent filter chips.",
+    "decisions": [
+      "D17"
+    ],
+    "tasks": [
+      "fe-agents-strip"
+    ],
+    "status": "approved"
   }
 ]

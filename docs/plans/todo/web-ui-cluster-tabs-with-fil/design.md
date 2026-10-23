@@ -102,6 +102,9 @@ Q11: a minimized panel is a narrow vertical strip with the panel name and a rest
 ### D16: Q12 phone three-way switch
 Q12: on a phone one panel is shown at a time with a three-way switch; the cluster tabs scroll. (user decision)
 
+### D17: Q2 agents strip in the chat header
+Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents strip in the chat panel header, merged with the agent filter chips. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -185,6 +188,7 @@ Q12: on a phone one panel is shown at a time with a three-way switch; the cluste
 | D14 Q14 hamburger menu with sessions and settings | fe-top-bar, fe-retire-ribbon |
 | D15 Q11 minimized strip and separator reset | fe-panel-workspace |
 | D16 Q12 phone three-way switch | fe-panel-workspace |
+| D17 Q2 agents strip in the chat header | fe-agents-strip |
 
 ## Contracts
 
