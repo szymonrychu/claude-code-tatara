@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-discard-hook-and-export/agent-orchestrator
+branch: agent-orchestrator-discard-hook-and-export
 verified_head: ""
 run: ""
 provides: []

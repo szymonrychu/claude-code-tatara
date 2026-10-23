@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-k8s-object-renderer/agent-orchestrator
+branch: agent-orchestrator-k8s-object-renderer
 verified_head: ""
 run: ""
 provides: []

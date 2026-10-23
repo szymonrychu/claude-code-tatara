@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-scaffold-repo-and-cli/agent-orchestrator
+branch: agent-orchestrator-scaffold-repo-and-cli
 verified_head: ""
 run: ""
 provides: []

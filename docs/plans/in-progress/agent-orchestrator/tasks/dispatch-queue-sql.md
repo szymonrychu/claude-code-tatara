@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-dispatch-queue-sql/agent-orchestrator
+branch: agent-orchestrator-dispatch-queue-sql
 verified_head: ""
 run: ""
 provides: []

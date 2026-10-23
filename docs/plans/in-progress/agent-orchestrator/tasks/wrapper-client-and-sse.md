@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-wrapper-client-and-sse/agent-orchestrator
+branch: agent-orchestrator-wrapper-client-and-sse
 verified_head: ""
 run: ""
 provides: []
