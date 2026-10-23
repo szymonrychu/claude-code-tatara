@@ -1,6 +1,6 @@
 ---
 title: readme api and openapi
-status: done
+status: escalated
 repo: agent-orchestrator
 value: "A documented, versioned contract for tatara, magic-trainer and the UI, enforced by a parity test and an OpenAPI drift check."
 files: [README.md, MEMORY.md, ROADMAP.md, openapi.json, src/agent_orchestrator/api/openapi.py, tests/test_readme_api.py]
