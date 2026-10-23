@@ -45,7 +45,7 @@ Create the repo skeleton of code/agents-helmfile (public GitHub origin szymonryc
 - AC3: no tracked file holds a plaintext secret pattern [evidence: command:uv run pytest tests/test_repo_hygiene.py -q -k no_plaintext_secrets]
 - AC4: gitleaks finds nothing in the tree [evidence: command:uv run pytest tests/test_repo_hygiene.py -q -k gitleaks_clean]
 - AC5: mise defines the lint and test tasks and loads .env [evidence: command:mise tasks ls | grep -q '^lint' && mise tasks ls | grep -q '^test' && grep -q '\.env' mise.toml]
-- AC6: .env exists locally with mode 600 and is untracked [evidence: command:test -f .env && test "$(stat -f %Lp .env 2>/dev/null || stat -c %a .env)" = 600 && ! git ls-files --error-unmatch .env 2>/dev/null]
+- AC6: no .env is created or tracked; .env stays git-ignored for local overrides (user decision 2026-10-23) [evidence: command:! git ls-files --error-unmatch .env 2>/dev/null && git check-ignore -q .env]
 - AC7: lint passes [evidence: command:mise run lint]
 
 ## Files

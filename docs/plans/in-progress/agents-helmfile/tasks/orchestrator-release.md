@@ -71,6 +71,8 @@ Consumes contracts agent-orchestrator-chart, agent-orchestrator-settings-env, ag
 
 ## Notes
 
+Orchestrator ruling 2026-10-23: the source-range annotations are rendered by the chart from ingress.allowSourceRanges / ingress.denySourceRanges (verified with helmfile template: whitelist-source-range 192.168.1.0/24, denylist-source-range the five node IPs); the values must not set the annotations by hand.
+
 Ingress precedent: ~/Documents/infrastructure/code/helmfile helmfiles/coding/values/argo-workflows/common.yaml:137-152. The settings contract names the exact ORCH_* variables; the image tags come from the agent-orchestrator CI. Pin versions and tags, never `latest`.
 
 - 2026-10-23 run agents-helmfile: dependency-failed on db-release

@@ -9,7 +9,8 @@
       "scaffold-repo",
       "helmfile-base",
       "mise-tasks",
-      "hook-missing-namespace"
+      "hook-missing-namespace",
+      "apply-guard-and-hygiene"
     ],
     "status": "approved"
   },

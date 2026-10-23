@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: apply can only ever hit the homelab cluster and nothing sensitive gets committed or traced
 files: [mise.toml, .gitignore, .hook.sh, tests/test_mise_tasks.py, tests/test_repo_hygiene.py, tests/test_helmfile_base.py]
 verify: "uv run pytest tests/test_mise_tasks.py tests/test_repo_hygiene.py tests/test_helmfile_base.py -q -p no:cacheprovider && mise run lint"
-depends_on: []
+depends_on: [helmfile-base, hook-missing-namespace, mise-tasks, scaffold-repo, smoke-script]
 owns: []
 uses: []
 model: ""
@@ -49,9 +49,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The security findings are closed and pinned by tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing tests; run red.
+- Implement; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
