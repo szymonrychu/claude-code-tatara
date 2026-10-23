@@ -81,6 +81,9 @@ Q1: the slug is optional; it defaults to <preset name DNS-1123 form>-<4 random l
 ### D12: Q2 raw spec kept, exactly one of spec or preset_id
 Q2: POST /api/v1/clusters keeps accepting a raw spec for headless callers; exactly one of spec or preset_id (2026-10-23) (user decision)
 
+### D13: Q3 snapshot at create
+Q3: a cluster keeps the spec snapshotted at create; preset edits and deletes do not touch it (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -133,6 +136,7 @@ Q2: POST /api/v1/clusters keeps accepting a raw spec for headless callers; exact
 | D10 Headless parity | preset-routes, create-cluster-from-preset, kind-e2e-presets |
 | D11 Q1 optional generated slug | slug-from-name, create-cluster-from-preset, fe-new-cluster-dialog |
 | D12 Q2 raw spec kept, exactly one of spec or preset_id | create-cluster-from-preset |
+| D13 Q3 snapshot at create | create-cluster-from-preset, kind-e2e-presets |
 
 ## Contracts
 
