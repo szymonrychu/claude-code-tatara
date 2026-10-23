@@ -1,0 +1,8 @@
+[
+  {
+    "task": "readme-api-and-openapi",
+    "accept": true,
+    "reason": "gate-repeat on a parking-wording false positive: ROADMAP.md:5 describes the bench experiment the epic delivers (bench-cli task), it defers nothing; verified true.",
+    "at": "2026-10-23T01:28:05Z"
+  }
+]

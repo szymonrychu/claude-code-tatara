@@ -1,6 +1,6 @@
 ---
 title: readme api and openapi
-status: escalated
+status: done
 repo: agent-orchestrator
 value: "A documented, versioned contract for tatara, magic-trainer and the UI, enforced by a parity test and an OpenAPI drift check."
 files: [README.md, MEMORY.md, ROADMAP.md, openapi.json, src/agent_orchestrator/api/openapi.py, tests/test_readme_api.py]
@@ -78,6 +78,10 @@ README is the spec, kept in parity with the code, and `openapi.json` is the sour
 - Write tests/test_readme_api.py with the five named tests; run it; expect failures.
 - Write openapi.py, export openapi.json, and write the README sections, MEMORY.md and ROADMAP.md.
 - Rerun `uv run pytest tests/test_readme_api.py -q`; expect `5 passed`; run `mise run lint`.
+
+## Ruling
+
+- 2026-10-23 accepted: gate-repeat on a parking-wording false positive: ROADMAP.md:5 describes the bench experiment the epic delivers (bench-cli task), it defers nothing; verified true.
 
 ## Notes
 
