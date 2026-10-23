@@ -38,7 +38,7 @@ agent-orchestrator: microservice web UI and headless API for orchestrating Kuber
 
 ## Time
 
-Estimate: 284 agent-min | Critical path: 82 min | Expected wall at P=1.5: 6.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 5 min
+Estimate: 284 agent-min | Critical path: 82 min | Expected wall at P=1.5: 6.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 0 min
 
 ## Review
 
