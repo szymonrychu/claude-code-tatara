@@ -1,6 +1,6 @@
 ---
 title: db secret name from cnpg
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the orchestrator connects to the database CNPG actually created
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-secret-name-from-cnpg/agents-helmfile
+branch: agents-helmfile-db-secret-name-from-cnpg
 verified_head: ""
 run: ""
 provides: []
