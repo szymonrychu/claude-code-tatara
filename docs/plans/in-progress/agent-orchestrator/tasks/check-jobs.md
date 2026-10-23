@@ -1,6 +1,6 @@
 ---
 title: check jobs
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Runs verification commands against a cluster's shared workspace, which is how the bench scores correctness."
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]

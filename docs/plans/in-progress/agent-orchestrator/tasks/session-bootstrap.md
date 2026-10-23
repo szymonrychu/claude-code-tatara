@@ -1,6 +1,6 @@
 ---
 title: session bootstrap
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "Every ready agent pod gets exactly one wrapper session, adopted after a restart instead of duplicated."
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-session-bootstrap/agent-orchestrator
 branch: agent-orchestrator-session-bootstrap
-verified_head: ""
+verified_head: e91ee1a751870066e3dd2ca3ba63b690153b96b4
 run: agent-orchestrator
 provides: []
 acs_for_audit: []
