@@ -3,7 +3,7 @@ title: origin allowlist
 status: todo
 repo: agent-orchestrator
 value: no web page from another origin can open a shell through a LAN browser
-files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/origin.py, src/agent_orchestrator/api/app.py, README.md, e2e/values-kind.yaml, tests/test_origin.py]
+files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/origin.py, src/agent_orchestrator/api/app.py, README.md, chart/agent-orchestrator/README.md, e2e/values-kind.yaml, tests/test_origin.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [origin-allowlist]
@@ -43,6 +43,7 @@ Add the mandatory Origin allowlist to the orchestrator api (design D5, user Q7),
 - AC5: the setting is documented in the README Configuration table [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_settings.py]
 - AC6: README Security and Ingress describe the Origin rule and the WebSocket timeouts [evidence: doc-section:README.md#Ingress]
 - AC7: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check .]
+- AC8: the orchestrator README and the chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example [evidence: test:tests/test_origin.py::test_readmes_document_dev_origin]
 
 ## Files
 
@@ -74,3 +75,6 @@ A browser page from another origin can no longer open any WebSocket on the api; 
 - Pattern: `api/allowlist.py:SourceAllowlist` (pure ASGI over `http` and `websocket`, closes 1008 before accept) and the `CsvList` plus `_split` validator in `settings.py`.
 - do-not-build: no chart template change (values `env:` already reaches every component's ConfigMap) and no new peer allowlist.
 - No route in the app is a WebSocket yet; the middleware test needs no real WebSocket route.
+- Builder check ruling 10: Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin. The chart README is chart/agent-orchestrator/README.md (create it if absent; it is now in files).
+
+- 2026-10-23 amended: builder check rulings 10 add acceptance conditions AC8-AC8
