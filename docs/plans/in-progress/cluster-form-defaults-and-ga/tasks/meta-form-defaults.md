@@ -1,6 +1,6 @@
 ---
 title: meta form defaults
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the form and the pods agree on one set of defaults
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-meta-form-defaults/agent-orchestrator
 branch: cluster-form-defaults-and-ga-meta-form-defaults
-verified_head: ""
-run: ""
+verified_head: 9b0efb6c24775830a06976d9277c367ac511df31
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: ["tests/test_render.py was edited in the fix round (make_settings gets models) without a finding or tests.added entry naming it"]
 ---
 
 # meta form defaults

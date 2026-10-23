@@ -32,7 +32,7 @@ User request (2026-10-23): in the cluster form, Model and Effort must be dropdow
 
 ## Time
 
-Estimate: 12 agent-min | Critical path: 12 min | Expected wall at P=1.5: 0.4 h (k=2.0) | Actual: 0 min | Remaining estimate: 12 min
+Estimate: 12 agent-min | Critical path: 12 min | Expected wall at P=1.5: 0.4 h (k=2.0) | Actual: 0 min | Remaining estimate: 0 min
 
 ## Review
 

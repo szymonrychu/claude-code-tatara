@@ -1,6 +1,6 @@
 ---
 title: form dropdowns and gauge tick
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the form shows what a cluster will get, and the gauge tick sits on the ring"
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic/agent-orchestrator
 branch: cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic
-verified_head: ""
-run: ""
+verified_head: c993d7c1e48faa40a81d4f87d79ee0836a479ea7
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # form dropdowns and gauge tick
