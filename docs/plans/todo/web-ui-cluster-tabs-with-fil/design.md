@@ -224,7 +224,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q5: How long does a shell live? [answer: survives tab switches and reloads, reaped 15 min after last detach, 256 KiB scrollback replayed on reattach, max 8 shells per pod (user, 2026-10-23)]
 - Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [answer: yes, scrub CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN as defence in depth (user, 2026-10-23)]
 - Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [answer: yes, unauthenticated LAN-only with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) (user, 2026-10-23)]
-- Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
+- Q8: Does "shows everything" include dotfiles and .git? [answer: yes, everything incl. dotfiles and .git, lazy per directory, 2000 entries cap with a more row (user, 2026-10-23)]
 - Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
 - Q10: How does the tree stay current? [recommended: re-fetch directories touched by the cluster event stream plus a manual refresh button; no inotify]
 - Q11: What does a minimized panel look like? [recommended: a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split]
