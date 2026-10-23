@@ -168,5 +168,15 @@
       "agents-helmfile"
     ],
     "note": "ORCH_ALLOWED_ORIGINS: CSV of scheme://host[:port]; refuses Origin-bearing WebSocket upgrades not listed (1008) and unlisted Origin on terminal POST/DELETE (403 forbidden_origin); agents-helmfile sets https://agents.szymonrichert.pl"
+  },
+  {
+    "name": "orch-settings-menu",
+    "kind": "interface",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "code/agent-orchestrator/frontend/src/layout/SessionsMenu.tsx",
+    "consumers": [
+      "cluster-presets"
+    ],
+    "note": "SessionsMenu settingsCategories: {id, label, onOpen}[] rendered in the settings section pinned to the drawer bottom; cluster-presets adds Presets; this epic removes only the Edit entry points, cluster-presets removes PATCH and the ClusterForm edit code"
   }
 ]
