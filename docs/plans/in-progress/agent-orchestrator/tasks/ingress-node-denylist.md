@@ -1,6 +1,6 @@
 ---
 title: ingress node denylist
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: agent pods cannot reach the API through the ingress
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ingress-node-denylist/agent-orchestrator
+branch: agent-orchestrator-ingress-node-denylist
 verified_head: ""
 run: ""
 provides: []

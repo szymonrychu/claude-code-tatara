@@ -1,6 +1,6 @@
 ---
 title: wrapper 5xx ambiguous
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a wrapper error after it may have accepted a turn never causes a double send
 files: [src/agent_orchestrator/wrapper/client.py, tests/test_wrapper_client.py, tests/test_dispatcher.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-wrapper-5xx-ambiguous/agent-orchestrator
+branch: agent-orchestrator-wrapper-5xx-ambiguous
 verified_head: ""
 run: ""
 provides: []

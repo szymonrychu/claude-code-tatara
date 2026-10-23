@@ -1,6 +1,6 @@
 ---
 title: ambiguous fail releases agent
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: an ambiguous send that times out never strands its agent
 files: [src/agent_orchestrator/db/queue.py, tests/test_ambiguous_verify.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ambiguous-fail-releases-agen/agent-orchestrator
+branch: agent-orchestrator-ambiguous-fail-releases-agen
 verified_head: ""
 run: ""
 provides: []

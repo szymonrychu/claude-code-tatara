@@ -1,6 +1,6 @@
 ---
 title: stored session resume
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: an agent whose session died while its pod lives recovers by itself
 files: [src/agent_orchestrator/reconciler/sessions.py, tests/test_session_bootstrap.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-stored-session-resume/agent-orchestrator
+branch: agent-orchestrator-stored-session-resume
 verified_head: ""
 run: ""
 provides: []

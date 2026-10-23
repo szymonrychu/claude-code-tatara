@@ -1,6 +1,6 @@
 ---
 title: images test precision
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the full suite and the integration task run green out of the box
 files: [tests/test_images.py, mise.toml, README.md]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-images-test-precision/agent-orchestrator
+branch: agent-orchestrator-images-test-precision
 verified_head: ""
 run: ""
 provides: []
