@@ -1,6 +1,6 @@
 ---
 title: fast full-spec form test
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "PR #3 frontend CI goes green, so the form fix can ship"
 files: [frontend/src/clusters/ClusterForm.test.tsx]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-fast-full-spec-form-test/agent-orchestrator
 branch: cluster-form-defaults-and-ga-fast-full-spec-form-test
-verified_head: ""
-run: ""
+verified_head: 3f272a6823fb43b2d13b3de545b5d8cb23b42a83
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: ["stash@{0} left in the stash list by the implementer", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+fork_point: 3fcbb0b
 ---
 
 # fast full-spec form test
