@@ -1,6 +1,6 @@
 ---
 title: db release
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
