@@ -12,7 +12,7 @@ The user wants the orchestrator running on the homelab cluster, reachable from t
 
 - Namespace `agents` with regcred, `agent-orchestrator-db` (cnpg/cluster 0.9.0, S3 backups) and `agent-orchestrator` releases.
 - LAN-only ingress, no auth, certificate from letsencrypt-prod, SSE-safe timeouts.
-- Encrypted Claude OAuth token and master key; `.env` copied and never committed or printed.
+- Encrypted Claude OAuth token and master key; tooling mirrored from the infrastructure helmfile (.envrc + .mise.toml); no .env is copied (user decision 2026-10-23).
 - Local mise tasks lint, test, diff, apply, smoke.
 - Repo tests over the rendered helmfile and a smoke script that checks the UI and `claude mcp list`.
 
@@ -30,7 +30,7 @@ The user wants the orchestrator running on the homelab cluster, reachable from t
 
 - Mirror the infrastructure helmfile conventions (`.sops.yaml` PGP key, `.hook.sh` regcred copy, `*default` template, mise tool pins) but only for one namespace.
 - Raw sops decrypt to stdout is blocked by the guard hook: secret handling only pipes between processes.
-- `.env` is copied with `cp` from ~/Documents/infrastructure/code/helmfile/.env, never read into logs, gitignored.
+- No `.env` is copied: the infrastructure helmfile has none; its `.envrc`/`.mise.toml` are mirrored (user decision 2026-10-23). `.env` stays gitignored for local overrides.
 - The chart, its values and the image tags are owned by the agent-orchestrator epic; this repo consumes them (contracts `agent-orchestrator-chart`, `agent-orchestrator-settings-env`, `agent-orchestrator-image`).
 
 ## Decisions

@@ -28,7 +28,7 @@ provides: []
 Add the operator tasks and the README.
 
 - `mise.toml` tasks `diff`: `helmfile -f helmfile.yaml.gotmpl diff --detailed-exitcode --suppress-secrets` (exit 2 means changes; the task documents it and passes it through); `apply`: `helmfile -f helmfile.yaml.gotmpl apply --suppress-secrets` (hook-driven regcred and raw manifests, rollback on failure from helmDefaults). Both load `.env` through the mise `[env]` block, never call scripts/bootstrap-secrets.sh, and accept `--selector name=<release>` as a task argument. `apply` has `depends = ["lint", "test"]` so a broken tree cannot be applied. A `kube-context` guard task (a `depends` of diff and apply) fails unless `kubectl config current-context` is non-empty and `kubectl version` reaches the API, printing only the context name.
-- `README.md`: what the repo is, the namespace, releases and host, that the ingress is LAN-only without auth, `.env` handling (copied from the infrastructure helmfile, ignored, never printed), the secrets bootstrap, and a `## Operating` section covering `mise run lint|test|diff|apply|smoke`; applies are manual and local.
+- `README.md`: what the repo is, the namespace, releases and host, that the ingress is LAN-only without auth, tooling (mise mirrored from the infrastructure helmfile; optional local `.env`, ignored, never printed), the secrets bootstrap, and a `## Operating` section covering `mise run lint|test|diff|apply|smoke`; applies are manual and local.
 - `tests/test_mise_tasks.py` parses mise.toml (tomllib) and asserts the tasks diff, apply, lint and test exist, diff uses `--detailed-exitcode` and `--suppress-secrets`, apply depends on lint and test, no task redirects a decrypt to a file, and the README names every task.
 
 ## Acceptance conditions
