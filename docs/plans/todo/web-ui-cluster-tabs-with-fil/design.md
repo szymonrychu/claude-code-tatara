@@ -231,6 +231,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q12: Phone layout? [recommended: one panel at a time with a three-way switch (a forced maximize), the cluster tabs scroll]
 - Q13: Add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons? [recommended: yes, SVG icons pass designRules.ts, which only bans glyph Unicode]
 - Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [recommended: yes, the top bar is designed once here; the presets epic only adds its category and page]
+- Q15: Drop the cluster Edit action from the UI in this epic, before the presets epic removes the PATCH route? [recommended: yes, the user said live edit is not needed, so the tab actions carry only Discard]
 
 ## Irreversible operations in scope
 
