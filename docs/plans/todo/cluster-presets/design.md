@@ -96,6 +96,9 @@ Q6: the seeded default preset holds replicas 1 and every other field empty (2026
 ### D17: Q7 sparse preset storage
 Q7: a preset stores only what the user set; the editor shows /meta defaults as prefilled values (2026-10-23) (user decision)
 
+### D18: Q8 preset name rules
+Q8: preset names are unique, 1 to 40 characters of letters, digits, spaces, dots, dashes and underscores (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -153,6 +156,7 @@ Q7: a preset stores only what the user set; the editor shows /meta defaults as p
 | D15 Q5 default preset guards | presets-table-and-repo, preset-routes, fe-presets-page |
 | D16 Q6 seeded default content | presets-table-and-repo |
 | D17 Q7 sparse preset storage | preset-routes, fe-preset-form |
+| D18 Q8 preset name rules | presets-table-and-repo, preset-routes, fe-preset-form |
 
 ## Contracts
 
