@@ -84,6 +84,9 @@ Q2: POST /api/v1/clusters keeps accepting a raw spec for headless callers; exact
 ### D13: Q3 snapshot at create
 Q3: a cluster keeps the spec snapshotted at create; preset edits and deletes do not touch it (2026-10-23) (user decision)
 
+### D14: Q4 PATCH retired from the API
+Q4: PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the UI, with a 405 retirement test (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -137,6 +140,7 @@ Q3: a cluster keeps the spec snapshotted at create; preset edits and deletes do 
 | D11 Q1 optional generated slug | slug-from-name, create-cluster-from-preset, fe-new-cluster-dialog |
 | D12 Q2 raw spec kept, exactly one of spec or preset_id | create-cluster-from-preset |
 | D13 Q3 snapshot at create | create-cluster-from-preset, kind-e2e-presets |
+| D14 Q4 PATCH retired from the API | retire-cluster-patch-route, fe-preset-form |
 
 ## Contracts
 

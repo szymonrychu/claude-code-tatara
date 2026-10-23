@@ -65,7 +65,8 @@
     "id": "E",
     "text": "Live cluster edit is removed: PATCH /api/v1/clusters/{id} is retired (405 retirement test), with its schema, repository function, the stored parameter of validate_spec, the client call and the form's edit mode, and a documented exception to the additive-only rule.",
     "decisions": [
-      "D5"
+      "D5",
+      "D14"
     ],
     "tasks": [
       "fe-preset-form",
