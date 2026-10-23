@@ -5,14 +5,15 @@
     "decisions": [
       "D2",
       "D3",
-      "D6"
+      "D6",
+      "D17"
     ],
     "tasks": [
-      "presets-table-and-repo",
-      "preset-routes",
       "fe-new-cluster-dialog",
       "fe-preset-form",
-      "fe-presets-page"
+      "fe-presets-page",
+      "preset-routes",
+      "presets-table-and-repo"
     ],
     "status": "approved"
   },

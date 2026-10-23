@@ -93,6 +93,9 @@ Q5: the default preset can be edited and copied, not renamed or deleted (409); t
 ### D16: Q6 seeded default content
 Q6: the seeded default preset holds replicas 1 and every other field empty (2026-10-23) (user decision)
 
+### D17: Q7 sparse preset storage
+Q7: a preset stores only what the user set; the editor shows /meta defaults as prefilled values (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -149,6 +152,7 @@ Q6: the seeded default preset holds replicas 1 and every other field empty (2026
 | D14 Q4 PATCH retired from the API | retire-cluster-patch-route, fe-preset-form |
 | D15 Q5 default preset guards | presets-table-and-repo, preset-routes, fe-presets-page |
 | D16 Q6 seeded default content | presets-table-and-repo |
+| D17 Q7 sparse preset storage | preset-routes, fe-preset-form |
 
 ## Contracts
 
