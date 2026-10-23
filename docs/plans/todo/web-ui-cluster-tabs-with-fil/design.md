@@ -135,6 +135,9 @@ Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons
 ### D27: N1 api proxy module may call wrappers
 N1 (Q16): the orchestrator api may call wrapper pods for the file and terminal proxies, reversing MEMORY D5 narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; test_api_never_imports_k8s_or_wrapper whitelists exactly that module; README Architecture and MEMORY.md are updated with the date and why. (user decision)
 
+### D28: Headless parity
+Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -229,6 +232,7 @@ N1 (Q16): the orchestrator api may call wrapper pods for the file and terminal p
 | D25 Q10 event-driven refresh, no inotify | fe-filesystem-panel |
 | D26 Q13 add @mui/icons-material | fe-deps-and-storage, fe-top-bar, fe-panel-workspace, fe-filesystem-panel |
 | D27 N1 api proxy module may call wrappers | wrapper-proxy-seam, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay |
+| D28 Headless parity | wrapper-file-api, terminal-websocket-api, wrapper-workspace-e2e, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay, kind-e2e-workspace |
 
 ## Contracts
 

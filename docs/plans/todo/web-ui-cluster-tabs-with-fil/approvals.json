@@ -148,5 +148,22 @@
       "fe-filesystem-panel"
     ],
     "status": "approved"
+  },
+  {
+    "id": "H",
+    "text": "Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test.",
+    "decisions": [
+      "D28"
+    ],
+    "tasks": [
+      "wrapper-file-api",
+      "terminal-websocket-api",
+      "wrapper-workspace-e2e",
+      "file-proxy-routes",
+      "terminal-proxy-routes",
+      "terminal-ws-relay",
+      "kind-e2e-workspace"
+    ],
+    "status": "approved"
   }
 ]
