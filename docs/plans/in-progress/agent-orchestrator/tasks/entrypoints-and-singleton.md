@@ -1,6 +1,6 @@
 ---
 title: entrypoints and singleton
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Makes the four services and migrate runnable as separate processes, with singletons that fail over and clean shutdown."
 files: [src/agent_orchestrator/runtime/__init__.py, src/agent_orchestrator/runtime/singleton.py, src/agent_orchestrator/runtime/run.py, src/agent_orchestrator/cli.py, tests/test_entrypoints.py, README.md]
