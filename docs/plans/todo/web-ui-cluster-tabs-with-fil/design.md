@@ -224,6 +224,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q5: How long does a shell live? [recommended: survives tab switches and page reloads, reaped 15 minutes after its last client detaches, 256 KiB scrollback replayed on reattach, at most 8 shells per pod]
 - Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [recommended: yes, as defence in depth only; the same uid can still read them from /proc, which the wrapper trust model already accepts]
 - Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [recommended: yes, with a mandatory Origin allowlist on every WebSocket upgrade (ORCH_ALLOWED_ORIGINS) and the existing source allowlist; authentication stays a separate epic]
+- Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
 
 ## Irreversible operations in scope
 
