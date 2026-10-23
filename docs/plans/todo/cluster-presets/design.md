@@ -158,7 +158,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: this epic consumes `orch-se
 
 ## Open questions
 
-- Q1: Does "only preset is required" mean the slug is optional too? [recommended: yes, the slug defaults to `<preset name>-<4 random lowercase characters>` and can be overridden in the New cluster dialog]
+- Q1: Does "only preset is required" mean the slug is optional too? [answer: yes, the slug is optional: it defaults to <preset name DNS-1123 form>-<4 random lowercase letters>, within SLUG_MAX 40 and avoiding the reserved orchestrator* prefix, and can be overridden in the New cluster dialog (user, 2026-10-23)]
 - Q2: Does `POST /api/v1/clusters` keep accepting a raw `spec` for headless callers (bench, smoke, tatara, magic-trainer)? [recommended: yes, exactly one of `spec` or `preset_id`; the UI always sends a preset; `orch bench` keeps building arm specs inline]
 - Q3: What happens to running clusters when their preset is edited or deleted? [recommended: nothing; the cluster keeps the spec snapshotted at create, `preset_id` is set to null on delete and `preset_name` keeps showing where it came from]
 - Q4: Is live cluster edit removed from the API as well as the UI? [recommended: yes, PATCH /api/v1/clusters/{id} is retired with a 405 retirement test; changing a running cluster means discarding it and scheduling a new one]
