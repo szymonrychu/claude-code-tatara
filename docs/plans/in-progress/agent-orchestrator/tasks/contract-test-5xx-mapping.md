@@ -41,9 +41,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The full suite is green.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red already seen in the epic full suite (isinstance Ambiguous vs Unavailable).
+- Update the assertion to the approved mapping; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

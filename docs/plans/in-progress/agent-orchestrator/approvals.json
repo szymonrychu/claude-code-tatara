@@ -235,7 +235,8 @@
       "ambiguous-send-verifier",
       "fe-composer-and-queue-strip",
       "ambiguous-fail-releases-agen",
-      "wrapper-5xx-ambiguous"
+      "wrapper-5xx-ambiguous",
+      "contract-test-5xx-mapping"
     ],
     "status": "approved"
   },
