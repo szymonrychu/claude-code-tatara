@@ -73,12 +73,14 @@
     "id": "I",
     "text": "New backend surface: a wrapper file and terminal API and orchestrator /api/v1 proxies for both, with path confinement, size caps and terminal caps.",
     "decisions": [
-      "D4"
+      "D4",
+      "D27"
     ],
     "tasks": [
-      "wrapper-proxy-seam",
       "file-proxy-routes",
-      "terminal-proxy-routes"
+      "terminal-proxy-routes",
+      "terminal-ws-relay",
+      "wrapper-proxy-seam"
     ],
     "status": "approved"
   },

@@ -132,6 +132,9 @@ Q10: the tree re-fetches directories touched by the cluster event stream plus a 
 ### D26: Q13 add @mui/icons-material
 Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons. (user decision)
 
+### D27: N1 api proxy module may call wrappers
+N1 (Q16): the orchestrator api may call wrapper pods for the file and terminal proxies, reversing MEMORY D5 narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; test_api_never_imports_k8s_or_wrapper whitelists exactly that module; README Architecture and MEMORY.md are updated with the date and why. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -225,6 +228,7 @@ Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons
 | D24 Q9 read-only preview | wrapper-file-api, fe-filesystem-panel |
 | D25 Q10 event-driven refresh, no inotify | fe-filesystem-panel |
 | D26 Q13 add @mui/icons-material | fe-deps-and-storage, fe-top-bar, fe-panel-workspace, fe-filesystem-panel |
+| D27 N1 api proxy module may call wrappers | wrapper-proxy-seam, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay |
 
 ## Contracts
 
