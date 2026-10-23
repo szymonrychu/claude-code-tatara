@@ -1,6 +1,6 @@
 ---
 title: meta form defaults
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the form and the pods agree on one set of defaults
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]

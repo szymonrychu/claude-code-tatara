@@ -2,7 +2,7 @@
 title: cluster form defaults and gauge tick
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agent-orchestrator, agents-helmfile]
 created: 2026-10-23
 ---

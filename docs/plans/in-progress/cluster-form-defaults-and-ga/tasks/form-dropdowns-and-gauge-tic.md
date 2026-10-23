@@ -1,6 +1,6 @@
 ---
 title: form dropdowns and gauge tick
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the form shows what a cluster will get, and the gauge tick sits on the ring"
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
