@@ -1,7 +1,7 @@
 ---
 title: any-mcp
 blockers: []
-stage: review
+stage: build
 owner: Szymon Richert
 repos: [any-mcp]
 created: 2026-10-22
