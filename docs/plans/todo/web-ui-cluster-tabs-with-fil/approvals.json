@@ -17,7 +17,8 @@
     "id": "C",
     "text": "A cluster tab shows three panels side by side, filesystem, chat and terminal, split by draggable separators, with minimize and maximize controls (at most two minimized, maximize minimizes the other two), a layout persisted per cluster in the browser, and a phone layout.",
     "decisions": [
-      "D7"
+      "D7",
+      "D15"
     ],
     "tasks": [
       "fe-deps-and-storage",
