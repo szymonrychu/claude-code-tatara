@@ -40,6 +40,9 @@ The terminal panel (user Q4, Q5), test-first.
 - AC5: API errors render inline [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t errors_inline]
 - AC6: terminal colours live in theme.ts and design rules pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/theme.test.ts src/layout/designRules.test.ts]
 - AC7: tests, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal src/App.test.tsx src/theme.test.ts src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
+- AC8: only alive shells from listTerminals reopen as tabs on mount [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t reopens_only_alive_shells]
+- AC9: a refused tab stays with its reason, a Retry button that reconnects and a Close button [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t refused_tab_retry_and_close]
+- AC10: unmounting closes the sockets without deleting the shells and remounting reattaches with scrollback replay [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t remount_reattaches_with_replay]
 
 ## Files
 
@@ -68,3 +71,8 @@ The right panel runs several interactive shells on chosen agent pods, sized to t
 - xterm 6 removed the canvas renderer addon and reworked the viewport; use the default DOM renderer and import `@xterm/xterm/css/xterm.css` once.
 - jsdom has no canvas, no ResizeObserver and no WebSocket: mock them; the real rendering is checked by the user in a browser after deploy.
 - A colour literal outside `theme.ts` fails `designRules.test.ts`.
+- Builder check ruling 1: Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
+- Builder check ruling 6: Reconnect on 1006, 1011, 1013 and 4409 with exponential backoff 1 s to 30 s, at most 10 attempts, then state refused; never reconnect on 1000, 1003, 1008, 1009. A refused tab stays with the reason, a Retry and a Close button.
+- Builder check ruling 9: Only the active cluster tab's Workspace is mounted; switching away unmounts it and terminals reattach with scrollback replay on return. A minimized panel stays mounted, so its event subscription stays live.
+
+- 2026-10-23 amended: builder check rulings 1,6,9 add acceptance conditions AC8-AC10
