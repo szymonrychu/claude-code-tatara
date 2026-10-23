@@ -167,7 +167,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: this epic consumes `orch-se
 - Q7: Should a preset store the defaults it was shown, or only what the user changed? [answer: a preset stores only what the user set; the editor shows /meta defaults as prefilled values (user, 2026-10-23)]
 - Q8: Does a preset name have rules? [answer: names unique, 1 to 40 characters, letters, digits, spaces, dots, dashes and underscores (user, 2026-10-23)]
 - Q9: Should the UI show that a cluster's preset changed after it was created? [answer: no; the tab shows only preset_name and the snapshot is the truth (user, 2026-10-23)]
-- Q10: Is the Presets page a full main-area view or a dialog? [recommended: a full main-area view in place of the active tab content, left with the hamburger menu or a Back button]
+- Q10: Is the Presets page a full main-area view or a dialog? [answer: a full main-area view with a Back button (user, 2026-10-23)]
 - Q11: Should presets be exportable or importable as JSON or YAML? [recommended: no, not in this epic]
 - Q12: Does the README rule that /api/v1 is additive only get a documented exception for the PATCH retirement, with the now-dead code removed? [recommended: yes, README and the component MEMORY.md document the exception with date and why; ClusterDeleting, the stored parameter of validate_spec and the PATCH tests go, and tests/test_migrations is updated for 0002 and the presets table]
 
