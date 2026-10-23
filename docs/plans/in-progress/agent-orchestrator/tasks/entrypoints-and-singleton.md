@@ -1,6 +1,6 @@
 ---
 title: entrypoints and singleton
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Makes the four services and migrate runnable as separate processes, with singletons that fail over and clean shutdown."
 files: [src/agent_orchestrator/runtime/__init__.py, src/agent_orchestrator/runtime/singleton.py, src/agent_orchestrator/runtime/run.py, src/agent_orchestrator/cli.py, tests/test_entrypoints.py, README.md]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-entrypoints-and-singleton/agent-orchestrator
 branch: agent-orchestrator-entrypoints-and-singleton
-verified_head: ""
+verified_head: fab4fae6cc277775265e4d5531d51d482ee56762
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

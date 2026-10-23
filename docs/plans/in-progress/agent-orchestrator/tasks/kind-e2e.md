@@ -1,6 +1,6 @@
 ---
 title: kind e2e
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "End-to-end proof on a real Kubernetes: the published-to-be chart installs, a 2-agent cluster round-robins three messages with any-mcp installed by onStart, and a discard removes everything without touching the orchestrator."
 files: [tests/e2e/test_e2e_kind.py, e2e/kind-config.yaml, e2e/manifests/postgres.yaml, e2e/values-kind.yaml, scripts/e2e.sh, mise.toml, .github/workflows/ci.yaml]
@@ -15,12 +15,13 @@ actual: ""
 actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-kind-e2e/agent-orchestrator
-branch: agent-orchestrator-kind-e2e
-verified_head: ""
+branch: "HEAD of /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-kind-e2e/agent-orchestrator (commit 5465ab6)"
+verified_head: 56e5443e477d35b80c2269695dd1d47440be9461
 run: agent-orchestrator
 provides: []
 acs_for_audit: []
 process_gaps: []
+fork_point: 503cf0d
 ---
 
 # kind e2e

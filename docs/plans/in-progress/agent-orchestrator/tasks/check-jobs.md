@@ -1,6 +1,6 @@
 ---
 title: check jobs
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Runs verification commands against a cluster's shared workspace, which is how the bench scores correctness."
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]
@@ -16,11 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-check-jobs/agent-orchestrator
 branch: agent-orchestrator-check-jobs
-verified_head: ""
+verified_head: 2f18e52c61e9950ae05d671468c774f92ff6582e
 run: agent-orchestrator
 provides: []
 acs_for_audit: []
 process_gaps: []
+fork_point: e91ee1a751870066e3dd2ca3ba63b690153b96b4
 ---
 
 # check jobs

@@ -1,6 +1,6 @@
 ---
 title: bench cli
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Runs the experiment the user wants: does round-robin with several peered agents finish faster, fail less and verify more often?"
 files: [src/agent_orchestrator/bench/__init__.py, src/agent_orchestrator/bench/spec.py, src/agent_orchestrator/bench/runner.py, src/agent_orchestrator/bench/report.py, src/agent_orchestrator/cli.py, tests/test_bench.py, examples/bench.yaml, README.md]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-bench-cli/agent-orchestrator
 branch: agent-orchestrator-bench-cli
-verified_head: ""
+verified_head: 503cf0d198ef74aa812ca25cc15ebc6d9714e39f
 run: agent-orchestrator
 provides: []
 acs_for_audit: []
