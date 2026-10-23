@@ -126,6 +126,9 @@ Q8: the tree shows everything, dotfiles and .git included, loaded lazily per dir
 ### D24: Q9 read-only preview
 Q9: clicking a file opens a read-only preview in the filesystem panel: text up to 1 MiB; binary files show size and type. (user decision)
 
+### D25: Q10 event-driven refresh, no inotify
+Q10: the tree re-fetches directories touched by the cluster event stream plus a manual refresh button; no inotify. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -217,6 +220,7 @@ Q9: clicking a file opens a read-only preview in the filesystem panel: text up t
 | D22 Q7 LAN-only with mandatory Origin allowlist | origin-allowlist, terminal-ws-relay, deploy-pin |
 | D23 Q8 everything, lazy, 2000 entries with more | wrapper-file-api, file-proxy-routes, fe-filesystem-panel |
 | D24 Q9 read-only preview | wrapper-file-api, fe-filesystem-panel |
+| D25 Q10 event-driven refresh, no inotify | fe-filesystem-panel |
 
 ## Contracts
 
