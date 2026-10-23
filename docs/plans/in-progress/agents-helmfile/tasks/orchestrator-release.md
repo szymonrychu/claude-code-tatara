@@ -1,6 +1,6 @@
 ---
 title: orchestrator release
-status: in-progress
+status: blocked
 repo: agents-helmfile
 value: "The orchestrator runs in namespace agents and answers at agents.szymonrichert.pl from the LAN only, with new sessions carrying any-mcp."
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -16,11 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-orchestrator-release/agents-helmfile
 branch: agents-helmfile-orchestrator-release
-verified_head: ""
+verified_head: 7fb17c5c2f186dc2629d035af56a514597cdacdf
 run: agents-helmfile
 provides: []
 acs_for_audit: []
-process_gaps: []
+process_gaps: ["No red-run evidence for the new tests before the implementation (tests.red empty)"]
 ---
 
 # orchestrator release

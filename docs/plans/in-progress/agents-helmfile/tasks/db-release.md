@@ -1,6 +1,6 @@
 ---
 title: db release
-status: in-progress
+status: done
 repo: agents-helmfile
 value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-release/agents-helmfile
 branch: agents-helmfile-db-release
-verified_head: ""
+verified_head: 1544c272131989687db0f9aa02024cd3ca7074f7
 run: agents-helmfile
 provides: []
 acs_for_audit: []
