@@ -1,6 +1,6 @@
 ---
 title: model default option
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: editing a cluster with no model shows its real value
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-model-default-option/agent-orchestrator
+branch: cluster-form-defaults-and-ga-model-default-option
 verified_head: ""
 run: ""
 provides: []

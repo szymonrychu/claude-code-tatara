@@ -1,6 +1,6 @@
 ---
 title: deterministic in-flight cap test
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the full suite is green on every run, not most runs"
 files: [tests/test_dispatcher.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-deterministic-in-flight-cap/agent-orchestrator
+branch: cluster-form-defaults-and-ga-deterministic-in-flight-cap
 verified_head: ""
 run: ""
 provides: []
