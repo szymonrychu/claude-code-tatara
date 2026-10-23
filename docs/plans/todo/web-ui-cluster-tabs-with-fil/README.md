@@ -75,6 +75,7 @@ Order: cluster-form-defaults-and-ga (in progress), then this epic, then presets-
 
 ## Decisions (user, 2026-10-23)
 
+- Headless parity (user, 2026-10-23): everything in this epic must also work in headless mode. Every UI capability is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test.
 - Q1: yes, one cluster is one tab.
 - Q3: a shell in an agent pod; the user does not know how, so the mechanism is decided in design (recommended: served by the wrapper, proxied by the orchestrator api).
 - Q7: yes, unauthenticated LAN-only shell with the mandatory Origin allowlist.

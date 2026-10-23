@@ -80,6 +80,7 @@ In scope, per repo:
 
 ## Decisions (user, 2026-10-23)
 
+- Headless parity (user, 2026-10-23): everything in this epic must also work in headless mode. Every UI capability is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test.
 - Q1: yes, the leader is the only agent that receives untargeted messages.
 - Q3: no, not the wrapper's ccw MCP server; the leadership tool may be offered through any-mcp (an any-mcp plugin), so design must settle the agent-to-orchestrator path and its credential.
 - Q12: no opt-in: a cluster is a hive. Every multi-agent cluster runs in hive mode; there is no separate hive switch (this also answers Q8: no ClusterSpec switch, and changes Q13: the hive switch is not a preset field). The bench still records the result.

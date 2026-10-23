@@ -71,6 +71,7 @@ Order: cluster-form-defaults-and-ga (in progress; it reworks the same form, /met
 
 ## Decisions (user, 2026-10-23)
 
+- Headless parity (user, 2026-10-23): everything in this epic must also work in headless mode. Every UI capability is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test.
 - Q2: yes, POST keeps accepting a raw spec for headless callers; exactly one of spec or preset_id.
 - Q3: yes, a cluster keeps the spec snapshotted at create; preset edits and deletes do not touch it.
 - Q4: yes, PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the UI.
