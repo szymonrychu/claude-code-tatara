@@ -138,5 +138,15 @@
       "agent-orchestrator"
     ],
     "note": "hooks.onStart: instance event fired once per ccw process start before peer join, resume_on_start and any session; blocking deny or on_error deny failure exits 1; envelope like preJoin, runs in the sessions root"
+  },
+  {
+    "name": "wrapper-files-api",
+    "kind": "api",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "claude-code-wrapper GET /v1/sessions/{id}/files (root, path, entries[name,type,size,mtime], next_offset; limits.files_max_entries 2000) and /files/content (kind text|binary|too_large, 1 MiB); errors invalid_path, not_found, not_a_directory, not_a_file; consumed by agent-orchestrator task file-proxy-routes"
   }
 ]
