@@ -75,6 +75,9 @@ agents-helmfile pins the agent-orchestrator chart `0.1.0-main.<sha7>` and image 
 ### D10: Headless parity
 Headless parity: every UI capability of this epic is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test (2026-10-23) (user decision)
 
+### D11: Q1 optional generated slug
+Q1: the slug is optional; it defaults to <preset name DNS-1123 form>-<4 random lowercase letters> within SLUG_MAX 40, avoiding the reserved orchestrator* prefix, and is overridable in the New cluster dialog (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -125,6 +128,7 @@ Headless parity: every UI capability of this epic is backed by a documented publ
 | D8 API-only end-to-end proof | kind-e2e-presets |
 | D9 Deploy pin | deploy-pin-presets |
 | D10 Headless parity | preset-routes, create-cluster-from-preset, kind-e2e-presets |
+| D11 Q1 optional generated slug | slug-from-name, create-cluster-from-preset, fe-new-cluster-dialog |
 
 ## Contracts
 

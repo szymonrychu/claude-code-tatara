@@ -34,12 +34,13 @@
     "text": "Scheduling a cluster takes a preset and an optional slug (generated from the preset name when absent); POST /api/v1/clusters keeps a raw spec for headless callers, exactly one of spec or preset_id.",
     "decisions": [
       "D4",
-      "D6"
+      "D6",
+      "D11"
     ],
     "tasks": [
-      "slug-from-name",
       "create-cluster-from-preset",
-      "fe-new-cluster-dialog"
+      "fe-new-cluster-dialog",
+      "slug-from-name"
     ],
     "status": "approved"
   },
