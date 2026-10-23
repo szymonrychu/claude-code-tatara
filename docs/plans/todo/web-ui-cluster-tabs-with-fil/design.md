@@ -221,6 +221,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [recommended: a compact agents strip in the chat panel header, merged with the agent filter chips]
 - Q3: Where does a terminal run? [recommended: a shell in a chosen agent pod, served by the wrapper and proxied by the orchestrator api; not a separate workspace pod, not Kubernetes pods/exec]
 - Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [recommended: yes, several concurrent shells as tabs, each with its own pod choice]
+- Q5: How long does a shell live? [recommended: survives tab switches and page reloads, reaped 15 minutes after its last client detaches, 256 KiB scrollback replayed on reattach, at most 8 shells per pod]
 
 ## Irreversible operations in scope
 
