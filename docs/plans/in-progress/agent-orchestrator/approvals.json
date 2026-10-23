@@ -76,7 +76,8 @@
       "api-clusters-and-agents",
       "api-messages-and-commands",
       "api-events-and-streams",
-      "readme-api-and-openapi"
+      "readme-api-and-openapi",
+      "frontend-api-types-regen"
     ],
     "status": "approved"
   },
