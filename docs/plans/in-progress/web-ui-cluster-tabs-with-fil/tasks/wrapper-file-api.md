@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-file-api/claude-code-wrapper
+branch: web-ui-cluster-tabs-with-fil-wrapper-file-api
 verified_head: ""
 run: ""
 provides: []

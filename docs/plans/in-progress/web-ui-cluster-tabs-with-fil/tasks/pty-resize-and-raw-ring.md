@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring/claude-code-wrapper
+branch: web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring
 verified_head: ""
 run: ""
 provides: []

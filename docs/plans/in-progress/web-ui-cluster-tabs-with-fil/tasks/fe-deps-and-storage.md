@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-deps-and-storage/agent-orchestrator
+branch: web-ui-cluster-tabs-with-fil-fe-deps-and-storage
 verified_head: ""
 run: ""
 provides: []
