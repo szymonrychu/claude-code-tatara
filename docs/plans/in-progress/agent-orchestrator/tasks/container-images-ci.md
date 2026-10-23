@@ -1,6 +1,6 @@
 ---
 title: container images ci
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Every main commit yields a pushed, immutable orchestrator image, with the agent image, the wrapper config validation and the any-mcp pin all on one wrapper sha and one any-mcp tag."
 files: [.github/workflows/ci.yaml, tests/test_images.py, pyproject.toml, uv.lock, README.md]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-container-images-ci/agent-orchestrator
 branch: agent-orchestrator-container-images-ci
-verified_head: ""
+verified_head: e9df1b422f67b1cf46c89e885bf74d64186fef39
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

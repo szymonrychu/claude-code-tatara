@@ -1,6 +1,6 @@
 ---
 title: helm chart ci publish
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: agents-helmfile can pin an immutable published chart version for every main commit and release tag
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_chart_ci.py, README.md]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-ci-publish/agent-orchestrator
 branch: agent-orchestrator-helm-chart-ci-publish
-verified_head: ""
+verified_head: d85839940dea8cfdb8b835b663b9cf0bf620a02e
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

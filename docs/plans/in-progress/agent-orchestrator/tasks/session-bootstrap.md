@@ -1,6 +1,6 @@
 ---
 title: session bootstrap
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Every ready agent pod gets exactly one wrapper session, adopted after a restart instead of duplicated."
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]

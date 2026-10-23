@@ -1,6 +1,6 @@
 ---
 title: reconciler loop
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and discard clusters without drift after a crash."
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]
@@ -16,9 +16,9 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-reconciler-loop/agent-orchestrator
 branch: agent-orchestrator-reconciler-loop
-verified_head: ""
+verified_head: ab3e57ca830938006c53c2a3b0e9c589bc6c0f8f
 run: agent-orchestrator
-provides: []
+provides: [kube-api, lightkube-api, kube-ownership-helpers, fake-kube, agents-repo, pod-url]
 acs_for_audit: []
 process_gaps: []
 ---

@@ -1,6 +1,6 @@
 ---
 title: check jobs
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Runs verification commands against a cluster's shared workspace, which is how the bench scores correctness."
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]
@@ -81,3 +81,5 @@ RBAC needs batch/jobs create, delete, get, list, watch and pods/log get (D9). Ne
 - 2026-10-23 run agent-orchestrator: dependency-failed on session-bootstrap
 
 - 2026-10-23 run agent-orchestrator: dependency-failed on k8s-object-renderer, reconciler-loop, session-bootstrap
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on reconciler-loop, session-bootstrap
