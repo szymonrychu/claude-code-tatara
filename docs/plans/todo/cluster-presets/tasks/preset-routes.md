@@ -65,17 +65,23 @@ Expose presets through `/api/v1` (design D2, D3; user Q5, Q7, Q8; headless parit
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Routes: `GET|POST /api/v1/presets`, `GET|PUT|DELETE /api/v1/presets/{preset_id}`, `POST /api/v1/presets/{preset_id}/copy` (part `orch-presets-api`, defined in README.md).
+- `api/clusters.py:check_spec(spec, settings, stored=None) -> ClusterSpec` (part `check-spec-public`).
+- `schemas.PresetIn`, `schemas.CopyPreset`, `schemas.PresetView`.
+- Error codes `preset_default` (409), `last_preset` (409), plus the existing `conflict`, `not_found`, `invalid_request`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A headless client can list, create, read, replace, copy and delete presets, with the same validation the cluster create applies, and the README and OpenAPI describe it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_api_presets.py` with the seven tests named in the AC refs (reuse `make_settings`, `client_for`, `assert_error` by importing them from `test_api_clusters` or a small local copy); run `uv run pytest -q -p no:cacheprovider tests/test_api_presets.py`: fails with 404s.
+- Rename `_check_spec`, add schemas, `api/presets.py` and the router registration; run the test file: passes.
+- Add the README sections and error codes; regenerate `openapi.json` and `schema.d.ts`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `exclude_unset=True` must be applied to the parsed request model, not to a re-validated copy, or every default reappears.
+- `check_spec` is called for its validation; the filled spec it returns is not stored here.
+- DELETE answers 204 with no body; keep `response_model=None` so OpenAPI stays clean.

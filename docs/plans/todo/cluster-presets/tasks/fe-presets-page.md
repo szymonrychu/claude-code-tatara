@@ -49,17 +49,19 @@ Add Presets as the first settings category and its page (design D7; user Q5, Q10
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `PresetsPage({onBack: () => void})` in `frontend/src/presets/PresetsPage.tsx`.
+- Uses `SessionsMenu` `settingsCategories: {id, label, onOpen}[]` through `TopBar` (cross-epic contract `orch-settings-menu`), `PresetForm` (fe-preset-form), the preset client functions (fe-preset-client), `ConfirmDialog` (`layout/ConfirmDialog.tsx`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Opening the hamburger menu shows Presets under Settings; it opens a page listing every preset where the user creates, copies, edits and deletes presets, and Back returns to the cluster tabs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `PresetsPage.test.tsx` and add `presets_from_settings_menu` to `App.test.tsx` (titles as in the AC refs); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/presets/PresetsPage.test.tsx src/App.test.tsx`: fails.
+- Build the page and the App view switch; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- web-ui-cluster-tabs-with-fil passes an empty `settingsCategories` from App; this task supplies the one entry.
+- Delete is offered only for non-default presets, but the page still shows a 409 from the server (for example `last_preset`).

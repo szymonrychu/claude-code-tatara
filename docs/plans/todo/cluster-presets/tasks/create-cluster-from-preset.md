@@ -58,17 +58,23 @@ Let `POST /api/v1/clusters` schedule a cluster from a preset and snapshot its sp
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `POST /api/v1/clusters` body `{"slug"?, "spec"?, "preset_id"?}` (part `orch-cluster-create-api`, defined in README.md; cross-epic contract of the same name, consumer agents-helmfile smoke).
+- `ClusterView.preset_id`, `ClusterView.preset_name`; `db/clusters.Cluster.preset_id`, `.preset_name`; `db/clusters.create(conn, slug, spec, preset_id=None, preset_name=None)`.
+- Uses `spec.generated_slug` (slugify-helper), `db/presets.get_for_share` (presets-repo), `check_spec` (check-spec-public).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A cluster can be scheduled with nothing but a preset id; it owns a full copy of the preset's spec as filled at that moment and remembers the preset's id and name.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_api_create_from_preset.py` with the seven tests named in the AC refs; run `uv run pytest -q -p no:cacheprovider tests/test_api_create_from_preset.py`: fails.
+- Change `CreateCluster`, `ClusterView`, `Cluster`, `create` and `create_cluster`; run the file and `tests/test_api_clusters.py tests/test_clusters_repo.py`: pass.
+- Update README, regenerate `openapi.json` and `schema.d.ts`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `repo.create` opens a nested transaction (a savepoint), so a generated-slug clash can be retried inside the outer creation transaction without losing the advisory lock.
+- A preset deleted between the read and the insert is impossible while it is held `FOR SHARE`.
+- `tests/factories.py:insert_cluster` keeps working because the new columns are nullable.
+- `orch bench`, `scripts/smoke.sh` and the kind e2e send `{"slug", "spec"}` and stay valid.

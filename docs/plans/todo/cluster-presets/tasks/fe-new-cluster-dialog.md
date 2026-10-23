@@ -30,7 +30,7 @@ Schedule clusters from a preset in the UI and show where a cluster came from (de
 - `frontend/src/api/client.ts` (part `fe-preset-client`): type aliases `PresetView`, `PresetIn`, `CopyPreset` from `./schema`; `listPresets()`, `getPreset(id)`, `createPreset(body)`, `updatePreset(id, body)`, `deletePreset(id)`, `copyPreset(id, body?)` on `/presets`; `createCluster` takes the new `CreateCluster` body.
 - New `frontend/src/clusters/NewClusterDialog.tsx`: `NewClusterDialog({open, onClose, onCreated})`. On open it loads `listPresets()`; a preset `Select` (label "Preset") lists every preset by name with the default preselected; an optional "Slug" field with helper text saying an empty slug is generated from the preset name; a non-empty slug longer than `MAX_SLUG` blocks Create. Create posts `{preset_id}` plus `slug` only when non-empty, then calls `onCreated(cluster)`. There is no other field. A server error (404, 409, 422, the 422 naming the preset) shows in an outlined Alert and the dialog stays open.
 - `frontend/src/App.tsx`: New cluster opens `NewClusterDialog` instead of `ClusterForm mode="create"`; on create the new cluster's tab is selected.
-- `frontend/src/layout/TopBar.tsx`: a cluster tab shows `preset_name` as a caption under the slug when it is set; there is no marker for later preset changes (Q9).
+- `frontend/src/layout/TopBar.tsx`: a cluster tab shows `preset_name` as a caption under the slug when it is set; no marker shows that the preset changed after create (Q9).
 - Tests: new `frontend/src/clusters/NewClusterDialog.test.tsx`; `frontend/src/App.test.tsx` `create_and_discard_from_top_bar` drives the new dialog; `frontend/src/layout/TopBar.test.tsx` gains `tab_shows_preset_name`. All pass `designRules`.
 
 ## Acceptance conditions
@@ -55,17 +55,21 @@ Schedule clusters from a preset in the UI and show where a cluster came from (de
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/client.ts` (part `fe-preset-client`): `PresetView`, `PresetIn`, `CopyPreset`, `listPresets`, `getPreset`, `createPreset`, `updatePreset`, `deletePreset`, `copyPreset`; consumed by fe-preset-form and fe-presets-page.
+- `NewClusterDialog({open, onClose, onCreated: (cluster: ClusterView) => void})`.
+- `TopBar` props unchanged; the tab label reads `cluster.preset_name`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Clicking New cluster asks for a preset (Default preselected) and an optional slug, creates the cluster and opens its tab; every tab shows which preset it came from.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `NewClusterDialog.test.tsx` (`// @vitest-environment jsdom`, stub `window.matchMedia`, `vi.mock('../api/client')` like the other tests; titles as in the AC refs), update `App.test.tsx` and add `tab_shows_preset_name` to `TopBar.test.tsx`; run `mise x node@24.20.0 -- npm --prefix frontend test -- src/clusters/NewClusterDialog.test.tsx src/App.test.tsx src/layout/TopBar.test.tsx`: fails.
+- Add the client functions, the dialog, the App wiring and the tab caption; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `schema.d.ts` already carries the preset and create schemas (tasks preset-routes and create-cluster-from-preset); never hand-edit it.
+- `ClusterForm` stays in the tree until fe-preset-form; App simply stops opening it.
+- The tab caption must fit the phone top bar (tabs scroll); use `Typography variant="caption"`.

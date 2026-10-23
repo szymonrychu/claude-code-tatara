@@ -46,17 +46,20 @@ Prove presets end to end through the public API on kind (design D8; headless par
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `/api/v1/presets` routes (part `orch-presets-api`) and the preset create body (part `orch-cluster-create-api`).
+- Existing fixtures `api`, `baseline`, `cluster`, `round_robin` and helpers `wait_for`, `agents_of`, `kubectl` in `tests/e2e/test_e2e_kind.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The PR CI e2e job shows on a real kind cluster that presets drive scheduling and that preset changes never touch a running cluster.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Change the `cluster` fixture and add the five tests; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
+- Run the verify command: passes. The full run happens in CI (no cluster access here).
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Order the new tests after the round-robin and before the discard test (the module runs in file order and shares one cluster).
+- The generated-slug cluster costs one more reconcile; discard it immediately and wait only for its row to disappear, bounded like the existing discard wait.
+- Pod uids come from `kubectl get pods -l agents.szymonrichert.pl/cluster=<SLUG> -o jsonpath`.

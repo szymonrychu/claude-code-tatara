@@ -62,17 +62,22 @@ Add the presets table, the cluster provenance columns and the presets repository
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tables: `presets(id, name, spec, is_default, created_at, updated_at)`; `clusters.preset_id`, `clusters.preset_name`.
+- `db/presets.py` (part `presets-repo`): `validate_preset_name`, `Preset`, `PresetExists`, `PresetNotFound`, `PresetDefault`, `LastPreset`, `list_presets`, `get`, `get_for_share`, `create`, `update`, `delete`. Consumed by preset-routes and create-cluster-from-preset.
+- Default preset id `00000000-0000-0000-0000-000000000001`, name `Default`, spec `{"replicas": 1}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After `orch migrate` every database has a Default 1-pod preset, a presets repository the api can call, and clusters able to record where they came from.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Update `tests/test_migrations.py` (TABLES, versions, concurrent count, the three new tests) and write `tests/test_presets_repo.py`; run `uv run pytest -q -p no:cacheprovider tests/test_migrations.py tests/test_presets_repo.py`: fails.
+- Write `0002_presets.sql` and `db/presets.py`; add the README rows; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `db/migrate.py:run_migrations` records versions and skips applied ones, so the re-apply test deletes the `0002` row from `schema_migrations` first; every statement must then succeed again.
+- Follow `db/clusters.py` for row mapping (`dict_row`), `Jsonb` dumps and exception translation from `psycopg.errors.UniqueViolation`.
+- The repository does not NOTIFY; nothing listens for preset changes.
+- Review tier is full (migration path).

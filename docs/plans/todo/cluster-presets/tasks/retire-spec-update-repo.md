@@ -47,17 +47,19 @@ Remove the dead code live edit leaves behind (design D5; user N2), test-first.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.validate_spec(spec: ClusterSpec, settings: Settings) -> None`.
+- `db/clusters.py` without `update_spec` and `ClusterDeleting`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The repository and spec module carry no code that only live edit used.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add `test_live_edit_code_retired` and `test_validate_spec_always_checks_model_and_effort`, drop the update tests; run `uv run pytest -q -p no:cacheprovider tests/test_clusters_repo.py`: the retirement test fails.
+- Delete `update_spec`, `ClusterDeleting` and the `stored` parameter; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Deletion pinned by a retirement test (`test_live_edit_code_retired`).
+- The api stopped passing `stored` in retire-cluster-patch-route.

@@ -48,17 +48,19 @@ Add the shared slug helper (part `slugify-helper`, design D4, user Q1 and Q8) to
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.slugify(text: str, max_len: int = SLUG_MAX) -> str` and `spec.generated_slug(name: str, rand: Callable[[], str] | None = None) -> str` (part `slugify-helper`, consumed by create-cluster-from-preset).
+- `bench/runner.py:arm_slug(arm, run)` keeps its signature and output.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Any preset name maps to a valid, short, non-reserved cluster slug with a random suffix, from one helper the bench also uses.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_slugs.py` with the four tests named in the AC refs; run `uv run pytest -q -p no:cacheprovider tests/test_slugs.py`: fails on the missing functions.
+- Implement `slugify` and `generated_slug` in `spec.py`, switch `arm_slug` to `slugify`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `validate_slug` (spec.py) is the oracle: DNS-1123 label, at most `SLUG_MAX` 40, `orchestrator` and `orchestrator-*` reserved.
+- Reuse map: `arm_slug` sanitising is the adopted prior art (discovery/reuse.md ideas).

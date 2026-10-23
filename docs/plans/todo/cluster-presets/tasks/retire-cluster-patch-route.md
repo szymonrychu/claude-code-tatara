@@ -56,17 +56,21 @@ Retire live cluster edit from the API (design D5; user Q4 and N2), test-first; t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `check_spec(spec, settings) -> ClusterSpec` (part `check-spec-public`, final signature).
+- `PATCH /api/v1/clusters/{cluster_id}` no longer exists; GET and DELETE on the path are unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The API cannot change a running cluster's spec any more; README, MEMORY and OpenAPI say so and why.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add `test_patch_cluster_retired_405` and rewrite the PATCH-based tests to POST; run `uv run pytest -q -p no:cacheprovider tests/test_api_clusters.py`: the retirement test fails.
+- Delete the route and schema, drop `stored` from `check_spec`, edit README and MEMORY, regenerate `openapi.json` and `schema.d.ts`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Deletion pinned by a retirement test (`test_patch_cluster_retired_405`).
+- FastAPI answers 405 for a known path with an unknown method; `api/errors.py` maps it to `bad_request`, which the test may assert.
+- `cluster_deleting` stays: messages and checks still return it.
+- fe-preset-form already removed `PatchCluster` from `client.ts`, so `npm run build` stays green after the schema regen.

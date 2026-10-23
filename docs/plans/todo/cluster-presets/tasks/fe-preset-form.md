@@ -55,17 +55,21 @@ Turn the cluster form into the preset editor and remove the cluster edit path (d
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `PresetForm({open, preset?: PresetView, copyOf?: PresetView, onClose, onSaved: (preset: PresetView) => void})` in `frontend/src/presets/PresetForm.tsx` (part `fe-preset-form`, consumed by fe-presets-page).
+- `clusterSpecForm.ts`: `FormValues.name`, `blankValues(meta)`, the preset form-state builder, `toPresetSpec(values, setKeys)`, `validate(values, meta)`, `MAX_SLUG`.
+- `api/client.ts` without `patchCluster` and `PatchCluster`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The form that used to create and edit clusters now creates, edits and copies presets, saving only what the user set, and nothing in the frontend can edit a running cluster.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `git mv` the form and its test, write the preset tests and the retirement test (titles as in the AC refs), move the discard tests to `DiscardClusterDialog.test.tsx`; run `mise x node@24.20.0 -- npm --prefix frontend test -- src/presets/PresetForm.test.tsx src/clusters/DiscardClusterDialog.test.tsx`: fails.
+- Rewrite `PresetForm.tsx` and `clusterSpecForm.ts`, drop `patchCluster` and `PatchCluster` from `client.ts`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Deletion of the edit path is pinned by `cluster_edit_path_retired` (deletion pinned by a retirement test).
+- Keep the Model and Effort selects, env rows, any-mcp JSON and resource fields from cluster-form-defaults-and-ga; only the slug, mode and PATCH parts change.
+- A field the user clears to empty counts as set to empty only where an empty value is meaningful for ClusterSpec (nullable keys); otherwise it falls back to unset. Builder's choice within that boundary, documented in a code comment.

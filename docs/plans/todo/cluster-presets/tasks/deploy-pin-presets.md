@@ -48,17 +48,19 @@ The value is the short sha (7 hex) of this epic's agent-orchestrator main merge;
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes the published chart `oci://harbor.szymonrichert.pl/charts/agent-orchestrator` `0.1.0-main.<sha7>` and image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>` (contracts `agent-orchestrator-chart`, `agent-orchestrator-image`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows only the agent-orchestrator chart version and image tag changing to this epic's merge.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Update `test_orchestrator_pin_matches_image` to the new sha and to read `helmfile.yaml.gotmpl` as text; run `uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k test_orchestrator_pin_matches_image`: fails.
+- Change the two pins; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Check the chart and image exist before pinning when credentials allow (`helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version 0.1.0-main.<sha7>`).
+- `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` build the helmfile and pull charts; they fail here on network policy and are deselected in the verify, not changed.
+- Apply and smoke are not this task's verify; the user runs them.

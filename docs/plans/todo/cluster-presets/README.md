@@ -112,7 +112,7 @@ Order: cluster-form-defaults-and-ga (in progress; it reworks the same form, /met
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 62 agent-min | Critical path: 46 min | Expected wall at P=1.5: 1.5 h (k=2.0) | Actual: 0 min | Remaining estimate: 62 min
 
 ## Review
 
