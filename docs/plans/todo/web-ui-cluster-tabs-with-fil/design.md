@@ -87,6 +87,9 @@ When no tab is selected and clusters exist, the first cluster by slug is selecte
 ### D11: Shell process
 The shell is `/bin/bash -l` (falling back to `/bin/sh -l` when bash is absent) with `TERM=xterm-256color`, started under `PtyProcess` in the session workdir with the service environment minus the scrubbed secrets. Terminals are capped per wrapper process (`limits.terminals_max` 8), which is per pod. (my call)
 
+### D12: Q1 one cluster per tab
+Q1: one cluster is one tab; every cluster is shown, tabs are not closable, the bar scrolls and is ordered by slug. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -165,6 +168,7 @@ The shell is `/bin/bash -l` (falling back to `/bin/sh -l` when bash is absent) w
 | D9 Pins, merge order and deploy | wrapper-sha-pin, kind-e2e-workspace, deploy-pin |
 | D10 Tab selection default | fe-retire-ribbon |
 | D11 Shell process | terminal-registry |
+| D12 Q1 one cluster per tab | fe-top-bar, fe-retire-ribbon |
 
 ## Contracts
 
