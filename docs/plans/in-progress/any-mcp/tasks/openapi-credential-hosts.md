@@ -1,6 +1,6 @@
 ---
 title: openapi credential hosts
-status: in-progress
+status: done
 repo: any-mcp
 value: credentials never reach a host the operator did not configure
 files: [src/any_mcp/openapi.py, src/any_mcp/http.py, tests/test_openapi.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-openapi-credential-hosts/any-mcp
-branch: any-mcp-openapi-credential-hosts
-verified_head: ""
-run: ""
+branch: "HEAD (worktree any-mcp-openapi-credential-hosts)"
+verified_head: 4ece80b7a74121ff60ee4cd0c3183d465793c388
+run: any-mcp
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # openapi credential hosts
