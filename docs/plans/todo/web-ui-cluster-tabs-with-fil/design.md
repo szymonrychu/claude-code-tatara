@@ -90,6 +90,9 @@ The shell is `/bin/bash -l` (falling back to `/bin/sh -l` when bash is absent) w
 ### D12: Q1 one cluster per tab
 Q1: one cluster is one tab; every cluster is shown, tabs are not closable, the bar scrolls and is ordered by slug. (user decision)
 
+### D13: Q15 no Edit entry point
+Q15: the cluster Edit action is dropped from the UI in this epic; tab actions carry only Discard. PATCH and the ClusterForm edit code stay until the cluster-presets epic removes them. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -169,6 +172,7 @@ Q1: one cluster is one tab; every cluster is shown, tabs are not closable, the b
 | D10 Tab selection default | fe-retire-ribbon |
 | D11 Shell process | terminal-registry |
 | D12 Q1 one cluster per tab | fe-top-bar, fe-retire-ribbon |
+| D13 Q15 no Edit entry point | fe-top-bar, fe-retire-ribbon |
 
 ## Contracts
 

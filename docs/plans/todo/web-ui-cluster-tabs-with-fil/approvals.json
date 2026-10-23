@@ -4,7 +4,8 @@
     "text": "The left ribbon is replaced by a top tab bar: one tab per cluster with its state mark, slug and context gauge; New cluster and Discard are reachable from the bar; the cluster Edit action is dropped from the UI.",
     "decisions": [
       "D10",
-      "D12"
+      "D12",
+      "D13"
     ],
     "tasks": [
       "fe-retire-ribbon",
