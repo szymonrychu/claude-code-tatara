@@ -1,6 +1,6 @@
 ---
 title: api allowlist pod gateways
-status: escalated
+status: done
 repo: agents-helmfile
 value: LAN users reach the UI while agent pods stay refused
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -56,6 +56,10 @@ What is true and observable when the task is done.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Ruling
+
+- 2026-10-23 accepted: gate-repeat on a parking-wording false positive: common.yaml:22 is the required note that the list tracks the node set; hand-verified on 02b3cc9: tests/test_orchestrator_release.py 9 passed, mise run lint exit 0 (the verifier's 2 ruff errors were on a stale base).
 
 ## Notes
 

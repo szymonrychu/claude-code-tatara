@@ -10,5 +10,11 @@
     "accept": true,
     "reason": "round-cap only on AC3, which could not pass before the release tasks land (orchestrator planning error); AC3 moved to db-release AC5; AC1/AC2 verified on 1fcd489.",
     "at": "2026-10-23T06:58:27Z"
+  },
+  {
+    "task": "api-allowlist-pod-gateways",
+    "accept": true,
+    "reason": "gate-repeat on a parking-wording false positive: common.yaml:22 is the required note that the list tracks the node set; hand-verified on 02b3cc9: tests/test_orchestrator_release.py 9 passed, mise run lint exit 0 (the verifier's 2 ruff errors were on a stale base).",
+    "at": "2026-10-23T07:47:09Z"
   }
 ]
