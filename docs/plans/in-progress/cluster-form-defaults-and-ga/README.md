@@ -37,3 +37,13 @@ Estimate: 29 agent-min | Critical path: 17 min | Expected wall at P=1.5: 0.6 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-23)
+
+Whole-diff review (sonnet reviewer): 3 medium findings, all fixed in run wf_e3cf829b-ffa:
+- render-time resource defaults would roll running clusters: moved to write time (2d099ec); goldens identical to origin/main.
+- PATCH 422 for stored legacy model/effort and for high request without limit: validate only changed values, guarded fill (2d099ec).
+- edit mode blank Model select for null model: default option (34631bd).
+Also fixed a pre-existing timing flake in test_at_most_eight_sends_in_flight (3fcbb0b; TDD exception: test-only change, red shown by cap mutation 7/9).
+Full suites on 3fcbb0b: test 405 passed; integration 8 passed; chart, lint, lint:chart, fe lint/test/build/check:api, kind e2e all exit 0.
+Ruling: user said live session edit is not needed; edit removal belongs to the cluster-presets epic.
