@@ -16,5 +16,11 @@
     "accept": true,
     "reason": "land-failed was a rebase conflict from dependency commits duplicated under other SHAs; the task's own commits 8624fe8/55dbb33 were cherry-picked onto the epic tip as fcd7210/1ad933b (no conflicts) and fast-forwarded; verified there: test_render.py + test_settings.py 40 passed, lint clean.",
     "at": "2026-10-23T02:15:01Z"
+  },
+  {
+    "task": "reconciler-loop",
+    "accept": true,
+    "reason": "gate-repeat on a parking-wording false positive: loop.py:118 documents the pre-discard hook seam that the planned discard-hook-and-export task (dependent of this task) fills in; no work deferred outside the plan. Verified true on ab3e57c.",
+    "at": "2026-10-23T02:36:05Z"
   }
 ]

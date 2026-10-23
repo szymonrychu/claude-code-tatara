@@ -1,6 +1,6 @@
 ---
 title: reconciler loop
-status: escalated
+status: done
 repo: agent-orchestrator
 value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and discard clusters without drift after a crash."
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]
@@ -105,6 +105,10 @@ Cluster rows drive Kubernetes objects and agents rows, idempotently, with discar
 - Implement kube.py, db/agents.py and reconciler/loop.py.
 - Rerun; expect `13 passed`.
 - Add the README section; run `mise run lint`.
+
+## Ruling
+
+- 2026-10-23 accepted: gate-repeat on a parking-wording false positive: loop.py:118 documents the pre-discard hook seam that the planned discard-hook-and-export task (dependent of this task) fills in; no work deferred outside the plan. Verified true on ab3e57c.
 
 ## Notes
 
