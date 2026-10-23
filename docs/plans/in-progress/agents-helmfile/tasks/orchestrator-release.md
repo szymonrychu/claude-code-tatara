@@ -1,6 +1,6 @@
 ---
 title: orchestrator release
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "The orchestrator runs in namespace agents and answers at agents.szymonrichert.pl from the LAN only, with new sessions carrying any-mcp."
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]

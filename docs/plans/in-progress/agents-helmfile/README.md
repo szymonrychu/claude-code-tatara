@@ -2,7 +2,7 @@
 title: agents-helmfile
 blockers: [agent-orchestrator]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-helmfile]
 created: 2026-10-22
 ---

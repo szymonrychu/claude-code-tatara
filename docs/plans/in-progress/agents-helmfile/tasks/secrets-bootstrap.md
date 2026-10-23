@@ -1,6 +1,6 @@
 ---
 title: secrets bootstrap
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "The Claude token, master key and backup credentials exist encrypted in git without ever being shown, so the orchestrator can authenticate agents."
 files: [scripts/bootstrap-secrets.sh, values/agent-orchestrator/default.secrets.yaml, values/agent-orchestrator-db/default.secrets.yaml, tests/test_secrets.py]

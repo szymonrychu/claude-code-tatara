@@ -1,6 +1,6 @@
 ---
 title: mise tasks
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "One command each to diff and apply the namespace locally, guarded by lint and tests."
 files: [mise.toml, README.md, tests/test_mise_tasks.py]

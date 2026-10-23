@@ -1,6 +1,6 @@
 ---
 title: scaffold repo
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "A tested, secret-safe repo skeleton with lint, test and a copied .env, so every later task has tooling and the guarantee that nothing sensitive is committed."
 files: [pyproject.toml, uv.lock, mise.toml, .gitignore, .sops.yaml, .gitleaks.toml, .pre-commit-config.yaml, tests/test_repo_hygiene.py]

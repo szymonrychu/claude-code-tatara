@@ -1,6 +1,6 @@
 ---
 title: helmfile base
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "The namespace-agents helmfile skeleton with the regcred hook, so releases render and apply the way the rest of the homelab does."
 files: [helmfile.yaml.gotmpl, .hook.sh, values/common.yaml, raw/regcred.pre.secrets.yaml, tests/conftest.py, tests/test_helmfile_base.py]
