@@ -227,6 +227,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
 - Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
 - Q10: How does the tree stay current? [recommended: re-fetch directories touched by the cluster event stream plus a manual refresh button; no inotify]
+- Q11: What does a minimized panel look like? [recommended: a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split]
 
 ## Irreversible operations in scope
 
