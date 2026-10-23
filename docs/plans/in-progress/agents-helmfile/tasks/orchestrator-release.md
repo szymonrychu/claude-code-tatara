@@ -64,7 +64,7 @@ Consumes contracts agent-orchestrator-chart, agent-orchestrator-settings-env, ag
 ## Steps
 
 - Write tests/test_orchestrator_release.py; run it; expect failures.
-- Run `helm show chart` and `helm show values` on the published chart (published by agent-orchestrator CI as oci://harbor.szymonrichert.pl/charts/agent-orchestrator version 0.1.0; try anonymous first, else `helm registry login` with the Harbor robot credentials supplied by the orchestrator, never printed), then add the release and values/agent-orchestrator/common.yaml (and raw/ secrets manifests when the chart cannot create the Secrets).
+- Run `helm show chart` and `helm show values` on the published chart (published by agent-orchestrator CI as oci://harbor.szymonrichert.pl/charts/agent-orchestrator version 0.1.0-main.ccb7c04 (appVersion ccb7c04, confirmed in Harbor); try anonymous first, else `helm registry login` with the Harbor robot credentials supplied by the orchestrator, never printed), then add the release and values/agent-orchestrator/common.yaml (and raw/ secrets manifests when the chart cannot create the Secrets).
 - Rerun both release tests and `mise run lint`; expect `passed`.
 
 ## Notes
