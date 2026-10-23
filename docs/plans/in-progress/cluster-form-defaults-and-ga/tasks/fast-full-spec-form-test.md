@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "PR #3 frontend CI goes green, so the form fix can ship"
 files: [frontend/src/clusters/ClusterForm.test.tsx]
 verify: "cd frontend && npx vitest run src/clusters && npm run lint"
-depends_on: []
+depends_on: [model-default-option]
 owns: []
 uses: []
 model: sonnet
@@ -41,12 +41,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The full-spec test runs in well under 2 s locally with a 15 s explicit timeout; assertions unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Test-only change (exception: no behaviour change). Record the current duration with `npx vitest run src/clusters/ClusterForm.test.tsx --reporter=verbose`.
+- Switch long typing to paste or a no-delay userEvent instance, add the 15000 ms timeout, rerun: passes, duration under 2000 ms.
 
 ## Notes
 
