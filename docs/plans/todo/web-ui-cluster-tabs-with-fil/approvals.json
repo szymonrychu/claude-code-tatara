@@ -57,12 +57,13 @@
     "text": "The filesystem panel shows the cluster's shared workdir as a lazily loaded tree (VS Code explorer style), refreshed when the event stream shows a write, with a read-only file preview.",
     "decisions": [
       "D1",
-      "D8"
+      "D8",
+      "D23"
     ],
     "tasks": [
-      "wrapper-file-api",
+      "fe-filesystem-panel",
       "file-proxy-routes",
-      "fe-filesystem-panel"
+      "wrapper-file-api"
     ],
     "status": "approved"
   },

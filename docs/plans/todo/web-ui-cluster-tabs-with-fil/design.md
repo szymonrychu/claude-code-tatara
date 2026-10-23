@@ -120,6 +120,9 @@ Q6: the shell environment drops CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN a
 ### D22: Q7 LAN-only with mandatory Origin allowlist
 Q7: an unauthenticated LAN-only shell is acceptable with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) on every WebSocket upgrade and the existing source allowlist; authentication stays a separate epic. (user decision)
 
+### D23: Q8 everything, lazy, 2000 entries with more
+Q8: the tree shows everything, dotfiles and .git included, loaded lazily per directory, at most 2000 entries per directory with a more row. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -209,6 +212,7 @@ Q7: an unauthenticated LAN-only shell is acceptable with a mandatory Origin allo
 | D20 Q5 shell lifetime, replay and cap | pty-resize-and-raw-ring, terminal-registry, terminal-websocket-api, fe-terminal-socket, fe-terminal-panel |
 | D21 Q6 scrub secrets from the shell env | terminal-registry, wrapper-workspace-e2e |
 | D22 Q7 LAN-only with mandatory Origin allowlist | origin-allowlist, terminal-ws-relay, deploy-pin |
+| D23 Q8 everything, lazy, 2000 entries with more | wrapper-file-api, file-proxy-routes, fe-filesystem-panel |
 
 ## Contracts
 
