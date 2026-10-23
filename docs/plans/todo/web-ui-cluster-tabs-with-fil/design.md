@@ -277,6 +277,20 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - The reconnect backoff curve of the terminal socket within 1 to 30 s.
 - Mocking strategy for `react-resizable-panels`, `@xterm/xterm` and `@mui/x-tree-view` under jsdom.
 
+### Builder check rulings (my call)
+
+1. Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
+2. The idle clock starts at creation for a never-attached terminal, else at the last detach. terminals_max counts every registered terminal, alive or exited; an exited terminal with no attached client is reaped at the next reaper tick.
+3. Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
+4. The shell env is the same env the Claude process gets (BASE_ENV plus the passthrough set, which includes spec.env) minus CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN; not the whole service env.
+5. Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
+6. Reconnect on 1006, 1011, 1013 and 4409 with exponential backoff 1 s to 30 s, at most 10 attempts, then state refused; never reconnect on 1000, 1003, 1008, 1009. A refused tab stays with the reason, a Retry and a Close button.
+7. A maximized panel shows one Restore control that returns the layout from before maximize; restoring a single minimized strip returns that panel to its pre-minimize size (Panel.expand()); double-click on a separator still resets 25/45/30.
+8. Symlink entries are leaves that preview through the content route (an escape outside the workdir shows the wrapper error inline); other entries are leaves showing type only, no preview.
+9. Only the active cluster tab's Workspace is mounted; switching away unmounts it and terminals reattach with scrollback replay on return. A minimized panel stays mounted, so its event subscription stays live.
+10. Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
+11. A missing workdir root (not_found for path "") renders as an empty tree with the line "workdir not created yet", not as an error.
+
 ## Assumptions and unknowns
 
 - `react-resizable-panels` 4 and `@xterm/xterm` 6 need mocks under jsdom (no ResizeObserver, no canvas): confirmed by the first frontend task that imports them; tests mock them like `react-virtuoso`.

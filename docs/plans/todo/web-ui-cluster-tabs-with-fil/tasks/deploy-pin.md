@@ -64,3 +64,4 @@ The values are the short shas (7 hex) of the agent-orchestrator main merge and t
 
 - Check the chart and images exist before pinning when credentials allow (`helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version 0.1.0-main.<sha7>`); the precedent run blocked on a transient Harbor 403 in chart publish.
 - Apply and smoke are not this task's verify: no cluster access in this container, and the user runs them.
+- Builder check ruling 10: Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
