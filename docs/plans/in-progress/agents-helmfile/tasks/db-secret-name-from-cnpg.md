@@ -1,6 +1,6 @@
 ---
 title: db secret name from cnpg
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the orchestrator connects to the database CNPG actually created
 files: [values/agent-orchestrator/common.yaml, values/agent-orchestrator-db/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-secret-name-from-cnpg/agents-helmfile
 branch: agents-helmfile-db-secret-name-from-cnpg
-verified_head: ""
-run: ""
+verified_head: 375635a217c2ade60efe6ebffee99dd121d70fa8
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: ["mise run lint fails on 2 errors outside this task's files (FURB167 re.M at tests/test_helmfile_base.py:121, PLW1510 at tests/test_mise_tasks.py:87). The new code in tests/test_orchestrator_release.py is lint-clean (it carries noqa PLW1510). Fix in the integrating branch."]
 ---
 
 # db secret name from cnpg
