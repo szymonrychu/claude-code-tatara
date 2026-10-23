@@ -1,6 +1,6 @@
 ---
 title: smoke script
-status: in-progress
+status: done
 repo: agents-helmfile
 value: A repeatable proof that the deployed UI answers and a fresh agent pod lists any-mcp.
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-smoke-script/agents-helmfile
 branch: agents-helmfile-smoke-script
-verified_head: ""
+verified_head: 6b8fa017763c2ea130a9a77556e7e14e88cdfb7e
 run: agents-helmfile
 provides: []
 acs_for_audit: []
