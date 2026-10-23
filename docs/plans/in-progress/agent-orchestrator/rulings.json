@@ -22,5 +22,11 @@
     "accept": true,
     "reason": "gate-repeat on a parking-wording false positive: loop.py:118 documents the pre-discard hook seam that the planned discard-hook-and-export task (dependent of this task) fills in; no work deferred outside the plan. Verified true on ab3e57c.",
     "at": "2026-10-23T02:36:05Z"
+  },
+  {
+    "task": "session-bootstrap",
+    "accept": true,
+    "reason": "gate-repeat on parking-wording false positives (loop.py:168/348, sessions.py:6/12 restate the required retry-on-next-tick behaviour); verified on e91ee1a: 14 passed, lint clean. The discovered 'reconciler wiring in an entrypoint' is the planned entrypoints-and-singleton task.",
+    "at": "2026-10-23T02:44:33Z"
   }
 ]

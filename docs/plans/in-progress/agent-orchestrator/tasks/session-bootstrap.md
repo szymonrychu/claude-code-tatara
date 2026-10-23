@@ -1,6 +1,6 @@
 ---
 title: session bootstrap
-status: escalated
+status: done
 repo: agent-orchestrator
 value: "Every ready agent pod gets exactly one wrapper session, adopted after a restart instead of duplicated."
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]
@@ -72,6 +72,10 @@ After reconcile, each ready agent row has the wrapper session id the ingester an
 - Write tests/test_session_bootstrap.py with the eleven named tests against FakeWrapper and FakeKube; run it; expect failures.
 - Implement sessions.py and call it from Reconciler.reconcile_once.
 - Rerun `uv run pytest tests/test_session_bootstrap.py -q`; expect `11 passed`; run `mise run lint`.
+
+## Ruling
+
+- 2026-10-23 accepted: gate-repeat on parking-wording false positives (loop.py:168/348, sessions.py:6/12 restate the required retry-on-next-tick behaviour); verified on e91ee1a: 14 passed, lint clean. The discovered 'reconciler wiring in an entrypoint' is the planned entrypoints-and-singleton task.
 
 ## Notes
 
