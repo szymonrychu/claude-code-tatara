@@ -1,6 +1,6 @@
 ---
 title: discard hook and export
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: Discarding a cluster deletes everything while an optional hook still receives the full chat history first
 files: [src/agent_orchestrator/db/export.py, src/agent_orchestrator/reconciler/discard_hook.py, src/agent_orchestrator/reconciler/loop.py, tests/test_discard_hook.py, README.md]
