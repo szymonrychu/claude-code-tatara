@@ -90,6 +90,9 @@ Q4: PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the 
 ### D15: Q5 default preset guards
 Q5: the default preset can be edited and copied, not renamed or deleted (409); the API refuses to delete the last preset (2026-10-23) (user decision)
 
+### D16: Q6 seeded default content
+Q6: the seeded default preset holds replicas 1 and every other field empty (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -145,6 +148,7 @@ Q5: the default preset can be edited and copied, not renamed or deleted (409); t
 | D13 Q3 snapshot at create | create-cluster-from-preset, kind-e2e-presets |
 | D14 Q4 PATCH retired from the API | retire-cluster-patch-route, fe-preset-form |
 | D15 Q5 default preset guards | presets-table-and-repo, preset-routes, fe-presets-page |
+| D16 Q6 seeded default content | presets-table-and-repo |
 
 ## Contracts
 

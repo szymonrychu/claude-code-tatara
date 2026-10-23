@@ -22,7 +22,8 @@
     "decisions": [
       "D1",
       "D3",
-      "D15"
+      "D15",
+      "D16"
     ],
     "tasks": [
       "fe-presets-page",
