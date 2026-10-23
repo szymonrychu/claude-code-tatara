@@ -4,7 +4,7 @@ status: todo
 repo: claude-code-wrapper
 value: "the wrapper can run, share, reap and close login shells in a session workdir with secrets scrubbed"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/config.py, src/claude_code_wrapper/manager.py, README.md, tests/test_terminals.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check ."
+verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py tests/test_manager.py --deselect tests/test_manager.py::test_shutdown_stops_all && uv run ruff check . && uv run ruff format --check ."
 depends_on: [pty-resize-and-raw-ring, wrapper-file-api]
 owns: [terminal-registry]
 uses: [pty-resize, ring-raw-snapshot, wrapper-path-confinement]
@@ -89,14 +89,14 @@ The manager can start, fan out, resize, reap and close login shells in a session
 
 - Concurrency is the risk: `PtyProcess` has one `on_output` callback, called on the loop; fan out from it with `queue.put_nowait` per subscriber and treat `QueueFull` as overflow. Never await inside the callback.
 - Snapshot and subscribe in the same synchronous block (no await between) so replay and live output join exactly.
-- `CCW_HOOK_TOKEN` is per session and normally absent from `service_env`; scrub it anyway (defence in depth, user Q6; the same uid can still read `/proc`, which the trust model accepts).
+- `CCW_HOOK_TOKEN` is per session and is set by `_child_env`; it is scrubbed with the other tokens (defence in depth, user Q6; the same uid can still read `/proc`, which the trust model accepts).
 - The shell is a login shell so `/etc/profile.d/mise-shims.sh` puts the mise tools on PATH in the image (Dockerfile:81).
 - Tests run real children: use `/bin/sh` (present everywhere) and short `wait_until` bounds.
-- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies; CI on main is green); never a verify target. Do not edit `tests/conftest.py`.
+- `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies; CI on main is green); the verify command includes `tests/test_manager.py` (this task touches the manager destroy, stop and shutdown paths) with that one test deselected. Do not edit `tests/conftest.py`.
 - Builder check ruling 1: Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
 - Builder check ruling 2: The idle clock starts at creation for a never-attached terminal, else at the last detach. terminals_max counts every registered terminal, alive or exited; an exited terminal with no attached client is reaped at the next reaper tick.
 - Builder check ruling 3: Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
-- Builder check ruling 4: The shell env is the same env the Claude process gets (BASE_ENV plus the passthrough set, which includes spec.env) minus CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN; not the whole service env.
+- Builder check ruling 4 (widened by interrogate ruling 1): The shell env is the env `manager._child_env(ctx)` builds for Claude (BASE_ENV plus the passthrough set, which includes spec.env, plus TERM) minus every ClaudeEnv name of kind secret (claude_env.py:30) and CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN; not the whole service env.
 - Builder check ruling 5: Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
 
 - 2026-10-23 amended: builder check rulings 1,2,3,4,5 add acceptance conditions AC11-AC16

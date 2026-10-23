@@ -83,7 +83,7 @@ README (`code/claude-code-wrapper/README.md`): one `### \`GET /v1/sessions/{id}/
 ## Notes
 
 - Confinement precedent: `workdir.py:safe_write_files` (realpath root, `is_relative_to`). Do not move or change it; the new helper is read-side.
-- Read with a bounded read (`size` from `os.stat` first; never `read()` an unbounded file); do the blocking filesystem work in `asyncio.to_thread` so a slow CephFS stat does not stall the loop.
+- Read with a bounded read (`size` from `os.fstat` on the opened descriptor; never `read()` an unbounded file; never stat then open by path); do the blocking filesystem work in `asyncio.to_thread` so a slow CephFS stat does not stall the loop.
 - `mtime` as UTC ISO-8601 with milliseconds, like other wrapper timestamps.
 - Wrapper rules: plain ASCII, `uv run` always, never write service files into a session workdir (tests create their own fixture files in `tmp_path`).
 - `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies); not a verify target.

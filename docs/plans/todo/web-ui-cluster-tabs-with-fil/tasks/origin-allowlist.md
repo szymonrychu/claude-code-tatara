@@ -51,6 +51,7 @@ Add the mandatory Origin allowlist to the orchestrator api (design D5, user Q7),
 - `src/agent_orchestrator/api/origin.py`
 - `src/agent_orchestrator/api/app.py`
 - `README.md`
+- `chart/agent-orchestrator/README.md`
 - `e2e/values-kind.yaml`
 - `tests/test_origin.py`
 
