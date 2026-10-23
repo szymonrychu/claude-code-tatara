@@ -41,12 +41,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The cap test synchronises on an event, not sleep overlap, and is stable under load.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Test-only change (exception: the test itself is the deliverable). Rewrite the wrapper to gate on an asyncio.Event set when now reaches 8; assert peak == 8 and never above.
+- Run the AC1 loop: 20 passes. Run the verify command.
 
 ## Notes
 
