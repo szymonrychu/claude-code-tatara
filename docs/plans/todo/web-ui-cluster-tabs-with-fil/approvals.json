@@ -58,7 +58,8 @@
     "decisions": [
       "D1",
       "D8",
-      "D23"
+      "D23",
+      "D24"
     ],
     "tasks": [
       "fe-filesystem-panel",

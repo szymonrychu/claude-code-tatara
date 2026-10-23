@@ -123,6 +123,9 @@ Q7: an unauthenticated LAN-only shell is acceptable with a mandatory Origin allo
 ### D23: Q8 everything, lazy, 2000 entries with more
 Q8: the tree shows everything, dotfiles and .git included, loaded lazily per directory, at most 2000 entries per directory with a more row. (user decision)
 
+### D24: Q9 read-only preview
+Q9: clicking a file opens a read-only preview in the filesystem panel: text up to 1 MiB; binary files show size and type. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -213,6 +216,7 @@ Q8: the tree shows everything, dotfiles and .git included, loaded lazily per dir
 | D21 Q6 scrub secrets from the shell env | terminal-registry, wrapper-workspace-e2e |
 | D22 Q7 LAN-only with mandatory Origin allowlist | origin-allowlist, terminal-ws-relay, deploy-pin |
 | D23 Q8 everything, lazy, 2000 entries with more | wrapper-file-api, file-proxy-routes, fe-filesystem-panel |
+| D24 Q9 read-only preview | wrapper-file-api, fe-filesystem-panel |
 
 ## Contracts
 
