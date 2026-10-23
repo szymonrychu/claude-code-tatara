@@ -158,5 +158,15 @@
       "agent-orchestrator"
     ],
     "note": "claude-code-wrapper POST|GET /v1/sessions/{id}/terminals, DELETE .../{terminal_id}, WS .../{terminal_id}/attach (binary PTY bytes; JSON resize, ping/pong, exit; replay 256 KiB; close 1000/1003/1009/1013); errors terminal_limit 409, terminal_not_found 404; consumed by agent-orchestrator tasks terminal-proxy-routes, terminal-ws-relay"
+  },
+  {
+    "name": "orch-allowed-origins",
+    "kind": "schema",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/settings.py",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "ORCH_ALLOWED_ORIGINS: CSV of scheme://host[:port]; refuses Origin-bearing WebSocket upgrades not listed (1008) and unlisted Origin on terminal POST/DELETE (403 forbidden_origin); agents-helmfile sets https://agents.szymonrichert.pl"
   }
 ]
