@@ -1,6 +1,6 @@
 ---
 title: spa serving and dockerfile
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Ships the web UI inside the orchestrator image and makes CI prove the frontend builds, lints, tests and matches the API types."
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, Dockerfile, .dockerignore, .github/workflows/ci.yaml, tests/test_spa.py]

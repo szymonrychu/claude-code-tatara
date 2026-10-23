@@ -1,6 +1,6 @@
 ---
 title: fe shell and ribbon
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "The left ribbon of clusters and agents with working or waiting state, pod counts and context gauges, live."
 files: [frontend/src/App.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/AgentRow.tsx, frontend/src/ribbon/useClusters.ts, frontend/src/components/StatusItem.tsx, frontend/src/ribbon/Ribbon.test.tsx]

@@ -1,6 +1,6 @@
 ---
 title: fe chat model
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Turns stored agent events into readable chat items: inputs, outputs, thinking, paired tool calls, peer messages and gaps."
 files: [frontend/src/chat/chatModel.ts, frontend/src/chat/chatModel.test.ts]

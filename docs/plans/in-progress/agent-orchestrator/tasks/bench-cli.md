@@ -1,6 +1,6 @@
 ---
 title: bench cli
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Runs the experiment the user wants: does round-robin with several peered agents finish faster, fail less and verify more often?"
 files: [src/agent_orchestrator/bench/__init__.py, src/agent_orchestrator/bench/spec.py, src/agent_orchestrator/bench/runner.py, src/agent_orchestrator/bench/report.py, src/agent_orchestrator/cli.py, tests/test_bench.py, examples/bench.yaml, README.md]

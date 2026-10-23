@@ -1,6 +1,6 @@
 ---
 title: fe chat log paging
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "The main chat view with smart loading: newest messages instantly, older ones on scroll-up, live updates, and per-agent filters."
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/entries.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/AgentFilter.tsx, frontend/src/chat/ChatView.tsx, frontend/src/App.tsx, frontend/src/chat/ChatLog.test.tsx]

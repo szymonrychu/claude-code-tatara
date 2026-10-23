@@ -1,6 +1,6 @@
 ---
 title: fe api client and stream
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Typed access to every API route the UI uses, generated from the server's OpenAPI, with a resilient live-event stream."
 files: [frontend/package.json, frontend/src/api/schema.d.ts, frontend/src/api/client.ts, frontend/src/api/stream.ts, frontend/src/api/stream.test.ts]

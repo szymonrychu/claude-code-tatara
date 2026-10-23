@@ -1,6 +1,6 @@
 ---
 title: fe cluster form
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Defines new clusters with their full config and discards them safely, from the UI."
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/DiscardClusterDialog.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/clusters/ClusterForm.test.tsx]
