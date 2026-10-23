@@ -111,6 +111,9 @@ Q3: a terminal is a shell in a chosen agent pod, served by the wrapper and proxi
 ### D19: Q4 several shells as tabs with pod choice
 Q4: several concurrent shells as tabs, each with its own pod choice, the first ready agent preselected. (user decision)
 
+### D20: Q5 shell lifetime, replay and cap
+Q5: a shell survives tab switches and page reloads, is reaped 15 minutes after its last client detaches, replays 256 KiB of scrollback on reattach, and at most 8 shells run per pod. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -197,6 +200,7 @@ Q4: several concurrent shells as tabs, each with its own pod choice, the first r
 | D17 Q2 agents strip in the chat header | fe-agents-strip |
 | D18 Q3 shell in an agent pod via wrapper and api proxy | terminal-registry, terminal-websocket-api, terminal-proxy-routes, terminal-ws-relay |
 | D19 Q4 several shells as tabs with pod choice | terminal-proxy-routes, fe-terminal-panel |
+| D20 Q5 shell lifetime, replay and cap | pty-resize-and-raw-ring, terminal-registry, terminal-websocket-api, fe-terminal-socket, fe-terminal-panel |
 
 ## Contracts
 
