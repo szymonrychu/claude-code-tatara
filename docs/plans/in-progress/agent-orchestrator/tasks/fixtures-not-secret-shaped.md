@@ -1,6 +1,6 @@
 ---
 title: fixtures not secret shaped
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: secret scanners stay quiet on fake test data
 files: [e2e/values-kind.yaml, scripts/e2e.sh, tests/test_chart_config.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fixtures-not-secret-shaped/agent-orchestrator
 branch: agent-orchestrator-fixtures-not-secret-shaped
-verified_head: ""
-run: ""
+verified_head: e147d5a194d0e409be6aefa3cc660cdd85f15aaa
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 ---
 
 # fixtures not secret shaped
