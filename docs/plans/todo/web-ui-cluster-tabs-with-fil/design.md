@@ -228,6 +228,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
 - Q10: How does the tree stay current? [recommended: re-fetch directories touched by the cluster event stream plus a manual refresh button; no inotify]
 - Q11: What does a minimized panel look like? [recommended: a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split]
+- Q12: Phone layout? [recommended: one panel at a time with a three-way switch (a forced maximize), the cluster tabs scroll]
 
 ## Irreversible operations in scope
 
