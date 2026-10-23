@@ -114,6 +114,9 @@ Q4: several concurrent shells as tabs, each with its own pod choice, the first r
 ### D20: Q5 shell lifetime, replay and cap
 Q5: a shell survives tab switches and page reloads, is reaped 15 minutes after its last client detaches, replays 256 KiB of scrollback on reattach, and at most 8 shells run per pod. (user decision)
 
+### D21: Q6 scrub secrets from the shell env
+Q6: the shell environment drops CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN and CLAUDE_CODE_OAUTH_TOKEN, as defence in depth. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -201,6 +204,7 @@ Q5: a shell survives tab switches and page reloads, is reaped 15 minutes after i
 | D18 Q3 shell in an agent pod via wrapper and api proxy | terminal-registry, terminal-websocket-api, terminal-proxy-routes, terminal-ws-relay |
 | D19 Q4 several shells as tabs with pod choice | terminal-proxy-routes, fe-terminal-panel |
 | D20 Q5 shell lifetime, replay and cap | pty-resize-and-raw-ring, terminal-registry, terminal-websocket-api, fe-terminal-socket, fe-terminal-panel |
+| D21 Q6 scrub secrets from the shell env | terminal-registry, wrapper-workspace-e2e |
 
 ## Contracts
 

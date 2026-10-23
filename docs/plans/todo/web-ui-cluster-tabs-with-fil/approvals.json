@@ -37,7 +37,8 @@
       "D11",
       "D18",
       "D19",
-      "D20"
+      "D20",
+      "D21"
     ],
     "tasks": [
       "fe-terminal-panel",
@@ -46,7 +47,8 @@
       "terminal-proxy-routes",
       "terminal-registry",
       "terminal-websocket-api",
-      "terminal-ws-relay"
+      "terminal-ws-relay",
+      "wrapper-workspace-e2e"
     ],
     "status": "approved"
   },
