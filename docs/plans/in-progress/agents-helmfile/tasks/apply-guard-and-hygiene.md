@@ -1,6 +1,6 @@
 ---
 title: apply guard and hygiene
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: apply can only ever hit the homelab cluster and nothing sensitive gets committed or traced
 files: [mise.toml, .gitignore, .hook.sh, tests/test_mise_tasks.py, tests/test_repo_hygiene.py, tests/test_helmfile_base.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-apply-guard-and-hygiene/agents-helmfile
+branch: agents-helmfile-apply-guard-and-hygiene
 verified_head: ""
 run: ""
 provides: []
