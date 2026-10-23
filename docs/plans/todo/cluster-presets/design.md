@@ -108,6 +108,9 @@ Q10: the Presets page is a full main-area view with a Back button (2026-10-23) (
 ### D21: Q11 no import or export
 Q11: no preset import or export in this epic (2026-10-23) (user decision)
 
+### D22: N2 additive-only exception and dead code
+N2: the README additive-only rule for /api/v1 gets a documented exception for the PATCH retirement in README and the component MEMORY.md with date and why; now-dead code (ClusterDeleting, the stored parameter of validate_spec) is removed and tests/test_migrations is updated for 0002 and the table set (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -169,6 +172,7 @@ Q11: no preset import or export in this epic (2026-10-23) (user decision)
 | D19 Q9 tab shows preset_name only | fe-new-cluster-dialog |
 | D20 Q10 full main-area Presets view | fe-presets-page |
 | D21 Q11 no import or export | preset-routes |
+| D22 N2 additive-only exception and dead code | retire-cluster-patch-route, retire-spec-update-repo, presets-table-and-repo |
 
 ## Contracts
 
