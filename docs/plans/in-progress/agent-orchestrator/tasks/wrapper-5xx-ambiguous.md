@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: a wrapper error after it may have accepted a turn never causes a double send
 files: [src/agent_orchestrator/wrapper/client.py, tests/test_wrapper_client.py, tests/test_dispatcher.py]
 verify: "uv run pytest tests/test_wrapper_client.py tests/test_dispatcher.py -q && mise run lint"
-depends_on: []
+depends_on: [dispatcher-loop, wrapper-client-and-sse]
 owns: []
 uses: []
 model: ""
@@ -44,9 +44,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

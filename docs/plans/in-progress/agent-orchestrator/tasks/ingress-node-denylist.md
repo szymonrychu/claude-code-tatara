@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: agent pods cannot reach the API through the ingress
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
 verify: "uv run pytest tests/test_chart_rbac_ingress.py -q && mise run lint && mise run lint:chart"
-depends_on: []
+depends_on: [ambiguous-send-verifier, bench-cli, container-images-ci, discard-hook-and-export, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-scaffold, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, settings-model]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

@@ -38,6 +38,7 @@ Add release `agent-orchestrator` to `helmfile.yaml.gotmpl`: chart `oci://harbor.
 
 ## Acceptance conditions
 
+- AC0: the ingress denies the cluster node IPs (chart value ingress.denySourceRanges = [192.168.1.26/32, 192.168.1.27/32, 192.168.1.28/32, 192.168.1.29/32, 192.168.1.65/32], read with `kubectl get nodes -o wide` at build time) and allows 192.168.1.0/24 (ingress.allowSourceRanges), so agent pods SNATed to node IPs cannot reach the API through the ingress [evidence: command:uv run pytest tests/test_orchestrator_release.py -q]
 - AC1: the release installs the harbor chart at a pinned version in namespace agents after the database [evidence: command:uv run pytest tests/test_orchestrator_release.py -q -k release_chart_version_and_needs]
 - AC2: the ingress is nginx, letsencrypt-prod, host agents.szymonrichert.pl, whitelisted to 192.168.1.0/24 with a 3600s read timeout and no auth annotation [evidence: command:uv run pytest tests/test_orchestrator_release.py -q -k ingress_lan_only_no_auth]
 - AC3: ORCH_ALLOWED_CIDRS and ORCH_AGENT_IMAGES are set to the specified values [evidence: command:uv run pytest tests/test_orchestrator_release.py -q -k orch_env_values]

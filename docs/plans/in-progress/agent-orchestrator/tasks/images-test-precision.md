@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: the full suite and the integration task run green out of the box
 files: [tests/test_images.py, mise.toml, README.md]
 verify: "uv run pytest tests/test_images.py -q && mise run lint"
-depends_on: []
+depends_on: [ambiguous-send-verifier, bench-cli, container-images-ci, discard-hook-and-export, discard-quiesce-before-expor, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-rbac-and-ingress, helm-chart-scaffold, ingress-node-denylist, kind-e2e, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, settings-model]
 owns: []
 uses: []
 model: ""
@@ -44,9 +44,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The full suite and integration task are green out of the box.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red already seen in the epic full suite (test_no_derived_agent_image) and integration KeyError.
+- Fix the test and the mise task; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

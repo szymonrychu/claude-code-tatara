@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "a discarded cluster's exported history includes every event"
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/discard_hook.py, tests/test_discard_hook.py, README.md]
 verify: "uv run pytest tests/test_discard_hook.py tests/test_reconciler.py -q && mise run lint"
-depends_on: []
+depends_on: [ambiguous-send-verifier, bench-cli, check-jobs, container-images-ci, discard-hook-and-export, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-rbac-and-ingress, ingress-node-denylist, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, session-bootstrap, settings-model]
 owns: []
 uses: []
 model: ""
@@ -46,9 +46,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
