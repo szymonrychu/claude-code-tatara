@@ -1,6 +1,6 @@
 ---
 title: k8s object renderer
-status: escalated
+status: done
 repo: agent-orchestrator
 value: "Turns a cluster spec into the exact Kubernetes objects of a working, peered, any-mcp-enabled agent cluster on shared CephFS."
 files: [src/agent_orchestrator/k8s/__init__.py, src/agent_orchestrator/k8s/labels.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/k8s/on_start.py, tests/test_render.py, tests/golden/cluster_two_peers.yaml, tests/golden/cluster_single.yaml]
@@ -134,6 +134,10 @@ Given a cluster row, the orchestrator produces the objects of D6, a wrapper conf
   - AC15 runs the rendered script with `sh` in a tmp dir. `ANY_MCP_DIR` is overridable for the test, and stub `python3` and `pip` scripts on PATH record their argv.
 - Implement labels.py, on_start.py and render.py.
 - Rerun and expect `18 passed`, then run `mise run lint`.
+
+## Ruling
+
+- 2026-10-23 accepted: land-failed was a rebase conflict from dependency commits duplicated under other SHAs; the task's own commits 8624fe8/55dbb33 were cherry-picked onto the epic tip as fcd7210/1ad933b (no conflicts) and fast-forwarded; verified there: test_render.py + test_settings.py 40 passed, lint clean.
 
 ## Notes
 
