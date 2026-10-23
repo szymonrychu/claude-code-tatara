@@ -40,3 +40,8 @@ Estimate: 150 agent-min | Critical path: 80 min | Expected wall at P=1.5: 3.3 h 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-23)
+
+Whole-diff review (sonnet): PASS; acted on list-tools client cleanup on setup failure and per-client aclose isolation. Security pass: no critical; acted on credential host pinning for OpenAPI specs, unknown-argument rejection, streamed upstream and spec bodies with caps, refusing a non-loopback HTTP bind without a token unless --insecure, CI/release least privilege and tag validation, credential redaction in error bodies; recorded the plugin-reference trust model in docs/configuration.md. Scope audit: A-J landed; H (v0.1.0 tag) is pushed after merge. Full suite on the epic tip: 202 passed, lint clean.
+Rulings: cli-stdio (fix agent died on false positives), docs-authoring/docs-reference/docs-readme-concepts (parking-wording false positives on factual doc sentences, one mandated verbatim), openapi-plugin re-run after a rate-limited implementer; discovered tasks python 3.12 pin and http client aclose built, probe-notes doc folded into docs-reference.
