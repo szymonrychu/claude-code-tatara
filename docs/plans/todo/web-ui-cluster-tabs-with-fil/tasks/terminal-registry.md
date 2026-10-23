@@ -51,6 +51,12 @@ Config (`LimitsConfig`, each with a `## Configuration reference` row and its def
 - AC8: destroying the session and manager shutdown close its terminals [evidence: test:tests/test_terminals.py::test_closed_on_destroy_and_shutdown]
 - AC9: the config keys are documented with their defaults [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_config.py tests/test_config.py]
 - AC10: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check .]
+- AC11: attaching to an exited terminal returns the scrollback and then the exit marker [evidence: test:tests/test_terminals.py::test_attach_exited_replays_then_exit]
+- AC12: the idle clock starts at creation for a never-attached terminal and at the last detach otherwise [evidence: test:tests/test_terminals.py::test_idle_clock_creation_and_detach]
+- AC13: terminals_max counts exited terminals and an exited terminal with no client is reaped at the next reaper tick [evidence: test:tests/test_terminals.py::test_cap_counts_exited_and_reaps_exited]
+- AC14: rows or cols outside 1..1000 on create raise InvalidSize [evidence: test:tests/test_terminals.py::test_invalid_size_rejected]
+- AC15: the shell env is BASE_ENV plus the passthrough set including spec.env, minus the four secrets, and not the whole service env [evidence: test:tests/test_terminals.py::test_env_matches_claude_process_env]
+- AC16: create or attach on a known but not active session raises SessionNotActive and stopping a session closes its shells [evidence: test:tests/test_terminals.py::test_session_not_active_and_closed_on_stop]
 
 ## Files
 
@@ -85,3 +91,10 @@ The manager can start, fan out, resize, reap and close login shells in a session
 - The shell is a login shell so `/etc/profile.d/mise-shims.sh` puts the mise tools on PATH in the image (Dockerfile:81).
 - Tests run real children: use `/bin/sh` (present everywhere) and short `wait_until` bounds.
 - `tests/test_manager.py::test_shutdown_stops_all` fails only in this container (PID 1 does not reap zombies; CI on main is green); never a verify target. Do not edit `tests/conftest.py`.
+- Builder check ruling 1: Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
+- Builder check ruling 2: The idle clock starts at creation for a never-attached terminal, else at the last detach. terminals_max counts every registered terminal, alive or exited; an exited terminal with no attached client is reaped at the next reaper tick.
+- Builder check ruling 3: Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
+- Builder check ruling 4: The shell env is the same env the Claude process gets (BASE_ENV plus the passthrough set, which includes spec.env) minus CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN; not the whole service env.
+- Builder check ruling 5: Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
+
+- 2026-10-23 amended: builder check rulings 1,2,3,4,5 add acceptance conditions AC11-AC16
