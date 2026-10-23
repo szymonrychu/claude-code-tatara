@@ -47,6 +47,7 @@ README: a `### \`GET /api/v1/clusters/{cluster_id}/files\`` and a `### \`GET /ap
 - AC6: README, openapi.json and schema.d.ts match the app [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 - AC7: the fake's file routes have contract cases collected under the integration marker [evidence: command:uv run pytest -q -p no:cacheprovider -m integration --collect-only tests/test_fake_wrapper_contract.py]
 - AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check .]
+- AC9: a wrapper not_found for path empty (missing workdir root) passes through as 404 not_found [evidence: test:tests/test_api_files.py::test_missing_root_not_found_passes_through]
 
 ## Files
 
@@ -80,3 +81,6 @@ A headless client can browse and read a cluster's workdir through `/api/v1` alon
 - `tests/test_readme_api.py::test_frontend_schema_matches_openapi` needs `frontend/node_modules`; the verify runs `npm ci` first.
 - `schema.d.ts` is generated; never hand-edit it.
 - The wrapper field names are the contract (wrapper README `GET /v1/sessions/{id}/files`); copy them, do not rename.
+- Builder check ruling 11: A missing workdir root (not_found for path "") renders as an empty tree with the line "workdir not created yet", not as an error.
+
+- 2026-10-23 amended: builder check rulings 11 add acceptance conditions AC9-AC9
