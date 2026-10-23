@@ -1,6 +1,6 @@
 ---
 title: images test precision
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the full suite and the integration task run green out of the box
 files: [tests/test_images.py, mise.toml, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-images-test-precision/agent-orchestrator
 branch: agent-orchestrator-images-test-precision
-verified_head: ""
-run: ""
+verified_head: a27c8c3b791cecc2e1867f61800098e14e51b4eb
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # images test precision

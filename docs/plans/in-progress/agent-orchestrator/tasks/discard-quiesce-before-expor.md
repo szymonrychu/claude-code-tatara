@@ -1,6 +1,6 @@
 ---
 title: discard quiesce before export
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "a discarded cluster's exported history includes every event"
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/discard_hook.py, tests/test_discard_hook.py, README.md]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-discard-quiesce-before-expor/agent-orchestrator
-branch: agent-orchestrator-discard-quiesce-before-expor
-verified_head: ""
-run: ""
+branch: HEAD
+verified_head: 6e26b8993cd1252bed2742456a28eb81091026cf
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # discard quiesce before export
