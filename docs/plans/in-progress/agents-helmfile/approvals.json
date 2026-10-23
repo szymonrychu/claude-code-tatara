@@ -57,7 +57,8 @@
     ],
     "tasks": [
       "orchestrator-release",
-      "smoke-script"
+      "smoke-script",
+      "smoke-session-mcp-check"
     ],
     "status": "approved"
   }

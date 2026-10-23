@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: the smoke proves any-mcp is connected in a real agent session
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
 verify: "uv run pytest tests/test_smoke_script.py -q -p no:cacheprovider && mise run lint"
-depends_on: [smoke-script]
+depends_on: [db-secret-name-from-cnpg, smoke-script]
 owns: []
 uses: []
 model: ""
@@ -43,9 +43,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+mise run smoke passes on the live deployment.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: live smoke FAIL any-mcp missing; write the test, see it fail.
+- Check the session config dir; run green and the live smoke.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
