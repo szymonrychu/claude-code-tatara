@@ -108,6 +108,9 @@ Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents s
 ### D18: Q3 shell in an agent pod via wrapper and api proxy
 Q3: a terminal is a shell in a chosen agent pod, served by the wrapper and proxied by the orchestrator api; no workspace pod, no Kubernetes pods/exec. (user decision)
 
+### D19: Q4 several shells as tabs with pod choice
+Q4: several concurrent shells as tabs, each with its own pod choice, the first ready agent preselected. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -193,6 +196,7 @@ Q3: a terminal is a shell in a chosen agent pod, served by the wrapper and proxi
 | D16 Q12 phone three-way switch | fe-panel-workspace |
 | D17 Q2 agents strip in the chat header | fe-agents-strip |
 | D18 Q3 shell in an agent pod via wrapper and api proxy | terminal-registry, terminal-websocket-api, terminal-proxy-routes, terminal-ws-relay |
+| D19 Q4 several shells as tabs with pod choice | terminal-proxy-routes, fe-terminal-panel |
 
 ## Contracts
 
