@@ -162,7 +162,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: this epic consumes `orch-se
 - Q2: Does `POST /api/v1/clusters` keep accepting a raw `spec` for headless callers (bench, smoke, tatara, magic-trainer)? [answer: yes, POST /api/v1/clusters keeps accepting a raw spec; exactly one of spec or preset_id (user, 2026-10-23)]
 - Q3: What happens to running clusters when their preset is edited or deleted? [answer: yes, a cluster keeps the spec snapshotted at create; preset edits and deletes do not touch it, preset_id becomes null on delete and preset_name is kept (user, 2026-10-23)]
 - Q4: Is live cluster edit removed from the API as well as the UI? [answer: yes, PATCH /api/v1/clusters/{id} is retired from the API with a 405 retirement test (user, 2026-10-23)]
-- Q5: Can the default preset be deleted or renamed? [recommended: edited and copied yes, renamed and deleted no; the API also refuses to delete the last preset]
+- Q5: Can the default preset be deleted or renamed? [answer: the default preset can be edited and copied, not renamed or deleted (409); the API refuses to delete the last preset (user, 2026-10-23)]
 - Q6: What does the seeded default preset contain? [recommended: `replicas: 1` and every other field empty, so /meta defaults fill in at schedule]
 - Q7: Should a preset store the defaults it was shown, or only what the user changed? [recommended: only what the user set; the editor shows defaults as prefilled values]
 - Q8: Does a preset name have rules? [recommended: unique, 1 to 40 characters, letters, digits, spaces, dots, dashes and underscores; the generated slug uses its DNS-1123 form]
