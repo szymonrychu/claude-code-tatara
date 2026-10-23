@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic/agent-orchestrator
+branch: cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic
 verified_head: ""
 run: ""
 provides: []
