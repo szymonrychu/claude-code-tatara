@@ -72,6 +72,9 @@ Removed: `api/clusters.py:patch_cluster`, `schemas.PatchCluster`, `db/clusters.p
 ### D9: Deploy pin
 agents-helmfile pins the agent-orchestrator chart `0.1.0-main.<sha7>` and image `<sha7>` of this epic's merge, like `docs/plans/done/cluster-form-defaults-and-ga/tasks/deploy-pin-d5a7738.md`; the sha is supplied with `ticket.py amend` after the merge, until then the task reports `blocked`. The pin test reads `helmfile.yaml.gotmpl` as text so it runs without the chart pull. `helmfile apply` and `mise run smoke` are run by the user. Serves approval H.
 
+### D10: Headless parity
+Headless parity: every UI capability of this epic is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -121,6 +124,7 @@ agents-helmfile pins the agent-orchestrator chart `0.1.0-main.<sha7>` and image 
 | D7 Presets page and menu entry | fe-presets-page |
 | D8 API-only end-to-end proof | kind-e2e-presets |
 | D9 Deploy pin | deploy-pin-presets |
+| D10 Headless parity | preset-routes, create-cluster-from-preset, kind-e2e-presets |
 
 ## Contracts
 
