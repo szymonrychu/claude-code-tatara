@@ -1,6 +1,6 @@
 ---
 title: api allowlist pod gateways
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: LAN users reach the UI while agent pods stay refused
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-api-allowlist-pod-gateways/agents-helmfile
+branch: agents-helmfile-api-allowlist-pod-gateways
 verified_head: ""
 run: ""
 provides: []
