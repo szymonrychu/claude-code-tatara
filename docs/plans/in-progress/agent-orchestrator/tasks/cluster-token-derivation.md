@@ -1,6 +1,6 @@
 ---
 title: cluster token derivation
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Per-cluster wrapper and peer tokens that every process derives identically, so no token is stored or read back from Kubernetes."
 files: [src/agent_orchestrator/tokens.py, tests/test_tokens.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-cluster-token-derivation/agent-orchestrator
 branch: agent-orchestrator-cluster-token-derivation
-verified_head: ""
-run: ""
-provides: []
+verified_head: dc7d657673fcc8497863e24ccb93808876a20459
+run: agent-orchestrator
+provides: [cluster-tokens]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # cluster token derivation

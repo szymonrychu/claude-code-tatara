@@ -1,6 +1,6 @@
 ---
 title: migrations and schema
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The one Postgres schema every process coordinates through, applied safely by concurrent initContainers."
 files: [src/agent_orchestrator/db/__init__.py, src/agent_orchestrator/db/pool.py, src/agent_orchestrator/db/migrate.py, src/agent_orchestrator/db/migrations/0001_init.sql, tests/conftest.py, tests/factories.py, tests/test_migrations.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-migrations-and-schema/agent-orchestrator
 branch: agent-orchestrator-migrations-and-schema
-verified_head: ""
-run: ""
-provides: []
+verified_head: 25a8811aefde4d144139311c3de985332088fd24
+run: agent-orchestrator
+provides: [insert-turn-factory, empty-dsn-fixture]
+acs_for_audit: []
+process_gaps: []
+fork_point: 7844dd22f9b1dbdf592cc5c55c9d2b4160acbed7
 ---
 
 # migrations and schema

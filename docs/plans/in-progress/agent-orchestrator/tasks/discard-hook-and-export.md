@@ -1,6 +1,6 @@
 ---
 title: discard hook and export
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: Discarding a cluster deletes everything while an optional hook still receives the full chat history first
 files: [src/agent_orchestrator/db/export.py, src/agent_orchestrator/reconciler/discard_hook.py, src/agent_orchestrator/reconciler/loop.py, tests/test_discard_hook.py, README.md]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-discard-hook-and-export/agent-orchestrator
 branch: agent-orchestrator-discard-hook-and-export
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # discard hook and export
@@ -93,3 +95,5 @@ README.md gains `## Discard`. It covers:
 A command hook comes only from settings (operator-controlled). The API has no auth, and a spec-level command would run inside the reconciler that holds the Kubernetes credentials (D15, my call). The spec carries only a webhook URL, validated as http or https.
 
 The export runs before any deletion, so the history is complete. Agents may still be running while it is read: the cluster is already `deleting`, and the api refuses new messages to it.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on check-jobs

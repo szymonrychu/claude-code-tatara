@@ -1,6 +1,6 @@
 ---
 title: k8s object renderer
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "Turns a cluster spec into the exact Kubernetes objects of a working, peered, any-mcp-enabled agent cluster on shared CephFS."
 files: [src/agent_orchestrator/k8s/__init__.py, src/agent_orchestrator/k8s/labels.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/k8s/on_start.py, tests/test_render.py, tests/golden/cluster_two_peers.yaml, tests/golden/cluster_single.yaml]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-k8s-object-renderer/agent-orchestrator
 branch: agent-orchestrator-k8s-object-renderer
-verified_head: ""
-run: ""
-provides: []
+verified_head: unknown
+run: agent-orchestrator
+provides: [workdir-path-and-mount, cluster-labels]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # k8s object renderer

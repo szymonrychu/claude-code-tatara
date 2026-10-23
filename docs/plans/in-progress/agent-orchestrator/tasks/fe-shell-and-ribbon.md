@@ -1,6 +1,6 @@
 ---
 title: fe shell and ribbon
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "The left ribbon of clusters and agents with working or waiting state, pod counts and context gauges, live."
 files: [frontend/src/App.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/AgentRow.tsx, frontend/src/ribbon/useClusters.ts, frontend/src/components/StatusItem.tsx, frontend/src/ribbon/Ribbon.test.tsx]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-shell-and-ribbon/agent-orchestrator
 branch: agent-orchestrator-fe-shell-and-ribbon
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe shell and ribbon
@@ -93,3 +95,5 @@ Opening the UI shows every cluster with live state, pod count and context.
 ## Notes
 
 No permanent left ribbon exists in ros2; the docked-column pattern is layout/MapSidebar.tsx:13,37-52 (brief-ui section 1). State is hand-rolled reducers, no react-query (D12).
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-api-client-and-stream

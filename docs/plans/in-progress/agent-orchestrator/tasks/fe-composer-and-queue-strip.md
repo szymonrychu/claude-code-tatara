@@ -1,6 +1,6 @@
 ---
 title: fe composer and queue strip
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Lets the user message a cluster (any free agent or a chosen one) and see, cancel or retry what is still queued or failed."
 files: [frontend/src/chat/Composer.tsx, frontend/src/chat/QueueStrip.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/Composer.test.tsx]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-composer-and-queue-strip/agent-orchestrator
 branch: agent-orchestrator-fe-composer-and-queue-strip
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe composer and queue strip
@@ -77,3 +79,5 @@ Messages can be sent round-robin or targeted, and the queue is visible and actio
 ## Notes
 
 The ros2 composer is tabs/AgentChatTab.tsx:110-126. The dispatcher retries definite non-accepts automatically with backoff and verifies ambiguous sends (D24). The Retry button is the user's explicit re-send of a failed message.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-chat-log-paging

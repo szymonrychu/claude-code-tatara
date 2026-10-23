@@ -1,6 +1,6 @@
 ---
 title: helm chart rbac and ingress
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: The chart gives the reconciler least-privilege RBAC in one namespace and an opt-in ingress with no homelab defaults
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/role.yaml, chart/agent-orchestrator/templates/rolebinding.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-rbac-and-ingress/agent-orchestrator
 branch: agent-orchestrator-helm-chart-rbac-and-ingress
-verified_head: ""
-run: ""
+verified_head: 5e75aee1e3d1b7528fe3c0e191edccc20c4123d1
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helm chart rbac and ingress

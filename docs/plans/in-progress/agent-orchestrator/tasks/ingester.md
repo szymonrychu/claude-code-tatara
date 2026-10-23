@@ -1,6 +1,6 @@
 ---
 title: ingester
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "Turns each agent's event stream into stored history and live state: idle or busy, free since when, how full its context is."
 files: [src/agent_orchestrator/ingester/__init__.py, src/agent_orchestrator/ingester/loop.py, src/agent_orchestrator/db/status.py, tests/test_ingester.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ingester/agent-orchestrator
 branch: agent-orchestrator-ingester
-verified_head: ""
-run: ""
-provides: []
+verified_head: unknown
+run: agent-orchestrator
+provides: [agent-status-repo, wrapper-state-map]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # ingester

@@ -1,6 +1,6 @@
 ---
 title: fe cluster form
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Defines new clusters with their full config and discards them safely, from the UI."
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/DiscardClusterDialog.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/clusters/ClusterForm.test.tsx]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-cluster-form/agent-orchestrator
 branch: agent-orchestrator-fe-cluster-form
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe cluster form
@@ -83,3 +85,5 @@ Clusters can be defined with their config, edited and discarded from the UI.
 ## Notes
 
 Form patterns come from ros2 map/MapsDialog.tsx and poi/PoiPanels.tsx. Spec field rules mirror ClusterSpec (clusters-repository); the server stays the authority.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-shell-and-ribbon

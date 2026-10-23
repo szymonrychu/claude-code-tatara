@@ -1,6 +1,6 @@
 ---
 title: api messages and commands
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The headless way to talk to a cluster: send a message, watch its status, cancel or retry it, and control agents and checks."
 files: [src/agent_orchestrator/api/messages.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/schemas.py, tests/test_api_messages.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-messages-and-commands/agent-orchestrator
 branch: agent-orchestrator-api-messages-and-commands
-verified_head: ""
-run: ""
+verified_head: 9e2081381ba6fe6649b8e2cb5044b26538a8d981
+run: agent-orchestrator
 provides: []
+acs_for_audit: [AC2]
+process_gaps: []
 ---
 
 # api messages and commands

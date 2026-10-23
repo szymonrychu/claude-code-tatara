@@ -1,6 +1,6 @@
 ---
 title: bench cli
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Runs the experiment the user wants: does round-robin with several peered agents finish faster, fail less and verify more often?"
 files: [src/agent_orchestrator/bench/__init__.py, src/agent_orchestrator/bench/spec.py, src/agent_orchestrator/bench/runner.py, src/agent_orchestrator/bench/report.py, src/agent_orchestrator/cli.py, tests/test_bench.py, examples/bench.yaml, README.md]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-bench-cli/agent-orchestrator
 branch: agent-orchestrator-bench-cli
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # bench cli
@@ -87,3 +89,5 @@ One command produces comparable metrics for 1 agent, 3 agents, and 3 peered agen
 ## Notes
 
 No special prompts (non-goal): prompts are passed through verbatim. Shapes follow openapi.json (contract openapi-v1).
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on entrypoints-and-singleton, readme-api-and-openapi

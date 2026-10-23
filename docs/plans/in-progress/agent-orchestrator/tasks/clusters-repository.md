@@ -1,6 +1,6 @@
 ---
 title: clusters repository
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Cluster definitions with a validated spec and a generation counter, the reconcile queue every cluster change flows through."
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-clusters-repository/agent-orchestrator
 branch: agent-orchestrator-clusters-repository
-verified_head: ""
-run: ""
-provides: []
+verified_head: a6ea51602db755508750a98c06c4d03ecdb26add
+run: agent-orchestrator
+provides: [cluster-spec, k8s-quantity-parser, clusters-repo]
+acs_for_audit: [AC2]
+process_gaps: []
 ---
 
 # clusters repository

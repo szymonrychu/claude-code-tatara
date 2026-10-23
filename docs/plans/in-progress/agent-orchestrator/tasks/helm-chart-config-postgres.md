@@ -1,6 +1,6 @@
 ---
 title: helm chart config postgres
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The chart wires settings, secrets and any Postgres (or an optional CNPG) without homelab assumptions"
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/_config.tpl, chart/agent-orchestrator/templates/configmap.yaml, chart/agent-orchestrator/templates/secret.yaml, chart/agent-orchestrator/templates/cnpg-cluster.yaml, tests/test_chart_config.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-config-postgres/agent-orchestrator
 branch: agent-orchestrator-helm-chart-config-postgres
-verified_head: ""
-run: ""
+verified_head: e241811551161e82310fa3cd1e2ec7289d4cb94b
+run: agent-orchestrator
 provides: []
+acs_for_audit: [AC9]
+process_gaps: ["No red phase: implementer states tests and implementation were written in one pass, so no failing-test evidence exists (tdd rule)."]
 ---
 
 # helm chart config postgres

@@ -1,6 +1,6 @@
 ---
 title: fake wrapper contract
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "An in-process wrapper fake that every loop test uses, kept honest by running the same contract tests against the real wrapper image."
 files: [tests/fakes/fake_wrapper.py, tests/fakes/real_wrapper.py, tests/test_fake_wrapper_contract.py, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fake-wrapper-contract/agent-orchestrator
 branch: agent-orchestrator-fake-wrapper-contract
-verified_head: ""
-run: ""
-provides: []
+verified_head: 41eb3b9ed02a3f7c965172f3e2aab7b2d6ed1522
+run: agent-orchestrator
+provides: [fake-wrapper, real-wrapper-launcher, agent-test-image]
+acs_for_audit: [AC11]
+process_gaps: ["TDD red step not run (implementer admits wroteTestFirst false); no exception applies"]
 ---
 
 # fake wrapper contract

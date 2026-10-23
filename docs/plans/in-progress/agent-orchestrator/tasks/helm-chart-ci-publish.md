@@ -1,6 +1,6 @@
 ---
 title: helm chart ci publish
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: agents-helmfile can pin an immutable published chart version for every main commit and release tag
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_chart_ci.py, README.md]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-ci-publish/agent-orchestrator
 branch: agent-orchestrator-helm-chart-ci-publish
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helm chart ci publish
@@ -84,3 +86,5 @@ Harbor chart tags are immutable (brief-infra section 1). The same version is rej
 With Helm 4, `helm registry login` against a Harbor robot can answer 401 without a scope probe. If it does, write the registry config.json directly (field note helm4-harbor-robot-login).
 
 The Harbor robot needs push on the `charts` project as well as `containers`. The orchestrator checks this at origin creation (design Assumptions).
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on container-images-ci

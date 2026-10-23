@@ -1,6 +1,6 @@
 ---
 title: fe chat model
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Turns stored agent events into readable chat items: inputs, outputs, thinking, paired tool calls, peer messages and gaps."
 files: [frontend/src/chat/chatModel.ts, frontend/src/chat/chatModel.test.ts]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-chat-model/agent-orchestrator
 branch: agent-orchestrator-fe-chat-model
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe chat model
@@ -80,3 +82,5 @@ The chat log renders from one tested model.
 ## Notes
 
 Adapted from ros2 agent/agentModel.ts (reduceEvent :331, trimWindow :503, prependHistory :519). That file has no thinking kind, so add it here. Event names follow the wrapper README (brief-wrapper section 1) plus `user_message` from epic claude-code-wrapper-orchestr.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-api-client-and-stream

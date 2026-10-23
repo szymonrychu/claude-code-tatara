@@ -1,6 +1,6 @@
 ---
 title: kind e2e
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "End-to-end proof on a real Kubernetes: the published-to-be chart installs, a 2-agent cluster round-robins three messages with any-mcp installed by onStart, and a discard removes everything without touching the orchestrator."
 files: [tests/e2e/test_e2e_kind.py, e2e/kind-config.yaml, e2e/manifests/postgres.yaml, e2e/values-kind.yaml, scripts/e2e.sh, mise.toml, .github/workflows/ci.yaml]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-kind-e2e/agent-orchestrator
 branch: agent-orchestrator-kind-e2e
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # kind e2e
@@ -102,3 +104,5 @@ Docker is available locally (29.8.2), and kind is installed through mise. The fa
 The Role is the chart's (helm-chart-rbac-and-ingress). There is no hand-written e2e RBAC or orchestrator manifest any more, so the e2e proves the production chart.
 
 - 2026-10-22 amended at the gate: one namespace (Q14), chart install instead of hand manifests (5.4), any-mcp by onStart (Q8), and discard deletes history (Q4).
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on helm-chart-ci-publish, entrypoints-and-singleton, discard-hook-and-export, ambiguous-send-verifier

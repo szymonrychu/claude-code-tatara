@@ -1,6 +1,6 @@
 ---
 title: api clusters and agents
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The headless API's cluster and agent surface: define, edit, list, discard clusters and see each agent's live state."
 files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py, src/agent_orchestrator/api/allowlist.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-clusters-and-agents/agent-orchestrator
 branch: agent-orchestrator-api-clusters-and-agents
-verified_head: ""
-run: ""
-provides: []
+verified_head: 8d361062e98c6826832909a184315d77af948b00
+run: agent-orchestrator
+provides: [api-app, api-error-helpers, cluster-views]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # api clusters and agents

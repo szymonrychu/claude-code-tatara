@@ -1,6 +1,6 @@
 ---
 title: helm chart deployments
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: The chart runs the four orchestrator processes with migrations first and Kubernetes credentials only on the reconciler
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/service.yaml, chart/agent-orchestrator/templates/serviceaccount.yaml, chart/agent-orchestrator/templates/NOTES.txt, chart/agent-orchestrator/templates/tests/test-connection.yaml, tests/test_chart_deployments.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-deployments/agent-orchestrator
 branch: agent-orchestrator-helm-chart-deployments
-verified_head: ""
-run: ""
+verified_head: bb95fe6dbebe5198caf1ae4c2efc6241cf9b3afd
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helm chart deployments

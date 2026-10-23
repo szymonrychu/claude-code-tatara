@@ -1,6 +1,6 @@
 ---
 title: fe theme port
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The look the user asked for: the ros2 web UI's dark, flat theme, with its design rules enforced by a test from day one."
 files: [frontend/src/theme.ts, frontend/src/theme.test.ts, frontend/src/index.css, frontend/src/main.tsx, frontend/src/layout/designRules.ts, frontend/src/layout/designRules.test.ts, frontend/src/layout/useLayout.ts, frontend/src/layout/ConfirmDialog.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-theme-port/agent-orchestrator
 branch: agent-orchestrator-fe-theme-port
-verified_head: ""
-run: ""
+verified_head: 272fd0d1b4bbcabec5efeea8e42764095d50f62f
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: ["tests.red / verification.evidence not recorded for the TDD finding. I ran a mutation check in a scratch copy instead: removing onClose, double-firing onConfirm, and moving the desktop breakpoint to xl made 4 of 12 tests fail."]
 ---
 
 # fe theme port

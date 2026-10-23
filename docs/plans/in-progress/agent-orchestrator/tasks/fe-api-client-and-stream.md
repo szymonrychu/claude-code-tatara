@@ -1,6 +1,6 @@
 ---
 title: fe api client and stream
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Typed access to every API route the UI uses, generated from the server's OpenAPI, with a resilient live-event stream."
 files: [frontend/package.json, frontend/src/api/schema.d.ts, frontend/src/api/client.ts, frontend/src/api/stream.ts, frontend/src/api/stream.test.ts]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-api-client-and-stream/agent-orchestrator
 branch: agent-orchestrator-fe-api-client-and-stream
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe api client and stream
@@ -81,3 +83,5 @@ Components call typed functions and subscribe to resumable streams; a server API
 ## Notes
 
 Port the backoff logic from ros2 agent/agentSocket.ts (1-30 s, reset on first frame), retargeted from WebSocket to EventSource. The server's SSE also honours Last-Event-ID, but a manual reconnect after close() has to pass after_id.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on readme-api-and-openapi

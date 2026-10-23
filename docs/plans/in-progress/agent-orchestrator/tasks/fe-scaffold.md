@@ -1,6 +1,6 @@
 ---
 title: fe scaffold
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "A current-majors React/MUI/Vite project that builds, lints and tests, so every UI task starts from a working base."
 files: [frontend/package.json, frontend/vite.config.ts, frontend/tsconfig.json, frontend/eslint.config.js, frontend/index.html, frontend/src/main.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-scaffold/agent-orchestrator
 branch: agent-orchestrator-fe-scaffold
-verified_head: ""
-run: ""
+verified_head: 56a20e95dcedbf695dbec037aa02412c3fb50abe
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe scaffold

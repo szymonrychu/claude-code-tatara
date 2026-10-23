@@ -1,6 +1,6 @@
 ---
 title: spa serving and dockerfile
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Ships the web UI inside the orchestrator image and makes CI prove the frontend builds, lints, tests and matches the API types."
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, Dockerfile, .dockerignore, .github/workflows/ci.yaml, tests/test_spa.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-spa-serving-and-dockerfile/agent-orchestrator
 branch: agent-orchestrator-spa-serving-and-dockerfile
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # spa serving and dockerfile
@@ -79,3 +81,5 @@ One image serves `/api/v1` and the UI; CI gates every frontend change.
 ## Notes
 
 Modelled on ros2 web_ui's SpaStaticFiles (web_ui/server.py:599). Image pushing is container-images-ci.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-api-client-and-stream

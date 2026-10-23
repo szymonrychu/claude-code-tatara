@@ -1,6 +1,6 @@
 ---
 title: fe chat log paging
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "The main chat view with smart loading: newest messages instantly, older ones on scroll-up, live updates, and per-agent filters."
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/entries.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/AgentFilter.tsx, frontend/src/chat/ChatView.tsx, frontend/src/App.tsx, frontend/src/chat/ChatLog.test.tsx]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-chat-log-paging/agent-orchestrator
 branch: agent-orchestrator-fe-chat-log-paging
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe chat log paging
@@ -89,3 +91,5 @@ Selecting a cluster shows its merged agent activity, newest first in view, older
 ## Notes
 
 Port the Virtuoso configuration of ros2 agent/ChatLog.tsx:281-300 and ToolEntry :60-119. Adapt the epoch guard from useAgentChat.ts.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on fe-chat-model, fe-shell-and-ribbon

@@ -1,6 +1,6 @@
 ---
 title: check jobs
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Runs verification commands against a cluster's shared workspace, which is how the bench scores correctness."
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-check-jobs/agent-orchestrator
 branch: agent-orchestrator-check-jobs
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # check jobs
@@ -75,3 +77,5 @@ For a deleting cluster, queued checks are cancelled (`cancel_checks`) and its Jo
 ## Notes
 
 RBAC needs batch/jobs create, delete, get, list, watch and pods/log get (D9). Never pods/exec.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on session-bootstrap

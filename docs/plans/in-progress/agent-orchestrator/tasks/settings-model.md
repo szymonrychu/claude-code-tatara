@@ -1,6 +1,6 @@
 ---
 title: settings model
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "One validated configuration surface for every process, whose env names are the contract the Helm chart sets."
 files: [src/agent_orchestrator/settings.py, tests/test_settings.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-settings-model/agent-orchestrator
 branch: agent-orchestrator-settings-model
-verified_head: ""
-run: ""
+verified_head: bae5fe80c5ae32b56897d5066529b74703e1a7ac
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # settings model

@@ -1,6 +1,6 @@
 ---
 title: ambiguous send verifier
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Automatic retry never pastes a message twice: an ambiguous send is checked against the wrapper before it is re-sent"
 files: [src/agent_orchestrator/dispatcher/verify.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_ambiguous_verify.py, README.md]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ambiguous-send-verifier/agent-orchestrator
 branch: agent-orchestrator-ambiguous-send-verifier
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # ambiguous send verifier
@@ -86,3 +88,5 @@ The wrapper records the turn, including its `metadata`, synchronously in `Router
 The turns list carries summaries only (turns.py:32-39, SUMMARY_FIELDS), so fetch each candidate's full record with `get_turn`. Never compare wrapper timestamps with database time (D23).
 
 For AC6, run two Verifier instances with asyncio.gather on separate pool connections.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on dispatcher-loop

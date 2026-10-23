@@ -1,6 +1,6 @@
 ---
 title: events store
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Every agent's activity stored once in a merged, pageable timeline that survives pod and cluster deletion."
 files: [src/agent_orchestrator/db/events.py, tests/test_events_store.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-events-store/agent-orchestrator
 branch: agent-orchestrator-events-store
-verified_head: ""
-run: ""
-provides: []
+verified_head: 75f4dffcf28f22f1052cf519df962a7396857bb7
+run: agent-orchestrator
+provides: [events-repo]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # events store

@@ -1,6 +1,6 @@
 ---
 title: scaffold repo and cli
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Gives every later task a Python project that builds, lints and tests, CI that runs both, and the `orch` command the entrypoints hang on."
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yaml, src/agent_orchestrator/__init__.py, src/agent_orchestrator/cli.py, tests/test_cli.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-scaffold-repo-and-cli/agent-orchestrator
 branch: agent-orchestrator-scaffold-repo-and-cli
-verified_head: ""
-run: ""
-provides: []
+verified_head: e1743b1b7a8cc9258a5ecd98943ab737f4620ebd
+run: agent-orchestrator
+provides: [orch-cli]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # scaffold repo and cli

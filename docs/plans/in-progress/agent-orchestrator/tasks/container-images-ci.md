@@ -1,6 +1,6 @@
 ---
 title: container images ci
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Every main commit yields a pushed, immutable orchestrator image, with the agent image, the wrapper config validation and the any-mcp pin all on one wrapper sha and one any-mcp tag."
 files: [.github/workflows/ci.yaml, tests/test_images.py, pyproject.toml, uv.lock, README.md]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-container-images-ci/agent-orchestrator
 branch: agent-orchestrator-container-images-ci
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # container images ci
@@ -84,3 +86,5 @@ The repo secrets are set by the orchestrator at origin creation. Local AC6 needs
 The no-derived-image test pins a removal against an earlier plan, so it asserts on `git ls-files`, never on the filesystem.
 
 - 2026-10-22 amended at the gate: derived agent image dropped (Q8). any-mcp is installed by the onStart script of k8s-object-renderer.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on spa-serving-and-dockerfile, k8s-object-renderer

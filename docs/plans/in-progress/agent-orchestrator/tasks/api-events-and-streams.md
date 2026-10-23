@@ -1,6 +1,6 @@
 ---
 title: api events and streams
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Smart chat loading for any client: page history backwards, then follow live events and status changes over SSE."
 files: [src/agent_orchestrator/api/streams.py, src/agent_orchestrator/api/listener.py, src/agent_orchestrator/api/app.py, tests/test_api_streams.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-events-and-streams/agent-orchestrator
 branch: agent-orchestrator-api-events-and-streams
-verified_head: ""
-run: ""
-provides: []
+verified_head: 77697b02faa60fe11b077e3cb45410cecd42ff5a
+run: agent-orchestrator
+provides: [notify-listener, agent-view-builder]
+acs_for_audit: []
+process_gaps: [Red-first not observed for the new tests]
 ---
 
 # api events and streams

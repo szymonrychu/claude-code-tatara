@@ -1,6 +1,6 @@
 ---
 title: helm chart scaffold
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: The repo ships a standard helm-create-shaped chart skeleton that every later chart task and agents-helmfile build on
 files: [chart/agent-orchestrator/Chart.yaml, chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/.helmignore, chart/agent-orchestrator/templates/_helpers.tpl, chart/agent-orchestrator/ci/lint-values.yaml, tests/helm_render.py, tests/test_chart_scaffold.py, mise.toml]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-scaffold/agent-orchestrator
 branch: agent-orchestrator-helm-chart-scaffold
-verified_head: ""
-run: ""
-provides: []
+verified_head: dcbbab0f2f70a4beb460343a797d4caff0b8e7c0
+run: agent-orchestrator
+provides: [helm-render]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helm chart scaffold

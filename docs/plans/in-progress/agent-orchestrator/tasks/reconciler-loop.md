@@ -1,6 +1,6 @@
 ---
 title: reconciler loop
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and discard clusters without drift after a crash."
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]
@@ -17,8 +17,10 @@ review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-reconciler-loop/agent-orchestrator
 branch: agent-orchestrator-reconciler-loop
 verified_head: ""
-run: ""
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # reconciler loop
@@ -107,3 +109,5 @@ Cluster rows drive Kubernetes objects and agents rows, idempotently, with discar
 ## Notes
 
 `wrapper_factory` is accepted now and used by session-bootstrap. Jobs are pruned only for deleting clusters, by check-jobs. lightkube generic resources: use `lightkube.generic_resource` or the typed models in `lightkube.resources`; apply with `field_manager='agent-orchestrator', force=True`.
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on k8s-object-renderer, dispatch-queue-sql

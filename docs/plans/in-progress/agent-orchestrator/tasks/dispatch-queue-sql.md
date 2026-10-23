@@ -1,6 +1,6 @@
 ---
 title: dispatch queue sql
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The round-robin core: a message goes to the agent free the longest, never twice, even with several dispatchers."
 files: [src/agent_orchestrator/db/queue.py, tests/test_dispatch_queue.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-dispatch-queue-sql/agent-orchestrator
 branch: agent-orchestrator-dispatch-queue-sql
-verified_head: ""
-run: ""
-provides: []
+verified_head: 0b871e0643d8b4223249ea9c4290760911428d30
+run: agent-orchestrator
+provides: [queue-sql, queue-dataclasses]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # dispatch queue sql

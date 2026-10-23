@@ -1,6 +1,6 @@
 ---
 title: readme api and openapi
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: "A documented, versioned contract for tatara, magic-trainer and the UI, enforced by a parity test and an OpenAPI drift check."
 files: [README.md, MEMORY.md, ROADMAP.md, openapi.json, src/agent_orchestrator/api/openapi.py, tests/test_readme_api.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-readme-api-and-openapi/agent-orchestrator
 branch: agent-orchestrator-readme-api-and-openapi
-verified_head: ""
-run: ""
-provides: []
+verified_head: 87131ab81f8148581b962afcca93d4386b0095c5
+run: agent-orchestrator
+provides: [openapi-v1]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # readme api and openapi

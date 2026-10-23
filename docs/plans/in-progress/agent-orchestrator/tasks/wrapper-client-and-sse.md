@@ -1,6 +1,6 @@
 ---
 title: wrapper client and sse
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "One typed, tested way to talk to every wrapper endpoint the orchestrator needs, including a resumable SSE reader."
 files: [src/agent_orchestrator/wrapper/__init__.py, src/agent_orchestrator/wrapper/client.py, src/agent_orchestrator/wrapper/sse.py, src/agent_orchestrator/wrapper/models.py, tests/test_wrapper_client.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-wrapper-client-and-sse/agent-orchestrator
 branch: agent-orchestrator-wrapper-client-and-sse
-verified_head: ""
-run: ""
-provides: []
+verified_head: 7844dd22f9b1dbdf592cc5c55c9d2b4160acbed7
+run: agent-orchestrator
+provides: [wrapper-client, sse-parser]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper client and sse

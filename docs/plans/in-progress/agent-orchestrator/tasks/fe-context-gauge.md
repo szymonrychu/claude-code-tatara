@@ -1,6 +1,6 @@
 ---
 title: fe context gauge
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The circular 0-100% context indicator the user asked for, honest about unknown values and the auto-compact point."
 files: [frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-context-gauge/agent-orchestrator
 branch: agent-orchestrator-fe-context-gauge
-verified_head: ""
-run: ""
+verified_head: 004aeb059e2a1e18a92bc9a0d6deb9e8e7b676c1
+run: agent-orchestrator
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 272fd0d
 ---
 
 # fe context gauge
