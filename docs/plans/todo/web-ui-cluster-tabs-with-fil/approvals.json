@@ -34,16 +34,17 @@
       "D2",
       "D3",
       "D6",
-      "D11"
+      "D11",
+      "D18"
     ],
     "tasks": [
+      "fe-terminal-panel",
+      "fe-terminal-socket",
       "pty-resize-and-raw-ring",
+      "terminal-proxy-routes",
       "terminal-registry",
       "terminal-websocket-api",
-      "terminal-proxy-routes",
-      "terminal-ws-relay",
-      "fe-terminal-socket",
-      "fe-terminal-panel"
+      "terminal-ws-relay"
     ],
     "status": "approved"
   },
