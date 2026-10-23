@@ -227,7 +227,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q8: Does "shows everything" include dotfiles and .git? [answer: yes, everything incl. dotfiles and .git, lazy per directory, 2000 entries cap with a more row (user, 2026-10-23)]
 - Q9: What does clicking a file do? [answer: read-only preview, text up to 1 MiB, binary shows size and type (user, 2026-10-23)]
 - Q10: How does the tree stay current? [answer: re-fetch directories touched by the event stream plus manual refresh, no inotify (user, 2026-10-23)]
-- Q11: What does a minimized panel look like? [recommended: a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split]
+- Q11: What does a minimized panel look like? [answer: narrow vertical strip with name and restore button, double-click separator restores 25/45/30 (user, 2026-10-23)]
 - Q12: Phone layout? [recommended: one panel at a time with a three-way switch (a forced maximize), the cluster tabs scroll]
 - Q13: Add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons? [recommended: yes, SVG icons pass designRules.ts, which only bans glyph Unicode]
 - Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [recommended: yes, the top bar is designed once here; the presets epic only adds its category and page]
