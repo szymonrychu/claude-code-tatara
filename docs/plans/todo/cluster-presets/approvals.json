@@ -21,11 +21,13 @@
     "text": "A seeded default preset with 1 pod always exists; it can be edited and copied but not renamed or deleted, and the API refuses to delete the last preset.",
     "decisions": [
       "D1",
-      "D3"
+      "D3",
+      "D15"
     ],
     "tasks": [
-      "presets-table-and-repo",
-      "preset-routes"
+      "fe-presets-page",
+      "preset-routes",
+      "presets-table-and-repo"
     ],
     "status": "approved"
   },

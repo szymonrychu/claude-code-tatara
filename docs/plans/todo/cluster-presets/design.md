@@ -87,6 +87,9 @@ Q3: a cluster keeps the spec snapshotted at create; preset edits and deletes do 
 ### D14: Q4 PATCH retired from the API
 Q4: PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the UI, with a 405 retirement test (2026-10-23) (user decision)
 
+### D15: Q5 default preset guards
+Q5: the default preset can be edited and copied, not renamed or deleted (409); the API refuses to delete the last preset (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -141,6 +144,7 @@ Q4: PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the 
 | D12 Q2 raw spec kept, exactly one of spec or preset_id | create-cluster-from-preset |
 | D13 Q3 snapshot at create | create-cluster-from-preset, kind-e2e-presets |
 | D14 Q4 PATCH retired from the API | retire-cluster-patch-route, fe-preset-form |
+| D15 Q5 default preset guards | presets-table-and-repo, preset-routes, fe-presets-page |
 
 ## Contracts
 
