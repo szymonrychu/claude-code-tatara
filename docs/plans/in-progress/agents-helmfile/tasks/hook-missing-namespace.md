@@ -1,6 +1,6 @@
 ---
 title: hook missing namespace
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: a first deploy into an empty cluster works
 files: [.hook.sh, tests/test_helmfile_base.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-hook-missing-namespace/agents-helmfile
+branch: agents-helmfile-hook-missing-namespace
 verified_head: ""
 run: ""
 provides: []
