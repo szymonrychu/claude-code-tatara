@@ -1,7 +1,7 @@
 ---
 title: agent-orchestrator
 blockers: [claude-code-wrapper orchestrator support, any-mcp]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agent-orchestrator]
 created: 2026-10-22
