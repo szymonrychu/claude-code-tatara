@@ -29,7 +29,7 @@ Let `POST /api/v1/clusters` schedule a cluster from a preset and snapshot its sp
 
 - `api/schemas.py`: `CreateCluster` becomes `{slug: str | None = None, spec: ClusterSpec | None = None, preset_id: uuid.UUID | None = None}`, `extra="forbid"` (part `orch-cluster-create-api`). Exactly one of `spec` and `preset_id`, else 422 `invalid_request` ("exactly one of spec or preset_id"); with `spec` the slug is required (422 "slug is required with spec"). `ClusterView` gains `preset_id: uuid.UUID | None` and `preset_name: str | None`.
 - `db/clusters.py`: `Cluster` gains `preset_id` and `preset_name` (read by `_from_row`); `create(conn, slug, spec, preset_id=None, preset_name=None)` inserts them.
-- `api/clusters.py:create_cluster`, preset path: inside the existing transaction after `pg_advisory_xact_lock(_CREATE_LOCK)` and the `max_clusters` check, read the preset with `presets.get_for_share` (404 `not_found` "preset not found"); run `check_spec(ClusterSpec.model_validate(preset.spec), settings)` against current settings, a 422 message prefixed `preset '<name>': `; the filled spec is the cluster's own spec (the snapshot). Slug: `body.slug` checked with `validate_slug`, or `generated_slug(preset.name)` retried with a fresh suffix up to 5 times on `ClusterExists`; an explicit slug clash stays 409 `conflict`. Insert with `preset_id` and `preset_name`. `_view` fills the two new fields.
+- `api/clusters.py:create_cluster`, preset path: inside the existing transaction after `pg_advisory_xact_lock(_CREATE_LOCK)` and the `max_clusters` check, read the preset with `presets.get_for_share` (404 `not_found` "preset not found"); run `check_spec(ClusterSpec.model_validate(preset.spec), settings)` against current settings, a 422 message prefixed `preset '<name>': `; the filled spec is the cluster's own spec (the snapshot). On this preset path only, when the preset leaves `replicas` unset the schedule-time fill sets it from `settings.default_replicas`, alongside the write-time fills (the raw-spec path is unchanged; the seeded Default stores replicas 1 explicitly, so it schedules 1). Slug: `body.slug` checked with `validate_slug`, or `generated_slug(preset.name)` retried with a fresh suffix up to 5 times on `ClusterExists`; an explicit slug clash stays 409 `conflict`, and after the 5th generated-slug clash the answer is 409 `conflict` too, never 500. Insert with `preset_id` and `preset_name`. `_view` fills the two new fields.
 - Raw spec path unchanged apart from the exactly-one rule; its clusters have null `preset_id` and `preset_name`.
 - No code path changes a cluster's `spec` or `generation` when a preset is edited or deleted.
 - README `### POST /api/v1/clusters` documents both bodies, the generated slug, the snapshot, 404 for an unknown preset and the preset-named 422; `### GET /api/v1/clusters/{cluster_id}` lists `preset_id` and `preset_name`. `openapi.json` and `frontend/src/api/schema.d.ts` regenerated.
@@ -45,6 +45,8 @@ Let `POST /api/v1/clusters` schedule a cluster from a preset and snapshot its sp
 - AC7: a preset without resources gets the resource defaults current at schedule time, so a settings change reaches the next cluster [evidence: test:tests/test_api_create_from_preset.py::test_defaults_filled_at_schedule]
 - AC8: README, openapi.json and schema.d.ts match the app [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 - AC9: targeted tests, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_create_from_preset.py tests/test_api_clusters.py tests/test_clusters_repo.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check .]
+- AC10: a preset that leaves replicas unset schedules settings.default_replicas, the Default schedules its stored 1, and a raw spec POST without replicas is unchanged [evidence: test:tests/test_api_create_from_preset.py::test_replicas_filled_from_settings_at_schedule]
+- AC11: after the 5th generated-slug clash the answer is 409 conflict, never 500 [evidence: test:tests/test_api_create_from_preset.py::test_generated_slug_exhausted_409]
 
 ## Files
 
@@ -68,7 +70,7 @@ A cluster can be scheduled with nothing but a preset id; it owns a full copy of 
 
 ## Steps
 
-- Write `tests/test_api_create_from_preset.py` with the seven tests named in the AC refs; run `uv run pytest -q -p no:cacheprovider tests/test_api_create_from_preset.py`: fails.
+- Write `tests/test_api_create_from_preset.py` with the nine tests named in the AC refs; run `uv run pytest -q -p no:cacheprovider tests/test_api_create_from_preset.py`: fails.
 - Change `CreateCluster`, `ClusterView`, `Cluster`, `create` and `create_cluster`; run the file and `tests/test_api_clusters.py tests/test_clusters_repo.py`: pass.
 - Update README, regenerate `openapi.json` and `schema.d.ts`; run the verify command: passes.
 
@@ -78,3 +80,7 @@ A cluster can be scheduled with nothing but a preset id; it owns a full copy of 
 - A preset deleted between the read and the insert is impossible while it is held `FOR SHARE`.
 - `tests/factories.py:insert_cluster` keeps working because the new columns are nullable.
 - `orch bench`, `scripts/smoke.sh` and the kind e2e send `{"slug", "spec"}` and stay valid.
+- Builder check ruling 1 (2026-10-23): on the preset path only, the schedule-time fill sets replicas from settings.default_replicas when the preset leaves replicas unset (alongside the existing write-time fills). The raw-spec POST path is unchanged. The seeded Default stores replicas 1 explicitly, so it schedules 1.
+- Builder check ruling 3 (2026-10-23): after the 5th generated-slug clash the API answers 409 conflict (the existing conflict code), never 500.
+
+- 2026-10-23 amended: builder check rulings 1, 3: preset-path replicas fill from settings.default_replicas; 409 after the 5th slug clash (AC10, AC11)

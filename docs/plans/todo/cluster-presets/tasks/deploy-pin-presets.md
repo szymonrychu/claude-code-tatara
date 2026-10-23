@@ -64,3 +64,4 @@ The value is the short sha (7 hex) of this epic's agent-orchestrator main merge;
 - Check the chart and image exist before pinning when credentials allow (`helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version 0.1.0-main.<sha7>`).
 - `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` build the helmfile and pull charts; they fail here on network policy and are deselected in the verify, not changed.
 - Apply and smoke are not this task's verify; the user runs them.
+- Builder check ruling 10 (2026-10-23): excluded from the build run; it runs after the orchestrator PR merges, its sha filled with ticket.py amend, same as web-ui's deploy-pin.

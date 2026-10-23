@@ -32,7 +32,7 @@ Add the presets table, the cluster provenance columns and the presets repository
   - seed: `INSERT INTO presets (id, name, spec, is_default) VALUES ('00000000-0000-0000-0000-000000000001', 'Default', '{"replicas": 1}', true) ON CONFLICT DO NOTHING`.
   - `clusters` gains `preset_id uuid REFERENCES presets (id) ON DELETE SET NULL` and `preset_name text`, both nullable.
 - New `src/agent_orchestrator/db/presets.py` (part `presets-repo`; the api is its only caller and `presets` has the api as its only writer):
-  - `validate_preset_name(name)`: 1 to 40 characters of letters, digits, spaces, dots, dashes and underscores, no leading or trailing space; raises `ValueError` with a readable message.
+  - `validate_preset_name(name)`: 1 to 40 characters of letters, digits, spaces, dots, dashes and underscores, no leading or trailing space (rejected, never trimmed: the API passes names through untouched); raises `ValueError` with a readable message.
   - `Preset` frozen dataclass (`id`, `name`, `spec: dict[str, Any]`, `is_default`, `created_at`, `updated_at`); exceptions `PresetExists`, `PresetNotFound`, `PresetDefault`, `LastPreset`.
   - `list_presets(conn)` (default first, then `lower(name)`), `get(conn, preset_id)`, `get_for_share(conn, preset_id)` (`SELECT ... FOR SHARE`, for cluster create), `create(conn, name, spec) -> Preset` (validates the name, new uuid, `PresetExists` on the unique index), `update(conn, preset_id, name, spec) -> Preset` (sets `updated_at = now()`; `PresetNotFound`, `PresetExists`, `PresetDefault` when the default's name changes), `delete(conn, preset_id)` (`PresetNotFound`; `PresetDefault` for the default; `LastPreset` when it is the only row, decided under a lock so two concurrent deletes cannot remove the last two rows).
   - The repository stores `spec` exactly as given; it never fills defaults.
@@ -47,7 +47,7 @@ Add the presets table, the cluster provenance columns and the presets repository
 - AC3: re-applying 0002 after its schema_migrations row is removed succeeds and keeps an edited default [evidence: test:tests/test_migrations.py::test_presets_migration_reapply_keeps_edited_default]
 - AC4: deleting a preset sets clusters.preset_id to null and keeps preset_name [evidence: test:tests/test_migrations.py::test_preset_delete_keeps_cluster_provenance]
 - AC5: create, get, list order and update round-trip the stored spec exactly, and update bumps updated_at [evidence: test:tests/test_presets_repo.py::test_crud_round_trip_and_order]
-- AC6: names are unique case-insensitively and validate_preset_name enforces 1 to 40 allowed characters [evidence: test:tests/test_presets_repo.py::test_name_rules_and_unique]
+- AC6: names are unique case-insensitively and validate_preset_name enforces 1 to 40 allowed characters and rejects leading or trailing spaces [evidence: test:tests/test_presets_repo.py::test_name_rules_and_unique]
 - AC7: the default cannot be renamed or deleted and the last preset cannot be deleted [evidence: test:tests/test_presets_repo.py::test_default_and_last_preset_guards]
 - AC8: README Data model and single-writer table name presets and the provenance columns [evidence: judgement:README.md Data model and Single-writer sections reviewed]
 - AC9: the targeted tests and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_migrations.py tests/test_presets_repo.py && uv run ruff check . && uv run ruff format --check .]
@@ -81,3 +81,6 @@ After `orch migrate` every database has a Default 1-pod preset, a presets reposi
 - Follow `db/clusters.py` for row mapping (`dict_row`), `Jsonb` dumps and exception translation from `psycopg.errors.UniqueViolation`.
 - The repository does not NOTIFY; nothing listens for preset changes.
 - Review tier is full (migration path).
+- Builder check ruling 4 (2026-10-23): names with leading or trailing spaces are rejected (422 on the API, inline error in the form); the API never trims. The copy name's source part is cut to fit 40 characters and right-trimmed before " copy".
+
+- 2026-10-23 amended: builder check ruling 4: leading/trailing space rejected, never trimmed (AC6 rewritten)
