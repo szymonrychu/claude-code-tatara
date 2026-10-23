@@ -85,7 +85,8 @@
     "id": "F",
     "text": "Presets is the first settings category at the bottom of the hamburger menu and opens a full main-area page with a Back button.",
     "decisions": [
-      "D7"
+      "D7",
+      "D20"
     ],
     "tasks": [
       "fe-presets-page"

@@ -102,6 +102,9 @@ Q8: preset names are unique, 1 to 40 characters of letters, digits, spaces, dots
 ### D19: Q9 tab shows preset_name only
 Q9: the UI does not show that a cluster's preset changed after create; the tab shows only preset_name (2026-10-23) (user decision)
 
+### D20: Q10 full main-area Presets view
+Q10: the Presets page is a full main-area view with a Back button (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -161,6 +164,7 @@ Q9: the UI does not show that a cluster's preset changed after create; the tab s
 | D17 Q7 sparse preset storage | preset-routes, fe-preset-form |
 | D18 Q8 preset name rules | presets-table-and-repo, preset-routes, fe-preset-form |
 | D19 Q9 tab shows preset_name only | fe-new-cluster-dialog |
+| D20 Q10 full main-area Presets view | fe-presets-page |
 
 ## Contracts
 
