@@ -42,12 +42,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Model select lists a default (empty) option followed by meta.models; null model in edit mode selects it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the AC1 test, run `cd frontend && npx vitest run src/clusters/ClusterForm.test.tsx`: it fails.
+- Add the empty option to the Model select, reuse the Effort select's pattern; rerun: passes; `npm run lint` clean.
 
 ## Notes
 
