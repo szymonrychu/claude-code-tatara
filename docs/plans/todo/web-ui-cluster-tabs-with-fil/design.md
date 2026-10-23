@@ -225,6 +225,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [recommended: yes, as defence in depth only; the same uid can still read them from /proc, which the wrapper trust model already accepts]
 - Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [recommended: yes, with a mandatory Origin allowlist on every WebSocket upgrade (ORCH_ALLOWED_ORIGINS) and the existing source allowlist; authentication stays a separate epic]
 - Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
+- Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
 
 ## Irreversible operations in scope
 
