@@ -1,6 +1,6 @@
 ---
 title: hook missing namespace
-status: escalated
+status: done
 repo: agents-helmfile
 value: a first deploy into an empty cluster works
 files: [.hook.sh, tests/test_helmfile_base.py]
@@ -56,6 +56,10 @@ What is true and observable when the task is done.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Ruling
+
+- 2026-10-23 accepted: round-cap only on AC3, which could not pass before the release tasks land (planning error by the orchestrator); AC3 moved to db-release AC5. AC1/AC2 verified on 1fcd489: tests/test_helmfile_base.py passed, lint and gitleaks clean.
 
 ## Notes
 
