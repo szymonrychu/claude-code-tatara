@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "End-to-end proof on a real Kubernetes: the published-to-be chart installs, a 2-agent cluster round-robins three messages with any-mcp installed by onStart, and a discard removes everything without touching the orchestrator."
 files: [tests/e2e/test_e2e_kind.py, e2e/kind-config.yaml, e2e/manifests/postgres.yaml, e2e/values-kind.yaml, scripts/e2e.sh, mise.toml, .github/workflows/ci.yaml]
 verify: "mise run test:e2e && mise run lint"
-depends_on: [helm-chart-ci-publish, entrypoints-and-singleton, fake-wrapper-contract, discard-hook-and-export, ambiguous-send-verifier]
+depends_on: [ambiguous-send-verifier, discard-hook-and-export, entrypoints-and-singleton, fake-wrapper-contract, helm-chart-ci-publish, helm-chart-scaffold]
 owns: []
 uses: [fake-wrapper, agent-orchestrator-chart, wrapper-on-start-hook, any-mcp-cli]
 model: opus

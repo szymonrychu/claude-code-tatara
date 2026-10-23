@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Automatic retry never pastes a message twice: an ambiguous send is checked against the wrapper before it is re-sent"
 files: [src/agent_orchestrator/dispatcher/verify.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_ambiguous_verify.py, README.md]
 verify: "uv run pytest tests/test_ambiguous_verify.py -q && mise run lint"
-depends_on: [dispatcher-loop]
+depends_on: [cluster-token-derivation, clusters-repository, dispatch-queue-sql, dispatcher-loop, fake-wrapper-contract, migrations-and-schema, settings-model, wrapper-client-and-sse]
 owns: []
 uses: [queue-sql, wrapper-client, fake-wrapper, cluster-tokens, pg-fixture, settings, cluster-spec]
 model: opus

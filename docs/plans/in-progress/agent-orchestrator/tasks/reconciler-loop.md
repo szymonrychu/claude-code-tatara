@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and discard clusters without drift after a crash."
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]
 verify: "uv run pytest tests/test_reconciler.py -q && mise run lint"
-depends_on: [k8s-object-renderer, dispatch-queue-sql]
+depends_on: [clusters-repository, dispatch-queue-sql, k8s-object-renderer, migrations-and-schema, settings-model]
 owns: [kube-api, agents-repo]
 uses: [k8s-render, queue-sql, schema-v1, pg-fixture, cluster-spec, settings]
 model: opus

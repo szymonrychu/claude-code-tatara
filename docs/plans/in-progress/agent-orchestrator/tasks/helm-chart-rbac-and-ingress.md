@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: The chart gives the reconciler least-privilege RBAC in one namespace and an opt-in ingress with no homelab defaults
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/role.yaml, chart/agent-orchestrator/templates/rolebinding.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
 verify: "uv run pytest tests/test_chart_rbac_ingress.py -q && mise run lint && mise run lint:chart"
-depends_on: [helm-chart-deployments]
+depends_on: [helm-chart-deployments, helm-chart-scaffold]
 owns: []
 uses: [helm-render, agent-orchestrator-chart]
 model: ""

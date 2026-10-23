@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Turns a cluster spec into the exact Kubernetes objects of a working, peered, any-mcp-enabled agent cluster on shared CephFS."
 files: [src/agent_orchestrator/k8s/__init__.py, src/agent_orchestrator/k8s/labels.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/k8s/on_start.py, tests/test_render.py, tests/golden/cluster_two_peers.yaml, tests/golden/cluster_single.yaml]
 verify: "uv run pytest tests/test_render.py -q && mise run lint"
-depends_on: [clusters-repository, cluster-token-derivation]
+depends_on: [cluster-token-derivation, clusters-repository, settings-model]
 owns: [k8s-render]
 uses: [cluster-spec, cluster-tokens, settings, any-mcp-cli, any-mcp-config, any-mcp-install, wrapper-on-start-hook]
 model: ""

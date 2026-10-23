@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Turns each agent's event stream into stored history and live state: idle or busy, free since when, how full its context is."
 files: [src/agent_orchestrator/ingester/__init__.py, src/agent_orchestrator/ingester/loop.py, src/agent_orchestrator/db/status.py, tests/test_ingester.py]
 verify: "uv run pytest tests/test_ingester.py -q && mise run lint"
-depends_on: [events-store, fake-wrapper-contract, cluster-token-derivation]
+depends_on: [cluster-token-derivation, events-store, fake-wrapper-contract, migrations-and-schema, wrapper-client-and-sse]
 owns: []
 uses: [events-repo, wrapper-client, fake-wrapper, cluster-tokens, schema-v1, pg-fixture, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
 model: opus

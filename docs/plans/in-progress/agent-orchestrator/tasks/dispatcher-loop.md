@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Delivers queued messages round-robin and runs interrupt and compact commands, safely with more than one replica."
 files: [src/agent_orchestrator/dispatcher/__init__.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_dispatcher.py]
 verify: "uv run pytest tests/test_dispatcher.py -q && mise run lint"
-depends_on: [dispatch-queue-sql, fake-wrapper-contract, cluster-token-derivation, clusters-repository]
+depends_on: [cluster-token-derivation, clusters-repository, dispatch-queue-sql, fake-wrapper-contract, migrations-and-schema, settings-model, wrapper-client-and-sse]
 owns: []
 uses: [queue-sql, wrapper-client, fake-wrapper, cluster-tokens, pg-fixture, cluster-spec, settings]
 model: ""

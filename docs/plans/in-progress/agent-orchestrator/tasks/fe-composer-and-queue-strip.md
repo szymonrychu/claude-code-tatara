@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Lets the user message a cluster (any free agent or a chosen one) and see, cancel or retry what is still queued or failed."
 files: [frontend/src/chat/Composer.tsx, frontend/src/chat/QueueStrip.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/Composer.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/chat/Composer.test.tsx src/layout/designRules.test.ts && npm run lint"
-depends_on: [fe-chat-log-paging]
+depends_on: [fe-api-client-and-stream, fe-chat-log-paging]
 owns: []
 uses: [fe-api]
 model: ""

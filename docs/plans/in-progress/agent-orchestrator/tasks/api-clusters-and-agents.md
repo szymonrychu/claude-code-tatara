@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "The headless API's cluster and agent surface: define, edit, list, discard clusters and see each agent's live state."
 files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py, src/agent_orchestrator/api/allowlist.py]
 verify: "uv run pytest tests/test_api_clusters.py -q && mise run lint"
-depends_on: [clusters-repository, settings-model]
+depends_on: [clusters-repository, migrations-and-schema, settings-model]
 owns: [api-app]
 uses: [cluster-spec, settings, schema-v1, pg-fixture]
 model: ""

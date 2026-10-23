@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Runs verification commands against a cluster's shared workspace, which is how the bench scores correctness."
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]
 verify: "uv run pytest tests/test_checks.py -q && mise run lint"
-depends_on: [session-bootstrap]
+depends_on: [dispatch-queue-sql, k8s-object-renderer, reconciler-loop, session-bootstrap]
 owns: []
 uses: [queue-sql, kube-api, agents-repo, k8s-render]
 model: ""

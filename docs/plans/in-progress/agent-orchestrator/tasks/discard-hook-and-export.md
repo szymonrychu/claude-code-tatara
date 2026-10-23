@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: Discarding a cluster deletes everything while an optional hook still receives the full chat history first
 files: [src/agent_orchestrator/db/export.py, src/agent_orchestrator/reconciler/discard_hook.py, src/agent_orchestrator/reconciler/loop.py, tests/test_discard_hook.py, README.md]
 verify: "uv run pytest tests/test_discard_hook.py -q && mise run lint"
-depends_on: [check-jobs]
+depends_on: [check-jobs, clusters-repository, migrations-and-schema, reconciler-loop, settings-model]
 owns: []
 uses: [schema-v1, pg-fixture, settings, cluster-spec, kube-api]
 model: ""

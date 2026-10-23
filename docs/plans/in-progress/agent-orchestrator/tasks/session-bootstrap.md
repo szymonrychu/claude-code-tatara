@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Every ready agent pod gets exactly one wrapper session, adopted after a restart instead of duplicated."
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]
 verify: "uv run pytest tests/test_session_bootstrap.py -q && mise run lint"
-depends_on: [reconciler-loop, fake-wrapper-contract]
+depends_on: [cluster-token-derivation, fake-wrapper-contract, k8s-object-renderer, reconciler-loop, wrapper-client-and-sse]
 owns: []
 uses: [agents-repo, wrapper-client, fake-wrapper, cluster-tokens, kube-api, k8s-render]
 model: ""

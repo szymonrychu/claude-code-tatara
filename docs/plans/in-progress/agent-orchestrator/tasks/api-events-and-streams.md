@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Smart chat loading for any client: page history backwards, then follow live events and status changes over SSE."
 files: [src/agent_orchestrator/api/streams.py, src/agent_orchestrator/api/listener.py, src/agent_orchestrator/api/app.py, tests/test_api_streams.py]
 verify: "uv run pytest tests/test_api_streams.py -q && mise run lint"
-depends_on: [api-messages-and-commands, events-store]
+depends_on: [api-clusters-and-agents, api-messages-and-commands, events-store]
 owns: []
 uses: [api-app, events-repo]
 model: ""

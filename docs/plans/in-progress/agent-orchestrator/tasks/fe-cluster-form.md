@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Defines new clusters with their full config and discards them safely, from the UI."
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/DiscardClusterDialog.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/clusters/ClusterForm.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/clusters/ClusterForm.test.tsx src/layout/designRules.test.ts && npm run lint"
-depends_on: [fe-shell-and-ribbon]
+depends_on: [fe-api-client-and-stream, fe-shell-and-ribbon, fe-theme-port]
 owns: []
 uses: [fe-api, fe-theme]
 model: ""

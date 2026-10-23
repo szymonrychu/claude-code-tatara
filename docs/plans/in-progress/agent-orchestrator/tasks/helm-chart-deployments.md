@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: The chart runs the four orchestrator processes with migrations first and Kubernetes credentials only on the reconciler
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/service.yaml, chart/agent-orchestrator/templates/serviceaccount.yaml, chart/agent-orchestrator/templates/NOTES.txt, chart/agent-orchestrator/templates/tests/test-connection.yaml, tests/test_chart_deployments.py]
 verify: "uv run pytest tests/test_chart_deployments.py -q && mise run lint && mise run lint:chart"
-depends_on: [helm-chart-config-postgres]
+depends_on: [helm-chart-config-postgres, helm-chart-scaffold, scaffold-repo-and-cli]
 owns: []
 uses: [helm-render, agent-orchestrator-chart, orch-cli]
 model: ""

@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "A documented, versioned contract for tatara, magic-trainer and the UI, enforced by a parity test and an OpenAPI drift check."
 files: [README.md, MEMORY.md, ROADMAP.md, openapi.json, src/agent_orchestrator/api/openapi.py, tests/test_readme_api.py]
 verify: "uv run pytest tests/test_readme_api.py -q && mise run lint"
-depends_on: [api-events-and-streams]
+depends_on: [api-clusters-and-agents, api-events-and-streams]
 owns: [openapi-v1]
 uses: [api-app]
 model: ""

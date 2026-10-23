@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "Makes the four services and migrate runnable as separate processes, with singletons that fail over and clean shutdown."
 files: [src/agent_orchestrator/runtime/__init__.py, src/agent_orchestrator/runtime/singleton.py, src/agent_orchestrator/runtime/run.py, src/agent_orchestrator/cli.py, tests/test_entrypoints.py, README.md]
 verify: "uv run pytest tests/test_entrypoints.py -q && mise run lint"
-depends_on: [ingester, dispatcher-loop, check-jobs, api-events-and-streams]
+depends_on: [api-clusters-and-agents, api-events-and-streams, check-jobs, dispatcher-loop, ingester, reconciler-loop, scaffold-repo-and-cli, settings-model]
 owns: []
 uses: [orch-cli, settings, kube-api, api-app]
 model: ""

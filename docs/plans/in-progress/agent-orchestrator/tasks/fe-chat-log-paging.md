@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "The main chat view with smart loading: newest messages instantly, older ones on scroll-up, live updates, and per-agent filters."
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/entries.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/AgentFilter.tsx, frontend/src/chat/ChatView.tsx, frontend/src/App.tsx, frontend/src/chat/ChatLog.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/chat/ChatLog.test.tsx src/layout/designRules.test.ts && npm run lint"
-depends_on: [fe-chat-model, fe-shell-and-ribbon]
+depends_on: [fe-api-client-and-stream, fe-chat-model, fe-shell-and-ribbon, fe-theme-port]
 owns: []
 uses: [chat-model, fe-api, fe-theme]
 model: ""
