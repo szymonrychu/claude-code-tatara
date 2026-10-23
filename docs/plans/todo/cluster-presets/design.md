@@ -165,7 +165,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: this epic consumes `orch-se
 - Q5: Can the default preset be deleted or renamed? [answer: the default preset can be edited and copied, not renamed or deleted (409); the API refuses to delete the last preset (user, 2026-10-23)]
 - Q6: What does the seeded default preset contain? [answer: replicas 1 and every other field empty (user, 2026-10-23)]
 - Q7: Should a preset store the defaults it was shown, or only what the user changed? [answer: a preset stores only what the user set; the editor shows /meta defaults as prefilled values (user, 2026-10-23)]
-- Q8: Does a preset name have rules? [recommended: unique, 1 to 40 characters, letters, digits, spaces, dots, dashes and underscores; the generated slug uses its DNS-1123 form]
+- Q8: Does a preset name have rules? [answer: names unique, 1 to 40 characters, letters, digits, spaces, dots, dashes and underscores (user, 2026-10-23)]
 - Q9: Should the UI show that a cluster's preset changed after it was created? [recommended: no, the tab shows only `preset_name`; the snapshot is the truth]
 - Q10: Is the Presets page a full main-area view or a dialog? [recommended: a full main-area view in place of the active tab content, left with the hamburger menu or a Back button]
 - Q11: Should presets be exportable or importable as JSON or YAML? [recommended: no, not in this epic]
