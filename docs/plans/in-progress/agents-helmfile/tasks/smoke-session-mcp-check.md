@@ -1,6 +1,6 @@
 ---
 title: smoke session mcp check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the smoke proves any-mcp is connected in a real agent session
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-smoke-session-mcp-check/agents-helmfile
+branch: agents-helmfile-smoke-session-mcp-check
 verified_head: ""
 run: ""
 provides: []
