@@ -1,6 +1,6 @@
 ---
 title: workflow hardening
-status: todo
+status: in-progress
 repo: any-mcp
 value: CI and release tokens get least privilege and the release cannot be shell-injected
 files: [.github/workflows/ci.yml, .github/workflows/release.yml, tests/test_release.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-workflow-hardening/any-mcp
+branch: any-mcp-workflow-hardening
 verified_head: ""
 run: ""
 provides: []

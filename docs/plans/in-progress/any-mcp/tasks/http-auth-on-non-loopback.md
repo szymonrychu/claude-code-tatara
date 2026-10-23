@@ -1,6 +1,6 @@
 ---
 title: http auth on non loopback
-status: todo
+status: in-progress
 repo: any-mcp
 value: an HTTP server reachable beyond loopback is never unauthenticated by accident
 files: [src/any_mcp/_fastmcp_adapter.py, src/any_mcp/cli.py, src/any_mcp/config.py, docs/transports.md, tests/test_http_transport.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-auth-on-non-loopback/any-mcp
+branch: any-mcp-http-auth-on-non-loopback
 verified_head: ""
 run: ""
 provides: []

@@ -1,6 +1,6 @@
 ---
 title: bounded upstream bodies
-status: todo
+status: in-progress
 repo: any-mcp
 value: a large or hostile upstream cannot exhaust memory
 files: [src/any_mcp/http.py, src/any_mcp/openapi.py, src/any_mcp/config.py, tests/test_http_binding.py, tests/test_openapi.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-bounded-upstream-bodies/any-mcp
+branch: any-mcp-bounded-upstream-bodies
 verified_head: ""
 run: ""
 provides: []

@@ -1,6 +1,6 @@
 ---
 title: error redaction and cleanup
-status: todo
+status: in-progress
 repo: any-mcp
 value: tool errors never echo credentials and HTTP clients always close
 files: [src/any_mcp/errors.py, src/any_mcp/discovery.py, src/any_mcp/cli.py, src/any_mcp/openapi.py, docs/configuration.md, tests/test_pipeline.py, tests/test_cli.py, tests/test_discovery.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-error-redaction-and-cleanup/any-mcp
+branch: any-mcp-error-redaction-and-cleanup
 verified_head: ""
 run: ""
 provides: []
