@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: secret scanners stay quiet on fake test data
 files: [e2e/values-kind.yaml, scripts/e2e.sh, tests/test_chart_config.py]
 verify: "uv run pytest tests/test_chart_config.py -q -p no:cacheprovider && mise run lint"
-depends_on: []
+depends_on: [helm-chart-config-postgres, kind-e2e]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+No secret-shaped literals in fixtures; tests and e2e unchanged in behaviour.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: gitleaks/GitGuardian flags the two literals today.
+- Generate the values at run/install time; run the verify command and the e2e.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

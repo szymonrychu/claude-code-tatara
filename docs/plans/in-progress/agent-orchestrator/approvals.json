@@ -193,7 +193,8 @@
       "spa-serving-and-dockerfile",
       "container-images-ci",
       "kind-e2e",
-      "images-test-precision"
+      "images-test-precision",
+      "fixtures-not-secret-shaped"
     ],
     "status": "approved"
   },
