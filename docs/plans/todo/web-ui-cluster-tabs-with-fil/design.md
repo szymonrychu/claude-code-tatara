@@ -218,6 +218,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 
 ## Open questions
 - Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [recommended: yes, a tab per cluster, same set the ribbon lists today]
+- Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [recommended: a compact agents strip in the chat panel header, merged with the agent filter chips]
 
 ## Irreversible operations in scope
 
