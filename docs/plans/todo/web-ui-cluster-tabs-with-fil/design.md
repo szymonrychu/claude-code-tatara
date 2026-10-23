@@ -222,6 +222,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q3: Where does a terminal run? [recommended: a shell in a chosen agent pod, served by the wrapper and proxied by the orchestrator api; not a separate workspace pod, not Kubernetes pods/exec]
 - Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [recommended: yes, several concurrent shells as tabs, each with its own pod choice]
 - Q5: How long does a shell live? [recommended: survives tab switches and page reloads, reaped 15 minutes after its last client detaches, 256 KiB scrollback replayed on reattach, at most 8 shells per pod]
+- Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [recommended: yes, as defence in depth only; the same uid can still read them from /proc, which the wrapper trust model already accepts]
 
 ## Irreversible operations in scope
 
