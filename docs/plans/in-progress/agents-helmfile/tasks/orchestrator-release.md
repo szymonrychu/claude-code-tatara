@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-orchestrator-release/agents-helmfile
+branch: agents-helmfile-orchestrator-release
 verified_head: ""
 run: ""
 provides: []
