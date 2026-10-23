@@ -1,6 +1,6 @@
 ---
 title: deploy pin d5a7738
-status: in-progress
+status: blocked
 repo: agents-helmfile
 value: the live agents namespace runs the merged form fix
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-deploy-pin-d5a7738/agents-helmfile
 branch: cluster-form-defaults-and-ga-deploy-pin-d5a7738
-verified_head: ""
-run: ""
+verified_head: 9c88ccf66c1beaada119ab849d623dfd1e1f4b9d
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # deploy pin d5a7738
