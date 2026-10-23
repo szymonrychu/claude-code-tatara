@@ -1,0 +1,56 @@
+---
+title: images test precision
+status: todo
+repo: agent-orchestrator
+value: the full suite and the integration task run green out of the box
+files: [tests/test_images.py, mise.toml, README.md]
+verify: "uv run pytest tests/test_images.py -q && mise run lint"
+depends_on: []
+owns: []
+uses: []
+model: ""
+estimate: 5
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# images test precision
+
+## Requirement
+
+Full-suite failure: tests/test_images.py::test_no_derived_agent_image asserts the string claude-code-wrapper never appears in .github/workflows/ci.yaml, but the kind e2e job legitimately pulls the wrapper image. Make the test assert what the decision means: no Dockerfile in the repo builds FROM the wrapper image and CI builds and pushes no agent image (no containers/agent-orchestrator-agent tag), while allowing the e2e job's wrapper references. Also: mise run test:integration fails with KeyError when ORCH_TEST_WRAPPER_IMAGE is unset; make the task build e2e/agent-test.Dockerfile (tag agent-orchestrator-agent-test:e2e, as scripts/e2e.sh does) when the variable is unset and export it, and document it in README.
+
+## Acceptance conditions
+
+- AC1: the derived-image rule is asserted precisely and passes with the e2e job present [evidence: test:tests/test_images.py::test_no_derived_agent_image]
+- AC2: mise run test:integration works with ORCH_TEST_WRAPPER_IMAGE unset [evidence: command:env -u ORCH_TEST_WRAPPER_IMAGE mise run test:integration]
+
+## Files
+
+- `tests/test_images.py`
+- `mise.toml`
+- `README.md`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
