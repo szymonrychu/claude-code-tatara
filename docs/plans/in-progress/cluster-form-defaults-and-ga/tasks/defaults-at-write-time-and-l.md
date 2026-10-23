@@ -57,12 +57,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Rendering a stored spec without resources gives the pre-epic pod template (golden files match the pre-epic content). New and edited clusters store default resources. Re-saving a legacy cluster in the form succeeds.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the AC1-AC5 tests and run the verify command: they fail.
+- Move the resource fill from k8s/render.py into the POST/PATCH write path (api/clusters.py or spec.py), with the request/limit guard; restore the golden files to `git show origin/main:tests/golden/<file>`.
+- Make PATCH validate model/effort only when changed; add the Model empty option in ClusterForm.tsx.
+- Run the verify command: all pass.
 
 ## Notes
 
