@@ -36,7 +36,7 @@ agents-helmfile: a new public component (code/agents-helmfile, origin szymonrych
 
 ## Time
 
-Estimate: 43 agent-min | Critical path: 33 min | Expected wall at P=1.5: 1.1 h (k=2.0) | Actual: 0 min | Remaining estimate: 15 min
+Estimate: 43 agent-min | Critical path: 33 min | Expected wall at P=1.5: 1.1 h (k=2.0) | Actual: 0 min | Remaining estimate: 20 min
 
 ## Review
 
