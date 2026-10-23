@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "round-cap only on AC3, which could not pass before the release tasks land (planning error by the orchestrator); AC3 moved to db-release AC5. AC1/AC2 verified on 1fcd489: tests/test_helmfile_base.py passed, lint and gitleaks clean.",
     "at": "2026-10-23T06:58:11Z"
+  },
+  {
+    "task": "hook-missing-namespace",
+    "accept": true,
+    "reason": "round-cap only on AC3, which could not pass before the release tasks land (orchestrator planning error); AC3 moved to db-release AC5; AC1/AC2 verified on 1fcd489.",
+    "at": "2026-10-23T06:58:27Z"
   }
 ]
