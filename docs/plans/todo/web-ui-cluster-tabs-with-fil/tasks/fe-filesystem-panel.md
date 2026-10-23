@@ -41,6 +41,10 @@ The filesystem panel (design D8; user Q8, Q9, Q10), test-first.
 - AC4: a Write or Edit tool_call refreshes the loaded parent directory and a Bash tool_result refreshes expanded directories, debounced [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t event_driven_refresh]
 - AC5: the refresh button re-fetches the tree and errors render inline [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t manual_refresh_and_errors]
 - AC6: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/files src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
+- AC7: a symlink entry is a leaf that previews through the content route and an escape error shows inline [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t symlink_previews_and_escape_error]
+- AC8: other entry types are leaves showing the type only with no preview [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t other_entries_type_only]
+- AC9: a missing workdir root renders an empty tree with the line workdir not created yet and no error [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t missing_root_empty_tree]
+- AC10: the event stream stays open while the panel is mounted and closes on unmount [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t event_stream_closes_on_unmount]
 
 ## Files
 
@@ -70,3 +74,8 @@ The left panel shows the cluster workdir like the VS Code explorer, stays curren
 - Event data shape: `chatModel.ts` reads tool input as `data.tool_input ?? data.input` and name as `data.name ?? data.tool_name`; reuse the same accessors.
 - `file_path` is absolute; map it to the tree with the listing `root` (paths outside `root` are ignored).
 - Do not lift or change the private stream in `useClusterChat.ts`; ChatView stays untouched.
+- Builder check ruling 8: Symlink entries are leaves that preview through the content route (an escape outside the workdir shows the wrapper error inline); other entries are leaves showing type only, no preview.
+- Builder check ruling 9: Only the active cluster tab's Workspace is mounted; switching away unmounts it and terminals reattach with scrollback replay on return. A minimized panel stays mounted, so its event subscription stays live.
+- Builder check ruling 11: A missing workdir root (not_found for path "") renders as an empty tree with the line "workdir not created yet", not as an error.
+
+- 2026-10-23 amended: builder check rulings 8,9,11 add acceptance conditions AC7-AC10
