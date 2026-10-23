@@ -93,6 +93,9 @@ Q1: one cluster is one tab; every cluster is shown, tabs are not closable, the b
 ### D13: Q15 no Edit entry point
 Q15: the cluster Edit action is dropped from the UI in this epic; tab actions carry only Discard. PATCH and the ClusterForm edit code stay until the cluster-presets epic removes them. (user decision)
 
+### D14: Q14 hamburger menu with sessions and settings
+Q14: this epic builds the hamburger menu at the top left: every session (cluster) listed from the top and a settings section pinned to the bottom that stays empty until the cluster-presets epic adds Presets. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -173,6 +176,7 @@ Q15: the cluster Edit action is dropped from the UI in this epic; tab actions ca
 | D11 Shell process | terminal-registry |
 | D12 Q1 one cluster per tab | fe-top-bar, fe-retire-ribbon |
 | D13 Q15 no Edit entry point | fe-top-bar, fe-retire-ribbon |
+| D14 Q14 hamburger menu with sessions and settings | fe-top-bar, fe-retire-ribbon |
 
 ## Contracts
 

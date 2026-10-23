@@ -97,5 +97,17 @@
       "deploy-pin"
     ],
     "status": "approved"
+  },
+  {
+    "id": "B",
+    "text": "Q14: this epic builds the hamburger menu at the top left: every session (cluster) listed from the top and a settings section pinned to the bottom that stays empty until the cluster-presets epic adds Presets.",
+    "decisions": [
+      "D14"
+    ],
+    "tasks": [
+      "fe-top-bar",
+      "fe-retire-ribbon"
+    ],
+    "status": "approved"
   }
 ]
