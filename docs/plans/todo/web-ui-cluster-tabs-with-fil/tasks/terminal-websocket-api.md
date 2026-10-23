@@ -33,8 +33,9 @@ Expose the terminal registry over HTTP and a WebSocket (design D2, D3), test-fir
   - `GET /v1/sessions/{id}/terminals` -> 200 `{"terminals": [...]}`.
   - `DELETE /v1/sessions/{id}/terminals/{terminal_id}` -> 204; 404 `terminal_not_found` when unknown.
   - `WS /v1/sessions/{id}/terminals/{terminal_id}/attach`: unknown session or terminal is denied before accept with 404. After accept: the scrollback snapshot as binary frames, then live PTY output as binary frames; client binary frames are written to the PTY; client text frames are JSON control: `{"type":"resize","cols","rows"}` resizes, `{"type":"ping"}` answers `{"type":"pong"}`, anything else closes 1003. A frame over `limits.terminal_max_frame_bytes` closes 1009. A subscriber dropped for overflow closes 1013. Shell exit sends `{"type":"exit","code":N}` then closes 1000. Closing the socket detaches (the shell keeps running).
-- README (`## API reference`): a `###` section per HTTP route and one hand-written `### \`WS /v1/sessions/{id}/terminals/{terminal_id}/attach\`` section with the frame protocol and close codes; `## Errors` rows for `terminal_limit` and `terminal_not_found`; `## Trust model` note that terminals are interactive login shells of the agent uid with the listed secrets removed from their environment.
+- README (`## API reference`): a `###` section per HTTP route and one hand-written `### \`WS /v1/sessions/{id}/terminals/{terminal_id}/attach\`` section with the frame protocol and close codes; `## Errors` rows for `terminal_limit`, `terminal_not_found`, `session_not_active` (409) and `invalid_size` (422); `## Trust model` note that terminals are interactive login shells of the agent uid with every secret-kind Claude variable and the `CCW_*` tokens removed from their environment.
 - `tests/test_readme_api.py` gains a check that every WebSocket route of the app (`APIWebSocketRoute`) has a README `### \`WS <path>\`` heading, since `_walk` sees only `APIRoute`.
+- `terminal_id` path parameters (DELETE and the WebSocket attach) are accepted only in the registry's id format, `TERMINAL_ID_RE = ^term_[0-9a-f]{12}$`, defined once in `api/terminals.py` next to the id generator's format; anything else is 422 `invalid_request` (the WebSocket is denied before accept with the same 422), so a crafted id never reaches the registry or a path (interrogate ruling 4).
 
 ## Acceptance conditions
 
@@ -50,6 +51,8 @@ Expose the terminal registry over HTTP and a WebSocket (design D2, D3), test-fir
 - AC10: create with rows or cols outside 1..1000 answers 422 invalid_size [evidence: test:tests/test_api_terminals.py::test_create_invalid_size]
 - AC11: a resize frame out of range or malformed is ignored and the socket stays open [evidence: test:tests/test_api_terminals.py::test_bad_resize_ignored]
 - AC12: create or attach on a known but not active session answers 409 session_not_active and an unknown session 404 [evidence: test:tests/test_api_terminals.py::test_session_not_active_vs_unknown]
+- AC13: a terminal_id outside ^term_[0-9a-f]{12}$ (for example ..%2F, term_zz, an uppercase or overlong id) is 422 invalid_request on DELETE and denied with 422 before accept on the WebSocket [evidence: test:tests/test_api_terminals.py::test_invalid_terminal_id_rejected]
+- AC14: the README Errors table lists session_not_active and invalid_size and the README tests stay green [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 
 ## Files
 
@@ -88,3 +91,5 @@ A client with the bearer token can create a shell in a session workdir, attach o
 - Builder check ruling 5: Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
 
 - 2026-10-23 amended: builder check rulings 1,3,5 add acceptance conditions AC9-AC12
+
+- 2026-10-23 amended: interrogate rulings 4 (terminal_id format check in the wrapper routes), 5 (README Errors rows session_not_active and invalid_size), 1 (Trust model wording follows the new env contract)
