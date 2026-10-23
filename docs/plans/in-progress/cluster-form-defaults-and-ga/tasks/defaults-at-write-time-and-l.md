@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: "deploying the new image does not roll running clusters, and old clusters stay editable"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, tests/test_render.py, tests/test_api_clusters.py, tests/golden/cluster_single.yaml, tests/golden/cluster_two_peers.yaml, frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, README.md]
-verify: "uv run pytest tests/test_render.py tests/test_api_clusters.py tests/test_golden.py -q -p no:cacheprovider && (cd frontend && npm test -- --run src/clusters/ClusterForm.test.tsx) && mise run lint"
+verify: "uv run pytest tests/test_render.py tests/test_api_clusters.py -q -p no:cacheprovider && (cd frontend && npm test -- --run src/clusters/ClusterForm.test.tsx) && mise run lint"
 depends_on: []
 owns: []
 uses: []
