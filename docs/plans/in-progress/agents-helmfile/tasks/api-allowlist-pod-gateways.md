@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: LAN users reach the UI while agent pods stay refused
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest tests/test_orchestrator_release.py -q -p no:cacheprovider && mise run lint"
-depends_on: []
+depends_on: [db-secret-name-from-cnpg, orchestrator-release]
 owns: []
 uses: []
 model: ""
@@ -43,9 +43,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The UI answers 200 from the LAN after apply.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: live 403 from 192.168.1.106; write the value test, see it fail.
+- Set the value; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

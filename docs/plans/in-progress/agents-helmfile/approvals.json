@@ -33,7 +33,8 @@
     ],
     "tasks": [
       "orchestrator-release",
-      "db-secret-name-from-cnpg"
+      "db-secret-name-from-cnpg",
+      "api-allowlist-pod-gateways"
     ],
     "status": "approved"
   },
