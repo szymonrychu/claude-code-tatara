@@ -1,6 +1,6 @@
 ---
 title: frontend api types regen
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: API changes always ship with matching frontend types
 files: [frontend/src/api/schema.d.ts, tests/test_readme_api.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-frontend-api-types-regen/agent-orchestrator
+branch: agent-orchestrator-frontend-api-types-regen
 verified_head: ""
 run: ""
 provides: []
