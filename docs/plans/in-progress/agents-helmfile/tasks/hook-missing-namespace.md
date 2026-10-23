@@ -44,9 +44,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+helmfile build/diff/apply work against a cluster without namespace agents.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: live helmfile build exits 1 (namespaces agents not found); write the stubbed-kubectl tests, see them fail.
+- Make prepare tolerate a missing namespace; run green and the live build.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

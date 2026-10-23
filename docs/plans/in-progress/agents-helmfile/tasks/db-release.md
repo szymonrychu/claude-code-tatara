@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
 verify: "uv run pytest tests/test_db_release.py -q && mise run lint"
-depends_on: [secrets-bootstrap]
+depends_on: [hook-missing-namespace, secrets-bootstrap]
 owns: []
 uses: []
 model: ""
