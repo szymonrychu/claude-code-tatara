@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: the orchestrator connects to the database CNPG actually created
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
 verify: "uv run pytest tests/test_orchestrator_release.py tests/test_db_release.py -q -p no:cacheprovider && mise run lint"
-depends_on: []
+depends_on: [mise-tasks, orchestrator-release, smoke-script]
 owns: []
 uses: []
 model: ""
@@ -45,9 +45,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The orchestrator release starts against the CNPG database on the live cluster.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: write the render-derived test, see it fail on the wrong name.
+- Fix the references; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

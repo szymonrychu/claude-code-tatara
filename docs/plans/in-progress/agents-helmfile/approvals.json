@@ -32,7 +32,8 @@
       "D3"
     ],
     "tasks": [
-      "orchestrator-release"
+      "orchestrator-release",
+      "db-secret-name-from-cnpg"
     ],
     "status": "approved"
   },
