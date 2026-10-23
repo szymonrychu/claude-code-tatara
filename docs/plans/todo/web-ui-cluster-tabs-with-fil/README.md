@@ -73,6 +73,13 @@ Order: cluster-form-defaults-and-ga (in progress), then this epic, then presets-
 - Terminal: MUI `Tabs` inside the panel, one `@xterm/xterm` 6 instance per tab with `@xterm/addon-fit` (re-fit on panel resize), a small WebSocket protocol (binary frames are PTY bytes, text frames are JSON control such as `{"type":"resize","cols":..,"rows":..}`), app-level ping every 20 s, reconnect with scrollback replay.
 - Wrapper side: reuse `PtyProcess` and its ring (`pty_proc.py`) for shells; file API resolves every path and refuses anything that leaves the workdir after symlink resolution.
 
+## Decisions (user, 2026-10-23)
+
+- Q1: yes, one cluster is one tab.
+- Q3: a shell in an agent pod; the user does not know how, so the mechanism is decided in design (recommended: served by the wrapper, proxied by the orchestrator api).
+- Q7: yes, unauthenticated LAN-only shell with the mandatory Origin allowlist.
+- From the presets message: live cluster edit is not needed (supports Q15: yes).
+
 ## Open questions
 
 - Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [recommended: yes, a tab per cluster, same set the ribbon lists today]

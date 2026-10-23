@@ -69,6 +69,12 @@ Order: cluster-form-defaults-and-ga (in progress; it reworks the same form, /met
 - Defaults: /meta stays the source of defaults. A preset stores only what the user set (empty fields stay empty), the editor shows the /meta defaults as prefilled values, and the write-time fill from cluster-form-defaults-and-ga runs at schedule, so a later change of an `ORCH_DEFAULT_*` setting reaches new clusters made from untouched presets.
 - Default preset: seeded once, can be edited and copied, cannot be deleted (409); the API refuses to delete the last preset.
 
+## Decisions (user, 2026-10-23)
+
+- Q2: yes, POST keeps accepting a raw spec for headless callers; exactly one of spec or preset_id.
+- Q3: yes, a cluster keeps the spec snapshotted at create; preset edits and deletes do not touch it.
+- Q4: yes, PATCH /api/v1/clusters/{id} is retired from the API, not only hidden in the UI.
+
 ## Open questions
 
 - Q1: Does "only preset is required" mean the slug is optional too? [recommended: yes, the slug defaults to `<preset name>-<4 random lowercase characters>` and can be overridden in the New cluster dialog]
