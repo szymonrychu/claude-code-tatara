@@ -1,6 +1,6 @@
 ---
 title: model default option
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: editing a cluster with no model shows its real value
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-model-default-option/agent-orchestrator
 branch: cluster-form-defaults-and-ga-model-default-option
-verified_head: ""
-run: ""
+verified_head: 34631bdb6477cad78277a8766ef29d9dd5376f2e
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: c993d7c1e48faa40a81d4f87d79ee0836a479ea7
 ---
 
 # model default option

@@ -1,6 +1,6 @@
 ---
 title: deterministic in-flight cap test
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the full suite is green on every run, not most runs"
 files: [tests/test_dispatcher.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-deterministic-in-flight-cap/agent-orchestrator
 branch: cluster-form-defaults-and-ga-deterministic-in-flight-cap
-verified_head: ""
-run: ""
+verified_head: 3fcbb0ba697209495a2b3a6cc21b3379da6e5068
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+fork_point: 2d099eca38ab71be5e17c4332237c42cb442a38a
 ---
 
 # deterministic in-flight cap test

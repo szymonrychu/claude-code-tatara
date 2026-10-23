@@ -1,6 +1,6 @@
 ---
 title: defaults at write time and legacy edit
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "deploying the new image does not roll running clusters, and old clusters stay editable"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, tests/test_render.py, tests/test_api_clusters.py, tests/golden/cluster_single.yaml, tests/golden/cluster_two_peers.yaml, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-defaults-at-write-time-and-l/agent-orchestrator
 branch: cluster-form-defaults-and-ga-defaults-at-write-time-and-l
-verified_head: ""
-run: ""
+verified_head: 2d099eca38ab71be5e17c4332237c42cb442a38a
+run: cluster-form-defaults-and-ga
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # defaults at write time and legacy edit
