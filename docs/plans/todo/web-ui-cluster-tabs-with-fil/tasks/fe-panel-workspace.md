@@ -40,6 +40,10 @@ The three-panel cluster workspace (design D7; user Q11, Q12), test-first.
 - AC5: layout persists per cluster and survives a remount; corrupt stored data falls back to the default [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t layout_persists_per_cluster]
 - AC6: phone shows one panel at a time with a three-way switch, Chat by default [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t phone_three_way_switch]
 - AC7: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/Workspace.test.tsx src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
+- AC8: a maximized panel shows one Restore control that returns the layout from before maximize [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t maximized_restore_returns_previous_layout]
+- AC9: restoring a single minimized strip returns that panel to its pre-minimize size [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t restore_minimized_to_previous_size]
+- AC10: a minimized panel stays mounted [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t minimized_panel_stays_mounted]
+- AC11: only the active cluster tab's Workspace is mounted and switching away unmounts it [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t only_active_cluster_workspace_mounted]
 
 ## Files
 
@@ -66,3 +70,7 @@ Each cluster tab is a resizable three-panel workspace with chat in the middle, a
 
 - react-resizable-panels v4 renamed components (`Group`, `Panel`, `Separator`); v3 examples with `PanelGroup`/`PanelResizeHandle` do not apply. Numbers are pixels, unit-less strings are percent.
 - Keep `App.test.tsx` green (it now sees the workspace around ChatView).
+- Builder check ruling 7: A maximized panel shows one Restore control that returns the layout from before maximize; restoring a single minimized strip returns that panel to its pre-minimize size (Panel.expand()); double-click on a separator still resets 25/45/30.
+- Builder check ruling 9: Only the active cluster tab's Workspace is mounted; switching away unmounts it and terminals reattach with scrollback replay on return. A minimized panel stays mounted, so its event subscription stays live.
+
+- 2026-10-23 amended: builder check rulings 7,9 add acceptance conditions AC8-AC11
