@@ -3,7 +3,7 @@ title: deploy pin d5a7738
 status: todo
 repo: agents-helmfile
 value: the live agents namespace runs the merged form fix
-files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_versions.py]
+files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest -q -p no:cacheprovider && mise run lint"
 depends_on: []
 owns: []
@@ -35,7 +35,7 @@ Deploy agent-orchestrator main d5a7738 (PR #3 merge): set helmfile.yaml.gotmpl r
 
 - `helmfile.yaml.gotmpl`
 - `values/agent-orchestrator/common.yaml`
-- `tests/test_versions.py`
+- `tests/test_orchestrator_release.py`
 
 ## Interfaces
 
@@ -43,12 +43,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` would show only the image tag and chart version change for agent-orchestrator.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add a test in tests/test_orchestrator_release.py asserting chart version 0.1.0-main.d5a7738 and image tag d5a7738; run `uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: fails.
+- Change the two pins; rerun the verify command: passes.
 
 ## Notes
 
