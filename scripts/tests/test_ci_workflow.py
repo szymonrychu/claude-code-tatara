@@ -39,7 +39,12 @@ def test_actions_are_pinned_by_full_sha_with_tag_comment():
 def test_has_check_and_secrets_jobs():
     assert re.search(r"^jobs:\s*\n(?:.*\n)*?  check:", _text(), re.M)
     assert re.search(r"^  secrets:\s*$", _text(), re.M)
-    assert _text().count("runs-on: ubuntu-latest") == 2
+    assert re.search(r"^  e2e:\s*$", _text(), re.M)
+    jobs = re.findall(r"^  ([\w-]+):\s*$", _text().split("\njobs:\n", 1)[1], re.M)
+    assert jobs == ["check", "e2e", "secrets"]
+    assert _text().count("runs-on: ubuntu-latest") == 3
+    e2e = re.search(r"^  e2e:\s*\n((?:    .*\n|\s*\n)*)", _text(), re.M)
+    assert e2e and re.search(r"^\s*-\s*run:\s*mise run e2e\s*$", e2e.group(1), re.M)
 
 
 def test_runs_install_lint_and_test():
