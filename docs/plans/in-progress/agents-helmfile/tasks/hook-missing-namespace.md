@@ -1,6 +1,6 @@
 ---
 title: hook missing namespace
-status: in-progress
+status: escalated
 repo: agents-helmfile
 value: a first deploy into an empty cluster works
 files: [.hook.sh, tests/test_helmfile_base.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-hook-missing-namespace/agents-helmfile
 branch: agents-helmfile-hook-missing-namespace
-verified_head: ""
-run: ""
+verified_head: 1fcd489ba971394e2d64fdca49f904ba730a3f11
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: ["AC3's evidence command cannot pass until db-release and orchestrator-release land, yet db-release depends_on this task. Move AC3 to an integration check or re-run it after the release tasks."]
 ---
 
 # hook missing namespace

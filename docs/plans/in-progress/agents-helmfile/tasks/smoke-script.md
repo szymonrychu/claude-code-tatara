@@ -1,6 +1,6 @@
 ---
 title: smoke script
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: A repeatable proof that the deployed UI answers and a fresh agent pod lists any-mcp.
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py]

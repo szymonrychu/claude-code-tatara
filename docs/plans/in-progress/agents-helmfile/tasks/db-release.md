@@ -1,6 +1,6 @@
 ---
 title: db release
-status: escalated
+status: todo
 repo: agents-helmfile
 value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
@@ -16,11 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-release/agents-helmfile
 branch: agents-helmfile-db-release
-verified_head: b2babecdf3e0c3531a083865a4b3f13ebb0ca282
+verified_head: ""
 run: agents-helmfile
 provides: []
 acs_for_audit: []
-process_gaps: ["The .hook.sh prepare-on-missing-namespace failure is not recorded as an epic task in the plan, despite the implementer's claim."]
+process_gaps: []
 ---
 
 # db release
@@ -64,3 +64,5 @@ Provides CNPG Secret `agent-orchestrator-db-app` (keys uri, host, port, dbname, 
 ## Notes
 
 Template: ~/Documents/infrastructure/code/helmfile helmfiles/ai/values/buzz-database/common.yaml and helmfiles/media/values/jellystat-database/common.yaml. The app Secret name is CNPG's `<release>-app`.
+
+- 2026-10-23 run agents-helmfile: dependency-failed on hook-missing-namespace
