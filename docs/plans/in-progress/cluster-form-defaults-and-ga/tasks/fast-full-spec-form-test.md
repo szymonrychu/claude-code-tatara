@@ -1,6 +1,6 @@
 ---
 title: fast full-spec form test
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "PR #3 frontend CI goes green, so the form fix can ship"
 files: [frontend/src/clusters/ClusterForm.test.tsx]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-fast-full-spec-form-test/agent-orchestrator
+branch: cluster-form-defaults-and-ga-fast-full-spec-form-test
 verified_head: ""
 run: ""
 provides: []
