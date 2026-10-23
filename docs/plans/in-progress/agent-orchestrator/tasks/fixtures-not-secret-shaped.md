@@ -1,6 +1,6 @@
 ---
 title: fixtures not secret shaped
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: secret scanners stay quiet on fake test data
 files: [e2e/values-kind.yaml, scripts/e2e.sh, tests/test_chart_config.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fixtures-not-secret-shaped/agent-orchestrator
+branch: agent-orchestrator-fixtures-not-secret-shaped
 verified_head: ""
 run: ""
 provides: []
