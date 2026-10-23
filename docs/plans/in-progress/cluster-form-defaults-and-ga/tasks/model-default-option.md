@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: editing a cluster with no model shows its real value
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx]
 verify: "cd frontend && npx vitest run src/clusters && npm run lint"
-depends_on: []
+depends_on: [form-dropdowns-and-gauge-tic]
 owns: []
 uses: []
 model: sonnet

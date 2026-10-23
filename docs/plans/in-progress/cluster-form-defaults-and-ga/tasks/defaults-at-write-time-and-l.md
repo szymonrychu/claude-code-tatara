@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "deploying the new image does not roll running clusters, and old clusters stay editable"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, tests/test_render.py, tests/test_api_clusters.py, tests/golden/cluster_single.yaml, tests/golden/cluster_two_peers.yaml, README.md]
 verify: "uv run pytest tests/test_render.py tests/test_api_clusters.py -q -p no:cacheprovider && mise run lint"
-depends_on: []
+depends_on: [meta-form-defaults]
 owns: []
 uses: []
 model: sonnet
