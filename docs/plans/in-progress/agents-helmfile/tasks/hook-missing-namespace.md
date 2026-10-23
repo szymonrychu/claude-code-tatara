@@ -31,7 +31,6 @@ Found by db-release on the live cluster: the .hook.sh prepare step runs kubectl 
 
 - AC1: prepare on a missing namespace does not fail and reports the namespace as to-be-created [evidence: test:tests/test_helmfile_base.py::test_prepare_tolerates_missing_namespace]
 - AC2: any other kubectl failure still aborts [evidence: test:tests/test_helmfile_base.py::test_prepare_aborts_on_other_kubectl_errors]
-- AC3: helmfile build succeeds against the live cluster where namespace agents does not exist yet [evidence: command:mise exec -- helmfile -f helmfile.yaml.gotmpl build]
 
 ## Files
 
@@ -59,3 +58,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+
+## Notes
+
+AC3 (live helmfile build on a cluster without namespace agents) moved to db-release AC5: it cannot pass before any release exists (orchestrator ruling 2026-10-23).
