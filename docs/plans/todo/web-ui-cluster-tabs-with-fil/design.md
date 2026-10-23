@@ -99,6 +99,9 @@ Q14: this epic builds the hamburger menu at the top left: every session (cluster
 ### D15: Q11 minimized strip and separator reset
 Q11: a minimized panel is a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split. (user decision)
 
+### D16: Q12 phone three-way switch
+Q12: on a phone one panel is shown at a time with a three-way switch; the cluster tabs scroll. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -181,6 +184,7 @@ Q11: a minimized panel is a narrow vertical strip with the panel name and a rest
 | D13 Q15 no Edit entry point | fe-top-bar, fe-retire-ribbon |
 | D14 Q14 hamburger menu with sessions and settings | fe-top-bar, fe-retire-ribbon |
 | D15 Q11 minimized strip and separator reset | fe-panel-workspace |
+| D16 Q12 phone three-way switch | fe-panel-workspace |
 
 ## Contracts
 
