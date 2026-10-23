@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: "the api can reach a cluster's wrapper pods through one audited module"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/wrapper/client.py, tests/test_workspace_proxy.py, tests/test_wrapper_client.py, tests/test_api_clusters.py, README.md, MEMORY.md]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py tests/test_settings.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [origin-allowlist]
 owns: [workspace-proxy-module]
 uses: []
@@ -43,7 +43,7 @@ Open the narrow seam through which the orchestrator api may call wrapper pods (u
 - AC4: WrapperClient.request_json sends the bearer and returns status and body [evidence: test:tests/test_wrapper_client.py::test_request_json_passthrough]
 - AC5: only api/workspace.py may import agent_orchestrator.wrapper or agent_orchestrator.tokens [evidence: test:tests/test_api_clusters.py::test_api_never_imports_k8s_or_wrapper]
 - AC6: MEMORY.md records the D5 amendment with date and why, and README Architecture names the proxy module [evidence: judgement:MEMORY.md and README.md Architecture]
-- AC7: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py tests/test_settings.py && mise run lint]
+- AC7: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -58,17 +58,23 @@ Open the narrow seam through which the orchestrator api may call wrapper pods (u
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.api.workspace.resolve_agent`, `WrapperTarget`, the forwarding helper and the lifespan-managed client on `app.state` (owns part `workspace-proxy-module`, consumed by file-proxy-routes, terminal-proxy-routes, terminal-ws-relay).
+- `agent_orchestrator.wrapper.client.WrapperClient.request_json`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The api has one audited module that can reach a cluster's wrapper pods with the derived token; every other api module stays wrapper-free, and the docs say so.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_workspace_proxy.py` (DB fixtures `pool`/`dsn`, `tests/factories.py:insert_cluster`/`insert_agent`, `FakeWrapper` for the forwarding cases), `test_request_json_passthrough` in `tests/test_wrapper_client.py`, and tighten `test_api_never_imports_k8s_or_wrapper`; run `uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py`: new tests fail.
+- Implement `api/workspace.py`, the lifespan client in `api/app.py`, `request_json`; rerun: passes.
+- README and MEMORY edits; `uv run pytest -q -p no:cacheprovider tests/test_settings.py`: passes.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `db/views.py:agent_rows` does not select `url`/`session_id`; use `db/agents.py:get_agent`/`list_agents` (`Agent.url`, `Agent.session_id`, `pod_name`, `ordinal`).
+- Readiness: use the same notion of a usable agent the dispatcher uses (has a session and is not in a dead or discarding state); name the exact rule in the docstring.
+- `WrapperClient` errors are `WrapperError`/`WrapperUnreachable` (`wrapper/client.py`); reuse its `_error_parts` for the wrapper code.
+- DB tests use testcontainers (dockerd is running in this container).

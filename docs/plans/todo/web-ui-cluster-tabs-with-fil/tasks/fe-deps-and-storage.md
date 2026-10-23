@@ -51,17 +51,22 @@ Lay the frontend foundation for the workspace (design D7; user Q13), test-first 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/layout/storage.ts`: `loadJson`, `saveJson` (owns part `fe-storage`, consumed by fe-panel-workspace).
+- `frontend/package.json` dependency set (owns part `fe-deps`, consumed by fe-top-bar, fe-panel-workspace, fe-filesystem-panel, fe-terminal-socket, fe-terminal-panel).
+- `frontend/src/api/client.ts`: `request`, `query` now exported.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every later frontend task can import the panel, tree, terminal and icon libraries, call `request`, and persist UI state safely.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/layout/storage.test.ts` (node environment, stub `globalThis.localStorage` with a map and with throwing methods; test titles exactly `loadJson_round_trip_and_fallbacks` and `storage_never_throws`); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/storage.test.ts`: fails (module missing).
+- Implement `storage.ts`; rerun: passes.
+- Add the dependencies (`mise x node@24.20.0 -- npm --prefix frontend install <pkgs>`), the proxy flag and the exports; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- PATH node is 22; use `mise x node@24.20.0 --` for every npm call (jsdom 30 wants node 24).
+- The build already warns about a chunk over 500 kB; that warning is non-fatal and not in scope.
+- No colour literals anywhere outside `theme.ts` (designRules).

@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: headless clients and the UI can browse and read a cluster workdir through /api/v1
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_files.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
-verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && mise run lint"
+verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-proxy-seam, wrapper-file-api]
 owns: [orch-files-api]
 uses: [workspace-proxy-module, wrapper-files-api]
@@ -46,7 +46,7 @@ README: a `### \`GET /api/v1/clusters/{cluster_id}/files\`` and a `### \`GET /ap
 - AC5: no ready agent answers 409 agent_not_ready [evidence: test:tests/test_api_files.py::test_no_ready_agent]
 - AC6: README, openapi.json and schema.d.ts match the app [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 - AC7: the fake's file routes have contract cases collected under the integration marker [evidence: command:uv run pytest -q -p no:cacheprovider -m integration --collect-only tests/test_fake_wrapper_contract.py]
-- AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && mise run lint]
+- AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -61,17 +61,22 @@ README: a `### \`GET /api/v1/clusters/{cluster_id}/files\`` and a `### \`GET /ap
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `GET /api/v1/clusters/{cluster_id}/files`, `GET /api/v1/clusters/{cluster_id}/files/content`; `schemas.FileEntry`, `FileListing`, `FileContent` (owns part `orch-files-api`, consumed by fe-filesystem-panel and kind-e2e-workspace).
+- Uses `workspace-proxy-module` and the wrapper contract `wrapper-files-api` (wrapper README, task wrapper-file-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A headless client can browse and read a cluster's workdir through `/api/v1` alone; the UI types exist in `schema.d.ts`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Extend FakeWrapper with the two routes and write `tests/test_api_files.py` (`client_for` pattern with `httpx.ASGITransport`, DB factories, a FakeWrapper per agent); run `uv run pytest -q -p no:cacheprovider tests/test_api_files.py`: fails (404).
+- Add the routes and schemas; rerun: passes.
+- README sections; `uv run python -m agent_orchestrator.api.openapi > openapi.json`; `mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend run gen:api`; run the verify command: passes.
+- Add the contract cases to `tests/test_fake_wrapper_contract.py`; the integration run needs the new wrapper image and happens after wrapper-sha-pin (CI); here confirm collection only.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `tests/test_readme_api.py::test_frontend_schema_matches_openapi` needs `frontend/node_modules`; the verify runs `npm ci` first.
+- `schema.d.ts` is generated; never hand-edit it.
+- The wrapper field names are the contract (wrapper README `GET /v1/sessions/{id}/files`); copy them, do not rename.

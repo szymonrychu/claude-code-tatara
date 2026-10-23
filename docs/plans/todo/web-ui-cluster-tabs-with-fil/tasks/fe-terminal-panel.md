@@ -33,11 +33,11 @@ The terminal panel (user Q4, Q5), test-first.
 
 ## Acceptance conditions
 
-- AC1: existing shells of the cluster open as tabs on mount [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::reattaches_existing_shells]
-- AC2: New terminal preselects the first ready agent and creates a shell on the chosen agent [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::new_terminal_on_chosen_agent]
-- AC3: several shells live as tabs and closing a tab deletes its shell [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::multiple_tabs_and_close]
-- AC4: the view fits on container resize and sends the size, and resets before a reconnect replay [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::fit_on_resize_and_reset_on_reconnect]
-- AC5: API errors render inline [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::errors_inline]
+- AC1: existing shells of the cluster open as tabs on mount [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t reattaches_existing_shells]
+- AC2: New terminal preselects the first ready agent and creates a shell on the chosen agent [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t new_terminal_on_chosen_agent]
+- AC3: several shells live as tabs and closing a tab deletes its shell [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t multiple_tabs_and_close]
+- AC4: the view fits on container resize and sends the size, and resets before a reconnect replay [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t fit_on_resize_and_reset_on_reconnect]
+- AC5: API errors render inline [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/terminal/TerminalPanel.test.tsx -t errors_inline]
 - AC6: terminal colours live in theme.ts and design rules pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/theme.test.ts src/layout/designRules.test.ts]
 - AC7: tests, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal src/App.test.tsx src/theme.test.ts src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
@@ -51,17 +51,20 @@ The terminal panel (user Q4, Q5), test-first.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `openTerminalSocket` (part `fe-terminal-socket`), `api/terminals.ts`, the `terminal` slot (part `fe-workspace-slots`), `@xterm/xterm` 6 and `@xterm/addon-fit` 0.11 (part `fe-deps`).
+- `frontend/src/theme.ts`: new export `terminalTheme` (xterm `ITheme`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The right panel runs several interactive shells on chosen agent pods, sized to the panel, surviving tab switches and reloads.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/terminal/TerminalPanel.test.tsx` (jsdom; `vi.mock('@xterm/xterm')`, `vi.mock('@xterm/addon-fit')`, `vi.mock('../api/terminals')`, `vi.mock('./terminalSocket')`, a stub `ResizeObserver`; titles as in the AC refs); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/TerminalPanel.test.tsx`: fails.
+- Implement `XtermView.tsx`, `TerminalPanel.tsx`, `terminalTheme`, wire the slot; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- xterm 6 removed the canvas renderer addon and reworked the viewport; use the default DOM renderer and import `@xterm/xterm/css/xterm.css` once.
+- jsdom has no canvas, no ResizeObserver and no WebSocket: mock them; the real rendering is checked by the user in a browser after deploy.
+- A colour literal outside `theme.ts` fails `designRules.test.ts`.

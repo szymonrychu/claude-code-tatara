@@ -33,10 +33,10 @@ Move the per-agent rows into the chat panel header as an agents strip merged wit
 
 ## Acceptance conditions
 
-- AC1: the strip shows each agent's name, state mark, free-since age and own gauge in ordinal order [evidence: test:frontend/src/chat/AgentsStrip.test.tsx::shows_agent_rows]
-- AC2: clicking an agent toggles the chat filter as the old chips did [evidence: test:frontend/src/chat/AgentsStrip.test.tsx::click_toggles_filter]
-- AC3: formatAge keeps its outputs [evidence: test:frontend/src/chat/AgentsStrip.test.tsx::format_age_unchanged]
-- AC4: AgentFilter.tsx and AgentRow.tsx are gone from git ls-files [evidence: test:frontend/src/chat/AgentsStrip.test.tsx::agent_filter_and_row_retired]
+- AC1: the strip shows each agent's name, state mark, free-since age and own gauge in ordinal order [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/chat/AgentsStrip.test.tsx -t shows_agent_rows]
+- AC2: clicking an agent toggles the chat filter as the old chips did [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/chat/AgentsStrip.test.tsx -t click_toggles_filter]
+- AC3: formatAge keeps its outputs [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/chat/AgentsStrip.test.tsx -t format_age_unchanged]
+- AC4: AgentFilter.tsx and AgentRow.tsx are gone from git ls-files [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/chat/AgentsStrip.test.tsx -t agent_filter_and_row_retired]
 - AC5: chat tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/chat src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
 ## Files
@@ -49,17 +49,18 @@ Move the per-agent rows into the chat panel header as an agents strip merged wit
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/chat/AgentsStrip.tsx`: `AgentsStrip` props as above; `formatAge(ms: number): string` keeps its signature wherever it lands.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The agent detail the ribbon used to show sits in the chat header, and filtering by agent works from the same items.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/chat/AgentsStrip.test.tsx` (jsdom; titles as in the AC refs; retirement via `git ls-files src/chat/AgentFilter.tsx src/ribbon/AgentRow.tsx`); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/chat/AgentsStrip.test.tsx`: fails.
+- Implement the strip, swap it into ChatView, `git rm` the two files; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `ChatLog.test.tsx`, `Composer.test.tsx` and `chatModel.test.ts` must stay green unchanged: they pin "chat stays as is".
+- Retirement tests assert on `git ls-files`, never on the filesystem.

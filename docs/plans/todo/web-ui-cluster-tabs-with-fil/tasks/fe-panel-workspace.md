@@ -33,12 +33,12 @@ The three-panel cluster workspace (design D7; user Q11, Q12), test-first.
 
 ## Acceptance conditions
 
-- AC1: minimize is refused for the last expanded panel, so at most two are minimized [evidence: test:frontend/src/layout/Workspace.test.tsx::at_most_two_minimized]
-- AC2: maximize collapses the other two and restore expands a panel [evidence: test:frontend/src/layout/Workspace.test.tsx::maximize_and_restore]
-- AC3: a minimized panel renders as a strip with its name and a restore button [evidence: test:frontend/src/layout/Workspace.test.tsx::minimized_strip_has_name_and_restore]
-- AC4: double-click on a separator resets to 25/45/30 [evidence: test:frontend/src/layout/Workspace.test.tsx::separator_double_click_resets]
-- AC5: layout persists per cluster and survives a remount; corrupt stored data falls back to the default [evidence: test:frontend/src/layout/Workspace.test.tsx::layout_persists_per_cluster]
-- AC6: phone shows one panel at a time with a three-way switch, Chat by default [evidence: test:frontend/src/layout/Workspace.test.tsx::phone_three_way_switch]
+- AC1: minimize is refused for the last expanded panel, so at most two are minimized [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t at_most_two_minimized]
+- AC2: maximize collapses the other two and restore expands a panel [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t maximize_and_restore]
+- AC3: a minimized panel renders as a strip with its name and a restore button [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t minimized_strip_has_name_and_restore]
+- AC4: double-click on a separator resets to 25/45/30 [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t separator_double_click_resets]
+- AC5: layout persists per cluster and survives a remount; corrupt stored data falls back to the default [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t layout_persists_per_cluster]
+- AC6: phone shows one panel at a time with a three-way switch, Chat by default [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/Workspace.test.tsx -t phone_three_way_switch]
 - AC7: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/Workspace.test.tsx src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
 ## Files
@@ -50,17 +50,19 @@ The three-panel cluster workspace (design D7; user Q11, Q12), test-first.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Workspace({clusterId, files, chat, terminal})` slots (owns part `fe-workspace-slots`, consumed by fe-filesystem-panel and fe-terminal-panel).
+- `panelLayout.ts` pure functions; uses `loadJson`/`saveJson` (part `fe-storage`) and `react-resizable-panels` 4 (`Group`, `Panel` with `collapsible`, `collapsedSize`, `panelRef` `collapse()`/`expand()`, `Separator`, `onLayoutChanged`) (part `fe-deps`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Each cluster tab is a resizable three-panel workspace with chat in the middle, and its arrangement is remembered per cluster.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/layout/Workspace.test.tsx` (jsdom; mock `react-resizable-panels` with thin components that expose the imperative handle, or stub `ResizeObserver` if the real library works; titles as in the AC refs) and pure tests of `panelLayout.ts` in the same file; run `mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/Workspace.test.tsx`: fails.
+- Implement `panelLayout.ts`, `Workspace.tsx`, wire `App.tsx`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- react-resizable-panels v4 renamed components (`Group`, `Panel`, `Separator`); v3 examples with `PanelGroup`/`PanelResizeHandle` do not apply. Numbers are pixels, unit-less strings are percent.
+- Keep `App.test.tsx` green (it now sees the workspace around ChatView).

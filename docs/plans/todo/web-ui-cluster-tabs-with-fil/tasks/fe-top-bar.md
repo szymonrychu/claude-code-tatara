@@ -33,11 +33,11 @@ Build the top bar and the hamburger sessions menu as standalone components (user
 
 ## Acceptance conditions
 
-- AC1: one tab per cluster in slug order with state mark, slug and gauge, the selected one active, and selecting a tab calls onSelect [evidence: test:frontend/src/layout/TopBar.test.tsx::tabs_one_per_cluster_in_slug_order]
-- AC2: the tab actions menu offers Discard only, no Edit [evidence: test:frontend/src/layout/TopBar.test.tsx::tab_actions_offer_discard_only]
-- AC3: New cluster calls onNew [evidence: test:frontend/src/layout/TopBar.test.tsx::new_cluster_button]
-- AC4: the hamburger opens the drawer listing sessions from the top, and choosing one selects it and closes the drawer [evidence: test:frontend/src/layout/TopBar.test.tsx::hamburger_lists_sessions_and_selects]
-- AC5: the settings section sits at the bottom, renders given categories and shows the empty state when none [evidence: test:frontend/src/layout/TopBar.test.tsx::settings_section_bottom_with_empty_state]
+- AC1: one tab per cluster in slug order with state mark, slug and gauge, the selected one active, and selecting a tab calls onSelect [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/TopBar.test.tsx -t tabs_one_per_cluster_in_slug_order]
+- AC2: the tab actions menu offers Discard only, no Edit [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/TopBar.test.tsx -t tab_actions_offer_discard_only]
+- AC3: New cluster calls onNew [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/TopBar.test.tsx -t new_cluster_button]
+- AC4: the hamburger opens the drawer listing sessions from the top, and choosing one selects it and closes the drawer [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/TopBar.test.tsx -t hamburger_lists_sessions_and_selects]
+- AC5: the settings section sits at the bottom, renders given categories and shows the empty state when none [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/layout/TopBar.test.tsx -t settings_section_bottom_with_empty_state]
 - AC6: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/TopBar.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
 ## Files
@@ -48,17 +48,19 @@ Build the top bar and the hamburger sessions menu as standalone components (user
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `TopBar` props as above; `SessionsMenu` props including `settingsCategories: {id: string, label: string, onOpen: () => void}[]` (owns part `fe-sessions-menu`, consumed by fe-retire-ribbon; cross-epic contract `orch-settings-menu`, consumed by cluster-presets).
+- Uses `StateMark` (`ribbon/stateMark.tsx`), `ContextGauge` (`ribbon/ContextGauge.tsx`), `sortedClusters` and `ClusterEntry` (`ribbon/useClusters.ts`), part `fe-deps` (icons).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A tested top bar and drawer ready to replace the ribbon, with the settings area the presets epic will fill.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/layout/TopBar.test.tsx` (`// @vitest-environment jsdom`, stub `window.matchMedia` like the other tests; titles exactly as in the AC refs); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/TopBar.test.tsx`: fails.
+- Implement `TopBar.tsx` and `SessionsMenu.tsx`; rerun: passes; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `StateMark`, `ContextGauge` and `useClusters.ts` stay where they are (under `ribbon/`); moving them is not in scope.
+- The cluster-presets epic will add a Presets entry through `settingsCategories` and remove the ClusterForm edit code; keep that prop generic.

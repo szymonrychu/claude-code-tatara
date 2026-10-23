@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: "headless clients and the UI can create, list and delete shells on any agent through /api/v1"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_terminals.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
-verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && mise run lint"
+verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [file-proxy-routes, terminal-websocket-api, origin-allowlist]
 owns: [orch-terminals-api, fake-wrapper-terminals]
 uses: [workspace-proxy-module, origin-allowlist, wrapper-terminals-api]
@@ -47,7 +47,7 @@ README: a `###` section per route; `terminal_limit` (409), `terminal_not_found` 
 - AC5: POST and DELETE with an unlisted Origin are 403 forbidden_origin, without Origin they pass [evidence: test:tests/test_api_terminals.py::test_origin_guard]
 - AC6: README, openapi.json and schema.d.ts match the app [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_readme_api.py]
 - AC7: terminal contract cases are collected under the integration marker [evidence: command:uv run pytest -q -p no:cacheprovider -m integration --collect-only tests/test_fake_wrapper_contract.py]
-- AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && mise run lint]
+- AC8: targeted suites, schema check and lint pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -62,17 +62,23 @@ README: a `###` section per route; `terminal_limit` (409), `terminal_not_found` 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `POST /api/v1/agents/{agent_id}/terminals`, `GET /api/v1/clusters/{cluster_id}/terminals`, `DELETE /api/v1/agents/{agent_id}/terminals/{terminal_id}`; `schemas.CreateTerminal`, `TerminalView`, `TerminalList` (owns part `orch-terminals-api`, consumed by fe-terminal-socket and kind-e2e-workspace).
+- FakeWrapper terminal HTTP and WebSocket routes (owns part `fake-wrapper-terminals`, consumed by terminal-ws-relay).
+- Uses `workspace-proxy-module`, `origin-allowlist` and the wrapper contract `wrapper-terminals-api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A headless client can create, list and delete shells on any agent of a cluster through `/api/v1`; FakeWrapper speaks the wrapper terminal protocol for the relay task.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Extend FakeWrapper (HTTP and WebSocket, real socket so the relay can use it) and write `tests/test_api_terminals.py`; run `uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py`: fails (404).
+- Add routes and schemas; rerun: passes.
+- README sections, regenerate `openapi.json` and `schema.d.ts`; run the verify command: passes.
+- Add contract cases to `tests/test_fake_wrapper_contract.py`; confirm collection.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `tests/test_api_files.py` stays in the verify because both tasks edit `api/workspace.py` and `fake_wrapper.py`.
+- The fake's WebSocket route must check the bearer header like the real wrapper (denial 401) so the relay test proves the token is sent.
+- `schema.d.ts` is generated; never hand-edit it.

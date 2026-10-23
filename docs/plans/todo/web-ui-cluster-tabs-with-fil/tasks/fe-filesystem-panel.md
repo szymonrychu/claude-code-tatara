@@ -35,11 +35,11 @@ The filesystem panel (design D8; user Q8, Q9, Q10), test-first.
 
 ## Acceptance conditions
 
-- AC1: the root loads on mount and a folder's children load only on first expand [evidence: test:frontend/src/files/FilesPanel.test.tsx::lazy_load_on_expand]
-- AC2: a truncated directory shows a more row that loads the next page [evidence: test:frontend/src/files/FilesPanel.test.tsx::more_row_pages]
-- AC3: clicking a file previews text, binary and too-large files as specified [evidence: test:frontend/src/files/FilesPanel.test.tsx::preview_kinds]
-- AC4: a Write or Edit tool_call refreshes the loaded parent directory and a Bash tool_result refreshes expanded directories, debounced [evidence: test:frontend/src/files/FilesPanel.test.tsx::event_driven_refresh]
-- AC5: the refresh button re-fetches the tree and errors render inline [evidence: test:frontend/src/files/FilesPanel.test.tsx::manual_refresh_and_errors]
+- AC1: the root loads on mount and a folder's children load only on first expand [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t lazy_load_on_expand]
+- AC2: a truncated directory shows a more row that loads the next page [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t more_row_pages]
+- AC3: clicking a file previews text, binary and too-large files as specified [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t preview_kinds]
+- AC4: a Write or Edit tool_call refreshes the loaded parent directory and a Bash tool_result refreshes expanded directories, debounced [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t event_driven_refresh]
+- AC5: the refresh button re-fetches the tree and errors render inline [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/files/FilesPanel.test.tsx -t manual_refresh_and_errors]
 - AC6: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/files src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
 ## Files
@@ -53,17 +53,20 @@ The filesystem panel (design D8; user Q8, Q9, Q10), test-first.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `GET /api/v1/clusters/{cluster_id}/files` and `/files/content` (part `orch-files-api`, types from `schema.d.ts`), `openStream` and `eventStreamUrl`, the `files` slot (part `fe-workspace-slots`), `@mui/x-tree-view` and icons (part `fe-deps`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The left panel shows the cluster workdir like the VS Code explorer, stays current as agents write, and previews files read-only.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/files/FilesPanel.test.tsx` (jsdom; `vi.mock('../api/files')` and `vi.mock('../api/stream')`, fake timers for the debounce; titles as in the AC refs); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/files/FilesPanel.test.tsx`: fails.
+- Implement `api/files.ts`, `useFileTree.ts`, `fileEvents.ts`, `FilesPanel.tsx`, wire the slot; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- MUI X tree lazy loading and virtualization are Pro features; load children by hand on expand (`onExpandedItemsChange`) and render a placeholder child so collapsed folders show an expand icon.
+- Event data shape: `chatModel.ts` reads tool input as `data.tool_input ?? data.input` and name as `data.name ?? data.tool_name`; reuse the same accessors.
+- `file_path` is absolute; map it to the tree with the listing `root` (paths outside `root` are ignored).
+- Do not lift or change the private stream in `useClusterChat.ts`; ChatView stays untouched.

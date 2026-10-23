@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: integration and e2e runs exercise the real wrapper with the new file and terminal APIs
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-ws-relay, wrapper-workspace-e2e]
 owns: [wrapper-main-pin]
 uses: []
@@ -40,7 +40,7 @@ The pin is the commit of the claude-code-wrapper main merge of this epic's wrapp
 - AC1: pyproject, uv.lock, README Images and the agent-test Dockerfile all name the same wrapper commit [evidence: test:tests/test_images.py::test_agent_test_dockerfile_matches_dev_dependency]
 - AC2: the existing pin consistency test passes on the new sha [evidence: test:tests/test_images.py::test_ccw_dev_dependency_matches_agent_image_sha]
 - AC3: the renderer's config validation passes on the new wrapper [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_render.py]
-- AC4: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && mise run lint]
+- AC4: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -52,17 +52,19 @@ The pin is the commit of the claude-code-wrapper main merge of this epic's wrapp
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- The wrapper pin (owns part `wrapper-main-pin`, consumed by kind-e2e-workspace): pyproject dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` args, README `## Images`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run test:integration` and the CI e2e job build the test agent image from the wrapper commit that has the file and terminal APIs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add `test_agent_test_dockerfile_matches_dev_dependency` to `tests/test_images.py`, then change the pyproject pin and run `uv lock`; run `uv run pytest -q -p no:cacheprovider tests/test_images.py`: the new test and `test_ccw_dev_dependency_matches_agent_image_sha` fail (Dockerfile and README still name ca2ddf3).
+- Update the Dockerfile args and README `## Images`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Precedent: done epic agent-orchestrator task `container-images-ci` (dev dependency pinned to the wrapper main merge commit; README Images names the image).
+- The Harbor image `claude-code-wrapper:<sha7>` exists only for main builds of the wrapper; check with `docker manifest inspect` or `regctl image digest` when credentials allow; without credentials `scripts/e2e.sh` builds the same commit from source.
+- `tests/test_fake_wrapper_contract.py` without `-m integration` runs the fake only; the real-image run is the CI integration and e2e jobs.

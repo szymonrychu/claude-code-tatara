@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: no web page from another origin can open a shell through a LAN browser
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/origin.py, src/agent_orchestrator/api/app.py, README.md, e2e/values-kind.yaml, tests/test_origin.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [origin-allowlist]
 uses: []
@@ -42,7 +42,7 @@ Add the mandatory Origin allowlist to the orchestrator api (design D5, user Q7),
 - AC4: require_allowed_origin answers 403 forbidden_origin for an unlisted Origin on HTTP and passes a missing one [evidence: test:tests/test_origin.py::test_http_dependency]
 - AC5: the setting is documented in the README Configuration table [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_settings.py]
 - AC6: README Security and Ingress describe the Origin rule and the WebSocket timeouts [evidence: doc-section:README.md#Ingress]
-- AC7: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && mise run lint]
+- AC7: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_origin.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -55,17 +55,22 @@ Add the mandatory Origin allowlist to the orchestrator api (design D5, user Q7),
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_orchestrator.settings.Settings.allowed_origins` (`ORCH_ALLOWED_ORIGINS`; cross-epic contract `orch-allowed-origins`, consumed by agents-helmfile task deploy-pin).
+- `agent_orchestrator.api.origin.OriginAllowlist` (ASGI) and `require_allowed_origin` (dependency) (owns part `origin-allowlist`, consumed by terminal-proxy-routes and terminal-ws-relay).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A browser page from another origin can no longer open any WebSocket on the api; headless clients that send no Origin keep working.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_origin.py`: settings parsing, and the middleware exercised directly as ASGI (call it with a fake `websocket` scope and receive/send queues, assert the `websocket.close` 1008 message and that the inner app was not called), plus a tiny FastAPI app for the dependency via `httpx.ASGITransport`; run `uv run pytest -q -p no:cacheprovider tests/test_origin.py`: fails (ImportError).
+- Implement the setting, `api/origin.py`, add the middleware in `create_app`; rerun: passes.
+- README rows and sections; `uv run pytest -q -p no:cacheprovider tests/test_settings.py`: passes.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Pattern: `api/allowlist.py:SourceAllowlist` (pure ASGI over `http` and `websocket`, closes 1008 before accept) and the `CsvList` plus `_split` validator in `settings.py`.
+- do-not-build: no chart template change (values `env:` already reaches every component's ConfigMap) and no new peer allowlist.
+- No route in the app is a WebSocket yet; the middleware test needs no real WebSocket route.

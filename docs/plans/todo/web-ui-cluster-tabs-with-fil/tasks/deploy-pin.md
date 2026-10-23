@@ -4,7 +4,7 @@ status: todo
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [kind-e2e-workspace, fe-terminal-panel, fe-agents-strip]
 owns: []
 uses: []
@@ -39,7 +39,7 @@ The values are the short shas (7 hex) of the agent-orchestrator main merge and t
 - AC1: chart version and image tag agree on the orchestrator sha [evidence: test:tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image]
 - AC2: agentImage and ORCH_AGENT_IMAGES agree on the wrapper sha [evidence: test:tests/test_orchestrator_release.py::test_agent_image_pins_agree]
 - AC3: ORCH_ALLOWED_ORIGINS allows exactly the https ingress host [evidence: test:tests/test_orchestrator_release.py::test_allowed_origins_is_ingress_host]
-- AC4: the release tests and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py && mise run lint]
+- AC4: the release tests and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -49,17 +49,18 @@ The values are the short shas (7 hex) of the agent-orchestrator main merge and t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes the cross-epic contract `orch-allowed-origins` (`ORCH_ALLOWED_ORIGINS`) and the published chart `0.1.0-main.<sha7>` and images `agent-orchestrator:<sha7>`, `claude-code-wrapper:<sha7>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows only the chart version, the two image pins and the new origin setting for agent-orchestrator.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write or update the three tests in `tests/test_orchestrator_release.py` for the new values; run `uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: fails.
+- Change the pins and add the setting; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Check the chart and images exist before pinning when credentials allow (`helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version 0.1.0-main.<sha7>`); the precedent run blocked on a transient Harbor 403 in chart publish.
+- Apply and smoke are not this task's verify: no cluster access in this container, and the user runs them.

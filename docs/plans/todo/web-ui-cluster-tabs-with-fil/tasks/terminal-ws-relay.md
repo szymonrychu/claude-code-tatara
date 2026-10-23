@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: a browser or headless client gets a live shell on an agent pod without ever seeing the wrapper token
 files: [src/agent_orchestrator/api/workspace.py, pyproject.toml, uv.lock, tests/test_terminal_relay.py, README.md]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_terminal_relay.py tests/test_api_terminals.py tests/test_readme_api.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider tests/test_terminal_relay.py tests/test_api_terminals.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-proxy-routes]
 owns: [orch-terminal-ws]
 uses: [workspace-proxy-module, origin-allowlist, fake-wrapper-terminals, wrapper-terminals-api]
@@ -42,7 +42,7 @@ Relay terminal WebSockets from browsers and headless clients to the wrapper (des
 - AC6: a close on either side closes the other with the same code and leaves no relay task running [evidence: test:tests/test_terminal_relay.py::test_close_propagates_without_leak]
 - AC7: websockets is a declared dependency and the lock is current [evidence: command:uv lock --check]
 - AC8: the WebSocket route is documented in the README [evidence: command:grep -qF 'WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach' README.md]
-- AC9: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_terminal_relay.py tests/test_api_terminals.py tests/test_readme_api.py && mise run lint]
+- AC9: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_terminal_relay.py tests/test_api_terminals.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -54,17 +54,23 @@ Relay terminal WebSockets from browsers and headless clients to the wrapper (des
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach` (owns part `orch-terminal-ws`, consumed by fe-terminal-socket and kind-e2e-workspace).
+- Uses `workspace-proxy-module`, `origin-allowlist`, `fake-wrapper-terminals` and the wrapper contract `wrapper-terminals-api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A browser on an allowed origin, or a headless client with no Origin, gets an interactive shell on any agent pod through the api, with the wrapper token never leaving the api.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `tests/test_terminal_relay.py`: serve `create_app(...)` with uvicorn on 127.0.0.1:0 inside the test loop (same pattern as `FakeWrapper.start`), register a FakeWrapper agent in the DB, connect with `websockets.asyncio.client.connect` (with and without an `origin`); run `uv run pytest -q -p no:cacheprovider tests/test_terminal_relay.py`: fails.
+- Implement the relay and declare the dependency (`uv add 'websockets>=17.3'` or edit plus `uv lock`); rerun: passes.
+- README section; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Do not use Starlette `TestClient` for these tests: it runs the app on its own loop, which conflicts with the async psycopg pool fixture; `httpx.ASGITransport` cannot do WebSockets at all (fix-as-ac from the reuse map).
+- Only the Origin refusal happens before accept (middleware, 1008, seen by the client as HTTP 403); every other failure is a close after accept with the codes in the requirement, documented in the README.
+- `websockets` 17 asyncio client: `from websockets.asyncio.client import connect`; pass headers with `additional_headers=`.
+- A ping every 20 s comes from the browser and is relayed like any text frame; the api adds no pings of its own.
+- Opus task: two concurrent pumps with cancellation on either close; make sure `asyncio.TaskGroup` or explicit cancel-and-await leaves nothing running.

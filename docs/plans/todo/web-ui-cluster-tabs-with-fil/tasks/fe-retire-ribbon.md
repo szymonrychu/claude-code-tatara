@@ -34,11 +34,11 @@ Replace the left ribbon with the top bar in the app and retire the ribbon (user 
 
 ## Acceptance conditions
 
-- AC1: the app shows the top bar with one tab per cluster and the selected cluster's chat, and no aside [evidence: test:frontend/src/App.test.tsx::top_bar_replaces_ribbon]
-- AC2: with no selection the first cluster by slug is selected, also after the selected one disappears [evidence: test:frontend/src/App.test.tsx::first_tab_selected_by_default]
-- AC3: New cluster opens the create form and selects the created cluster; Discard opens the discard dialog [evidence: test:frontend/src/App.test.tsx::create_and_discard_from_top_bar]
-- AC4: no Edit entry point exists in the rendered UI [evidence: test:frontend/src/App.test.tsx::no_edit_entry_point]
-- AC5: Ribbon.tsx, ClusterRow.tsx and Ribbon.test.tsx are gone from git ls-files [evidence: test:frontend/src/App.test.tsx::ribbon_files_retired]
+- AC1: the app shows the top bar with one tab per cluster and the selected cluster's chat, and no aside [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t top_bar_replaces_ribbon]
+- AC2: with no selection the first cluster by slug is selected, also after the selected one disappears [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t first_tab_selected_by_default]
+- AC3: New cluster opens the create form and selects the created cluster; Discard opens the discard dialog [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t create_and_discard_from_top_bar]
+- AC4: no Edit entry point exists in the rendered UI [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t no_edit_entry_point]
+- AC5: Ribbon.tsx, ClusterRow.tsx and Ribbon.test.tsx are gone from git ls-files [evidence: command:cd frontend && mise x node@24.20.0 -- npx vitest run src/App.test.tsx -t ribbon_files_retired]
 - AC6: tests, design rules, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/App.test.tsx src/clusters/ClusterForm.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
 
 ## Files
@@ -53,17 +53,19 @@ Replace the left ribbon with the top bar in the app and retire the ribbon (user 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `TopBar` and `SessionsMenu` (part `fe-sessions-menu`), `ClusterForm`, `DiscardClusterDialog`, `useClusters`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The running UI has tabs at the top and no left ribbon; the ribbon sources are gone from the repo.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Rewrite `frontend/src/App.test.tsx` with the five tests (titles as in the AC refs; the retirement test runs `git ls-files src/ribbon/Ribbon.tsx src/ribbon/ClusterRow.tsx src/ribbon/Ribbon.test.tsx` with `node:child_process` from the frontend dir and expects empty output); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/App.test.tsx`: fails.
+- Rewire `App.tsx`, rewrite or delete `Shell.tsx`, delete the ribbon files with `git rm`, drop the Ribbon wiring test; rerun; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Retirement tests assert on `git ls-files`, never on the filesystem (an untracked file can survive a merge). This task's deletions are pinned by `ribbon_files_retired`.
+- `ribbon/AgentRow.tsx` stays for now (task fe-agents-strip retires it); `ribbon/useClusters.ts`, `stateMark.tsx`, `ContextGauge.tsx` stay.
+- Keep `useLayout` breakpoints; on phone the top bar must still fit (tabs scroll).

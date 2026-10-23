@@ -4,7 +4,7 @@ status: todo
 repo: agent-orchestrator
 value: CI proves on a real cluster that files and shells work through the public API alone
 files: [tests/e2e/test_e2e_kind.py]
-verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && mise run lint"
+verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-sha-pin]
 owns: []
 uses: [orch-files-api, orch-terminals-api, orch-terminal-ws, wrapper-main-pin]
@@ -40,7 +40,7 @@ On the kind cluster the existing fixtures bring up (`api`, `cluster`), using onl
 
 - AC1: the new e2e tests are collected under the e2e marker [evidence: command:uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py]
 - AC2: the tests cover files, terminal lifecycle over WebSocket and the Origin refusal using only the public API [evidence: judgement:tests/e2e/test_e2e_kind.py reviewed against the requirement; executed by the PR CI e2e job]
-- AC3: lint passes [evidence: command:mise run lint]
+- AC3: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -48,17 +48,19 @@ On the kind cluster the existing fixtures bring up (`api`, `cluster`), using onl
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Consumes `orch-files-api`, `orch-terminals-api`, `orch-terminal-ws` as documented in the README, on the agent image pinned by `wrapper-main-pin`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The PR CI e2e job proves on a real cluster with the real wrapper that a headless client can browse files and run a shell through the orchestrator.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the tests next to the existing ones, reusing `api` and `cluster` fixtures and bounded waits.
+- Run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
+- `uv run ruff check . && uv run ruff format --check .`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- No cluster access in this container: kind, helm apply and the e2e run are not possible here; verification here is collection plus lint, the real run is the orchestrator PR CI `e2e` job (`mise run test:e2e`).
+- `pyproject.toml` addopts deselect `e2e` by default; the `-m e2e` flag is required.

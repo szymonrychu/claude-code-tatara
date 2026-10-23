@@ -48,17 +48,20 @@ The browser side of the terminal protocol (design D2; user Q5), test-first, with
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/terminal/terminalSocket.ts`: `openTerminalSocket` (owns part `fe-terminal-socket`, consumed by fe-terminal-panel).
+- `frontend/src/api/terminals.ts`: the four functions above.
+- Uses the api contract parts `orch-terminals-api` and `orch-terminal-ws` (README `WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A tested client that keeps a shell connection alive through ingress idle timeouts and reconnects with replay.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `frontend/src/terminal/terminalSocket.test.ts` (node environment; a fake WebSocket class passed as `WebSocketImpl`; `vi.useFakeTimers()`; titles as in the AC refs); run `mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/terminalSocket.test.ts`: fails.
+- Implement both modules; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Backoff constants mirror `api/stream.ts` (`BACKOFF_START_MS` 1000, `BACKOFF_MAX_MS` 30000); reuse them rather than duplicating numbers.
+- The 20 s ping keeps ingress-nginx from closing an idle connection (its default proxy timeouts are 60 s; the deployed values are 3600).
