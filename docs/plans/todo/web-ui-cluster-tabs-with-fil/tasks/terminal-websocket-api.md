@@ -46,6 +46,10 @@ Expose the terminal registry over HTTP and a WebSocket (design D2, D3), test-fir
 - AC6: detach leaves the shell alive and a second attach replays what was printed meanwhile [evidence: test:tests/test_api_terminals.py::test_reattach_replays]
 - AC7: every WebSocket route is documented in the README [evidence: test:tests/test_readme_api.py::test_every_websocket_route_documented]
 - AC8: targeted suites and lint pass [evidence: command:uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_auth.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check .]
+- AC9: attaching to an exited shell replays the scrollback, sends the exit frame and closes 1000 [evidence: test:tests/test_api_terminals.py::test_attach_exited_replays_and_closes]
+- AC10: create with rows or cols outside 1..1000 answers 422 invalid_size [evidence: test:tests/test_api_terminals.py::test_create_invalid_size]
+- AC11: a resize frame out of range or malformed is ignored and the socket stays open [evidence: test:tests/test_api_terminals.py::test_bad_resize_ignored]
+- AC12: create or attach on a known but not active session answers 409 session_not_active and an unknown session 404 [evidence: test:tests/test_api_terminals.py::test_session_not_active_vs_unknown]
 
 ## Files
 
@@ -79,3 +83,8 @@ A client with the bearer token can create a shell in a session workdir, attach o
 - HTTP exception handlers do not apply inside an accepted WebSocket: errors there are close codes or the JSON control frames above.
 - Run the send loop (queue to socket) and the receive loop (socket to PTY) as two tasks; when either ends, cancel the other and detach, so no task leaks per connection.
 - `tests/test_manager.py::test_shutdown_stops_all` fails only in this container; never a verify target.
+- Builder check ruling 1: Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
+- Builder check ruling 3: Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
+- Builder check ruling 5: Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
+
+- 2026-10-23 amended: builder check rulings 1,3,5 add acceptance conditions AC9-AC12
