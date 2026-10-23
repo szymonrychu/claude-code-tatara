@@ -1,6 +1,6 @@
 ---
 title: helmfile base
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "The namespace-agents helmfile skeleton with the regcred hook, so releases render and apply the way the rest of the homelab does."
 files: [helmfile.yaml.gotmpl, .hook.sh, values/common.yaml, raw/regcred.pre.secrets.yaml, tests/conftest.py, tests/test_helmfile_base.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-helmfile-base/agents-helmfile
 branch: agents-helmfile-helmfile-base
-verified_head: ""
-run: ""
+verified_head: bccbbef451145660efb6091b91ad618385eed8d4
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helmfile base

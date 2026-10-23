@@ -1,6 +1,6 @@
 ---
 title: mise tasks
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "One command each to diff and apply the namespace locally, guarded by lint and tests."
 files: [mise.toml, README.md, tests/test_mise_tasks.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-mise-tasks/agents-helmfile
 branch: agents-helmfile-mise-tasks
-verified_head: ""
-run: ""
+verified_head: 05c971cbc6dfcb03a0a6f259508d894dd6f1b8db
+run: agents-helmfile
 provides: []
+acs_for_audit: [AC4]
+process_gaps: []
 ---
 
 # mise tasks

@@ -1,6 +1,6 @@
 ---
 title: db release
-status: in-progress
+status: escalated
 repo: agents-helmfile
 value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-release/agents-helmfile
 branch: agents-helmfile-db-release
-verified_head: ""
-run: ""
+verified_head: b2babecdf3e0c3531a083865a4b3f13ebb0ca282
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: ["The .hook.sh prepare-on-missing-namespace failure is not recorded as an epic task in the plan, despite the implementer's claim."]
 ---
 
 # db release

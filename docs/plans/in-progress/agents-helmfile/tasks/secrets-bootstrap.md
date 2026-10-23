@@ -1,6 +1,6 @@
 ---
 title: secrets bootstrap
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "The Claude token, master key and backup credentials exist encrypted in git without ever being shown, so the orchestrator can authenticate agents."
 files: [scripts/bootstrap-secrets.sh, values/agent-orchestrator/default.secrets.yaml, values/agent-orchestrator-db/default.secrets.yaml, tests/test_secrets.py]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-secrets-bootstrap/agents-helmfile
-branch: agents-helmfile-secrets-bootstrap
-verified_head: ""
-run: ""
+branch: HEAD
+verified_head: bc4e0d317f1aedade99bfd0a70633790275f3d37
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: ["Token exposed in an implementer transcript. The committed orchestrator secret holds that exposed token, so rotation and a regenerate commit are still owed."]
 ---
 
 # secrets bootstrap

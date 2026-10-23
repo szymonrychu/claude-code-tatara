@@ -1,6 +1,6 @@
 ---
 title: orchestrator release
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: "The orchestrator runs in namespace agents and answers at agents.szymonrichert.pl from the LAN only, with new sessions carrying any-mcp."
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-orchestrator-release/agents-helmfile
 branch: agents-helmfile-orchestrator-release
 verified_head: ""
-run: ""
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # orchestrator release
@@ -70,3 +72,5 @@ Consumes contracts agent-orchestrator-chart, agent-orchestrator-settings-env, ag
 ## Notes
 
 Ingress precedent: ~/Documents/infrastructure/code/helmfile helmfiles/coding/values/argo-workflows/common.yaml:137-152. The settings contract names the exact ORCH_* variables; the image tags come from the agent-orchestrator CI. Pin versions and tags, never `latest`.
+
+- 2026-10-23 run agents-helmfile: dependency-failed on db-release

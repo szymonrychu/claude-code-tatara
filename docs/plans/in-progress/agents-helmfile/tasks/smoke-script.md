@@ -1,6 +1,6 @@
 ---
 title: smoke script
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: A repeatable proof that the deployed UI answers and a fresh agent pod lists any-mcp.
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-smoke-script/agents-helmfile
 branch: agents-helmfile-smoke-script
 verified_head: ""
-run: ""
+run: agents-helmfile
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # smoke script
@@ -66,3 +68,5 @@ none
 ## Notes
 
 The real run happens after the orchestrator applies the namespace; this task only delivers the script and its offline tests. API paths and the cluster label come from the agent-orchestrator API contract (README of code/agent-orchestrator, or its openapi.json).
+
+- 2026-10-23 run agents-helmfile: dependency-failed on orchestrator-release
