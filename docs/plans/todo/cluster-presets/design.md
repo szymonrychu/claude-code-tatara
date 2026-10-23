@@ -105,6 +105,9 @@ Q9: the UI does not show that a cluster's preset changed after create; the tab s
 ### D20: Q10 full main-area Presets view
 Q10: the Presets page is a full main-area view with a Back button (2026-10-23) (user decision)
 
+### D21: Q11 no import or export
+Q11: no preset import or export in this epic (2026-10-23) (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -165,6 +168,7 @@ Q10: the Presets page is a full main-area view with a Back button (2026-10-23) (
 | D18 Q8 preset name rules | presets-table-and-repo, preset-routes, fe-preset-form |
 | D19 Q9 tab shows preset_name only | fe-new-cluster-dialog |
 | D20 Q10 full main-area Presets view | fe-presets-page |
+| D21 Q11 no import or export | preset-routes |
 
 ## Contracts
 
