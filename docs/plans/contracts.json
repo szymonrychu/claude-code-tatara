@@ -186,5 +186,15 @@
     "file": "code/agent-orchestrator/README.md",
     "consumers": [],
     "note": "GET|POST /api/v1/presets, GET|PUT|DELETE /api/v1/presets/{preset_id}, POST /api/v1/presets/{preset_id}/copy; PresetView {id, name, is_default, spec (sparse, only set keys), created_at, updated_at}; errors preset_default, last_preset, conflict; task preset-routes"
+  },
+  {
+    "name": "orch-cluster-create-api",
+    "kind": "api",
+    "owner": "cluster-presets",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "POST /api/v1/clusters {slug?, spec? | preset_id?}: exactly one of spec or preset_id, slug required with spec, generated from the preset name otherwise; ClusterView preset_id, preset_name; PATCH /api/v1/clusters/{id} retired (405); smoke.sh keeps the raw spec body; task create-cluster-from-preset"
   }
 ]
