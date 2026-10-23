@@ -178,5 +178,13 @@
       "cluster-presets"
     ],
     "note": "SessionsMenu settingsCategories: {id, label, onOpen}[] rendered in the settings section pinned to the drawer bottom; cluster-presets adds Presets; this epic removes only the Edit entry points, cluster-presets removes PATCH and the ClusterForm edit code"
+  },
+  {
+    "name": "orch-presets-api",
+    "kind": "api",
+    "owner": "cluster-presets",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [],
+    "note": "GET|POST /api/v1/presets, GET|PUT|DELETE /api/v1/presets/{preset_id}, POST /api/v1/presets/{preset_id}/copy; PresetView {id, name, is_default, spec (sparse, only set keys), created_at, updated_at}; errors preset_default, last_preset, conflict; task preset-routes"
   }
 ]
