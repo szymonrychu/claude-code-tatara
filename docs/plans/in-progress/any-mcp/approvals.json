@@ -18,7 +18,10 @@
       "plugin-abc",
       "registry",
       "call-pipeline",
-      "nothing-ever-calls-aclose-on"
+      "nothing-ever-calls-aclose-on",
+      "openapi-credential-hosts",
+      "bounded-upstream-bodies",
+      "error-redaction-and-cleanup"
     ],
     "status": "approved"
   },
@@ -31,7 +34,8 @@
     "tasks": [
       "cli-stdio",
       "http-transport",
-      "fastmcp-adapter"
+      "fastmcp-adapter",
+      "http-auth-on-non-loopback"
     ],
     "status": "approved"
   },
@@ -89,7 +93,8 @@
     ],
     "tasks": [
       "scaffold",
-      "uv-picks-cpython-3-15-for-th"
+      "uv-picks-cpython-3-15-for-th",
+      "workflow-hardening"
     ],
     "status": "approved"
   },

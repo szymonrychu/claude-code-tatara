@@ -5,7 +5,7 @@ repo: any-mcp
 value: CI and release tokens get least privilege and the release cannot be shell-injected
 files: [.github/workflows/ci.yml, .github/workflows/release.yml, tests/test_release.py]
 verify: "uv run --frozen pytest tests/test_release.py -q && mise run lint"
-depends_on: []
+depends_on: [release, scaffold]
 owns: []
 uses: []
 model: ""
@@ -44,9 +44,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

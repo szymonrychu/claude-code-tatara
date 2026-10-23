@@ -5,7 +5,7 @@ repo: any-mcp
 value: a large or hostile upstream cannot exhaust memory
 files: [src/any_mcp/http.py, src/any_mcp/openapi.py, src/any_mcp/config.py, tests/test_http_binding.py, tests/test_openapi.py]
 verify: "uv run --frozen pytest tests/test_http_binding.py tests/test_openapi.py -q && mise run lint"
-depends_on: []
+depends_on: [config-model, http-binding, openapi-credential-hosts, openapi-plugin]
 owns: []
 uses: []
 model: ""
@@ -46,9 +46,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

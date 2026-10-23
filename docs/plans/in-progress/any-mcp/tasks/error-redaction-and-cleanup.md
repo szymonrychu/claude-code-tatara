@@ -5,7 +5,7 @@ repo: any-mcp
 value: tool errors never echo credentials and HTTP clients always close
 files: [src/any_mcp/errors.py, src/any_mcp/discovery.py, src/any_mcp/cli.py, src/any_mcp/openapi.py, docs/configuration.md, tests/test_pipeline.py, tests/test_cli.py, tests/test_discovery.py]
 verify: "uv run --frozen pytest tests/test_pipeline.py tests/test_cli.py tests/test_discovery.py tests/test_docs_reference.py -q && mise run lint"
-depends_on: []
+depends_on: [bounded-upstream-bodies, call-pipeline, cli-stdio, core-types, docs-reference, http-auth-on-non-loopback, http-transport, nothing-ever-calls-aclose-on, openapi-credential-hosts, openapi-plugin, plugin-discovery]
 owns: []
 uses: []
 model: ""
@@ -51,9 +51,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The requirement holds, pinned by the acceptance tests.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Write the failing acceptance tests; run red.
+- Implement; run green with the verify command.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
