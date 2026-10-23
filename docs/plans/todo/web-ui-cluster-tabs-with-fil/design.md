@@ -226,6 +226,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [recommended: yes, with a mandatory Origin allowlist on every WebSocket upgrade (ORCH_ALLOWED_ORIGINS) and the existing source allowlist; authentication stays a separate epic]
 - Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
 - Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
+- Q10: How does the tree stay current? [recommended: re-fetch directories touched by the cluster event stream plus a manual refresh button; no inotify]
 
 ## Irreversible operations in scope
 
