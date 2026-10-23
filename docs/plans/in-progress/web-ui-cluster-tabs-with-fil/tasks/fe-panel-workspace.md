@@ -1,6 +1,6 @@
 ---
 title: fe panel workspace
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "each cluster tab is a resizable files, chat and terminal workspace that remembers its layout"
 files: [frontend/src/layout/Workspace.tsx, frontend/src/layout/panelLayout.ts, frontend/src/layout/Workspace.test.tsx, frontend/src/App.tsx]

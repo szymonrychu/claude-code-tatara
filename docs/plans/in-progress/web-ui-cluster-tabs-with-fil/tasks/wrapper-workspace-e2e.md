@@ -1,6 +1,6 @@
 ---
 title: wrapper workspace e2e
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: proof that a headless client can browse files and run shells on a real wrapper
 files: [tests/test_e2e_workspace.py]

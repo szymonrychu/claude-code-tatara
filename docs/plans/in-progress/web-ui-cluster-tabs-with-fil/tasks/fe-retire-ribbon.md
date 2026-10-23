@@ -1,6 +1,6 @@
 ---
 title: fe retire ribbon
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the UI navigates clusters by top tabs and the left ribbon is gone
 files: [frontend/src/App.tsx, frontend/src/App.test.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/Ribbon.test.tsx, frontend/src/clusters/ClusterForm.test.tsx]

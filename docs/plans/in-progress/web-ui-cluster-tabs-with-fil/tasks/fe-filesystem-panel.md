@@ -1,6 +1,6 @@
 ---
 title: fe filesystem panel
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the user sees what agents changed on disk as a live tree with file previews
 files: [frontend/src/api/files.ts, frontend/src/files/useFileTree.ts, frontend/src/files/fileEvents.ts, frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, frontend/src/App.tsx]

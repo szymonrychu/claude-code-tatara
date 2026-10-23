@@ -1,6 +1,6 @@
 ---
 title: terminal websocket api
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: clients get interactive shells on an agent pod over an authenticated WebSocket
 files: [src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/api/auth.py, src/claude_code_wrapper/api/app.py, README.md, tests/test_api_terminals.py, tests/test_api_auth.py, tests/test_readme_api.py]

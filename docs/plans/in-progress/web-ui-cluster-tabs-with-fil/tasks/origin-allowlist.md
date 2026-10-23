@@ -1,6 +1,6 @@
 ---
 title: origin allowlist
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: no web page from another origin can open a shell through a LAN browser
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/origin.py, src/agent_orchestrator/api/app.py, README.md, chart/agent-orchestrator/README.md, e2e/values-kind.yaml, tests/test_origin.py]

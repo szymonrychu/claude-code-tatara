@@ -1,6 +1,6 @@
 ---
 title: fe terminal socket
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the browser keeps shell connections alive and reconnects them with replay
 files: [frontend/src/api/terminals.ts, frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts]

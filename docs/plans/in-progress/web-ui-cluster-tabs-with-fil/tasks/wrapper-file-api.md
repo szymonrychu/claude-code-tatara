@@ -1,6 +1,6 @@
 ---
 title: wrapper file api
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: any client can browse and read a session workdir safely over the wrapper API
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/config.py, README.md, tests/test_api_files.py]

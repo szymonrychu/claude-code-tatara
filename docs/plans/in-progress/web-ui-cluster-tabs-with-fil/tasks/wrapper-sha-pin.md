@@ -1,6 +1,6 @@
 ---
 title: wrapper sha pin
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: integration and e2e runs exercise the real wrapper with the new file and terminal APIs
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]

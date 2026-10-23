@@ -2,7 +2,7 @@
 title: web ui cluster tabs with filesystem chat and terminal panels
 blockers: [cluster-form-defaults-and-ga]
 stage: build
-owner: ""
+owner: Claude
 repos: [agent-orchestrator, claude-code-wrapper, agents-helmfile]
 created: 2026-10-23
 ---

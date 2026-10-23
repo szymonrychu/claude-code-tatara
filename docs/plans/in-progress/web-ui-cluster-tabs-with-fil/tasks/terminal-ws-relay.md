@@ -1,6 +1,6 @@
 ---
 title: terminal ws relay
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a browser or headless client gets a live shell on an agent pod without ever seeing the wrapper token
 files: [src/agent_orchestrator/api/workspace.py, pyproject.toml, uv.lock, tests/test_terminal_relay.py, README.md]

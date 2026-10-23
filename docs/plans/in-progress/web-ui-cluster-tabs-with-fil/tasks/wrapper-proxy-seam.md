@@ -1,6 +1,6 @@
 ---
 title: wrapper proxy seam
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the api can reach a cluster's wrapper pods through one audited module"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/wrapper/client.py, tests/test_workspace_proxy.py, tests/test_wrapper_client.py, tests/test_api_clusters.py, README.md, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: pty resize and raw ring
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: shells can be resized and their output replayed byte for byte
 files: [src/claude_code_wrapper/pty_proc.py, src/claude_code_wrapper/ring.py, tests/test_pty_proc.py, tests/test_ring.py]

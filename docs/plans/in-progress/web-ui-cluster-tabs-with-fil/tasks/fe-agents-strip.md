@@ -1,6 +1,6 @@
 ---
 title: fe agents strip
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: per-agent state and context stay visible in the chat header and double as the agent filter
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/AgentFilter.tsx, frontend/src/ribbon/AgentRow.tsx]

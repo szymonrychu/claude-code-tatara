@@ -1,6 +1,6 @@
 ---
 title: fe top bar
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: clusters are tabs at the top with a hamburger menu of sessions and settings
 files: [frontend/src/layout/TopBar.tsx, frontend/src/layout/SessionsMenu.tsx, frontend/src/layout/TopBar.test.tsx]

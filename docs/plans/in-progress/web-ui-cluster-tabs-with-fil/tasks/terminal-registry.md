@@ -1,6 +1,6 @@
 ---
 title: terminal registry
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "the wrapper can run, share, reap and close login shells in a session workdir with secrets scrubbed"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/config.py, src/claude_code_wrapper/manager.py, README.md, tests/test_terminals.py]

@@ -1,6 +1,6 @@
 ---
 title: file proxy routes
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: headless clients and the UI can browse and read a cluster workdir through /api/v1
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_files.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]

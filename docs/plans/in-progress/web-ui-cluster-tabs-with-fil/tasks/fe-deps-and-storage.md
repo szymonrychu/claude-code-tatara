@@ -1,6 +1,6 @@
 ---
 title: fe deps and storage
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the frontend has the panel, tree, terminal and icon libraries and crash-proof UI state storage"
 files: [frontend/package.json, frontend/package-lock.json, frontend/vite.config.ts, frontend/src/api/client.ts, frontend/src/layout/storage.ts, frontend/src/layout/storage.test.ts]

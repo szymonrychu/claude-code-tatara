@@ -1,6 +1,6 @@
 ---
 title: fe terminal panel
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the user runs several shells on chosen agent pods beside the chat
 files: [frontend/src/terminal/XtermView.tsx, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/theme.ts, frontend/src/App.tsx]
