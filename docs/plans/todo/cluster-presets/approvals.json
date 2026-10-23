@@ -35,7 +35,8 @@
     "decisions": [
       "D4",
       "D6",
-      "D11"
+      "D11",
+      "D12"
     ],
     "tasks": [
       "create-cluster-from-preset",
