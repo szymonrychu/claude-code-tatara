@@ -3,9 +3,9 @@ title: db secret name from cnpg
 status: in-progress
 repo: agents-helmfile
 value: the orchestrator connects to the database CNPG actually created
-files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
+files: [values/agent-orchestrator/common.yaml, values/agent-orchestrator-db/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
 verify: "uv run pytest tests/test_orchestrator_release.py tests/test_db_release.py -q -p no:cacheprovider && mise run lint"
-depends_on: [mise-tasks, orchestrator-release, smoke-script]
+depends_on: [db-release, mise-tasks, orchestrator-release, smoke-script]
 owns: []
 uses: []
 model: ""
@@ -35,6 +35,7 @@ Live apply failed: the orchestrator Deployments reference secret agent-orchestra
 ## Files
 
 - `values/agent-orchestrator/common.yaml`
+- `values/agent-orchestrator-db/common.yaml`
 - `tests/test_orchestrator_release.py`
 - `scripts/smoke.sh`
 - `README.md`
