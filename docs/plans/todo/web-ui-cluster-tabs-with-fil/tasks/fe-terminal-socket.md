@@ -39,6 +39,8 @@ The browser side of the terminal protocol (design D2; user Q5), test-first, with
 - AC5: the exit frame calls onExit with the code [evidence: test:frontend/src/terminal/terminalSocket.test.ts::exit_frame]
 - AC6: the socket URL follows the page protocol and host [evidence: test:frontend/src/terminal/terminalSocket.test.ts::socket_url_from_location]
 - AC7: tests, lint and build pass [evidence: command:mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/terminalSocket.test.ts src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build]
+- AC8: close codes 1006, 1011, 1013 and 4409 reconnect and 1000, 1003, 1008 and 1009 never do [evidence: test:frontend/src/terminal/terminalSocket.test.ts::reconnect_close_codes]
+- AC9: after 10 failed reconnect attempts the state is refused [evidence: test:frontend/src/terminal/terminalSocket.test.ts::refused_after_ten_attempts]
 
 ## Files
 
@@ -65,3 +67,6 @@ A tested client that keeps a shell connection alive through ingress idle timeout
 
 - Backoff constants mirror `api/stream.ts` (`BACKOFF_START_MS` 1000, `BACKOFF_MAX_MS` 30000); reuse them rather than duplicating numbers.
 - The 20 s ping keeps ingress-nginx from closing an idle connection (its default proxy timeouts are 60 s; the deployed values are 3600).
+- Builder check ruling 6: Reconnect on 1006, 1011, 1013 and 4409 with exponential backoff 1 s to 30 s, at most 10 attempts, then state refused; never reconnect on 1000, 1003, 1008, 1009. A refused tab stays with the reason, a Retry and a Close button.
+
+- 2026-10-23 amended: builder check rulings 6 add acceptance conditions AC8-AC9
