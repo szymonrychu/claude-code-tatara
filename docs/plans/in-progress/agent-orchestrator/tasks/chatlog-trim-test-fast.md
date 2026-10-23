@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: frontend CI is green on slow runners
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/ChatLog.test.tsx]
 verify: "cd frontend && npx vitest run src/chat && npm run lint"
-depends_on: []
+depends_on: [fe-chat-log-paging]
 owns: []
 uses: []
 model: ""
@@ -44,9 +44,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
+The frontend suite passes on slow CI runners.
+
 What is true and observable when the task is done.
 
 ## Steps
+
+- Red: CI timeout at 5000 ms on the trim test.
+- Inject the window size; shrink it in the test; run green.
 
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.

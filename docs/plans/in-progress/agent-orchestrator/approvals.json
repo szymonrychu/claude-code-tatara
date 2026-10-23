@@ -28,7 +28,8 @@
       "api-events-and-streams",
       "fe-chat-model",
       "fe-chat-log-paging",
-      "fe-composer-and-queue-strip"
+      "fe-composer-and-queue-strip",
+      "chatlog-trim-test-fast"
     ],
     "status": "approved"
   },
