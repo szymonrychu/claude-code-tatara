@@ -1,6 +1,6 @@
 ---
 title: entrypoints and singleton
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Makes the four services and migrate runnable as separate processes, with singletons that fail over and clean shutdown."
 files: [src/agent_orchestrator/runtime/__init__.py, src/agent_orchestrator/runtime/singleton.py, src/agent_orchestrator/runtime/run.py, src/agent_orchestrator/cli.py, tests/test_entrypoints.py, README.md]
@@ -91,3 +91,5 @@ README.md gains `## Commands`: each command, what it runs, which settings it nee
 Advisory lock keys: a stable 64-bit hash of the name. The api process gets no Kubernetes client (D1). Contract agent-orchestrator-settings-env: this repo's chart sets these commands and env (consumed by agents-helmfile).
 
 - 2026-10-23 run agent-orchestrator: dependency-failed on ingester, dispatcher-loop, check-jobs
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on check-jobs, dispatcher-loop, reconciler-loop

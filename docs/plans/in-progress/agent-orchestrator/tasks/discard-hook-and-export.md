@@ -1,6 +1,6 @@
 ---
 title: discard hook and export
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: Discarding a cluster deletes everything while an optional hook still receives the full chat history first
 files: [src/agent_orchestrator/db/export.py, src/agent_orchestrator/reconciler/discard_hook.py, src/agent_orchestrator/reconciler/loop.py, tests/test_discard_hook.py, README.md]
@@ -97,3 +97,5 @@ A command hook comes only from settings (operator-controlled). The API has no au
 The export runs before any deletion, so the history is complete. Agents may still be running while it is read: the cluster is already `deleting`, and the api refuses new messages to it.
 
 - 2026-10-23 run agent-orchestrator: dependency-failed on check-jobs
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on check-jobs, reconciler-loop

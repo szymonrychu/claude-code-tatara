@@ -1,6 +1,6 @@
 ---
 title: reconciler loop
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and discard clusters without drift after a crash."
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]

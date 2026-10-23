@@ -1,6 +1,6 @@
 ---
 title: spa serving and dockerfile
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Ships the web UI inside the orchestrator image and makes CI prove the frontend builds, lints, tests and matches the API types."
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, Dockerfile, .dockerignore, .github/workflows/ci.yaml, tests/test_spa.py]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-spa-serving-and-dockerfile/agent-orchestrator
 branch: agent-orchestrator-spa-serving-and-dockerfile
-verified_head: ""
+verified_head: 09462682981e8fb455888b5a19c7862616be8f49
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

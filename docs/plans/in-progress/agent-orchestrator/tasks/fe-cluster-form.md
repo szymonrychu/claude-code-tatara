@@ -1,6 +1,6 @@
 ---
 title: fe cluster form
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Defines new clusters with their full config and discards them safely, from the UI."
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/DiscardClusterDialog.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/clusters/ClusterForm.test.tsx]
@@ -15,8 +15,8 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-cluster-form/agent-orchestrator
-branch: agent-orchestrator-fe-cluster-form
-verified_head: ""
+branch: HEAD
+verified_head: a9f12d05d679804d3bb84702647b27fd5d53063b
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

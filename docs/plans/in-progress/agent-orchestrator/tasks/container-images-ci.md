@@ -1,6 +1,6 @@
 ---
 title: container images ci
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Every main commit yields a pushed, immutable orchestrator image, with the agent image, the wrapper config validation and the any-mcp pin all on one wrapper sha and one any-mcp tag."
 files: [.github/workflows/ci.yaml, tests/test_images.py, pyproject.toml, uv.lock, README.md]

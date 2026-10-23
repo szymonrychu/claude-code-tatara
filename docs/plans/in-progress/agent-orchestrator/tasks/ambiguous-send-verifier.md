@@ -1,6 +1,6 @@
 ---
 title: ambiguous send verifier
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Automatic retry never pastes a message twice: an ambiguous send is checked against the wrapper before it is re-sent"
 files: [src/agent_orchestrator/dispatcher/verify.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_ambiguous_verify.py, README.md]
@@ -16,11 +16,12 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ambiguous-send-verifier/agent-orchestrator
 branch: agent-orchestrator-ambiguous-send-verifier
-verified_head: ""
+verified_head: 3589f407de6061be3e6dbda5d93f57c6c16bdd2a
 run: agent-orchestrator
-provides: []
+provides: [cluster-max-attempts]
 acs_for_audit: []
 process_gaps: []
+fork_point: d1399d0aef0dc1cc578df6d1352d808534e60488
 ---
 
 # ambiguous send verifier

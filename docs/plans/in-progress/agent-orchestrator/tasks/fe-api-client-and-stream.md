@@ -1,6 +1,6 @@
 ---
 title: fe api client and stream
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Typed access to every API route the UI uses, generated from the server's OpenAPI, with a resilient live-event stream."
 files: [frontend/package.json, frontend/src/api/schema.d.ts, frontend/src/api/client.ts, frontend/src/api/stream.ts, frontend/src/api/stream.test.ts]
@@ -15,8 +15,8 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-api-client-and-stream/agent-orchestrator
-branch: agent-orchestrator-fe-api-client-and-stream
-verified_head: ""
+branch: "HEAD (worktree agent-orchestrator-fe-api-client-and-stream)"
+verified_head: 6e19b7dc55a4ef20bf7c1d7b6fb975a5a6fcf60c
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

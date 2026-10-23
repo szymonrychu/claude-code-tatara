@@ -16,10 +16,10 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-k8s-object-renderer/agent-orchestrator
 branch: agent-orchestrator-k8s-object-renderer-land
-verified_head: unknown
+verified_head: 1ad933b
 run: agent-orchestrator
 provides: [workdir-path-and-mount, cluster-labels]
-acs_for_audit: []
+acs_for_audit: [AC4]
 process_gaps: []
 ---
 

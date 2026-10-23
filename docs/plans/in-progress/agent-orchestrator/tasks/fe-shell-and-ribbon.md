@@ -1,6 +1,6 @@
 ---
 title: fe shell and ribbon
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "The left ribbon of clusters and agents with working or waiting state, pod counts and context gauges, live."
 files: [frontend/src/App.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/AgentRow.tsx, frontend/src/ribbon/useClusters.ts, frontend/src/components/StatusItem.tsx, frontend/src/ribbon/Ribbon.test.tsx]
@@ -16,7 +16,7 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-shell-and-ribbon/agent-orchestrator
 branch: agent-orchestrator-fe-shell-and-ribbon
-verified_head: ""
+verified_head: 44990c5d4647316af43be40352a29e60c853b310
 run: agent-orchestrator
 provides: []
 acs_for_audit: []

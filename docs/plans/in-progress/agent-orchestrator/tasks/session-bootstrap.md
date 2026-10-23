@@ -1,6 +1,6 @@
 ---
 title: session bootstrap
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: "Every ready agent pod gets exactly one wrapper session, adopted after a restart instead of duplicated."
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]
@@ -78,3 +78,5 @@ After reconcile, each ready agent row has the wrapper session id the ingester an
 Session create is synchronous (returns when ready) and `max_sessions` is 1, so a duplicate create returns 429; adopt first. The reconciler, not the API, calls wrappers here (D1).
 
 - 2026-10-23 run agent-orchestrator: dependency-failed on reconciler-loop
+
+- 2026-10-23 run agent-orchestrator: dependency-failed on k8s-object-renderer, reconciler-loop

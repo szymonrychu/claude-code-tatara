@@ -1,6 +1,6 @@
 ---
 title: helm chart ci publish
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: agents-helmfile can pin an immutable published chart version for every main commit and release tag
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_chart_ci.py, README.md]

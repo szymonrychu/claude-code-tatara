@@ -1,6 +1,6 @@
 ---
 title: fe chat model
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Turns stored agent events into readable chat items: inputs, outputs, thinking, paired tool calls, peer messages and gaps."
 files: [frontend/src/chat/chatModel.ts, frontend/src/chat/chatModel.test.ts]
@@ -16,11 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-chat-model/agent-orchestrator
 branch: agent-orchestrator-fe-chat-model
-verified_head: ""
+verified_head: f414e585a9e613958ff82ec4a4f1cf165cc0171f
 run: agent-orchestrator
-provides: []
+provides: [chat-model]
 acs_for_audit: []
 process_gaps: []
+fork_point: 44990c5
 ---
 
 # fe chat model
