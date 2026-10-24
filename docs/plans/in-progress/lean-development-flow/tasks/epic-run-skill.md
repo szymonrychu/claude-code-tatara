@@ -1,6 +1,6 @@
 ---
 title: Epic-run skill
-status: in-progress
+status: done
 repo: workbench
 value: The one entry point that decouples executing an epic from planning it
 files: [plugins/workbench/skills/epic-run/, plugins/workbench/skills/start-research/tests/]
@@ -9,6 +9,7 @@ depends_on: [start-development-rewrite]
 owns: []
 uses: []
 model: sonnet
+verified_head: de33424
 estimate: 5
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
