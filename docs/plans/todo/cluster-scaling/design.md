@@ -82,6 +82,9 @@ The replica cap N is set at cluster init (ClusterSpec field, ceiling 16); the le
 ### D11: S3 static switch
 Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hive, peers or messaging tools. (user decision)
 
+### D12: X1 one shared orchestrator plugin
+One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit), with a per-cluster scoped credential in the pod; built once by hive-mode-leadership-handove, the other epics add tools to it. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -123,6 +126,7 @@ Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hiv
 | D9 S1 dynamic join and leave | scale-down-drain, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check, deploy-pin-scaling |
 | D10 S2 cap at init, leader scales 1..N | scale-replicas-repo, public-scale-route, agent-scale-route, scale-ui-control, cap-static-preset-form, kind-e2e-scaling |
 | D11 S3 static switch | scale-replicas-repo, scale-tool-allow, cap-static-preset-form, scale-ui-control, kind-e2e-scaling |
+| D12 X1 one shared orchestrator plugin | agent-scale-route, scale-tool-allow |
 
 ## Contracts
 

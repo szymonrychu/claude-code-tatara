@@ -58,7 +58,8 @@
     "text": "One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool, including scale; built by hive-mode-leadership-handove, this epic adds the scale route and its allow rule.",
     "decisions": [
       "D2",
-      "D4"
+      "D4",
+      "D12"
     ],
     "tasks": [
       "agent-scale-route",
