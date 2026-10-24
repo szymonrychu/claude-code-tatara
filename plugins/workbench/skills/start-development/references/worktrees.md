@@ -18,9 +18,9 @@ agents in one tree overwrite each other. Parallelism is across epics, each in it
 
 ## Rules for every agent in the tree
 
-- The orchestrator passes the absolute tree path. The agent works in it by absolute path and never calls
-  the built-in `EnterWorktree`, which relocates the permission root and prompts on every skill-created
-  tree. Every tree is plain `git worktree` made by `worktree-create`.
+- The orchestrator passes the absolute tree path, and the agent works in it by absolute path.
+  It never calls the built-in `EnterWorktree`, which relocates the permission root and prompts on
+  every skill-created tree. Every tree is plain `git worktree` made by `worktree-create`.
 - `git commit` runs only inside the tree; never in the main checkout or another tree. Before its first
   commit the implementer checks that `git rev-parse --show-toplevel` prints the tree it was given.
 - Nobody resets, amends, rebases or stashes on `<epic>`: the commits are the hand-off between tasks.
