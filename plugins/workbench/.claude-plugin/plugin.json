@@ -60,6 +60,18 @@
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-usage-recorder.py\"",
+            "timeout": 10,
+            "statusMessage": "Recording agent usage..."
+          }
+        ]
+      }
+    ],
     "SubagentStop": [
       {
         "hooks": [
@@ -68,6 +80,16 @@
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-commit-guard.py\"",
             "timeout": 15,
             "statusMessage": "Checking for uncommitted work..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-usage-recorder.py\"",
+            "timeout": 10,
+            "statusMessage": "Recording agent usage..."
           }
         ]
       }

@@ -227,6 +227,7 @@ Both SCM families ship deliberately. They are parallel implementations, not drif
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file with the formatter for its language when one is installed |
 | `verify-recorder.py` | PostToolUse and PostToolUseFailure/Bash | records the HEAD and tree state of every test or lint run in an agent worktree |
 | `subagent-commit-guard.py` | SubagentStop | blocks a turn that leaves uncommitted work, and also blocks a turn whose last verification did not run on HEAD |
+| `agent-usage-recorder.py` | SubagentStart and SubagentStop | records each subagent's time, model and tokens to `.logs/agents/<agentId>.json` in the main checkout; Claude-only, never blocks |
 
 `guard-bash.py` is an advisory guardrail against agent mistakes, not a security sandbox.
 Enterprises that need enforcement should use managed permissions (deny rules) or a

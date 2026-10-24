@@ -12,6 +12,7 @@ report" reflex; these hooks make the rule mechanical. They ship with the plugin
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file when a formatter for its language is installed |
 | `verify-recorder.py` | PostToolUse and PostToolUseFailure/Bash | records each test or lint run in an agent worktree |
 | `subagent-commit-guard.py` | SubagentStop | the commit guard and the verification-freshness guard below |
+| `agent-usage-recorder.py` | SubagentStart and SubagentStop | records each subagent's time, model and tokens to `.logs/agents/<agentId>.json` in the main checkout (the usage record below); never blocks |
 
 The two SubagentStop guards fire only in agent worktrees - `<configdir>/worktrees/<name>` from
 `worktree-create` (epic integration trees) and the legacy `.worktrees/<branch>/<repo>` from
@@ -42,6 +43,20 @@ SubagentStop guard reads it, so a subagent cannot end a turn in a worktree whose
 on its HEAD. A run on an older HEAD (the stale green of a docs-only or test-only commit made after the
 run), on a dirty tree, or a run that failed sends the agent back to re-run that command on what it
 committed. A worktree with no recorded run is left to the reviewer, who runs the task's `verify` on HEAD.
+
+## The usage record
+
+`agent-usage-recorder.py` keeps one record per subagent at `.logs/agents/<agentId>.json` in the main
+checkout, resolved from the event cwd, so an agent working in an integration tree still records there.
+SubagentStart (spawn and every resume) writes the start time, the agent id and type, the agent
+transcript path and, once the transcript is readable, the `[wb <epic>/<task>/<role>]` marker.
+SubagentStop recomputes model, end and tokens (input, cache creation, cache read and output, and
+their total) from the whole agent transcript and overwrites the record, keeping the first start, so a
+fix round that stops the same agent again grows the one record without double counting. The role
+comes from the marker, else from the agent type (`workbench:implementer`, `workbench:reviewer`).
+Internal agents (an empty agent type) write nothing. The recorder makes no decision: on any error it
+exits 0 with no output, so it never blocks or slows a stop. It is Claude-only: the Copilot, Codex,
+Gemini CLI, Cursor and Antigravity targets keep explicit hook allowlists and none emits it.
 
 ## Both guards fire once
 
