@@ -1,6 +1,6 @@
 ---
 title: Em dash edit guard
-status: in-progress
+status: done
 repo: workbench
 value: No agent in any harness can write an em dash into a file
 files: [plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/lib/harness_io.py, plugins/workbench/hooks/lib/apply_patch.py, plugins/workbench/hooks/tests/test_protect_files.py, plugins/workbench/hooks/tests/test_adapter.py, plugins/workbench/skills/start-development/references/hooks.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only hooks && bash plugin
 depends_on: [em-dash-lint]
 model: opus
 review: ""
-verified_head: ""
+verified_head: f45010f
 ---
 
 # Em dash edit guard
@@ -65,3 +65,5 @@ No agent in any harness can write an em dash into a file through an edit tool.
 - Reuse: harness_io._tool_input / _TOOL_INPUT_KEYS (Copilot sends toolArgs as a JSON string), apply_patch.patch_paths header rules.
 - protect_files.py denies on any internal error (exit 2); keep the content check inside `decide` so that holds.
 - Test data writes the character as the escape `"\u2014"` (the em dash lint scans tests too).
+
+- 2026-10-24 done
