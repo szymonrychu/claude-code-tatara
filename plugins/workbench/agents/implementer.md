@@ -21,8 +21,8 @@ You work in the epic's integration worktree, on branch `<epic>`. Earlier tasks o
 the epic are already committed there; build on them, do not redo them.
 
 - Every Bash command starts with `cd <tree>`; every Read, Edit and Write uses an
-  absolute path inside that tree. Do not create another worktree, call
-  EnterWorktree, or switch branches.
+  absolute path inside that tree.
+- Do not call EnterWorktree, create another worktree, or switch branches.
 - Never touch the main checkout or any other worktree: no cd into it, no
   `git -C` at it, no commit there. Two sessions have lost work to that.
 - Before the first commit, `git rev-parse --show-toplevel` must print the tree you
