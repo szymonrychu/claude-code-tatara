@@ -299,6 +299,12 @@ def test_live_tree_warning_uses_ticket_lookup(tmp_path):
     b = epic(root, "Beta", "in-progress")
     task(root, a, "Tee one")
     task(root, b, "Tee one")
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    from ticket_repo_helpers import set_meta
+
+    set_meta(next(root.glob(f"**/{b}/tasks/tee-one.md")), verified_head=head)
     for n in (f"{a}-tee-one", f"{b}-tee-one", a, b):
         subprocess.run(
             ["git", "worktree", "add", "-q", str(tmp_path / n), "-b", n],

@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_ticket_check import check, cli, epic, task  # noqa: E402
+from ticket_repo_helpers import set_meta  # noqa: E402
 
 
 @pytest.fixture
@@ -135,8 +136,10 @@ def test_merged_fallback_branch_single_hyphen(tmp_path):
     g("commit", "-m", "init")
     a, b = two_epics(root, "src/x.py", "")
     tp = next((root / "in-progress" / a / "tasks").glob("*.md"))
-    branch = f"{a}-{tp.stem}"
-    g("branch", branch)  # at main's head: merged
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    set_meta(tp, verified_head=head)  # contained in main: merged
     r = cli(
         "new-task",
         "--root",

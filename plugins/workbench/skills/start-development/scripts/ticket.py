@@ -529,11 +529,8 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     left = [f for f in shared if not workbench.overlap_ignored(f, globs)]
     if not left:
         return []
-    branch = worktree_name(other.epic, other.slug)
     try:
-        if _task_merged(
-            _task_src(root, other.meta), branch, other.meta.get("verified_head", ""), "main"
-        ):
+        if _task_merged(_task_src(root, other.meta), other.meta.get("verified_head", ""), "main"):
             return []
     except (OSError, _mod().WorktreeError):
         pass  # no git checkout to ask (e.g. a bare plans dir): not merged
@@ -881,14 +878,13 @@ def ensure_integration_trees(root: Path, epic_dir: Path) -> list[dict]:
     return out
 
 
-def _write_task(path: Path, doc: Doc, changed: list[Path], **updates) -> None:
-    """Rewrite the task with updated frontmatter; record it in `changed` only if it differs."""
+def _write_task(path: Path, doc: Doc, **updates) -> None:
+    """Rewrite the task with updated frontmatter when it differs."""
     meta = dict(doc.meta)
     meta.update(updates)
     text = dump(Doc(meta, doc.body))
     if text != path.read_text():
         path.write_text(text)
-        changed.append(path)
 
 
 def cmd_worktrees(a: argparse.Namespace) -> int:
@@ -1028,7 +1024,7 @@ def _move_in_progress(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     for path in _task_files(dest):
         doc = _read_doc(path)
         if doc.meta.get("status") == "todo":
-            _write_task(path, doc, [], status="in-progress")
+            _write_task(path, doc, status="in-progress")
     commit_ticket_change(name, "move in-progress", [epic_dir, dest], root)
     print(dest)
     return 0
@@ -1048,19 +1044,9 @@ def _branch_exists(src: Path, branch: str) -> bool:
     )
 
 
-def _task_contained(src: Path, branch: str, verified_head: str, base: str) -> tuple[bool, str]:
-    """Whether the task is contained in base (ancestry, else patch equivalence), and why not.
-    A branch worktree-merge already deleted is judged by its verified_head."""
-    mm = _merge()
-    if _branch_exists(src, branch):
-        return mm.contained(src, branch, base)
-    if not verified_head:
-        return False, f"branch {branch!r} is gone and the task has no verified_head"
-    return mm.contained(src, verified_head, base)
-
-
-def _task_merged(src: Path, branch: str, verified_head: str, base: str) -> bool:
-    return _task_contained(src, branch, verified_head, base)[0]
+def _task_merged(src: Path, verified_head: str, base: str) -> bool:
+    """Whether the task's verified_head is contained in base (ancestry, else patch equivalence)."""
+    return bool(verified_head) and _merge().contained(src, verified_head, base)[0]
 
 
 def _trunk(wb: Path, repo: str, base: str) -> tuple[str, bool]:

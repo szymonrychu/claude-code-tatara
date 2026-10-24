@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pytest
 
+sys.path.insert(0, str(Path(__file__).parent))
+from ticket_repo_helpers import set_meta  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
 
@@ -137,6 +140,7 @@ def test_roadmap_open_files_drops_merged(tmp_path):
     git(r, "commit", "-m", "init")
     out = roadmap(plans)
     assert "overlaps busy: src/a.py" in out.stdout, out.stdout + out.stderr
-    git(r, "branch", "busy-b1")  # merged: the branch tip is already in main
+    head = git(r, "rev-parse", "HEAD").stdout.strip()
+    set_meta(plans / "in-progress" / "busy" / "tasks" / "b1.md", verified_head=head)  # merged
     out = roadmap(plans)
     assert out.stdout.splitlines()[-1] == "runnable: next", out.stdout + out.stderr

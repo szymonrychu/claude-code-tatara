@@ -267,7 +267,7 @@ def test_task_frontmatter_is_lean(t, root):
     }
     assert t.load(t.dump(doc), legacy) == doc
     # a writer keeps the legacy keys it does not know about
-    t._write_task(legacy, doc, [], status="escalated")
+    t._write_task(legacy, doc, status="escalated")
     again = t.load(legacy.read_text(), legacy).meta
     assert again["status"] == "escalated" and again["owns"] == ["helper"]
     assert again["estimate"] == "6" and again["run"] == "run-1"
