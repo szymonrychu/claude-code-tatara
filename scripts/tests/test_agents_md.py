@@ -193,3 +193,28 @@ def test_banner_routes_other_requests():
     flat = " ".join(_block("uninitialised").replace(">", " ").split()).lower()
     assert "any other development request" in flat
     assert "ask the user whether to run init first" in flat
+
+
+HOUSEKEEPING = (
+    "supervisor",
+    "accountable",
+    "xfail",
+    "no longer accurate",
+    "list every file",
+    "one pass",
+    "backward compatibility",
+    "em dash",
+    "fable",
+    "full scope",
+    ".scratchpad",
+    ".logs",
+)
+
+
+def test_housekeeping_rules():
+    rule = (ROOT / "plugins/workbench/rules/housekeeping.md").read_text()
+    for text in (rule, AGENTS):
+        flat = " ".join(text.split()).lower()
+        for needle in HOUSEKEEPING:
+            assert needle in flat, needle
+    assert len(re.findall(r"^## Housekeeping rules$", AGENTS, re.M)) == 1

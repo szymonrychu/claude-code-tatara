@@ -7,10 +7,10 @@ sharper requirement or another approach, not a smaller deliverable. The only sto
 
 ## Orchestrate. Do not implement.
 
-Delegate implementing, reviewing, auditing and suite runs; never implement a task yourself because it looks small,
-and never merge a worktree yourself (`ticket.py close`, the MR, or a `worktree-merger` for a conflict). Set every
-subagent's model: sonnet by default, opus for planning and the hardest tasks, fable for one hard architecture
-question.
+The orchestrator is the supervisor, responsible and accountable for all subagent work; it never writes code or
+builds anything, however small (its own duties: rules/housekeeping.md). Delegate implementing, reviewing, auditing
+and suite runs; never merge a worktree yourself (`ticket.py close`, the MR, or a `worktree-merger` for a conflict).
+Set every model: sonnet by default, opus for planning and the hardest tasks, fable for one hard architecture question.
 
 ## Loop until it is actually finished
 
