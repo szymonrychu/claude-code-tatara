@@ -64,6 +64,8 @@ def tree(tmp_path):
     (root / "scripts").mkdir(parents=True)
     for name in ("run-tests.sh", "flake-hunt.sh"):
         shutil.copy(SCRIPTS / name, root / "scripts" / name)
+    ignore = shutil.ignore_patterns("__pycache__")
+    shutil.copytree(SCRIPTS / "lib", root / "scripts" / "lib", ignore=ignore)
     fake = root / "skills" / "fake" / "tests"
     fake.mkdir(parents=True)
     (fake / "test_fake.py").write_text(FAKE_TEST)
@@ -72,7 +74,11 @@ def tree(tmp_path):
     (other / "test_other.py").write_text(OTHER_TEST)
     tmpdir = tmp_path / "tmpdir"
     tmpdir.mkdir()
-    env = {k: v for k, v in os.environ.items() if k != "RUN_TESTS_LOG_DIR"}
+    main = tmp_path / "main"
+    main.mkdir()
+    skip = ("RUN_TESTS_LOG_DIR", "WORKBENCH_ROOT", "CLAUDE_PROJECT_DIR")
+    env = {k: v for k, v in os.environ.items() if k not in skip}
+    env["WORKBENCH_ROOT"] = str(main)
     env["PYTEST"] = pt
     env["TMPDIR"] = str(tmpdir)
 
@@ -84,7 +90,7 @@ def tree(tmp_path):
             ["bash", *cmd], cwd=root, env=env, capture_output=True, text=True, timeout=120
         )
 
-    return SimpleNamespace(root=root, tmpdir=tmpdir, control=control, run=run, env=env)
+    return SimpleNamespace(root=root, main=main, tmpdir=tmpdir, control=control, run=run, env=env)
 
 
 def test_failing_component_keeps_full_output(tree):
@@ -96,10 +102,29 @@ def test_failing_component_keeps_full_output(tree):
     assert m, r.stdout
     log = Path(m.group(1))
     assert log.exists()
+    assert log.parent.parent == tree.main / ".logs" / "run-tests"
     assert "line 1\n" in log.read_text()
     assert "line 1\n" not in r.stdout  # the 15-line tail cannot show it
     assert "failure logs:" in r.stdout
     assert r.stdout.index("FAILED:") < r.stdout.index("failure logs:")
+
+
+def test_log_dir_override_and_fallback(tree, tmp_path):
+    tree.control("fail")
+    custom = tmp_path / "custom"
+    tree.env["RUN_TESTS_LOG_DIR"] = str(custom)
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert (custom / "fake.log").exists()
+    assert not (tree.main / ".logs").exists()
+    del tree.env["RUN_TESTS_LOG_DIR"]
+    del tree.env["WORKBENCH_ROOT"]  # tmp tree is not in git: no main checkout
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    m = re.search(r"^        full output: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    assert Path(m.group(1)).parent.parent == tree.tmpdir
+    assert not (tree.main / ".logs").exists()
 
 
 def test_green_run_leaves_nothing(tree):
@@ -110,6 +135,7 @@ def test_green_run_leaves_nothing(tree):
     assert "full output:" not in r.stdout
     assert "failure logs:" not in r.stdout
     assert list(tree.tmpdir.glob("run-tests.*")) == []
+    assert list((tree.main / ".logs" / "run-tests").glob("*")) == []
 
 
 def test_only_runs_one_component(tree):
@@ -137,6 +163,8 @@ def test_flake_hunt_reports_failures_and_keeps_logs(tree):
     logs = [ln.strip() for ln in r.stdout.splitlines() if ln.strip().endswith(".log")]
     assert len(logs) == 2
     assert all(Path(p).exists() for p in logs)
+    hunts = tree.main / ".logs" / "flake-hunt"
+    assert all(hunts in Path(p).parents for p in logs)
 
 
 def test_flake_hunt_all_pass(tree):

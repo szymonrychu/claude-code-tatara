@@ -11,9 +11,10 @@
 # Usage: run-tests.sh [--only <component>]
 # A component is a directory basename: a skill name, hooks or scripts.
 #
-# A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default: a
-# fresh mktemp dir) as <component>.log, or <component>-bats.log,
-# and its path is printed after the 15-line tail. Every pytest process gets a
+# A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default:
+# <main checkout>/.logs/run-tests/<UTC timestamp>-<pid>/, else a fresh mktemp dir
+# under TMPDIR when no main checkout is found) as <component>.log, or
+# <component>-bats.log, and its path is printed after the 15-line tail. Every pytest process gets a
 # private --basetemp under that dir, so parallel runs never share pytest's
 # per-user numbered basetemp. The dir is removed when everything passes.
 #
@@ -49,8 +50,20 @@ export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-workbench-tests@example.invalid}"
 export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
 export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
 
-LOG_DIR="${RUN_TESTS_LOG_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX")}"
+default_log_dir() {
+  local base
+  if base="$(python3 "$HERE/scripts/lib/workbench.py" logs 2>/dev/null)" && [ -n "$base" ]; then
+    printf '%s/run-tests/%s-%s' "$base" "$(date -u +%Y%m%dT%H%M%SZ)" "$$"
+  else
+    mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX"
+  fi
+}
+LOG_DIR="${RUN_TESTS_LOG_DIR:-$(default_log_dir)}"
 mkdir -p "$LOG_DIR/tmp"
+# The pytest basetemps live under the log dir, which may sit inside the main
+# checkout's repo; suites must not discover that repo from their temp dirs.
+LOG_REAL="$(cd "$LOG_DIR" && pwd -P)"
+export GIT_CEILING_DIRECTORIES="$LOG_REAL${GIT_CEILING_DIRECTORIES:+:$GIT_CEILING_DIRECTORIES}"
 
 # Resolve a pytest that actually runs. `command -v pytest` finds mise's shim,
 # which fails with "No version is set for shim" unless a .mise.toml scopes it,

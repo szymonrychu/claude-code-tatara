@@ -4,7 +4,8 @@
 # Usage: flake-hunt.sh <component> <runs> [parallel]
 # Runs `scripts/run-tests.sh --only <component>` <runs> times, at most
 # <parallel> at once (default 1), each with its own RUN_TESTS_LOG_DIR under one
-# hunt dir. Prints run <i>: PASS|FAIL as each run finishes, then fails: k/<runs>
+# hunt dir: <main checkout>/.logs/flake-hunt/<UTC timestamp>-<pid>/, else a
+# mktemp dir under TMPDIR when no main checkout is found. Prints run <i>: PASS|FAIL as each run finishes, then fails: k/<runs>
 # and the kept log paths. Exit 1 when any run failed (the hunt dir is kept),
 # else 0 (the hunt dir is removed).
 set -uo pipefail
@@ -26,7 +27,12 @@ is_pos "$parallel" || usage
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$HERE" || exit 1
 
-hunt="$(mktemp -d "${TMPDIR:-/tmp}/flake-hunt.XXXXXX")"
+if base="$(python3 "$HERE/scripts/lib/workbench.py" logs 2>/dev/null)" && [ -n "$base" ]; then
+  hunt="$base/flake-hunt/$(date -u +%Y%m%dT%H%M%SZ)-$$"
+  mkdir -p "$hunt"
+else
+  hunt="$(mktemp -d "${TMPDIR:-/tmp}/flake-hunt.XXXXXX")"
+fi
 
 one_run() {
   local i="$1"
