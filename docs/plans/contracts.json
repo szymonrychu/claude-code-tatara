@@ -247,5 +247,15 @@
       "any-mcp"
     ],
     "note": "GET|PUT /agent/v1/init-scripts behind hive require_agent() (Bearer ORCH_AGENT_TOKEN, X-Orch-Cluster, caller IP = agents.pod_ip); same InitScriptsIn {scripts} and InitScriptsView as the public route, cluster = the token's cluster; consumed by OrchestratorPlugin tools orchestrator_init_scripts_get / orchestrator_init_scripts_edit built by hive F1 against this shape; task init-scripts-agent-api"
+  },
+  {
+    "name": "orch-cluster-scale-api",
+    "kind": "api",
+    "owner": "cluster-scaling",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "POST /api/v1/clusters/{id}/scale {replicas} -> 202 ScaleResult {cluster_id, replicas, previous_replicas, max_replicas}; errors static_cluster 409, out_of_range 422, leader_would_leave 409, cluster_deleting 409, not_found 404; spec.replicas in place, no generation bump"
   }
 ]
