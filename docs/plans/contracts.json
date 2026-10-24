@@ -289,5 +289,15 @@
       "agent-init-scripts"
     ],
     "note": "task any-mcp-release-v0-2-0: tag v0.2.0 carries the plugin; no further any-mcp release planned"
+  },
+  {
+    "name": "wrapper-notes-inbox",
+    "kind": "api",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/claude-code-wrapper/README.md",
+    "consumers": [
+      "cluster-scaling"
+    ],
+    "note": "task wrapper-notes-inbox: POST /v1/sessions/{id}/notes {text, key?, source?}, notes.enabled (hive only), events note_received/note_delivered"
   }
 ]
