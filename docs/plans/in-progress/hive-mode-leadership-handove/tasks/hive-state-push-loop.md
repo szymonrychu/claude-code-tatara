@@ -34,6 +34,9 @@ Every agent knows the hive and sees the others' activity (D3, Q6, Q7, Q9). `disp
 - The fake wrapper (`tests/fakes/fake_wrapper.py`) serves the notes route and records notes per session; `tests/test_fake_wrapper_contract.py` covers the route against the real wrapper (integration marker).
 - Alone clusters get nothing.
 - Interrogate item 2: the per-cluster advisory lock (pg_try_advisory_xact_lock) is held only around the DB read and write (reading members, hashes and events, storing hash and cursor), never across HTTP. Wrapper pushes run outside any transaction and outside drain's critical path (their own task in the dispatcher loop) with a short per-push timeout (`PUSH_TIMEOUT_SECONDS = 3`, module constant).
+- Interrogate item 3(a): event ids commit out of order across per-agent ingester transactions, so the feed cursor only advances over a committed-safe window: rows newer than `FEED_SETTLE_SECONDS = 5` (module constant) are not consumed yet, so no row is skipped for good.
+- Interrogate item 3(b): Bash calls reported pending by `digest_lines` are carried over to the next tick (kept in memory per cluster) and the cursor does not move past the oldest pending call until its result lands or the timeout elapses.
+- Interrogate item 3(c): `feed_cursor` starts at the current max events id for the cluster when a cluster first becomes a hive (the leader row is created in the leadership pass) and in migration-0003-hive for existing hive clusters, so history is never pushed as current activity.
 
 ## Acceptance conditions
 
@@ -46,6 +49,9 @@ Every agent knows the hive and sees the others' activity (D3, Q6, Q7, Q9). `disp
 - AC7: the wrapper client and fake wrapper agree on the notes route [evidence: command:uv run pytest tests/test_wrapper_client.py tests/test_fake_wrapper_contract.py -q]
 - AC8: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 - AC9: a hanging wrapper does not delay claim_and_pick or the leadership pass of that cluster [evidence: test:tests/test_hive_push.py::test_hanging_wrapper_does_not_block_claim]
+- AC10: a row committed late with a lower id than the cursor is still pushed once the settle window has passed [evidence: test:tests/test_hive_push.py::test_feed_cursor_settle_window]
+- AC11: a pending Bash call is carried to a later tick and pushed with its exit status [evidence: test:tests/test_hive_push.py::test_feed_pending_bash_carried]
+- AC12: a newly created leader row starts feed_cursor at the current max events id and old history is not pushed [evidence: test:tests/test_hive_push.py::test_feed_cursor_starts_at_max]
 
 ## Files
 
@@ -76,3 +82,5 @@ Hived agents receive a hive-state note on every leader or membership change and 
 - `events.page(types=...)` (`db/events.py:117-170`) or a direct keyset query by `(cluster_id, id)`.
 
 - 2026-10-24 amended: interrogate verdict 2026-10-24 item 2
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 3
