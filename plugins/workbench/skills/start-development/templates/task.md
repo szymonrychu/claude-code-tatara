@@ -6,15 +6,9 @@ value: ""
 files: []
 verify: ""
 depends_on: []
-owns: []
-uses: []
 model: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
 ---
 
 # {{title}}

@@ -158,6 +158,20 @@ def test_new_epic_refuses_existing_in_any_phase(root, phase):
 
 
 # (4) new-task
+LEAN_KEYS = [
+    "title",
+    "status",
+    "repo",
+    "value",
+    "files",
+    "verify",
+    "depends_on",
+    "model",
+    "review",
+    "verified_head",
+]
+
+
 def test_new_task(t, root):
     new_epic(root)
     r = new_task(
@@ -166,10 +180,6 @@ def test_new_task(t, root):
         "Ticket core",
         "--depends-on",
         "a,b",
-        "--owns",
-        "p",
-        "--uses",
-        "q",
         "--model",
         "sonnet",
         "--review",
@@ -180,30 +190,12 @@ def test_new_task(t, root):
     text = p.read_text()
     doc = t.load(text, p)
     m = doc.meta
-    assert list(m) == [
-        "title",
-        "status",
-        "repo",
-        "value",
-        "files",
-        "verify",
-        "depends_on",
-        "owns",
-        "uses",
-        "model",
-        "review",
-        "worktree",
-        "branch",
-        "verified_head",
-        "run",
-        "provides",
-    ]
+    assert list(m) == LEAN_KEYS
     assert m["status"] == "todo" and m["files"] == ["a.py", "b.py"]
     assert m["verify"] == 'pytest -q -k "x y"'
-    assert m["depends_on"] == ["a", "b"] and m["owns"] == ["p"] and m["uses"] == ["q"]
+    assert m["depends_on"] == ["a", "b"]
     assert m["model"] == "sonnet" and m["review"] == "full"
-    assert m["worktree"] == m["branch"] == m["verified_head"] == m["run"] == ""
-    assert m["provides"] == []
+    assert m["verified_head"] == ""
     assert re.findall(r"^## (.+)$", text, re.M) == [
         "Requirement",
         "Acceptance conditions",
@@ -214,6 +206,70 @@ def test_new_task(t, root):
         "Notes",
     ]
     assert t.dump(doc) == text
+
+
+LEGACY_TASK = """---
+title: Old task
+status: done
+repo: plugin
+value: "Kept for history"
+files: [a.py]
+verify: "pytest -q"
+depends_on: [other]
+owns: [helper]
+uses: [shared]
+model: opus
+estimate: 6
+estimate_by: formula
+actual: ""
+review: full
+worktree: /tmp/wt
+branch: e-old-task
+verified_head: abc123
+run: run-1
+provides: [thing]
+---
+
+# Old task
+
+## Requirement
+
+Old.
+"""
+
+
+def test_task_frontmatter_is_lean(t, root):
+    new_epic(root)
+    assert new_task(root).returncode == 0
+    p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
+    assert list(t.load(p.read_text(), p).meta) == LEAN_KEYS
+    for gone in ("--owns", "--uses"):
+        r = new_task(root, "cost-and-ticketing", "Other task", gone, "x")
+        assert r.returncode == 2 and gone in r.stderr
+    tmpl = (SD / "templates" / "task.md").read_text()
+    assert list(t.load(tmpl, "task.md").meta) == LEAN_KEYS
+    # a task file carrying legacy keys still loads and round-trips every lean field
+    legacy = p.parent / "old-task.md"
+    legacy.write_text(LEGACY_TASK)
+    doc = t.load(legacy.read_text(), legacy)
+    assert {k: doc.meta[k] for k in LEAN_KEYS} == {
+        "title": "Old task",
+        "status": "done",
+        "repo": "plugin",
+        "value": "Kept for history",
+        "files": ["a.py"],
+        "verify": "pytest -q",
+        "depends_on": ["other"],
+        "model": "opus",
+        "review": "full",
+        "verified_head": "abc123",
+    }
+    assert t.load(t.dump(doc), legacy) == doc
+    # a writer keeps the legacy keys it does not know about
+    t._write_task(legacy, doc, [], status="escalated")
+    again = t.load(legacy.read_text(), legacy).meta
+    assert again["status"] == "escalated" and again["owns"] == ["helper"]
+    assert again["estimate"] == "6" and again["run"] == "run-1"
 
 
 def test_new_task_requirement_and_ac_files(root, tmp_path):

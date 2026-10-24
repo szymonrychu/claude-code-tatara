@@ -395,7 +395,7 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         raise TicketError(f"task {task!r} already exists in epic {epic_dir.name!r}")
     worktree_name(epic_dir.name, task)
     files = _csv(a.files)
-    if report(run_check(root, a.title, epic_dir.name, files, _csv(a.owns))):
+    if report(run_check(root, a.title, epic_dir.name, files)):
         return 1
     doc = _template("task.md")
     doc.meta.update(
@@ -406,8 +406,6 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         files=files,
         verify=a.verify,
         depends_on=_csv(a.depends_on),
-        owns=_csv(a.owns),
-        uses=_csv(a.uses),
         model=a.model or "",
         review=a.review or "",
     )
@@ -554,7 +552,6 @@ def run_check(
     title: str | None = None,
     epic: str | None = None,
     files: list[str] | None = None,
-    owns: list[str] | None = None,
     blockers: list[str] | None = None,
     goals: str = "",
 ) -> CheckResult:
@@ -574,12 +571,12 @@ def run_check(
         named |= set(epics[epic].meta.get("blockers", []))
     own_blockers = {_blocker_slug(b, epics) for b in named}
 
-    def candidates() -> list[tuple[list[str], list[str], str]]:
-        """(files, owns, label) to run the files and owns checks on."""
+    def candidates() -> list[tuple[list[str], str]]:
+        """(files, label) to run the cross-epic file overlap check on."""
         if title is not None:
-            return [(files or [], owns or [], f"task {slug(title)!r}")]
+            return [(files or [], f"task {slug(title)!r}")]
         return [
-            (list(t.meta.get("files", [])), list(t.meta.get("owns", [])), f"task {t.slug!r}")
+            (list(t.meta.get("files", [])), f"task {t.slug!r}")
             for t in tickets
             if t.kind == "task" and t.epic == epic
         ]
@@ -614,7 +611,7 @@ def run_check(
                 )
 
     if epic is not None:
-        for tfiles, towns, label in candidates():
+        for tfiles, label in candidates():
             for t in tickets:
                 if t.kind != "task" or t.epic == epic or t.epic in own_blockers:
                     continue
@@ -624,19 +621,6 @@ def run_check(
                         fails.append(
                             f"{label}: file {f!r} is also in task {t.slug!r} of "
                             f"in-progress epic {t.epic!r}"
-                        )
-                for part in towns:
-                    if part not in t.meta.get("owns", []):
-                        continue
-                    if t.phase == "done":
-                        notes.append(
-                            f"existing: {part!r} is owned by done epic {t.epic!r} "
-                            f"(task {t.slug!r}); reuse it"
-                        )
-                    else:
-                        fails.append(
-                            f"{label}: part {part!r} is owned by task {t.slug!r} of "
-                            f"{t.phase} epic {t.epic!r}"
                         )
 
     names = ticket_names(root)
@@ -669,7 +653,6 @@ def cmd_check(a: argparse.Namespace) -> int:
             a.title,
             a.epic,
             _csv(a.files),
-            _csv(a.owns),
             _csv(a.blockers),
             _read(a.goals_file),
         )
@@ -691,8 +674,6 @@ def cmd_index(a: argparse.Namespace) -> int:
                 "stage": m.get("stage", "") if t.kind == "epic" else "",
                 "status": m.get("status", "") if t.kind == "task" else "",
                 "files": m.get("files", []),
-                "owns": m.get("owns", []),
-                "provides": m.get("provides", []),
             }
         )
     out = root / "index.json"
@@ -702,13 +683,14 @@ def cmd_index(a: argparse.Namespace) -> int:
 
 
 def cmd_existing(a: argparse.Namespace) -> int:
+    """Every file a done task built, with the first task that names it: what to reuse."""
     root = Path(a.root)
     seen: dict[str, str] = {}
     for t in scan(root):
         if t.kind != "task" or t.phase != "done":
             continue
         where = str(t.path.relative_to(root))
-        for name in [*t.meta.get("owns", []), *t.meta.get("provides", [])]:
+        for name in t.meta.get("files", []):
             seen.setdefault(name, where)
     print(json.dumps([{"name": n, "where": w} for n, w in seen.items()], indent=2))
     return 0
@@ -1709,18 +1691,10 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp = add("new-task", cmd_new_task)
     for opt in ("epic", "title", "repo", "value", "files", "verify"):
         sp.add_argument(f"--{opt}", required=True)
-    for opt in (
-        "depends-on",
-        "owns",
-        "uses",
-        "model",
-        "review",
-        "requirement-file",
-        "ac-file",
-    ):
+    for opt in ("depends-on", "model", "review", "requirement-file", "ac-file"):
         sp.add_argument(f"--{opt}")
     sp = add("check", cmd_check)
-    for opt in ("title", "epic", "files", "owns", "blockers", "goals-file"):
+    for opt in ("title", "epic", "files", "blockers", "goals-file"):
         sp.add_argument(f"--{opt}")
     add("index", cmd_index)
     add("existing", cmd_existing)
