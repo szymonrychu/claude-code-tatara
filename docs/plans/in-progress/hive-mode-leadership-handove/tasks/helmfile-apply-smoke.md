@@ -32,12 +32,14 @@ Deploy and smoke the release (the user asked for helmfile bump, apply and smoke 
 3. `mise run smoke` green.
 4. Live check: a 2-replica cluster shows a leader in `GET /api/v1/clusters/{id}` and its agent pod reaches `/agent/v1/me` with 200.
 5. MEMORY.md entry dated with the applied chart, orchestrator image, wrapper image and any-mcp ref.
+- Interrogate item 10: the smoke includes a call from an agent pod (kubectl exec in a 2-replica cluster's pod) to `/agent/v1/me` through the agents Service that must succeed with 200, proving the lab CNI preserves the pod source IP through the Service (the pod-IP binding of the agent token depends on it).
 
 ## Acceptance conditions
 
 - AC1: the smoke script passes against the applied release [evidence: command:mise run smoke]
 - AC2: the live 2-replica cluster has a leader and its agent pod gets 200 from /agent/v1/me [evidence: judgement:]
 - AC3: MEMORY.md records the applied versions [evidence: command:grep -q "0.1.0-main" MEMORY.md]
+- AC4: the smoke script calls /agent/v1/me from an agent pod through the agents Service and expects 200 [evidence: command:grep -q 'agent/v1/me' scripts/smoke.sh && mise run smoke]
 
 ## Files
 
@@ -61,3 +63,5 @@ The hive release runs live, smoke is green and a live hive has a leader.
 ## Notes
 
 - Least destructive first: stop after `diff` if it shows anything beyond the pins, the Service and the settings.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 10
