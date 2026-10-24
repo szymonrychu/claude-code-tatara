@@ -310,5 +310,16 @@
       "agent-init-scripts"
     ],
     "note": "task main-agent-only-tools: claude.main_agent_only_tools globs; rendered [mcp__any-mcp__orchestrator_*], so scale and init edit are main-agent only"
+  },
+  {
+    "name": "orch-hive-tables",
+    "kind": "schema",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/db/migrations/0003_hive.sql",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task migration-0003-hive: leadership_requests (api inserts, dispatcher decides), cluster_leaders (dispatcher), file_locks (api), agents.pod_ip (reconciler); later epics use migrations 0004+"
   }
 ]
