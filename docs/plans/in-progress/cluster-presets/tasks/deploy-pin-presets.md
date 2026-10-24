@@ -4,7 +4,7 @@ status: blocked
 repo: agents-helmfile
 value: the live agents namespace runs the presets release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
+verify: "mise x -- uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [fe-presets-page, retire-spec-update-repo, kind-e2e-presets]
 owns: []
 uses: []
@@ -29,11 +29,11 @@ process_gaps: []
 
 Pin agents-helmfile to this epic's merged agent-orchestrator build (design D9; precedent `docs/plans/done/cluster-form-defaults-and-ga/tasks/deploy-pin-d5a7738.md`; web-ui-cluster-tabs-with-fil task deploy-pin set the current pins).
 
-The value is the short sha (7 hex) of this epic's agent-orchestrator main merge; the orchestrator supplies it by amending this requirement (`ticket.py amend`) after the PR merges; until then this task reports `blocked` with `whoCanClear: orchestrator (merge the agent-orchestrator PR of cluster-presets)`.
+The value is `9ab0d60`: agent-orchestrator main merge of szymonrychu/agent-orchestrator#5 (full `9ab0d60e9e4675d4314c6b6b8ed3e0e29de74b50`). The agents-helmfile integration branch for this epic must start from agents-helmfile main `78299cc` (the web-ui deploy pin).
 
-- `helmfile.yaml.gotmpl`: release `agent-orchestrator` chart version `0.1.0-main.<orch sha7>`.
-- `values/agent-orchestrator/common.yaml`: `image.tag` `<orch sha7>`. The wrapper image pins, `ORCH_ALLOWED_ORIGINS` and the ingress settings stay as they are.
-- `tests/test_orchestrator_release.py`: `test_orchestrator_pin_matches_image` asserts the chart version and the image tag both carry `<orch sha7>`, reading `helmfile.yaml.gotmpl` as text (no `helmfile build`, so it runs without pulling charts).
+- `helmfile.yaml.gotmpl`: release `agent-orchestrator` chart version `0.1.0-main.9ab0d60`.
+- `values/agent-orchestrator/common.yaml`: `image.tag` `9ab0d60`. The wrapper image pins, `ORCH_ALLOWED_ORIGINS` and the ingress settings stay as they are.
+- `tests/test_orchestrator_release.py`: `test_orchestrator_pin_matches_image` asserts the chart version and the image tag both carry `9ab0d60`, reading `helmfile.yaml.gotmpl` as text (no `helmfile build`, so it runs without pulling charts).
 - Nothing else changes. `scripts/smoke.sh` keeps its raw spec create (Q2). `helmfile apply` and `mise run smoke` are run by the user after the epic.
 
 ## Acceptance conditions
@@ -69,3 +69,5 @@ The value is the short sha (7 hex) of this epic's agent-orchestrator main merge;
 - Builder check ruling 10 (2026-10-23): excluded from the build run; it runs after the orchestrator PR merges, its sha filled with ticket.py amend, same as web-ui's deploy-pin.
 
 - 2026-10-24 run cluster-presets: dependency-failed on kind-e2e-presets
+
+- 2026-10-24 amended: orchestrator PR #5 merged as 9ab0d60
