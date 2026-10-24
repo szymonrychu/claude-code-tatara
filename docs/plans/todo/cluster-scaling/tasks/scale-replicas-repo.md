@@ -45,17 +45,20 @@ Add the one writer of the runtime replica count (design D1; user S2, S3, Q4; fou
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Builds `src/agent_orchestrator/db/clusters.py::set_replicas`, `ScaleRefused` (codes `cluster_deleting`, `not_leader`, `static_cluster`, `out_of_range`, `leader_would_leave`), `ScaleOutcome` (part `scale-replicas-write`).
+- Consumes from hive-mode-leadership-handove: `ClusterSpec.max_replicas`, `static` (F3, `spec.py`), table `cluster_leaders` (F5, `db/migrations/0003_hive.sql`, written by the dispatcher only; read here), writer rule "`spec.replicas` mutable in place, no generation bump" (README `## API` Versioning, written by hive).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The api process can change `clusters.spec.replicas` of an active cluster under the leader and cap rules, and the reconciler picks it up through `cluster_changed`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four tests to `tests/test_clusters_repo.py` (insert `cluster_leaders` and `agents` rows directly); run `uv run --frozen pytest -q tests/test_clusters_repo.py -k set_replicas`: they fail on the missing import.
+- Green: implement `set_replicas`; rerun: passes. Add the MEMORY.md entry; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `jsonb_set` keeps every other key; assert byte equality of the other spec keys by loading the row before and after.
+- Lock order: the cluster row first (`FOR UPDATE`), then read `cluster_leaders` joined to `agents` for the leader ordinal; never write `cluster_leaders` or `agents` (single writer: dispatcher and reconciler).
+- Reuse `_fetch`, `_notify` and `ClusterNotFound` in the same module.

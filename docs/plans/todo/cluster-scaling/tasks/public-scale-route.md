@@ -49,17 +49,21 @@ Add the public scale route for headless parity (design D2, D5; user S2, S3, X2; 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Builds `POST /api/v1/clusters/{cluster_id}/scale` (part `orch-cluster-scale-api`, registered cross-epic, consumers agents-helmfile smoke) and `api/schemas.py::ScaleRequest`, `ScaleResult` (part `scale-schemas`).
+- Uses `db/clusters.py::set_replicas` (part `scale-replicas-write`).
+- README `### Scaling` is the API caller's reference for cap, static, replicas, drain (`status.drain {target, since, waiting}`, built by scale-down-drain) and the leader rule.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -X POST .../clusters/<id>/scale -d '{"replicas":3}'` answers 202 and the cluster grows; every refusal has a documented code.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_scale.py` with the three tests (factories for the cluster, a `cluster_leaders` row for the leader case); run `uv run --frozen pytest -q tests/test_api_scale.py`: fails with 404/405.
+- Green: add the schemas and route; document in README; run `uv run python -m agent_orchestrator.api.openapi > openapi.json` and `npm --prefix frontend run gen:api`; run the verify command and `cd frontend && npm run check:api`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Follow the existing `ApiError(status, code, message)` pattern in `api/errors.py`; no new error class is needed.
+- `ClusterSpec` and the ClusterView already carry `max_replicas` and `static` after hive F3; this task adds only docs for them where missing.
+- The route sits beside `create_cluster` and uses the same `Pool` dependency; no `_CREATE_LOCK` (the row lock in `set_replicas` serialises scale calls per cluster).

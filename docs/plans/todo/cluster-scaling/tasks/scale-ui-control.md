@@ -44,17 +44,18 @@ Add the scale control to the cluster view (design D5; user S2, S3, X2). New `fro
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `POST /api/v1/clusters/{cluster_id}/scale` (part `orch-cluster-scale-api`) via `frontend/src/api/client.ts::scaleCluster`, and `ClusterView.spec.replicas`, `max_replicas`, `static`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chat header of a scalable cluster shows the agent count with add and remove buttons that scale it through the public API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `frontend/src/chat/ScaleControl.test.tsx` with the four cases (mock `fetch` like the existing component tests); run `cd frontend && npx vitest run src/chat/ScaleControl.test.tsx`: fails.
+- Green: add `scaleCluster`, the component and its mount in ChatView; run the verify command and `npm run build`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse the MUI IconButton and Tooltip patterns of `layout/TopBar.tsx` and the TOKENS font sizes.
+- No new route or field: the control reads the cluster view it already has.

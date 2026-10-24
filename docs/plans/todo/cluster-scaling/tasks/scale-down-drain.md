@@ -49,17 +49,22 @@ Drain on scale-down so a busy agent finishes its turn before its pod goes (desig
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Builds `clusters.status.drain {target, since, waiting}` (part `scale-drain-status`, reconciler-written) and setting `Settings.scale_drain_seconds` / `ORCH_SCALE_DRAIN_SECONDS`.
+- Reads `agent_status.state` (ingester-written) and `messages.status`/`agent_id` (dispatcher-written); writes only `clusters.status` and `agents` rows as today.
+- Keeps the hive hash invariant: render input differs only in `spec.replicas`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After a scale-down an agent in the middle of a turn finishes it, then its pod goes; idle agents above it go at once; nothing waits longer than the drain bound.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the six tests to `tests/test_reconciler.py` using the existing fake kube and `env` fixture (set `agent_status.state` and a `dispatching` message directly); run `uv run --frozen pytest -q tests/test_reconciler.py -k "drain or scale"`: they fail.
+- Green: compute the effective replicas and status.drain in `_converge`; add the setting with its validator; README and MEMORY.md; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `drain.since` lives in `status` so it survives a reconciler failover; compare with `now()` from the database or the loop clock consistently with existing status timestamps.
+- `_observe` keeps using the target `spec.replicas` for readiness, so draining agents are never `ready`; do not change that rule.
+- The hive dispatcher's lost-leader fallback and `hive_state` push react to the gone marking; nothing to add there.
+- The unchanged-status test (`test_unchanged_status_is_not_rewritten`) must stay green: write `status.drain` only when it changes.

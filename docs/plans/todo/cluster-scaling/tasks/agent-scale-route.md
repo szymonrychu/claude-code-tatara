@@ -48,17 +48,21 @@ Add the agent-facing scale route behind the leader check (design D2, D4; user S2
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Builds `POST /agent/v1/scale` (part `orch-agent-scale-api`, registered cross-epic; consumer: the any-mcp `OrchestratorPlugin.scale` tool, foundation contract `POST /agent/v1/scale {replicas} -> 202; errors static_cluster, out_of_range, leader_would_leave, not_leader`).
+- Uses `set_replicas` (part `scale-replicas-write`), `ScaleRequest`/`ScaleResult` (part `scale-schemas`).
+- Consumes from hive-mode-leadership-handove: `api/agent.py` router and `require_agent()` (F4), agent port branch in `api/allowlist.py` (F4), `OrchestratorPlugin` tool `orchestrator_scale` (F1, any-mcp v0.2.0 pinned by F3).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The leader agent's `orchestrator_scale` tool call changes the cluster's replica count; any other agent is refused with `not_leader`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_scale.py` (agents rows with `pod_ip` equal to the test client host, a `cluster_leaders` row); run `uv run --frozen pytest -q tests/test_agent_scale.py`: fails with 404.
+- Green: add the route; document; regenerate openapi and schema types when F4 includes agent routes; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Copy the client setup F4 uses in its own agent-route tests (two-socket app, caller IP); do not build a second harness.
+- Plugin contract test: prefer `any_mcp.testing` with the plugin's HTTP client pointed at the app through an ASGI transport; when the plugin cannot take an injected transport, serve the app with uvicorn on an ephemeral localhost port inside the test.
+- Main-agent-only gating of the tool is the wrapper's job (`claude.main_agent_only_tools`, rendered by F3); nothing to add here.

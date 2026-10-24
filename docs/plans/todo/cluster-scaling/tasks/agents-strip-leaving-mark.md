@@ -41,17 +41,18 @@ Show which agents are leaving during a scale-down (design D3, D5; user S1, X2). 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `ClusterView.status.drain.waiting` (part `scale-drain-status`) and `ClusterView.spec.replicas`.
+- `AgentsStripProps` gains `replicas: number` and `drainWaiting?: number[]`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+During a scale-down the agents strip marks the leaving agents and those still finishing a turn.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the leaving cases to `frontend/src/chat/AgentsStrip.test.tsx`; run `cd frontend && npx vitest run src/chat/AgentsStrip.test.tsx -t leaving`: fails.
+- Green: add the props and labels; pass them from ChatView; run the verify command and `npm run build`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `status` is a free-form dict in the types; read `drain` defensively (absent when no drain).

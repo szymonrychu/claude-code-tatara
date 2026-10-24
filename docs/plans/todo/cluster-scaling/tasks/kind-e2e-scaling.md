@@ -49,17 +49,20 @@ Every cluster a test creates is deleted in its teardown; raise `ORCH_MAX_CLUSTER
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `orch-cluster-scale-api`, `orch-agent-scale-api`, `scale-drain-status`; hive routes `POST /api/v1/clusters/{id}/leader` and `GET /agent/v1/me`, pod env `ORCH_AGENT_URL`, `ORCH_AGENT_TOKEN` (hive F4).
+- Existing helpers `api`, `kubectl`, `wait_for`, `agents_of` in `tests/e2e/test_e2e_kind.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The PR CI e2e job shows on kind that a cluster scales up and down through the API with surviving pods untouched, the leader and static rules hold, and a static single pod is alone.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the tests; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
+- Run the verify command: passes. The full run happens in the PR CI e2e job.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The agent image is the wrapper image (Python present): exec `python3 -c` with urllib for the agent-route calls, reading the token from the pod env inside the exec so it never appears in test output.
+- Pod uids and the config-hash annotation come from `kubectl get pods -l agents.szymonrichert.pl/cluster=<slug> -o jsonpath`.
+- Scale tests create their own clusters (not the shared module cluster) and run before the discard test.

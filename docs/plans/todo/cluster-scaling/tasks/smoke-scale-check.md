@@ -43,17 +43,18 @@ Extend the live smoke to prove scaling on the deployed orchestrator (design D6; 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `POST /api/v1/clusters/{cluster_id}/scale` (part `orch-cluster-scale-api`) and `max_replicas` on the raw spec create.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` against the live namespace scales its cluster 1 to 2 to 1 and confirms pod-0 was never restarted.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend the fakes and add `test_scale_refused_fails` and `test_pod0_restart_fails`; run `uv run --frozen pytest -q tests/test_smoke_script.py`: fails.
+- Green: add the scale step to `scripts/smoke.sh`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Keep every curl and wait bounded by the existing timeout variables; `test_script_is_strict_bounded_and_traps` must stay green.
+- The smoke runs against the live API only after deploy-pin-scaling applies the release.

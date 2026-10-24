@@ -3,7 +3,7 @@ title: cluster scaling
 blockers: [hive-mode-leadership-handove]
 stage: build
 owner: ""
-repos: [agent-orchestrator, any-mcp, claude-code-wrapper, agents-helmfile]
+repos: [agent-orchestrator, agents-helmfile]
 created: 2026-10-24
 ---
 
@@ -30,15 +30,22 @@ Scope confirmation (user, 2026-10-24):
 
 ## Goals
 
+- The leader agent scales its cluster between 1 and the cap set at init (ceiling 16) with the orchestrator_scale tool; users and headless callers do the same through POST /api/v1/clusters/{id}/scale and a scale control.
+- Agents join and leave without restarting the others: surviving pod uids and the config hash stay unchanged; a busy leaving agent finishes its turn first; the leader is never removed.
+- A static cluster cannot be scaled and offers no scale tool; a static single pod is alone.
+- The cap and static switch are set in the preset form; every capability has a documented API and an API-only e2e test.
+- Released and deployed: deploy pin, apply and a smoke with a scale step.
 
+Design: design.md. Foundation (binding): hive-mode-leadership-handove F1-F5 provide the spec fields, seeds from the cap, agent API, plugin and leader tables; this epic consumes them.
 
 ## Non-goals
 
-
+- No new spec fields, membership code, any-mcp or wrapper change (hive epic).
+- No choice of which agent leaves (StatefulSet removes the highest ordinals), no autoscaling.
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 59 agent-min | Critical path: 27 min | Expected wall at P=1.5: 1.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 59 min
 
 ## Review
 

@@ -42,17 +42,19 @@ Set the cap and the static switch at init in the preset form (design D5; user S2
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `ClusterSpec.max_replicas` and `static` (hive F3) through `schema.d.ts`, and `Meta.caps.max_replicas`.
+- `clusterSpecForm.ts` `FormValues`, `SetKey`, `stateFromPreset`, `validate`, `toPresetSpec` gain the two fields.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A preset can define a hive cap and a static cluster, and clusters scheduled from it get those values.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three cases to `frontend/src/presets/PresetForm.test.tsx`; run `cd frontend && npx vitest run src/presets/PresetForm.test.tsx -t "max agents"`: fails.
+- Green: extend the form model and render the field and switch; run the verify command and `npm run build`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- agent-init-scripts also adds a field to these two files; whichever epic lands second rebases onto the other.
+- Keep the existing `num()` helper pattern for the number field.

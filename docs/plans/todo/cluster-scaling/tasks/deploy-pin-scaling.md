@@ -43,17 +43,21 @@ Release and deploy this epic to the agents namespace (design D6; user S1, S2, S3
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes the published chart `oci://harbor.szymonrichert.pl/charts/agent-orchestrator` `0.1.0-main.<sha7>` and image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>` (contracts `agent-orchestrator-chart`, `agent-orchestrator-image`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The agents namespace runs this epic's orchestrator and the live smoke, including the scale step, passes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Update `test_orchestrator_pin_matches_image` to the new sha; run it: fails.
+- Change the two pins; run the verify command: passes.
+- `mise run diff`: only the orchestrator chart version and image tag change. `mise run apply`, then `mise run smoke`: both exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Runs after the orchestrator epic branch merges to main; its sha is filled with `ticket.py amend` then (precedent cluster-presets deploy-pin-presets).
+- Starts from agents-helmfile main after the hive epic's deploy pin, so the any-mcp v0.2.0 smoke check is already in place.
+- `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts and are deselected in the verify, not changed.
+- `mise run apply` is guarded by lint, test and the kube-context check (`EXPECTED_KUBE_CONTEXT`).

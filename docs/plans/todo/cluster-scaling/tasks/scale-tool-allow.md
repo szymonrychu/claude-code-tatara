@@ -41,17 +41,19 @@ Expose the scale tool only on scalable clusters (design D4; user S3, Q7, X1; fou
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Changes the `allow` list of the `orchestrator` plugin entry rendered in `src/agent_orchestrator/k8s/on_start.py` by hive F3 (foundation D2: init tools always, hive tools when `hive`, `scale` when `scalable`).
+- Keeps `tests/test_render.py::test_runtime_fields_change_only_statefulset_replicas` (hive hash invariant) green.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agents of scalable clusters load `orchestrator_scale`; static and alone agents never see it, and scaling never changes the rendered config.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tests to `tests/test_render.py`; run `uv run --frozen pytest -q tests/test_render.py -k scale`: the scalable case fails (no scale tool).
+- Green: add the condition where F3 builds `allow`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Use the derived `spec.scalable` property from F3; do not read the live replica count anywhere in render.
+- If F3 already renders `scale` under the same condition, this task only adds the two pinning tests and says so in the result.
