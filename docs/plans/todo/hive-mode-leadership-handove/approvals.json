@@ -111,5 +111,16 @@
       "leader-routing"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q2",
+    "text": "The first ready agent leads when a hive starts, at epoch 1.",
+    "decisions": [
+      "D19"
+    ],
+    "tasks": [
+      "dispatcher-leadership-pass"
+    ],
+    "status": "approved"
   }
 ]
