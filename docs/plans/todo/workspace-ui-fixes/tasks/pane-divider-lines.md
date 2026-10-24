@@ -44,12 +44,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Both separators render as visible lines of the intended pixel width.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add a divider test asserting each separator inline flex-basis is a px size; run it and see it fail on 'auto'.
+- Green: size the Divider, colour from TOKENS.borderStrong; run the verify command.
 
 ## Notes
 

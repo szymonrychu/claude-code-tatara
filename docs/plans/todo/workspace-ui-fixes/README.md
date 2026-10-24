@@ -25,11 +25,13 @@ User request (2026-10-24), verbatim:
 
 ## Goals
 
-
+- Visible vertical dividers between files, chat and terminal.
+- File tree updates itself (agents, terminals, new directories, notebooks); no refresh button.
 
 ## Non-goals
 
-
+- No wrapper inotify, no new endpoint or event type.
+- No phone layout change.
 
 ## Time
 

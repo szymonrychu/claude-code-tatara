@@ -50,12 +50,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The tree updates by itself with no button; MEMORY.md records the decisions.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite the FilesPanel tests per the requirement (fake timers, visibility stubs) and see them fail.
+- Green: remove the button, add the visible-tab poll and preview mtime refetch, write MEMORY.md; run the verify command, then npm run build and npm run check:api.
 
 ## Notes
 

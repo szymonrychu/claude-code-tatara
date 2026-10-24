@@ -49,12 +49,12 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Identical listings cause no render; new-dir and notebook writes refresh the right directory.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add tests named in the ACs to FilesPanel.test.tsx and see them fail.
+- Green: change-only commit and pollExpanded in useFileTree, ancestor and notebook_path in fileEvents; run the verify command.
 
 ## Notes
 
