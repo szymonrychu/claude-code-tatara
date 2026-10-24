@@ -248,10 +248,21 @@ tokens) taken as 3 points and scaled linearly: 1: 11 min, 0.75M; 2: 23 min, 1.5M
   is correct either way, and stamp-actuals re-summarises from the transcript path.
 - The seed table rests on 25 agents of this machine's history (D15); calibration replaces it as epics close.
 
+- Builder check (my call): the supervisor-only rule exempts the orchestrator's own duties, named in housekeeping.md:
+  ticket and plan files through `ticket.py` (and design.md, record.md directly), running the repo's test and lint
+  commands to read results, and the git operations of close (rebase, fast-forward) through `ticket.py close`. It
+  never edits source, tests, skills, agents, hooks or docs outside `docs/plans/`, and never builds.
+- Builder check (my call): the commit guard reads a `-F <file>` or `--file=<file>` message relative to the event cwd;
+  `-F -` (stdin) and a file that does not exist yet are out of its scope and pass, stated in the rule's docstring.
+- Builder check (fact, probed 2026-10-24): `git ls-files | xargs grep -l U+2014` finds exactly one tracked file,
+  scripts/tests/test_agents_md.py:107 (a literal in a banned-character list), so em-dash-lint goes green by turning
+  that literal into an escape; no other rewrite is needed.
+
 ## Open questions
 
 - Q1: 'Run tests once' (U1) is read together with TDD as: list every file, read them all in one pass, make all edits for the step, then run the targeted verify once per red step and once per green step (never an edit-run-edit-run dribble). Accept this reading? [recommended: yes; a single run per task would make the red step impossible, which rules/tdd.md requires]
 - Q2: Seed table for expected minutes and tokens until history has 3 samples per points bucket (and 5 overall): 1pt 11 min 0.75M, 2pt 23 min 1.5M, 3pt 34 min 2.25M, 5pt 57 min 3.75M, 8pt 91 min 6.0M, 13pt 147 min 9.75M tokens, derived from this machine's implementer and reviewer transcripts (median task taken as 3 points, scaled linearly). Accept? [recommended: yes; calibration replaces it as soon as epics close with actuals]
+- Q3: This epic's own runs happen before the usage hook loads from main, so its actuals would be 'not recorded'. Add one small task: the epic-run prompts carry the [wb ...] marker from now on, and agent-usage-lib gains a backfill that scans the harness's subagent transcript dir for marked prompts and writes the missing .logs/agents records, so stamp-actuals and retro work for this epic too [recommended: yes; one extra sonnet task (2 points), and the first RETRO.md carries real numbers instead of 'not recorded']
 
 ## Irreversible operations in scope
 
