@@ -117,3 +117,11 @@ Estimate: 73 agent-min | Critical path: 47 min | Expected wall at P=1.5: 1.6 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-24)
+
+Whole-diff review (sonnet): no blockers or majors; 3 minor findings fixed in presets-review-fixes (upgrade-path migration test, PresetForm early edits, README writers table).
+Scope audit (sonnet): every approved item A-G landed, kind e2e collected (17), no gaps.
+Security review: skipped, no authz, secrets, ingress or privilege surface in the diff; migration is additive and idempotent.
+Full suite on integration head: lint clean, 524 passed (+ test_frontend_schema_matches_openapi passes once node_modules exist), frontend 183 passed, build and check:api clean.
+CI on agent-orchestrator#5 caught a real product bug (PATCH answered 404 instead of 405 behind the SPA mount in the real image); fixed test-first in spa-method-not-allowed, full suite 528 passed, PR CI all green incl. kind e2e. Merged: agent-orchestrator#5 (9ab0d60); agents-helmfile#7 pin open.
