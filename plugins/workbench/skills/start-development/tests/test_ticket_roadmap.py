@@ -126,8 +126,7 @@ def test_roadmap_open_files_drops_merged(tmp_path):
     _mk(plans / "in-progress" / "busy" / "README.md", readme.format("busy"))
     _mk(
         plans / "in-progress" / "busy" / "tasks" / "b1.md",
-        "---\ntitle: b1\nstatus: in-progress\nrepo: proj\nbranch: busy--b1\n"
-        "files: [src/a.py]\n---\nb\n",
+        "---\ntitle: b1\nstatus: in-progress\nrepo: proj\nfiles: [src/a.py]\n---\nb\n",
     )
     _mk(plans / "todo" / "next" / "README.md", readme.format("next"))
     _mk(
@@ -138,6 +137,6 @@ def test_roadmap_open_files_drops_merged(tmp_path):
     git(r, "commit", "-m", "init")
     out = roadmap(plans)
     assert "overlaps busy: src/a.py" in out.stdout, out.stdout + out.stderr
-    git(r, "branch", "busy--b1")  # merged: the branch tip is already in main
+    git(r, "branch", "busy-b1")  # merged: the branch tip is already in main
     out = roadmap(plans)
     assert out.stdout.splitlines()[-1] == "runnable: next", out.stdout + out.stderr

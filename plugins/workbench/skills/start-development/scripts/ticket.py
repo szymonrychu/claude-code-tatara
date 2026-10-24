@@ -506,12 +506,6 @@ def _live_worktrees(root: Path) -> list[str]:
     return [Path(line[9:]).name for line in r.stdout.splitlines() if line.startswith("worktree ")]
 
 
-def _tree_live(wt: str) -> bool:
-    """True when `wt` is a live git worktree, whichever repo (docs root or code/<repo>) owns it."""
-    path = Path(wt)
-    return path.is_dir() and path.name in _live_worktrees(path)
-
-
 class CheckResult(NamedTuple):
     failures: list[str]
     warnings: list[str]
@@ -536,7 +530,7 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     left = [f for f in shared if not workbench.overlap_ignored(f, globs)]
     if not left:
         return []
-    branch = other.meta.get("branch") or worktree_name(other.epic, other.slug)
+    branch = worktree_name(other.epic, other.slug)
     try:
         if _task_merged(
             _task_src(root, other.meta), branch, other.meta.get("verified_head", ""), "main"
@@ -824,10 +818,6 @@ def _mod():
     return _WT
 
 
-def _create():
-    return _mod().create
-
-
 def _workbench(root: Path) -> Path:
     return _mod().workbench_root(_existing(Path(root)))
 
@@ -902,71 +892,19 @@ def _write_task(path: Path, doc: Doc, changed: list[Path], **updates) -> None:
         changed.append(path)
 
 
-def _require_integration_branch(root: Path, meta: dict, base: str, epic: str) -> None:
-    """Exit 1 naming the upgrade command when the epic branch is missing in the task's checkout."""
-    if base != integration_branch(epic):
-        return
-    src = _task_src(root, meta)
-    if not _branch_exists(src, base):
-        raise TicketError(
-            f"integration branch {base} missing in {src}; "
-            f"run ticket.py worktrees {epic} --integration"
-        )
-
-
-def _worktrees_integration(root: Path, epic_dir: Path) -> int:
-    """Create or reuse the integration trees of an in-progress epic; no task tree."""
-    phase = _phase_of(epic_dir)
-    if phase != "in-progress":
-        raise TicketError(
-            f"epic {epic_dir.name!r} is in {phase}; worktrees --integration needs it in-progress"
-        )
-    for tree in ensure_integration_trees(root, epic_dir):
-        print(f"integration {tree['path']} ({tree['verb']})")
-    return 0
-
-
 def cmd_worktrees(a: argparse.Namespace) -> int:
+    """Create or reuse the integration trees of an in-progress epic; tasks run inside them."""
     root = Path(a.root)
     require_main_checkout(root)
     epic_dir = resolve_epic(a.epic, root)
-    if getattr(a, "integration", False):
-        return _worktrees_integration(root, epic_dir)
-    derive_tasks(epic_dir)
-    create, create_mod = _create(), _mod()
-    changed: list[Path] = []
-    refresh = getattr(a, "refresh", False)
-    base = getattr(a, "base", None) or integration_branch(epic_dir.name)
-    results: list[str] = []
-    for path in _task_files(epic_dir):
-        doc = _read_doc(path)
-        if doc.meta.get("status") == "done":
-            continue
-        name = worktree_name(epic_dir.name, path.stem)
-        live = doc.meta.get("worktree", "")
-        if live and Path(live).is_dir():
-            wt, verb = live, "reused"
-            branch = doc.meta.get("branch") or name
-        else:
-            branch = name
-            repo = _task_repo(root, doc.meta.get("repo", ""))
-            existing = workbench.worktrees_dir(_workbench(root)) / name
-            if existing.is_dir():
-                wt, verb = str(existing / repo if repo else existing), "reused"
-            else:
-                _require_integration_branch(root, doc.meta, base, epic_dir.name)
-                wt, verb = create(name=name, base=base, repo=repo, start=root)["path"], "created"
-        status = "in-progress" if doc.meta.get("status", "todo") == "todo" else doc.meta["status"]
-        _write_task(path, doc, changed, worktree=wt, branch=branch, status=status)
-        if refresh:
-            if verb == "created" or _tree_live(wt):
-                results.append(f"{path.stem} {create_mod.fast_forward(Path(wt), base)}")
-        else:
-            print(f"{verb} {name}: {wt}")
-    if changed:
-        commit_ticket_change(epic_dir.name, "worktrees", changed, root)
-    for line in results:
-        print(line)
+    phase = _phase_of(epic_dir)
+    if phase != "in-progress":
+        raise TicketError(f"epic {epic_dir.name!r} is in {phase}; worktrees needs it in-progress")
+    for tree in ensure_integration_trees(root, epic_dir):
+        print(f"integration {tree['path']} ({tree['verb']})")
+        if a.refresh:
+            base = a.base or tree["base"]
+            print(f"refresh {tree['path']} {_mod().fast_forward(Path(tree['path']), base)}")
     return 0
 
 
@@ -1126,13 +1064,6 @@ def _task_merged(src: Path, branch: str, verified_head: str, base: str) -> bool:
     return _task_contained(src, branch, verified_head, base)[0]
 
 
-def _epic_target(src: Path, epic: str, base: str) -> str:
-    """What a task branch must be merged into: the epic's integration branch when src has it
-    (an epic claimed before integration trees existed has none), else base."""
-    branch = integration_branch(epic)
-    return branch if _branch_exists(src, branch) else base
-
-
 def _trunk(wb: Path, repo: str, base: str) -> tuple[str, bool]:
     """(ref the integration branch must be in, whether to fetch it): the local base in meta
     mode, origin/<tracked branch> in component mode."""
@@ -1187,17 +1118,7 @@ def review_gate(epic_dir: Path, action: str) -> None:
 def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     name = epic_dir.name
     review_gate(epic_dir, "move done")
-    tasks = _tasks_of(epic_dir)
-    problems = _undelivered(tasks)
-    for p, m in tasks:
-        branch = m.get("branch") or worktree_name(name, p.stem)
-        src = _task_src(root, m)
-        target = _epic_target(src, name, a.base)
-        ok, why = _task_contained(src, branch, m.get("verified_head", ""), target)
-        if not ok:
-            problems.append(
-                f"task {p.stem!r}: branch {branch!r} is not merged into {target!r}: {why}"
-            )
+    problems = _undelivered(_tasks_of(epic_dir))
     problems += _integration_problems(root, epic_dir, a.base)
     _refuse(problems)
     dest = _git_mv(epic_dir, "done", root)
@@ -1280,12 +1201,6 @@ def cmd_rename(a: argparse.Namespace) -> int:
     if not new:
         raise TicketError("title has no usable characters")
     tasks = _tasks_of(epic_dir)
-    live = [p.stem for p, m in tasks if m.get("worktree") or m.get("branch")]
-    if live and new != name:
-        raise TicketError(
-            f"epic {name!r} has task worktrees ({', '.join(live)}) named after "
-            "its slug; rename refused"
-        )
     for p, _ in tasks:
         worktree_name(new, p.stem)
     epics = _epics(root)
@@ -1352,7 +1267,7 @@ def _rmdir_if_empty(d: Path) -> None:
 
 class Sweep:
     """Removes merged, clean worktrees and their branches through merge.py cleanup(); everything
-    else is listed with its reason. Task trees and branches go before the integration ones."""
+    else is listed with its reason."""
 
     def __init__(self, base: str, dry_run: bool) -> None:
         self.base, self.dry_run = base, dry_run
@@ -1452,67 +1367,11 @@ class Sweep:
         if not self.dry_run:
             _rmdir_if_empty(d)
 
-    def _own_branch(self, branch: str, epic: str, tree: str, legacy: str, target: str) -> bool:
-        """Only the task's own branch is swept: its tree name, its legacy name, or an
-        <epic>-... name; never the integration branch, the base, a trunk or HEAD."""
-        refused = {self.base, target, integration_branch(epic), "HEAD", "main", "master"}
-        if branch in refused or branch.startswith("-"):
-            return False
-        return branch in (tree, legacy) or branch.startswith(f"{epic}-")
-
-    @staticmethod
-    def _own_tree(wt: Path, wb: Path, tree: str, legacy: str) -> bool:
-        """A tree is the task's own when it sits under a worktrees dir and carries the task's
-        tree name (or legacy name, or a <tree>-2 rebased copy), alone or as its parent dir."""
-        roots = [workbench.worktrees_dir(wb).resolve(), (wb / ".worktrees").resolve()]
-        res = wt.resolve()
-        if not any(r in res.parents for r in roots):
-            return False
-        names = (tree, legacy)
-        return any(
-            n == x or re.fullmatch(re.escape(x) + r"-\d+", n)
-            for n in (res.name, res.parent.name)
-            for x in names
-        )
-
-    def task(self, root: Path, epic: str, p: Path, m: dict) -> None:
-        """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>-<task>)
-        and its branch, removed when contained in the epic branch (else base) and clean."""
-        wb = _workbench(root)
-        tree = worktree_name(epic, p.stem)
-        legacy = f"{epic}{LEGACY_SEP}{p.stem}"
-        branch = m.get("branch") or tree
-        if branch == "HEAD":
-            branch = tree
-        src = _task_src(root, m)
-        target = _epic_target(src, epic, self.base)
-        if not self._own_branch(branch, epic, tree, legacy, target):
-            self.leave(f"{src} (branch {branch})", "not this task's branch")
-            return
-        wt = Path(m["worktree"]) if m.get("worktree") else workbench.worktrees_dir(wb) / tree
-        if not self._own_tree(wt, wb, tree, legacy):
-            self.leave(wt, "outside the worktrees dir")
-            return
-        if wt.name == tree:
-            if wt.is_dir():
-                self.container(wt, branch, wb, src, target)
-            else:
-                self.branch_only(src, branch, target)
-            return
-        self.tree(wt, src, branch, target)
-        if not wt.is_dir():
-            self.branch_only(src, branch, target)
-        if wt.parent.name == tree and not self.dry_run:
-            _rmdir_if_empty(wt.parent)
-
     def epic(self, root: Path, epic_dir: Path) -> None:
-        """Every task tree and branch of the epic (target: the epic branch), then its integration
-        trees at <config dir>/worktrees/<epic>[/<repo>] and legacy .worktrees/<epic>/<repo>, and
-        the integration branches (target: the trunk)."""
+        """The epic's integration trees at <config dir>/worktrees/<epic>[/<repo>] and legacy
+        .worktrees/<epic>/<repo>, then its integration branches (target: the trunk)."""
         wb = _workbench(root)
         name = epic_dir.name
-        for p, m in _tasks_of(epic_dir):
-            self.task(root, name, p, m)
         for d in (workbench.worktrees_dir(wb) / integration_branch(name), wb / ".worktrees" / name):
             if d.is_dir():
                 self.integration(d, name, wb)
@@ -1532,18 +1391,6 @@ def cmd_reap(a: argparse.Namespace) -> int:
     if not a.dry_run:
         require_main_checkout(root)
     sweep = Sweep(a.base, a.dry_run)
-    if a.task and not a.epic:
-        raise TicketError("reap: --task needs --epic")
-    if a.epic and a.task:
-        epic_dir = resolve_epic(a.epic, root)
-        found = [(p, m) for p, m in _tasks_of(epic_dir) if p.stem == a.task]
-        if not found:
-            raise TicketError(f"reap: epic {epic_dir.name} has no task {a.task!r}")
-        sweep.task(root, epic_dir.name, *found[0])
-        print(json.dumps({"dryRun": a.dry_run, **sweep.summary()}, indent=2))
-        for item in sweep.left:
-            print(f"reap: {a.task} left in place: {item['reason']}", file=sys.stderr)
-        return 1 if sweep.left else 0
     if a.epic:
         epic_dir = resolve_epic(a.epic, root)
         if _phase_of(epic_dir) != "done":
@@ -1721,22 +1568,17 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--out", help="write the JSON to this file instead of stdout")
     sp = add("worktrees", cmd_worktrees)
     sp.add_argument("epic")
-    sp.add_argument("--base", default=None, help="default: the epic's integration branch")
-    sp.add_argument(
-        "--integration",
-        action="store_true",
-        help="create or reuse the integration tree(s) of an in-progress epic; no task tree",
-    )
+    sp.add_argument("--base", default=None, help="--refresh target (default: each tree's trunk)")
     sp.add_argument(
         "--refresh",
         action="store_true",
-        help="fast-forward each live, clean tree with nothing ahead of --base",
+        help="fast-forward each clean integration tree with nothing ahead of --base",
     )
     sp = add("move", cmd_move)
     sp.add_argument("epic")
     sp.add_argument("phase", choices=("in-progress", "done"))
     sp.add_argument("--owner", help="who claims the epic (default: git user.name)")
-    sp.add_argument("--base", default="main", help="branch task branches must be merged into")
+    sp.add_argument("--base", default="main", help="branch the epic branch must be merged into")
     sp = add("stage", cmd_stage)
     sp.add_argument("epic")
     sp.add_argument("stage", choices=EPIC_STAGES)
@@ -1752,8 +1594,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp = add("reap", cmd_reap)
     sp.add_argument("--dry-run", action="store_true", help="list what would go, remove nothing")
     sp.add_argument("--base", default="main")
-    sp.add_argument("--epic", help="reap only this done epic (slug or directory)")
-    sp.add_argument("--task", help="with --epic: reap only this task's merged, clean worktree")
+    sp.add_argument("--epic", help="reap only this done epic's integration trees")
     sp = add("path", cmd_path)
     sp.add_argument("epic")
     sp.add_argument("kind", choices=sorted(PATH_KINDS))

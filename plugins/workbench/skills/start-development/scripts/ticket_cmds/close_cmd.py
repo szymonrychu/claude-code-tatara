@@ -1,10 +1,10 @@
-"""ticket.py close: land the epic's integration branch on main, tested, in a fixed order (D5).
+"""ticket.py close: land the epic's integration branch on main, tested, in a fixed order.
 
-Meta mode: every done task is contained in <epic> (else MERGE lines and exit 2), then merge.py
+Meta mode: tasks commit directly on <epic>, so there is no per-task landing gate. merge.py
 rebases <epic> onto <base> in the integration tree, runs --verify on the rebased tip there and
 fast-forwards <base> in the main checkout only when it passed; --verify then runs on <base>
-itself. close.json records the result and main's pre-fast-forward SHA. Component mode checks
-landing only; the epic closes through the phase 6 MR.
+itself. close.json records the result and main's pre-fast-forward SHA. Component mode moves
+nothing; the epic closes through the phase 6 MR.
 """
 
 import datetime
@@ -13,35 +13,8 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-LANDED_EXIT = 2
 VERIFY_EXIT = 4
 CLOSE_JSON = "close.json"
-
-
-def _merge_gate(epic_dir: Path, base: str, t, root: Path) -> list[str]:
-    """MERGE lines for done tasks whose branch is not yet where it has to be.
-
-    Landing mode (the epic's integration branch exists in the task's source checkout): every
-    done task must be contained in <epic>, dependencies of open tasks or not. Without an
-    integration branch only the done dependencies of open tasks are checked, against base.
-    """
-    metas = {p.stem: t._read_doc(p).meta for p in t._task_files(epic_dir)}
-    open_ids = {k for k, m in metas.items() if m.get("status") != "done"}
-    needed = {d for x in t.derive_tasks(epic_dir) if x["id"] in open_ids for d in x["dependsOn"]}
-    epic = t.integration_branch(epic_dir.name)
-    lines = []
-    for task, m in sorted(metas.items()):
-        if m.get("status") != "done":
-            continue
-        src = t._task_src(root, m)
-        landing = t._branch_exists(src, epic)
-        if not landing and task not in needed:
-            continue
-        target = epic if landing else base
-        name = m.get("branch") or t.worktree_name(epic_dir.name, task)
-        if not t._task_merged(src, name, m.get("verified_head", ""), target):
-            lines.append(f"MERGE {task} --name {name} --base {target} --repo {m.get('repo', '')}")
-    return lines
 
 
 def _recorded(epic_dir: Path) -> dict | None:
@@ -72,13 +45,6 @@ def run(a, t) -> int:
     component = any(repo for repo, _ in t._integration_plan(root, epic_dir))
     if not component and not t._branch_exists(wb, name):
         raise t.TicketError(f"epic {name!r} has no integration branch {name!r} to close")
-    lines = _merge_gate(epic_dir, name, t, root)
-    if lines:
-        print("\n".join(lines))
-        print(
-            "land the tasks above on the epic (worktree-merger), then rerun close", file=sys.stderr
-        )
-        return LANDED_EXIT
     if component:
         print(f"component mode: close through the phase 6 MR from {name}")
         return 0

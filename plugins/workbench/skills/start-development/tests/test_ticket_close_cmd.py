@@ -12,7 +12,6 @@ from ticket_repo_helpers import (
     git,
     init_repo,
     integration_tree,
-    meta,
     mk_epic,
     mk_task,
     set_meta,
@@ -29,12 +28,12 @@ def private_suite_lock(tmp_path, monkeypatch):
     monkeypatch.delenv("SUITE_LOCK_SLOTS", raising=False)
 
 
-def ready(repo, root, tasks=("alpha", "beta"), land=True, verdict="pass"):
-    """A started epic whose tasks are delivered (landed on <epic> unless land is False), then
-    reviewed. deliver() commits the ticket change to main after the fork, as a real run does."""
+def ready(repo, root, tasks=("alpha", "beta"), verdict="pass"):
+    """A started epic whose tasks committed on <epic> in the integration tree, then reviewed.
+    deliver() commits the ticket change to main after the fork, as a real run does."""
     ep = started(repo, root, tasks)
     for t in tasks:
-        deliver(repo, root, ep, t, merge=land)
+        deliver(repo, root, ep, t)
     assert cli("stage", ep, "review", "--root", root).returncode == 0
     notes = root.parent / "notes.txt"
     notes.write_text("All good.")
@@ -56,34 +55,36 @@ def close_json(root, ep) -> dict:
     return json.loads((root / "in-progress" / ep / "close.json").read_text())
 
 
-def test_close_refuses_task_not_landed(repo, root):
-    ep = ready(repo, root, land=False)
-    main_before, tip = sha(repo, "main"), sha(repo, ep)
-    r = close(root, ep)
-    assert r.returncode == 2, r.stdout + r.stderr
-    lines = r.stdout.splitlines()
-    assert f"MERGE alpha --name {ep}-alpha --base {ep} --repo proj" in lines
-    assert f"MERGE beta --name {ep}-beta --base {ep} --repo proj" in lines
-    assert sha(repo, "main") == main_before and sha(repo, ep) == tip
+def test_close_without_containment_gate(repo, root):
+    ep = ready(repo, root)
+    # the verified heads are not on <epic> (say a fix round rewrote them): no MERGE-line gate
+    wt = integration_tree(repo, ep)
+    git(wt, "checkout", "-q", "-b", "side")
+    (wt / "side.py").write_text("s = 1\n")
+    git(wt, "add", "side.py")
+    git(wt, "commit", "-m", "side")
+    off_epic = sha(wt, "HEAD")
+    git(wt, "checkout", "-q", ep)
+    for t in ("alpha", "beta"):
+        set_meta(task_path(root, ep, t), verified_head=off_epic)
+    commit_all(repo, "verified heads off the epic")
+    main_before = sha(repo, "main")
+    r = close(root, ep, "false")
+    assert r.returncode == 4, r.stdout + r.stderr
+    assert "MERGE" not in r.stdout and sha(repo, "main") == main_before
     assert not (root / "in-progress" / ep / "close.json").exists()
+    r = close(root, ep)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "MERGE" not in r.stdout
+    assert git(repo, "merge-base", "--is-ancestor", ep, "main", check=False).returncode == 0
+    assert (wt / "alpha.py").exists() and (repo / "beta.py").exists()
+    assert close_json(root, ep)["mainVerify"]["passed"] is True
 
 
 def test_close_refuses_unreviewed_epic(repo, root):
     ep = ready(repo, root, verdict="fail")
     r = close(root, ep)
     assert r.returncode == 1 and "not pass" in r.stderr
-
-
-def test_accepted_escalated_task_lands_before_close(repo, root):
-    ep = ready(repo, root, tasks=("alpha", "beta"), land=False)
-    git(integration_tree(repo, ep), "merge", "--no-ff", "--no-edit", f"{ep}-alpha")
-    r = close(root, ep)
-    assert r.returncode == 2 and f"MERGE beta --name {ep}-beta" in r.stdout
-    assert "MERGE alpha" not in r.stdout
-    git(integration_tree(repo, ep), "merge", "--no-ff", "--no-edit", f"{ep}-beta")
-    r = close(root, ep)
-    assert r.returncode == 0, r.stdout + r.stderr
-    assert git(repo, "merge-base", "--is-ancestor", f"{ep}", "main", check=False).returncode == 0
 
 
 def test_close_failing_verify_never_moves_main(repo, root):
@@ -199,15 +200,11 @@ def test_close_component_mode_moves_nothing(wb):
     p.write_text(p.read_text().replace("repo: proj", "repo: svc"))
     commit_all(wb)
     assert cli("move", ep, "in-progress", "--root", root, "--owner", "t").returncode == 0
-    assert cli("worktrees", ep, "--root", root).returncode == 0
-    m = meta(p if p.exists() else task_path(root, ep, "alpha"))
-    wt = Path(m["worktree"])
-    (wt / "alpha.py").write_text("a = 1\n")
-    git(wt, "add", "alpha.py")
-    git(wt, "commit", "-m", "feat: alpha")
-    head = sha(wt, "HEAD")
     itree = ticket._mod().worktrees_dir(wb) / ep / "svc"
-    git(itree, "merge", "--no-ff", "--no-edit", m["branch"])
+    (itree / "alpha.py").write_text("a = 1\n")
+    git(itree, "add", "alpha.py")
+    git(itree, "commit", "-m", "feat: alpha")
+    head = sha(itree, "HEAD")
     tp = task_path(root, ep, "alpha")
     set_meta(tp, status="done", verified_head=head)
     commit_all(wb, "deliver")

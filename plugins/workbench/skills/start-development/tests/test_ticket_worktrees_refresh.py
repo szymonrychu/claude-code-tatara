@@ -120,126 +120,81 @@ def set_status(p, status):
     )
 
 
-def tree(repo, ep, slug):
-    return repo / ".claude" / "worktrees" / f"{ep}-{slug}"
+def integration(repo, ep):
+    return repo / ".claude" / "worktrees" / ep
 
 
-def test_refresh_updates_clean_skips_done(repo, root):
+def trees(repo):
+    d = repo / ".claude" / "worktrees"
+    return sorted(x.name for x in d.iterdir()) if d.is_dir() else []
+
+
+def claimed(repo, root, titles=("Alpha", "Beta")):
     ep = mk_epic(root)
-    for t in ("Clean one", "Dirty one", "Ahead one", "Done one"):
+    for t in titles:
         mk_task(root, ep, t)
     commit_all(repo)
-    done = root / "backlog" / ep / "tasks" / "done-one.md"
-    if not done.exists():
-        done = next(root.rglob("done-one.md"))
-    set_status(done, "done")
+    r = cli("move", ep, "in-progress", "--root", root, "--owner", "t")
+    assert r.returncode == 0, r.stderr
+    return ep
+
+
+def test_worktrees_creates_integration_tree_only(repo, root):
+    help_text = cli("worktrees", "--help").stdout
+    assert "--integration" not in help_text and "--refresh" in help_text
+    assert "--task" not in cli("reap", "--help").stdout
+    todo = mk_epic(root, "Still todo")
+    mk_task(root, todo, "Waiting")
     commit_all(repo)
-    epic_branch(repo, ep)
-    cli("worktrees", ep, "--root", root)
+    r = cli("worktrees", todo, "--root", root)
+    assert r.returncode == 1 and "in-progress" in r.stderr and trees(repo) == []
+    ep = claimed(repo, root)
+    tasks = root / "in-progress" / ep / "tasks"
+    set_status(tasks / "beta.md", "escalated")
+    commit_all(repo)
+    git(repo, "worktree", "remove", str(integration(repo, ep)))
+    before = {p.name: p.read_text() for p in tasks.iterdir()}
+    head = git(repo, "rev-parse", "HEAD").stdout
+    r = cli("worktrees", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.splitlines() == [f"integration {integration(repo, ep)} (created)"]
+    assert trees(repo) == [ep]
+    assert git(integration(repo, ep), "branch", "--show-current").stdout.strip() == ep
+    branches = git(repo, "branch", "--format=%(refname:short)").stdout.split()
+    assert sorted(branches) == sorted(["main", ep])
+    assert {p.name: p.read_text() for p in tasks.iterdir()} == before
+    assert git(repo, "rev-parse", "HEAD").stdout == head  # nothing to record, no commit
+    r = cli("worktrees", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.splitlines() == [f"integration {integration(repo, ep)} (reused)"]
+    assert trees(repo) == [ep]
+    r = cli("worktrees", ep, "--root", root, "--integration")
+    assert r.returncode == 2 and "--integration" in r.stderr
+    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
+    assert r.returncode == 2 and "--task" in r.stderr
+
+
+def test_refresh_fast_forwards_the_integration_tree(repo, root):
+    ep = claimed(repo, root)
+    wt = integration(repo, ep)
     (repo / "new.txt").write_text("n")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-m", "advance")
-    git(repo, "branch", "-f", ep, "main")  # the refresh follows the epic branch, not main
-    (tree(repo, ep, "dirty-one") / "wip.txt").write_text("x")
-    a = tree(repo, ep, "ahead-one")
-    (a / "mine.txt").write_text("m")
-    git(a, "add", "-A")
-    git(a, "commit", "-m", "mine")
+    git(repo, "add", "new.txt")
+    git(repo, "commit", "-m", "main moves")
     r = cli("worktrees", ep, "--root", root, "--refresh")
     assert r.returncode == 0, r.stderr
-    lines = r.stdout.splitlines()
-    assert f"{ep}-clean-one updated" in lines or "clean-one updated" in lines
-    assert any(x.endswith("dirty-one dirty") for x in lines)
-    assert any(x.endswith("ahead-one ahead") for x in lines)
-    assert not any("done-one" in x for x in lines)
-    assert (tree(repo, ep, "clean-one") / "new.txt").exists()
-    assert not (tree(repo, ep, "dirty-one") / "new.txt").exists()
-
-
-def test_refresh_fast_forwards_against_epic_branch(repo, root):
-    ep = mk_epic(root)
-    mk_task(root, ep, "Clean one")
-    commit_all(repo)
-    epic_branch(repo, ep)
-    assert cli("worktrees", ep, "--root", root).returncode == 0
-    git(repo, "checkout", "-q", ep)
-    (repo / "epic.txt").write_text("e")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-m", "epic only")
-    git(repo, "checkout", "-q", "main")
+    assert f"refresh {wt} updated" in r.stdout.splitlines()
+    assert (wt / "new.txt").exists()
     r = cli("worktrees", ep, "--root", root, "--refresh")
-    assert r.returncode == 0, r.stderr
-    assert "clean-one updated" in r.stdout
-    assert (tree(repo, ep, "clean-one") / "epic.txt").exists()
-    assert not (repo / "epic.txt").exists()
-
-
-def test_done_task_never_recreated(repo, root):
-    ep = mk_epic(root)
-    p = mk_task(root, ep, "Gone")
-    commit_all(repo)
-    set_status(p, "done")
-    commit_all(repo)
-    for extra in ([], ["--refresh"]):
-        epic_branch(repo, ep)
-        assert cli("worktrees", ep, "--root", root, *extra).returncode == 0
-    assert not tree(repo, ep, "gone").exists()
-
-
-@pytest.mark.parametrize("status", ["escalated", "blocked"])
-def test_keeps_escalated_and_blocked(repo, root, status):
-    ep = mk_epic(root)
-    p = mk_task(root, ep, "Held")
-    commit_all(repo)
-    set_status(p, status)
-    commit_all(repo)
-    epic_branch(repo, ep)
-    assert cli("worktrees", ep, "--root", root).returncode == 0
-    assert ticket.load(p.read_text(), p).meta["status"] == status
-    assert tree(repo, ep, "held").is_dir()
-
-
-def test_worktrees_todo_becomes_in_progress(repo, root):
-    ep = mk_epic(root)
-    p = mk_task(root, ep, "Fresh")
-    commit_all(repo)
-    epic_branch(repo, ep)
-    assert cli("worktrees", ep, "--root", root).returncode == 0
-    assert ticket.load(p.read_text(), p).meta["status"] == "in-progress"
-
-
-def test_worktrees_keeps_live_legacy_tree_record(repo, root):
-    ep = mk_epic(root)
-    p = mk_task(root, ep, "Old")
-    commit_all(repo)
-    legacy = repo / ".claude" / "worktrees" / f"{ep}--old"
-    git(repo, "worktree", "add", "-b", f"{ep}--old", str(legacy), "main")
-    doc = ticket.load(p.read_text(), p)
-    doc.meta.update(worktree=str(legacy), branch=f"{ep}--old")
-    p.write_text(ticket.dump(doc))
-    commit_all(repo)
-    epic_branch(repo, ep)
-    assert cli("worktrees", ep, "--root", root).returncode == 0
-    m = ticket.load(p.read_text(), p).meta
-    assert m["worktree"] == str(legacy) and m["branch"] == f"{ep}--old"
-    assert not tree(repo, ep, "old").exists()
-
-
-def test_workbench_repo_tree_is_live(tmp_path):
-    """A tree of code/<repo> is not in the docs root's worktree list but is still live."""
-    wb = tmp_path / "wb"
-    wb.mkdir()
-    git(wb, "init", "-b", "main")
-    src = wb / "code" / "proj"
-    src.mkdir(parents=True)
-    git(src, "init", "-b", "main")
-    git(src, "config", "user.email", "t@t")
-    git(src, "config", "user.name", "t")
-    (src / "a.py").write_text("x = 1\n")
-    git(src, "add", ".")
-    git(src, "commit", "-m", "init")
-    wt = wb / ".claude" / "worktrees" / "ep-t" / "proj"
-    git(src, "worktree", "add", "-b", "ep-t", str(wt), "main")
-    assert "proj" not in ticket._live_worktrees(wb / "docs" / "plans")
-    assert ticket._tree_live(str(wt))
-    assert not ticket._tree_live(str(tmp_path / "gone"))
+    assert f"refresh {wt} current" in r.stdout.splitlines()
+    (wt / "task.py").write_text("t = 1\n")
+    git(wt, "add", "task.py")
+    git(wt, "commit", "-m", "feat: task work on the epic")
+    (repo / "newer.txt").write_text("n")
+    git(repo, "add", "newer.txt")
+    git(repo, "commit", "-m", "main moves again")
+    r = cli("worktrees", ep, "--root", root, "--refresh")
+    assert f"refresh {wt} ahead" in r.stdout.splitlines()
+    assert not (wt / "newer.txt").exists()
+    (wt / "wip.txt").write_text("x")
+    r = cli("worktrees", ep, "--root", root, "--refresh")
+    assert f"refresh {wt} dirty" in r.stdout.splitlines()

@@ -114,18 +114,15 @@ def integration_tree(repo, ep) -> Path:
     return repo / ".claude" / "worktrees" / ep
 
 
-def deliver(repo, root, ep, task, merge=True):
-    """Commit work in the task's real worktree, merge its branch into main, mark it done."""
-    p = task_path(root, ep, task)
-    m = meta(p)
-    wt = Path(m["worktree"])
+def deliver(repo, root, ep, task):
+    """Commit the task's work on <epic> in the integration tree, as the implementer does, then
+    record it done with its verified head (the ticket change lands on main)."""
+    wt = integration_tree(repo, ep)
     (wt / f"{task}.py").write_text(f"{task} = 1\n")
     git(wt, "add", f"{task}.py")
     git(wt, "commit", "-m", f"feat: {task}")
     head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    if merge:  # land on the epic's integration branch, as the run's land step does
-        git(integration_tree(repo, ep), "merge", "--no-ff", "--no-edit", m["branch"])
-    set_meta(p, status="done", verified_head=head)
+    set_meta(task_path(root, ep, task), status="done", verified_head=head)
     commit_all(repo, f"deliver {task}")
     return wt
 
@@ -137,15 +134,14 @@ def started(repo, root, tasks=("alpha", "beta"), title="Big epic"):
     commit_all(repo)
     r = cli("move", ep, "in-progress", "--root", root, "--owner", "tess")
     assert r.returncode == 0, r.stderr
-    r = cli("worktrees", ep, "--root", root)
-    assert r.returncode == 0, r.stderr
+    assert integration_tree(repo, ep).is_dir()
     return ep
 
 
 def reviewed(repo, root, tasks=("alpha", "beta"), merge=True, verdict="pass"):
     ep = started(repo, root, tasks)
     for t in tasks:
-        deliver(repo, root, ep, t, merge=merge)
+        deliver(repo, root, ep, t)
     if merge:  # the epic close: the integration branch lands on main
         git(repo, "merge", "--no-ff", "--no-edit", ep)
     r = cli("stage", ep, "review", "--root", root)

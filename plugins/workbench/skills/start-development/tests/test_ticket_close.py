@@ -1,4 +1,4 @@
-"""Epic close: move done checks the integration chain, then sweeps every tree and branch."""
+"""Epic close: move done checks the integration chain, then sweeps the integration trees."""
 
 import json
 import subprocess
@@ -10,11 +10,10 @@ import ticket
 from ticket_repo_helpers import (
     branches,
     cli,
-    commit_all,
+    deliver,
     git,
     init_repo,
     integration_tree,
-    meta,
     set_meta,
     started,
     task_path,
@@ -43,23 +42,6 @@ def merge_py(repo, *args):
     )
 
 
-def land(repo, root, ep, task, commit=True):
-    """Work in the task tree, land it on <epic> with merge.py --keep, mark the task done."""
-    p = task_path(root, ep, task)
-    m = meta(p)
-    wt = Path(m["worktree"])
-    if commit:
-        (wt / f"{task}.py").write_text(f"{task} = 1\n")
-        git(wt, "add", f"{task}.py")
-        git(wt, "commit", "-m", f"feat: {task}")
-    head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    r = merge_py(repo, "--name", m["branch"], "--base", ep, "--keep")
-    assert r.returncode == 0, r.stdout + r.stderr
-    set_meta(p, status="done", verified_head=head)
-    commit_all(repo, f"deliver {task}")
-    return wt
-
-
 def to_review(repo, root, ep):
     assert cli("stage", ep, "review", "--root", root).returncode == 0
     notes = repo / "n.txt"
@@ -79,25 +61,31 @@ def worktree_paths(repo):
     return [ln[9:] for ln in out.splitlines() if ln.startswith("worktree ")]
 
 
-def test_move_done_refuses_task_not_in_epic(repo, root):
-    ep = started(repo, root, ("alpha",))
-    land(repo, root, ep, "alpha", commit=True)
-    p = task_path(root, ep, "alpha")
-    wt = Path(meta(p)["worktree"])
-    (wt / "extra.py").write_text("x = 2\n")
-    git(wt, "add", "extra.py")
-    git(wt, "commit", "-m", "feat: unlanded")
+def delivered(repo, root, tasks=("alpha", "beta")):
+    ep = started(repo, root, tasks)
+    for t in tasks:
+        deliver(repo, root, ep, t)
+    return ep
+
+
+def test_move_done_ignores_legacy_task_branch_and_worktree_keys(repo, root):
+    ep = started(repo, root, ("alpha", "beta"))
+    integ = integration_tree(repo, ep)
+    set_meta(task_path(root, ep, "alpha"), branch="main", worktree=str(integ))
+    set_meta(task_path(root, ep, "beta"), branch=ep, worktree=str(repo))
+    for t in ("alpha", "beta"):
+        deliver(repo, root, ep, t)
     to_review(repo, root, ep)
     close(repo, ep)
     r = cli("move", ep, "done", "--root", root)
-    assert r.returncode == 1
-    assert f"branch '{ep}-alpha' is not merged into '{ep}'" in r.stderr
-    assert (root / "in-progress" / ep).is_dir()
+    assert r.returncode == 0, r.stderr
+    s = json.loads(r.stdout)
+    assert s == {"removed": [str(integ)], "branches": [ep], "left": []}
+    assert branches(repo) == ["main"] and repo.is_dir()
 
 
 def test_move_done_refuses_epic_not_in_main(repo, root):
-    ep = started(repo, root, ("alpha",))
-    land(repo, root, ep, "alpha")
+    ep = delivered(repo, root, ("alpha",))
     to_review(repo, root, ep)
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 1
@@ -107,9 +95,7 @@ def test_move_done_refuses_epic_not_in_main(repo, root):
 
 
 def test_full_meta_lifecycle_cleans_every_tree_and_branch(repo, root):
-    ep = started(repo, root)
-    for t in ("alpha", "beta"):
-        land(repo, root, ep, t)
+    ep = delivered(repo, root)
     to_review(repo, root, ep)
     close(repo, ep)
     r = cli("move", ep, "done", "--root", root)
@@ -118,8 +104,8 @@ def test_full_meta_lifecycle_cleans_every_tree_and_branch(repo, root):
     assert s["left"] == []
     assert worktree_paths(repo) == [str(repo.resolve())]
     assert [b for b in branches(repo) if b.startswith(ep)] == []
-    assert set(s["branches"]) == {ep, f"{ep}-alpha", f"{ep}-beta"}
-    assert len(s["removed"]) == 3
+    assert s["branches"] == [ep]
+    assert s["removed"] == [str(integration_tree(repo, ep))]
     assert not [b for b in branches(repo) if b.endswith("-landed")]
 
 
@@ -129,12 +115,9 @@ def test_main_moved_after_fork_close_then_move_done_removes_all(repo, root):
     git(repo, "add", "later.txt")
     git(repo, "commit", "-m", "chore(ticket): main moves")
     for t in ("alpha", "beta"):
-        land(repo, root, ep, t)
+        deliver(repo, root, ep, t)
     to_review(repo, root, ep)
     close(repo, ep)
-    # the close rebased <epic>: no task branch is an ancestor of it any more
-    anc = git(repo, "merge-base", "--is-ancestor", f"{ep}-alpha", ep, check=False)
-    assert anc.returncode != 0
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
     assert json.loads(r.stdout)["left"] == []
@@ -142,93 +125,42 @@ def test_main_moved_after_fork_close_then_move_done_removes_all(repo, root):
     assert [b for b in branches(repo) if b.startswith(ep)] == []
 
 
-def test_sweep_leaves_dirty_or_unmerged_trees(repo, root):
-    ep = started(repo, root)
-    wt_a = land(repo, root, ep, "alpha")
-    wt_b = land(repo, root, ep, "beta")
+def test_sweep_leaves_dirty_integration_tree(repo, root):
+    ep = delivered(repo, root)
     to_review(repo, root, ep)
     close(repo, ep)
-    (wt_a / "scratch.txt").write_text("wip")
+    integ = integration_tree(repo, ep)
+    (integ / "scratch.txt").write_text("wip")
     r = cli("move", ep, "done", "--root", root)
     assert r.returncode == 0, r.stderr
     s = json.loads(r.stdout)
     left = {Path(x["path"]).name: x["reason"] for x in s["left"]}
-    assert "dirty" in left[wt_a.name]
-    assert wt_a.is_dir() and f"{ep}-alpha" in branches(repo)
-    assert not wt_b.exists() and f"{ep}-beta" not in branches(repo)
+    assert "dirty" in left[ep]
+    assert integ.is_dir() and ep in branches(repo)
 
 
-def test_sweep_lists_non_equivalent_branch_with_reason(repo, root):
-    ep = started(repo, root, ("alpha",))
-    wt = land(repo, root, ep, "alpha")
-    (wt / "late.py").write_text("late = 1\n")  # committed after landing, never landed
-    git(wt, "add", "late.py")
-    git(wt, "commit", "-m", "feat: late")
-    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
-    assert r.returncode == 1
-    s = json.loads(r.stdout)
-    reason = s["left"][0]["reason"]
-    assert "no equivalent" in reason and f"in {ep}" in reason
-    assert wt.is_dir() and f"{ep}-alpha" in branches(repo)
+def test_sweep_lists_non_equivalent_work_with_reason(repo, root):
+    ep = delivered(repo, root, ("alpha",))
+    to_review(repo, root, ep)
+    close(repo, ep)
+    integ = integration_tree(repo, ep)
+    (integ / "scratch.txt").write_text("wip")  # survives move done's sweep
+    assert cli("move", ep, "done", "--root", root).returncode == 0
+    (integ / "scratch.txt").unlink()
+    (integ / "late.py").write_text("late = 1\n")  # committed after the close, never landed
+    git(integ, "add", "late.py")
+    git(integ, "commit", "-m", "feat: late")
+    r = cli("reap", "--epic", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    reason = json.loads(r.stdout)["left"][0]["reason"]
+    assert "no equivalent" in reason and "in main" in reason
+    assert integ.is_dir() and ep in branches(repo)
 
 
 def test_dry_run_lists_integration_branch_once(repo, root):
-    ep = started(repo, root)
-    for t in ("alpha", "beta"):
-        land(repo, root, ep, t)
+    ep = delivered(repo, root)
     to_review(repo, root, ep)
     close(repo, ep)
     sweep = ticket.Sweep("main", True)
     sweep.epic(root, ticket.find_epic(ep, root))
-    got = sweep.summary()["branches"]
-    assert sorted(got) == sorted({ep, f"{ep}-alpha", f"{ep}-beta"})
-
-
-def _hostile(repo, root, **fm):
-    ep = started(repo, root, ("alpha",))
-    p = task_path(root, ep, "alpha")
-    wt = Path(meta(p)["worktree"])
-    set_meta(p, **fm)
-    return ep, wt
-
-
-def test_sweep_refuses_foreign_branch_from_frontmatter(repo, root):
-    ep, wt = _hostile(repo, root, branch="main")
-    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
-    assert "main" in branches(repo)
-    assert any(x["reason"] == "not this task's branch" for x in json.loads(r.stdout)["left"])
-
-
-def test_sweep_never_deletes_integration_branch_from_frontmatter(repo, root):
-    ep = started(repo, root, ("alpha",))
-    set_meta(task_path(root, ep, "alpha"), branch=ep)
-    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
-    assert ep in branches(repo)
-    assert any(x["reason"] == "not this task's branch" for x in json.loads(r.stdout)["left"])
-
-
-def test_sweep_branch_head_falls_back_to_tree_name(repo, root):
-    ep, wt = _hostile(repo, root, branch="HEAD")
-    sweep = ticket.Sweep("main", True)
-    sweep.task(root, ep, task_path(root, ep, "alpha"), meta(task_path(root, ep, "alpha")))
-    assert sweep.summary()["branches"] == [f"{ep}-alpha"]
-    assert not any(x["reason"] == "not this task's branch" for x in sweep.left)
-    assert wt.is_dir()
-
-
-def test_sweep_refuses_foreign_worktree_from_frontmatter(repo, root):
-    ep = started(repo, root, ("alpha",))
-    integ = integration_tree(repo, ep)
-    set_meta(task_path(root, ep, "alpha"), worktree=str(integ))
-    r = cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
-    assert Path(integ).is_dir()
-    assert any(x["reason"] == "outside the worktrees dir" for x in json.loads(r.stdout)["left"])
-
-
-def test_sweep_refuses_worktree_outside_worktrees_dir(repo, root, tmp_path):
-    ep = started(repo, root, ("alpha",))
-    out = tmp_path / f"{ep}-alpha"
-    git(repo, "worktree", "add", "-b", "other", str(out))
-    set_meta(task_path(root, ep, "alpha"), worktree=str(out))
-    cli("reap", "--epic", ep, "--task", "alpha", "--root", root)
-    assert out.is_dir()
+    assert sweep.summary()["branches"] == [ep]
