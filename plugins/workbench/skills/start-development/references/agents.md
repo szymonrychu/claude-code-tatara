@@ -19,8 +19,6 @@ the research agents write (code in its worktree, a brief at its output path).
 | `planner` | planning an epic: design.md, tasks, approvals, contracts (input `{epic, briefs[], userDecisions[], relatedEpics[]}`) | 3 |
 | `implementer` | every task's implementation, via `workbench:plan-execute` and the lean path | 4 |
 | `reviewer` | one reviewer for spec and quality (via `start-review --single`) | 5 |
-| `spec-reviewer` | full or panel tier work (via `start-review`) | 5 |
-| `quality-reviewer` | full or panel tier work (via `start-review`) | 5 |
 | `scope-auditor` | after implementation, before sign-off | 4, 5 |
 | `worktree-merger` | every worktree merge, sized by `--assess` | 4, 6 |
 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, hooks | 5 |

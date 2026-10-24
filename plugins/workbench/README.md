@@ -83,15 +83,13 @@ the caller sets it per call.
 | `scm-shepherd` | sonnet | MR/PR + pipeline status; picks `glab` or `gh` from the remote |
 | `submodule-auditor` | sonnet | which submodule pins are stale, unpushed, detached, or remote-less |
 | `codebase-cartographer` | opus | maps an unfamiliar repo before design: entrypoints, boundaries, where a change lands |
-| `planner` | sonnet (opus per call for multi-repo or new-subsystem epics) | plans an epic from `{epic, briefs[], userDecisions[], relatedEpics[]}`: design.md, tasks, approvals, contracts |
+| `planner` | opus | plans an epic from `{epic, briefs[], userDecisions[]}`: design.md and linted tasks |
 | `security-researcher` | opus | secrets, RBAC, container privilege, supply chain, CVE surface |
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
 | `record-writer` | sonnet | the one agent that writes: fills the record template for a finished run, one file |
 | `implementer` | sonnet | implements one task or the lean path's change test-first and returns `complete`, `undelivered`, `discovered` |
-| `reviewer` | per call | one reviewer for spec and quality, reads the shared review checklist |
-| `spec-reviewer` | per call | spec half of a split review (full or panel tier) |
-| `quality-reviewer` | per call | quality half of a split review (full or panel tier) |
+| `reviewer` | per call | one reviewer per task: verify on HEAD, every acceptance condition, then quality |
 | `panel-reviewer` | per call | one member of an `interrogate` review panel, one per model |
 | `worktree-merger` | sonnet | merges one task worktree back: rebase, fast-forward, verify every commit landed, clean up |
 | `research-docs-purist` | sonnet | official docs at the installed version, anti-patterns in our usage |
@@ -119,7 +117,7 @@ every pass, so routine work doesn't pay for them:
 | `start-development` phase 1 | `codebase-cartographer` | mapping a repo in scope (via `start-discovery`) |
 | `start-development` phase 1 | `reuse-hunter` | the reuse hunt (via `research-code-internal`) |
 | `start-development` phase 2 | `architect-researcher` | >1 viable approach, or an expensive-to-reverse choice |
-| `start-development` phase 3 | `planner` | planning an epic from `{epic, briefs[], userDecisions[], relatedEpics[]}` |
+| `start-development` phase 3 | `planner` | planning an epic from `{epic, briefs[], userDecisions[]}` |
 | `start-development` phase 1 | `research-docs-purist` | official docs of every library in scope (via `research-docs`) |
 | `start-development` phase 1 | `research-practitioner` | field experience, known failure modes (via `start-research`) |
 | `start-development` phase 1 | `research-prior-art-scout` | similar open-source projects (via `research-code-external`) |
@@ -127,8 +125,6 @@ every pass, so routine work doesn't pay for them:
 | `start-development` phase 1 | `research-reviewer` | adversarial check of every research brief |
 | `start-development` phase 4 | `implementer` | every task's implementation, via plan-execute and the lean path |
 | `start-development` phase 5 | `reviewer` | one reviewer for spec and quality (via `start-review --single`) |
-| `start-development` phase 5 | `spec-reviewer` | full or panel tier work (via `start-review`) |
-| `start-development` phase 5 | `quality-reviewer` | full or panel tier work (via `start-review`) |
 | `start-development` phase 4 | `scope-auditor` | after implementation, audit of delivered vs planned |
 | `start-development` phase 4 | `worktree-merger` | every worktree merge, sized by `--assess` |
 | `start-development` phase 5 | `scope-auditor` | before sign-off |

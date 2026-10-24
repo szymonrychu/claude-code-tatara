@@ -157,8 +157,6 @@ def test_start_development_line_cap():
 NEW_AGENTS = (
     "implementer",
     "reviewer",
-    "spec-reviewer",
-    "quality-reviewer",
     "research-docs-purist",
     "research-practitioner",
     "research-prior-art-scout",

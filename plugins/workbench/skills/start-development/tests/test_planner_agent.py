@@ -18,7 +18,7 @@ def test_planner_frontmatter_and_input():
     assert m
     fm = m.group(1)
     assert re.search(r"^name: planner$", fm, re.M)
-    assert re.search(r"^model: sonnet$", fm, re.M)
+    assert re.search(r"^model: opus$", fm, re.M)
     src = (Path(__file__).parent / "test_repo_hygiene.py").read_text()
     block = re.search(r"AGENT_KEYS = \((.*?)\)", src, re.S).group(1)
     AGENT_KEYS = re.findall(r"""['"](\w+)['"]""", block)
@@ -28,7 +28,6 @@ def test_planner_frontmatter_and_input():
         "epic",
         "briefs",
         "userDecisions",
-        "relatedEpics",
         "[{id, text}]",
         "absolute file paths",
     )
@@ -39,32 +38,33 @@ def test_planner_frontmatter_and_input():
 def test_planner_boilerplate():
     t = _text()
     for s in (
-        "task-fields",
-        "approvals",
-        "tickets",
-        "plan-inputs",
-        "builder-check",
+        "references/tickets.md",
         "templates/design.md",
+        "templates/task.md",
         "phases 2 and 3",
-        "docs/plans/facts.md",
-        "ticket.py facts",
-        "ticket.py contract list",
-        "ticket.py contract add",
-        "ticket.py graph --todo",
+        "ticket.py new-task",
         "workbench.py runner <ref> --repo <dir>",
         "`command:` ref",
-        "verify hints",
-        "approvals.json",
         "design.md",
         "chore(ticket): <epic> plan",
-        "validate-tasks.mjs --epic",
-        "ticket.py lint",
+        "ticket.py lint <epic>",
         "ticket.py questions --add",
         "200 words",
-        "critical path",
+        "dependency order",
         "preference questions",
     ):
         assert s in t, s
+    for gone in (
+        "relatedEpics",
+        "approvals",
+        "contract",
+        "ticket.py graph",
+        "ticket.py facts",
+        "ticket.py estimate",
+        "validate-tasks",
+        "facts.md",
+    ):
+        assert gone not in t, gone
 
 
 def test_planner_rules():
@@ -73,17 +73,6 @@ def test_planner_rules():
     assert "git ls-files <path>" in t
     assert "scratchpad" in t
     assert "LSP and grep" in t
-
-
-def test_planner_cross_epic_steps():
-    t = _text()
-    for s in (
-        "ticket.py contract list",
-        "ticket.py contract add",
-        "ticket.py graph --todo",
-        "ticket.py facts",
-    ):
-        assert s in t, s
 
 
 def test_agents_row():
@@ -105,5 +94,5 @@ def test_planner_sizing_and_heading_index():
     t = " ".join(_text().split())
     assert "one test file's worth of behaviour, at most 8 files" in t
     assert "never the full suite" in t
-    assert "ticket.py estimate <epic>" in t
+    assert "more than five files" in t
     assert "grep its `^#` headings first, then read only the sections the plan needs" in t
