@@ -206,5 +206,16 @@
       "agent-orchestrator"
     ],
     "note": "ClusterSpec.init_scripts: list[str] = [] (<=20 entries, each non-empty, <=16384 chars); spec.INIT_DIR='.agent-init'; spec.init_scripts_hash(scripts)=sha256 hex of compact JSON; never rendered (hash invariant); task init-scripts-spec-field"
+  },
+  {
+    "name": "orch-cluster-status-init",
+    "kind": "schema",
+    "owner": "agent-init-scripts",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/reconciler/init.py",
+    "consumers": [
+      "agent-orchestrator",
+      "agents-helmfile"
+    ],
+    "note": "clusters.status.init {state skipped|running|succeeded|failed, scripts_hash, started_at, finished_at, exit_code, log_tail, reason (job_missing|foreign_object|timeout|job_create_failed: ...), job}; reconciler-written once per cluster via Job agent-<slug>-init; sessions held while absent or running; failed -> degraded, sessions start; task init-job-runner"
   }
 ]
