@@ -107,6 +107,9 @@ Leadership and the other agent tools are offered through an any-mcp plugin, not 
 ### D21: Handover only, epoch fenced
 Handover only, no takeovers by agents: only the current leader gives leadership away, to a named or any agent; a stale epoch is rejected. (user decision)
 
+### D22: Feed contents
+Feed: file writes, edits and deletes (paths only), Bash commands with exit status cut at 200 chars, finished turns with their first line, leadership changes; no tool outputs, no Read, Grep or Glob. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -156,6 +159,7 @@ Handover only, no takeovers by agents: only the current leader gives leadership 
 | D19 First ready agent leads | dispatcher-leadership-pass |
 | D20 Tools through any-mcp, not ccw | orchestrator-plugin, agent-port-listener |
 | D21 Handover only, epoch fenced | leadership-requests-api, dispatcher-leadership-pass |
+| D22 Feed contents | hive-feed-digest |
 
 ## Contracts
 

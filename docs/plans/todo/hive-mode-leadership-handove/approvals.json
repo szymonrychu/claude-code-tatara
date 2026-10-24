@@ -146,5 +146,16 @@
       "dispatcher-leadership-pass"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q5",
+    "text": "Feed: file writes, edits and deletes (paths only), Bash commands with exit status cut at 200 chars, finished turns with their first line, leadership changes; no tool outputs, no Read, Grep or Glob.",
+    "decisions": [
+      "D22"
+    ],
+    "tasks": [
+      "hive-feed-digest"
+    ],
+    "status": "approved"
   }
 ]
