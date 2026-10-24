@@ -122,6 +122,9 @@ No ClusterSpec hive switch. (user decision)
 ### D26: Advise, never force, handover
 No forced handover; advise handing over above auto_compact_pct - 15 and keep every agent's context visible. (user decision)
 
+### D27: User make leader
+The user can make any agent leader from the UI and the API through the same leadership queue; a user request overrides handover-only. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -176,6 +179,7 @@ No forced handover; advise handing over above auto_compact_pct - 15 and keep eve
 | D24 Awareness from tool descriptions; alone clusters | orchestrator-plugin, render-hive-gating, plugin-config-merge, wrapper-notes-inbox |
 | D25 No hive switch | spec-cap-static |
 | D26 Advise, never force, handover | orchestrator-plugin, hive-state-push-loop, views-leader-stream, ui-leader-badge |
+| D27 User make leader | leadership-requests-api, dispatcher-leadership-pass, ui-leader-badge |
 
 ## Contracts
 

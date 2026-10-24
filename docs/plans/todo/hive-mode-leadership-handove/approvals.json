@@ -209,5 +209,18 @@
       "ui-leader-badge"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q10",
+    "text": "The user can make any agent leader from the UI and the API through the same leadership queue; a user request overrides handover-only.",
+    "decisions": [
+      "D27"
+    ],
+    "tasks": [
+      "leadership-requests-api",
+      "dispatcher-leadership-pass",
+      "ui-leader-badge"
+    ],
+    "status": "approved"
   }
 ]
