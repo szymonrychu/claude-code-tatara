@@ -196,5 +196,15 @@
       "agents-helmfile"
     ],
     "note": "POST /api/v1/clusters {slug?, spec? | preset_id?}: exactly one of spec or preset_id, slug required with spec, generated from the preset name otherwise; ClusterView preset_id, preset_name; PATCH /api/v1/clusters/{id} retired (405); smoke.sh keeps the raw spec body; task create-cluster-from-preset"
+  },
+  {
+    "name": "orch-cluster-spec-init-scripts",
+    "kind": "schema",
+    "owner": "agent-init-scripts",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/spec.py",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "ClusterSpec.init_scripts: list[str] = [] (<=20 entries, each non-empty, <=16384 chars); spec.INIT_DIR='.agent-init'; spec.init_scripts_hash(scripts)=sha256 hex of compact JSON; never rendered (hash invariant); task init-scripts-spec-field"
   }
 ]
