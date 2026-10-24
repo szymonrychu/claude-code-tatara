@@ -1,6 +1,6 @@
 ---
 title: Housekeeping rules
-status: in-progress
+status: done
 repo: workbench
 value: "Every agent in every harness reads the user's housekeeping rules from AGENTS.md"
 files: [plugins/workbench/rules/housekeeping.md, scripts/harness/agents_md.py, AGENTS.md, scripts/tests/test_agents_md.py, scripts/tests/harness/test_agents_md_block.py, plugins/workbench/skills/start-development/references/non-negotiables.md]
@@ -8,7 +8,7 @@ verify: "mise run test:scripts && bash plugins/workbench/scripts/run-tests.sh --
 depends_on: [em-dash-lint]
 model: opus
 review: ""
-verified_head: ""
+verified_head: bb010ff
 ---
 
 # Housekeeping rules
@@ -69,3 +69,5 @@ Every workbench AGENTS.md (through `mise run harness-setup`) carries the houseke
 - Fix-as-ac: AGENTS.md byte cap (mise-tasks/lint/agents-md, under 24000, 11184 now) and harness-setup drift (lint:harness) - AC3, AC4. Never edit the generated block by hand.
 - The TDD reconciliation wording is D2 (gate Q1); the implementer and reviewer texts follow in agent-discipline.
 - AGENTS.md and rule text are ASCII only; the em dash lint from em-dash-lint now runs on them.
+
+- 2026-10-24 done
