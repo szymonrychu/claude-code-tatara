@@ -332,5 +332,16 @@
       "agent-init-scripts"
     ],
     "note": "task spec-cap-static: ClusterSpec.max_replicas (default replicas, <=16 and settings cap), static (requires max_replicas == replicas), properties hive/alone/scalable; form inputs in task spec-form-cap-static"
+  },
+  {
+    "name": "orch-agent-env",
+    "kind": "credential",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/k8s/render.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task agent-token-env-render: tokens purpose agent; Secret key and pod env ORCH_AGENT_TOKEN, ORCH_AGENT_URL, ORCH_CLUSTER_ID; passthrough plus POD_NAME"
   }
 ]
