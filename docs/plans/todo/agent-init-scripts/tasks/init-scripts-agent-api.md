@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/api/agent.py, tests/test_agent_init_scripts.py, R
 verify: "uv run pytest tests/test_agent_init_scripts.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-public-api]
 owns: [orch-agent-init-scripts-api]
-uses: [orch-cluster-init-scripts-api]
+uses: [orch-cluster-init-scripts-api, orch-agent-api-auth]
 model: ""
 estimate: 5
 estimate_by: formula

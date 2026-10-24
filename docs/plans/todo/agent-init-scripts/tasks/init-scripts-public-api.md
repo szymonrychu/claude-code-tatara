@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/cluste
 verify: "uv run pytest tests/test_api_init_scripts.py tests/test_api_clusters.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-spec-field]
 owns: [orch-cluster-init-scripts-api]
-uses: [orch-cluster-spec-init-scripts]
+uses: [orch-cluster-spec-init-scripts, orch-spec-runtime-mutable]
 model: ""
 estimate: 6
 estimate_by: formula

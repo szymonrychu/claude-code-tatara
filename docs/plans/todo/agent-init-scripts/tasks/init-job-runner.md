@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/reconciler/init.py, src/agent_orchestrator/reconc
 verify: "uv run pytest tests/test_init_runner.py tests/test_reconciler.py tests/test_checks.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-spec-field]
 owns: [orch-cluster-status-init, orch-init-workdir-files]
-uses: [orch-cluster-spec-init-scripts]
+uses: [orch-cluster-spec-init-scripts, orch-render-hash-invariant]
 model: opus
 estimate: 6
 estimate_by: formula

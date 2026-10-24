@@ -140,6 +140,28 @@ Outside this epic's tasks: the agents-helmfile smoke (smoke-init-scripts) reads 
 
 Consumed from hive-mode-leadership-handove (not rebuilt): `/agent/v1` auth and `require_agent()`, `ORCH_AGENT_TOKEN`/`ORCH_AGENT_URL`/`ORCH_CLUSTER_ID` pod env, `OrchestratorPlugin` tools `orchestrator_init_scripts_get|edit` (any-mcp v0.2.0, always in `allow`), wrapper `claude.main_agent_only_tools`, hash invariant test, README `## API` Versioning sentence.
 
+## Builder check
+
+Answered (docs and code settle it):
+- Migrations: none. `ClusterSpec.init_scripts` lives in the existing `spec` JSONB and `status.init` in the existing `status` JSONB; no table or column is added. Hive owns `0003_hive.sql`, cluster-scaling `0004`; this epic would take `0005` only if a table were needed, and none is.
+- `WORKDIR_ROOT = "/workdir"` lives in `k8s/render.py:20` and the api may not import `k8s`: init-scripts-public-api moves the constant to `spec.py` and `k8s/render.py` imports it from there (one definition).
+- `workdir_path(spec)` / `workdir_mount(spec)` exist in `k8s/render.py` (lines 35, 39) and the init Job reuses them.
+- The checks helpers (`_condition`, `_tail`, `_exit_code`, limits) exist in `reconciler/checks.py`; the checks Job carries a TTL, the init Job deliberately does not (D2).
+- Clusters that exist before this release have no `status.init` and empty scripts: their first converge writes `skipped`, no Job, sessions unaffected.
+- The init tools in any-mcp are hive task orchestrator-plugin (F1), not built here; this epic builds only the `/agent/v1/init-scripts` routes (contract orch-agent-init-scripts-api, text matches hive's tool lines: GET returns the view, PUT body `{scripts}`).
+
+Minor (my call):
+- Job image, resources and uid follow the agent container (my call).
+- Unchanged-list PUT is accepted and rewrites the same list (my call).
+- An empty list is valid and clears the scripts (my call).
+
+Theirs: none.
+
+## Cross-epic
+
+- Consumed hive contracts (registered with consumer agent-init-scripts): any-mcp-orchestrator-plugin, any-mcp-release-v0-2-0, wrapper-main-agent-only-tools, orch-hive-tables, orch-spec-cap-static, orch-agent-env, orch-agents-service, orch-agent-api-auth, orch-render-hash-invariant, orch-plugin-entry, orch-spec-runtime-mutable.
+- cluster-scaling edits the same orchestrator and frontend files; whichever epic lands second rebases onto the other (rebase, do not duplicate).
+
 ## Review focus
 
 - `reconciler/init.py`: the once guarantee across crashes, the `skipped` rule, the session gate, the Job never pruned by converge and deleted after its outcome.
