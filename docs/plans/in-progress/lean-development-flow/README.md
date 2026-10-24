@@ -37,7 +37,7 @@ The flow protects scope (agents silently narrowing the agreed deliverable) with 
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 53 agent-min | Critical path: 41 min | Expected wall at P=1.5: 1.4 h (k=2.0) | Actual: 0 min | Remaining estimate: 53 min
 
 ## Review
 
