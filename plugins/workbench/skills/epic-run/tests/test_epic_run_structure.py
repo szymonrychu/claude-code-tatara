@@ -44,8 +44,8 @@ def test_skill_structure():
         "work only in the integration tree, never the main checkout, never docs/plans",
         "report in at most 200 words",
         "report in at most 250 words",
-        "clean tree at HEAD, run the task's verify on HEAD, check every acceptance condition against the files, "
-        "grep for debt markers, then review quality",
+        "clean tree at HEAD, run the task's verify on HEAD, "
+        "check every acceptance condition against the files, grep for debt markers, then review quality",
         "every agent call, fix rounds via SendMessage included, runs in the background",
         "discovered",
         "undelivered",
