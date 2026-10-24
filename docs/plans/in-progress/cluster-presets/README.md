@@ -1,7 +1,7 @@
 ---
 title: cluster presets
 blockers: [web-ui-cluster-tabs-with-fil]
-stage: build
+stage: review
 owner: Claude
 repos: [agent-orchestrator, agents-helmfile]
 created: 2026-10-23
