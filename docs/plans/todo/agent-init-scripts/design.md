@@ -71,6 +71,9 @@ Run once with files in every pod, edit through the public and the agent route wr
 ### D9: C1 init scripts field, once per cluster
 Init scripts are new: ClusterSpec + preset field; run once per cluster (not per pod, not per restart). (user decision)
 
+### D10: C2 exposed to the agent
+Exposed to the agent initialised with them, so it knows how it was initialised. (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -109,6 +112,7 @@ Init scripts are new: ClusterSpec + preset field; run once per cluster (not per 
 | D7 release, pin, apply, smoke | smoke-init-scripts, deploy-pin-init-scripts, apply-smoke-init-scripts |
 | D8 API-only kind e2e | init-scripts-kind-e2e |
 | D9 C1 init scripts field, once per cluster | init-scripts-spec-field, init-job-runner, init-scripts-kind-e2e |
+| D10 C2 exposed to the agent | init-job-runner, init-scripts-agent-api |
 
 ## Contracts
 

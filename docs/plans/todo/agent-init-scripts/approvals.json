@@ -45,7 +45,8 @@
     "id": "C2",
     "text": "Exposed to the agent initialised with them, so it knows how it was initialised.",
     "decisions": [
-      "D3"
+      "D3",
+      "D10"
     ],
     "tasks": [
       "init-job-runner",
