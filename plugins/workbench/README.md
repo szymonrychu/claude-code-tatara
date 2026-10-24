@@ -284,11 +284,12 @@ both correct and honest about the skills being independent.
 
 ## Rules
 
-`rules/` carries the working rules as plain files: the cross-cutting ones (`concise-orchestrator`, `boy-scout`, `tdd`) and per-language ones. A plugin does not auto-load them in Claude Code; the template embeds the load-bearing rules in `AGENTS.md`, and `mise run harness-setup -- <target>` generates the per-harness copies.
+`rules/` carries the working rules as plain files: the cross-cutting ones (`concise-orchestrator`, `boy-scout`, `tdd`, `housekeeping`) and per-language ones. A plugin does not auto-load them in Claude Code; the template embeds the load-bearing rules in `AGENTS.md`, and `mise run harness-setup -- <target>` generates the per-harness copies.
 
 - `rules/concise-orchestrator.md` - one line per update, no pasted logs
 - `rules/boy-scout.md`
 - `rules/tdd.md`
+- `rules/housekeeping.md` - the user's standing rules for every agent, every harness and every task
 
 ## Research briefs
 
