@@ -12,7 +12,7 @@ created: 2026-10-24
 ## Project brief
 
 What: Per-cluster init scripts stored on ClusterSpec and presets, run once per cluster, visible to the agent and editable by it
-How: init_scripts field, a once-per-cluster run guarded by the orchestrator, scripts surfaced in the workdir and CLAUDE.md, an edit tool in the shared orchestrator any-mcp plugin writing to the cluster and its preset
+How: init_scripts field, a once-per-cluster init Job recorded in clusters.status.init by the reconciler, scripts and log surfaced in the workdir (.agent-init/) and through the init tools of the shared orchestrator any-mcp plugin, an edit writing to the cluster and its source preset
 Why: An agent knows how its environment was built and can improve it for the next cluster
 
 ## Description
