@@ -1,6 +1,6 @@
 ---
 title: fe review fixes
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "refused terminals say so at once, shells never hide after a late agent, and tabs keep the ribbon's hook-failed and ready marks"
 files: [frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-review-fixes/agent-orchestrator
+branch: web-ui-cluster-tabs-with-fil-fe-review-fixes
 verified_head: ""
 run: ""
 provides: []

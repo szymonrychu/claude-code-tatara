@@ -1,6 +1,6 @@
 ---
 title: be review fixes
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the api refuses oversized WebSocket frames before buffering them
 files: [src/agent_orchestrator/cli.py, tests/test_cli.py, src/agent_orchestrator/db/agents.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-be-review-fixes/agent-orchestrator
+branch: web-ui-cluster-tabs-with-fil-be-review-fixes
 verified_head: ""
 run: ""
 provides: []
