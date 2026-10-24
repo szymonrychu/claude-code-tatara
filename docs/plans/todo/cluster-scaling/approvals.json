@@ -1,11 +1,137 @@
 [
-  {"id": "S1", "text": "Agents dynamically join and leave a running cluster (peers, hive state, leader fallback update without restarting the others).", "decisions": ["D3", "D8"], "tasks": ["scale-down-drain", "agents-strip-leaving-mark", "kind-e2e-scaling", "smoke-scale-check", "deploy-pin-scaling"], "status": "approved"},
-  {"id": "S2", "text": "The replica cap N is set at cluster init (ClusterSpec field, ceiling 16); the leader can scale between 1 and N with a tool.", "decisions": ["D1", "D2", "D5"], "tasks": ["scale-replicas-repo", "public-scale-route", "agent-scale-route", "scale-ui-control", "cap-static-preset-form", "kind-e2e-scaling"], "status": "approved"},
-  {"id": "S3", "text": "Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hive, peers or messaging tools.", "decisions": ["D1", "D4", "D5"], "tasks": ["scale-replicas-repo", "scale-tool-allow", "cap-static-preset-form", "scale-ui-control", "kind-e2e-scaling"], "status": "approved"},
-  {"id": "X1", "text": "One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool, including scale; built by hive-mode-leadership-handove, this epic adds the scale route and its allow rule.", "decisions": ["D2", "D4"], "tasks": ["agent-scale-route", "scale-tool-allow"], "status": "approved"},
-  {"id": "X2", "text": "Headless parity: every UI capability (cap, static, replicas) has a documented public API and an API-only e2e test.", "decisions": ["D2", "D5"], "tasks": ["public-scale-route", "scale-ui-control", "agents-strip-leaving-mark", "cap-static-preset-form", "kind-e2e-scaling", "smoke-scale-check"], "status": "approved"},
-  {"id": "Q2", "text": "The first ready agent leads when a hive starts; scaling up never hands leadership to a joining agent.", "decisions": ["D7"], "tasks": ["scale-replicas-repo", "kind-e2e-scaling"], "status": "approved"},
-  {"id": "Q4", "text": "Handover only, no takeovers: a scale-down never removes the leader and only the leader may scale through the tool.", "decisions": ["D1", "D3", "D7"], "tasks": ["scale-replicas-repo", "agent-scale-route", "scale-down-drain", "kind-e2e-scaling"], "status": "approved"},
-  {"id": "Q7", "text": "Tools on load hint the mode; a static single-pod cluster gets no hive, peers or messaging tools (the agent is alone), so no scale tool either.", "decisions": ["D4"], "tasks": ["scale-tool-allow", "cap-static-preset-form", "kind-e2e-scaling"], "status": "approved"},
-  {"id": "REL", "text": "Releases, bumps and the helmfile apply and smoke are tasks of this epic.", "decisions": ["D6"], "tasks": ["smoke-scale-check", "deploy-pin-scaling"], "status": "approved"}
+  {
+    "id": "S1",
+    "text": "Agents dynamically join and leave a running cluster (peers, hive state, leader fallback update without restarting the others).",
+    "decisions": [
+      "D3",
+      "D8",
+      "D9"
+    ],
+    "tasks": [
+      "agents-strip-leaving-mark",
+      "deploy-pin-scaling",
+      "kind-e2e-scaling",
+      "scale-down-drain",
+      "smoke-scale-check"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "S2",
+    "text": "The replica cap N is set at cluster init (ClusterSpec field, ceiling 16); the leader can scale between 1 and N with a tool.",
+    "decisions": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "tasks": [
+      "scale-replicas-repo",
+      "public-scale-route",
+      "agent-scale-route",
+      "scale-ui-control",
+      "cap-static-preset-form",
+      "kind-e2e-scaling"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "S3",
+    "text": "Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hive, peers or messaging tools.",
+    "decisions": [
+      "D1",
+      "D4",
+      "D5"
+    ],
+    "tasks": [
+      "scale-replicas-repo",
+      "scale-tool-allow",
+      "cap-static-preset-form",
+      "scale-ui-control",
+      "kind-e2e-scaling"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "X1",
+    "text": "One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool, including scale; built by hive-mode-leadership-handove, this epic adds the scale route and its allow rule.",
+    "decisions": [
+      "D2",
+      "D4"
+    ],
+    "tasks": [
+      "agent-scale-route",
+      "scale-tool-allow"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "X2",
+    "text": "Headless parity: every UI capability (cap, static, replicas) has a documented public API and an API-only e2e test.",
+    "decisions": [
+      "D2",
+      "D5"
+    ],
+    "tasks": [
+      "public-scale-route",
+      "scale-ui-control",
+      "agents-strip-leaving-mark",
+      "cap-static-preset-form",
+      "kind-e2e-scaling",
+      "smoke-scale-check"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "Q2",
+    "text": "The first ready agent leads when a hive starts; scaling up never hands leadership to a joining agent.",
+    "decisions": [
+      "D7"
+    ],
+    "tasks": [
+      "scale-replicas-repo",
+      "kind-e2e-scaling"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "Q4",
+    "text": "Handover only, no takeovers: a scale-down never removes the leader and only the leader may scale through the tool.",
+    "decisions": [
+      "D1",
+      "D3",
+      "D7"
+    ],
+    "tasks": [
+      "scale-replicas-repo",
+      "agent-scale-route",
+      "scale-down-drain",
+      "kind-e2e-scaling"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "Q7",
+    "text": "Tools on load hint the mode; a static single-pod cluster gets no hive, peers or messaging tools (the agent is alone), so no scale tool either.",
+    "decisions": [
+      "D4"
+    ],
+    "tasks": [
+      "scale-tool-allow",
+      "cap-static-preset-form",
+      "kind-e2e-scaling"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "REL",
+    "text": "Releases, bumps and the helmfile apply and smoke are tasks of this epic.",
+    "decisions": [
+      "D6"
+    ],
+    "tasks": [
+      "smoke-scale-check",
+      "deploy-pin-scaling"
+    ],
+    "status": "approved"
+  }
 ]

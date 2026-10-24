@@ -73,6 +73,9 @@ A joining agent never leads (the first ready agent leads at hive start, Q2); a s
 ### D8: Join and leave reuse hive membership; this epic proves it
 Membership stays the wrapper gossip seeded with all cap ordinals (hive F3) and `hive_state` pushes on agents join and leave (hive). This epic adds no membership code and proves it on kind: after scale up and down the surviving pods keep their uids and the config hash, and `/agent/v1/me` members follow. Serves S1.
 
+### D9: S1 dynamic join and leave
+Agents dynamically join and leave a running cluster (peers, hive state, leader fallback update without restarting the others). (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -111,6 +114,7 @@ Membership stays the wrapper gossip seeded with all cap ordinals (hive F3) and `
 | D6 Release is the main build, deployed and smoked | smoke-scale-check, deploy-pin-scaling |
 | D7 Scaling never moves leadership | scale-replicas-repo, kind-e2e-scaling |
 | D8 Join and leave reuse hive membership | kind-e2e-scaling |
+| D9 S1 dynamic join and leave | scale-down-drain, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check, deploy-pin-scaling |
 
 ## Contracts
 
