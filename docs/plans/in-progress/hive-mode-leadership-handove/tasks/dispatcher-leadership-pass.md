@@ -37,6 +37,7 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 
 `dispatcher/loop.py` `drain` runs the pass for hive clusters with queued requests, no leader row, or a leader that is gone or not ready (one candidate query), and the loop also wakes on `leadership_requested` (plus the existing `agent_free` and poll). README `### Leadership` documents the rules and the new NOTIFY channels.
 - Interrogate item 6: `unready_since` is cleared as soon as the leader is ready again (by the pass, and by the observe path when it marks the leader ready), so two separate short unready windows never add up to a takeover.
+- Interrogate item 9: readiness is poll-driven. The initial election and lost-leader detection run on the next drain, so they happen within `dispatch_poll_seconds` of the change. "First ready agent leads" means the lowest-ordinal ready agent at the first pass that sees one ready, within the poll window, not an instantaneous first ready event. README `### Leadership` and the step 1 wording say so.
 
 ## Acceptance conditions
 
@@ -50,6 +51,7 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 - AC8: alone clusters get no leader row; every change sends NOTIFY leader_changed [evidence: test:tests/test_leadership_pass.py::test_alone_untouched_and_notify]
 - AC9: dispatcher tests and lint pass [evidence: command:uv run pytest tests/test_dispatcher.py -q && uv run ruff check . && uv run ruff format --check .]
 - AC10: a leader unready 20 s, ready, unready 20 s again does not trigger a takeover [evidence: test:tests/test_leadership_pass.py::test_unready_since_cleared_when_ready]
+- AC11: README `### Leadership` states that election and lost-leader detection are poll-driven and the first ready means lowest ordinal ready within the poll window [evidence: test:tests/test_leadership_pass.py::test_poll_driven_election_lowest_ordinal]
 
 ## Files
 
@@ -77,3 +79,5 @@ Each hive has one leader, changed only by valid requests or a lost leader, with 
 - `drain` at `dispatcher/loop.py:103-108`; NOTIFY listen list at `:36`.
 
 - 2026-10-24 amended: interrogate verdict 2026-10-24 item 6
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 9
