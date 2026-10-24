@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-docs-memory/agent-orchestrator
+branch: hive-mode-leadership-handove-hive-docs-memory
 verified_head: ""
 run: ""
 provides: []

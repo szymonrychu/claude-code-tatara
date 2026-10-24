@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-helmfile-deploy-pin/agents-helmfile
+branch: hive-mode-leadership-handove-helmfile-deploy-pin
 verified_head: ""
 run: ""
 provides: []
