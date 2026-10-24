@@ -68,6 +68,9 @@ The orchestrator release is the merge of this epic's PR to main (CI publishes ch
 ### D8: API-only kind e2e
 Run once with files in every pod, edit through the public and the agent route writing cluster and preset with no pod roll and no re-run, failure starting sessions degraded, and skipped; agent routes via `kubectl exec` with the pod's token (the fake claude cannot call MCP tools). Serves X2.
 
+### D9: C1 init scripts field, once per cluster
+Init scripts are new: ClusterSpec + preset field; run once per cluster (not per pod, not per restart). (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -105,6 +108,7 @@ Run once with files in every pod, edit through the public and the agent route wr
 | D6 consume hive foundation | init-scripts-agent-api |
 | D7 release, pin, apply, smoke | smoke-init-scripts, deploy-pin-init-scripts, apply-smoke-init-scripts |
 | D8 API-only kind e2e | init-scripts-kind-e2e |
+| D9 C1 init scripts field, once per cluster | init-scripts-spec-field, init-job-runner, init-scripts-kind-e2e |
 
 ## Contracts
 
