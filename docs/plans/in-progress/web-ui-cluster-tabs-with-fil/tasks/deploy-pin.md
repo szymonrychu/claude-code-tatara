@@ -1,6 +1,6 @@
 ---
 title: deploy pin
-status: blocked
+status: escalated
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -11,12 +11,12 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1"
+actual: 4
+actual_roles: "impl 1, verify 1, review 1, fix 1, false-finding 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-deploy-pin/agents-helmfile
-branch: "(none; worktree untouched at 38a2543)"
-verified_head: unknown
+branch: "current worktree branch (head feec968)"
+verified_head: feec968aa0c2574aebb25c3ca63e8ae0d1fb973a
 run: web-ui-cluster-tabs-with-fil
 provides: []
 acs_for_audit: []
