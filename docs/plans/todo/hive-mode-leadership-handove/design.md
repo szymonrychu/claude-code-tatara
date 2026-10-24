@@ -243,6 +243,12 @@ Cross-epic consumers (cluster-scaling, agent-init-scripts) are registered in `do
 - The agent image has `python3` for `kubectl exec` probes: confirmed when kind-e2e-hive runs; fall back to the wrapper's own interpreter path.
 - Harbor and GitHub releases are reachable for the tag pushes: the release tasks check and report.
 
+## Builder check (2026-10-24)
+
+Answered by docs or code: tool names and routes (orchestrator-plugin task, foundation contract table); built-in plugin path precedent (`openapi.py`); no I/O at load (`registry.py:87-122`); tag push only from merged main; env passthrough to stdio children (e2e probe); scale and init tool shapes (contracts `orch-agent-scale-api`, `orch-agent-init-scripts-api`, now AC10).
+Minor, sensible defaults: context bucket 10% in the state hash (my call); tool error text is `<code>: <message>` (my call); lock path normalisation relative to the workdir (my call); feed throttle values as in the wrapper-notes tasks (my call).
+Theirs: none.
+
 ## Open questions
 
 none

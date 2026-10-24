@@ -42,6 +42,7 @@ Foundation part F1 (decisions X1, Q3, Q7, Q9, Q11). Add the built-in any-mcp plu
   - `leadership_handover`: only the current leader may call it, to a named agent or any ready agent; pass the epoch from `me` or the latest hive-state note; the outcome arrives as a hive-state note; when `auto_compact_pct` is set, "hand over instead of compacting once your context passes <auto_compact_pct - 15>%" (Q9: advice only);
   - lock tools: advisory locks; a write to a file another agent claimed is warned, not blocked; the leader may reassign or discard any lock (Q11);
   - `scale`: range 1..<max_replicas>, leader only; `init_scripts_get` / `init_scripts_edit`: the scripts this cluster was initialised with, the run log under `.agent-init/` in the shared workdir, and that an edit applies to the next cluster created from the spec or preset and never re-runs here.
+- Gating (X1): the plugin always lists all nine; render-time config hides tools through the entry's `allow` list (`orchestrator_allow` in plugin-config-merge): `scale` only when `spec.scalable` (hidden when static or cap 1), init-script tools for every cluster, hive tools when `spec.hive`. Cluster-scaling and agent-init-scripts add their names to that function; this epic ships the tools in v0.2.0.
 - Which tools an agent sees is decided by the orchestrator-rendered entry's `allow` list; the plugin always lists all nine.
 - README section `## Orchestrator plugin`: config fields, tools and routes, the `allow` pattern, the `${ORCH_AGENT_TOKEN}` placeholder (expanded by any-mcp from its env; the token is never written to the config file), and that the token is scoped to one cluster.
 - MEMORY.md, dated 2026-10-24: the plugin is built into any-mcp (option a, no extra pip line in the orchestrator onStart) and why.
@@ -58,6 +59,7 @@ Tests in `tests/test_orchestrator_plugin.py` use `any_mcp.testing` / `in_memory_
 - AC6: a non-2xx answer surfaces the server error code in the tool error and the token value appears in no error or log line [evidence: test:tests/test_orchestrator_plugin.py::test_error_mapping_redacts_token]
 - AC7: setup and load_tools make no HTTP request [evidence: test:tests/test_orchestrator_plugin.py::test_no_io_at_load]
 - AC8: README documents the plugin [evidence: doc-section:README.md#Orchestrator plugin]
+- AC10: scale posts `{replicas}` and returns the server's 202 ScaleResult JSON unchanged; init_scripts_get returns the GET body unchanged; init_scripts_edit puts `{scripts: [...]}`; each shape matches contracts `orch-agent-scale-api` and `orch-agent-init-scripts-api`, and the scale error codes (`not_leader`, `static_cluster`, `out_of_range`, `leader_would_leave`) surface in the tool error [evidence: test:tests/test_orchestrator_plugin.py::test_scale_and_init_tools_match_contracts]
 - AC9: docs tests and lint pass [evidence: command:uv run pytest tests/test_docs_reference.py tests/test_docs_links.py tests/test_docs_snippets.py -q && uv run ruff check . && uv run ruff format --check .]
 
 ## Files

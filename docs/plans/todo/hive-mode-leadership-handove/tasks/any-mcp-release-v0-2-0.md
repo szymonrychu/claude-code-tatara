@@ -28,7 +28,7 @@ provides: []
 Foundation part F1 release (X1): any-mcp v0.2.0 carries `OrchestratorPlugin`.
 
 - `pyproject.toml` version `0.2.0`, `uv lock`.
-- `CHANGELOG.md` top entry `## v0.2.0` describing the built-in orchestrator plugin (tools, config, credential handling).
+- `CHANGELOG.md` top entry `## v0.2.0` describing the built-in orchestrator plugin (all nine tools by name, including orchestrator_scale and the init-script tools; config; credential handling).
 - README and CHANGELOG pinned install line and onStart line say `@v0.2.0` (`python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.2.0"`).
 - `tests/test_release.py`: version expectations `0.2.0`, `PINNED_LINE` at `v0.2.0`.
 - Release step, run by the orchestrator once this epic's any-mcp PR is merged to `main`: push tag `v0.2.0` on the merge commit (irreversible, listed in design.md), confirm the release workflow is green and `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.2.0"` installs; then amend `orch-pin-bumps` to the tag.
@@ -37,7 +37,7 @@ Foundation part F1 release (X1): any-mcp v0.2.0 carries `OrchestratorPlugin`.
 
 - AC1: pyproject, package metadata, the CHANGELOG top entry and the README pinned tag all say 0.2.0 [evidence: test:tests/test_release.py::test_versions_agree]
 - AC2: README and CHANGELOG state the v0.2.0 pinned onStart install line [evidence: test:tests/test_release.py::test_pinned_install_line_documented]
-- AC3: the CHANGELOG v0.2.0 entry names the orchestrator plugin [evidence: command:grep -q "^## v0.2.0" CHANGELOG.md && grep -qi "orchestrator" CHANGELOG.md]
+- AC3: the CHANGELOG v0.2.0 entry names the orchestrator plugin [evidence: command:grep -q "^## v0.2.0" CHANGELOG.md && grep -qi "orchestrator" CHANGELOG.md && grep -q "orchestrator_scale" CHANGELOG.md && grep -q "orchestrator_init_scripts_edit" CHANGELOG.md]
 - AC4: tag v0.2.0 exists on origin on the merge commit and its release workflow run is green [evidence: judgement:]
 - AC5: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
