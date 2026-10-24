@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-files-auto-poll-no-button/agent-orchestrator
+branch: workspace-ui-fixes-files-auto-poll-no-button
 verified_head: ""
 run: ""
 provides: []

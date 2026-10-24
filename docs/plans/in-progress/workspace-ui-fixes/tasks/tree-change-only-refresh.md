@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-tree-change-only-refresh/agent-orchestrator
+branch: workspace-ui-fixes-tree-change-only-refresh
 verified_head: ""
 run: ""
 provides: []
