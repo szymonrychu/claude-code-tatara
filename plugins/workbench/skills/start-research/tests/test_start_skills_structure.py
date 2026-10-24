@@ -101,6 +101,7 @@ LOCAL_SKILL_DIRS = (
     "git-submodules-refresh",
     "start-research",
     "start-discovery",
+    "epic-run",
     "git-worktrees-create",
     "git-worktrees-commit",
     "git-worktrees-push",
