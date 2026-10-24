@@ -27,6 +27,7 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
+import calibration  # noqa: E402
 import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
@@ -42,6 +43,11 @@ TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")
 AC_LINE = re.compile(r"^- (\S+?): (.+?) \[evidence: ([a-z-]+)(?::\s*(.*?))?\]$")
 REQUIRED_SECTIONS = ("Requirement", "Acceptance conditions", "Files", "Steps")
+POINT_KEYS = ("points", "points_actual")
+COUNT_KEYS = ("expected_minutes", "expected_tokens", "actual_minutes", "actual_tokens")
+ROLE_KEYS = ("actual_roles", "actual_role_tokens")
+ROLES = ("impl", "review")
+ROLE_PAIR = re.compile(r"(impl|review) ([0-9]+)")
 PATH_KINDS = {
     "readme": "README.md",
     "design": "design.md",
@@ -334,6 +340,82 @@ def _template(name: str) -> Doc:
     return load(p.read_text(), p)
 
 
+def _count(value, task: str, field: str) -> int | None:
+    """A whole non-negative number field (frontmatter values load as strings); unset is None."""
+    if value in (None, ""):
+        return None
+    if not re.fullmatch(r"[0-9]+", str(value)):
+        raise TicketError(f"task {task!r}: {field} must be a whole number >= 0: {value!r}")
+    return int(value)
+
+
+def _points(value, task: str, field: str) -> int | None:
+    """A storypoints field, one of calibration.POINTS; unset is None."""
+    if value in (None, ""):
+        return None
+    if re.fullmatch(r"[0-9]+", str(value)) and int(value) in calibration.POINTS:
+        return int(value)
+    allowed = ", ".join(map(str, calibration.POINTS))
+    raise TicketError(f"task {task!r}: {field} must be one of {allowed}: {value!r}")
+
+
+def _parse_roles(value, task: str, field: str) -> dict[str, int] | None:
+    """`impl N, review N` (each role at most once) to {role: N}; unset is None."""
+    if value in (None, ""):
+        return None
+    out: dict[str, int] = {}
+    for part in str(value).split(","):
+        m = ROLE_PAIR.fullmatch(part.strip())
+        if not m or m.group(1) in out:
+            raise TicketError(
+                f"task {task!r}: {field} must look like 'impl N, review N': {value!r}"
+            )
+        out[m.group(1)] = int(m.group(2))
+    return out
+
+
+def _format_roles(roles: dict[str, int]) -> str:
+    return ", ".join(f"{r} {roles[r]}" for r in ROLES if r in roles)
+
+
+def _number_problems(meta: dict, task: str) -> list[str]:
+    """Every points, count and roles field of a task that is set but malformed."""
+    checks = [(k, _points) for k in POINT_KEYS] + [(k, _count) for k in COUNT_KEYS]
+    out = []
+    for key, check in checks + [(k, _parse_roles) for k in ROLE_KEYS]:
+        try:
+            check(meta.get(key), task, key)
+        except TicketError as e:
+            out.append(str(e))
+    return out
+
+
+def calibration_rows(root: Path) -> list[dict]:
+    """calibration rows: every done task with integer points and both actuals, plus its
+    expected minutes and tokens and points_actual when they are well formed."""
+    rows = []
+    for t in scan(root):
+        if t.kind != "task" or t.meta.get("status") != "done":
+            continue
+        if _number_problems(t.meta, t.slug):
+            continue
+        row = {k: _points(t.meta.get(k), t.slug, k) for k in POINT_KEYS}
+        row.update({k: _count(t.meta.get(k), t.slug, k) for k in COUNT_KEYS})
+        if None in (row["points"], row["actual_minutes"], row["actual_tokens"]):
+            continue
+        rows.append({k: v for k, v in row.items() if v is not None})
+    return rows
+
+
+def _point_fields(root: Path, points: str | None, task: str) -> dict:
+    """`points` plus expected minutes and tokens from calibration; empty without points."""
+    n = _points(points, task, "points")
+    if n is None:
+        return {}
+    minutes, tokens = calibration.expected(n, calibration_rows(root))
+    return {"points": str(n), "expected_minutes": str(minutes), "expected_tokens": str(tokens)}
+
+
 def cmd_new_epic(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
@@ -393,6 +475,7 @@ def cmd_new_task(a: argparse.Namespace) -> int:
     if path.exists():
         raise TicketError(f"task {task!r} already exists in epic {epic_dir.name!r}")
     worktree_name(epic_dir.name, task)
+    numbers = _point_fields(root, a.points, task)
     files = _csv(a.files)
     if report(run_check(root, a.title, epic_dir.name, files)):
         return 1
@@ -407,6 +490,7 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         depends_on=_csv(a.depends_on),
         model=a.model or "",
         review=a.review or "",
+        **numbers,
     )
     body = _render(
         doc.body,
@@ -778,6 +862,8 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
                 "review": m.get("review", ""),
                 "status": m.get("status", ""),
                 "verifiedHead": m.get("verified_head", ""),
+                "points": _points(m.get("points"), path.stem, "points"),
+                **{k: _count(m.get(k), path.stem, k) for k in COUNT_KEYS[:2]},
             }
         )
     by_id = {x["id"]: x for x in out}
@@ -1410,7 +1496,8 @@ def cmd_reap(a: argparse.Namespace) -> int:
 
 
 def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
-    """What a task file lacks: a Requirement, an acceptance condition, verify, files."""
+    """What a task file lacks (a Requirement, an acceptance condition, verify, files) and its
+    malformed points, counts and roles."""
     sec = _sections(t.body)
     out = []
     req = sec.get("Requirement", "")
@@ -1424,7 +1511,7 @@ def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
     for key in ("verify", "files"):
         if not t.meta.get(key):
             out.append(f"task {t.slug!r} has no {key}")
-    return out
+    return out + _number_problems(t.meta, t.slug)
 
 
 def _coverage_problems(design: Path, slugs: set[str]) -> list[str]:
@@ -1593,6 +1680,11 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         sp.add_argument(f"--{opt}", required=True)
     for opt in ("depends-on", "model", "review", "requirement-file", "ac-file"):
         sp.add_argument(f"--{opt}")
+    sp.add_argument(
+        "--points",
+        help="Fibonacci storypoints (1, 2, 3, 5, 8, 13); fills expected_minutes and "
+        "expected_tokens from calibration",
+    )
     sp = add("check", cmd_check)
     for opt in ("title", "epic", "files", "blockers", "goals-file"):
         sp.add_argument(f"--{opt}")

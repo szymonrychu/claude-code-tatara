@@ -9,6 +9,14 @@ depends_on: []
 model: ""
 review: ""
 verified_head: ""
+points: ""
+expected_minutes: ""
+expected_tokens: ""
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # {{title}}

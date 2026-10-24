@@ -159,7 +159,7 @@ def test_new_epic_refuses_existing_in_any_phase(root, phase):
 
 
 # (4) new-task
-LEAN_KEYS = [
+BASE_KEYS = [
     "title",
     "status",
     "repo",
@@ -171,6 +171,17 @@ LEAN_KEYS = [
     "review",
     "verified_head",
 ]
+NUMBER_KEYS = [
+    "points",
+    "expected_minutes",
+    "expected_tokens",
+    "points_actual",
+    "actual_minutes",
+    "actual_tokens",
+    "actual_roles",
+    "actual_role_tokens",
+]
+LEAN_KEYS = BASE_KEYS + NUMBER_KEYS
 
 
 def test_new_task(t, root):
@@ -243,7 +254,10 @@ def test_task_frontmatter_is_lean(t, root):
     new_epic(root)
     assert new_task(root).returncode == 0
     p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
-    assert list(t.load(p.read_text(), p).meta) == LEAN_KEYS
+    lean = t.load(p.read_text(), p).meta
+    assert list(lean) == LEAN_KEYS
+    assert all(lean[k] == "" for k in NUMBER_KEYS)
+    assert not [k for k in LEAN_KEYS if "estimate" in k]
     for gone in ("--owns", "--uses"):
         r = new_task(root, "cost-and-ticketing", "Other task", gone, "x")
         assert r.returncode == 2 and gone in r.stderr
@@ -253,7 +267,7 @@ def test_task_frontmatter_is_lean(t, root):
     legacy = p.parent / "old-task.md"
     legacy.write_text(LEGACY_TASK)
     doc = t.load(legacy.read_text(), legacy)
-    assert {k: doc.meta[k] for k in LEAN_KEYS} == {
+    assert {k: doc.meta[k] for k in BASE_KEYS} == {
         "title": "Old task",
         "status": "done",
         "repo": "plugin",
@@ -271,6 +285,68 @@ def test_task_frontmatter_is_lean(t, root):
     again = t.load(legacy.read_text(), legacy).meta
     assert again["status"] == "escalated" and again["owns"] == ["helper"]
     assert again["estimate"] == "6" and again["run"] == "run-1"
+
+
+def _calibration():
+    spec = importlib.util.spec_from_file_location(
+        "calibration", ROOT / "scripts" / "lib" / "calibration.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _task_meta(t, root, slug_="ticket-core", epic="cost-and-ticketing"):
+    p = root / "todo" / epic / "tasks" / f"{slug_}.md"
+    return t.load(p.read_text(), p).meta
+
+
+def _history_task(root, epic, name, status="done", **fields):
+    """A task file written by hand in `epic` (done phase), carrying the given number fields."""
+    d = root / "done" / epic / "tasks"
+    d.mkdir(parents=True, exist_ok=True)
+    lines = ["---", f"title: {name}", f"status: {status}"]
+    lines += [f"{k}: {v}" for k, v in fields.items()]
+    (d / f"{name}.md").write_text("\n".join(lines) + "\n---\n\n# " + name + "\n")
+
+
+def test_new_task_points_fill_expected(t, root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "5")
+    assert r.returncode == 0, r.stderr
+    m = _task_meta(t, root)
+    minutes, tokens = _calibration().SEED[5]
+    assert m["points"] == "5"
+    assert m["expected_minutes"] == str(minutes) and m["expected_tokens"] == str(tokens)
+    for k in ("points_actual", "actual_minutes", "actual_tokens", "actual_roles"):
+        assert m[k] == "", k
+    assert m["actual_role_tokens"] == ""
+
+
+def test_new_task_expected_from_history(t, root):
+    new_epic(root)
+    for name, minutes, tokens in (("h1", 10, 100), ("h2", 20, 200), ("h3", 40, 900)):
+        _history_task(root, "old", name, points=3, actual_minutes=minutes, actual_tokens=tokens)
+    # rows that do not count: not done, missing an actual, a non-numeric actual
+    _history_task(root, "old", "open", "in-progress", points=3, actual_minutes=999,
+                  actual_tokens=999)
+    _history_task(root, "old", "half", points=3, actual_minutes=999)
+    _history_task(root, "old", "junk", points=3, actual_minutes="lots", actual_tokens=999)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "3")
+    assert r.returncode == 0, r.stderr
+    m = _task_meta(t, root)
+    assert (m["points"], m["expected_minutes"], m["expected_tokens"]) == ("3", "20", "200")
+    rows = t.calibration_rows(root)
+    assert sorted(r["actual_minutes"] for r in rows) == [10, 20, 40]
+    assert all(r["points"] == 3 for r in rows)
+
+
+def test_new_task_rejects_non_fibonacci_points(root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "4")
+    assert r.returncode == 1
+    assert "1, 2, 3, 5, 8, 13" in r.stderr and "points" in r.stderr
+    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
 
 
 def test_new_task_requirement_and_ac_files(root, tmp_path):
@@ -537,11 +613,11 @@ def test_cli_commits_in_git_repo(repo):
 
 
 # (13) tasks: dependency order
-def _full_task(root, epic, title, deps=""):
+def _full_task(root, epic, title, deps="", *more):
     req, ac = root / "req.txt", root / "ac.txt"
     req.write_text("Do it.")
     ac.write_text("- AC1: works [evidence: test:t.py::test_works]")
-    extra = ["--requirement-file", req, "--ac-file", ac]
+    extra = ["--requirement-file", req, "--ac-file", ac, *more]
     if deps:
         extra += ["--depends-on", deps]
     r = new_task(root, epic, title, *extra)
@@ -577,3 +653,18 @@ def test_tasks_are_in_dependency_order(root):
     _full_task(root, ep, "Loop two", "loop-one")
     r = cli("tasks", ep, "--root", root)
     assert r.returncode == 1 and "cycle" in r.stderr and "loop-one" in r.stderr
+
+
+def test_tasks_json_carries_estimates(root):
+    new_epic(root)
+    ep = "cost-and-ticketing"
+    _full_task(root, ep, "Alpha", "", "--points", "2")
+    _full_task(root, ep, "Beta")
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    by_id = {x["id"]: x for x in json.loads(r.stdout)}
+    minutes, tokens = _calibration().SEED[2]
+    alpha = {k: by_id["alpha"][k] for k in ("points", "expected_minutes", "expected_tokens")}
+    assert alpha == {"points": 2, "expected_minutes": minutes, "expected_tokens": tokens}
+    beta = {k: by_id["beta"][k] for k in ("points", "expected_minutes", "expected_tokens")}
+    assert beta == {"points": None, "expected_minutes": None, "expected_tokens": None}

@@ -27,10 +27,11 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
 (`ticket_cmds`):
 
 - `slug`, `new-epic`, `new-task`, `rename`, `path`: create and name tickets (`new-task` takes
-  `--requirement-file` and `--ac-file`).
+  `--requirement-file`, `--ac-file` and `--points N`).
 - `check`, `index`, `existing`: near-duplicate check, the generated index, the files done tasks built.
 - `tasks`: `tasks <epic>` prints the tasks as JSON in dependency order (every dependency before its
-  dependents; a cycle exits 1).
+  dependents; a cycle exits 1); each carries `points`, `expected_minutes` and `expected_tokens` (numbers,
+  or null when unset).
 - `task`: `task <epic> <task> --status <s> [--verified-head <sha>] [--note <text>]` records a task's
   outcome; the note is appended under `## Notes` as a dated line.
 - `move`: `move <epic> in-progress` claims the epic, sets every todo task to in-progress and creates the
@@ -39,7 +40,8 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
 - `stage`: `stage <epic> review|build` (`review` refuses while a task is not done).
 - `review`: `review <epic> --verdict pass|fail --notes-file <f>` writes the README Review section.
 - `lint`: `lint [<epic>]` checks statuses, dependencies, cycles, every task's Requirement, acceptance
-  conditions, `verify` and `files`, and design.md's Decision coverage; prints `lint: ok`.
+  conditions, `verify` and `files`, its points, minutes, tokens and roles fields (todo and in-progress
+  epics), and design.md's Decision coverage; prints `lint: ok`.
 - `amend`: `amend <epic> <task> --requirement-file ... [--ac-file ...] --reason ...` replaces a task's
   Requirement and acceptance conditions and notes why.
 - `questions`: `questions [--add <epic> <q> --recommended <a>|--answer <epic> <qid> <text>]` lists, adds
@@ -90,13 +92,26 @@ reads them and nothing writes them.
 Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `created`. Sections: Project
 brief (What/How/Why), Description, Goals, Non-goals, Review.
 
-Task file, ten keys: title, status, repo, value, files, verify, depends_on, model, review, verified_head.
+Task file, eighteen keys: title, status, repo, value, files, verify, depends_on, model, review, verified_head,
+points, expected_minutes, expected_tokens, points_actual, actual_minutes, actual_tokens, actual_roles,
+actual_role_tokens.
 - `value`: one line, what this task is worth to the user; required.
 - `files`: every file the task may touch. `verify`: the targeted test and lint command (named test
   files or a component suite plus lint, never the full suite); the reviewer runs it on HEAD.
 - `depends_on`: the tasks whose commits it builds on. `model`: opus when the task adds a module or
   touches more than five files, else sonnet; the reviewer and scope auditor run on sonnet.
 - `verified_head`: the commit the reviewer verified, written by `ticket.py task --verified-head`.
+- `points`: Fibonacci storypoints (1, 2, 3, 5, 8, 13), the planner's one number, from
+  `new-task --points N`; any other value exits 1 and writes nothing.
+- `expected_minutes`, `expected_tokens`: filled by `new-task` from `calibration.expected(points, rows)`
+  (`scripts/lib/calibration.py`). The rows are every done task with integer `points`, `actual_minutes`
+  and `actual_tokens`: the median of that points bucket at 3 rows, a least-squares line over points at 5
+  rows overall, else the seed table.
+- `points_actual`, `actual_minutes`, `actual_tokens`: what the task really took, written when it is done;
+  they start empty. `actual_roles` and `actual_role_tokens`: minutes and tokens per role, `impl N,
+  review N`.
+- `lint` checks these fields when set: `points` and `points_actual` Fibonacci, the minutes and tokens
+  whole numbers >= 0, the roles `impl N, review N`. Values load as strings. Done epics are not checked.
 
 Sections: Requirement (verbatim, every acceptance condition, never a summary), Acceptance conditions,
 Files, Interfaces, Expected outcome, Steps, Notes. An acceptance condition is `- <AC-id>: <text>
