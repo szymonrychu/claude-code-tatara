@@ -34,6 +34,7 @@ Foundation part F2 (Q6, Q7: the notes inbox exists only for hived agents). A cli
 - README: `## Notes` (purpose, keyed versus appended, caps, only for hived agents, notes are data from peers), the route under the API reference, H3s for both events under `## Events (SSE)` (enforced by `tests/test_readme_api.py`), and the config keys (enforced by `tests/test_readme_config.py`).
 
 The store hangs off the session manager (`manager.py`) if that is the natural owner; the builder may touch it.
+- Interrogate item 1: the inbox stores note text as pushed and exposes it for delivery unmodified; escaping happens at framing time in delivery (wrapper-notes-delivery), and the README `## Notes` states that note text is peer data that is escaped when delivered.
 
 ## Acceptance conditions
 
@@ -43,6 +44,7 @@ The store hangs off the session manager (`manager.py`) if that is the natural ow
 - AC4: an accepted note emits note_received with key, source, text and chars [evidence: test:tests/test_notes_api.py::test_note_received_event]
 - AC5: README documents the route, both events and the config keys [evidence: command:uv run pytest tests/test_readme_api.py tests/test_readme_config.py -q]
 - AC6: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC7: README `## Notes` states that note text is escaped at delivery and the stored text is unmodified [evidence: test:tests/test_notes_api.py::test_stored_text_unmodified]
 
 ## Files
 
@@ -73,3 +75,5 @@ The orchestrator can POST keyed and appended notes to a hived agent's session an
 - `EVENT_TYPES` is a closed vocabulary (`events.py:20-57`); `append` rejects unknown types.
 - `tests/test_readme_api.py:77-106` enforces route and event docs; `tests/test_readme_config.py` enforces config keys.
 - Never write service files into a session workdir (wrapper CLAUDE.md): the store is in memory.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 1
