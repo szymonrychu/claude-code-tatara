@@ -37,9 +37,17 @@ KEPT = [
     "close",
     "questions",
     "roadmap",
+    "task",
 ]
 CMDS = "plugins/workbench/skills/start-development/scripts/ticket_cmds"
-KEPT_MODULES = {"__init__.py", "amend.py", "close_cmd.py", "questions.py", "roadmap.py"}
+KEPT_MODULES = {
+    "__init__.py",
+    "amend.py",
+    "close_cmd.py",
+    "questions.py",
+    "roadmap.py",
+    "task_cmd.py",
+}
 
 
 def _help_names() -> set[str]:
