@@ -82,6 +82,8 @@ def test_write_mise_config_disables_attestations_and_aliases_bats_to_npm(tmp_pat
     text = path.read_text()
     assert path == tmp_path / "mise" / "conf.d" / "workbench-cloud.toml"
     assert "aqua.github_attestations = false" in text
+    assert "aqua.cosign = false" in text
+    assert "skills.fetch = false" in text
     assert 'npm.package_manager = "npm"' in text
     assert 'bats = "npm:bats"' in text
 

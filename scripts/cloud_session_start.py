@@ -32,6 +32,9 @@ MISE_CONFIG = """\
 [settings]
 # The proxy blocks tuf-repo-cdn.sigstore.dev; aqua still checks release checksums.
 aqua.github_attestations = false
+aqua.cosign = false
+# Tool-declared agent skills are fetched from raw GitHub URLs that can 404 and fail the install.
+skills.fetch = false
 # mise's default npm installer creates no bin links for bats.
 npm.package_manager = "npm"
 

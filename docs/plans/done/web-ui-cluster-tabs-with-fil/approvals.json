@@ -1,0 +1,169 @@
+[
+  {
+    "id": "A",
+    "text": "The left ribbon is replaced by a top tab bar: one tab per cluster with its state mark, slug and context gauge; New cluster and Discard are reachable from the bar; the cluster Edit action is dropped from the UI.",
+    "decisions": [
+      "D10",
+      "D12",
+      "D13"
+    ],
+    "tasks": [
+      "fe-retire-ribbon",
+      "fe-top-bar"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "C",
+    "text": "A cluster tab shows three panels side by side, filesystem, chat and terminal, split by draggable separators, with minimize and maximize controls (at most two minimized, maximize minimizes the other two), a layout persisted per cluster in the browser, and a phone layout.",
+    "decisions": [
+      "D7",
+      "D15",
+      "D16"
+    ],
+    "tasks": [
+      "fe-deps-and-storage",
+      "fe-panel-workspace"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "E",
+    "text": "The terminal panel holds several terminal tabs, each an interactive shell in the cluster workdir on a chosen agent pod, over a WebSocket PTY served by the wrapper and proxied by the orchestrator api, rendered with xterm.js.",
+    "decisions": [
+      "D2",
+      "D3",
+      "D6",
+      "D11",
+      "D18",
+      "D19",
+      "D20",
+      "D21"
+    ],
+    "tasks": [
+      "fe-terminal-panel",
+      "fe-terminal-socket",
+      "pty-resize-and-raw-ring",
+      "terminal-proxy-routes",
+      "terminal-registry",
+      "terminal-websocket-api",
+      "terminal-ws-relay",
+      "wrapper-workspace-e2e"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "F",
+    "text": "The filesystem panel shows the cluster's shared workdir as a lazily loaded tree (VS Code explorer style), refreshed when the event stream shows a write, with a read-only file preview.",
+    "decisions": [
+      "D1",
+      "D8",
+      "D23",
+      "D24",
+      "D25"
+    ],
+    "tasks": [
+      "fe-filesystem-panel",
+      "file-proxy-routes",
+      "wrapper-file-api"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "I",
+    "text": "New backend surface: a wrapper file and terminal API and orchestrator /api/v1 proxies for both, with path confinement, size caps and terminal caps.",
+    "decisions": [
+      "D4",
+      "D27"
+    ],
+    "tasks": [
+      "file-proxy-routes",
+      "terminal-proxy-routes",
+      "terminal-ws-relay",
+      "wrapper-proxy-seam"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "K",
+    "text": "Every WebSocket upgrade is checked against a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) beside the existing source allowlist.",
+    "decisions": [
+      "D5",
+      "D22"
+    ],
+    "tasks": [
+      "deploy-pin",
+      "origin-allowlist",
+      "terminal-proxy-routes",
+      "terminal-ws-relay"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "J",
+    "text": "Deployed: the wrapper image, the orchestrator image and chart are pinned in agents-helmfile; apply and smoke are run by the user after the epic.",
+    "decisions": [
+      "D9"
+    ],
+    "tasks": [
+      "wrapper-sha-pin",
+      "kind-e2e-workspace",
+      "deploy-pin"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "B",
+    "text": "Q14: this epic builds the hamburger menu at the top left: every session (cluster) listed from the top and a settings section pinned to the bottom that stays empty until the cluster-presets epic adds Presets.",
+    "decisions": [
+      "D14"
+    ],
+    "tasks": [
+      "fe-top-bar",
+      "fe-retire-ribbon"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "D",
+    "text": "Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents strip in the chat panel header, merged with the agent filter chips.",
+    "decisions": [
+      "D17"
+    ],
+    "tasks": [
+      "fe-agents-strip"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "G",
+    "text": "Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons.",
+    "decisions": [
+      "D26"
+    ],
+    "tasks": [
+      "fe-deps-and-storage",
+      "fe-top-bar",
+      "fe-panel-workspace",
+      "fe-filesystem-panel"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "H",
+    "text": "Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test.",
+    "decisions": [
+      "D28"
+    ],
+    "tasks": [
+      "wrapper-file-api",
+      "terminal-websocket-api",
+      "wrapper-workspace-e2e",
+      "file-proxy-routes",
+      "terminal-proxy-routes",
+      "terminal-ws-relay",
+      "kind-e2e-workspace"
+    ],
+    "status": "approved"
+  }
+]
