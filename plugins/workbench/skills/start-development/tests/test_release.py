@@ -28,18 +28,19 @@ def test_version_matches_changelog():
 
 def test_plugin_json_version_and_description():
     meta = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
-    assert "approval ledger" in meta["description"]
-    assert "one approval gate" in meta["description"]
-    assert "research skills" in meta["description"]
-    for word in ("review", "debugging", "verification hooks"):
-        assert word in meta["description"], word
-    assert "seven-phase" not in meta["description"]
+    desc = meta["description"]
     for word in (
+        "one approval gate",
         "file-based epic tickets",
-        "tiered review",
-        "script+haiku verifier",
+        "research skills",
+        "epic-run",
+        "review",
+        "debugging",
+        "verification hooks",
     ):
-        assert word in meta["description"], word
+        assert word in desc, word
+    for gone in ("seven-phase", "approval ledger", "tiered review", "verifier", "plan execution"):
+        assert gone not in desc, gone
 
 
 def test_manifests_do_not_mention_graphify():
@@ -83,24 +84,19 @@ def test_readme_wording():
 
 
 def test_readme_dispatch_phases_match_skill():
+    """Every start-development row of the README dispatch table names an agent SKILL.md names."""
     readme = (ROOT / "README.md").read_text()
-    agents = (SD / "references" / "agents.md").read_text()
-    table = re.findall(r"^\| `(\S+)` \| .*? \| (\d(?:, \d)*) \|$", agents, re.M)
-    assert table
-    # Agents shipped by an optional pack (plugins/workbench-*/agents) are documented in
-    # that pack's README, not the core's; agents.md still lists their phase triggers.
-    # Removed phase-row assertions (3 total, all moved to packs): tf-planner (phase 5),
-    # helmfile-differ (phase 5), k8s-triage (phase 6). They are replaced by the absence
-    # assertion below, and the skip set is pinned so no other agent can silently drop out.
+    skill = (SD / "SKILL.md").read_text()
+    rows = re.findall(r"^\| `start-development` phase (\d) \| `(\S+)` \|", readme, re.M)
+    assert rows
     packs = {f.stem for f in (ROOT.parent).glob("workbench-*/agents/*.md")}
     assert packs, "pack agents not found"
-    assert {a for a, _ in table} & packs == {"tf-planner", "helmfile-differ", "k8s-triage"}
-    for agent, phases in table:
-        if agent in packs:
-            assert not re.search(rf"`{agent}`", readme), f"core README names pack agent {agent}"
-            continue
-        for ph in phases.split(", "):
-            assert re.search(rf"`start-development` phase {ph}\W.*`{agent}`", readme), (agent, ph)
+    for phase, agent in rows:
+        assert agent not in packs, f"core README names pack agent {agent}"
+        assert f"## Phase {phase} - " in skill, phase
+        assert agent in skill, (agent, phase)
+    for agent in ("planner", "implementer", "reviewer", "scope-auditor", "record-writer"):
+        assert agent in {a for _, a in rows}, agent
 
 
 def test_readme_names_the_new_flows():
@@ -118,12 +114,9 @@ def test_readme_names_the_new_flows():
 def test_readme_names_round_three():
     text = (ROOT / "README.md").read_text()
     for needle in (
-        "verifier",
-        "heartbeat",
         "concise-orchestrator",
         "/workbench:review",
         "/workbench:debug",
-        "approval ledger",
         "flake-hunt",
         "full output:",
         "references/hooks.md",
@@ -133,39 +126,40 @@ def test_readme_names_round_three():
     assert "intentionally forked" not in text
 
 
-def test_readme_describes_1_0_0():
+def test_readme_describes_the_lean_flow():
     text = (ROOT / "README.md").read_text()
     for needle in (
         "docs/plans/{todo,in-progress,done}/<epic>/",
         "tasks/<task>.md",
-        "approvals.json",
         "legacy dated files were removed",
-        "ticket.py",
-        "<epic>-<task>",
+        "skills/start-development/scripts/ticket.py",
         "integration worktree",
         "epic review before",
-        "skills/start-development/scripts/ticket.py",
-        "risk tier",
-        "script+haiku verifier",
-        "gate-only fix rounds",
+        "epic-run",
+        "one implementer and one reviewer per task",
+        "at most two fix rounds",
+        "one scope audit per epic",
         "undelivered",
         "discovered",
-        "AC evidence",
-        "epic-close audit",
-        "time estimate",
+        "verified head",
         "LSP and grep",
     ):
         assert needle in text, needle
+    for gone in (
+        "approvals.json",
+        "approval ledger",
+        "script+haiku verifier",
+        "risk tier",
+        "gate-only fix rounds",
+        "time estimate",
+        "heartbeat",
+        "<epic>-<task>",
+        "--<task>",
+    ):
+        assert gone not in text, gone
     assert "graphify" not in text.lower()
-    assert re.search(r"`scope-auditor` \| sonnet \|.*agent type", text)
-
-
-def test_readme_names_epic_task_trees_and_integration():
-    text = (ROOT / "README.md").read_text()
-    assert "<epic>-<task>" in text
-    assert "integration worktree" in text
-    assert "--<task>" not in text
     assert "epic reached main" in text
+    assert re.search(r"`scope-auditor` \| sonnet \|", text)
 
 
 def test_readme_documents_the_template():

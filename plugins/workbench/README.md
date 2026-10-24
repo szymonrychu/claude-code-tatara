@@ -1,9 +1,10 @@
 # workbench - core plugin
 
 The development flow for any workbench tree, whether the tree is a metarepo or a flat
-set of sibling repos: discovery, design and plan behind one approval gate, unattended
-execution with a verifier, tiered review, gated debugging, file-based epic tickets,
-and hooks that guard destructive commands and tie every test run to the committed HEAD.
+set of sibling repos: discovery, design and tasks behind one approval gate, unattended
+execution through `epic-run` (one implementer and one reviewer per task, one scope audit per
+epic), gated review and debugging, file-based epic tickets, and hooks that guard destructive
+commands and tie every test run to the committed HEAD.
 
 ## Install
 
@@ -72,7 +73,8 @@ Every agent and script goes through this, so a new tree needs no code change.
 
 ## Agents
 
-Read-only, except `record-writer` (one file, the run record), `implementer` (code in its worktree)
+Read-only, except `record-writer` (one file, the epic record), `implementer` (code in the epic's
+integration worktree), `planner` (design.md and task files), `worktree-merger` (a conflicted rebase)
 and the `research-*` agents (a brief at their output path).
 Mechanical ones on sonnet (they exist to keep large output out of the main context);
 research ones on opus (they exist for judgement). The reviewers carry no model of their own:
@@ -87,17 +89,17 @@ the caller sets it per call.
 | `security-researcher` | opus | secrets, RBAC, container privilege, supply chain, CVE surface |
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
-| `record-writer` | sonnet | the one agent that writes: fills the record template for a finished run, one file |
-| `implementer` | sonnet | implements one task or the lean path's change test-first and returns `complete`, `undelivered`, `discovered` |
-| `reviewer` | per call | one reviewer per task: verify on HEAD, every acceptance condition, then quality |
+| `record-writer` | sonnet | fills the record template for a finished epic from its task files and git log, one file |
+| `implementer` | sonnet | implements one task test-first in the epic's integration worktree and returns `complete`, `undelivered`, `discovered`; fix rounds continue it |
+| `reviewer` | per call | one reviewer per task: verify on HEAD, every acceptance condition, debt markers, then quality |
 | `panel-reviewer` | per call | one member of an `interrogate` review panel, one per model |
-| `worktree-merger` | sonnet | merges one task worktree back: rebase, fast-forward, verify every commit landed, clean up |
+| `worktree-merger` | sonnet | resolves a conflicted rebase of an epic's integration branch, sized by `--assess` |
 | `research-docs-purist` | sonnet | official docs at the installed version, anti-patterns in our usage |
 | `research-practitioner` | sonnet | field experience and known failure modes |
 | `research-prior-art-scout` | sonnet | similar open-source projects, shapes and dead ends |
 | `research-paper-scout` | sonnet | literature for the algorithmic core, cited by DOI or arXiv id |
 | `research-reviewer` | sonnet | adversarial check of research briefs |
-| `scope-auditor` | sonnet | checks delivered work against the agreed scope; dispatched by plan-execute as an agent type |
+| `scope-auditor` | sonnet | once per epic: README goals and every acceptance condition against the integrated diff, plus a duplicate sweep |
 
 `scm-shepherd` decides per repo from `remote get-url`, so one agent serves GitHub and GitLab trees.
 
@@ -115,23 +117,22 @@ every pass, so routine work doesn't pay for them:
 |---|---|---|
 | `start-development` phase 1 | `submodule-auditor` | a checkout may be stale, detached, or unpushed |
 | `start-development` phase 1 | `codebase-cartographer` | mapping a repo in scope (via `start-discovery`) |
-| `start-development` phase 1 | `reuse-hunter` | the reuse hunt (via `research-code-internal`) |
+| `research-code-internal` | `reuse-hunter` | the reuse hunt |
 | `start-development` phase 2 | `architect-researcher` | >1 viable approach, or an expensive-to-reverse choice |
 | `start-development` phase 3 | `planner` | planning an epic from `{epic, briefs[], userDecisions[]}` |
-| `start-development` phase 1 | `research-docs-purist` | official docs of every library in scope (via `research-docs`) |
-| `start-development` phase 1 | `research-practitioner` | field experience, known failure modes (via `start-research`) |
-| `start-development` phase 1 | `research-prior-art-scout` | similar open-source projects (via `research-code-external`) |
-| `start-development` phase 1 | `research-paper-scout` | literature for an algorithmic core (via `research-papers`) |
-| `start-development` phase 1 | `research-reviewer` | adversarial check of every research brief |
-| `start-development` phase 4 | `implementer` | every task's implementation, via plan-execute and the lean path |
-| `start-development` phase 5 | `reviewer` | one reviewer for spec and quality (via `start-review --single`) |
-| `start-development` phase 4 | `scope-auditor` | after implementation, audit of delivered vs planned |
-| `start-development` phase 4 | `worktree-merger` | every worktree merge, sized by `--assess` |
-| `start-development` phase 5 | `scope-auditor` | before sign-off |
+| `research-docs` | `research-docs-purist` | official docs of every library in scope |
+| `start-research` | `research-practitioner` | field experience, known failure modes |
+| `research-code-external` | `research-prior-art-scout` | similar open-source projects |
+| `research-papers` | `research-paper-scout` | literature for an algorithmic core |
+| `start-research` | `research-reviewer` | adversarial check of every research brief |
+| `start-development` phase 4 | `implementer` | every task, via `epic-run`, in the background |
+| `start-development` phase 4 | `reviewer` | every task, after its implementer and after each fix round |
+| `start-development` phase 5 | `reviewer` | the whole epic diff (via `start-review --single`) |
+| `start-development` phase 5 | `scope-auditor` | once per epic, before the verdict |
 | `start-development` phase 5 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
-| `start-development` phase 6 | `worktree-merger` | the final merge |
-| `start-development` phase 6 | `scm-shepherd` | a pipeline failed and the cause is not in the log tail |
-| `start-development` phase 7 | `record-writer` | always on a plan-execute run: writes the record |
+| `start-development` phase 6 | `worktree-merger` | `ticket.py close` hit a rebase conflict |
+| `references/merge-hosts.md` | `scm-shepherd` | a pipeline failed and the cause is not in the log tail |
+| `start-development` phase 7 | `record-writer` | always: writes the epic record |
 | `interrogate` | `panel-reviewer` | a review panel, one agent per model |
 | `git-submodules-refresh` | `submodule-auditor` | checkout state unknown before refreshing |
 
@@ -155,7 +156,7 @@ pullrequests-update, pullrequests-watch, pullrequests-list, pullrequests-review-
 start-research, start-discovery, start-development, interrogate
 epic-create, epic-task-create   create an epic / a task file through ticket.py
 epic-move, epic-worktrees-remove  move an epic between stages / remove its merged worktrees
-heartbeat                       progress line every 10 minutes while waiting on a run; keepalive opt-in
+epic-run                        execute one planned epic: one implementer and one reviewer per task, at most two fix rounds, then audit and close
 start-review                    review a branch, diff, MR or PR against its intent: pinned ref, independent suite run, one reviewer for spec and quality, validated findings
 review                          alias of start-review (invoked as /workbench:review)
 start-debugging                 gated: reproduce with a red-capable command, minimise, hypothesise, root cause, proven regression test, fix through the lean path
@@ -174,9 +175,9 @@ harness files and fills the project block of `AGENTS.md`. `component-add` and
 `component-remove` wrap `mise run component`. `template-update` wraps `mise run init:update`:
 it fetches the template, merges its tooling, keeps the instance-owned docs and pushes nothing.
 
-`start-development` has one approval gate, up front, after design and plan are
-written; everything after it runs unattended through `workbench:plan-execute` and ends
-with a record. The four `research-*` skills are optional inputs to that gate.
+`start-development` has one approval gate, up front, after the design doc and the task files are
+written; everything after it runs unattended through `epic-run` and ends with a record. The four
+`research-*` skills are optional inputs to that gate.
 
 One flow serves both tree shapes; the host (GitLab or GitHub) is picked per repo in references/merge-hosts.md.
 
@@ -185,33 +186,33 @@ One flow serves both tree shapes; the host (GitLab or GitHub) is picked per repo
 Every epic is a file-based ticket under `docs/plans/{todo,in-progress,done}/<epic>/`:
 
 ```
-docs/plans/{todo,in-progress,done}/<epic>/README.md      epic ticket (status, Time section)
+docs/plans/{todo,in-progress,done}/<epic>/README.md      epic ticket (brief, goals, non-goals, review)
                                           design.md
-                                          approvals.json
-                                          tasks/<task>.md  one file per task (acceptance criteria, estimate, actual)
+                                          tasks/<task>.md  one file per task (requirement, acceptance conditions, verified head)
+                                          close.json
                                           record.md
 docs/research/                               research briefs
 ```
 
 Older runs wrote `docs/plans/<date>-<slug>-{design,plan,tasks,record}.md` (tasks is .json); those legacy dated files were removed and live only in git history.
 
-`skills/start-development/scripts/ticket.py` moves tickets between the three folders (epic review before done is required, and the move to done checks that the epic reached main, then removes every tree and branch), derives the task JSON, applies a run's results and dedups discovered tasks. The claim creates the epic integration worktree and branch `<epic>`; each task runs in its own `<epic>-<task>` worktree forked from it and landing back on it, and the epic merges to main once at close (`ticket.py close <epic>`: rebase onto main, full suite and lint on the rebased tip, fast-forward only when green). Plain `git worktree` is used throughout, never the harness's built-in worktree feature. Further commands (sibling modules in `scripts/ticket_cmds/`): `ticket.py rule` records a ruling, `ticket.py args` builds and copies the run args, `ticket.py continue` relaunches an escalated run, `ticket.py contract` lists the design contracts, `ticket.py graph --todo` shows the epic dependency graph and open work, `ticket.py roadmap` lists epics in order, `ticket.py facts` builds the facts pack for planners, `ticket.py decide` records a user decision, `ticket.py questions` lists open questions, `ticket.py amend` edits a task in place, `ticket.py worktrees --refresh` brings task worktrees up to date, and `ticket.py reap --epic <epic> --task <task-id>` reaps one merged task worktree (<task-id> is the bare task name, without the epic prefix). Research paths come from `skills/start-research/scripts/doc_path.sh <kind> "<topic>"`.
+`skills/start-development/scripts/ticket.py` moves tickets between the three folders (epic review before done is required, and the move to done checks that the epic reached main, then removes its integration tree and branch) and derives the task list in dependency order. The claim creates the epic integration worktree and branch `<epic>`; every task commits there in order, and the epic merges to main once at close (`ticket.py close <epic>`: rebase onto main, full suite and lint on the rebased tip, fast-forward only when green). Plain `git worktree` is used throughout, never the harness's built-in worktree feature. Further commands (sibling modules in `scripts/ticket_cmds/`): `ticket.py tasks` prints the tasks in dependency order, `ticket.py task` records a task's status and verified head, `ticket.py amend` edits a task in place, `ticket.py questions` lists or answers open questions, `ticket.py roadmap` lists epics in order, `ticket.py close` closes a meta mode epic, `ticket.py worktrees --refresh` brings an integration worktree up to date, and `ticket.py reap --epic <epic>` reaps a done epic's leftover worktrees. Research paths come from `skills/start-research/scripts/doc_path.sh <kind> "<topic>"`.
 The design, plan and record follow `skills/start-development/templates/`.
 
 ### Per-repo config
 
 `.claude/workbench.json` holds the per-repo settings read by `scripts/lib/workbench.py`: `refRunners` (glob to command for an acceptance-condition test ref), `suites`, `deploy` (hook run after merge) and `overlapIgnore` (paths ignored by the overlap rule). Keys and defaults: `skills/start-development/references/workbench-config.md`.
 
-### Waiting and user steps
+### Background dispatches and user steps
 
-`skills/heartbeat/scripts/heartbeat.py --run <id>` waits for the run's journal and ends with the run. A command only the user can run (reboots, firmware) becomes a user-run step: `skills/start-development/scripts/user-run-step.py` checks state before and after and parses the pasted result (`skills/start-development/references/user-run-steps.md`).
+`epic-run` dispatches each implementer and reviewer in the background; the completion notification is the wake signal, so the session stays free to plan another epic. A command only the user can run (reboots, firmware) becomes a user-run step: `skills/start-development/scripts/user-run-step.py` checks state before and after and parses the pasted result (`skills/start-development/references/user-run-steps.md`).
 
 Releases go through the `release` skill: `skills/release/scripts/release.py --dry-run` previews the judged bump and changelog section; a real run bumps `plugin.json` and the `workbench` entry of the root `.claude-plugin/marketplace.json`, prepends `plugins/workbench/CHANGELOG.md`, commits `chore(release): vX.Y.Z` and tags it locally.
 
-## What 1.0.0 adds
+## The lean loop
 
-- **Tickets**: file-based epics and tasks (above), `ticket.py`, `<epic>-<task>` task worktrees on a per-epic integration worktree, epic review before done, every tree and branch removed on done, dedup of discovered tasks.
-- **Cheaper review flow**: the script+haiku verifier replaces a model re-run; risk tiers pick how much review a task gets; gate-only fix rounds re-review through the work gate; findings split into undelivered and discovered; an AC evidence gate requires each acceptance criterion to carry command, file or test evidence; an epic-close audit checks the whole epic; time estimates and actuals are report-only, never a budget.
+- **Tickets**: file-based epics and tasks (above), `ticket.py`, one integration worktree per epic, epic review before done, the tree and branch removed on done.
+- **Execution**: `epic-run` runs the tasks in dependency order in the integration worktree: one implementer and one reviewer per task, at most two fix rounds that continue the same agents, then `ticket.py task` records the verified head or escalates; `undelivered` is a finding and `discovered` becomes a new task in the same epic; one scope audit per epic reads the README goals and every acceptance condition against the integrated diff.
 - **Discovery**: discovery uses LSP and grep, with no graph probe; LSP first for symbols and references, then grep.
 
 Both SCM families ship deliberately. They are parallel implementations, not drift.
@@ -241,15 +242,15 @@ state surgery, raw secret-tool edits, bulk or cluster-scoped deletes, force-push
 directly; every other harness runs `hooks/adapter.py --harness <h> --event <e> --hook <name>`
 over the same logic.
 
-Which hooks fire inside Workflow subagents is measured, not assumed: see skills/start-development/references/hooks.md (hook-probe.js and scripts/hook-evidence.py).
+What each hook enforces and why: skills/start-development/references/hooks.md.
 
 ## Verification
 
-The independent verifier in `plan-execute` runs the task's own command on the committed HEAD after every implementer and fixer, and records the SHA it ran on. Implementers return red evidence (`tests.red`), and a behaviour change without it becomes a `No red evidence` finding (`TDD skipped` is for a task that reports `wroteTestFirst` false with no listed exception). The freshness guard (`verify-recorder.py` plus `subagent-commit-guard.py`) refuses to let a subagent stop while its last test or lint run was not on the current HEAD. After remediation, each remediated task's branch is forward-merged into every finished same-repo dependent's worktree and re-verified there.
+The reviewer of each task runs the task's own `verify` command on the committed HEAD, checks every acceptance condition against the files, and the orchestrator records that verified head with `ticket.py task <epic> <task> --status done --verified-head <head>`. Implementers return red evidence (`tests.red`) or name the TDD exception that applied. The freshness guard (`verify-recorder.py` plus `subagent-commit-guard.py`) refuses to let a subagent stop while its last test or lint run was not on the current HEAD.
 
-The approval ledger (docs/plans/<date>-<slug>-approvals.json) gives every approved item an id; validate-tasks --approvals checks it against the design and the tasks, plan-execute refuses to defer an approved item (a named external blocker escalates instead), the scope audit checks it by id, and the record shows a status per item.
+Approving the gate approves the README goals and every task's acceptance conditions; the scope auditor checks both once per epic, and the record shows a status and verified head per task.
 
-Every implementer, reviewer, fixer, verifier, merge and audit prompt carries the project brief (what, how, why) and the task's value.
+Every implementer and reviewer prompt carries the task file verbatim, with its value and requirement.
 
 start-debugging supersedes engineering:debug and start-review supersedes /code-review for work in these trees.
 
@@ -271,9 +272,9 @@ mise install
 mise run test     # or: bash scripts/run-tests.sh
 ```
 
-The suites are pytest, bats and node. `run-tests.sh` prints the component and assertion counts and ends with `all green`.
+The suites are pytest and bats. `run-tests.sh` prints the component and assertion counts and ends with `all green`.
 
-`bash scripts/run-tests.sh --only <component>` runs one component (a skill name, `hooks`, `scripts` or `workflows`). A failing component's full output is kept on disk and its path is printed after the tail as `full output: <path>`. `scripts/flake-hunt.sh <component> <runs> [parallel]` repeats one component under parallel load to hunt order, timing or environment flakes (the hooks hunt, 30 runs x 4 parallel, found 0 failures).
+`bash scripts/run-tests.sh --only <component>` runs one component (a skill name, `hooks` or `scripts`). A failing component's full output is kept on disk and its path is printed after the tail as `full output: <path>`. `scripts/flake-hunt.sh <component> <runs> [parallel]` repeats one component under parallel load to hunt order, timing or environment flakes (the hooks hunt, 30 runs x 4 parallel, found 0 failures).
 
 One pytest process **per skill**, deliberately: the GitLab and GitHub skills each
 ship `scripts/watch.py` and `scripts/update.py`, and their tests sys.path-insert

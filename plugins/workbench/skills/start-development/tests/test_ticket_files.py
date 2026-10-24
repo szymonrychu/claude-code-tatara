@@ -407,15 +407,12 @@ def test_tickets_reference():
         "todo",
         "in-progress",
         "done",
-        "<epic>-<task>",
         "57",
-        "Run name",
         "Integration branch",
         "slug freeze",
         "main checkout",
         "discovered",
         "{what, where, why}",
-        "approvals.json",
         "design.md",
         "record.md",
         "record-writer",
@@ -423,53 +420,50 @@ def test_tickets_reference():
         "blocked",
     ):
         assert needle.lower() in text.lower(), needle
-    assert "<epic>--<task>" not in text
+    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json"):
+        assert gone not in text, gone
     assert text.isascii()
 
 
 def _doc(name):
-    return (SD / "references" / name).read_text()
+    return " ".join((SD / "references" / name).read_text().split())
 
 
-def test_tickets_doc_names_single_hyphen_and_integration():
+def test_tickets_doc_integration_naming_and_collision_rule():
     text = _doc("tickets.md")
-    for needle in ("<epic>-<task>", "57", "Integration branch", "<configdir>/worktrees/<epic>"):
+    for needle in (
+        "Integration branch",
+        "<configdir>/worktrees/<epic>",
+        "Collision rule",
+        "still on disk",
+    ):
         assert needle in text, needle
-    assert "<epic>--<task>" not in text
-
-
-def test_tickets_doc_collision_rule_and_merge_line():
-    text = _doc("tickets.md")
-    assert "Collision rule" in text
     for cmd in ("new-epic", "new-task", "rename"):
         assert cmd in text, cmd
-    assert "still on disk" in text
-    assert "MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>" in text
+    assert "MERGE <task>" not in text
 
 
 def test_worktrees_doc_integration_lifecycle():
     text = _doc("worktrees.md")
     for needle in (
-        "<epic>-<task>",
-        "57",
         "The integration tree",
         "<configdir>/worktrees/<epic>",
         "move <epic> in-progress",
         "worktree-merger",
-        "merge.py --base <epic> --keep --verify",
         "Every role on a task",
         "never calls the built-in `EnterWorktree`",
         "move <epic> done",
     ):
         assert needle in text, needle
+    for gone in ("<epic>-<task>", "merge.py --base <epic> --keep", "fork_point", "forward merge"):
+        assert gone not in text, gone
 
 
-def test_tickets_doc_close_upgrade_and_fork_point():
+def test_tickets_doc_close():
     text = _doc("tickets.md")
-    needles = ("close <epic> --verify <cmd>", "close.json", "worktrees <epic> --integration")
-    for needle in (*needles, "fork_point"):
+    for needle in ("close <epic> --verify <cmd>", "close.json", "exit 4"):
         assert needle in text, needle
-    assert "recorded when the task lands" in text
+    assert "fork_point" not in text
 
 
 # (10) guard and (11) commit helper

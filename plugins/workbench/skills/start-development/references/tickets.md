@@ -6,133 +6,121 @@ short human page (`README.md`) plus one agent-facing file per task.
 ## Layout
 
 ```
-docs/plans/<phase>/<epic>/README.md      human page: brief, description, goals, non-goals, review
-docs/plans/<phase>/<epic>/design.md      full path only
-docs/plans/<phase>/<epic>/approvals.json the approvals ledger
-docs/plans/<phase>/<epic>/tasks/<task>.md agent-facing task files
-docs/plans/<phase>/<epic>/rulings.json   orchestrator rulings (ticket.py rule), read by the run
-docs/plans/<phase>/<epic>/record.md      written at done
-docs/plans/contracts.json                shared contracts across epics (ticket.py contract)
-docs/plans/facts.md                      repo facts pack (ticket.py facts), generated, gitignored
-docs/plans/index.json                    generated, gitignored
+docs/plans/<phase>/<epic>/README.md        human page: brief, description, goals, non-goals, review
+docs/plans/<phase>/<epic>/design.md        full size only
+docs/plans/<phase>/<epic>/tasks/<task>.md  agent-facing task files
+docs/plans/<phase>/<epic>/close.json       written by `ticket.py close`
+docs/plans/<phase>/<epic>/record.md        written by record-writer at phase 7
+docs/plans/index.json                      generated, gitignored
 ```
 
-- `<phase>` is `todo`, `in-progress` or `done`. The epic directory is the coarse status and moves
-  only three times in an epic's life.
+- `<phase>` is `todo`, `in-progress` or `done`. The epic directory is the coarse status and moves only
+  twice in an epic's life.
 - `--root <dir>` overrides `<docs_root>/docs/plans` (tests).
 - Legacy `docs/plans/<date>-*` files were removed; only the three phase folders live under `docs/plans/`.
-- `ticket.py path <epic> readme|design|approvals|record|tasks` prints the absolute path inside the
-  epic's current phase. Every subcommand that takes an epic accepts its slug or its directory.
-- Time is report-only: `ticket.py estimate <epic>` writes `estimate` (formula minutes, `estimate_by: formula`; `--estimate` is only an override), `apply-run --run-dir` and `continue --run` write `actual` and `actual_roles` from the run dir, and `ticket.py tasks` regenerates the README `## Time` section. See `task-fields.md`.
+- `ticket.py path <epic> readme|design|record|tasks` prints the absolute path inside the epic's current
+  phase. Every subcommand that takes an epic accepts its slug or its directory.
 
-## Subcommands added for the run loop and planning
+## Subcommands
 
-Each lives in its own module under `skills/start-development/scripts/ticket_cmds/` (`ticket_cmds`):
+Core in `ticket.py`, the rest one module each under `skills/start-development/scripts/ticket_cmds/`
+(`ticket_cmds`):
 
-- `rule`: `rule <epic> --accept|--reject <ids> --reason ...` records rulings in the task files and `rulings.json`.
-- `args`: `args <epic> --out-dir <dir>` writes the plan-execute args JSON and its named copy.
-- `continue`: `continue <epic> --out-dir <dir>` applies the last return, records rulings, refreshes trees, writes the next args.
-  The merge gate exits 2 (exit 2): an accepted task that a still-open task depends on has no merge in the base yet.
-  `continue` then prints one line per task, `MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>`, and writes no args file.
-  The orchestrator dispatches `workbench:worktree-merger` with those `--name` and `--repo` values, then reruns `continue`
-  (the earlier steps are idempotent).
-- `estimate`: `estimate <epic> [--json]` recomputes every task's formula minutes and rewrites the README Time line
-  (`Estimate: ... | Critical path: ... | Expected wall at P=<p>: <h> h (k=<k>) | Actual: ... | Remaining estimate: ...`),
-  then prints `Longest path:` with the tasks on the critical path. The gate shows that line and the three longest-path tasks.
-- `continue <epic> --out-dir <dir> --run <id> --launch`: one step. It applies the return, auto-accepts processOnly and
-  triageRejected escalations, lands the done tasks itself with `merge.py`, refreshes the trees, writes the args and prints
-  a `LAUNCH <script> <args>` line and an `ARM python3 heartbeat.py --run <runId> --total <n>` line. The `LAUNCH` line is the one
-  Workflow call, the `ARM` line the one Monitor. Without `--launch` it still prints MERGE lines for the orchestrator to dispatch.
-- `contract`: `contract add|use|list` keeps `docs/plans/contracts.json`.
-- `graph --todo` checks todo and in-progress epics for blocker cycles and contract order.
-- `roadmap`: `roadmap [--json]` lists the epics by phase.
-- `facts`: writes `docs/plans/facts.md`.
-- `decide`: `decide <epic> <approval_id> <text> --tasks ...` records a user decision (see `approvals.md`).
-- `questions`: `questions [--add|--answer]` lists, adds or answers open questions in todo epics.
-- `amend`: `amend <epic> <task> --requirement-file ... --reason ...` replaces a task's Requirement and AC.
-- `worktrees --refresh` (`worktrees <epic> --refresh`) fast-forwards live, clean trees with nothing ahead of the base.
-- `close`: `close <epic> --verify <cmd>` lands `<epic>` on main in a fixed order (every done task contained in `<epic>`,
-  rebase, `--verify` on the rebased tip in the integration tree, fast-forward main, `--verify` on main) and writes
-  `close.json` (`epic`, `base`, `baseBefore`, `baseAfter`, `epicTip`, `integrationVerify`, `mainVerify`, `at`).
-  Exit 2 means a task is not yet contained (MERGE lines), exit 4 a failed verify.
-- `worktrees --integration` (`worktrees <epic> --integration`) creates or reuses the integration trees of an epic
-  claimed before this change; it makes no task tree.
-- `reap --task` (`reap --epic <epic> --task <task>`) reaps one task's merged, clean worktree.
-
-`apply-run` resets a dependency-failed task to the initial status (`todo`) and appends a dated note line
-naming the failed dependency, so the next run picks it up; a discovered task carries the finding as its AC.
+- `slug`, `new-epic`, `new-task`, `rename`, `path`: create and name tickets (`new-task` takes
+  `--requirement-file` and `--ac-file`).
+- `check`, `index`, `existing`: near-duplicate check, the generated index, the files done tasks built.
+- `tasks`: `tasks <epic>` prints the tasks as JSON in dependency order (every dependency before its
+  dependents; a cycle exits 1).
+- `task`: `task <epic> <task> --status <s> [--verified-head <sha>] [--note <text>]` records a task's
+  outcome; the note is appended under `## Notes` as a dated line.
+- `move`: `move <epic> in-progress` claims the epic, sets every todo task to in-progress and creates the
+  integration tree; `move <epic> done` needs the pass verdict, every task done and the epic on main, then
+  removes the integration tree and branch.
+- `stage`: `stage <epic> review|build` (`review` refuses while a task is not done).
+- `review`: `review <epic> --verdict pass|fail --notes-file <f>` writes the README Review section.
+- `lint`: `lint [<epic>]` checks statuses, dependencies, cycles, every task's Requirement, acceptance
+  conditions, `verify` and `files`, and design.md's Decision coverage; prints `lint: ok`.
+- `amend`: `amend <epic> <task> --requirement-file ... [--ac-file ...] --reason ...` replaces a task's
+  Requirement and acceptance conditions and notes why.
+- `questions`: `questions [--add <epic> <q> --recommended <a>|--answer <epic> <qid> <text>]` lists, adds
+  or answers open questions in todo epics (design.md's Open questions).
+- `roadmap`: `roadmap [--json]` lists the epics by phase with what blocks each.
+- `worktrees`: `worktrees <epic>` creates or reuses the integration trees of an epic claimed earlier;
+  `worktrees <epic> --refresh` fast-forwards each clean tree with nothing ahead of the base.
+- `close`: `close <epic> --verify <cmd>` rebases `<epic>` onto main in the integration tree, runs
+  `--verify` on the rebased tip there, fast-forwards main only when it passed, then runs `--verify` on
+  main, and writes `close.json` (`epic`, `base`, `baseBefore`, `baseAfter`, `epicTip`,
+  `integrationVerify`, `mainVerify`, `at`). A failed verify is exit 4; main does not move. Component mode
+  closes through the MR instead.
+- `reap`: `reap --epic <epic> [--dry-run]` removes a done epic's merged, clean trees.
 
 ## Naming
 
 | Thing | Value |
 |---|---|
 | Epic slug | `slugify(title, 28)`, trailing `-` trimmed; unique across all three phases |
-| Task slug | the same rule; unique within its epic |
-| Run name and named copy | `<epic>`, giving `plan-execute-<epic>.js` |
-| Task `id` and `short` | `<task>` |
-| Agent labels | `<epic>:impl:<task>`, `<epic>:verify:<task>#n` |
-| Per-task worktree and branch | `<epic>-<task>`, at most 57 characters (28 + 1 + 28) |
+| Task slug | the same rule; unique within its epic; the task's id everywhere |
 | Integration branch and tree | branch `<epic>`; tree `<configdir>/worktrees/<epic>[/<repo>]` |
 
-`ticket.py slug "<title>"` prints a slug. `worktree_name(epic, task)` raises past 57 characters.
-Collision rule: `new-epic`, `new-task` and `rename` refuse a slug whose worktree or branch name is taken,
-including a name whose tree or branch is still on disk (a legacy double-hyphen tree included), even when no ticket file
-carries it; the stop names what is occupying it.
-Slug freeze: a slug never changes once the epic leaves `todo/`; `ticket.py` refuses a rename after that.
+`ticket.py slug "<title>"` prints a slug. Collision rule: `new-epic`, `new-task` and `rename` refuse a
+slug whose branch or worktree name (epic plus task, at most 57 characters) is taken, including a name
+still on disk with no ticket file carrying it; the stop names what holds it. Slug freeze: a slug never
+changes once the epic leaves `todo/`.
 
-## Creating an epic: near duplicates
-
-`ticket.py new-epic` runs the dedup check first. A near-duplicate epic (similarity >= 0.6) in `todo/` or
-`in-progress/` stops creation: it prints `new-epic: near duplicate <slug> (<score>); pass --force to create anyway`
-on stderr, writes and commits nothing, and exits 3 (exit 3 is reserved for this stop). `--force` creates the
-epic anyway and still prints the near-duplicate note on stdout. A near duplicate in `done/` is only a note
-(a new epic on a finished subject is legitimate). `--force` never overrides a real failure such as a slug clash.
-`ticket.py check --title` only lists near duplicates (exit 0), and `new-task` keeps near-duplicate tasks as notes.
+`new-epic` runs the near-duplicate check first: a near duplicate (similarity >= 0.6) in `todo/` or
+`in-progress/` stops creation with exit 3 (reserved for this stop) and writes nothing; `--force` creates
+anyway. One in `done/` is only a note. `check --title` only lists near duplicates (exit 0).
 
 ## State machines
 
 Epic: `todo` -> `in-progress` -> `done`. Under `in-progress/` the README `stage` is `build`, then
-`review`. There is no fourth directory. `ticket.py move <epic> in-progress` sets every todo task to in-progress
-(other statuses are left alone), in the same commit.
+`review`; `stage build` sends it back.
 
-Task `status` is exactly one of `todo`, `in-progress`, `done`, `blocked`, `escalated`. There is no
-parked, deferred or wontfix state: a task is delivered, blocked on a named external blocker, or
-escalated.
+Task `status` is exactly one of `todo`, `in-progress`, `done`, `blocked`, `escalated`. There is no parked,
+deferred or wontfix state: a task is delivered, blocked on a named external blocker, or escalated after
+two fix rounds for the orchestrator's judgement. The epic cannot close while a task is not `done`.
 
 ## Frontmatter
 
-Restricted, parsed by `ticket.py` with no YAML dependency: scalars, single- and double-quoted
-strings, and inline lists `[a, b]`. A nested mapping or block list fails with
-`<path>:<line>: unsupported frontmatter`. `dump(load(x)) == x` for every file `ticket.py` wrote.
+Restricted, parsed by `ticket.py` with no YAML dependency: scalars, single- and double-quoted strings, and
+inline lists `[a, b]`. A nested mapping or block list fails with `<path>:<line>: unsupported frontmatter`.
+`dump(load(x)) == x` for every file `ticket.py` wrote. Older done epics keep their extra keys; the loader
+reads them and nothing writes them.
 
-Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `created`. Sections:
-Project brief (What/How/Why), Description, Goals, Non-goals, Review.
+Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `created`. Sections: Project
+brief (What/How/Why), Description, Goals, Non-goals, Review.
 
-Task file: `title`, `status`, `repo`, `value`, `files`, `verify`, `depends_on`, `owns`, `uses`,
-`model`, `review`, `worktree`, `branch`, `fork_point` (the commit the task forked from, recorded when the task lands: apply-run stores the merge's `baseBefore`),
-`verified_head`, `run`, `provides`. Sections: Requirement,
-Acceptance conditions (`- <AC-id>: <text> [evidence: <kind>:<ref>]`), Files, Interfaces, Expected
-outcome, Steps, Notes.
+Task file, ten keys: title, status, repo, value, files, verify, depends_on, model, review, verified_head.
+- `value`: one line, what this task is worth to the user; required.
+- `files`: every file the task may touch. `verify`: the targeted test and lint command (named test
+  files or a component suite plus lint, never the full suite); the reviewer runs it on HEAD.
+- `depends_on`: the tasks whose commits it builds on. `model`: opus when the task adds a module or
+  touches more than five files, else sonnet; the reviewer and scope auditor run on sonnet.
+- `verified_head`: the commit the reviewer verified, written by `ticket.py task --verified-head`.
+
+Sections: Requirement (verbatim, every acceptance condition, never a summary), Acceptance conditions,
+Files, Interfaces, Expected outcome, Steps, Notes. An acceptance condition is `- <AC-id>: <text>
+[evidence: <kind>:<ref>]` with kind one of `test`, `symbol`, `command`, `doc-section`, `judgement`. A
+`test:<file>::<name>` ref runs with its package's runner from the package root (the nearest
+`pyproject.toml`, `package.json` or `package.xml`) or a `refRunners` entry (`workbench-config.md`); with
+no runner, use a `command:` ref.
+
+A retirement test (one that pins a removal) asserts on `git ls-files <path>`, never on the filesystem,
+because an untracked empty directory can survive a merge. The TDD exception for a deletion is narrow: the
+diff's non-test changes are deletions only and a test pins the removal; the implementer names it as
+"deletion pinned by a retirement test".
 
 ## Writer rule
 
-Only the orchestrator writes tickets, only through `ticket.py`, only in the main checkout, never on
-a task branch. Every mutating subcommand calls `require_main_checkout(root)`, which exits 1 with
-`ticket.py: run in the main checkout, not a linked worktree` inside a linked worktree. After a
-mutating subcommand succeeds, `commit_ticket_change(epic, event, paths)` commits exactly the
-`docs/plans/` paths it wrote as `chore(ticket): <epic> <event>`; unrelated dirty files stay
-uncommitted. Outside git both are no-ops.
-
-## Ownership split
-
-- `ticket.py` writes: README frontmatter and the sections it creates, task files, moves and stage
-  changes. `decide`, `questions` and `amend` write design.md, approvals.json and task files;
-  `rule` writes rulings.json.
-- Written directly by the orchestrator or the record-writer, always in the main checkout:
-  `record.md`, and `approvals.json` and `design.md` outside those subcommands.
+Only the orchestrator writes tickets, only through `ticket.py`, only in the main checkout, never on the
+epic branch. Every mutating subcommand calls `require_main_checkout(root)`, which exits 1 with `ticket.py:
+run in the main checkout, not a linked worktree` inside a linked worktree. After it succeeds,
+`commit_ticket_change(epic, event, paths)` commits exactly the `docs/plans/` paths it wrote as
+`chore(ticket): <epic> <event>`; unrelated dirty files stay uncommitted. Outside git both are no-ops.
+`design.md` and `record.md` (record-writer) are written directly, in the main checkout.
 
 ## The `discovered` entry
 
-Work found during a task that is outside its ownership is recorded as `{what, where, why}`: what the
-gap is, where it sits (file or repo), and why the task could not fix it. It is never a way to leave
-agreed scope undone.
+Work an implementer finds outside its task's files is returned as `{what, where, why}`: what the gap is,
+where it sits (file or repo), and why the task could not fix it. The orchestrator adds it as a new task in
+the same epic with `ticket.py new-task`. It is never a way to leave agreed scope undone.

@@ -75,14 +75,13 @@ def test_planner_rules():
     assert "LSP and grep" in t
 
 
-def test_agents_row():
-    rows = [
-        ln
-        for ln in (SD / "references" / "agents.md").read_text().splitlines()
-        if ln.startswith("| `planner`")
-    ]
-    assert len(rows) == 1
-    assert rows[0].rstrip().endswith("| 3 |")
+def test_planner_dispatched_in_phase_three():
+    readme = (ROOT / "README.md").read_text()
+    rows = [ln for ln in readme.splitlines() if ln.startswith("| `start-development` phase 3 |")]
+    assert any("`planner`" in r for r in rows), rows
+    skill = (SD / "SKILL.md").read_text()
+    phase3 = skill[skill.index("## Phase 3") : skill.index("## The gate")]
+    assert "workbench:planner" in phase3
 
 
 def test_task_template_retirement_rule():

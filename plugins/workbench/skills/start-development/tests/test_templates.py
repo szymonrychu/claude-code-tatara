@@ -1,4 +1,4 @@
-"""Structure tests for the design/record templates, builder check and record-writer."""
+"""Structure tests for the design/record templates, the builder check and record-writer."""
 
 import re
 from pathlib import Path
@@ -24,14 +24,12 @@ DESIGN_H2 = [
     "Irreversible operations in scope",
 ]
 RECORD_H2 = [
-    "Summary",
-    "Planned vs built",
-    "Deviations and rulings",
-    "Duplicates reconciled",
+    "Asked",
+    "Shipped",
+    "Tasks",
+    "Rulings",
     "Discovered and blocked",
-    "Research that changed the plan",
-    "Cost",
-    "MRs and deploy",
+    "Not pushed",
     "Lessons routed to",
 ]
 
@@ -75,10 +73,12 @@ def test_record_template():
 
 
 def test_builder_check():
-    t = read(SD / "references" / "builder-check.md")
+    t = " ".join((SD / "SKILL.md").read_text().split())
+    assert "builder check" in t
+    assert "one general-purpose agent on sonnet" in t
     assert "Report only the questions you would still need answered before building" in t
     assert "(my call)" in t
-    for ph in ("<epic-dir>/README.md", "<epic-dir>/design.md", "<epic-dir>/tasks/"):
+    for ph in ("<epic-dir>", "README.md", "design.md", "tasks/"):
         assert ph in t, ph
 
 
@@ -97,13 +97,13 @@ def test_record_writer_agent():
 def test_plain_ascii_punctuation():
     for p in [
         *(SD / "templates").glob("*.md"),
-        SD / "references" / "builder-check.md",
+        SD / "SKILL.md",
         ROOT / "agents" / "record-writer.md",
     ]:
         assert not re.search(r"[\u2014\u2013\u2018\u2019\u201c\u201d\u2192]", read(p)), p
 
 
-PLAN_INPUTS = SD / "references" / "plan-inputs.md"
+PLAN_INPUTS_POINTER = "${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md"
 POINTERS = [
     *(
         ROOT / "skills" / n / "SKILL.md"
@@ -120,21 +120,24 @@ POINTERS = [
 ]
 
 
-def test_plan_inputs_has_one_definition_and_maps_to_workflow_args():
-    body = read(PLAN_INPUTS)
+def test_plan_inputs_defined_once_in_phase_one():
+    skill = (SD / "SKILL.md").read_text()
+    phase1 = " ".join(skill[skill.index("## Phase 1") : skill.index("## Phase 2")].split())
+    assert "## Plan inputs" in phase1
     for fmt in (
         "name - file:symbol - which plan items need it",
         "item - what provides it instead - source",
         "anti-pattern - where - the acceptance condition",
         "adopted / rejected, one line each",
     ):
-        assert fmt in body, fmt
-    assert "args.existing" in body and "args.doNotBuild" in body
+        assert fmt in phase1, fmt
+    assert "args.existing" not in skill and "args.doNotBuild" not in skill
 
 
 def test_other_files_point_to_plan_inputs_instead_of_restating():
     for p in POINTERS:
-        text = read(p)
-        assert "references/plan-inputs.md" in text, p
+        text = " ".join(read(p).split())
+        assert PLAN_INPUTS_POINTER in text, p
+        assert "references/plan-inputs.md" not in text, p
         assert "which plan items need it" not in text, p
         assert "what provides it instead" not in text, p
