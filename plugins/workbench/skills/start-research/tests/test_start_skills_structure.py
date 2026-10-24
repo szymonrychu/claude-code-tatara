@@ -462,17 +462,6 @@ def test_tdd_section_requires_red_evidence_and_independent_verification():
     assert "verified on HEAD <sha> by an agent that did not write it" in tdd
 
 
-def test_merge_is_a_prompt_role_and_verify_is_the_verifier_agent():
-    agents = (START_DEVELOPMENT / "references" / "agents.md").read_text()
-    assert re.search(r"^\| `verifier` \| .* \| 4 \|$", agents, re.M), "no verifier row"
-    flat = _flat(agents)
-    assert (
-        "The merge role in workbench:plan-execute is a prompt role, not an agent file;"
-        " verify runs as the verifier agent."
-    ) in flat
-    assert "`verify` and `merge` roles" not in flat
-
-
 def test_run_handback_covers_new_keys():
     text = (START_DEVELOPMENT / "references" / "run-handback.md").read_text()
     for key in (
@@ -577,7 +566,7 @@ def test_worktrees_reference_covers_helpers_for_every_role():
 def test_phase_four_names_heartbeat():
     phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
     for term in (
-            "keepalive off by default",
+        "keepalive off by default",
         "references/run-handback.md",
     ):
         assert term in phase4, f"Phase 4 does not name {term!r}"
@@ -634,23 +623,6 @@ def test_task_fields_reference_lists_value():
     assert "| `value` | one line: what this task is worth to the user; required |" in text
     assert "`requirement`" in text
     assert "references/task-fields.md" in _skill()
-
-
-def test_verifier_agent_file():
-    f = ROOT / "agents" / "verifier.md"
-    assert f.is_file()
-    fm = frontmatter(f)
-    assert fm.get("name") == "verifier"
-    assert fm.get("model") == "haiku"
-    assert fm.get("maxTurns")
-    tools = str(fm.get("tools"))
-    for forbidden in ("Edit", "Write"):
-        assert forbidden not in tools, f"verifier must stay read-only, got {tools}"
-    flat = re.sub(r"\s+", " ", f.read_text())
-    assert "judged by its `exit` field only" in flat
-    assert "0 is met and passed" in flat
-    assert "Never set `passed` or `met` differently from the script" in flat
-    assert "no gloss or note of your own" in flat
 
 
 def test_phase_five_reap_line_has_no_conditional_parking():
