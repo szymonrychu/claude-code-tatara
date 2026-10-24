@@ -29,6 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import worktree_lib as wl  # noqa: E402
 
+from .apply_patch import PATCH_KEYS, patch_added_lines  # noqa: E402
+
 EVENTS = ("pre-tool", "post-tool", "stop")
 TOOL_KINDS = ("shell", "edit", "write", "read", "other")
 ACTIONS = ("allow", "deny", "block")
@@ -372,8 +374,47 @@ def blocked_reason(path: str) -> str | None:
     return None
 
 
+EM_DASH = "\u2014"
+
+# Keys holding the new text of an edit or write, across every harness's tool
+# schema: Claude Write/Edit/NotebookEdit, Copilot CLI create/edit, Antigravity
+# write_to_file/replace_file_content. Lists of dicts (MultiEdit `edits`) are
+# searched one level down for the same keys. `old_string` and its aliases are
+# never read, so removing an em dash stays allowed.
+_NEW_CONTENT_KEYS = (
+    "content",
+    "new_string",
+    "new_source",
+    "file_text",
+    "new_str",
+    "CodeContent",
+    "ReplacementContent",
+)
+
+
+def new_content(tool_input: Any) -> list[str]:
+    """Every string an edit or write would put into a file, from its tool input."""
+    if not isinstance(tool_input, dict):
+        return []
+    found: list[str] = []
+    items = [tool_input]
+    for value in tool_input.values():
+        if isinstance(value, list):
+            items.extend(item for item in value if isinstance(item, dict))
+    for item in items:
+        for key in _NEW_CONTENT_KEYS:
+            value = item.get(key)
+            if isinstance(value, str):
+                found.append(value)
+    for key in PATCH_KEYS:
+        text = tool_input.get(key)
+        if isinstance(text, str) and "*** Begin Patch" in text:
+            found.extend(patch_added_lines(text))
+    return found
+
+
 def protect_files(event: NormalizedEvent) -> Decision:
-    """Deny an edit or write that touches any protected path."""
+    """Deny an edit or write that touches a protected path or adds an em dash."""
     if event.event != "pre-tool" or event.tool_kind not in ("edit", "write"):
         return ALLOW
     for path in event.paths:
@@ -388,6 +429,13 @@ def protect_files(event: NormalizedEvent) -> Decision:
                 "pack's sops-secret-helper skill when enabled), git for .git, "
                 "terraform state commands for tfstate.",
             )
+    if any(EM_DASH in text for text in new_content(event.raw.get("tool_input"))):
+        target = f" ({', '.join(event.paths)})" if event.paths else ""
+        return Decision(
+            "deny",
+            f"BLOCKED by protect-files hook: the new content{target} contains an em dash "
+            "(U+2014). Use a plain hyphen (-) instead and retry the edit.",
+        )
     return ALLOW
 
 

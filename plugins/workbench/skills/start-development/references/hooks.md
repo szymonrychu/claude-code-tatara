@@ -8,7 +8,7 @@ report" reflex; these hooks make the rule mechanical. They ship with the plugin
 |---|---|---|
 | `guard-bash.py` | PreToolUse/Bash | denies destructive commands (stash pop, file-scoped restores, force-push without lease, applies, bulk deletes) with an actionable reason |
 | `bash-output-filter.py` | PreToolUse/Bash | caps noisy test and log output before it reaches context |
-| `protect_files.py` | PreToolUse/Edit,Write | blocks edits to secrets, state files, `.git` and encrypted-secret files |
+| `protect_files.py` | PreToolUse/Edit,Write | blocks edits to secrets, state files, `.git` and encrypted-secret files, and any edit that adds an em dash (U+2014) |
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file when a formatter for its language is installed |
 | `verify-recorder.py` | PostToolUse and PostToolUseFailure/Bash | records each test or lint run in an agent worktree |
 | `subagent-commit-guard.py` | SubagentStop | the commit guard and the verification-freshness guard below |
@@ -16,6 +16,17 @@ report" reflex; these hooks make the rule mechanical. They ship with the plugin
 The two SubagentStop guards fire only in agent worktrees - `<configdir>/worktrees/<name>` from
 `worktree-create` (epic integration trees) and the legacy `.worktrees/<branch>/<repo>` from
 `git-worktrees-create`. The main checkout belongs to the human and is never blocked.
+
+## The em dash check
+
+protect-files also denies an edit or write whose new content contains an em dash (U+2014): Write
+`content`, Edit `new_string`, MultiEdit `edits[].new_string`, NotebookEdit `new_source`, the added
+lines of a Codex `apply_patch` envelope, and the same fields under other harnesses' names (Copilot
+`file_text` and `new_str`, Antigravity `CodeContent` and `ReplacementContent`). The reason tells the
+agent to use a plain hyphen. Removing an em dash is allowed: `old_string` and `-` patch lines are
+never read. The path check runs first, and the hook stays fail-closed. Every harness that emits
+protect-files (Claude Code, Copilot, Codex, Gemini CLI, Cursor, Antigravity) gets the check, because
+the adapter hands the normalised tool input to the same `core.protect_files`.
 
 ## The commit guard
 
