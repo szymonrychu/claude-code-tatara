@@ -1,6 +1,6 @@
 ---
 title: Em dash commit guard
-status: in-progress
+status: done
 repo: workbench
 value: No agent can commit a message containing an em dash
 files: [plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/tests/test_guard_bash.py, plugins/workbench/skills/start-development/references/hooks.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only hooks && bash plugin
 depends_on: [em-dash-edit-guard]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: cea87f1
 ---
 
 # Em dash commit guard
@@ -55,3 +55,5 @@ No agent commits a message with an em dash through Bash, in any harness that emi
 - Fix-as-ac (brief): guard_segments splits on newlines (core.py SEPARATORS 214, segments 230), so heredoc lines are separate segments: match the commit segment, then test the whole command for U+2014. -F <file> is handled by reading the file (D5), not left as a gap.
 - Test data writes the character as the escape `"\u2014"`.
 - Depends on em-dash-edit-guard only because both edit core.py and hooks.md.
+
+- 2026-10-24 done
