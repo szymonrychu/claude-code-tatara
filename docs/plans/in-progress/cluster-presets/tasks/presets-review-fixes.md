@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "the migration is proven on a live database, early form edits survive, and the writers table is accurate"
 files: [tests/test_migrations.py, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx, README.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_migrations.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check . && mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/presets && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
-depends_on: []
+depends_on: [create-cluster-from-preset, fe-preset-form, preset-routes, presets-table-and-repo, retire-cluster-patch-route]
 owns: []
 uses: []
 model: sonnet
@@ -50,12 +50,13 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The migration upgrade path is tested, early PresetForm edits survive /meta loading, and the README writers table is accurate.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the AC1 and AC2 tests and run the verify command: they fail.
+- Implement the fixes and the README note.
+- Run the verify command: all pass.
 
 ## Notes
 

@@ -240,3 +240,8 @@ Cross-epic contracts in `docs/plans/contracts.json`: this epic consumes `orch-se
 
 - Migration `0002_presets.sql` on the live database when the user applies the release: additive only (new table, two nullable columns, one seed row); no data is deleted. Covered by approval H and the idempotency test in presets-table-and-repo.
 - Removal of `PATCH /api/v1/clusters/{cluster_id}` from the public API: a breaking change for any external caller, covered by approval E and the README exception.
+
+## Epic review rulings (2026-10-24)
+
+- Acted on (task presets-review-fixes): migration upgrade-path test on a database with clusters; PresetForm keeps edits made before /meta loads; README writers table notes the preset delete cascade on clusters.preset_id.
+- Declined: getPreset/copyPreset used only by tests (the fe-preset-client contract lists them); no "copy 2" naming on collision (the 409 is shown, as designed).
