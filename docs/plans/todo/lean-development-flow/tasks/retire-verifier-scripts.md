@@ -31,7 +31,7 @@ Retire the independent-verifier tooling that only the plan-execute run called. D
 
 - AC1: `git ls-files plugins/workbench/scripts/verify-task.py plugins/workbench/scripts/triage.py plugins/workbench/scripts/lib/claude_json.py plugins/workbench/agents/verifier.md plugins/workbench/scripts/tests/fixtures` prints nothing [evidence: command:git ls-files plugins/workbench/scripts/verify-task.py plugins/workbench/scripts/triage.py plugins/workbench/scripts/lib/claude_json.py plugins/workbench/agents/verifier.md plugins/workbench/scripts/tests/fixtures]
 - AC2: a retirement test asserts AC1 with git ls-files [evidence: test:plugins/workbench/scripts/tests/test_retired_verifier.py::test_verifier_tooling_retired]
-- AC3: `grep -rn "claude_json\|verify-task\|triage.py" plugins/workbench/README.md docs/enterprise.md` prints nothing [evidence: command:grep -rc "claude_json\|verify-task\|triage.py" plugins/workbench/README.md docs/enterprise.md]
+- AC3: `grep -rn "claude_json\|verify-task\|triage.py" plugins/workbench/README.md docs/enterprise.md` prints nothing [evidence: command:! grep -rn "claude_json\|verify-task\|triage.py" plugins/workbench/README.md docs/enterprise.md]
 - AC4: `bash plugins/workbench/scripts/run-tests.sh --only scripts` and `pytest plugins/workbench/skills/start-development/tests/test_release.py -q` pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only scripts]
 
 ## Files
@@ -55,8 +55,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 

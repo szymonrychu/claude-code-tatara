@@ -25,14 +25,14 @@ provides: []
 
 ## Requirement
 
-Remove from `ticket.py` every subcommand that existed for the plan-execute run loop or the approval ledger: `apply-run`, `args`, `continue`, `rule`, `estimate`, `facts`, `decide`, `contract` and `graph`, with their modules under `ticket_cmds/`, their tests (`test_ticket_run.py`, `test_ticket_continue.py`, `test_ticket_continue_launch.py`, `test_ticket_args.py`, `test_ticket_apply_run_fixes.py`, `test_ticket_decide.py`, `test_ticket_estimate.py` and the contract, graph, facts and rule tests), and the estimator (`plugins/workbench/scripts/lib/estimator.py`, `estimator.json`, `scripts/tests/test_estimator.py`). `ticket.py --help` lists exactly: slug, new-epic, new-task, check, index, existing, tasks, worktrees, move, stage, review, rename, lint, reap, path, amend, close, questions, roadmap. `new-task` loses `--estimate`; nothing writes `estimate`, `estimate_by`, `actual` or `actual_roles`. Dead helpers that only those commands used go too (the run-dir readers, rulings readers, approvals loaders used only by decide). Keep every other subcommand's behaviour and tests green. Add a retirement test that pins the removed subcommands and files.
+Remove from `ticket.py` every subcommand that existed for the plan-execute run loop or the approval ledger: `apply-run`, `args`, `continue`, `rule`, `estimate`, `facts`, `decide`, `contract` and `graph`, with their modules under `ticket_cmds/`, their tests (`test_ticket_run.py`, `test_ticket_continue.py`, `test_ticket_continue_launch.py`, `test_ticket_args.py`, `test_ticket_apply_run_fixes.py`, `test_ticket_decide.py`, `test_ticket_estimate.py` and the contract, graph, facts and rule tests), and the estimator (`plugins/workbench/scripts/lib/estimator.py`, `estimator.json`, `scripts/tests/test_estimator.py`). `ticket.py --help` lists none of the removed nine and still lists: slug, new-epic, new-task, check, index, existing, tasks, worktrees, move, stage, review, rename, lint, reap, path, amend, close, questions, roadmap (a later task adds `task`, so the retirement test asserts the absence of the removed nine, never an exact count). Under `ticket_cmds/` the kept modules are `__init__.py`, `amend.py`, `close_cmd.py`, `questions.py` and `roadmap.py`. `new-task` loses `--estimate`; nothing writes `estimate`, `estimate_by`, `actual` or `actual_roles`. Dead helpers that only those commands used go too (the run-dir readers, rulings readers, approvals loaders used only by decide). Keep every other subcommand's behaviour and tests green. Add a retirement test that pins the removed subcommands and files.
 
 ## Acceptance conditions
 
-- AC1: `python3 plugins/workbench/skills/start-development/scripts/ticket.py --help` lists exactly the 19 kept subcommands and none of apply-run, args, continue, rule, estimate, facts, decide, contract, graph [evidence: command:python3 plugins/workbench/skills/start-development/scripts/ticket.py --help]
-- AC2: `git ls-files plugins/workbench/skills/start-development/scripts/ticket_cmds plugins/workbench/scripts/lib/estimator.py plugins/workbench/scripts/lib/estimator.json` lists only `__init__.py`, `amend.py` and `questions.py` under ticket_cmds [evidence: command:git ls-files plugins/workbench/skills/start-development/scripts/ticket_cmds plugins/workbench/scripts/lib/estimator.py plugins/workbench/scripts/lib/estimator.json]
-- AC3: a retirement test pins AC1 and AC2 [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py::test_run_loop_commands_retired]
-- AC4: `grep -n "estimate\|actual_roles\|apply.run\|rulings" plugins/workbench/skills/start-development/scripts/ticket.py` prints nothing [evidence: command:grep -c "estimate\|actual_roles\|apply.run\|rulings" plugins/workbench/skills/start-development/scripts/ticket.py]
+- AC1: `python3 plugins/workbench/skills/start-development/scripts/ticket.py --help` lists none of apply-run, args, continue, rule, estimate, facts, decide, contract, graph and still lists the 19 kept subcommands [evidence: command:python3 plugins/workbench/skills/start-development/scripts/ticket.py --help]
+- AC2: `git ls-files plugins/workbench/skills/start-development/scripts/ticket_cmds plugins/workbench/scripts/lib/estimator.py plugins/workbench/scripts/lib/estimator.json` lists only `__init__.py`, `amend.py`, `close_cmd.py`, `questions.py` and `roadmap.py` under ticket_cmds and no estimator file [evidence: command:git ls-files plugins/workbench/skills/start-development/scripts/ticket_cmds plugins/workbench/scripts/lib/estimator.py plugins/workbench/scripts/lib/estimator.json]
+- AC3: a retirement test pins AC1 and AC2 by absence (no exact subcommand count) [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py::test_run_loop_commands_retired]
+- AC4: `grep -n "estimate\|actual_roles\|apply.run\|rulings" plugins/workbench/skills/start-development/scripts/ticket.py` prints nothing [evidence: command:! grep -n "estimate\|actual_roles\|apply.run\|rulings" plugins/workbench/skills/start-development/scripts/ticket.py]
 - AC5: `bash plugins/workbench/scripts/run-tests.sh --only start-development` and `--only scripts` pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development]
 
 ## Files
@@ -54,8 +54,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 

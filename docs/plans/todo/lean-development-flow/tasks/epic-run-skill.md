@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-Add the `epic-run` skill (`plugins/workbench/skills/epic-run/SKILL.md`): execute one already-planned epic from any session. Description for the skill index: "Execute one planned epic: claim it, run its tasks in dependency order through one implementer and one reviewer each with at most two fix rounds, audit scope, close. Use after the gate of start-development or to run an epic planned in another session." The body is short and refers to the phase 4 text of `start-development/SKILL.md` for the loop rather than restating it; it adds only the entry conditions (`ticket.py lint <epic>` ok, epic in todo or in-progress, a clean green main), the per-task dispatch prompt shapes (implementer: the task file verbatim plus the tree path and the `cd`; reviewer: the task file, the tree path, the task's commit range), the status command after each task, what to do with `escalated`, `discovered` and `undelivered`, and the exit (phases 5 to 7 of start-development, one closing message of three lines). Add a structure test like the other skills' tests (frontmatter name and description, the referenced files exist, the forbidden words plan-execute, heartbeat, Workflow(, approvals absent) and register the skill wherever the start-* structure tests enumerate skills.
+Add the `epic-run` skill (`plugins/workbench/skills/epic-run/SKILL.md`): execute one already-planned epic from any session. Description for the skill index: "Execute one planned epic: claim it, run its tasks in dependency order through one implementer and one reviewer each with at most two fix rounds, audit scope, close. Use after the gate of start-development or to run an epic planned in another session." The body is short and refers to the phase 4 text of `start-development/SKILL.md` for the loop rather than restating it; it adds only the entry conditions (`ticket.py lint <epic>` ok, epic in todo or in-progress, a clean green main), the per-task dispatch prompt shapes (implementer: the task file verbatim plus the tree path and the `cd`; reviewer: the task file, the tree path, the task's commit range), the status command after each task, what to do with `escalated`, `discovered` and `undelivered`, and the exit (phases 5 to 7 of start-development, one closing message of three lines). Add a structure test like the other skills' tests (frontmatter name and description, the referenced files exist, the forbidden words plan-execute, heartbeat, Workflow(, approvals absent) and register the skill in `plugins/workbench/skills/start-research/tests/test_start_skills_structure.py`, which enumerates skills (it lists `skills/heartbeat/SKILL.md` today; remove-workflows handles that line).
 
 ## Acceptance conditions
 
@@ -48,8 +48,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 

@@ -36,10 +36,10 @@ Rewrite the four agents that carry the lean loop, and remove the two the merge m
 ## Acceptance conditions
 
 - AC1: `git ls-files plugins/workbench/agents/spec-reviewer.md plugins/workbench/agents/quality-reviewer.md` prints nothing, pinned by a retirement test [evidence: test:plugins/workbench/skills/start-review/tests/test_agents_lean.py::test_split_reviewers_retired]
-- AC2: `grep -n "owns\|uses\|provides\|reimplemented\|forks from\|git merge\|readSet\|approved item" plugins/workbench/agents/implementer.md` prints nothing, and the file keeps the words `undelivered`, `discovered`, `tests.red`, `handoff` [evidence: test:plugins/workbench/skills/start-review/tests/test_agents_lean.py::test_implementer_is_lean]
+- AC2: implementer.md contains none of the backticked field names `owns`, `uses`, `provides`, `reimplemented`, nor the phrases "forks from", "git merge", "readSet", "approved item", and the file keeps the words `undelivered`, `discovered`, `tests.red`, `handoff` [evidence: test:plugins/workbench/skills/start-review/tests/test_agents_lean.py::test_implementer_is_lean]
 - AC3: `reviewer.md` orders clean tree and head, verify on HEAD, every AC, debt markers, then quality, and names the output fields head, verifyPassed, unmetAcs, findings, declined, cannotVerify [evidence: test:plugins/workbench/skills/start-review/tests/test_agents_lean.py::test_reviewer_verifies_then_reviews]
-- AC4: `grep -n "ledger\|approvals\|plan-execute\|worktrees\b.*task\|shared-parts" plugins/workbench/agents/scope-auditor.md plugins/workbench/agents/planner.md` prints nothing; planner.md has `model: opus` and names `ticket.py lint` [evidence: command:grep -c "ledger\|approvals\|plan-execute\|validate-tasks\|shared-parts" plugins/workbench/agents/scope-auditor.md plugins/workbench/agents/planner.md]
-- AC5: `review-checklist.md` lists only reviewer, panel-reviewer and start-review as readers [evidence: command:grep -n "spec-reviewer\|quality-reviewer\|plan-execute" plugins/workbench/skills/start-review/references/review-checklist.md]
+- AC4: scope-auditor.md and planner.md contain none of ledger, approvals, plan-execute, validate-tasks, shared-parts; planner.md has `model: opus` and names `ticket.py lint` [evidence: command:! grep -n "ledger\|approvals\|plan-execute\|validate-tasks\|shared-parts" plugins/workbench/agents/scope-auditor.md plugins/workbench/agents/planner.md]
+- AC5: `review-checklist.md` mentions none of spec-reviewer, quality-reviewer, plan-execute (its readers line names reviewer, panel-reviewer and start-review) [evidence: command:! grep -n "spec-reviewer\|quality-reviewer\|plan-execute" plugins/workbench/skills/start-review/references/review-checklist.md]
 - AC6: `bash plugins/workbench/scripts/run-tests.sh --only start-review` and `--only start-research` pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-review]
 
 ## Files
@@ -63,8 +63,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 

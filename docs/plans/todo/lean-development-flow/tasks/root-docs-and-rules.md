@@ -29,9 +29,9 @@ Bring the root documents and their tests to the lean flow. `AGENTS.md`: ground r
 
 ## Acceptance conditions
 
-- AC1: `grep -rniE "plan-execute|heartbeat|Workflow tool|Workflow scripts|approval ledger" AGENTS.md CLAUDE.md README.md docs/architecture.md docs/harnesses.md docs/enterprise.md` prints nothing [evidence: command:grep -rniEc "plan-execute|heartbeat|Workflow tool|Workflow scripts|approval ledger" AGENTS.md CLAUDE.md README.md docs/architecture.md docs/harnesses.md docs/enterprise.md]
+- AC1: `grep -rniE "plan-execute|heartbeat|Workflow tool|Workflow scripts|approval ledger" AGENTS.md CLAUDE.md README.md docs/architecture.md docs/harnesses.md docs/enterprise.md` prints nothing [evidence: command:! grep -rniE "plan-execute|heartbeat|Workflow tool|Workflow scripts|approval ledger" AGENTS.md CLAUDE.md README.md docs/architecture.md docs/harnesses.md docs/enterprise.md]
 - AC2: AGENTS.md ground rule 1 names `epic-run`, one implementer and one reviewer per task, two fix rounds and one scope audit per epic [evidence: test:scripts/tests/test_agents_md.py::test_ground_rule_one_names_epic_run]
-- AC3: `mise run harness-setup` leaves the tree unchanged (the generated block is committed) [evidence: command:mise run harness-setup && git status --porcelain]
+- AC3: after the task's commit, `mise run harness-setup` leaves the tree unchanged (the generated block is committed) [evidence: command:mise run harness-setup && git status --porcelain]
 - AC4: `pytest scripts/tests -m "not slow" -q` and `mise run lint` pass [evidence: command:pytest scripts/tests -m "not slow" -q]
 
 ## Files
@@ -54,8 +54,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 

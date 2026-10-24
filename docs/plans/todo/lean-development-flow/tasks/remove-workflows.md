@@ -29,9 +29,10 @@ Remove the Workflow runtime and everything that exists only to drive or watch it
 
 ## Acceptance conditions
 
+- AC0: every `! grep` evidence command below passes when it exits 0, which means no match [evidence: command:true]
 - AC1: `git ls-files plugins/workbench/workflows plugins/workbench/skills/heartbeat plugins/workbench/scripts/hook-evidence.py scripts/harness/fallbacks/plan-execute` prints nothing [evidence: command:git ls-files plugins/workbench/workflows plugins/workbench/skills/heartbeat plugins/workbench/scripts/hook-evidence.py scripts/harness/fallbacks/plan-execute]
 - AC2: a retirement test asserts AC1 with git ls-files, never the filesystem [evidence: test:scripts/tests/test_retired_workflow.py::test_workflow_runtime_retired]
-- AC3: `scripts/harness/skills_emit.py` has no CLAUDE_ONLY set and no rewrite rule mentioning Workflow, plan-execute, heartbeat or Monitor; `grep -n "plan-execute\|heartbeat\|CLAUDE_ONLY\|Workflow" scripts/harness/skills_emit.py` prints nothing [evidence: command:grep -c "plan-execute\|heartbeat\|CLAUDE_ONLY\|Workflow" scripts/harness/skills_emit.py]
+- AC3: `scripts/harness/skills_emit.py` has no CLAUDE_ONLY set and no rewrite rule mentioning Workflow, plan-execute, heartbeat or Monitor; `grep -n "plan-execute\|heartbeat\|CLAUDE_ONLY\|Workflow" scripts/harness/skills_emit.py` prints nothing [evidence: command:! grep -n "plan-execute\|heartbeat\|CLAUDE_ONLY\|Workflow" scripts/harness/skills_emit.py]
 - AC4: `bash plugins/workbench/scripts/run-tests.sh` runs every remaining component and ends with `all green` [evidence: command:bash plugins/workbench/scripts/run-tests.sh]
 - AC5: `pytest scripts/tests -m "not slow" -q` and `mise run lint` pass [evidence: command:pytest scripts/tests -m "not slow" -q]
 
@@ -56,8 +57,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the files named under Files and the tests the ACs name; write the new or changed tests first and run them: they must fail for the expected reason.
+2. Implement until the targeted verify command passes; keep every existing test green or update it where it pinned removed behaviour.
+3. Run the verify command, paste its real tail in the report, commit on the epic branch, leave the tree clean.
 
 ## Notes
 
