@@ -10,7 +10,7 @@ fail the Bash tool call.
 
 The test-runner match happens on the command with any leading `cd <dir> &&`/
 `cd <dir>;` prefix(es) stripped first, so `cd <worktree> && mise run test ...`
-- the shape every plan-execute agent actually runs - matches, not only a
+- the shape every implementer agent actually runs - matches, not only a
 command that starts with the runner itself.
 
 For a bare pytest invocation (no further shell chaining after it) `-q -rfE

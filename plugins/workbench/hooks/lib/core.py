@@ -197,7 +197,7 @@ RULES = [
 
 COMPILED = [(re.compile(p), r) for p, r in RULES]
 
-# --- idle no-op / polling heartbeats ------------------------------------
+# --- idle no-op / polling loops ------------------------------------------
 #
 # A peer-session token review found 2,108 Bash calls in one session that were
 # bare `true` / `echo waiting` / `sleep 1` used to poll or wait out a
@@ -208,7 +208,7 @@ IDLE_NOOP_REASON = (
     "This looks like an idle wait, not work: end the turn instead. Use "
     "run_in_background for a long command, Monitor to stream a background "
     "process, or a bounded until-loop that checks a real condition (never a "
-    "bare sleep/true/: /echo heartbeat)."
+    "bare sleep/true/: /echo waiting)."
 )
 
 # A command containing a bounded loop construct is exempt: `sleep` inside
@@ -221,7 +221,7 @@ _IDLE_NOOP_SEGMENT = re.compile(
     r"|:"
     r"|sleep\s+[0-9]+(?:\.[0-9]+)?"
     r"|echo\s+(?:-[a-zA-Z]+\s+)*"
-    r"""['"]?(?:waiting|idle|polling|still\s+waiting|heartbeat|\.\.\.)[.\s'"]*"""
+    r"""['"]?(?:waiting|idle|polling|still\s+waiting|\.\.\.)[.\s'"]*"""
     r")$",
     re.IGNORECASE,
 )
@@ -319,7 +319,7 @@ def guard_segments(cmd: str, depth: int = 0):
 
 
 def guard_bash(event: NormalizedEvent) -> Decision:
-    """Deny destructive shell commands and idle no-op heartbeats.
+    """Deny destructive shell commands and idle no-op polls.
 
     Advisory guardrail against agent mistakes, not a security sandbox.
     """

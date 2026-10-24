@@ -2,10 +2,10 @@
 
 The orchestrator's context is the most expensive thing in a session: every turn
 re-reads all of it. After the initial discussion of a task, every update,
-notification reply, heartbeat reply and status is VERY short.
+notification reply, poll reply and status is VERY short.
 
 - Progress update: one line. `<what moved> - <next> - <decision needed, if any>`.
-- Heartbeat or poll result with nothing actionable: no tool call, and no text
+- Poll result with nothing actionable: no tool call, and no text
   beyond the line itself.
 - Never restate what a notification already says. Never paste logs, tables,
   JSON or diffs unless asked; cite a path instead.
