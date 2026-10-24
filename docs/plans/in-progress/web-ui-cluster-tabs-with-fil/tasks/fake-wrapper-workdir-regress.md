@@ -1,6 +1,6 @@
 ---
 title: fake wrapper workdir regression
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the orchestrator suite is green again on the epic branch
 files: [tests/fakes/fake_wrapper.py, tests/test_api_files.py, tests/test_api_terminals.py, tests/test_terminal_relay.py, tests/test_workspace_proxy.py, tests/test_fake_wrapper_contract.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fake-wrapper-workdir-regress/agent-orchestrator
+branch: web-ui-cluster-tabs-with-fil-fake-wrapper-workdir-regress
 verified_head: ""
 run: ""
 provides: []
