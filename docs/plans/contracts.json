@@ -257,5 +257,15 @@
       "agents-helmfile"
     ],
     "note": "POST /api/v1/clusters/{id}/scale {replicas} -> 202 ScaleResult {cluster_id, replicas, previous_replicas, max_replicas}; errors static_cluster 409, out_of_range 422, leader_would_leave 409, cluster_deleting 409, not_found 404; spec.replicas in place, no generation bump"
+  },
+  {
+    "name": "orch-agent-scale-api",
+    "kind": "api",
+    "owner": "cluster-scaling",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "any-mcp"
+    ],
+    "note": "POST /agent/v1/scale {replicas} -> 202 ScaleResult; leader only via require_agent(); errors not_leader 403, static_cluster 409, out_of_range 422, leader_would_leave 409, cluster_deleting 409; consumed by OrchestratorPlugin orchestrator_scale"
   }
 ]
