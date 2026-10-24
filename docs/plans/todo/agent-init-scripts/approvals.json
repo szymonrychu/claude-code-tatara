@@ -58,11 +58,12 @@
     "id": "C3",
     "text": "An agent edit writes to the cluster's stored spec AND to its source preset when there is one.",
     "decisions": [
-      "D4"
+      "D4",
+      "D11"
     ],
     "tasks": [
-      "init-scripts-public-api",
-      "init-scripts-agent-api"
+      "init-scripts-agent-api",
+      "init-scripts-public-api"
     ],
     "status": "approved"
   },

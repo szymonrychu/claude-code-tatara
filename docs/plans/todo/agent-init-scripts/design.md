@@ -74,6 +74,9 @@ Init scripts are new: ClusterSpec + preset field; run once per cluster (not per 
 ### D10: C2 exposed to the agent
 Exposed to the agent initialised with them, so it knows how it was initialised. (user decision)
 
+### D11: C3 edit writes cluster spec and source preset
+An agent edit writes to the cluster's stored spec AND to its source preset when there is one. (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -113,6 +116,7 @@ Exposed to the agent initialised with them, so it knows how it was initialised. 
 | D8 API-only kind e2e | init-scripts-kind-e2e |
 | D9 C1 init scripts field, once per cluster | init-scripts-spec-field, init-job-runner, init-scripts-kind-e2e |
 | D10 C2 exposed to the agent | init-job-runner, init-scripts-agent-api |
+| D11 C3 edit writes cluster spec and source preset | init-scripts-public-api, init-scripts-agent-api |
 
 ## Contracts
 
