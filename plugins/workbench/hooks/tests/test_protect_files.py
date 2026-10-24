@@ -109,7 +109,7 @@ def test_every_edit_tool_is_guarded(tool, key):
 
 # --- em dash content guard ----------------------------------------------------
 
-EM_DASH = "—"
+EM_DASH = "\u2014"
 
 
 def tool_payload(tool: str, tool_input: dict) -> str:
