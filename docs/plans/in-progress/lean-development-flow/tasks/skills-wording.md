@@ -1,6 +1,6 @@
 ---
 title: Skills wording
-status: in-progress
+status: done
 repo: workbench
 value: A skill that still tells the agent to arm a heartbeat or run plan-execute reintroduces the cost
 files: [plugins/workbench/skills/, plugins/workbench/hooks/, plugins/workbench/rules/concise-orchestrator.md, plugins/workbench/agents/]
@@ -9,6 +9,7 @@ depends_on: [start-development-rewrite, epic-run-skill]
 owns: []
 uses: []
 model: sonnet
+verified_head: 606b059
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
