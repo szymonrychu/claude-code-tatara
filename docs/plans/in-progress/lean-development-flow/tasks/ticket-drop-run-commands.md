@@ -1,6 +1,6 @@
 ---
 title: Ticket drop run commands
-status: in-progress
+status: done
 repo: workbench
 value: Cuts ticket.py to the planning and lifecycle commands the user keeps
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/tests/test_estimator.py]
@@ -9,6 +9,7 @@ depends_on: [remove-workflows]
 owns: []
 uses: []
 model: sonnet
+verified_head: 31559e5841b567af391c1516c94f2cd187bc0340
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
