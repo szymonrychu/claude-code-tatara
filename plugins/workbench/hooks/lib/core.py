@@ -407,7 +407,6 @@ def blocked_reason(path: str) -> str | None:
     return None
 
 
-
 # Keys holding the new text of an edit or write, across every harness's tool
 # schema: Claude Write/Edit/NotebookEdit, Copilot CLI create/edit, Antigravity
 # write_to_file/replace_file_content. Lists of dicts (MultiEdit `edits`) are
