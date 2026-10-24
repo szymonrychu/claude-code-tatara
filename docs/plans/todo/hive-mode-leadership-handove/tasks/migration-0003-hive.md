@@ -1,0 +1,65 @@
+---
+title: migration 0003 hive
+status: todo
+repo: agent-orchestrator
+value: "leadership, locks and pod identity have tables with one writer each"
+files: [src/agent_orchestrator/db/migrations/0003_hive.sql, README.md, tests/test_migrations.py]
+verify: "uv run pytest tests/test_migrations.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
+depends_on: []
+owns: [orch-hive-tables]
+uses: []
+model: ""
+estimate: 5
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# migration 0003 hive
+
+## Requirement
+
+Foundation part F5. `src/agent_orchestrator/db/migrations/0003_hive.sql`, forward-only, statements idempotent like `0002_presets.sql`:
+
+- `leadership_requests` (queue): `id bigserial pk`, `cluster_id uuid not null references clusters on delete cascade`, `kind text check (kind in ('handover','user'))`, `from_agent_id` and `to_agent_id` nullable references agents, `reason text not null default ''`, `epoch int null`, `status text not null default 'queued' check (status in ('queued','applied','rejected'))`, `reject_reason text null`, `created_at timestamptz not null default now()`, `decided_at timestamptz null`; partial index `(cluster_id, id) where status = 'queued'`. Writers: the api inserts; the dispatcher decides rows only through status-guarded updates (`where status = 'queued'`).
+- `cluster_leaders`: `cluster_id uuid pk references clusters on delete cascade`, `agent_id` references agents, `epoch int not null`, `since timestamptz not null`, `reason text not null`, `unready_since timestamptz null`, `feed_cursor bigint not null default 0`, `state_hash text null`, `state_pushed_at timestamptz null`. Writer: the dispatcher only.
+- `file_locks`: `cluster_id` references clusters on delete cascade, `path text`, `agent_id` references agents on delete cascade, `claimed_at timestamptz not null default now()`, primary key `(cluster_id, path)`. Writer: the api only.
+- `agents.pod_ip text null` (writer: the reconciler, like the rest of `agents`).
+- README Architecture writers table (`### Single-writer interpretation`) lists the three tables and the column with their writer (`tests/test_readme_api.py` enforces). Migrations 0004 and later belong to cluster-scaling and agent-init-scripts.
+
+## Acceptance conditions
+
+- AC1: after migrate the three tables, their columns and agents.pod_ip exist [evidence: test:tests/test_migrations.py::test_0003_hive_schema]
+- AC2: running the migrations twice is a no-op [evidence: test:tests/test_migrations.py::test_0003_idempotent]
+- AC3: the check constraints reject an unknown kind or status [evidence: test:tests/test_migrations.py::test_0003_constraints]
+- AC4: README lists every new table with its single writer [evidence: command:uv run pytest tests/test_readme_api.py -q]
+- AC5: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+
+## Files
+
+- `src/agent_orchestrator/db/migrations/0003_hive.sql`
+- `README.md`
+- `tests/test_migrations.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
