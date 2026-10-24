@@ -92,7 +92,7 @@ def test_toml_parses_and_roundtrips(tree):
 def test_real_tree_renders_every_agent():
     out = CodexEmitter().render(load_sources(REPO))
     agents = {k for k in out if k.startswith(".codex/agents/")}
-    assert ".codex/agents/verifier.toml" in agents
+    assert ".codex/agents/reviewer.toml" in agents
     for k in agents:
         tomllib.loads(out[k])
 
