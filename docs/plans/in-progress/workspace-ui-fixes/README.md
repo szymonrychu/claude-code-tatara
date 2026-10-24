@@ -1,7 +1,7 @@
 ---
 title: workspace ui fixes
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agent-orchestrator]
 created: 2026-10-24
