@@ -1,6 +1,6 @@
 ---
 title: kind e2e workspace
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: CI proves on a real cluster that files and shells work through the public API alone
 files: [tests/e2e/test_e2e_kind.py]

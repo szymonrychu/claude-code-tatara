@@ -11,8 +11,8 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: 3
-actual_roles: "impl 2, verify 1"
+actual: 1
+actual_roles: "impl 1, verify 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-sha-pin/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-wrapper-sha-pin
