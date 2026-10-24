@@ -385,5 +385,16 @@
       "cluster-scaling"
     ],
     "note": "task dispatcher-leadership-pass: leadership_pass under the per-cluster claim lock; lost-leader fallback when a leader is gone or unready past 30 s; NOTIFY leader_changed"
+  },
+  {
+    "name": "orch-render-hash-invariant",
+    "kind": "test",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/tests/test_render.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task render-hive-gating: test_runtime_fields_change_only_statefulset_replicas, parametrised over runtime fields; init adds init_scripts; nothing rendered may depend on the live replica count"
   }
 ]
