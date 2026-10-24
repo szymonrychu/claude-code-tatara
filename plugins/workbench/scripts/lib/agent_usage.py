@@ -1,9 +1,10 @@
 """Per-agent time and tokens, read from Claude Code subagent transcripts.
 
-A subagent transcript is JSONL at `~/.claude/projects/<project>/<session>/subagents/
-agent-<id>.jsonl`. `assistant` lines carry `timestamp`, `message.model` and
-`message.usage`; one message often spans several lines with the same `message.id` and
-identical usage, so usage is counted once per id (then `requestId`, then the line).
+A subagent transcript is JSONL at `<project>/<session>/subagents/agent-<id>.jsonl` under
+the harness's projects dir (the path arrives in the hook payload). `assistant` lines
+carry `timestamp`, `message.model` and `message.usage`; one message often spans several
+lines with the same `message.id` and identical usage, so usage is counted once per id
+(then `requestId`, then the line).
 The first `user` line opens with the run marker `[wb <epic>/<task>/<role>]`.
 
 Records live at `<logs>/agents/<agentId>.json`, one per agent, overwritten whole on
