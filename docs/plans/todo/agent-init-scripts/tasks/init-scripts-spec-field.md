@@ -57,17 +57,19 @@ Steps: write `tests/test_spec_init_scripts.py` (model limits, hash, preset round
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agent_orchestrator/spec.py::ClusterSpec.init_scripts`, `spec.py::INIT_DIR`, `spec.py::init_scripts_hash` (contract orch-cluster-spec-init-scripts).
+- Keeps the hive hash invariant test green and extends it to `init_scripts`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A preset or cluster spec carries `init_scripts`; nothing rendered for pods changes with it; README, openapi.json and schema.d.ts describe it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_spec_init_scripts.py` and the render pin; `uv run pytest tests/test_spec_init_scripts.py tests/test_render.py -q` fails on the missing field.
+- Green: add the field, constant and hash helper; regenerate openapi.json and schema.d.ts; document in README; run the verify command: all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Presets dump `exclude_unset` (`api/presets.py:42-54`), so an unset `init_scripts` stays absent from the stored preset.
+- `extra="forbid"` means older orchestrator builds reject a spec with the field; this build only moves forward.

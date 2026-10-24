@@ -48,17 +48,18 @@ Kind e2e cannot run inside the task container; verification is collection and li
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Public routes `GET|PUT /api/v1/clusters/{id}/init-scripts`, agent routes `GET|PUT /agent/v1/init-scripts`, `status.init`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Four API-only e2e tests cover run once, edit without roll or re-run, failure and skipped; they are collected locally and run in PR CI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the four tests and their teardown; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py -k init_scripts`: four tests listed.
+- Run the verify command: collection and lint pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Check `e2e/values-kind.yaml` `ORCH_MAX_CLUSTERS` against the extra clusters; raise it there only if needed (that file then joins this task's diff).
+- Kind e2e cannot run in the task container; verified by collection and lint, run by the PR CI e2e job.

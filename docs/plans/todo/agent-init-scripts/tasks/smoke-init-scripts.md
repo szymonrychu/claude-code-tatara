@@ -47,17 +47,17 @@ Extend the deployed smoke to prove init scripts end to end (user decisions C1, X
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `GET /api/v1/clusters/{id}/init-scripts` and `status.init` (contracts orch-cluster-init-scripts-api, orch-cluster-status-init).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` creates its cluster with an init script and fails unless the init run succeeds and is visible through the API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three smoke tests with the fake API and kubectl; `uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py` fails.
+- Green: update `scripts/smoke.sh`; run the verify command: all pass, shellcheck clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Today the pod is the first of `kubectl get pods -l agents.szymonrichert.pl/cluster=<slug>` (`scripts/smoke.sh`, step 3); the init Job pod matches that label.

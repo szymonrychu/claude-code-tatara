@@ -53,17 +53,17 @@ Steps: write `tests/test_agent_init_scripts.py` (auth reuse: no token 401, other
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/agent.py` routes `GET|PUT /agent/v1/init-scripts` (contract orch-agent-init-scripts-api), using hive `require_agent()` and `api/clusters.py::init_scripts_view` / `edit_init_scripts`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An agent pod reads and edits its cluster's init scripts over the agent socket, and the pinned plugin tools work against these routes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_init_scripts.py`; `uv run pytest tests/test_agent_init_scripts.py -q` fails with 404.
+- Green: add both routes; document them like `/agent/v1/me`; run the verify command: all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Follow the test fixtures hive F4 added for `/agent/v1/me` (agent client with token, cluster header and caller IP).

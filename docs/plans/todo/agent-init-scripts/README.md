@@ -27,15 +27,21 @@ Scope confirmation (user, 2026-10-24): init scripts do not exist in agent-orches
 
 ## Goals
 
-
+- Clusters and presets carry `init_scripts`; a cluster runs them exactly once, before its agent sessions start, and records the run in `status.init`.
+- The agent reads its scripts, run state and log (workdir `.agent-init/` and the init tools) and edits them; an edit writes the cluster spec and its source preset, never rolls a pod and never re-runs.
+- Documented public routes, an API-only kind e2e, preset form rows and a cluster Init scripts dialog.
+- The live agents namespace runs the build; the smoke proves init scripts.
 
 ## Non-goals
 
-
+- Re-running init on a running cluster.
+- Per-pod setup (wrapper `init.setup_commands` unchanged).
+- any-mcp or claude-code-wrapper changes (the init tools and the main-agent-only gate come from hive-mode-leadership-handove).
+- Secrets for the init Job beyond `spec.env`.
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 54 agent-min | Critical path: 32 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 54 min
 
 ## Review
 

@@ -68,17 +68,21 @@ Steps: write `tests/test_init_runner.py` against `tests/fakes/fake_kube.py` (fir
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reconciler/init.py::InitRunner.step`, `init_job_name`, `render_init_job`.
+- `clusters.status.init` shape (contract orch-cluster-status-init) and `<workdir>/.agent-init/` files (contract orch-init-workdir-files).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A new cluster with scripts runs them once in one Job, records the outcome in `status.init`, and its agents get sessions after the run; edits, restarts and scaling never run them again.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_init_runner.py` on `tests/fakes/fake_kube.py`; `uv run pytest tests/test_init_runner.py -q` fails on the missing module.
+- Green: implement `reconciler/init.py`, call it from `_converge` before `_bootstrap_sessions`, gate the bootstrap; run the verify command: all pass.
+- Docs: README Reconcile loop and Data model, MEMORY.md dated entry.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `_write_status` merges keys (`reconciler/loop.py:500-520`); write `{"init": {...}}` through it so the discard hook keys survive.
+- `_observe` skips pods whose name suffix is not an ordinal (`loop.py:282`), so `agent-<slug>-init-xxxxx` never becomes an agent.
+- `DISCARD_ORDER` already deletes labelled Jobs; `PRUNE_ORDER` has no Job, so converge never prunes it.

@@ -61,17 +61,18 @@ Steps: write `tests/test_api_init_scripts.py` first (repo function and both rout
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/clusters.py::set_init_scripts`, `api/clusters.py::init_scripts_view`, `api/clusters.py::edit_init_scripts`, `api/schemas.py::InitScriptsIn`, `InitStatus`, `InitScriptsView`, `ClusterView.init_edited_since_run` (contract orch-cluster-init-scripts-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`GET|PUT /api/v1/clusters/{id}/init-scripts` work and are documented; a PUT updates the cluster and its preset in one transaction with no pod roll.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_init_scripts.py`; `uv run pytest tests/test_api_init_scripts.py -q` fails with 404 on the routes.
+- Green: repo function, helpers, schemas, routes; regenerate openapi.json and schema.d.ts; README H3s; run the verify command: all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The clusters single-writer is the api process; `presets` too. Lock clusters then presets in every path that takes both.
+- `preset_id` is null after the preset was deleted (`ON DELETE SET NULL`).

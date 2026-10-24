@@ -50,17 +50,17 @@ Steps: write the PresetForm tests first, see them fail, implement; then `npm run
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `frontend/src/clusters/clusterSpecForm.ts` `SetKey` `initScripts`, form value `initScripts: string[]`, its validation (reused by fe-cluster-init-dialog).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The preset form edits init scripts as rows and submits them sparse.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the PresetForm tests; `cd frontend && npx vitest run src/presets/PresetForm.test.tsx` fails.
+- Green: form value, validation, rows; run the verify command, then `npm run build` and `npm run check:api`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Export the validation helper so the cluster dialog reuses it.

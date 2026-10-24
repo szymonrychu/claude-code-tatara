@@ -48,17 +48,18 @@ Release path: this epic changes no chart version and no any-mcp or wrapper pin (
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes the published chart `oci://harbor.szymonrichert.pl/charts/agent-orchestrator` `0.1.0-main.<sha7>` and image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>` (contracts agent-orchestrator-chart, agent-orchestrator-image).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows only the agent-orchestrator chart version and image tag changing to this epic's merge.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition (merge commit and published artifacts); otherwise end blocked as the requirement says.
+- Red: update the pin test to the new sha; it fails on the old pins.
+- Green: bump the chart version and image tag; run the verify command: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- cluster-scaling and hive pin the same two lines; take the sha of the latest orchestrator main merge that contains this epic.
