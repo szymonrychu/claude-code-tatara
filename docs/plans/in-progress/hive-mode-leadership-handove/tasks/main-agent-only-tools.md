@@ -28,6 +28,7 @@ provides: []
 Foundation part F2 (D2 main-agent gating). New wrapper config key `claude.main_agent_only_tools: list[str]` (fnmatch globs, default `[]`). The PreToolUse gate in `router.py` denies a tool whose name matches any glob when the hook payload carries `agent_id` (a subagent), next to the existing `mcp__ccw__*` check (`router.py:611-614`), with the same deny shape and a reason naming the main-agent-only rule. Main-agent calls pass; non-matching tools and the default `[]` change nothing. The orchestrator renders `["mcp__any-mcp__orchestrator_*"]`, so a leader's subagent cannot hand leadership away or scale the cluster.
 
 README: the key in the config reference (enforced by `tests/test_readme_config.py`) and one sentence in the trust model section.
+- Interrogate item 8: the gate is a best-effort guard against a subagent calling the orchestrator tools, not a security boundary: subagents share the pod and trust domain with the main agent (Bash can read ORCH_AGENT_TOKEN). The README trust-model sentence and the config key description say so; no new mechanism.
 
 ## Acceptance conditions
 
@@ -36,6 +37,7 @@ README: the key in the config reference (enforced by `tests/test_readme_config.p
 - AC3: with the default empty list, and for non-matching tools, the gate behaves as before [evidence: test:tests/test_main_agent_only_tools.py::test_default_empty_changes_nothing]
 - AC4: the key validates as a list of strings and is documented in the README config reference [evidence: command:uv run pytest tests/test_readme_config.py tests/test_config.py -q]
 - AC5: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC6: README trust model states the gate is best-effort and not a security boundary [evidence: test:tests/test_main_agent_only_tools.py::test_readme_documents_best_effort]
 
 ## Files
 
@@ -61,3 +63,5 @@ A subagent calling a configured tool is denied before it runs; nothing else chan
 
 - Gate site: `router.py:611-614` next to `CCW_TOOL_PREFIX` (`router.py:75`). Use `fnmatch.fnmatchcase`.
 - claude-code-wrapper has no MEMORY.md or AGENTS.md; read its CLAUDE.md.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 8
