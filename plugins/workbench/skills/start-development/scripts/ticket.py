@@ -2,7 +2,7 @@
 """ticket.py: file-based epic and task tickets under docs/plans/{todo,in-progress,done}.
 
 Core: layout, slugs, restricted frontmatter, new-epic, new-task, path. Dedup: check, index,
-existing. Run: tasks, worktrees, apply-run. Epic state: move, stage, review, rename, lint, reap.
+existing. Run: tasks, worktrees. Epic state: move, stage, review, rename, lint, reap.
 Every mutating subcommand calls require_main_checkout() first and commit_ticket_change() last.
 Worktree cleanup removes only merged, clean trees, through worktree-merge's cleanup().
 """
@@ -27,7 +27,6 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
-import estimator  # noqa: E402
 import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
@@ -382,25 +381,6 @@ def cmd_new_epic(a: argparse.Namespace) -> int:
     return 0
 
 
-def formula_minutes(root: Path, repo: str, files: list, verify: str) -> int:
-    """The estimator's agent-minutes for a task, with the repo's workbench.json suites."""
-    suites = workbench.config_for_repo(Path(root), repo).get("suites", [])
-    return estimator.task_minutes(len(files), verify, suites)
-
-
-def _estimate_fields(a: argparse.Namespace, root: Path, files: list) -> dict:
-    """`--estimate` is a planner override; without it the formula supplies the minutes."""
-    if a.estimate:
-        return {
-            "estimate": str(_minutes(a.estimate, "new task", "estimate")),
-            "estimate_by": "override",
-        }
-    return {
-        "estimate": str(formula_minutes(root, a.repo, files, a.verify)),
-        "estimate_by": "formula",
-    }
-
-
 def cmd_new_task(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
@@ -429,7 +409,6 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         owns=_csv(a.owns),
         uses=_csv(a.uses),
         model=a.model or "",
-        **_estimate_fields(a, root, files),
         review=a.review or "",
     )
     body = _render(
@@ -735,7 +714,7 @@ def cmd_existing(a: argparse.Namespace) -> int:
     return 0
 
 
-# ---------------------------------------------------------------- run: tasks, worktrees, apply-run
+# ---------------------------------------------------------------- run: tasks, worktrees
 
 
 def _sections(body: str) -> dict[str, str]:
@@ -770,59 +749,6 @@ def _parse_ac(text: str, task: str) -> list[dict]:
 
 def _task_files(epic_dir: Path) -> list[Path]:
     return sorted((epic_dir / "tasks").glob("*.md"))
-
-
-def _minutes(value, task: str, field: str) -> int:
-    """A task's `estimate` or `actual` frontmatter value in minutes; unset is 0."""
-    if value in (None, ""):
-        return 0
-    try:
-        n = int(value)
-    except (TypeError, ValueError):
-        n = -1
-    if n < 0:
-        raise TicketError(f"task {task!r}: {field} must be a whole number of minutes: {value!r}")
-    return n
-
-
-def epic_rows(epic_dir: Path) -> list[dict]:
-    """The estimator's task rows for an epic: id, minutes, depends_on, status."""
-    return [
-        {
-            "id": p.stem,
-            "minutes": _minutes(m.get("estimate"), p.stem, "estimate"),
-            "depends_on": m.get("depends_on") or [],
-            "status": m.get("status", ""),
-        }
-        for p, m in _tasks_of(epic_dir)
-    ]
-
-
-def time_summary(epic_dir: Path) -> str:
-    """Estimate, critical path, expected wall, actuals and remaining estimate, in minutes."""
-    est = estimator.epic_estimate(epic_rows(epic_dir))
-    act = sum(_minutes(m.get("actual"), p.stem, "actual") for p, m in _tasks_of(epic_dir))
-    k = estimator.load()["epic"]["k"]
-    return (
-        f"Estimate: {est['sum']} agent-min | Critical path: {est['cp']} min | "
-        f"Expected wall at P={est['p']}: {est['epicWall'] / 60:.1f} h (k={k}) | "
-        f"Actual: {act} min | Remaining estimate: {est['remaining']} min"
-    )
-
-
-def update_time_section(epic_dir: Path) -> tuple[Path, bool]:
-    """Regenerate the derived `## Time` section of the epic README; (path, changed)."""
-    p = epic_dir / "README.md"
-    doc = _read_doc(p)
-    text = time_summary(epic_dir)
-    if re.search(r"^## Time\s*$", doc.body, flags=re.M):
-        body = _section_replace(doc.body, "Time", text)
-    else:
-        body = doc.body.rstrip("\n") + f"\n\n## Time\n\n{text}\n"
-    changed = body != doc.body
-    if changed:
-        p.write_text(dump(Doc(doc.meta, body)))
-    return p, changed
 
 
 def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
@@ -862,8 +788,6 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
                 "review": m.get("review", ""),
                 "worktree": m.get("worktree", ""),
                 "acsForAudit": m.get("acs_for_audit", []),
-                "estimate": _minutes(m.get("estimate"), path.stem, "estimate"),
-                "actual": _minutes(m.get("actual"), path.stem, "actual"),
                 "branch": m.get("branch", ""),
                 "verifiedHead": m.get("verified_head", ""),
                 "forkPoint": m.get("fork_point", ""),
@@ -875,8 +799,6 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
 def cmd_tasks(a: argparse.Namespace) -> int:
     epic_dir = resolve_epic(a.epic, Path(a.root))
     text = json.dumps(derive_tasks(epic_dir, _csv(a.only)), indent=2)
-    if (epic_dir / "README.md").is_file():
-        update_time_section(epic_dir)
     if a.out:
         Path(a.out).write_text(text + "\n")
     else:
@@ -1049,56 +971,6 @@ def cmd_worktrees(a: argparse.Namespace) -> int:
     return 0
 
 
-def _ids(entries, *keys) -> set[str]:
-    return {str(e.get(k)) for e in entries or [] if isinstance(e, dict) for k in keys if e.get(k)}
-
-
-def _reasons(entries, tid: str) -> list[str]:
-    """Every escalation reason the run recorded for one task."""
-    out = []
-    for e in entries or []:
-        if isinstance(e, dict) and tid in (str(e.get("id")), str(e.get("taskId"))):
-            rs = e.get("reasons") or [e.get("reason")]
-            out += [str(r) for r in rs if r]
-    return out
-
-
-def _dependency_only(entries, tid: str) -> bool:
-    reasons = _reasons(entries, tid)
-    return bool(reasons) and set(reasons) == {"dependency-failed"}
-
-
-def _run_status(
-    t: dict, blocked: set[str], escalated: set[str], escalations: list | None = None
-) -> str:
-    tid = t["id"]
-    if tid in blocked or t.get("stopped") == "blocked":
-        return "blocked"
-    if t.get("verified") and t.get("processOnly") and t.get("stopped") != "review-shallow":
-        return "done"
-    if tid in escalated:
-        return "todo" if _dependency_only(escalations, tid) else "escalated"
-    if t.get("verified") and t.get("clean") and not t.get("stopped"):
-        return "done"
-    return "in-progress"
-
-
-def _dependency_note(entries, t: dict, meta: dict, run: str) -> str:
-    deps = []
-    for e in entries or []:
-        if isinstance(e, dict) and t["id"] in (str(e.get("id")), str(e.get("taskId"))):
-            deps += [str(d) for d in e.get("waitingOn") or e.get("dependsOn") or []]
-    deps = deps or [str(d) for d in t.get("waitingOn") or meta.get("depends_on") or []]
-    day = datetime.date.today().isoformat()
-    return f"- {day} run {run}: dependency-failed on {', '.join(dict.fromkeys(deps))}"
-
-
-def _gap_summary(g) -> str:
-    if isinstance(g, dict):
-        return str(g.get("what") or g.get("summary") or "")
-    return str(g)
-
-
 def _section_replace(body: str, name: str, text: str) -> str:
     return re.sub(
         rf"(^## {re.escape(name)}[ \t]*\n).*?(?=^## |\Z)",
@@ -1107,247 +979,6 @@ def _section_replace(body: str, name: str, text: str) -> str:
         count=1,
         flags=re.M | re.S,
     )
-
-
-def _new_discovered(epic_dir: Path, d: dict, src: Doc | None, run: str, root: Path) -> Path | None:
-    title = str(d.get("what", "")).strip()
-    task = slug(title)
-    if not task:
-        raise TicketError(f"discovered entry has no usable 'what': {d!r}")
-    worktree_name(epic_dir.name, task)
-    path = epic_dir / "tasks" / f"{task}.md"
-    if path.exists():
-        return None
-    clashes = name_clashes(root, [(f"{epic_dir.name}-{task}", epic_dir.name, task)])
-    if clashes:
-        for line in clashes:
-            print(f"ticket.py: discovered task {task!r} not created: {line}", file=sys.stderr)
-        return None
-    where, why = str(d.get("where", "")), str(d.get("why", ""))
-    doc = _template("task.md")
-    files = [where] if where and " " not in where else []
-    clash = run_check(root, title, epic_dir.name, files).failures
-    doc.meta.update(
-        title=title,
-        status="blocked" if clash else "todo",
-        repo=(src.meta.get("repo", "") if src else ""),
-        value=why,
-        files=files,
-    )
-    finding = f"{title} at {where or 'the place the run named'}"
-    body = _render(
-        doc.body,
-        {
-            "title": title,
-            "ac": f"- AC1: {title} at {where or 'the place the run named'} is resolved "
-            "[evidence: judgement]",
-            "requirement": f"{title}\n\nWhere: {where}\n\nWhy: {why}",
-            "files": "\n".join(f"- `{f}`" for f in files),
-        },
-    )
-    for name, text in (
-        (
-            "Interfaces",
-            f"Keep the interfaces around {where or 'the finding'} unchanged "
-            f"unless resolving it requires otherwise: {title}.",
-        ),
-        (
-            "Expected outcome",
-            f"{finding} is resolved, and {why or 'the reason it was raised'} no longer applies.",
-        ),
-        (
-            "Steps",
-            f"1. Write a failing test that shows: {title}.\n"
-            f"2. Fix it at {where or 'the place named above'}.\n"
-            "3. Run the task verify command and confirm it passes.",
-        ),
-    ):
-        body = _section_replace(body, name, text)
-    note = f"Discovered in task `{d.get('taskId', '')}` during run `{run}`."
-    if clash:
-        note += "\n\nBlocked by the dedup check:\n" + "\n".join(f"- {m}" for m in clash)
-    body = _section_replace(body, "Notes", note)
-    path.parent.mkdir(exist_ok=True)
-    path.write_text(dump(Doc(doc.meta, body)))
-    return path
-
-
-ROLE_ORDER = ("impl", "verify", "review", "fix")
-
-
-def _parse_roles(text) -> dict[str, int]:
-    """`actual_roles` ("impl 2, review 1") to {role: minutes}."""
-    out: dict[str, int] = {}
-    for part in str(text or "").split(","):
-        name, _, n = part.strip().partition(" ")
-        if name and n.isdigit():
-            out[name] = int(n)
-    return out
-
-
-def _format_roles(roles: dict[str, int]) -> str:
-    known = [r for r in ROLE_ORDER if r in roles]
-    rest = sorted(set(roles) - set(ROLE_ORDER))
-    return ", ".join(f"{r} {roles[r]}" for r in known + rest)
-
-
-def _ms_minutes(ms) -> int:
-    return max(1, round(ms / 60000))
-
-
-def _actual_update(meta: dict, t: dict, run: str) -> dict:
-    """`actual` and `actual_roles` minutes: added to earlier runs, replaced on a re-apply.
-
-    `actual` is the summed per-role agent time (the estimator's unit); `durationMs` is the
-    fallback when the run has no per-role split.
-    """
-    same = meta.get("run") == run
-    role_ms = {r: ms for r, ms in (t.get("roleMs") or {}).items() if ms and ms > 0}
-    before = _minutes(meta.get("actual"), t["id"], "actual")
-    if role_ms:
-        roles = {r: _ms_minutes(ms) for r, ms in role_ms.items()}
-        total = _ms_minutes(sum(role_ms.values()))
-        if not same:
-            prev = _parse_roles(meta.get("actual_roles"))
-            roles = {r: roles.get(r, 0) + prev.get(r, 0) for r in set(roles) | set(prev)}
-        return {
-            "actual": str(total if same else before + total),
-            "actual_roles": _format_roles(roles),
-        }
-    ms = t.get("durationMs")
-    if not isinstance(ms, (int, float)) or ms <= 0:
-        return {}
-    minutes = _ms_minutes(ms)
-    return {"actual": str(minutes if same else before + minutes)}
-
-
-def _run_dir_durations(run_dir: Path) -> dict[str, dict]:
-    """Task id -> {durationMs, roleMs} from the run's agent transcript timestamps.
-
-    Labels are `<prefix>:<role>:<task>` with an optional `#<n>` or `+<n>` retry suffix on the
-    task. durationMs spans the first to the last timestamp of all the task's agents; roleMs
-    sums each agent's own span under its role.
-    """
-    labels: dict[str, str] = {}
-    try:
-        lines = (run_dir / "journal.jsonl").read_text().splitlines()
-    except OSError:
-        return {}
-    for line in lines:
-        try:
-            e = json.loads(line)
-        except ValueError:
-            continue
-        if (
-            isinstance(e, dict)
-            and e.get("type") == "started"
-            and e.get("agentId")
-            and e.get("label")
-        ):
-            labels[str(e["agentId"])] = str(e["label"])
-    stamps: dict[str, list[float]] = {}
-    roles: dict[str, dict[str, int]] = {}
-    for agent, label in labels.items():
-        parts = label.split(":")
-        tid = re.sub(r"[#+]\d+$", "", parts[-1])
-        role = re.sub(r"[#+]\d+$", "", parts[1]) if len(parts) > 2 else ""
-        mine: list[float] = []
-        try:
-            rows = (run_dir / f"agent-{agent}.jsonl").read_text().splitlines()
-        except OSError:
-            continue
-        for row in rows:
-            try:
-                raw = str(json.loads(row)["timestamp"]).replace("Z", "+00:00")
-                ts = datetime.datetime.fromisoformat(raw)
-            except (ValueError, KeyError, TypeError):
-                continue
-            mine.append(ts.timestamp() * 1000)
-        stamps.setdefault(tid, []).extend(mine)
-        if role and len(mine) > 1:
-            by_role = roles.setdefault(tid, {})
-            by_role[role] = by_role.get(role, 0) + round(max(mine) - min(mine))
-    return {
-        t: {"durationMs": round(max(v) - min(v)), "roleMs": roles.get(t, {})}
-        for t, v in stamps.items()
-        if len(v) > 1
-    }
-
-
-def cmd_apply_run(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    if _phase_of(epic_dir) != "in-progress":
-        raise TicketError(
-            f"epic {epic_dir.name!r} is in {_phase_of(epic_dir)}; apply-run needs it in-progress"
-        )
-    ret = json.loads(Path(a.run_return).read_text())
-    if a.run_dir:
-        for t, spans in _run_dir_durations(Path(a.run_dir)).items():
-            for entry in ret.get("tasks", []):
-                if str(entry.get("id")) == t:
-                    entry.update(spans)
-    run = str(ret.get("run") or ret.get("name") or ret.get("runName") or epic_dir.name)
-    files = {p.stem: p for p in _task_files(epic_dir)}
-    unknown = sorted({str(t.get("id")) for t in ret.get("tasks", [])} - set(files))
-    if unknown:
-        raise TicketError(
-            f"return names tasks with no file in {epic_dir.name!r}: {', '.join(unknown)}"
-        )
-    blocked = _ids(ret.get("blocked"), "id", "taskId")
-    escalated = _ids(ret.get("escalated"), "id", "taskId")
-    provides: dict[str, list[str]] = {}
-    for p in ret.get("provides", []):
-        provides.setdefault(str(p.get("taskId")), []).append(str(p.get("name")))
-    landed_fork = {
-        str(e.get("id") or e.get("taskId")): str(e["forkPoint"])
-        for e in ret.get("landed") or []
-        if isinstance(e, dict) and e.get("forkPoint")
-    }
-    changed: list[Path] = []
-    for t in ret.get("tasks", []):
-        path = files[t["id"]]
-        doc = _read_doc(path)
-        status = _run_status(t, blocked, escalated, ret.get("escalated"))
-        body = doc.body
-        if status == "todo" and t["id"] in escalated:
-            line = _dependency_note(ret.get("escalated"), t, doc.meta, run)
-            if line not in body:
-                body = _append_to_section(body, "Notes", line)
-            doc = Doc(doc.meta, body)
-        have = list(doc.meta.get("provides", []))
-        have += [n for n in provides.get(t["id"], []) if n not in have]
-        fork = t.get("forkPoint") or landed_fork.get(str(t["id"]))
-        fork_update = {"fork_point": str(fork)} if fork else {}
-        _write_task(
-            path,
-            doc,
-            changed,
-            status=status,
-            branch=t.get("branch") or doc.meta.get("branch", ""),
-            verified_head=(t.get("verification") or {}).get("head") or "",
-            run=run,
-            acs_for_audit=[str(x) for x in t.get("acsForAudit") or []],
-            process_gaps=[_gap_summary(g) for g in t.get("processGaps") or []],
-            provides=have,
-            **fork_update,
-            **_actual_update(doc.meta, t, run),
-        )
-        print(f"{t['id']}: {status}")
-    for d in ret.get("discovered", []):
-        src = _read_doc(files[d["taskId"]]) if d.get("taskId") in files else None
-        path = _new_discovered(epic_dir, d, src, run, root)
-        if path:
-            changed.append(path)
-            status = _read_doc(path).meta["status"]
-            print(f"discovered {path.stem}: new {status} task from {d.get('taskId', '')}")
-    if changed:
-        readme, moved = update_time_section(epic_dir)
-        if moved:
-            changed.append(readme)
-        commit_ticket_change(epic_dir.name, f"apply-run {run}", changed, root)
-    return 0
 
 
 # ---------------------------------------------------------------- epic state
@@ -2084,7 +1715,6 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         "uses",
         "model",
         "review",
-        "estimate",
         "requirement-file",
         "ac-file",
     ):
@@ -2111,10 +1741,6 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         action="store_true",
         help="fast-forward each live, clean tree with nothing ahead of --base",
     )
-    sp = add("apply-run", cmd_apply_run)
-    sp.add_argument("epic")
-    sp.add_argument("run_return", metavar="return.json")
-    sp.add_argument("--run-dir", help="Workflow transcript dir: task actuals from timestamps")
     sp = add("move", cmd_move)
     sp.add_argument("epic")
     sp.add_argument("phase", choices=("in-progress", "done"))

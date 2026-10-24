@@ -9,10 +9,6 @@ depends_on: []
 owns: []
 uses: []
 model: ""
-estimate: ""
-estimate_by: ""
-actual: ""
-actual_roles: ""
 review: ""
 worktree: ""
 branch: ""

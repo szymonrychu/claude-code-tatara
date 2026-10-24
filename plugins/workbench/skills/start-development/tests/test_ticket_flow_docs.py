@@ -235,8 +235,3 @@ def test_gate_shows_epic_estimate_line():
     assert "ticket.py estimate <epic>" in t
     assert "three longest-path tasks" in t
     assert "continue <epic> --run <id> --out-dir <dir> --launch" in t
-
-
-def test_templates_name_time_line_and_actual_roles():
-    assert "Expected wall at P=" in flat((SD / "templates" / "epic.md").read_text())
-    assert "`actual_roles`" in flat((SD / "templates" / "record.md").read_text())

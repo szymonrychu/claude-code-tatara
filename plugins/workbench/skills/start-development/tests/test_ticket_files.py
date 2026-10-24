@@ -123,7 +123,6 @@ def test_new_epic_readme(t, root):
         "Description",
         "Goals",
         "Non-goals",
-        "Time",
         "Review",
     ]
     for line in ("What: W", "How: H", "Why: Y"):
@@ -192,10 +191,6 @@ def test_new_task(t, root):
         "owns",
         "uses",
         "model",
-        "estimate",
-        "estimate_by",
-        "actual",
-        "actual_roles",
         "review",
         "worktree",
         "branch",

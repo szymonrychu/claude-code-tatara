@@ -1,6 +1,6 @@
 """ticket.py roadmap: the epic graph, which epics can run now, one status line per epic (D4).
 
-An epic is runnable when it is in todo, its blockers are all done (graph.epic_graph) and its
+An epic is runnable when it is in todo, its blockers are all done (ticket.resolve_blocker) and its
 open tasks' files are disjoint from the open tasks of every in-progress epic, after the repo's
 overlapIgnore. Runnable epics that overlap each other are all listed with `overlaps`; the
 `runnable:` line keeps the first of each overlapping group by slug order.
@@ -8,7 +8,6 @@ overlapIgnore. Runnable epics that overlap each other are all listed with `overl
 
 import importlib.util
 import json
-import re
 from pathlib import Path
 
 _T = None
@@ -24,10 +23,15 @@ def _load(name: str, path: Path):
     return _CACHE[name]
 
 
-def _graph():
-    g = _load("ticket_cmds._roadmap_graph", Path(__file__).with_name("graph.py"))
-    g._T = _T
-    return g
+def _edges(root: Path) -> list:
+    """[epic, blocker] pairs from each epic's `blockers`, resolved with ticket.resolve_blocker."""
+    epics = _T._epics(root)
+    return [
+        [s, found.slug]
+        for s in sorted(epics)
+        for b in epics[s].meta.get("blockers", [])
+        if (found := _T.resolve_blocker(b, epics))
+    ]
 
 
 def _wb():
@@ -51,7 +55,7 @@ def _open_files(root: Path, epic: str, tickets: list, ignore_for) -> dict:
 
 def build(root) -> dict:
     root = Path(root)
-    g = _graph().epic_graph(root)
+    edges = _edges(root)
     wb = _wb()
     epics = _T._epics(root)
     tickets = _T.scan(root)
@@ -64,7 +68,7 @@ def build(root) -> dict:
 
     files = {s: _open_files(root, s, tickets, ignore_for) for s in epics}
     deps = {s: [] for s in epics}
-    for a, b in g["edges"]:
+    for a, b in edges:
         deps[a].append(b)
 
     def clash(a, b):
@@ -77,8 +81,6 @@ def build(root) -> dict:
             continue
         mine = [t for t in tickets if t.kind == "task" and t.epic == s]
         done = sum(1 for t in mine if t.meta.get("status") == "done")
-        line = _T.time_summary(e.path.parent)
-        est = int(re.search(r"Estimate: (\d+) agent-min", line).group(1))
         raw = list(e.meta.get("blockers", []))
         unresolved = [b for b in raw if _T.resolve_blocker(b, epics) is None]
         waiting = sorted({b for b in deps[s] if epics[b].phase != "done"} | set(unresolved))
@@ -89,7 +91,6 @@ def build(root) -> dict:
                 "stage": e.meta.get("stage", "") if e.phase == "in-progress" else "",
                 "done": done,
                 "total": len(mine),
-                "est": est,
                 "blockers": deps[s] + unresolved,
                 "state": "",
                 "_wait": waiting,
@@ -118,7 +119,7 @@ def build(root) -> dict:
             runnable.append(s)
     for r in rows:
         del r["_wait"]
-    return {"epics": rows, "edges": g["edges"], "runnable": runnable}
+    return {"epics": rows, "edges": edges, "runnable": runnable}
 
 
 def cmd_roadmap(a) -> int:
@@ -129,7 +130,7 @@ def cmd_roadmap(a) -> int:
     for r in data["epics"]:
         phase = r["phase"] + (f"/{r['stage']}" if r["stage"] else "")
         print(
-            f"{r['epic']} {phase} {r['done']}/{r['total']} tasks est {r['est']}m "
+            f"{r['epic']} {phase} {r['done']}/{r['total']} tasks "
             f"blockers={','.join(r['blockers'])} {r['state']}"
         )
     live = {r["epic"] for r in data["epics"]}

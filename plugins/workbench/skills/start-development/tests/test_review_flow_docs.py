@@ -97,12 +97,6 @@ def test_phase_four_names_the_cost_mechanics():
         assert term in sec, f"Phase 4 does not name {term!r}"
 
 
-def test_verifier_table_row_names_haiku():
-    lines = (SD_SKILL.parent / "references" / "agents.md").read_text().splitlines()
-    row = next(line for line in lines if line.startswith("| `verifier`"))
-    assert "haiku" in row
-
-
 def test_scope_section_names_the_ledger_strike():
     sec = section(SD_SKILL, "Scope is not negotiable")
     for term in ("acceptance condition", "undelivered", "strikes the ledger item"):

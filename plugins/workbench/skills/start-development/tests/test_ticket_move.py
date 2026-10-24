@@ -82,7 +82,7 @@ def test_move_in_progress_pulls_only_todo_tasks(repo, root):
     assert last_subject(repo) == f"chore(ticket): {ep} move in-progress"
 
 
-def test_move_in_progress_keeps_tasks_listing_and_time(repo, root):
+def test_move_in_progress_keeps_tasks_listing(repo, root):
     ep = mk_epic(root)
     mk_task(root, ep, "alpha")
     commit_all(repo)
@@ -93,15 +93,9 @@ def test_move_in_progress_keeps_tasks_listing_and_time(repo, root):
             for t in json.loads(cli("tasks", ep, "--root", root).stdout)
         ]
 
-    def time_line(d):
-        assert cli("tasks", ep, "--root", root).returncode == 0
-        return re.search(r"Estimate:.*", (d / ep / "README.md").read_text()).group(0)
-
-    t0 = time_line(root / "todo")
     before = listing()
     assert cli("move", ep, "in-progress", "--root", root).returncode == 0
     assert listing() == before
-    assert time_line(root / "in-progress") == t0
 
 
 def test_move_in_progress_owner_defaults_to_git_user(repo, root):
