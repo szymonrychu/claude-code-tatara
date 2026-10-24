@@ -45,7 +45,6 @@ REQUIRED_SECTIONS = ("Requirement", "Acceptance conditions", "Files", "Steps")
 PATH_KINDS = {
     "readme": "README.md",
     "design": "design.md",
-    "approvals": "approvals.json",
     "record": "record.md",
     "tasks": "tasks",
 }
@@ -460,7 +459,7 @@ def scan(root: Path) -> list[Ticket]:
 
 
 def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
-    """Every tree or branch name a ticket owns: `<epic>` -> (epic, None) and
+    """Every tree or branch name a ticket holds: `<epic>` -> (epic, None) and
     `<epic>-<task>` -> (epic, task). `<epic>-<task>` cannot be split, so this lookup is the
     only way code maps a name back to a ticket."""
     out: dict[str, tuple[str, str | None]] = {}

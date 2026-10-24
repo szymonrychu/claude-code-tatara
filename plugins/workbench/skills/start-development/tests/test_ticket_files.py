@@ -349,7 +349,6 @@ def test_frontmatter_roundtrip_awkward_values(t):
     [
         ("readme", "README.md"),
         ("design", "design.md"),
-        ("approvals", "approvals.json"),
         ("record", "record.md"),
         ("tasks", "tasks"),
     ],
@@ -359,6 +358,12 @@ def test_path(root, kind, rel):
     r = cli("path", "--root", root, "cost-and-ticketing", kind)
     assert r.returncode == 0
     assert r.stdout.strip() == str(root.resolve() / "todo" / "cost-and-ticketing" / rel)
+
+
+def test_path_has_no_approvals_kind(root):
+    new_epic(root)
+    r = cli("path", "--root", root, "cost-and-ticketing", "approvals")
+    assert r.returncode == 2 and "approvals" in r.stderr
 
 
 def test_path_follows_phase_and_unknown_epic(root):

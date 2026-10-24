@@ -17,10 +17,9 @@ DESIGN_H2 = [
     "Research",
     "Research inputs",
     "Decision coverage",
-    "Contracts",
     "Review focus",
     "Left to the builder",
-    "Assumptions and unknowns",
+    "Assumptions and unknown facts",
     "Open questions",
     "Irreversible operations in scope",
 ]
@@ -52,14 +51,13 @@ def test_design_template():
     assert h2s(t) == DESIGN_H2
     assert "(my call)" in t
     assert "### D<n>" in t
-    assert "approval ids" in t
     assert "| Decision | Tasks |" in t
-    assert "| Part | Owner | Consumers | Where defined |" in t
+    for gone in ("approval ids", "ledger", "| Part | Owner", "Contracts", "owns", "uses"):
+        assert gone not in t, gone
     assert (
         t.index("## Research\n")
         < t.index("## Research inputs")
         < t.index("## Decision coverage")
-        < t.index("## Contracts")
         < t.index("## Review focus")
         < t.index("## Left to the builder")
     )
