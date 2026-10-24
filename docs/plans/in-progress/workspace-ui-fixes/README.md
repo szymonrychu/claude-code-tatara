@@ -35,7 +35,7 @@ User request (2026-10-24), verbatim:
 
 ## Time
 
-Estimate: 15 agent-min | Critical path: 10 min | Expected wall at P=1.5: 0.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 15 min
+Estimate: 15 agent-min | Critical path: 10 min | Expected wall at P=1.5: 0.3 h (k=2.0) | Actual: 10 min | Remaining estimate: 0 min
 
 ## Review
 

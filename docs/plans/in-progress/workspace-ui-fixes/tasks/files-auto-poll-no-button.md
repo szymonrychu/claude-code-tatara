@@ -1,6 +1,6 @@
 ---
 title: files auto poll no button
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the file tree stays current by itself and the refresh button is gone
 files: [frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, MEMORY.md]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 3
+actual_roles: "impl 2, verify 1, review 1, land 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-files-auto-poll-no-button/agent-orchestrator
 branch: workspace-ui-fixes-files-auto-poll-no-button
-verified_head: ""
-run: ""
+verified_head: 0f99a786e0045e77d491887dac203a2ca6c1a98e
+run: workspace-ui-fixes
 provides: []
+acs_for_audit: [AC8]
+process_gaps: []
 ---
 
 # files auto poll no button

@@ -1,6 +1,6 @@
 ---
 title: pane divider lines
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "files, chat and terminal panes are visibly separated"
 files: [frontend/src/layout/Workspace.tsx, frontend/src/layout/Workspace.test.tsx]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 2
+actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-pane-divider-lines/agent-orchestrator
 branch: workspace-ui-fixes-pane-divider-lines
-verified_head: ""
-run: ""
+verified_head: f2b25e81b32c67ea6c32d03ca5b322d5c6f7fe98
+run: workspace-ui-fixes
 provides: []
+acs_for_audit: [AC3]
+process_gaps: []
 ---
 
 # pane divider lines

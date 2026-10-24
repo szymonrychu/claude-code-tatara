@@ -1,6 +1,6 @@
 ---
 title: tree change only refresh
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: tree state can refresh safely and catches new directories and notebooks
 files: [frontend/src/files/useFileTree.ts, frontend/src/files/fileEvents.ts, frontend/src/files/FilesPanel.test.tsx]
@@ -11,14 +11,17 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 5
+actual_roles: "impl 2, verify 1, review 2, fix 1, land 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-tree-change-only-refresh/agent-orchestrator
 branch: workspace-ui-fixes-tree-change-only-refresh
-verified_head: ""
-run: ""
+verified_head: e4a80eb32b3ee13487ab41bec896ec97412cbfa5
+run: workspace-ui-fixes
 provides: []
+acs_for_audit: []
+process_gaps: ["TDD red-first not followed, as disclosed by the implementer"]
+fork_point: f2b25e8
 ---
 
 # tree change only refresh
