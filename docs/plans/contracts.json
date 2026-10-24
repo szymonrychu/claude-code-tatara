@@ -299,5 +299,16 @@
       "cluster-scaling"
     ],
     "note": "task wrapper-notes-inbox: POST /v1/sessions/{id}/notes {text, key?, source?}, notes.enabled (hive only), events note_received/note_delivered"
+  },
+  {
+    "name": "wrapper-main-agent-only-tools",
+    "kind": "schema",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/claude-code-wrapper/src/claude_code_wrapper/config.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task main-agent-only-tools: claude.main_agent_only_tools globs; rendered [mcp__any-mcp__orchestrator_*], so scale and init edit are main-agent only"
   }
 ]
