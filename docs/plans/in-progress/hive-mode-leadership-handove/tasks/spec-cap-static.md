@@ -34,6 +34,7 @@ Foundation part F3, spec fields (Q8, Q12, S2, S3 vocabulary owned here). In `src
 - `validate_spec`: `max_replicas <= settings.max_replicas` (422 `invalid_request` naming the field); an `any_mcp_config.plugins` entry named `orchestrator` or with namespace `orchestrator` is rejected (reserved for the rendered plugin).
 - Presets stay sparse: a preset that does not set `max_replicas` or `static` stores neither (`exclude_unset`).
 - README `## API` ClusterSpec field list documents both fields and the derived hive rule; `openapi.json` and `frontend/src/api/schema.d.ts` regenerated (`tests/test_readme_api.py` drift checks).
+- Interrogate item 7: the in-memory fallback (a stored spec without the key loads as `max_replicas == replicas`) stays only as a defence; the migration-0003-hive backfill writes the key into stored specs, so editing `replicas` in place later never moves the cap.
 
 ## Acceptance conditions
 
@@ -45,6 +46,7 @@ Foundation part F3, spec fields (Q8, Q12, S2, S3 vocabulary owned here). In `src
 - AC6: a preset without the new fields stays sparse [evidence: test:tests/test_spec_hive.py::test_preset_stays_sparse]
 - AC7: README, openapi.json and schema.d.ts agree [evidence: command:uv run pytest tests/test_readme_api.py tests/test_api_clusters.py tests/test_api_presets.py -q]
 - AC8: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC9: a stored spec loaded after the backfill keeps its cap when replicas is edited in place [evidence: test:tests/test_spec_hive.py::test_cap_stable_after_backfill]
 
 ## Files
 
@@ -71,3 +73,5 @@ Clusters and presets accept the two fields; every reader can ask `spec.hive` and
 
 - `ClusterSpec` at `spec.py:119-176` (`extra="forbid"`), `validate_spec` at `:207-268`, any-mcp config check at `:260-266`.
 - Presets dump with `exclude_unset` (`api/presets.py:42-54`): resolve the default without marking the field set.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 7
