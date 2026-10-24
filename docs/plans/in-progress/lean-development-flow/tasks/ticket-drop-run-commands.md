@@ -1,6 +1,6 @@
 ---
 title: Ticket drop run commands
-status: todo
+status: in-progress
 repo: workbench
 value: Cuts ticket.py to the planning and lifecycle commands the user keeps
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/tests/test_estimator.py]

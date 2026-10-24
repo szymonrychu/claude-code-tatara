@@ -1,6 +1,6 @@
 ---
 title: Epic-run skill
-status: todo
+status: in-progress
 repo: workbench
 value: The one entry point that decouples executing an epic from planning it
 files: [plugins/workbench/skills/epic-run/, plugins/workbench/skills/start-research/tests/]

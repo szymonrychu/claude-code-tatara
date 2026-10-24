@@ -1,6 +1,6 @@
 ---
 title: Root docs and rules
-status: todo
+status: in-progress
 repo: workbench
 value: "AGENTS.md is loaded into every session; a stale rule 1 would send agents back to a deleted workflow"
 files: [AGENTS.md, CLAUDE.md, README.md, docs/architecture.md, docs/harnesses.md, docs/enterprise.md, scripts/tests/]

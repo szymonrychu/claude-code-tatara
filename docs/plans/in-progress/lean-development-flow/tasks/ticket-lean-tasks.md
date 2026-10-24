@@ -1,6 +1,6 @@
 ---
 title: Ticket lean tasks
-status: todo
+status: in-progress
 repo: workbench
 value: "The task file becomes the whole contract between planner, implementer and reviewer; one status command replaces apply-run"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/skills/start-development/templates/]

@@ -1,6 +1,6 @@
 ---
 title: Remove workflows
-status: todo
+status: in-progress
 repo: workbench
 value: Deletes the 12k-line Workflow runtime that every other simplification depends on
 files: [plugins/workbench/workflows/, plugins/workbench/skills/heartbeat/, plugins/workbench/scripts/hook-evidence.py, plugins/workbench/scripts/tests/, scripts/harness/fallbacks/, scripts/harness/skills_emit.py, scripts/tests/, plugins/workbench/scripts/run-tests.sh]

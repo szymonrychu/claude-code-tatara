@@ -1,6 +1,6 @@
 ---
 title: Retire verifier scripts
-status: todo
+status: in-progress
 repo: workbench
 value: "Removes 2500 lines of verifier, triage and claude -p plumbing the lean reviewer replaces"
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/triage.py, plugins/workbench/scripts/lib/claude_json.py, plugins/workbench/scripts/tests/, plugins/workbench/agents/verifier.md, plugins/workbench/README.md, docs/enterprise.md, plugins/workbench/skills/start-development/tests/test_release.py]

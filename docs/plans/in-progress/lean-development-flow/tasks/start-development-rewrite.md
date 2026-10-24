@@ -1,6 +1,6 @@
 ---
 title: Start-development rewrite
-status: todo
+status: in-progress
 repo: workbench
 value: "The flow document is what every orchestrator session reads; it must describe only the lean loop"
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/, plugins/workbench/agents/record-writer.md, plugins/workbench/README.md, plugins/workbench/.claude-plugin/plugin.json]

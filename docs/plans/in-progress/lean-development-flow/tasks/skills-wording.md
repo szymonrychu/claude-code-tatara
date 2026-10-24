@@ -1,6 +1,6 @@
 ---
 title: Skills wording
-status: todo
+status: in-progress
 repo: workbench
 value: A skill that still tells the agent to arm a heartbeat or run plan-execute reintroduces the cost
 files: [plugins/workbench/skills/, plugins/workbench/hooks/, plugins/workbench/rules/concise-orchestrator.md, plugins/workbench/agents/]

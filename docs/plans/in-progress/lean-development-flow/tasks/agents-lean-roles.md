@@ -1,6 +1,6 @@
 ---
 title: Agents lean roles
-status: todo
+status: in-progress
 repo: workbench
 value: "Model quality and instructions replace orchestration machinery; these four files are where scope protection now lives"
 files: [plugins/workbench/agents/implementer.md, plugins/workbench/agents/reviewer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/agents/planner.md, plugins/workbench/agents/spec-reviewer.md, plugins/workbench/agents/quality-reviewer.md, plugins/workbench/skills/start-review/, plugins/workbench/skills/start-research/tests/]
