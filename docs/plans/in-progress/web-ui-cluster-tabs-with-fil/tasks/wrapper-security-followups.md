@@ -39,7 +39,7 @@ Close the security review findings on the wrapper terminal and file APIs (review
 - AC2: an env key matching SECRET_KEY_RE (for example MY_SERVICE_TOKEN) is absent from the shell env [evidence: test:tests/test_terminals.py::test_shell_env_drops_secret_named_keys]
 - AC3: service.py passes ws_max_size from limits.terminal_max_frame_bytes to uvicorn.Config [evidence: test:tests/test_terminals.py::test_uvicorn_ws_max_size_matches_frame_cap]
 - AC4: the attach beyond limits.terminal_max_subscribers is closed with 1013 [evidence: test:tests/test_terminals.py::test_attach_beyond_subscriber_cap_refused]
-- AC5: README Trust model states the four limits (proc environ, setsid escape, parent symlink swap, unmatched passthrough names) and the config table lists terminal_max_subscribers [evidence: review]
+- AC5: README Trust model states the four limits (proc environ, setsid escape, parent symlink swap, unmatched passthrough names) and the config table lists terminal_max_subscribers [evidence: doc-section:README.md#trust-model]
 
 ## Files
 
@@ -56,12 +56,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A closed exited terminal never signals a reused pid; secret-named env keys never reach the shell; frames above the cap are refused by uvicorn; attaches beyond the subscriber cap close 1013; the README states the real isolation limits.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the AC1-AC4 tests in tests/test_terminals.py and run the verify command: they fail.
+- Implement the start-time pid guard, the SECRET_KEY_RE scrub, ws_max_size in service.py and limits.terminal_max_subscribers.
+- Update the README Trust model and config table (AC5).
+- Run the verify command: all pass. tests/test_manager.py::test_shutdown_stops_all fails only in this container (PID 1 does not reap zombies); do not chase it.
 
 ## Notes
 
