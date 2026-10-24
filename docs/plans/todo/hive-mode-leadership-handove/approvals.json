@@ -222,5 +222,18 @@
       "ui-leader-badge"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q11",
+    "text": "Advisory file locks: agents claim files, a write to a file claimed by another agent is warned, the leader can reassign or discard any lock.",
+    "decisions": [
+      "D28"
+    ],
+    "tasks": [
+      "file-locks-api",
+      "render-hive-gating",
+      "orchestrator-plugin"
+    ],
+    "status": "approved"
   }
 ]

@@ -125,6 +125,9 @@ No forced handover; advise handing over above auto_compact_pct - 15 and keep eve
 ### D27: User make leader
 The user can make any agent leader from the UI and the API through the same leadership queue; a user request overrides handover-only. (user decision)
 
+### D28: Advisory locks
+Advisory file locks: agents claim files, a write to a file claimed by another agent is warned, the leader can reassign or discard any lock. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -180,6 +183,7 @@ The user can make any agent leader from the UI and the API through the same lead
 | D25 No hive switch | spec-cap-static |
 | D26 Advise, never force, handover | orchestrator-plugin, hive-state-push-loop, views-leader-stream, ui-leader-badge |
 | D27 User make leader | leadership-requests-api, dispatcher-leadership-pass, ui-leader-badge |
+| D28 Advisory locks | file-locks-api, render-hive-gating, orchestrator-plugin |
 
 ## Contracts
 
