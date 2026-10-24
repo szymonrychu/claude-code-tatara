@@ -1,6 +1,6 @@
 ---
 title: wrapper file api
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: any client can browse and read a session workdir safely over the wrapper API
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/config.py, README.md, tests/test_api_files.py]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 4
+actual_roles: "impl 3, verify 1, review 1, land 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-file-api/claude-code-wrapper
 branch: web-ui-cluster-tabs-with-fil-wrapper-file-api
-verified_head: ""
-run: ""
-provides: []
+verified_head: f63dee9c6a431d93f31b3cba025e9b98518ae24f
+run: web-ui-cluster-tabs-with-fil
+provides: [wrapper-path-confinement, wrapper-files-api]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper file api

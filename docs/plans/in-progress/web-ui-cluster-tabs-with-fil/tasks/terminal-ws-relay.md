@@ -1,6 +1,6 @@
 ---
 title: terminal ws relay
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: a browser or headless client gets a live shell on an agent pod without ever seeing the wrapper token
 files: [src/agent_orchestrator/api/workspace.py, pyproject.toml, uv.lock, tests/test_terminal_relay.py, README.md]
@@ -11,14 +11,17 @@ uses: [workspace-proxy-module, origin-allowlist, fake-wrapper-terminals, wrapper
 model: opus
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 20
+actual_roles: "impl 13, verify 3, review 2, fix 2, land 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-ws-relay/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-terminal-ws-relay
-verified_head: ""
-run: ""
-provides: []
+verified_head: 876c5be2f6eb34da9e0097b289e3646dfac4f030
+run: web-ui-cluster-tabs-with-fil
+provides: [orch-terminal-ws, relay-test-harness]
+acs_for_audit: []
+process_gaps: ["The independent verification entry failed with a script error, so head, clean state and diffstat were never collected. I checked by hand: git status --short printed nothing (clean tree), uv lock --check resolved, and websockets 17.3 is pinned in uv.lock."]
+fork_point: fbd686b
 ---
 
 # terminal ws relay

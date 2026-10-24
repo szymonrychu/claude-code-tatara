@@ -1,6 +1,6 @@
 ---
 title: fe terminal panel
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the user runs several shells on chosen agent pods beside the chat
 files: [frontend/src/terminal/XtermView.tsx, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/theme.ts, frontend/src/App.tsx]
@@ -11,14 +11,17 @@ uses: [fe-terminal-socket, fe-workspace-slots, fe-deps]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 12
+actual_roles: "impl 4, verify 5, review 2, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-terminal-panel/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-terminal-panel
-verified_head: ""
-run: ""
+verified_head: 25e24cc32aab9be6397016de55a79f03c29723dc
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 236c3348fbf3ac753a56d3efb83a547ea82e8024
 ---
 
 # fe terminal panel

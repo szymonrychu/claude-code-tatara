@@ -1,6 +1,6 @@
 ---
 title: terminal registry
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "the wrapper can run, share, reap and close login shells in a session workdir with secrets scrubbed"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/config.py, src/claude_code_wrapper/manager.py, README.md, tests/test_terminals.py]
@@ -11,14 +11,16 @@ uses: [pty-resize, ring-raw-snapshot, wrapper-path-confinement]
 model: opus
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 46
+actual_roles: "impl 18, verify 11, review 5, fix 10, land 1, triage 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-registry/claude-code-wrapper
 branch: web-ui-cluster-tabs-with-fil-terminal-registry
-verified_head: ""
-run: ""
-provides: []
+verified_head: 5f8f1e22b82b0927bb77e14433fc688c402d92d2
+run: web-ui-cluster-tabs-with-fil
+provides: [terminal-registry]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # terminal registry

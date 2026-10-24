@@ -1,6 +1,6 @@
 ---
 title: wrapper proxy seam
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the api can reach a cluster's wrapper pods through one audited module"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/wrapper/client.py, tests/test_workspace_proxy.py, tests/test_wrapper_client.py, tests/test_api_clusters.py, README.md, MEMORY.md]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 6
+actual_roles: "impl 4, verify 1, review 1, land 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-proxy-seam/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-wrapper-proxy-seam
-verified_head: ""
-run: ""
-provides: []
+verified_head: 093a155e09ab1248b87d755d1828432fc82b89e9
+run: web-ui-cluster-tabs-with-fil
+provides: [workspace-proxy-module, wrapper-request-json]
+acs_for_audit: [AC2, AC6]
+process_gaps: []
 ---
 
 # wrapper proxy seam

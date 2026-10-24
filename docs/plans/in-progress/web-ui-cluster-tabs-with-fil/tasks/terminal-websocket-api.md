@@ -1,6 +1,6 @@
 ---
 title: terminal websocket api
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: clients get interactive shells on an agent pod over an authenticated WebSocket
 files: [src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/api/auth.py, src/claude_code_wrapper/api/app.py, README.md, tests/test_api_terminals.py, tests/test_api_auth.py, tests/test_readme_api.py]
@@ -11,14 +11,17 @@ uses: [terminal-registry]
 model: opus
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 14
+actual_roles: "impl 12, verify 1, review 1, land 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-websocket-api/claude-code-wrapper
 branch: web-ui-cluster-tabs-with-fil-terminal-websocket-api
-verified_head: ""
-run: ""
-provides: []
+verified_head: 09b92769f4b2906f37cdc2f900aac39a5851f4e7
+run: web-ui-cluster-tabs-with-fil
+provides: [wrapper-terminals-api]
+acs_for_audit: []
+process_gaps: []
+fork_point: 5f8f1e2
 ---
 
 # terminal websocket api

@@ -1,6 +1,6 @@
 ---
 title: origin allowlist
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: no web page from another origin can open a shell through a LAN browser
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/origin.py, src/agent_orchestrator/api/app.py, README.md, chart/agent-orchestrator/README.md, e2e/values-kind.yaml, tests/test_origin.py]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 5
+actual_roles: "impl 2, verify 1, review 1, fix 1, land 1"
 review: full
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-origin-allowlist/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-origin-allowlist
-verified_head: ""
-run: ""
-provides: []
+verified_head: 2a8ce4f66056f06eadc3e460137d6d2abe5f9282
+run: web-ui-cluster-tabs-with-fil
+provides: [origin-allowlist, normalise-origin]
+acs_for_audit: [AC1, AC6]
+process_gaps: []
 ---
 
 # origin allowlist

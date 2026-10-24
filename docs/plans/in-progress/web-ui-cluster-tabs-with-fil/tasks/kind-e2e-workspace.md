@@ -1,6 +1,6 @@
 ---
 title: kind e2e workspace
-status: in-progress
+status: todo
 repo: agent-orchestrator
 value: CI proves on a real cluster that files and shells work through the public API alone
 files: [tests/e2e/test_e2e_kind.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-kind-e2e-workspace/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-kind-e2e-workspace
 verified_head: ""
-run: ""
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # kind e2e workspace
@@ -64,3 +66,5 @@ The PR CI e2e job proves on a real cluster with the real wrapper that a headless
 
 - No cluster access in this container: kind, helm apply and the e2e run are not possible here; verification here is collection plus lint, the real run is the orchestrator PR CI `e2e` job (`mise run test:e2e`).
 - `pyproject.toml` addopts deselect `e2e` by default; the `-m e2e` flag is required.
+
+- 2026-10-24 run web-ui-cluster-tabs-with-fil: dependency-failed on wrapper-sha-pin

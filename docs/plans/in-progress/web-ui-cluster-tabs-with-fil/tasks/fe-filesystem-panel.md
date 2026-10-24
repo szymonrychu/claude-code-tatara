@@ -1,6 +1,6 @@
 ---
 title: fe filesystem panel
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the user sees what agents changed on disk as a live tree with file previews
 files: [frontend/src/api/files.ts, frontend/src/files/useFileTree.ts, frontend/src/files/fileEvents.ts, frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, frontend/src/App.tsx]
@@ -11,14 +11,17 @@ uses: [orch-files-api, fe-workspace-slots, fe-deps]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 10
+actual_roles: "impl 6, verify 2, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-filesystem-panel/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-filesystem-panel
-verified_head: ""
-run: ""
+verified_head: 4ce96dff654c4486a84d50f0b9f344500cf53aac
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: ["The red step was a hidden-import failure, not a per-behaviour failing run."]
+fork_point: e666c3a
 ---
 
 # fe filesystem panel

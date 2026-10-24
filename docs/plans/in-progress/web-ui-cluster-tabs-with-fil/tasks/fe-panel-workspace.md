@@ -1,6 +1,6 @@
 ---
 title: fe panel workspace
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "each cluster tab is a resizable files, chat and terminal workspace that remembers its layout"
 files: [frontend/src/layout/Workspace.tsx, frontend/src/layout/panelLayout.ts, frontend/src/layout/Workspace.test.tsx, frontend/src/App.tsx]
@@ -11,14 +11,17 @@ uses: [fe-deps, fe-storage]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 15
+actual_roles: "impl 5, verify 5, review 2, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-panel-workspace/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-panel-workspace
-verified_head: ""
-run: ""
-provides: []
+verified_head: e666c3ac101be8b9943acd66be46269a00a5fe86
+run: web-ui-cluster-tabs-with-fil
+provides: [fe-workspace-slots, panel-layout]
+acs_for_audit: []
+process_gaps: []
+fork_point: d5bce5e9fcc11eab8332bb1a546b54d578315aac
 ---
 
 # fe panel workspace

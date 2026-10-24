@@ -1,6 +1,6 @@
 ---
 title: file proxy routes
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: headless clients and the UI can browse and read a cluster workdir through /api/v1
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_files.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -11,14 +11,16 @@ uses: [workspace-proxy-module, wrapper-files-api]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 18
+actual_roles: "impl 7, verify 5, review 2, fix 2, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-file-proxy-routes/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-file-proxy-routes
-verified_head: ""
-run: ""
-provides: []
+verified_head: f2a3dfd9fa289c8eccad7bd1d0f4e734761d3a4a
+run: web-ui-cluster-tabs-with-fil
+provides: [orch-files-api, fake-wrapper-workdir]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # file proxy routes

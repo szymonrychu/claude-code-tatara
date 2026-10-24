@@ -1,6 +1,6 @@
 ---
 title: terminal proxy routes
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "headless clients and the UI can create, list and delete shells on any agent through /api/v1"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_terminals.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -11,14 +11,17 @@ uses: [workspace-proxy-module, origin-allowlist, wrapper-terminals-api]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 13
+actual_roles: "impl 8, verify 3, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-proxy-routes/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-terminal-proxy-routes
-verified_head: ""
-run: ""
-provides: []
+verified_head: fbd686b83861ccc1c74ee3bfa203f13a5e8fbfd2
+run: web-ui-cluster-tabs-with-fil
+provides: [workspace-resolve-agents, fake-wrapper-terminal-controls]
+acs_for_audit: []
+process_gaps: []
+fork_point: 4ce96df
 ---
 
 # terminal proxy routes

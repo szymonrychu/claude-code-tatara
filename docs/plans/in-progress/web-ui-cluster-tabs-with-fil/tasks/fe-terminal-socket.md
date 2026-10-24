@@ -1,6 +1,6 @@
 ---
 title: fe terminal socket
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the browser keeps shell connections alive and reconnects them with replay
 files: [frontend/src/api/terminals.ts, frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts]
@@ -11,14 +11,16 @@ uses: [orch-terminals-api, orch-terminal-ws, fe-deps]
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 5
+actual_roles: "impl 2, verify 2, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-terminal-socket/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-terminal-socket
-verified_head: ""
-run: ""
+verified_head: 236c3348fbf3ac753a56d3efb83a547ea82e8024
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe terminal socket

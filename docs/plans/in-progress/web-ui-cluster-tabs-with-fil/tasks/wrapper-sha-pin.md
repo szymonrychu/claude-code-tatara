@@ -1,6 +1,6 @@
 ---
 title: wrapper sha pin
-status: in-progress
+status: blocked
 repo: agent-orchestrator
 value: integration and e2e runs exercise the real wrapper with the new file and terminal APIs
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 3
+actual_roles: "impl 2, verify 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-sha-pin/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-wrapper-sha-pin
-verified_head: ""
-run: ""
+verified_head: 504b8704f19e958b1e2caf75ed41a1ea0b6b512f
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper sha pin

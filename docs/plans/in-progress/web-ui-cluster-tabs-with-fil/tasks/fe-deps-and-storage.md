@@ -1,6 +1,6 @@
 ---
 title: fe deps and storage
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the frontend has the panel, tree, terminal and icon libraries and crash-proof UI state storage"
 files: [frontend/package.json, frontend/package-lock.json, frontend/vite.config.ts, frontend/src/api/client.ts, frontend/src/layout/storage.ts, frontend/src/layout/storage.test.ts]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 5
+actual_roles: "impl 1, verify 2, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-deps-and-storage/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-deps-and-storage
-verified_head: ""
-run: ""
-provides: []
+verified_head: fa1456d8c69b6a9b89be5f97bd0d317299d0f758
+run: web-ui-cluster-tabs-with-fil
+provides: [fe-storage, fe-deps]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe deps and storage

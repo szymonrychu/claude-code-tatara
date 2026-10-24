@@ -1,6 +1,6 @@
 ---
 title: deploy pin
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-deploy-pin/agents-helmfile
 branch: web-ui-cluster-tabs-with-fil-deploy-pin
 verified_head: ""
-run: ""
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # deploy pin
@@ -65,3 +67,5 @@ The values are the short shas (7 hex) of the agent-orchestrator main merge and t
 - Check the chart and images exist before pinning when credentials allow (`helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version 0.1.0-main.<sha7>`); the precedent run blocked on a transient Harbor 403 in chart publish.
 - Apply and smoke are not this task's verify: no cluster access in this container, and the user runs them.
 - Builder check ruling 10: Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
+
+- 2026-10-24 run web-ui-cluster-tabs-with-fil: dependency-failed on kind-e2e-workspace

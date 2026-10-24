@@ -1,6 +1,6 @@
 ---
 title: fe agents strip
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: per-agent state and context stay visible in the chat header and double as the agent filter
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/AgentFilter.tsx, frontend/src/ribbon/AgentRow.tsx]
@@ -11,14 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 9
+actual_roles: "impl 2, verify 4, review 1, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-agents-strip/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-agents-strip
-verified_head: ""
-run: ""
+verified_head: d5bce5e9fcc11eab8332bb1a546b54d578315aac
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe agents strip

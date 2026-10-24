@@ -1,6 +1,6 @@
 ---
 title: fe top bar
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: clusters are tabs at the top with a hamburger menu of sessions and settings
 files: [frontend/src/layout/TopBar.tsx, frontend/src/layout/SessionsMenu.tsx, frontend/src/layout/TopBar.test.tsx]
@@ -11,14 +11,17 @@ uses: [fe-deps]
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 8
+actual_roles: "impl 2, verify 4, review 1, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-top-bar/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-top-bar
-verified_head: ""
-run: ""
-provides: []
+verified_head: 997f078e838f0a9a51d8124d0c10ee202e7b87e9
+run: web-ui-cluster-tabs-with-fil
+provides: [sessions-menu]
+acs_for_audit: []
+process_gaps: []
+fork_point: 093a155e09ab1248b87d755d1828432fc82b89e9
 ---
 
 # fe top bar

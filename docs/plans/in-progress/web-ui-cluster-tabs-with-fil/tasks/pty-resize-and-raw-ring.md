@@ -1,6 +1,6 @@
 ---
 title: pty resize and raw ring
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: shells can be resized and their output replayed byte for byte
 files: [src/claude_code_wrapper/pty_proc.py, src/claude_code_wrapper/ring.py, tests/test_pty_proc.py, tests/test_ring.py]
@@ -11,14 +11,17 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 3
+actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring/claude-code-wrapper
 branch: web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring
-verified_head: ""
-run: ""
-provides: []
+verified_head: 2f6788d78832faeb574ecf5ab729b512f78b612a
+run: web-ui-cluster-tabs-with-fil
+provides: [pty-resize, ring-raw-snapshot]
+acs_for_audit: []
+process_gaps: []
+fork_point: f63dee9c6a431d93f31b3cba025e9b98518ae24f
 ---
 
 # pty resize and raw ring
