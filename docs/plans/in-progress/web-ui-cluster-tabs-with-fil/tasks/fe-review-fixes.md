@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: "refused terminals say so at once, shells never hide after a late agent, and tabs keep the ribbon's hook-failed and ready marks"
 files: [frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal src/layout && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
-depends_on: [kind-e2e-workspace, fake-wrapper-workdir-regress]
+depends_on: [fake-wrapper-workdir-regress, fe-terminal-panel, fe-terminal-socket, fe-top-bar, kind-e2e-workspace]
 owns: []
 uses: []
 model: sonnet
@@ -33,9 +33,9 @@ Close the epic review findings on the frontend (epic review 2026-10-24).
 
 ## Acceptance conditions
 
-- AC1: two consecutive closes before open put the terminal socket in refused with the ORCH_ALLOWED_ORIGINS reason; a socket that had opened keeps backoff [evidence: test:frontend/src/terminal/terminalSocket.test.ts::refuses after two closes before open]
-- AC2: the terminal panel re-lists shells when the cluster's ready agents change and renders unavailable_agents as a notice [evidence: test:frontend/src/terminal/TerminalPanel.test.tsx::relists when ready agents change and shows unavailable agents]
-- AC3: a cluster tab shows the hook-failed mark when discard_hook_failed and the ready/replicas count [evidence: test:frontend/src/layout/TopBar.test.tsx::tab shows hook failed mark and ready count]
+- AC1: two consecutive closes before open put the terminal socket in refused with the ORCH_ALLOWED_ORIGINS reason; a socket that had opened keeps backoff [evidence: command:mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/terminalSocket.test.ts -t "refuses after two closes before open"]
+- AC2: the terminal panel re-lists shells when the cluster's ready agents change and renders unavailable_agents as a notice [evidence: command:mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/TerminalPanel.test.tsx -t "relists when ready agents change and shows unavailable agents"]
+- AC3: a cluster tab shows the hook-failed mark when discard_hook_failed and the ready/replicas count [evidence: command:mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/TopBar.test.tsx -t "tab shows hook failed mark and ready count"]
 
 ## Files
 

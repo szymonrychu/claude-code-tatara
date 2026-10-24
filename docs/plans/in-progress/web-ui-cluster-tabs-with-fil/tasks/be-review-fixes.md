@@ -5,7 +5,7 @@ repo: agent-orchestrator
 value: the api refuses oversized WebSocket frames before buffering them
 files: [src/agent_orchestrator/cli.py, tests/test_cli.py, src/agent_orchestrator/db/agents.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_cli.py && uv run ruff check . && uv run ruff format --check ."
-depends_on: [kind-e2e-workspace, fake-wrapper-workdir-regress]
+depends_on: [fake-wrapper-workdir-regress, kind-e2e-workspace]
 owns: []
 uses: []
 model: sonnet
