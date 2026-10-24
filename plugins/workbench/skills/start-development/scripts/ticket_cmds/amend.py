@@ -1,10 +1,7 @@
 """ticket.py amend: record a mid-epic scope change on a task and re-validate the epic."""
 
 import datetime
-import subprocess
 from pathlib import Path
-
-VALIDATOR = Path(__file__).resolve().parents[4] / "workflows" / "validate-tasks.mjs"
 
 
 def register(sub, t):
@@ -15,12 +12,6 @@ def register(sub, t):
     sp.add_argument("--requirement-file", required=True)
     sp.add_argument("--ac-file")
     sp.add_argument("--reason", required=True)
-
-
-def _lint(epic_dir: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        ["node", str(VALIDATOR), "--epic", str(epic_dir)], capture_output=True, text=True
-    )
 
 
 def run(a, t) -> int:
@@ -48,8 +39,7 @@ def run(a, t) -> int:
     path.write_text(t.dump(t.Doc(dict(doc.meta), body)))
     try:
         t.derive_tasks(epic_dir, only=[a.task])
-        res = _lint(epic_dir)
-        problems = (res.stderr + res.stdout).strip() if res.returncode else ""
+        problems = "\n".join(f"ticket.py: lint: {p}" for p in t.lint_problems(root, epic_dir.name))
     except t.TicketError as e:
         problems = str(e)
     if problems:

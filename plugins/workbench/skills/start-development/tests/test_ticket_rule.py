@@ -3,7 +3,6 @@
 import importlib.util
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -19,8 +18,6 @@ _spec = importlib.util.spec_from_file_location(
 )
 rule = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rule)
-
-VALIDATE = SD.parents[1] / "workflows" / "validate-tasks.mjs"
 
 
 @pytest.fixture
@@ -139,11 +136,11 @@ def test_epic_with_rulings_lints(root):
         json.dumps([{"id": "A1", "text": "all", "tasks": ["alpha", "beta"], "status": "approved"}])
     )
     commit_all(root.parents[1])
-    base = subprocess.run(["node", str(VALIDATE), "--epic", str(d)], capture_output=True, text=True)
+    base = cli("lint", "--root", root)
     assert base.returncode == 0, base.stderr + base.stdout
     r = cli("rule", ep, "--accept", "alpha", "--reject", "beta", "--reason", "x", "--root", root)
     assert r.returncode == 0, r.stderr
     assert (d / "rulings.json").exists() and "## Ruling" in ts[0].read_text()
     assert cli("lint", "--root", root).returncode == 0
-    r = subprocess.run(["node", str(VALIDATE), "--epic", str(d)], capture_output=True, text=True)
+    r = cli("lint", "--root", root)
     assert r.returncode == 0, r.stderr + r.stdout

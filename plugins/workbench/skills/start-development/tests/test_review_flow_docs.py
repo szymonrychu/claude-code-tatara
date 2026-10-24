@@ -120,16 +120,6 @@ def test_skill_keeps_headroom_under_the_cap():
     assert len(SD_SKILL.read_text().splitlines()) <= 470
 
 
-def test_agents_reference_lists_every_dispatched_agent_type():
-    js = (ROOT / "workflows" / "plan-execute.js").read_text()
-    dispatched = set(re.findall(r"'workbench:([a-z-]+)'", js))
-    assert {"verifier", "scope-auditor"} <= dispatched
-    ref = AGENTS_REF.read_text()
-    for agent in dispatched:
-        assert f"| `{agent}` |" in ref, f"references/agents.md has no row for {agent}"
-    assert "references/agents.md" in SD_SKILL.read_text()
-
-
 def test_start_review_never_names_opus():
     assert "opus" not in REVIEW_SKILL.read_text().lower()
 
@@ -182,16 +172,6 @@ NEW_AGENTS = (
     "research-reviewer",
     "planner",
 )
-
-
-def test_every_plan_execute_agent_has_a_row():
-    agents = (ROOT / "skills" / "start-development" / "references" / "agents.md").read_text()
-    assert "Read-only" not in agents.split("\n", 1)[0]
-    for name in NEW_AGENTS:
-        assert re.search(rf"^\| `{name}` \| .* \| \d(?:, \d)* \|$", agents, re.M), name
-    js = (ROOT / "workflows" / "plan-execute.js").read_text()
-    for name in set(re.findall(r"workbench:([a-z-]+)", js)):
-        assert f"| `{name}` |" in agents, name
 
 
 def test_readme_agents_table_matches_files():

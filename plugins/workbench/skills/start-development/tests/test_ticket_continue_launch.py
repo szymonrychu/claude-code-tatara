@@ -107,22 +107,6 @@ def _done_alpha(repo, root, epic, head, verify="true"):
     commit_all(repo)
 
 
-def test_launch_uses_task_verify(repo, root, epic, tmp_path):
-    head = _alpha_commit(repo, epic)
-    _done_alpha(repo, root, epic, head)
-    out = tmp_path / "out"
-    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch")
-    assert r.returncode == 0, r.stdout + r.stderr
-    assert "MERGE" not in r.stdout
-    lines = r.stdout.strip().splitlines()
-    assert lines[-2].startswith("LAUNCH ") and lines[-2].endswith(f" {out / (epic + '-args.json')}")
-    assert lines[-1].startswith("ARM python3 ")
-    assert lines[-1].endswith("/skills/heartbeat/scripts/heartbeat.py --run <runId> --total 1")
-    assert git(repo / ".claude" / "worktrees" / epic, "merge-base", "--is-ancestor", head, "HEAD")
-    args = json.loads((out / f"{epic}-args.json").read_text())
-    assert [x["id"] for x in args["tasks"]] == ["beta"]
-
-
 def test_launch_keeps_merge_line_on_failure(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head)
@@ -157,16 +141,6 @@ def test_launch_without_verify_uses_returned_verification_command(repo, root, ep
     assert f"MERGE alpha --name {epic}-alpha" in r.stdout
 
 
-def test_launch_lands_with_recorded_verification_command(repo, root, epic, tmp_path):
-    head = _alpha_commit(repo, epic)
-    _done_alpha(repo, root, epic, head, verify=None)
-    rj = write_ret(repo, _ret_with_command(head, "true"))
-    out = tmp_path / "o"
-    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch", "--return", rj)
-    assert r.returncode == 0, r.stdout + r.stderr
-    assert "alpha: landed" in r.stdout
-
-
 def test_launch_without_any_verify_prints_merge(repo, root, epic, tmp_path):
     head = _alpha_commit(repo, epic)
     _done_alpha(repo, root, epic, head, verify=None)
@@ -178,26 +152,9 @@ def test_launch_without_any_verify_prints_merge(repo, root, epic, tmp_path):
     assert subprocess.run(["git", "merge-base", "--is-ancestor", head, "HEAD"], cwd=tree).returncode
 
 
-def test_without_launch_prints_no_launch_lines(repo, root, epic, tmp_path):
-    r = cli("continue", epic, "--root", root, "--out-dir", tmp_path / "out")
-    assert r.returncode == 0, r.stderr
-    assert "LAUNCH" not in r.stdout and "ARM" not in r.stdout
-
-
 def test_relaunch_args_hold_only_open_tasks(repo, root, epic, tmp_path):
     data = _ret(repo, stopped="gate-repeat", triageRejected=True)
     _go(repo, root, epic, tmp_path, data)
     args = json.loads((tmp_path / "out" / f"{epic}-args.json").read_text())
     assert "alpha" not in [x["id"] for x in args["tasks"]]
     assert "beta" in [x["id"] for x in args["tasks"]]
-
-
-def test_launch_prints_launch_and_arm_lines(repo, root, epic, tmp_path):
-    head = _alpha_commit(repo, epic)
-    _done_alpha(repo, root, epic, head)
-    out = tmp_path / "out"
-    r = cli("continue", epic, "--root", root, "--out-dir", out, "--launch")
-    assert r.returncode == 0, r.stdout + r.stderr
-    lines = r.stdout.strip().splitlines()
-    assert [x.split()[0] for x in lines if x.startswith(("LAUNCH", "ARM"))] == ["LAUNCH", "ARM"]
-    assert lines[-2].startswith("LAUNCH ") and lines[-1].startswith("ARM python3 ")

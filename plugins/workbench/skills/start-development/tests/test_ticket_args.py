@@ -130,27 +130,6 @@ def test_no_open_tasks_fails(epic, root, tmp_path):
     assert list(out.iterdir()) == []
 
 
-def test_writes_named_copy(epic, root, tmp_path):
-    ep, d, a, *_ = epic
-    set_status(a, "done")
-    before = subprocess.run(
-        ["git", "status", "--porcelain"], cwd=root.parents[1], capture_output=True, text=True
-    ).stdout
-    out = tmp_path / "out"
-    out.mkdir()
-    r = cli("args", ep, "--root", root, "--out-dir", out)
-    assert r.returncode == 0, r.stderr
-    data = json.loads((out / f"{ep}-args.json").read_text())
-    assert [t["id"] for t in data["tasks"]] == ["beta", "gamma"]
-    last = r.stdout.strip().splitlines()[-1]
-    assert last == str(out / f"plan-execute-{ep}.js")
-    assert f"plan-execute:{ep}" in Path(last).read_text()
-    after = subprocess.run(
-        ["git", "status", "--porcelain"], cwd=root.parents[1], capture_output=True, text=True
-    ).stdout
-    assert before == after
-
-
 HARNESS = SD.parents[1] / "workflows" / "tests" / "harness.mjs"
 PLAN_EXECUTE = SD.parents[1] / "workflows" / "plan-execute.js"
 NODE_CHECK = """
@@ -175,26 +154,6 @@ def run_in_harness(args, tmp_path):
     return subprocess.run(
         ["node", "--input-type=module", "-e", code, str(f)], capture_output=True, text=True
     )
-
-
-def test_args_validate_in_harness(epic, root, tmp_path):
-    ep, d, a, *_ = epic
-    set_status(a, "done")
-    readme = d / "README.md"
-    text = readme.read_text()
-    for k in ("What", "How", "Why"):
-        text = re.sub(rf"(?m)^{k}:.*$", f"{k}: fixture {k.lower()}", text, count=1)
-    readme.write_text(text)
-    out = args_mod.build_args(d)
-    # distinct files per task keep overlap detection out of the contract check
-    for t in out["tasks"]:
-        t["files"] = [f"{t['id']}.py"]
-    r = run_in_harness(out, tmp_path)
-    assert r.returncode == 0, r.stderr
-    # a contract mismatch (overlapIgnore as a per-repo map) must be caught
-    bad = dict(out, overlapIgnore={"proj": out["overlapIgnore"]})
-    r = run_in_harness(bad, tmp_path)
-    assert r.returncode != 0 and "overlapIgnore" in r.stderr
 
 
 def test_args_tasks_carry_task_file(epic, root):

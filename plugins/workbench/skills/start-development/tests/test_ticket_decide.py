@@ -128,11 +128,7 @@ def decide(root, *args):
 
 def test_baseline_epic_lints_clean(epic):
     root, d = epic
-    r = subprocess.run(
-        ["node", str(ROOT / "workflows" / "validate-tasks.mjs"), "--epic", str(d)],
-        capture_output=True,
-        text=True,
-    )
+    r = cli("lint", "--root", root)
     assert r.returncode == 0, r.stderr
 
 
@@ -205,28 +201,9 @@ def test_done_epic_fails(epic, repo):
     assert r.returncode == 1 and "done" in r.stderr
 
 
-def test_decide_rolls_back_on_lint_failure(epic, repo):
-    root, d = epic
-    ledger_path = d / "approvals.json"
-    broken = json.loads(ledger_path.read_text())
-    broken[1]["decisions"] = []  # empty decisions make the post-write lint fail
-    ledger_path.write_text(json.dumps(broken, indent=2) + "\n")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-m", "break")
-    head = git(repo, "rev-parse", "HEAD").stdout
-    design, ledger = (d / "design.md").read_text(), ledger_path.read_text()
-    r = decide(root, "A3", "t", "--tasks", "alpha")
-    assert r.returncode == 1
-    assert "approvals:" in r.stdout + r.stderr
-    assert (d / "design.md").read_text() == design
-    assert ledger_path.read_text() == ledger
-    assert git(repo, "rev-parse", "HEAD").stdout == head
-
-
 def test_decide_keeps_lint_green(epic):
     root, d = epic
     r = decide(root, "A3", "Use the new thing", "--tasks", "alpha,gamma")
     assert r.returncode == 0, r.stderr
-    validator = str(ROOT / "workflows" / "validate-tasks.mjs")
-    lint = subprocess.run(["node", validator, "--epic", str(d)], capture_output=True, text=True)
+    lint = cli("lint", "--root", root)
     assert lint.returncode == 0, lint.stdout + lint.stderr

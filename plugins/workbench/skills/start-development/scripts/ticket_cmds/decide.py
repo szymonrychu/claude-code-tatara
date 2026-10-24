@@ -2,10 +2,7 @@
 
 import json
 import re
-import subprocess
 from pathlib import Path
-
-VALIDATOR = Path(__file__).resolve().parents[4] / "workflows" / "validate-tasks.mjs"
 
 
 def register(sub, t):
@@ -46,11 +43,9 @@ def _add_decision(md: str, n: int, title: str, text: str, tasks: list[str], t) -
     return md[:s] + "\n".join(lines) + md[e:]
 
 
-def _lint(epic_dir: Path) -> tuple[int, str]:
-    r = subprocess.run(
-        ["node", str(VALIDATOR), "--epic", str(epic_dir)], capture_output=True, text=True
-    )
-    return r.returncode, (r.stderr + r.stdout).strip()
+def _lint(epic_dir: Path, root: Path, t) -> tuple[int, str]:
+    problems = t.lint_problems(root, epic_dir.name)
+    return (1 if problems else 0), "\n".join(f"ticket.py: lint: {p}" for p in problems)
 
 
 def run(a, t) -> int:
@@ -94,7 +89,7 @@ def run(a, t) -> int:
 
     design_path.write_text(_add_decision(design_before, n, title, a.text.strip(), tasks, t))
     ledger_path.write_text(json.dumps(ledger, indent=2, ensure_ascii=False) + "\n")
-    code, out = _lint(epic_dir)
+    code, out = _lint(epic_dir, root, t)
     if code != 0:
         design_path.write_text(design_before)
         if ledger_before is None:
