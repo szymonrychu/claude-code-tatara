@@ -1,6 +1,6 @@
 ---
 title: slug from name
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: clusters scheduled from a preset get a valid slug without the user typing one
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/bench/runner.py, tests/test_slugs.py]

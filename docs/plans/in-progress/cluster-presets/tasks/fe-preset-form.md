@@ -1,6 +1,6 @@
 ---
 title: fe preset form
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "presets are edited in the familiar cluster form, which no longer edits running clusters"
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/presets/PresetForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/presets/PresetForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/clusters/DiscardClusterDialog.test.tsx, frontend/src/api/client.ts]

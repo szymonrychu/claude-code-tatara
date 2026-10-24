@@ -1,6 +1,6 @@
 ---
 title: retire cluster patch route
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "running clusters can no longer be edited through the API, so they never restart under a live spec change"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_clusters.py, README.md, MEMORY.md, openapi.json, frontend/src/api/schema.d.ts]

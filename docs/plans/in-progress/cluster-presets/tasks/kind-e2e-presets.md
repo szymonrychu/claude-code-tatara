@@ -1,6 +1,6 @@
 ---
 title: kind e2e presets
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: CI proves on a real cluster that presets and preset scheduling work through the public API alone
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]

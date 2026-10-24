@@ -1,6 +1,6 @@
 ---
 title: retire spec update repo
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: no dead live-edit code is left to mislead the next change
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/spec.py, tests/test_clusters_repo.py]

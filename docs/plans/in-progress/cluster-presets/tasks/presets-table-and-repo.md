@@ -1,6 +1,6 @@
 ---
 title: presets table and repo
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: presets are stored durably with a Default 1-pod preset that always exists
 files: [src/agent_orchestrator/db/migrations/0002_presets.sql, src/agent_orchestrator/db/presets.py, tests/test_migrations.py, tests/test_presets_repo.py, README.md]

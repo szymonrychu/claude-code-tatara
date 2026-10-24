@@ -1,6 +1,6 @@
 ---
 title: fe new cluster dialog
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "New cluster in the UI is one preset choice and an optional slug, and each tab shows its preset"
 files: [frontend/src/api/client.ts, frontend/src/clusters/NewClusterDialog.tsx, frontend/src/clusters/NewClusterDialog.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]

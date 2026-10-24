@@ -1,6 +1,6 @@
 ---
 title: create cluster from preset
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "scheduling a cluster takes only a preset, and later preset changes never touch it"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/clusters.py, tests/test_api_create_from_preset.py, README.md, openapi.json, frontend/src/api/schema.d.ts]

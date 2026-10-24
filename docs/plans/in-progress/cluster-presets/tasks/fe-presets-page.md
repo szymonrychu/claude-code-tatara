@@ -1,6 +1,6 @@
 ---
 title: fe presets page
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "Presets is the first settings category in the hamburger menu, with create, copy, edit and delete"
 files: [frontend/src/presets/PresetsPage.tsx, frontend/src/presets/PresetsPage.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx]

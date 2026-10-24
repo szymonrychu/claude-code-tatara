@@ -1,6 +1,6 @@
 ---
 title: preset routes
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "presets can be created, copied, edited and deleted through the documented API"
 files: [src/agent_orchestrator/api/presets.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, tests/test_api_presets.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
