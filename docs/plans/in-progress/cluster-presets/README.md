@@ -112,7 +112,7 @@ Order: cluster-form-defaults-and-ga (in progress; it reworks the same form, /met
 
 ## Time
 
-Estimate: 73 agent-min | Critical path: 47 min | Expected wall at P=1.5: 1.6 h (k=2.0) | Actual: 90 min | Remaining estimate: 5 min
+Estimate: 73 agent-min | Critical path: 47 min | Expected wall at P=1.5: 1.6 h (k=2.0) | Actual: 90 min | Remaining estimate: 0 min
 
 ## Review
 
