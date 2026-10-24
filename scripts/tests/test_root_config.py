@@ -37,7 +37,7 @@ def test_gitignore_base_entries():
     entries = _ignore()
     for e in [
         "__pycache__/", "*.pyc", ".pytest_cache/", ".ruff_cache/", ".venv/",
-        "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/",
+        "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/", ".scratchpad/",
         ".worktrees/", "**/.claude/settings.local.json", "docs/plans/index.json",
         "docs/plans/facts.md", "docs/research/", "docs/handoffs/",
     ]:  # fmt: skip

@@ -124,3 +124,71 @@ def test_env_precedence(tmp_path, monkeypatch):
     assert workbench.find_root(start)[0] == a.resolve()
     monkeypatch.setenv("WORKBENCH_ROOT", str(b))
     assert workbench.find_root(start)[0] == b.resolve()
+
+
+def _repo(path: Path) -> Path:
+    path.mkdir(parents=True)
+    git(path, "init", "-q")
+    (path / "f").write_text("x")
+    git(path, "add", ".")
+    git(path, "commit", "-qm", "init")
+    return path
+
+
+def test_main_checkout_from_linked_worktree(tmp_path):
+    main = _repo(tmp_path / "main")
+    wt = tmp_path / "wt"
+    git(main, "worktree", "add", "-q", "-b", "side", str(wt))
+    assert workbench.main_checkout(wt) == main.resolve()
+    assert workbench.main_checkout(main) == main.resolve()
+
+
+def test_main_checkout_precedence(tmp_path, monkeypatch):
+    main = _repo(tmp_path / "main")
+    (main / "sub").mkdir()
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+    assert workbench.main_checkout(main / "sub") == main.resolve()
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(b))
+    assert workbench.main_checkout(main) == b.resolve()
+    monkeypatch.setenv("WORKBENCH_ROOT", str(a))
+    assert workbench.main_checkout(main) == a.resolve()
+    monkeypatch.delenv("WORKBENCH_ROOT")
+    monkeypatch.delenv("CLAUDE_PROJECT_DIR")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    assert workbench.main_checkout(outside) is None
+
+
+def test_scratchpad_and_logs_cli(tmp_path):
+    main = _repo(tmp_path / "main")
+    wt = tmp_path / "wt"
+    git(main, "worktree", "add", "-q", "-b", "side", str(wt))
+    for action in ("scratchpad", "logs"):
+        for start in (main, wt):
+            r = subprocess.run(
+                [sys.executable, str(CLI), action, "--from", str(start)],
+                capture_output=True,
+                text=True,
+            )
+            assert r.returncode == 0, r.stderr
+            want = main.resolve() / f".{action}"
+            assert r.stdout.strip() == str(want)
+            assert want.is_dir()
+    assert not (wt / ".scratchpad").exists()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    r = subprocess.run(
+        [sys.executable, str(CLI), "logs", "--from", str(outside)],
+        capture_output=True,
+        text=True,
+    )
+    assert r.returncode == 1
+    assert r.stderr.strip()
+    assert workbench.scratchpad_dir(outside) is None
+
+
+def test_main_checkout_from_submodule(tmp_path):
+    root = metarepo(tmp_path)
+    assert workbench.main_checkout(root / "code" / "x") == root.resolve()
