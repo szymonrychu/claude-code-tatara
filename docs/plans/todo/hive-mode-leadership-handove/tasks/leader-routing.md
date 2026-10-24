@@ -53,17 +53,17 @@ Leader-only routing (Q1). In `_claim_in_cluster` (`db/queue.py:245-283`): when t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Changes `db/queue.py` `_claim_in_cluster`; `_PICK` unchanged; reads `cluster_leaders`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Untargeted messages of a hive reach only the leader.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_queue_leader_routing.py` for AC1-AC5; run `uv run pytest tests/test_queue_leader_routing.py -q`: fails.
+- Green: leader-as-target in `_claim_in_cluster`; run the verify command: passes, including `tests/test_dispatch_queue.py`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `_claim_in_cluster` at `db/queue.py:245-283`: keep the FIFO hold for untargeted heads and the skip for busy targeted messages.

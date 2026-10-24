@@ -46,17 +46,18 @@ README: the key in the config reference (enforced by `tests/test_readme_config.p
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `claude.main_agent_only_tools: list[str]` in `src/claude_code_wrapper/config.py` (part `wrapper-main-agent-only-tools`); rendered by agent-orchestrator as `["mcp__any-mcp__orchestrator_*"]`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A subagent calling a configured tool is denied before it runs; nothing else changes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_main_agent_only_tools.py` (router PreToolUse payloads with and without `agent_id`); run `uv run pytest tests/test_main_agent_only_tools.py -q`: fails.
+- Green: add the key and the gate; document it; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Gate site: `router.py:611-614` next to `CCW_TOOL_PREFIX` (`router.py:75`). Use `fnmatch.fnmatchcase`.
+- claude-code-wrapper has no MEMORY.md or AGENTS.md; read its CLAUDE.md.

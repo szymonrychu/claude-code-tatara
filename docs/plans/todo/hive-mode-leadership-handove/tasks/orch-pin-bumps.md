@@ -53,17 +53,18 @@ The merge sha is filled in by amendment when the wrapper PR merges (precedent: d
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-hive-pins`: any-mcp `v0.2.0` and the wrapper 0.2.0 merge commit across pyproject, uv.lock, settings, README, Dockerfile.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator validates and renders against the released plugin and wrapper.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Change the pins (dependency-bump exception); run `uv run pytest tests/test_images.py -q`: the equality tests fail until every pin agrees, then pass.
+- Run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `tests/test_images.py:106-112` ties the any-mcp ref to `Settings.any_mcp_ref`.
+- The wrapper merge sha comes from the orchestrator's amendment after the wrapper PR merges.

@@ -48,17 +48,17 @@ The API shows the leader (X2, Q9, Q10). `ClusterView` gains `hive: bool`, `max_r
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-leader-views`: `ClusterView` and `AgentView` fields and the `leader_changed` frame.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A headless client sees the leader, the epoch and every agent's context, live.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_leader_views.py` for AC1-AC3; run `uv run pytest tests/test_leader_views.py -q`: fails.
+- Green: views, schemas, stream frame, README, openapi and schema regeneration; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Views at `api/schemas.py:54-85`, built in `api/clusters.py:43-78`; frames in `api/streams.py:174-268`.

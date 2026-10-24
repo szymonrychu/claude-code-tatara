@@ -52,17 +52,18 @@ Foundation part F4, listener (D1). `orch api` listens on two sockets from one uv
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-agent-port`: settings `agent_port` (`ORCH_AGENT_PORT`), `agent_api_url` (`ORCH_AGENT_API_URL`), the two-socket `orch api` and the port gate.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`orch api` answers `/agent/v1` only on 8001 and everything else only on the main port.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_port.py` for AC1-AC4; run `uv run pytest tests/test_agent_port.py -q`: fails.
+- Green: settings, sockets in `cli.py` `_cmd_api`, gate in `api/allowlist.py` installed in `api/app.py`; README; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `build_uvicorn_config` at `cli.py:69`: keep proxy headers off (D22). Bind the sockets yourself (`socket.socket`, `SO_REUSEADDR`, `bind`, `listen`) and pass `sockets=[...]` to `server.serve`.
+- `scope["server"]` is `(host, port)` of the accepting socket.

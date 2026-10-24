@@ -49,17 +49,18 @@ Test-only task: the real run is the PR CI e2e job.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `orch-agents-service`, `orch-plugin-entry`, `orch-hive-state-note` and the public and agent APIs as documented in the README.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The PR CI e2e job proves leadership, routing, locks, notes and the alone mode on a real cluster.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the tests next to the existing ones with bounded waits; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
+- Run lint: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `pyproject.toml` addopts deselect `e2e`; `-m e2e` is required. `E2E_HOLD_FILE` runs one test alone locally (`scripts/e2e.sh`).
+- Precedent: `test_in_cluster_pod_refused_by_allowlist` (`tests/e2e/test_e2e_kind.py:524-571`) for in-cluster probe pods.

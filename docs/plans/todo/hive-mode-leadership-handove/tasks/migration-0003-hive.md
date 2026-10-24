@@ -49,17 +49,17 @@ Foundation part F5. `src/agent_orchestrator/db/migrations/0003_hive.sql`, forwar
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-hive-tables` (cross-epic contract): `leadership_requests`, `cluster_leaders`, `file_locks`, `agents.pod_ip` in `db/migrations/0003_hive.sql`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`orch migrate` creates the hive tables; README names their writers.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three tests to `tests/test_migrations.py`; run `uv run pytest tests/test_migrations.py -q`: fails.
+- Green: write the migration and the README rows; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Runner `db/migrate.py:15-48` (one transaction per file, advisory lock). Use `create table if not exists`, `add column if not exists`.

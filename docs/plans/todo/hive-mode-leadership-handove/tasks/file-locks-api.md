@@ -56,17 +56,18 @@ Advisory file locks (Q11: agents claim files, a write to a file claimed by anoth
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/file_locks.py` (api writer of `file_locks`); routes `/agent/v1/locks`, `/locks/claim`, `/locks/release`, `/locks/reassign`, `/locks/check`.
+- The check route answers the wrapper webhook shape: `decision`, `additional_context`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agents claim files; a write to another agent's file brings a warning into the writer's context.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_locks.py` for AC1-AC5; run `uv run pytest tests/test_api_locks.py -q`: fails.
+- Green: repo, routes, README, openapi and schema regeneration; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Wrapper hook envelope and blocking webhook body: wrapper README `## Hooks` and `### Webhook actions`.

@@ -45,17 +45,17 @@ UI for the spec fields owned by this epic (S2, S3, X2 parity: the fields are alr
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ClusterSpec.max_replicas` and `static` through `frontend/src/api/schema.d.ts`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The preset editor and the new-cluster dialog set the cap and the static switch.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the "max replicas" and "static" cases to `PresetForm.test.tsx`; run `cd frontend && npx vitest run src/presets/PresetForm.test.tsx`: fails.
+- Green: extend `FormValues`, `SetKey`, validation and the form; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `clusterSpecForm.ts` holds form state and the sparse mapping; `PresetForm.tsx:133` renders replicas.

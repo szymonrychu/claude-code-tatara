@@ -1,0 +1,23 @@
+[
+  {
+    "id": "F",
+    "text": "Foundation F1-F5 (foundation.md D1-D6) built in this epic first: the any-mcp orchestrator plugin, the wrapper notes inbox and main-agent gate, ClusterSpec max_replicas and static with render gating and pins, the agent API with its port, token and pod-IP identity, and migration 0003.",
+    "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D15"],
+    "tasks": ["orchestrator-plugin", "main-agent-only-tools", "wrapper-notes-inbox", "wrapper-notes-delivery", "migration-0003-hive", "spec-cap-static", "spec-form-cap-static", "agent-port-listener", "agents-pod-ip-observe", "agent-token-env-render", "agent-api-me", "chart-agents-service", "render-hive-gating", "plugin-config-merge", "hive-docs-memory"],
+    "status": "approved"
+  },
+  {
+    "id": "H",
+    "text": "Hive mode: dispatcher leadership authority with epoch fencing, leader-only routing, the activity feed and hive-state notes, advisory file locks, leader in views, stream and UI, the bench arm and API-only kind e2e.",
+    "decisions": ["D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14"],
+    "tasks": ["leadership-requests-api", "dispatcher-leadership-pass", "leader-routing", "file-locks-api", "hive-feed-digest", "hive-state-push-loop", "views-leader-stream", "ui-leader-badge", "bench-hive-arm", "bench-run-record", "kind-e2e-hive"],
+    "status": "approved"
+  },
+  {
+    "id": "R",
+    "text": "Releases across repos are explicit tasks: any-mcp v0.2.0 tag, claude-code-wrapper 0.2.0 image and tag, the orchestrator pins, the agents-helmfile bump, apply and smoke.",
+    "decisions": ["D6"],
+    "tasks": ["any-mcp-release-v0-2-0", "wrapper-release-0-2-0", "orch-pin-bumps", "helmfile-deploy-pin", "helmfile-apply-smoke"],
+    "status": "approved"
+  }
+]

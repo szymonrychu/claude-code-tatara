@@ -51,17 +51,19 @@ Foundation part F1 release (X1): any-mcp v0.2.0 carries `OrchestratorPlugin`.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `any-mcp-release-v0-2-0`: tag `v0.2.0` of `github.com/szymonrychu/any-mcp`, installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.2.0"`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The repo says 0.2.0 everywhere; after the merge, tag v0.2.0 has a green release run.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the expectations in `tests/test_release.py` to 0.2.0; run `uv run pytest tests/test_release.py -q -k versions_agree`: fails.
+- Green: bump pyproject, `uv lock`, CHANGELOG and README; run the verify command: passes.
+- After merge (orchestrator): `git tag v0.2.0 <merge sha> && git push origin v0.2.0`; watch the release workflow with `gh run watch`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `tests/test_release.py:16-19` (`PINNED_LINE`) and `:51-60` hard-code the version.
+- The tag is pushed only from the merged `main` commit; never re-pointed.

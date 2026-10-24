@@ -45,17 +45,19 @@ Deploy and smoke the release (the user asked for helmfile bump, apply and smoke 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Runs the agents-helmfile mise tasks `diff`, `apply`, `smoke` against the live namespace.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The hive release runs live, smoke is green and a live hive has a leader.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `mise run diff`: only the expected changes.
+- `mise run apply`: succeeds.
+- `mise run smoke`: exits 0.
+- Live check of a 2-replica cluster's leader and `/agent/v1/me`; write the MEMORY entry.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Least destructive first: stop after `diff` if it shows anything beyond the pins, the Service and the settings.

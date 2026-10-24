@@ -57,17 +57,19 @@ Foundation part F2 (Q6). Deliver pending notes to Claude as `hookSpecificOutput.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `NoteStore` and the `notes` config from wrapper-notes-inbox; emits `note_delivered`.
+- Keeps the router's `_additional_context(event, text)` shape (`router.py:176-178`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A hived agent sees pending notes as a system reminder with its next prompt and, throttled, after tool results.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_notes_delivery.py` for AC1-AC6; run `uv run pytest tests/test_notes_delivery.py -q`: fails.
+- Green: wire delivery into `_on_user_prompt_submit` and `_on_post_tool_use`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `_on_user_prompt_submit` is at `router.py:594`, `_on_post_tool_use` at `router.py:654`.
+- PostToolUse already returns user-hook `additional_context`; concatenate, do not replace.

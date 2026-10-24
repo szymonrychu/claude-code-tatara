@@ -57,17 +57,18 @@ Routes:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-leader-read` (cross-epic contract): `db/leadership.py` `insert_request`, `current_leader`.
+- Routes `POST /agent/v1/leadership/handover`, `POST /api/v1/clusters/{id}/leader`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The leader and the user can queue leadership changes; members are refused at the door.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_leadership.py` for AC1-AC4; run `uv run pytest tests/test_api_leadership.py -q`: fails.
+- Green: repo functions, routes, schemas, README, openapi and schema regeneration; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Queue-table pattern: api inserts, NOTIFY; the dispatcher decides (dispatcher-leadership-pass).

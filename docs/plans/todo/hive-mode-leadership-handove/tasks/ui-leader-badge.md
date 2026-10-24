@@ -43,17 +43,17 @@ The UI shows and sets the leader (Q9, Q10). In the agents strip (`chat/AgentsStr
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `ClusterView.leader_agent_id`, `AgentView.leader`, `context_pct`, the `leader_changed` frame and `POST /api/v1/clusters/{id}/leader`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The agents strip shows the leader and offers "Make leader".
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add "leader badge", "make leader" and "leader_changed" cases to `AgentsStrip.test.tsx`; run `cd frontend && npx vitest run src/chat/AgentsStrip.test.tsx`: fails.
+- Green: badge, action, client call, frame handling; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Frontend commands: `npm --prefix frontend run test|lint|build`; `check:api` guards schema drift.

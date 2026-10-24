@@ -44,17 +44,17 @@ Measure the speed-up claim (Q12: no switch, the bench still records the result).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `bench/spec.py` `Arm{name, replicas, peers, max_replicas?, static?}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`orch bench` can run a hive arm and reports its leader epoch.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three tests to `tests/test_bench.py`; run `uv run pytest tests/test_bench.py -q`: fails.
+- Green: spec, runner, report, example; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `Arm` at `bench/spec.py:24-30`; runner drives only `/api/v1`.

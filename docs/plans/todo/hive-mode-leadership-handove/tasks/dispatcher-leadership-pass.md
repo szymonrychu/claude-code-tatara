@@ -58,17 +58,18 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-leadership-pass` (cross-epic contract): `db/leadership.py` `leadership_pass(conn, cluster_id)`, NOTIFY `leader_changed`, `LEADER_GRACE_SECONDS`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Each hive has one leader, changed only by valid requests or a lost leader, with every change announced.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_leadership_pass.py` for AC1-AC8 (two connections for the concurrency case); run `uv run pytest tests/test_leadership_pass.py -q`: fails.
+- Green: the pass and its drain wiring; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Lock: `pg_try_advisory_xact_lock(_CLAIM_LOCK_NAMESPACE, hashtext(cluster_id))` (`db/queue.py:314-334`), taken by the pass itself because claim_and_pick takes it only for clusters with queued messages.
+- `drain` at `dispatcher/loop.py:103-108`; NOTIFY listen list at `:36`.

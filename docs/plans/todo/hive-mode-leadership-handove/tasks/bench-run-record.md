@@ -39,17 +39,17 @@ Record the speed-up result (Q12). Against the deployed release, run `orch bench 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `orch bench` and `examples/bench.yaml` from bench-hive-arm against the deployed API.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+MEMORY.md holds the measured result of hive versus single.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Run `uv run orch bench examples/bench.yaml` against the deployed API; read the report.
+- Write the MEMORY entry; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The bench talks only to `/api/v1`; it needs an allowed source address (port-forward as in agents-helmfile smoke).

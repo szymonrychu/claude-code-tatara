@@ -49,17 +49,18 @@ Foundation part F3, plugin entry (X1, D2, Q7). In `k8s/on_start.py`:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-plugin-entry` (cross-epic contract): `k8s/on_start.py` `orchestrator_allow(spec)` and the merged `orchestrator` entry.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Hive pods start any-mcp with the orchestrator tools next to the user's plugins; alone pods start it exactly as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_on_start.py` for AC1-AC5; run `uv run pytest tests/test_on_start.py -q`: fails.
+- Green: merge logic in `on_start.py`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `any_mcp_config(spec)` returns the user config verbatim today (`on_start.py:17-20`); the heredoc is quoted (`<<'{DELIMITER}'`, `:39`).
+- any-mcp treats an empty `allow` as "all tools", hence omitting the entry when nothing is allowed.

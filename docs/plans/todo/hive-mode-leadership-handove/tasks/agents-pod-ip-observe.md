@@ -42,17 +42,17 @@ Foundation part F4 identity source (D1). The reconciler's `_observe` (`reconcile
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Writes `agents.pod_ip` (part `orch-hive-tables`); `db/agents.upsert_agent(..., pod_ip)`, `mark_gone` clears it.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every live agent row carries its pod IP.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three tests to `tests/test_reconciler.py`; run `uv run pytest tests/test_reconciler.py -q`: fails.
+- Green: pass `status.podIP` through `_observe`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `_observe` at `reconciler/loop.py:273-309`; `upsert_agent` and `mark_gone` at `db/agents.py:71-102`. The fake kube lives in `tests/fakes/fake_kube.py`.

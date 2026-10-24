@@ -46,17 +46,16 @@ Doc edit: the TDD exception for a doc edit applies.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-spec-runtime-mutable` (cross-epic contract): README `## API` Versioning rule.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+README and MEMORY.md explain the hive and the reasons behind it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the README sections and MEMORY entries (doc-edit exception); run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- MEMORY.md 2026-10-23 holds the immutability entry this amends; reference it by date.

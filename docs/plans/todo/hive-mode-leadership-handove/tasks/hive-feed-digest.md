@@ -45,17 +45,17 @@ The activity feed content (Q5). `dispatcher/feed.py`, pure functions over stored
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-feed-digest`: `dispatcher/feed.py` `digest_lines`, `render_feed`, `FeedLine`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A pure, tested digest that turns stored events into short feed lines.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_hive_feed.py` for AC1-AC4; run `uv run pytest tests/test_hive_feed.py -q`: fails.
+- Green: write `feed.py`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Event shapes: wrapper README `### tool_call`, `### tool_result`, `### turn_completed`; `tool_call.tool_input.file_path` is absolute.

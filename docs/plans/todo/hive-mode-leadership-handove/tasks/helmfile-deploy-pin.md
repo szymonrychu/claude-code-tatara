@@ -52,17 +52,17 @@ The shas are filled in by amendment when the orchestrator and wrapper PRs merge.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes the published chart `0.1.0-main.<sha7>`, images `agent-orchestrator:<sha7>` and `claude-code-wrapper:<sha7>`, and `orch-agents-service`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows only the pins, the agents Service and the new settings.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the tests for the new pins and the agents Service smoke check; run the verify command: fails.
+- Green: change the pins and the smoke script; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Precedent: `docs/plans/done/web-ui-cluster-tabs-with-fil/tasks/deploy-pin.md`, including the ruling on chart-pull tests blocked by the network policy.

@@ -46,17 +46,18 @@ Foundation part F2 release. claude-code-wrapper 0.2.0 carries the notes inbox an
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `wrapper-release-0-2-0`: image `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>` of the merge commit and tag `v0.2.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Version 0.2.0 in the repo; after the merge the image and tag exist.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_version_matches_pyproject` expecting 0.2.0; run `uv run pytest tests/test_packaging.py -q`: fails.
+- Green: bump the version and `uv lock`; run the verify command: passes.
+- After merge (orchestrator): wait for `build.yaml` green, `git tag v0.2.0 <merge sha> && git push origin v0.2.0`, watch `release.yaml`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- README `### Release`: `release.yaml` fails when the `:<shortsha>` image is missing, so tag only after the main build is green.

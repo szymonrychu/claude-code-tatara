@@ -51,17 +51,18 @@ Foundation part F3, credential and env (D1, X1).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-agent-env` (cross-epic contract): `ClusterTokens.agent`, Secret key and pod env `ORCH_AGENT_TOKEN`, `ORCH_AGENT_URL`, `ORCH_CLUSTER_ID`, passthrough of those plus `POD_NAME`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every agent pod and its any-mcp child see the cluster token, the cluster id and the agent API URL.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the tests named in the ACs; run `uv run pytest tests/test_tokens.py tests/test_render.py tests/test_spec_hive.py -q`: fails.
+- Green: tokens purpose, Secret key, env, passthrough, reserved `ORCH_*`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `tokens.py:22-34`; Secret at `render.py:201-207`; env at `:135-145`; passthrough at `:59`; reserved keys at `spec.py:150-167`.
+- Terminals scrub env names matching TOKEN (wrapper trust model), so shells never print it.

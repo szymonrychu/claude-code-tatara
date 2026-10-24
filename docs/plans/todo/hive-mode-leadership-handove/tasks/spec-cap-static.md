@@ -56,17 +56,18 @@ Foundation part F3, spec fields (Q8, Q12, S2, S3 vocabulary owned here). In `src
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-spec-cap-static` (cross-epic contract): `ClusterSpec.max_replicas`, `ClusterSpec.static`, properties `hive`, `alone`, `scalable` in `src/agent_orchestrator/spec.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Clusters and presets accept the two fields; every reader can ask `spec.hive` and `spec.scalable`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_spec_hive.py` for AC1-AC6; run `uv run pytest tests/test_spec_hive.py -q`: fails.
+- Green: add the fields, validator and properties; regenerate `openapi.json` (`uv run python -m agent_orchestrator.api.openapi > openapi.json`) and `schema.d.ts` (`npm --prefix frontend run gen:api`); run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `ClusterSpec` at `spec.py:119-176` (`extra="forbid"`), `validate_spec` at `:207-268`, any-mcp config check at `:260-266`.
+- Presets dump with `exclude_unset` (`api/presets.py:42-54`): resolve the default without marking the field set.

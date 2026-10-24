@@ -57,17 +57,19 @@ The store hangs off the session manager (`manager.py`) if that is the natural ow
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `POST /v1/sessions/{id}/notes`, config section `notes`, events `note_received` and `note_delivered` (part `wrapper-notes-inbox`, cross-epic contract of the same name).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can POST keyed and appended notes to a hived agent's session and sees `note_received` on its event stream.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_notes_api.py` for AC1-AC4; run `uv run pytest tests/test_notes_api.py -q`: fails (route missing).
+- Green: config section, `notes.py`, `api/notes.py`, router registration in `api/app.py`, `EVENT_TYPES`, README; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `EVENT_TYPES` is a closed vocabulary (`events.py:20-57`); `append` rejects unknown types.
+- `tests/test_readme_api.py:77-106` enforces route and event docs; `tests/test_readme_config.py` enforces config keys.
+- Never write service files into a session workdir (wrapper CLAUDE.md): the store is in memory.

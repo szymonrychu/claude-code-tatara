@@ -69,17 +69,20 @@ Tests in `tests/test_orchestrator_plugin.py` use `any_mcp.testing` / `in_memory_
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Builds `any_mcp.orchestrator:OrchestratorPlugin` with `Config{base_url, token, cluster, agent, slug, max_replicas, static, hive, auto_compact_pct}` (part `any-mcp-orchestrator-plugin`, cross-epic contract of the same name).
+- Calls the `/agent/v1` routes defined in foundation.md's contract table (agent-orchestrator README `## Agent API` once agent-api-me lands).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`any-mcp --config` with an `orchestrator` entry lists the nine tools with mode-aware descriptions and calls the agent API with the cluster token.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestrator_plugin.py` for AC1-AC7; run `uv run pytest tests/test_orchestrator_plugin.py -q`: fails (module missing).
+- Green: write `src/any_mcp/orchestrator.py`, the README section and the MEMORY entry; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Precedent: `src/any_mcp/openapi.py` (credentials hook at lines 105-109, built-in module path). `any_mcp.testing` and `in_memory_client` (`_fastmcp_adapter.py:581`) for in-process tests.
+- Only `_fastmcp_adapter.py` may import fastmcp/mcp (`tests/test_import_boundary.py`).
+- Docstrings become descriptions only for `@tool` methods; build `ToolSpec`s in `load_tools()` to get Config-dependent descriptions.

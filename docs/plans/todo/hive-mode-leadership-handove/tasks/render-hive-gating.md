@@ -51,17 +51,19 @@ Foundation part F3, render (D2, D3, Q7, Q11, S3). In `k8s/render.py` `_ccw_confi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns parts `orch-render-hash-invariant` and `orch-peer-seeds-cap` (cross-epic contracts): seeds from the cap, `peers.enabled`, `notes.enabled`, `claude.main_agent_only_tools`, the lock-check webhook, and the hash test.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Alone clusters render with no hive config, hive clusters with notes, peers and the lock webhook, and changing replicas touches only the StatefulSet replica count.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the five tests named in the ACs; run `uv run pytest tests/test_render.py -q`: fails.
+- Green: change `_ccw_config`; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Seeds at `render.py:107-116`; hash at `:189`, `:254`.
+- Webhook keys from the wrapper README `### hooks`: `{type: webhook, url, secret, headers, timeout_seconds, retries, blocking, on_error, matcher}`.
+- A literal `$` in any config string must be `$$` (wrapper interpolation).

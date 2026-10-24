@@ -57,17 +57,18 @@ Every agent knows the hive and sees the others' activity (D3, Q6, Q7, Q9). `disp
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `orch-hive-state-note` (cross-epic contract): `dispatcher/hive.py` `push_once`, the `hive_state` note text and schema; `WrapperClient.post_note`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Hived agents receive a hive-state note on every leader or membership change and feed notes about the others' work.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_hive_push.py` for AC1-AC6 against the fake wrapper; run `uv run pytest tests/test_hive_push.py -q`: fails.
+- Green: `post_note`, the fake route, `hive.py`, the drain wiring; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Wrapper client at `wrapper/client.py:46`; fake at `tests/fakes/fake_wrapper.py:204`; real-wrapper contract runs under `-m integration`.
+- `events.page(types=...)` (`db/events.py:117-170`) or a direct keyset query by `(cluster_id, id)`.
