@@ -235,5 +235,18 @@
       "orchestrator-plugin"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q12",
+    "text": "Every multi-agent cluster is a hive, no opt-in; the bench still records the result.",
+    "decisions": [
+      "D29"
+    ],
+    "tasks": [
+      "spec-cap-static",
+      "bench-hive-arm",
+      "bench-run-record"
+    ],
+    "status": "approved"
   }
 ]

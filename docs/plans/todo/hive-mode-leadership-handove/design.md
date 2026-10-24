@@ -128,6 +128,9 @@ The user can make any agent leader from the UI and the API through the same lead
 ### D28: Advisory locks
 Advisory file locks: agents claim files, a write to a file claimed by another agent is warned, the leader can reassign or discard any lock. (user decision)
 
+### D29: Every multi-agent cluster is a hive
+Every multi-agent cluster is a hive, no opt-in; the bench still records the result. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -184,6 +187,7 @@ Advisory file locks: agents claim files, a write to a file claimed by another ag
 | D26 Advise, never force, handover | orchestrator-plugin, hive-state-push-loop, views-leader-stream, ui-leader-badge |
 | D27 User make leader | leadership-requests-api, dispatcher-leadership-pass, ui-leader-badge |
 | D28 Advisory locks | file-locks-api, render-hive-gating, orchestrator-plugin |
+| D29 Every multi-agent cluster is a hive | spec-cap-static, bench-hive-arm, bench-run-record |
 
 ## Contracts
 
