@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: the agents namespace runs cluster scaling
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
-depends_on: [agent-scale-route, scale-tool-allow, agents-strip-leaving-mark, cap-static-preset-form, kind-e2e-scaling, smoke-scale-check]
+depends_on: [agent-scale-route, scale-tool-allow, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check]
 owns: []
 uses: []
 model: ""

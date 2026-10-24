@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py, MEMO
 verify: "uv run --frozen pytest -q tests/test_clusters_repo.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [scale-replicas-write]
-uses: []
+uses: [orch-spec-cap-static, orch-hive-tables, orch-spec-runtime-mutable]
 model: ""
 estimate: 5
 estimate_by: formula

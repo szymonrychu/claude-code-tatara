@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/k8s/on_start.py, tests/test_render.py]
 verify: "uv run --frozen pytest -q tests/test_render.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: []
-uses: []
+uses: [orch-plugin-entry, orch-spec-cap-static, orch-render-hash-invariant, any-mcp-orchestrator-plugin]
 model: ""
 estimate: 5
 estimate_by: formula

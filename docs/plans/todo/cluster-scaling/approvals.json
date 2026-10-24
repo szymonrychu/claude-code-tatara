@@ -27,7 +27,6 @@
     ],
     "tasks": [
       "agent-scale-route",
-      "cap-static-preset-form",
       "kind-e2e-scaling",
       "public-scale-route",
       "scale-replicas-repo",
@@ -45,7 +44,6 @@
       "D11"
     ],
     "tasks": [
-      "cap-static-preset-form",
       "kind-e2e-scaling",
       "scale-replicas-repo",
       "scale-tool-allow",
@@ -77,7 +75,6 @@
     ],
     "tasks": [
       "agents-strip-leaving-mark",
-      "cap-static-preset-form",
       "kind-e2e-scaling",
       "public-scale-route",
       "scale-ui-control",
@@ -121,7 +118,6 @@
     ],
     "tasks": [
       "scale-tool-allow",
-      "cap-static-preset-form",
       "kind-e2e-scaling"
     ],
     "status": "approved"

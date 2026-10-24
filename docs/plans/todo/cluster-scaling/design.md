@@ -62,7 +62,7 @@ Agents above the target are draining: never `ready`, so never dispatched to, nev
 The rendered `orchestrator` plugin `allow` includes the scale tool iff `spec.scalable` (hive and not static), decided from init-time fields only, so scaling never changes the rendered config. A scalable cluster at 1 pod lists it; static and alone clusters never do. Serves S3, Q7, X1.
 
 ### D5: UI for cap, static and replicas, all on the public API
-The preset form gets "Max agents" and "Static (no scaling)" (static locks the cap to replicas); the chat header gets a scale control (count of cap, add and remove, disabled at bounds and when static, hidden when alone, API errors inline); the agents strip marks leaving agents and those finishing a turn. Placement in the chat header rather than the top-bar tab is my call (the tab is per cluster in a list; the header is the selected cluster). README `### Scaling` documents cap, static, replicas and drain for API callers. Serves S2, S3, X2.
+The preset form gets (built by hive-mode-leadership-handove task spec-form-cap-static, not here) "Max agents" and "Static (no scaling)" (static locks the cap to replicas); the chat header gets a scale control (count of cap, add and remove, disabled at bounds and when static, hidden when alone, API errors inline); the agents strip marks leaving agents and those finishing a turn. Placement in the chat header rather than the top-bar tab is my call (the tab is per cluster in a list; the header is the selected cluster). README `### Scaling` documents cap, static, replicas and drain for API callers. Serves S2, S3, X2.
 
 ### D6: Release is the main build, deployed and smoked
 The orchestrator release is the main build of this epic's merge (chart `0.1.0-main.<sha7>`, image `<sha7>`); agents-helmfile pins it, runs `mise run diff`, `mise run apply` and `mise run smoke`, and the smoke gains a scale step (1 to 2 to 1, pod-0 uid unchanged). No any-mcp or wrapper release: their changes ship with the hive epic. Serves REL, S1.
@@ -102,7 +102,7 @@ Headless parity: every UI capability has a documented public API and an API-only
 
 | Source | Entry | Lands in |
 |---|---|---|
-| brief-orchestrator Plan inputs: cluster-scaling | spec cap field and static switch | do-not-build: hive F3; form fields in cap-static-preset-form |
+| brief-orchestrator Plan inputs: cluster-scaling | spec cap field and static switch | do-not-build: hive F3 and its spec-form-cap-static (form inputs) |
 | brief-orchestrator Plan inputs: cluster-scaling | live count outside the immutable spec | rejected: foundation D4 keeps it in `spec.replicas`; scale-replicas-repo |
 | brief-orchestrator Plan inputs: cluster-scaling | seeds not from replicas, hash-constant test | do-not-build: hive F3; kept green by scale-tool-allow, scale-down-drain |
 | brief-orchestrator Plan inputs: cluster-scaling | reconciler gone agents and leader fallback on leave | scale-down-drain; fallback do-not-build (hive dispatcher) |
@@ -122,15 +122,15 @@ Headless parity: every UI capability has a documented public API and an API-only
 | D2 Two routes, one shape | public-scale-route, agent-scale-route |
 | D3 Scale-down drains busy agents, bounded | scale-down-drain, agents-strip-leaving-mark |
 | D4 Scale tool listed only when scalable | scale-tool-allow |
-| D5 UI for cap, static and replicas | cap-static-preset-form, scale-ui-control, agents-strip-leaving-mark, public-scale-route |
+| D5 UI for cap, static and replicas | scale-ui-control, agents-strip-leaving-mark, public-scale-route |
 | D6 Release is the main build, deployed and smoked | smoke-scale-check, deploy-pin-scaling |
 | D7 Scaling never moves leadership | scale-replicas-repo, kind-e2e-scaling |
 | D8 Join and leave reuse hive membership | kind-e2e-scaling |
 | D9 S1 dynamic join and leave | scale-down-drain, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check, deploy-pin-scaling |
-| D10 S2 cap at init, leader scales 1..N | scale-replicas-repo, public-scale-route, agent-scale-route, scale-ui-control, cap-static-preset-form, kind-e2e-scaling |
-| D11 S3 static switch | scale-replicas-repo, scale-tool-allow, cap-static-preset-form, scale-ui-control, kind-e2e-scaling |
+| D10 S2 cap at init, leader scales 1..N | scale-replicas-repo, public-scale-route, agent-scale-route, scale-ui-control, kind-e2e-scaling |
+| D11 S3 static switch | scale-replicas-repo, scale-tool-allow, scale-ui-control, kind-e2e-scaling |
 | D12 X1 one shared orchestrator plugin | agent-scale-route, scale-tool-allow |
-| D13 X2 headless parity | public-scale-route, scale-ui-control, agents-strip-leaving-mark, cap-static-preset-form, kind-e2e-scaling, smoke-scale-check |
+| D13 X2 headless parity | public-scale-route, scale-ui-control, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check |
 
 ## Contracts
 
@@ -148,6 +148,14 @@ Headless parity: every UI capability has a documented public API and an API-only
 - Agent route: identity strictly from `require_agent()`; leader check against `cluster_leaders`; served only on the agent port.
 - Drain: effective replicas never below the target, never above the previous count; deadline from `status.drain.since`; no ConfigMap change (hash invariant).
 - e2e: uids and config hash compared across scale up and down; teardown of every created cluster.
+
+## Builder check
+
+Answered (docs and code settle it): cap ceiling is `settings.max_replicas` = 16 (`settings.py:128`); `ORCH_MAX_REPLICAS` already validates spec replicas (`spec.py:248`); no migration needed here (replicas via `jsonb_set`, drain in `clusters.status` jsonb; hive owns 0003, agent-init-scripts 0005, 0004 stays free); the `scale` tool and the cap/static form inputs are built by hive (`orchestrator-plugin`, `spec-form-cap-static`), this epic builds only the routes, `allow` rule, drain and scale control; the fake claude can hold a turn (`e2e/agent-test.scenario.json` "slow" sleeps 4 s), so the drain e2e is feasible; the cap is fixed at init (S2, spec immutable).
+
+Minor (my call): drain deadline 900 s; refusal order of D1; `ScaleResult` shape on the public route; control placement in the chat header; in-flight button disabling; scale to the current value is a 202 no-op.
+
+Theirs (product call only the user can make): none.
 
 ## Left to the builder
 

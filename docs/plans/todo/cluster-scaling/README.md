@@ -45,7 +45,7 @@ Design: design.md. Foundation (binding): hive-mode-leadership-handove F1-F5 prov
 
 ## Time
 
-Estimate: 59 agent-min | Critical path: 27 min | Expected wall at P=1.5: 1.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 59 min
+Estimate: 54 agent-min | Critical path: 27 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 54 min
 
 ## Review
 

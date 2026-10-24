@@ -7,7 +7,7 @@ files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [public-scale-route, agent-scale-route, scale-tool-allow, scale-down-drain]
 owns: []
-uses: [orch-cluster-scale-api, orch-agent-scale-api, scale-drain-status]
+uses: [orch-cluster-scale-api, orch-agent-scale-api, scale-drain-status, orch-peer-seeds-cap, orch-hive-state-note, orch-agents-service]
 model: ""
 estimate: 5
 estimate_by: formula

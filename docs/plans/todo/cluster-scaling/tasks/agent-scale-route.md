@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/api/agent.py, README.md, openapi.json, frontend/s
 verify: "uv run --frozen pytest -q tests/test_agent_scale.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [scale-replicas-repo, public-scale-route]
 owns: [orch-agent-scale-api]
-uses: [scale-replicas-write, scale-schemas]
+uses: [scale-replicas-write, scale-schemas, orch-agent-api-auth, any-mcp-orchestrator-plugin, any-mcp-release-v0-2-0]
 model: ""
 estimate: 6
 estimate_by: formula

@@ -7,7 +7,7 @@ files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/settin
 verify: "uv run --frozen pytest -q tests/test_reconciler.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
 owns: [scale-drain-status]
-uses: []
+uses: [orch-render-hash-invariant, orch-leadership-pass, orch-leader-read]
 model: opus
 estimate: 6
 estimate_by: formula
