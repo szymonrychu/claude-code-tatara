@@ -37,6 +37,7 @@ Every agent knows the hive and sees the others' activity (D3, Q6, Q7, Q9). `disp
 - Interrogate item 3(a): event ids commit out of order across per-agent ingester transactions, so the feed cursor only advances over a committed-safe window: rows newer than `FEED_SETTLE_SECONDS = 5` (module constant) are not consumed yet, so no row is skipped for good.
 - Interrogate item 3(b): Bash calls reported pending by `digest_lines` are carried over to the next tick (kept in memory per cluster) and the cursor does not move past the oldest pending call until its result lands or the timeout elapses.
 - Interrogate item 3(c): `feed_cursor` starts at the current max events id for the cluster when a cluster first becomes a hive (the leader row is created in the leadership pass) and in migration-0003-hive for existing hive clusters, so history is never pushed as current activity.
+- Interrogate item 4: the change hash also includes each member's session id, and the last-pushed hash is kept per agent (`agents`-keyed in `cluster_leaders.state_hash` as a JSON map, or a per-agent column, builder's pick, still written only by the dispatcher), so a fast wrapper restart (new session id) gets a re-push, and one unreachable or 409 agent does not cause re-pushes to every other agent.
 
 ## Acceptance conditions
 
@@ -52,6 +53,8 @@ Every agent knows the hive and sees the others' activity (D3, Q6, Q7, Q9). `disp
 - AC10: a row committed late with a lower id than the cursor is still pushed once the settle window has passed [evidence: test:tests/test_hive_push.py::test_feed_cursor_settle_window]
 - AC11: a pending Bash call is carried to a later tick and pushed with its exit status [evidence: test:tests/test_hive_push.py::test_feed_pending_bash_carried]
 - AC12: a newly created leader row starts feed_cursor at the current max events id and old history is not pushed [evidence: test:tests/test_hive_push.py::test_feed_cursor_starts_at_max]
+- AC13: a member whose session id changed gets a re-push of hive_state [evidence: test:tests/test_hive_push.py::test_hive_state_repush_on_session_change]
+- AC14: one unreachable agent does not cause re-pushes to the other agents [evidence: test:tests/test_hive_push.py::test_failed_agent_does_not_repush_others]
 
 ## Files
 
@@ -84,3 +87,5 @@ Hived agents receive a hive-state note on every leader or membership change and 
 - 2026-10-24 amended: interrogate verdict 2026-10-24 item 2
 
 - 2026-10-24 amended: interrogate verdict 2026-10-24 item 3
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 4
