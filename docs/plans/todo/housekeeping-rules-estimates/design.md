@@ -250,6 +250,7 @@ tokens) taken as 3 points and scaled linearly: 1: 11 min, 0.75M; 2: 23 min, 1.5M
 
 ## Open questions
 - Q1: Q1: 'Run tests once' (U1) is read together with TDD as: list every file, read them all in one pass, make all edits for the step, then run the targeted verify once per red step and once per green step (never an edit-run-edit-run dribble). Accept this reading? [recommended: yes; a single run per task would make the red step impossible, which rules/tdd.md requires]
+- Q2: Q2: Seed table for expected minutes and tokens until history has 3 samples per points bucket (and 5 overall): 1pt 11 min 0.75M, 2pt 23 min 1.5M, 3pt 34 min 2.25M, 5pt 57 min 3.75M, 8pt 91 min 6.0M, 13pt 147 min 9.75M tokens, derived from this machine's implementer and reviewer transcripts (median task taken as 3 points, scaled linearly). Accept? [recommended: yes; calibration replaces it as soon as epics close with actuals]
 
 ## Irreversible operations in scope
 
