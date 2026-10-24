@@ -17,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
