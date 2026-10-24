@@ -41,14 +41,15 @@
     "decisions": [
       "D1",
       "D4",
-      "D5"
+      "D5",
+      "D11"
     ],
     "tasks": [
+      "cap-static-preset-form",
+      "kind-e2e-scaling",
       "scale-replicas-repo",
       "scale-tool-allow",
-      "cap-static-preset-form",
-      "scale-ui-control",
-      "kind-e2e-scaling"
+      "scale-ui-control"
     ],
     "status": "approved"
   },

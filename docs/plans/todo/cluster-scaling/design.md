@@ -79,6 +79,9 @@ Agents dynamically join and leave a running cluster (peers, hive state, leader f
 ### D10: S2 cap at init, leader scales 1..N
 The replica cap N is set at cluster init (ClusterSpec field, ceiling 16); the leader can scale between 1 and N with a tool. (user decision)
 
+### D11: S3 static switch
+Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hive, peers or messaging tools. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -119,6 +122,7 @@ The replica cap N is set at cluster init (ClusterSpec field, ceiling 16); the le
 | D8 Join and leave reuse hive membership | kind-e2e-scaling |
 | D9 S1 dynamic join and leave | scale-down-drain, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check, deploy-pin-scaling |
 | D10 S2 cap at init, leader scales 1..N | scale-replicas-repo, public-scale-route, agent-scale-route, scale-ui-control, cap-static-preset-form, kind-e2e-scaling |
+| D11 S3 static switch | scale-replicas-repo, scale-tool-allow, cap-static-preset-form, scale-ui-control, kind-e2e-scaling |
 
 ## Contracts
 
