@@ -1,6 +1,6 @@
 ---
 title: presets review fixes
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the migration is proven on a live database, early form edits survive, and the writers table is accurate"
 files: [tests/test_migrations.py, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx, README.md]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-presets-review-fixes/agent-orchestrator
+branch: cluster-presets-presets-review-fixes
 verified_head: ""
 run: ""
 provides: []

@@ -1,6 +1,6 @@
 ---
 title: deploy pin presets
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live agents namespace runs the presets release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
