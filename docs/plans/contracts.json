@@ -278,5 +278,16 @@
       "agent-init-scripts"
     ],
     "note": "task orchestrator-plugin: OrchestratorPlugin Config{base_url, token, cluster, agent, slug, max_replicas, static, hive, auto_compact_pct}; tools orchestrator_{me,leadership_handover,lock_claim,lock_release,lock_list,lock_reassign,scale,init_scripts_get,init_scripts_edit}; scale calls POST /agent/v1/scale {replicas}; init tools GET/PUT /agent/v1/init-scripts {scripts}; server error.code surfaces in the tool error"
+  },
+  {
+    "name": "any-mcp-release-v0-2-0",
+    "kind": "release",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/any-mcp/pyproject.toml",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task any-mcp-release-v0-2-0: tag v0.2.0 carries the plugin; no further any-mcp release planned"
   }
 ]
