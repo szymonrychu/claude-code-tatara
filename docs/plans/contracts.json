@@ -267,5 +267,16 @@
       "any-mcp"
     ],
     "note": "POST /agent/v1/scale {replicas} -> 202 ScaleResult; leader only via require_agent(); errors not_leader 403, static_cluster 409, out_of_range 422, leader_would_leave 409, cluster_deleting 409; consumed by OrchestratorPlugin orchestrator_scale"
+  },
+  {
+    "name": "any-mcp-orchestrator-plugin",
+    "kind": "interface",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/any-mcp/src/any_mcp/orchestrator.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task orchestrator-plugin: OrchestratorPlugin Config{base_url, token, cluster, agent, slug, max_replicas, static, hive, auto_compact_pct}; tools orchestrator_{me,leadership_handover,lock_claim,lock_release,lock_list,lock_reassign,scale,init_scripts_get,init_scripts_edit}; scale calls POST /agent/v1/scale {replicas}; init tools GET/PUT /agent/v1/init-scripts {scripts}; server error.code surfaces in the tool error"
   }
 ]
