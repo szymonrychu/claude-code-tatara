@@ -1,6 +1,6 @@
 ---
 title: Estimate fields
-status: in-progress
+status: done
 repo: workbench
 value: Every task carries storypoints plus expected minutes and tokens for the price of one number
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/templates/task.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_lint.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [calibration-lib]
 model: opus
 review: ""
-verified_head: ""
+verified_head: fb13db0
 ---
 
 # Estimate fields
@@ -65,3 +65,5 @@ A planner passes one number; every new task file carries points plus expected mi
 - Fix-as-ac (brief): LEAN_KEYS (test_ticket_files.py:161-172) is exact and asserted on new-task output (:194) and templates/task.md (:252); append together with cmd_new_task (ticket.py:400-410) and the CLI flags (ticket.py:1591-1595).
 - Fix-as-ac (brief): lint cannot validate numbers today; lint_problems (1453) checks them; done-epic task problems stay skipped (:1489).
 - Retirement pins: no `estimate` subcommand or key; the legacy `estimate` key of done tasks stays readable and is never written.
+
+- 2026-10-24 done
