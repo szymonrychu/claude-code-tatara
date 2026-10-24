@@ -407,11 +407,9 @@ def calibration_rows(root: Path) -> list[dict]:
     return rows
 
 
-def _point_fields(root: Path, points: str | None, task: str) -> dict:
-    """`points` plus expected minutes and tokens from calibration; empty without points."""
+def _point_fields(root: Path, points: int, task: str) -> dict:
+    """`points` plus expected minutes and tokens from calibration."""
     n = _points(points, task, "points")
-    if n is None:
-        return {}
     minutes, tokens = calibration.expected(n, calibration_rows(root))
     return {"points": str(n), "expected_minutes": str(minutes), "expected_tokens": str(tokens)}
 
@@ -1496,8 +1494,8 @@ def cmd_reap(a: argparse.Namespace) -> int:
 
 
 def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
-    """What a task file lacks (a Requirement, an acceptance condition, verify, files) and its
-    malformed points, counts and roles."""
+    """What a task file lacks (a Requirement, an acceptance condition, verify, files, points)
+    and its malformed points, counts and roles."""
     sec = _sections(t.body)
     out = []
     req = sec.get("Requirement", "")
@@ -1508,7 +1506,7 @@ def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
             out.append(f"task {t.slug!r} has no acceptance condition")
     except TicketError as e:
         out.append(str(e))
-    for key in ("verify", "files"):
+    for key in ("verify", "files", "points"):
         if not t.meta.get(key):
             out.append(f"task {t.slug!r} has no {key}")
     return out + _number_problems(t.meta, t.slug)
@@ -1682,6 +1680,8 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         sp.add_argument(f"--{opt}")
     sp.add_argument(
         "--points",
+        required=True,
+        type=int,
         help="Fibonacci storypoints (1, 2, 3, 5, 8, 13); fills expected_minutes and "
         "expected_tokens from calibration",
     )

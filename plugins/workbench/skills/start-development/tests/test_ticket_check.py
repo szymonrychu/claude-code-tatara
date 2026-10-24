@@ -40,6 +40,8 @@ def epic(root, title, phase="todo", *extra):
 def task(root, ep, title, files="a.py", *extra):
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -224,6 +226,8 @@ def test_new_task_refuses_on_shared_file(root):
     b = epic(root, "Beta")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -325,6 +329,8 @@ def test_new_task_near_duplicate_still_created(root):
     task(root, a, "Write the parser module")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -350,6 +356,8 @@ def test_new_task_refuses_epic_path_outside_plans_root(root, tmp_path):
     (outside / "tasks").mkdir(parents=True)
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -378,6 +386,8 @@ def test_resolve_epic_refuses_path_outside_plans_root(root, tmp_path):
     for arg in (outside, traversal):
         r = cli(
             "new-task",
+            "--points",
+            "3",
             "--root",
             root,
             "--epic",
@@ -398,6 +408,8 @@ def test_resolve_epic_refuses_path_outside_plans_root(root, tmp_path):
     assert not (outside / "tasks" / "rogue-task.md").exists()
     ok = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",

@@ -68,6 +68,8 @@ def mk_task(
     af.write_text(ac)
     args = [
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",

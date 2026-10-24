@@ -51,7 +51,8 @@ def new_epic(root, title="Cost and ticketing", *extra):
     return cli("new-epic", "--root", root, "--title", title, "--force", *extra)
 
 
-def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra):
+def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra, points="3"):
+    """new-task with `points` storypoints; points=None leaves the flag out."""
     return cli(
         "new-task",
         "--root",
@@ -68,6 +69,7 @@ def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra):
         "a.py,b.py",
         "--verify",
         'pytest -q -k "x y"',
+        *(["--points", points] if points else []),
         *extra,
     )
 
@@ -256,7 +258,9 @@ def test_task_frontmatter_is_lean(t, root):
     p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
     lean = t.load(p.read_text(), p).meta
     assert list(lean) == LEAN_KEYS
-    assert all(lean[k] == "" for k in NUMBER_KEYS)
+    filled = ("points", "expected_minutes", "expected_tokens")  # new-task requires points
+    assert all(lean[k] for k in filled)
+    assert all(lean[k] == "" for k in NUMBER_KEYS if k not in filled)
     assert not [k for k in LEAN_KEYS if "estimate" in k]
     for gone in ("--owns", "--uses"):
         r = new_task(root, "cost-and-ticketing", "Other task", gone, "x")
@@ -312,7 +316,7 @@ def _history_task(root, epic, name, status="done", **fields):
 
 def test_new_task_points_fill_expected(t, root):
     new_epic(root)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "5")
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="5")
     assert r.returncode == 0, r.stderr
     m = _task_meta(t, root)
     minutes, tokens = _calibration().SEED[5]
@@ -332,7 +336,7 @@ def test_new_task_expected_from_history(t, root):
                   actual_tokens=999)
     _history_task(root, "old", "half", points=3, actual_minutes=999)
     _history_task(root, "old", "junk", points=3, actual_minutes="lots", actual_tokens=999)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "3")
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="3")
     assert r.returncode == 0, r.stderr
     m = _task_meta(t, root)
     assert (m["points"], m["expected_minutes"], m["expected_tokens"]) == ("3", "20", "200")
@@ -343,9 +347,17 @@ def test_new_task_expected_from_history(t, root):
 
 def test_new_task_rejects_non_fibonacci_points(root):
     new_epic(root)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", "--points", "4")
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="4")
     assert r.returncode == 1
     assert "1, 2, 3, 5, 8, 13" in r.stderr and "points" in r.stderr
+    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
+
+
+def test_new_task_requires_points(root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points=None)
+    assert r.returncode == 2
+    assert "--points" in r.stderr
     assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
 
 
@@ -613,14 +625,14 @@ def test_cli_commits_in_git_repo(repo):
 
 
 # (13) tasks: dependency order
-def _full_task(root, epic, title, deps="", *more):
+def _full_task(root, epic, title, deps="", *more, points="3"):
     req, ac = root / "req.txt", root / "ac.txt"
     req.write_text("Do it.")
     ac.write_text("- AC1: works [evidence: test:t.py::test_works]")
     extra = ["--requirement-file", req, "--ac-file", ac, *more]
     if deps:
         extra += ["--depends-on", deps]
-    r = new_task(root, epic, title, *extra)
+    r = new_task(root, epic, title, *extra, points=points)
     assert r.returncode == 0, r.stderr
     p = Path(r.stdout.strip().splitlines()[-1])
     text = p.read_text()
@@ -658,8 +670,13 @@ def test_tasks_are_in_dependency_order(root):
 def test_tasks_json_carries_estimates(root):
     new_epic(root)
     ep = "cost-and-ticketing"
-    _full_task(root, ep, "Alpha", "", "--points", "2")
-    _full_task(root, ep, "Beta")
+    _full_task(root, ep, "Alpha", "", points="2")
+    beta = _full_task(root, ep, "Beta")
+    # a task written before points were required carries no estimate fields
+    text = beta.read_text()
+    for key in ("points", "expected_minutes", "expected_tokens"):
+        text = re.sub(rf"^{key}: .*$", f'{key}: ""', text, count=1, flags=re.M)
+    beta.write_text(text)
     r = cli("tasks", ep, "--root", root)
     assert r.returncode == 0, r.stderr
     by_id = {x["id"]: x for x in json.loads(r.stdout)}

@@ -66,6 +66,8 @@ def mk_task(root, epic, title, files=None, extra=()):
         rf,
         "--ac-file",
         af,
+        "--points",
+        "3",
         *extra,
     )
     rf.unlink()

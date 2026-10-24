@@ -143,8 +143,8 @@ def test_lint_numeric_estimate_fields(repo, root):
         r = lint(root, ep)
         assert r.returncode == 1 and key in r.stderr and value in r.stderr, (key, r.stderr)
 
-    # unset is fine: the fields start empty
-    set_meta(alpha, **{k: "" for k in GOOD_NUMBERS})
+    # unset is fine: every field but points starts empty
+    set_meta(alpha, **{k: "" for k in GOOD_NUMBERS if k != "points"})
     assert lint(root, ep).returncode == 0
 
     # a done epic is history: its numbers are not checked
@@ -154,6 +154,31 @@ def test_lint_numeric_estimate_fields(repo, root):
     gamma = _moved(repo, root, old, "done") / "tasks" / "gamma.md"
     set_meta(gamma, status="done", **BAD_NUMBERS)
     r = lint(root, old)
+    assert r.returncode == 0, r.stderr
+
+
+def test_lint_requires_points(repo, root):
+    ep = mk_epic(root)
+    alpha = mk_task(root, ep, "alpha")
+    commit_all(repo)
+    assert lint(root, ep).returncode == 0
+    set_meta(alpha, points="")
+    r = lint(root, ep)
+    assert r.returncode == 1 and "'alpha' has no points" in r.stderr, r.stderr
+    set_meta(alpha, points="5")
+    r = lint(root, ep)
+    assert r.returncode == 0, r.stderr
+
+    # an in-progress epic is held to the same rule
+    alpha = _moved(repo, root, ep, "in-progress") / "tasks" / "alpha.md"
+    set_meta(alpha, status="in-progress", points="")
+    r = lint(root, ep)
+    assert r.returncode == 1 and "'alpha' has no points" in r.stderr, r.stderr
+
+    # a done epic is history: a task without points is not rejected
+    set_meta(alpha, status="done")
+    _moved(repo, root, ep, "done")
+    r = lint(root, ep)
     assert r.returncode == 0, r.stderr
 
 

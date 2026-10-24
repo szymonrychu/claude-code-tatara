@@ -30,6 +30,8 @@ def test_doc_overlap_not_refused(root):
     a, b = two_epics(root, "CHANGELOG.md,docs/README.md", "")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -53,6 +55,8 @@ def test_non_doc_file_shared_with_open_task_still_fails(root):
     a, b = two_epics(root, "src/x.py", "")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -78,6 +82,8 @@ def test_repo_overlap_ignore_honoured(root):
     (root / ".claude" / "workbench.json").write_text('{"overlapIgnore": ["*.lock"]}')
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -102,6 +108,8 @@ def test_done_task_overlap_ignored(root):
     p.write_text(re.sub(r"^status: .*$", "status: done", p.read_text(), flags=re.M))
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -142,6 +150,8 @@ def test_merged_fallback_branch_single_hyphen(tmp_path):
     set_meta(tp, verified_head=head)  # contained in main: merged
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -187,6 +197,8 @@ def test_malformed_workbench_config_is_reported(root):
     (root / ".claude" / "workbench.json").write_text("{not json")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",

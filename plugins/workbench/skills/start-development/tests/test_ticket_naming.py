@@ -43,7 +43,8 @@ def mk_epic(repo, title):
 def new_task(repo, epic, title, *extra):
     return cli(
         "new-task", "--root", plans(repo), "--epic", epic, "--title", title,
-        "--repo", "p", "--value", "v", "--files", "a.py", "--verify", "true", *extra,
+        "--repo", "p", "--value", "v", "--files", "a.py", "--verify", "true",
+        "--points", "3", *extra,
         cwd=repo,
     )  # fmt: skip
 
