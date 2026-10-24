@@ -1,0 +1,5 @@
+[
+  {"id": "U1", "text": "Visible vertical divider lines between the files, chat and terminal panes.", "decisions": ["D1"], "tasks": ["pane-divider-lines"], "status": "approved"},
+  {"id": "U2", "text": "The file tree updates automatically on file changes (new directories, notebook edits, terminal/Bash writes); the refresh button is removed.", "decisions": ["D2"], "tasks": ["tree-change-only-refresh", "files-auto-poll-no-button"], "status": "approved"},
+  {"id": "X2", "text": "Headless parity: no new UI capability without a documented public API; the tree reads the existing files API.", "decisions": ["D3"], "tasks": ["files-auto-poll-no-button"], "status": "approved"}
+]
