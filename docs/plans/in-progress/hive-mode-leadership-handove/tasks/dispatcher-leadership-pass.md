@@ -36,6 +36,7 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 4. Every change sends `NOTIFY leader_changed` with `{cluster_id, agent_id, epoch}`.
 
 `dispatcher/loop.py` `drain` runs the pass for hive clusters with queued requests, no leader row, or a leader that is gone or not ready (one candidate query), and the loop also wakes on `leadership_requested` (plus the existing `agent_free` and poll). README `### Leadership` documents the rules and the new NOTIFY channels.
+- Interrogate item 6: `unready_since` is cleared as soon as the leader is ready again (by the pass, and by the observe path when it marks the leader ready), so two separate short unready windows never add up to a takeover.
 
 ## Acceptance conditions
 
@@ -48,6 +49,7 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 - AC7: two concurrent passes on one cluster produce one change [evidence: test:tests/test_leadership_pass.py::test_concurrent_passes_single_change]
 - AC8: alone clusters get no leader row; every change sends NOTIFY leader_changed [evidence: test:tests/test_leadership_pass.py::test_alone_untouched_and_notify]
 - AC9: dispatcher tests and lint pass [evidence: command:uv run pytest tests/test_dispatcher.py -q && uv run ruff check . && uv run ruff format --check .]
+- AC10: a leader unready 20 s, ready, unready 20 s again does not trigger a takeover [evidence: test:tests/test_leadership_pass.py::test_unready_since_cleared_when_ready]
 
 ## Files
 
@@ -73,3 +75,5 @@ Each hive has one leader, changed only by valid requests or a lost leader, with 
 
 - Lock: `pg_try_advisory_xact_lock(_CLAIM_LOCK_NAMESPACE, hashtext(cluster_id))` (`db/queue.py:314-334`), taken by the pass itself because claim_and_pick takes it only for clusters with queued messages.
 - `drain` at `dispatcher/loop.py:103-108`; NOTIFY listen list at `:36`.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 6
