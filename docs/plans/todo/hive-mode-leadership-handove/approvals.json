@@ -100,5 +100,16 @@
       "kind-e2e-hive"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q1",
+    "text": "The leader is the only agent that receives untargeted messages; an explicit target still wins.",
+    "decisions": [
+      "D18"
+    ],
+    "tasks": [
+      "leader-routing"
+    ],
+    "status": "approved"
   }
 ]

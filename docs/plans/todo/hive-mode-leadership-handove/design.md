@@ -95,6 +95,9 @@ One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool 
 ### D17: Headless parity
 Headless parity: every UI capability has a documented public API and an API-only e2e test. (user decision)
 
+### D18: Leader-only routing
+The leader is the only agent that receives untargeted messages; an explicit target still wins. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -140,6 +143,7 @@ Headless parity: every UI capability has a documented public API and an API-only
 | D15 Plugin built into any-mcp | orchestrator-plugin |
 | D16 Shared orchestrator plugin with a per-cluster credential | orchestrator-plugin, plugin-config-merge, agent-token-env-render, agent-api-me |
 | D17 Headless parity | leadership-requests-api, views-leader-stream, ui-leader-badge, kind-e2e-hive |
+| D18 Leader-only routing | leader-routing |
 
 ## Contracts
 
