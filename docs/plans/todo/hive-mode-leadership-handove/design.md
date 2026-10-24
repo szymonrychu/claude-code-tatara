@@ -89,6 +89,9 @@ The fake claude cannot call MCP tools, so agent calls run from inside agent pods
 ### D15: The plugin is built into any-mcp
 `any_mcp.orchestrator:OrchestratorPlugin` ships in any-mcp (precedent `openapi.py`), so the onStart install line stays one pip install. Rejected: a separate package with an extra pip line. Source: brief-wrapper-anymcp `### Answers for the "orchestrator" plugin`. Serves F.
 
+### D16: Shared orchestrator plugin with a per-cluster credential
+One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit) with a per-cluster scoped credential in the pod; built once here, the other epics add tools to it. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -132,6 +135,7 @@ The fake claude cannot call MCP tools, so agent calls run from inside agent pods
 | D13 kind e2e | kind-e2e-hive |
 | D14 Module constants | dispatcher-leadership-pass, hive-state-push-loop |
 | D15 Plugin built into any-mcp | orchestrator-plugin |
+| D16 Shared orchestrator plugin with a per-cluster credential | orchestrator-plugin, plugin-config-merge, agent-token-env-render, agent-api-me |
 
 ## Contracts
 
