@@ -45,12 +45,13 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The kind e2e test_patch_cluster_retired passes in CI: PATCH on a cluster answers 405 with the SPA mounted.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the AC tests in tests/test_spa.py and run the verify command: AC1 fails with 404.
+- Answer non-GET/HEAD with 405 in SpaStaticFiles before the api/ 404 branch.
+- Run the verify command: all pass.
 
 ## Notes
 
