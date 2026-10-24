@@ -1,0 +1,61 @@
+---
+title: hive feed digest
+status: todo
+repo: agent-orchestrator
+value: "the activity feed carries only what other agents need: paths, commands, turn summaries and leader changes"
+files: [src/agent_orchestrator/dispatcher/feed.py, tests/test_hive_feed.py]
+verify: "uv run pytest tests/test_hive_feed.py -q && uv run ruff check . && uv run ruff format --check ."
+depends_on: []
+owns: [orch-feed-digest]
+uses: []
+model: ""
+estimate: 5
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# hive feed digest
+
+## Requirement
+
+The activity feed content (Q5). `dispatcher/feed.py`, pure functions over stored `events` rows (type, data, agent pod name, id):
+
+- `digest_lines(rows) -> list[FeedLine]`: a Write, Edit, MultiEdit or NotebookEdit `tool_call` gives "<agent> wrote|edited <path relative to the workdir>"; a Bash `tool_call` with its matching `tool_result` (by `tool_use_id`) gives "<agent> ran: <command cut to 200 chars> (<exit code, or ok / failed from is_error>)" (deletes show up here as the command); a `turn_completed` gives "<agent> finished a turn: <first line of the result, cut to 200 chars>"; a leadership change (passed in as a synthetic row) gives "leader is now <agent> (epoch <n>)". Nothing else: no tool outputs, no Read, Grep or Glob calls, no other tools. Subagent calls count as their agent's.
+- `render_feed(lines, for_agent, max_chars=4000) -> str | None`: drops the receiving agent's own lines, collapses consecutive duplicates, keeps the newest lines within `max_chars` with a "... N earlier lines omitted" line, None when nothing is left.
+
+## Acceptance conditions
+
+- AC1: file writes and edits become path lines relative to the workdir [evidence: test:tests/test_hive_feed.py::test_write_edit_lines]
+- AC2: Bash calls become command lines cut at 200 characters with their exit status [evidence: test:tests/test_hive_feed.py::test_bash_lines]
+- AC3: finished turns and leadership changes become lines; Read, Grep, Glob, other tools and outputs never appear [evidence: test:tests/test_hive_feed.py::test_turns_leadership_and_exclusions]
+- AC4: render_feed drops own lines, collapses duplicates, caps at max_chars with the omitted line [evidence: test:tests/test_hive_feed.py::test_render_feed]
+- AC5: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+
+## Files
+
+- `src/agent_orchestrator/dispatcher/feed.py`
+- `tests/test_hive_feed.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
