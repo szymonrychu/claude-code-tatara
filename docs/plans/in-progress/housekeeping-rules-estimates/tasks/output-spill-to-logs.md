@@ -1,6 +1,6 @@
 ---
 title: Output spill to logs
-status: todo
+status: in-progress
 repo: workbench
 value: Capped command output lands in the gitignored .logs of the workbench root
 files: [plugins/workbench/hooks/worktree_lib.py, plugins/workbench/hooks/bash-output-filter.py, plugins/workbench/hooks/tests/test_bash_output_filter.py, plugins/workbench/hooks/tests/test_output_filter_unwrap.py, plugins/workbench/skills/start-development/references/hooks.md]

@@ -1,6 +1,6 @@
 ---
 title: Planner points gate
-status: todo
+status: in-progress
 repo: workbench
 value: The planner gives one number per task and the gate shows the derived minutes and tokens
 files: [plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/tests/test_lean_flow_docs.py, plugins/workbench/skills/epic-task-create/SKILL.md]

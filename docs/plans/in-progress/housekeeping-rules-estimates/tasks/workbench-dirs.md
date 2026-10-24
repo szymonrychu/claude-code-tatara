@@ -1,6 +1,6 @@
 ---
 title: Workbench dirs
-status: todo
+status: in-progress
 repo: workbench
 value: "One resolver gives every tool the main checkout's .scratchpad and .logs, even from an integration tree"
 files: [plugins/workbench/scripts/lib/workbench.py, plugins/workbench/scripts/tests/test_workbench_root.py, .gitignore, scripts/tests/test_root_config.py]

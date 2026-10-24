@@ -1,6 +1,6 @@
 ---
 title: Deltas command
-status: todo
+status: in-progress
 repo: workbench
 value: One read-only command shows how far estimates were off and the table the next estimate uses
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]

@@ -1,6 +1,6 @@
 ---
 title: Em dash commit guard
-status: todo
+status: in-progress
 repo: workbench
 value: No agent can commit a message containing an em dash
 files: [plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/tests/test_guard_bash.py, plugins/workbench/skills/start-development/references/hooks.md]

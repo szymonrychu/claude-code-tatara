@@ -1,6 +1,6 @@
 ---
 title: Calibration lib
-status: todo
+status: in-progress
 repo: workbench
 value: "Expected minutes and tokens per storypoint come from measured history, not reasoning"
 files: [plugins/workbench/scripts/lib/calibration.py, plugins/workbench/scripts/tests/test_calibration.py]

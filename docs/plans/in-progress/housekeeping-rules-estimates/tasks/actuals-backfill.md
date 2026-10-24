@@ -1,6 +1,6 @@
 ---
 title: Actuals backfill
-status: todo
+status: in-progress
 repo: workbench
 value: "Runs the hook missed, this epic included, still get measured actuals"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/task_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/actuals.py, plugins/workbench/skills/start-development/tests/test_ticket_task_status.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]

@@ -1,6 +1,6 @@
 ---
 title: Retro writer
-status: todo
+status: in-progress
 repo: workbench
 value: Every closed epic gets a written retro whose proposals feed the next plan
 files: [plugins/workbench/agents/retro-writer.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/retro.md, plugins/workbench/skills/start-development/tests/test_skill_size.py, plugins/workbench/skills/start-development/tests/test_templates.py, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/README.md]

@@ -1,6 +1,6 @@
 ---
 title: Housekeeping rules
-status: todo
+status: in-progress
 repo: workbench
 value: "Every agent in every harness reads the user's housekeeping rules from AGENTS.md"
 files: [plugins/workbench/rules/housekeeping.md, scripts/harness/agents_md.py, AGENTS.md, scripts/tests/test_agents_md.py, scripts/tests/harness/test_agents_md_block.py, plugins/workbench/skills/start-development/references/non-negotiables.md]

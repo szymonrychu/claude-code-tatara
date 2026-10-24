@@ -1,6 +1,6 @@
 ---
 title: Em dash lint
-status: todo
+status: in-progress
 repo: workbench
 value: mise run lint fails on any em dash anywhere in the tracked tree
 files: [scripts/check_em_dash.py, mise-tasks/lint/em-dash, scripts/tests/test_check_em_dash.py, scripts/tests/test_agents_md.py]

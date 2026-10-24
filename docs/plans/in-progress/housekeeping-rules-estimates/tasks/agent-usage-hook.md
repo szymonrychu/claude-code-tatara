@@ -1,6 +1,6 @@
 ---
 title: Agent usage hook
-status: todo
+status: in-progress
 repo: workbench
 value: Every subagent run leaves an accurate usage record in .logs without the orchestrator doing anything
 files: [plugins/workbench/hooks/agent-usage-recorder.py, plugins/workbench/hooks/tests/test_agent_usage_recorder.py, plugins/workbench/hooks/tests/test_py39_safe.py, plugins/workbench/.claude-plugin/plugin.json, plugins/workbench/skills/start-development/references/hooks.md, scripts/tests/harness/test_claude_only_hooks.py]

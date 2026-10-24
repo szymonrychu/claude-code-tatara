@@ -1,6 +1,6 @@
 ---
 title: Test logs dir
-status: todo
+status: in-progress
 repo: workbench
 value: Failing test and flake-hunt logs land in the gitignored .logs of the workbench root
 files: [plugins/workbench/scripts/run-tests.sh, plugins/workbench/scripts/flake-hunt.sh, plugins/workbench/scripts/tests/test_run_tests.py]

@@ -1,6 +1,6 @@
 ---
 title: Estimate fields
-status: todo
+status: in-progress
 repo: workbench
 value: Every task carries storypoints plus expected minutes and tokens for the price of one number
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/templates/task.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_lint.py, plugins/workbench/skills/start-development/references/tickets.md]

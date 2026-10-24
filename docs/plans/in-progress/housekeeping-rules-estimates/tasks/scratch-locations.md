@@ -1,6 +1,6 @@
 ---
 title: Scratch locations
-status: todo
+status: in-progress
 repo: workbench
 value: ".scratchpad and .logs are the only scratch and log locations the tooling names, pinned by a test"
 files: [plugins/workbench/skills/start-debugging/references/loops.md, plugins/workbench-observability/skills/kubectl-logs-query/SKILL.md, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, scripts/tests/test_scratch_and_log_dirs.py]

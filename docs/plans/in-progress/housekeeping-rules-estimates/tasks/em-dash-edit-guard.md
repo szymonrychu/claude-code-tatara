@@ -1,6 +1,6 @@
 ---
 title: Em dash edit guard
-status: todo
+status: in-progress
 repo: workbench
 value: No agent in any harness can write an em dash into a file
 files: [plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/lib/harness_io.py, plugins/workbench/hooks/lib/apply_patch.py, plugins/workbench/hooks/tests/test_protect_files.py, plugins/workbench/hooks/tests/test_adapter.py, plugins/workbench/skills/start-development/references/hooks.md]

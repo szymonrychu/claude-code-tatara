@@ -1,6 +1,6 @@
 ---
 title: Agent usage lib
-status: todo
+status: in-progress
 repo: workbench
 value: "Per-agent time and tokens are read from transcripts once, correctly, by one module"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/tests/test_core_stop.py]

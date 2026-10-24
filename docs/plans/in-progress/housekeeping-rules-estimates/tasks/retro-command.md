@@ -1,6 +1,6 @@
 ---
 title: Retro command
-status: todo
+status: in-progress
 repo: workbench
 value: "Epic close writes RETRO.md's measured tasks table and deltas in delivery order with one command"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/retro.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/templates/retro.md, plugins/workbench/skills/start-development/tests/test_ticket_retro.py, plugins/workbench/skills/start-development/tests/test_templates.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]

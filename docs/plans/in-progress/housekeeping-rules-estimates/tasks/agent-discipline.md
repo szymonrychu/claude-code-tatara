@@ -1,6 +1,6 @@
 ---
 title: Agent discipline
-status: todo
+status: in-progress
 repo: workbench
 value: "Implementers, reviewers and the planner read once, edit once, never tamper with tests, never add compat shims, and ask instead of guessing"
 files: [plugins/workbench/agents/implementer.md, plugins/workbench/agents/reviewer.md, plugins/workbench/skills/start-review/tests/test_agents_lean.py, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py]
