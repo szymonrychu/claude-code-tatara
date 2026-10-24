@@ -1,6 +1,6 @@
 ---
 title: Plugin readme rules
-status: todo
+status: done
 repo: workbench
 value: The plugin README names the housekeeping rules beside the other cross-cutting rules
 files: [plugins/workbench/README.md, plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [housekeeping-rules]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1dc8d46
 ---
 
 # Plugin readme rules
@@ -49,3 +49,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-24 todo: Estimate: 1 points
+
+- 2026-10-24 done
