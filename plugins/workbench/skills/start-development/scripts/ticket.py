@@ -1424,8 +1424,50 @@ def cmd_reap(a: argparse.Namespace) -> int:
 # ---------------------------------------------------------------- lint
 
 
+def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
+    """What a task file lacks: a Requirement, an acceptance condition, verify, files."""
+    sec = _sections(t.body)
+    out = []
+    req = sec.get("Requirement", "")
+    if not req or req == placeholder.get("Requirement"):
+        out.append(f"task {t.slug!r} has an empty Requirement")
+    try:
+        if not _parse_ac(sec.get("Acceptance conditions", ""), t.slug):
+            out.append(f"task {t.slug!r} has no acceptance condition")
+    except TicketError as e:
+        out.append(str(e))
+    for key in ("verify", "files"):
+        if not t.meta.get(key):
+            out.append(f"task {t.slug!r} has no {key}")
+    return out
+
+
+def _coverage_problems(design: Path, slugs: set[str]) -> list[str]:
+    """Every `### D<n>` of design.md maps to existing task slugs in its Decision coverage."""
+    text = design.read_text()
+    rows: dict[str, list[str]] = {}
+    for line in _sections(text).get("Decision coverage", "").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        m = re.match(r"(D\d+)\b", cells[0])
+        if m and len(cells) > 1:
+            rows[m.group(1)] = [x.strip(" `") for x in cells[1].split(",") if x.strip(" `")]
+    out = []
+    for d in re.findall(r"^### (D\d+)\b", text, re.M):
+        if d not in rows:
+            out.append(f"design.md Decision coverage has no row for {d}")
+        elif not rows[d]:
+            out.append(f"design.md Decision coverage maps {d} to no task")
+        out += [
+            f"design.md Decision coverage maps {d} to unknown task {x!r}"
+            for x in rows.get(d, [])
+            if x not in slugs
+        ]
+    return out
+
+
 def lint_problems(root: Path, only: str | None = None) -> list[str]:
     """Invariant breaks across every epic, or only `only`."""
+    placeholder = _template_sections()
     tickets = scan(root)
     epics = {t.slug: t for t in tickets if t.kind == "epic"}
     out = []
@@ -1459,6 +1501,15 @@ def lint_problems(root: Path, only: str | None = None) -> list[str]:
             for d in t.meta.get("depends_on", []):
                 if d not in slugs:
                     out.append(f"{where}: task {t.slug!r} depends_on unknown task {d!r}")
+            if e.phase != "done":  # a done epic is history: its files are never rewritten
+                out += [f"{where}: {p}" for p in _task_problems(t, placeholder)]
+        try:
+            dependency_order({t.slug: list(t.meta.get("depends_on", [])) for t in tasks})
+        except TicketError as cycle:
+            out.append(f"{where}: {cycle}")
+        design = e.path.parent / "design.md"
+        if e.phase != "done" and design.is_file():
+            out += [f"{where}: {p}" for p in _coverage_problems(design, slugs)]
     return out
 
 
