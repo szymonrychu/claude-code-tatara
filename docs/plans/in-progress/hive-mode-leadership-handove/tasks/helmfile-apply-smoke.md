@@ -3,7 +3,7 @@ title: helmfile apply smoke
 status: in-progress
 repo: agents-helmfile
 value: the hive release runs live and passes smoke
-files: [MEMORY.md]
+files: [MEMORY.md, scripts/smoke.sh, tests/test_smoke_script.py]
 verify: mise run smoke
 depends_on: [helmfile-deploy-pin]
 owns: []
@@ -39,10 +39,12 @@ Deploy and smoke the release (the user asked for helmfile bump, apply and smoke 
 - AC1: the smoke script passes against the applied release [evidence: command:mise run smoke]
 - AC2: the live 2-replica cluster has a leader and its agent pod gets 200 from /agent/v1/me [evidence: judgement:]
 - AC3: MEMORY.md records the applied versions [evidence: command:grep -q "0.1.0-main" MEMORY.md]
-- AC4: the smoke script calls /agent/v1/me from an agent pod through the agents Service and expects 200 [evidence: command:grep -q 'agent/v1/me' scripts/smoke.sh && mise run smoke]
+- AC4: the smoke script calls /agent/v1/me from an agent pod through the agents Service and expects 200 [evidence: test:tests/test_smoke_script.py::test_agent_me_check_fails_without_200]
 
 ## Files
 
+- `scripts/smoke.sh` (adds the agent-pod `/agent/v1/me` check; also covered by `tests/test_smoke_script.py`)
+- `tests/test_smoke_script.py`
 - `MEMORY.md`
 
 ## Interfaces

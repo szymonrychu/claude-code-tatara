@@ -3,9 +3,9 @@ title: file locks api
 status: in-progress
 repo: agent-orchestrator
 value: agents claim files and get warned before editing a file another agent holds
-files: [src/agent_orchestrator/db/file_locks.py, src/agent_orchestrator/api/agent.py, tests/test_api_locks.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
+files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/db/file_locks.py, src/agent_orchestrator/api/agent.py, tests/test_api_locks.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "uv run pytest tests/test_api_locks.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
-depends_on: [leadership-requests-api]
+depends_on: [leadership-requests-api, spec-cap-static, render-hive-gating]
 owns: []
 uses: [orch-agent-api-auth, orch-leader-read, orch-hive-tables]
 model: ""
@@ -54,6 +54,8 @@ Advisory file locks (Q11: agents claim files, a write to a file claimed by anoth
 
 ## Files
 
+- `src/agent_orchestrator/spec.py` (shared `WORKDIR_ROOT`)
+- `src/agent_orchestrator/k8s/render.py` (imports it)
 - `src/agent_orchestrator/db/file_locks.py`
 - `src/agent_orchestrator/api/agent.py`
 - `tests/test_api_locks.py`

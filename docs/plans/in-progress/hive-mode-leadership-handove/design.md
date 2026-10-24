@@ -134,6 +134,12 @@ Every multi-agent cluster is a hive, no opt-in; the bench still records the resu
 ### D30: Prerequisites done
 Moot: the prerequisite epics are done; the leader UI lands in the existing agents strip. (user decision)
 
+## Risks
+
+- Subagent gate is not a security boundary (interrogate verdict 2026-10-24 item 8; wrapper README trust model): the agent token is readable from Bash in the pod; the gate only stops accidental subagent calls.
+- Election and failover latency is bounded by the dispatch poll interval, not instantaneous (interrogate verdict 2026-10-24 item 9).
+- Peer text in notes and locks/check context is escaped and framed as data; an unescaped path would let a peer forge a block.
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |

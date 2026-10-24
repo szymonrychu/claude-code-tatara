@@ -95,6 +95,8 @@ none
 - Leader as bottleneck: a long leader turn delays untargeted messages; explicit targets still dispatch.
 - Opening an agent path to the orchestrator: a separate port, a per-cluster token and pod-IP binding; the public API stays closed to pods.
 - One pod roll per existing cluster on upgrade (new env and rendered config).
+- The subagent gate (`main_agent_only_tools`) is best-effort, not a security boundary: subagents share the pod, and Bash can read `ORCH_AGENT_TOKEN`.
+- Election and failover are poll-driven (`dispatch_poll_seconds`): the first ready agent is the lowest-ordinal ready agent at the first pass that sees one, within the poll window.
 
 ## Rough task list
 
@@ -102,7 +104,7 @@ Task files under `tasks/`; foundation first (F1 orchestrator-plugin, any-mcp-rel
 
 ## Time
 
-Estimate: 175 agent-min | Critical path: 58 min | Expected wall at P=3.0: 1.9 h (k=2.0) | Actual: 0 min | Remaining estimate: 175 min
+Estimate: 175 agent-min | Critical path: 69 min | Expected wall at P=3.0: 2.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 175 min
 
 ## Review
 
