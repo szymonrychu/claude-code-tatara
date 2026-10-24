@@ -321,5 +321,16 @@
       "agent-init-scripts"
     ],
     "note": "task migration-0003-hive: leadership_requests (api inserts, dispatcher decides), cluster_leaders (dispatcher), file_locks (api), agents.pod_ip (reconciler); later epics use migrations 0004+"
+  },
+  {
+    "name": "orch-spec-cap-static",
+    "kind": "schema",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/spec.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task spec-cap-static: ClusterSpec.max_replicas (default replicas, <=16 and settings cap), static (requires max_replicas == replicas), properties hive/alone/scalable; form inputs in task spec-form-cap-static"
   }
 ]
