@@ -131,6 +131,9 @@ Advisory file locks: agents claim files, a write to a file claimed by another ag
 ### D29: Every multi-agent cluster is a hive
 Every multi-agent cluster is a hive, no opt-in; the bench still records the result. (user decision)
 
+### D30: Prerequisites done
+Moot: the prerequisite epics are done; the leader UI lands in the existing agents strip. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -188,6 +191,7 @@ Every multi-agent cluster is a hive, no opt-in; the bench still records the resu
 | D27 User make leader | leadership-requests-api, dispatcher-leadership-pass, ui-leader-badge |
 | D28 Advisory locks | file-locks-api, render-hive-gating, orchestrator-plugin |
 | D29 Every multi-agent cluster is a hive | spec-cap-static, bench-hive-arm, bench-run-record |
+| D30 Prerequisites done | ui-leader-badge |
 
 ## Contracts
 

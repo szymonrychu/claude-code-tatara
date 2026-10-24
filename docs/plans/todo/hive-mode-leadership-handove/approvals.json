@@ -248,5 +248,16 @@
       "bench-run-record"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q13",
+    "text": "Moot: the prerequisite epics are done; the leader UI lands in the existing agents strip.",
+    "decisions": [
+      "D30"
+    ],
+    "tasks": [
+      "ui-leader-badge"
+    ],
+    "status": "approved"
   }
 ]
