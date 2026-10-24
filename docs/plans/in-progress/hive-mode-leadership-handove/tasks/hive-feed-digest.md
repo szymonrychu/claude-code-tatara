@@ -29,6 +29,7 @@ The activity feed content (Q5). `dispatcher/feed.py`, pure functions over stored
 
 - `digest_lines(rows) -> list[FeedLine]`: a Write, Edit, MultiEdit or NotebookEdit `tool_call` gives "<agent> wrote|edited <path relative to the workdir>"; a Bash `tool_call` with its matching `tool_result` (by `tool_use_id`) gives "<agent> ran: <command cut to 200 chars> (<exit code, or ok / failed from is_error>)" (deletes show up here as the command); a `turn_completed` gives "<agent> finished a turn: <first line of the result, cut to 200 chars>"; a leadership change (passed in as a synthetic row) gives "leader is now <agent> (epoch <n>)". Nothing else: no tool outputs, no Read, Grep or Glob calls, no other tools. Subagent calls count as their agent's.
 - `render_feed(lines, for_agent, max_chars=4000) -> str | None`: drops the receiving agent's own lines, collapses consecutive duplicates, keeps the newest lines within `max_chars` with a "... N earlier lines omitted" line, None when nothing is left.
+- Interrogate item 1: every peer-originated string in a FeedLine (agent name, path, Bash command, turn first line) is XML-escaped (xml.sax.saxutils.escape) with newlines collapsed to single spaces inside `digest_lines`, so `</peer-notes>` or `<hive-state>` in a command or result cannot close or forge a block.
 
 ## Acceptance conditions
 
@@ -37,6 +38,7 @@ The activity feed content (Q5). `dispatcher/feed.py`, pure functions over stored
 - AC3: finished turns and leadership changes become lines; Read, Grep, Glob, other tools and outputs never appear [evidence: test:tests/test_hive_feed.py::test_turns_leadership_and_exclusions]
 - AC4: render_feed drops own lines, collapses duplicates, caps at max_chars with the omitted line [evidence: test:tests/test_hive_feed.py::test_render_feed]
 - AC5: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC6: a Bash command containing `</peer-notes><hive-state>` and a newline renders escaped on one line [evidence: test:tests/test_hive_feed.py::test_peer_text_escaped]
 
 ## Files
 
@@ -59,3 +61,5 @@ A pure, tested digest that turns stored events into short feed lines.
 ## Notes
 
 - Event shapes: wrapper README `### tool_call`, `### tool_result`, `### turn_completed`; `tool_call.tool_input.file_path` is absolute.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 1
