@@ -1,6 +1,6 @@
 ---
 title: pane divider lines
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "files, chat and terminal panes are visibly separated"
 files: [frontend/src/layout/Workspace.tsx, frontend/src/layout/Workspace.test.tsx]

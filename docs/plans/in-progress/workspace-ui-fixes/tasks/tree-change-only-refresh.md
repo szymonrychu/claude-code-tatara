@@ -1,6 +1,6 @@
 ---
 title: tree change only refresh
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: tree state can refresh safely and catches new directories and notebooks
 files: [frontend/src/files/useFileTree.ts, frontend/src/files/fileEvents.ts, frontend/src/files/FilesPanel.test.tsx]

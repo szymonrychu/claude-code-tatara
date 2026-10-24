@@ -2,7 +2,7 @@
 title: workspace ui fixes
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agent-orchestrator]
 created: 2026-10-24
 ---

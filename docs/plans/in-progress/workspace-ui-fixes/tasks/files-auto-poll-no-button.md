@@ -1,6 +1,6 @@
 ---
 title: files auto poll no button
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the file tree stays current by itself and the refresh button is gone
 files: [frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, MEMORY.md]
