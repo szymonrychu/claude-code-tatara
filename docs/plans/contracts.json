@@ -343,5 +343,16 @@
       "agent-init-scripts"
     ],
     "note": "task agent-token-env-render: tokens purpose agent; Secret key and pod env ORCH_AGENT_TOKEN, ORCH_AGENT_URL, ORCH_CLUSTER_ID; passthrough plus POD_NAME"
+  },
+  {
+    "name": "orch-agents-service",
+    "kind": "chart",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/chart/agent-orchestrator/templates/service-agents.yaml",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task chart-agents-service: ClusterIP <fullname>-agents:8001, never in the ingress; settings ORCH_AGENT_PORT, ORCH_AGENT_API_URL"
   }
 ]
