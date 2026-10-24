@@ -50,7 +50,6 @@ def make_valid(epic_dir, task):
     for name in ("Description", "Goals", "Non-goals"):
         text = text.replace(f"## {name}\n", f"## {name}\n\nfilled\n", 1)
     readme.write_text(text)
-    (epic_dir / "approvals.json").write_text("[]\n")
     body = task.read_text()
     task.write_text(body.replace("## Expected outcome\n", "## Expected outcome\n\nit works\n", 1))
 
