@@ -11,8 +11,6 @@ ROOT = SKILL_DIR.parents[1]
 SKILL = SKILL_DIR / "SKILL.md"
 AGENT = ROOT / "agents" / "panel-reviewer.md"
 START_DEVELOPMENT = ROOT / "skills" / "start-development" / "SKILL.md"
-PHASES_1_3 = ROOT / "skills" / "start-development" / "references" / "phases-1-3.md"
-RUN_HANDBACK = ROOT / "skills" / "start-development" / "references" / "run-handback.md"
 
 
 def frontmatter(path):
@@ -59,20 +57,25 @@ def test_it_is_one_pass_and_never_auto_applies():
     assert "Never auto-apply" in text
 
 
+def _sd_section(heading):
+    text = START_DEVELOPMENT.read_text()
+    start = text.index(heading)
+    end = text.find("\n## ", start + 1)
+    return " ".join((text[start:] if end == -1 else text[start:end]).split())
+
+
 def test_start_development_routes_to_interrogate():
-    assert "workbench:interrogate" in START_DEVELOPMENT.read_text()
-    handback = RUN_HANDBACK.read_text()
-    escalated = handback[handback.index("Handle what the run hands back") :]
-    assert "workbench:interrogate" in escalated[:2500], (
+    phase4 = _sd_section("## Phase 4 - Execute")
+    assert "escalated" in phase4
+    assert "workbench:interrogate" in phase4, (
         "an escalated task should get one panel verdict, not another fix round"
     )
 
 
 def test_start_development_classifies_questions_before_asking():
-    text = PHASES_1_3.read_text()
-    assert "### Ask only what no probe can answer" in text
-    section = text[text.index("### Ask only what no probe can answer") :][:2000]
-    assert "probe" in section and "preference" in section
+    phase2 = _sd_section("## Phase 2 - Design doc")
+    assert "Ask the user only what no probe can answer" in phase2
+    assert "probe" in phase2 and "preference" in phase2
 
 
 def test_interrogate_runs_before_the_gate_when_contested():

@@ -29,7 +29,7 @@ Skip when:
 ## Output: Plan inputs
 
 Return the four `## Plan inputs` lists (`reuse`, `do-not-build`, `fix-as-ac`, `ideas`) exactly as
-defined in `${CLAUDE_PLUGIN_ROOT}/skills/start-development/references/plan-inputs.md`; do not restate
+defined in phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md`; do not restate
 them.
 
 ## Rules

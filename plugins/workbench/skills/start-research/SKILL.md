@@ -58,7 +58,7 @@ questions / gaps" section from the reviewer; a numbered "Sources" list. Every
 non-trivial claim cites a source; killed claims do not appear.
 
 The brief ends with a mandatory final `## Plan inputs` section, defined once in
-`${CLAUDE_PLUGIN_ROOT}/skills/start-development/references/plan-inputs.md` (lists: `reuse`,
+phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md` (lists: `reuse`,
 `do-not-build`, `fix-as-ac`, `ideas`).
 
 ## Notes
