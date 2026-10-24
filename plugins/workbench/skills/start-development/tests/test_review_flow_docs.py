@@ -61,12 +61,14 @@ def test_phase_five_says_a_fail_verdict_goes_back_to_build():
 
 
 def test_start_review_step_four_defaults_to_single():
-    sec = section(REVIEW_SKILL, "4. Two reviewers")
+    sec = section(REVIEW_SKILL, "4. The reviewer")
     assert "`--single`" in sec
     assert "default" in sec
     assert "one `reviewer`" in sec
-    assert "`spec-reviewer`" in sec
-    assert "`quality-reviewer`" in sec
+    assert "the only path" in sec
+    assert "workbench:interrogate" in sec
+    for retired in ("spec-reviewer", "quality-reviewer"):
+        assert retired not in sec, retired
     assert "spec and quality" in sec
     assert "`full` or `panel` tier" in sec
     assert "opus when any reviewed task ran on opus" not in REVIEW_SKILL.read_text()

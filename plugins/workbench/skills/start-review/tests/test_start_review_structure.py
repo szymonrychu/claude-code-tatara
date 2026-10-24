@@ -50,7 +50,7 @@ SKILL_H2 = [
     "1. Pin the scope",
     "2. Intent",
     "3. Independent verification",
-    "4. Two reviewers",
+    "4. The reviewer",
     "5. Validate findings",
     "6. Verdict",
     "After the verdict",

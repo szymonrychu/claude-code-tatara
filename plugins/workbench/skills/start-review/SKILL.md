@@ -1,12 +1,12 @@
 ---
 name: start-review
-description: Review a branch, diff, MR or PR against its intent before merge. Phase 5 of start-development and any "review this" request. Pins the scope, fixes the intent, runs the repo's tests and lint independently, dispatches one reviewer covering spec and quality by default (--single; a spec reviewer and a quality reviewer only for full or panel tier work) that reads one shared checklist, validates every finding against the code, and returns a verdict (Act on, Consider, Noted, Dismissed) without applying anything. Read-only.
+description: Review a branch, diff, MR or PR against its intent before merge. Phase 5 of start-development and any "review this" request. Pins the scope, fixes the intent, runs the repo's tests and lint independently, dispatches one reviewer covering spec and quality (--single, the default and only path) that reads one shared checklist, validates every finding against the code, and returns a verdict (Act on, Consider, Noted, Dismissed) without applying anything. Read-only.
 ---
 
 # start-review
 
-One review pass with one checklist. One reviewer (`--single`, the default) or
-two read the change on the spec and quality axes, you verify what they report,
+One review pass with one checklist. One reviewer (`--single`, the default)
+reads the change on the spec and quality axes, you verify what it reports,
 and the verdict is the deliverable. The
 reviewer never fixes anything.
 
@@ -59,15 +59,16 @@ implementer's report.
 
 Done when: both commands ran by you, and their output tails are quoted.
 
-## 4. Two reviewers
+## 4. The reviewer
 
-`--single` is the default: dispatch one `reviewer` covering spec and quality,
-both axes in one read with the shared checklist. Dispatch two reviewers, a
-`spec-reviewer` and a `quality-reviewer` (in ONE message, in the background),
-only for `full` or `panel` tier work. Set `model` explicitly: `sonnet` for every
-reviewer, whatever model implemented the work.
+`--single` is the default and the only path: dispatch one `reviewer` covering
+spec and quality, both axes in one read with the shared checklist, with `model`
+set explicitly to `sonnet`, whatever model implemented the work. `full` or
+`panel` tier work gets the same single reviewer; a second opinion on other
+models is a `workbench:interrogate` panel (see When to use it), not a second
+reviewer here.
 
-Every reviewer gets the intent, the range, the worktree path, and this
+The reviewer gets the intent, the range, the worktree path, and this
 instruction: read
 `${CLAUDE_PLUGIN_ROOT}/skills/start-review/references/review-checklist.md`
 first, then apply it.
@@ -76,18 +77,17 @@ first, then apply it.
   each.
 - quality axis: tests first (read the tests before the code).
 
-Each returns findings with evidence and kind, then `declined` and
+It returns findings with evidence and kind, then `declined` and
 `cannotVerify` lists, capped at 400 words.
 
-Done when: every report is back, each with findings (or none), declined and
+Done when: the report is back with findings (or none), declined and
 cannotVerify.
 
 ## 5. Validate findings
 
 Validate every finding you would act on against the code yourself: open the
 file, run the command. Drop what you cannot confirm, and say it was dropped.
-Merge duplicates. With two reviewers, a finding both raise independently is
-the strongest signal. Process gaps (missing note, sweep, approval line) are
+Merge duplicates. Process gaps (missing note, sweep or ratchet line) are
 `processGaps`, not findings.
 
 Done when: every Act on item is confirmed by your own read of the code.
@@ -104,11 +104,7 @@ Sort into four buckets, then two lists:
 - Declined: behaviours no one judged, with why.
 - Cannot verify: requirements the diff and tree cannot show.
 
-With two reviewers, end with the agreement line: where they converged and where
-they split.
-
-Done when: every finding is in exactly one bucket and, with two reviewers, the
-agreement line is written.
+Done when: every finding is in exactly one bucket.
 
 ## After the verdict
 

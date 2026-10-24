@@ -156,7 +156,7 @@ start-research, start-discovery, start-development, interrogate
 epic-create, epic-task-create   create an epic / a task file through ticket.py
 epic-move, epic-worktrees-remove  move an epic between stages / remove its merged worktrees
 heartbeat                       progress line every 10 minutes while waiting on a run; keepalive opt-in
-start-review                    review a branch, diff, MR or PR against its intent: pinned ref, independent suite run, spec and quality reviewers, validated findings
+start-review                    review a branch, diff, MR or PR against its intent: pinned ref, independent suite run, one reviewer for spec and quality, validated findings
 review                          alias of start-review (invoked as /workbench:review)
 start-debugging                 gated: reproduce with a red-capable command, minimise, hypothesise, root cause, proven regression test, fix through the lean path
 debug                           alias of start-debugging (invoked as /workbench:debug)

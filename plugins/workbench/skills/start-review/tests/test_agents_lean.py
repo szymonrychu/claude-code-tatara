@@ -135,3 +135,15 @@ def test_scope_auditor_and_planner_are_lean():
         assert phrase in flat, phrase
     for word in ("contract", "ticket.py graph", "ticket.py facts", "ticket.py estimate"):
         assert word not in flat, word
+
+
+def test_start_review_names_no_split_reviewers():
+    skill_dir = ROOT / "skills" / "start-review"
+    hits = [
+        f"{path.relative_to(skill_dir)}: {name}"
+        for path in sorted(skill_dir.rglob("*"))
+        if path.is_file() and "tests" not in path.relative_to(skill_dir).parts
+        for name in ("spec-reviewer", "quality-reviewer", "spec reviewer", "quality reviewer")
+        if name in path.read_text(errors="ignore")
+    ]
+    assert hits == []
