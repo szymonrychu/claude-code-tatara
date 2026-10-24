@@ -134,5 +134,17 @@
       "agent-port-listener"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q4",
+    "text": "Handover only, no takeovers by agents: only the current leader gives leadership away, to a named or any agent; a stale epoch is rejected.",
+    "decisions": [
+      "D21"
+    ],
+    "tasks": [
+      "leadership-requests-api",
+      "dispatcher-leadership-pass"
+    ],
+    "status": "approved"
   }
 ]

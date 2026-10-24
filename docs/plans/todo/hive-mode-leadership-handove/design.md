@@ -104,6 +104,9 @@ The first ready agent leads when a hive starts, at epoch 1. (user decision)
 ### D20: Tools through any-mcp, not ccw
 Leadership and the other agent tools are offered through an any-mcp plugin, not the wrapper's ccw MCP server. (user decision)
 
+### D21: Handover only, epoch fenced
+Handover only, no takeovers by agents: only the current leader gives leadership away, to a named or any agent; a stale epoch is rejected. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -152,6 +155,7 @@ Leadership and the other agent tools are offered through an any-mcp plugin, not 
 | D18 Leader-only routing | leader-routing |
 | D19 First ready agent leads | dispatcher-leadership-pass |
 | D20 Tools through any-mcp, not ccw | orchestrator-plugin, agent-port-listener |
+| D21 Handover only, epoch fenced | leadership-requests-api, dispatcher-leadership-pass |
 
 ## Contracts
 
