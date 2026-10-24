@@ -1,6 +1,6 @@
 ---
 title: Points required
-status: in-progress
+status: done
 repo: workbench
 value: No task can be created or pass lint without storypoints
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/ticket_repo_helpers.py, plugins/workbench/skills/start-development/tests/test_ticket_overlap_ignore.py, plugins/workbench/skills/start-development/tests/test_ticket_check.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_lint.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [estimate-fields]
 model: opus
 review: ""
-verified_head: ""
+verified_head: e73b57b
 ---
 
 # Points required
@@ -57,3 +57,5 @@ No task can be created or pass lint without storypoints.
 - Estimate: 3 points.
 - The callers are the `"new-task"` invocations in test_ticket_overlap_ignore.py, test_ticket_check.py, test_ticket_naming.py (helper), ticket_repo_helpers.py, test_ticket_worktrees_refresh.py and test_ticket_files.py (helper). If a caller outside Files turns up, report it in `discovered`.
 - Splitting this from estimate-fields keeps each task at most 8 files; the two land in order.
+
+- 2026-10-25 done
