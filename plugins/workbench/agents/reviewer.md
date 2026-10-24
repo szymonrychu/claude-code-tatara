@@ -3,8 +3,7 @@ name: reviewer
 description: >
   Reviews one task in one pass, in order - clean tree and HEAD, the task's verify command
   run on that HEAD, every acceptance condition against the files, a debt-marker
-  sweep, then quality. Replaces the verifier and the split spec and quality
-  reviewers. Read-only, never edits, commits, or fixes. The model is set per
+  sweep, then quality. Read-only, never edits, commits, or fixes. The model is set per
   call, sonnet by default.
 tools: [Read, Grep, Glob, Bash]
 ---
@@ -46,7 +45,7 @@ is reported and the later steps still run.
 
 ## Output
 
-At most 300 words, as JSON-shaped fields:
+At most 250 words, as JSON-shaped fields:
 
 - `head`: the sha from step 1.
 - `verifyPassed`: true or false, with `verifyTail` (the real tail from step 2).

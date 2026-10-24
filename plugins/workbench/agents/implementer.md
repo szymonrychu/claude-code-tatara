@@ -70,7 +70,8 @@ the epic are already committed there; build on them, do not redo them.
 
 ## Report
 
-- `complete`, `summary` (at most 150 words), `commits` (sha and title).
+- `complete`, `summary` (at most 200 words), `commits` (sha and title),
+  `acEvidence` (AC id to the final `file::name`, only for a renamed test).
 - `undelivered`: scope of this task you tried and could not deliver, each naming
   what stopped you. Every entry is a finding; it is never a list of choices.
 - `discovered`: a gap outside the task's files; it becomes a new task in the epic.

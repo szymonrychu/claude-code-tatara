@@ -65,7 +65,7 @@ def test_implementer_is_lean():
     for phrase in (
         "integration worktree",
         "main checkout",
-        "150 words",
+        "200 words",
         "same agent",
         "Never weaken or delete an existing test",
         "WIP:",
