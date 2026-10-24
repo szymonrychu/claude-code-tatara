@@ -110,6 +110,9 @@ Handover only, no takeovers by agents: only the current leader gives leadership 
 ### D22: Feed contents
 Feed: file writes, edits and deletes (paths only), Bash commands with exit status cut at 200 chars, finished turns with their first line, leadership changes; no tool outputs, no Read, Grep or Glob. (user decision)
 
+### D23: Delivery through the notes inbox
+The feed is delivered through the wrapper notes inbox as hook additionalContext at the next tool result (throttled) and the next prompt. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -160,6 +163,7 @@ Feed: file writes, edits and deletes (paths only), Bash commands with exit statu
 | D20 Tools through any-mcp, not ccw | orchestrator-plugin, agent-port-listener |
 | D21 Handover only, epoch fenced | leadership-requests-api, dispatcher-leadership-pass |
 | D22 Feed contents | hive-feed-digest |
+| D23 Delivery through the notes inbox | wrapper-notes-inbox, wrapper-notes-delivery, hive-state-push-loop |
 
 ## Contracts
 

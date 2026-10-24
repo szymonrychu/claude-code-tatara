@@ -157,5 +157,18 @@
       "hive-feed-digest"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q6",
+    "text": "The feed is delivered through the wrapper notes inbox as hook additionalContext at the next tool result (throttled) and the next prompt.",
+    "decisions": [
+      "D23"
+    ],
+    "tasks": [
+      "wrapper-notes-inbox",
+      "wrapper-notes-delivery",
+      "hive-state-push-loop"
+    ],
+    "status": "approved"
   }
 ]
