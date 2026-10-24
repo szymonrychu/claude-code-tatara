@@ -55,8 +55,8 @@ _Filled by init: the surface where a mistake costs the most, and what must never
    the workbench itself) starts with `start-development` (Claude Code:
    `workbench:start-development`): discovery, design and plan behind one approval gate, then
    unattended execution. Reviews go through `start-review`, failures through
-   `start-debugging`. Implementation always goes through `plan-execute` on the full path
-   (Claude Code: the Workflow tool); never hand-dispatch implement/review/fix loops. In
+   `start-debugging`. Implementation goes through `epic-run`: one implementer and one reviewer per
+   task, two fix rounds, one scope audit per epic; never hand-roll a loop beyond that. In
    harnesses other than Claude Code, invoke the skills by their bare names.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
@@ -86,9 +86,8 @@ _Filled by init: the surface where a mistake costs the most, and what must never
    item, its state and what it waits on. Act on the first item that transitions, never the
    batch: independent items get independent action. Bound every wait at 10 minutes, then
    re-enumerate and report concretely. Use a tested watcher script, never a hand-rolled
-   polling loop. The heartbeat of a plan-execute run is the bounded watcher for that wait: it
-   prints END and STALL at once and progress at most every 30 minutes, so silence between its
-   lines is not a broken watcher.
+   polling loop. For agents running in the background, the Agent notification on exit is the
+   wake signal: do not poll.
 5. **Stay on the assignment and answer short.** Do the task given: no unrelated issues, no
    refactors beyond the task, no extra hardening. Keep answers to a few lines: what
    changed, what is next, anything needing a decision. Detail only when asked. If scope
@@ -180,10 +179,10 @@ Do not commit work that is broken, half-finished, or that you cannot verify.
 
 The orchestrator's context is the most expensive thing in a session: every turn
 re-reads all of it. After the initial discussion of a task, every update,
-notification reply, heartbeat reply and status is VERY short.
+notification reply, poll reply and status is VERY short.
 
 - Progress update: one line. `<what moved> - <next> - <decision needed, if any>`.
-- Heartbeat or poll result with nothing actionable: no tool call, and no text
+- Poll result with nothing actionable: no tool call, and no text
   beyond the line itself.
 - Never restate what a notification already says. Never paste logs, tables,
   JSON or diffs unless asked; cite a path instead.

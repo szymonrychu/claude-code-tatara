@@ -69,8 +69,7 @@ def test_ground_rules_content():
         "start-development",
         "start-review",
         "start-debugging",
-        "plan-execute",
-        "full path",
+        "epic-run",
         "research",
         "opus",
         "sonnet",
@@ -113,7 +112,10 @@ def test_no_personal_or_stale_content():
 def test_claude_md():
     assert CLAUDE.splitlines()[0] == "@AGENTS.md"
     assert "## Claude Code only" in CLAUDE
-    for needle in ("workbench:<skill>", "/reload-plugins", "Workflow", "trust dialog", "heartbeat"):
+    low = CLAUDE.lower()
+    for stale in ("plan-execute", "workflow", "heartbeat"):
+        assert stale not in low
+    for needle in ("workbench:<skill>", "/reload-plugins", "trust dialog", "in the background"):
         assert needle in CLAUDE
 
 
@@ -167,9 +169,22 @@ def test_model_table_has_haiku():
     assert "mechanical relays and classifiers: haiku" in flat
 
 
-def test_claude_md_heartbeat_wording():
-    assert "keeps long unattended runs alive" not in CLAUDE
-    assert "reports progress on long runs; keepalive only per its table" in CLAUDE
+def test_ground_rule_one_names_epic_run():
+    rule = " ".join(AGENTS[AGENTS.index("1. **Development flow.**") : AGENTS.index("2. **Always")].split())
+    for needle in (
+        "epic-run",
+        "one implementer and one reviewer per task",
+        "two fix rounds",
+        "one scope audit per epic",
+    ):
+        assert needle in rule, needle
+    assert "plan-execute" not in rule and "Workflow tool" not in rule
+
+
+def test_ground_rule_four_has_no_heartbeat():
+    flat = " ".join(AGENTS[AGENTS.index("4. **Never report") : AGENTS.index("5. **Stay")].split())
+    assert "heartbeat" not in flat.lower() and "plan-execute" not in flat
+    assert "10 minutes" in flat and "background Agent notification" in flat
 
 
 def test_banner_routes_other_requests():

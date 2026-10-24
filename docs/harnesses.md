@@ -28,7 +28,6 @@ Copilot cloud agent share the `copilot` target.
 | Agents | native (plugin) | generated `.github/agents/<name>.agent.md` | same | same | generated `.cursor/agents/<name>.md` | generated `.codex/agents/<name>.toml` | generated `.gemini/agents/<name>.md` | generated `.agents/agents/<name>.md` |
 | Hooks | native (plugin) | generated `.github/hooks/workbench.json` | same (needs `chat.useClaudeHooks` or the same file, see trust) | degraded: unverified | generated `.cursor/hooks.json` | generated `.codex/hooks.json` | generated `.gemini/settings.json` | generated `.agents/hooks.json` |
 | MCP | native `.mcp.json` | native root `.mcp.json` | generated `.vscode/mcp.json` | manual: repository Settings | generated `.cursor/mcp.json` | generated `.codex/config.toml` | generated `.gemini/settings.json` | generated `.agents/mcp_config.json` |
-| Workflows | native (Workflow scripts) | degraded: `plan-execute` fallback skill | degraded | degraded | degraded | degraded | degraded | degraded |
 
 Only the guards with an equivalent are registered on non-Claude harnesses: `guard-bash`,
 `protect-files` and `subagent-commit-guard`. `verify-recorder`, `bash-output-filter` and
@@ -87,11 +86,8 @@ Each harness has a directory: `.claude` (Claude Code), `.github` (Copilot), `.cu
 
 What degrades, and why.
 
-- Workflow scripts (`plan-execute`, `hook-probe`) are Claude-only. The generator emits a
-  `plan-execute` fallback skill that lists the phases for the agent to run with its own
-  subagents: implement test-first in one worktree per task, verify on the committed HEAD,
-  review, at most three fix rounds, one scope audit. It loses script-held state, resume and
-  fan-out caps.
+- `epic-run` is a skill, not a script: other harnesses run the same loop (one implementer and
+  one reviewer per task, two fix rounds, one scope audit) with their own subagent facility.
 - Plugin auto-enable has no equivalent. Generated, committed files replace it.
 - Per-agent models map to `inherit` (Cursor, Gemini CLI, Antigravity) or are omitted (Copilot,
   Codex), so each harness uses its default model. Override per target in
@@ -103,7 +99,6 @@ What degrades, and why.
 - Read-only agent restrictions are instruction-only on Codex, Gemini CLI and Antigravity: the
   agent file says not to write, but nothing enforces it. Cursor uses `readonly: true`.
 - Codex and Gemini CLI have no path-scoped rules, hence the generated block in `AGENTS.md`.
-- Claude-only skills (`heartbeat`, `hook-probe`) are not emitted.
 
 ## First run and trust
 

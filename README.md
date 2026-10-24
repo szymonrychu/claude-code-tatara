@@ -154,8 +154,8 @@ After the gate nothing waits for you until the run ends.
 
 ### The autonomous run to merge
 
-Approval starts `plan-execute`: per task, tests first, implementation, review
-and fixes, then one scope audit over the whole epic and the merge. "Approved
+Approval starts `epic-run`: per task, one implementer (tests first) and one
+reviewer, at most two fix rounds, then one scope audit over the whole epic and the merge. "Approved
 means fully delivered": every approved item is implemented in full, with its
 tests and docs, and nothing is left half done. The only acceptable
 non-delivery is an external blocker, which the run names and escalates.
@@ -163,9 +163,10 @@ non-delivery is an external blocker, which the run names and escalates.
 ### Resume after an escalation
 
 When a run stops on a blocker (a credential, a permission, a human merge),
-clear the blocker, then resume.
+clear the blocker, then resume. Task status lives in the ticket (`ticket.py task`
+records `done` or `escalated`), so `epic-run` picks up the tasks that are not `done`.
 
-> Continue the run from docs/plans/in-progress/<epic>/. The token is set now.
+> Continue the run from docs/plans/in-progress/<epic>/ with epic-run. The token is set now.
 
 ### Debug a field issue
 
@@ -195,12 +196,12 @@ For questions with no code change attached, use `workbench:start-research`.
 
 Research output is a document; acting on it is a new request.
 
-### Parallel epics, background runs, heartbeats
+### Parallel epics and background runs
 
 Independent epics run in parallel, each in its own worktree. Long runs go to the
-background and report when they exit. Do not poll: use the `heartbeat` skill for
-unattended waits, with a bound (10 minutes unless a tool sets less), and act on
-the first item that changes state instead of waiting for the whole batch.
+background and report when they exit. Do not poll: the background Agent
+notification is the wake signal, with a bound (10 minutes unless a tool sets
+less); act on the first item that changes state instead of waiting for the whole batch.
 
 ### Handoff, resume and compaction
 
