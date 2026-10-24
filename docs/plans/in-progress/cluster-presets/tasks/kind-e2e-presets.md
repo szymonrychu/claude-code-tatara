@@ -1,6 +1,6 @@
 ---
 title: kind e2e presets
-status: escalated
+status: done
 repo: agent-orchestrator
 value: CI proves on a real cluster that presets and preset scheduling work through the public API alone
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
@@ -64,6 +64,10 @@ The PR CI e2e job shows on a real kind cluster that presets drive scheduling and
 
 - Change the `cluster` fixture and add the five tests; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
 - Run the verify command: passes. The full run happens in CI (no cluster access here).
+
+## Ruling
+
+- 2026-10-24 accepted: kind e2e cannot run in this container (no cluster); verified by collection and lint here; the PR CI e2e job runs it on kind
 
 ## Notes
 

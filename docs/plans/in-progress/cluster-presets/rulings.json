@@ -1,0 +1,8 @@
+[
+  {
+    "task": "kind-e2e-presets",
+    "accept": true,
+    "reason": "kind e2e cannot run in this container (no cluster); verified by collection and lint here; the PR CI e2e job runs it on kind",
+    "at": "2026-10-24T03:00:28Z"
+  }
+]
