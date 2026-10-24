@@ -1,6 +1,6 @@
 ---
 title: Scratch locations
-status: in-progress
+status: done
 repo: workbench
 value: ".scratchpad and .logs are the only scratch and log locations the tooling names, pinned by a test"
 files: [plugins/workbench/skills/start-debugging/references/loops.md, plugins/workbench-observability/skills/kubectl-logs-query/SKILL.md, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, scripts/tests/test_scratch_and_log_dirs.py]
@@ -8,7 +8,7 @@ verify: "mise run test:scripts && bash plugins/workbench/scripts/run-tests.sh --
 depends_on: [output-spill-to-logs, test-logs-dir, agent-discipline]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fd6600a
 ---
 
 # Scratch locations
@@ -57,3 +57,5 @@ The only scratch and log locations named anywhere in the tracked tooling are `.s
 - Fix-as-ac (brief): planner.md:67 says "the scratchpad" generically and test_planner_agent.py:74 pins the word "scratchpad"; keep the word, add the location.
 - Depends on output-spill-to-logs and test-logs-dir so their fallbacks exist before the allowlist pins them.
 - Exclude tests directories (they legitimately use tmp_path and TMPDIR) and CHANGELOG files.
+
+- 2026-10-25 done
