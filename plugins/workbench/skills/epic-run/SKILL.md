@@ -19,12 +19,16 @@ Stop and report the refusal if any fails:
 1. Claim: `ticket.py move <epic> in-progress`; it creates the integration tree on branch `<epic>`.
 2. List the order: `ticket.py tasks <epic>`. For each task, one at a time, dependencies first, note the tree HEAD
    (`git -C <tree> rev-parse HEAD`), then dispatch in the background:
-   - `workbench:implementer` (model from the task file): the task file verbatim, the tree path, and the
-     instruction that every command starts with `cd <tree>`.
-   - On its return, `workbench:reviewer` (sonnet): the task file, the tree path, and the commit range
-     `<start-head>..HEAD`.
+   - `workbench:implementer` (model from the task file): the task file verbatim, the tree path, branch `<epic>`,
+     the instruction that every command starts with `cd <tree>`, the override "work only in the integration
+     tree, never the main checkout, never docs/plans", and "report in at most 200 words".
+   - On its return, `workbench:reviewer` (sonnet): the task file, the tree path, branch `<epic>`, the commit range
+     `<start-head>..HEAD`, the same override, and "report in at most 250 words". The reviewer works in this
+     order: clean tree at HEAD, run the task's verify on HEAD, check every acceptance condition against the
+     files, grep for debt markers, then review quality.
 3. Unmet conditions or findings: continue the same implementer with `SendMessage` (the findings, nothing else),
-   then the same reviewer. At most two fix rounds.
+   then the same reviewer. At most two fix rounds; every agent call, fix rounds via SendMessage
+   included, runs in the background.
 4. Status after each task, from the main checkout:
    - clean: `ticket.py task <epic> <task> --status done --verified-head <head>`
    - open after the cap: `ticket.py task <epic> <task> --status escalated --note "<open findings>"`, then continue
