@@ -37,6 +37,10 @@ What is true and observable when the task is done.
 
 ## Steps
 
+1. Read `plugins/workbench/README.md` (the rules list near lines 287-289), `plugins/workbench/rules/housekeeping.md` (its frontmatter description) and `scripts/harness/agents_md.py` (RULE_FILES).
+2. Write `test_plugin_readme_rules.py::test_readme_lists_every_rules_block_file` first; run `pytest plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py -q` and see it fail because housekeeping is missing from the README.
+3. Add the housekeeping line to the README list in the existing format; run the verify once and see it green.
+
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
