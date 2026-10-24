@@ -45,7 +45,8 @@ def test_skill_structure():
         "report in at most 200 words",
         "report in at most 250 words",
         "clean tree at HEAD, run the task's verify on HEAD, "
-        "check every acceptance condition against the files, grep for debt markers, then review quality",
+        "check every acceptance condition against the files, "
+        "grep for debt markers, then review quality",
         "every agent call, fix rounds via SendMessage included, runs in the background",
         "discovered",
         "undelivered",
