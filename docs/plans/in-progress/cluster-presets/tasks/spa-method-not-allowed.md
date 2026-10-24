@@ -1,6 +1,6 @@
 ---
 title: spa method not allowed
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the retired PATCH answers 405 in the real image, as the API contract says"
 files: [src/agent_orchestrator/api/spa.py, tests/test_spa.py]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-spa-method-not-allowed/agent-orchestrator
+branch: cluster-presets-spa-method-not-allowed
 verified_head: ""
 run: ""
 provides: []
