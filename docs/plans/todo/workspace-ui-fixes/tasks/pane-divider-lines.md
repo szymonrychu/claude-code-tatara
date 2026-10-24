@@ -54,3 +54,5 @@ Both separators render as visible lines of the intended pixel width.
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+
+- Divider is `styled(Separator)` in Workspace.tsx (flex `0 0 spacing(0.5)`, background `palette.divider`); TOKENS from '../theme' is already imported. Size: 2px line (my call), pass `style={{ flexBasis: 2 }}` (px) on both `<Divider>` uses, background `TOKENS.borderStrong`, hover/active/focus keep primary.

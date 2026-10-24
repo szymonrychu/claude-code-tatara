@@ -80,3 +80,5 @@ Exact divider pixel size (2 to 4px, hit area stays the library's) and poll imple
 Real-browser divider pixels and live refresh are unverifiable by agents; confirmed by user smoke after deploy.
 
 ## Open questions
+
+None. Divider width 2px and poll interval 3 s are settled in the task notes (my call).

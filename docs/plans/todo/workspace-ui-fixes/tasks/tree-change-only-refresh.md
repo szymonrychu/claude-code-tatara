@@ -59,3 +59,5 @@ Identical listings cause no render; new-dir and notebook writes refresh the righ
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+
+- Entries carry name, type, size, mtime (api/schema.d.ts). `load(path, 'refresh')` in useFileTree.ts is where to compare before `patchDir`. In-flight = `dirs[path].loading`. Root retry condition: `dirs[''].error` set or `missing` true. In fileEvents.ts the write path comes from the tool_call input (`tool_input` or `input`); extend to `notebook_path`. Nearest loaded ancestor: walk up from the parent via `isLoaded` until one is loaded (my call: stop at root '').

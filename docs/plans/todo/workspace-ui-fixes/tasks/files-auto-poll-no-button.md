@@ -60,3 +60,5 @@ The tree updates by itself with no button; MEMORY.md records the decisions.
 ## Notes
 
 Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+
+- Wire the poll in a FilesPanel effect with setInterval 3000 ms (my call), cleared on unmount and when hidden; `openStream` in src/api/stream.ts already takes `onOpen`. Preview refetch: compare the open file's entry mtime and size in `state.dirs[parent]` against the last seen, then call `openFile`. MEMORY.md is code/agent-orchestrator/MEMORY.md (no D25 entry exists there yet; write it fresh). Retired tests: manual_refresh_and_errors and the 5000 ms advance test in the event_driven_refresh Bash case.
