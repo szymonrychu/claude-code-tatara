@@ -36,7 +36,7 @@ The dispatcher is the single authority for leadership (Q2, Q4, Q10; cluster_lead
 4. Every change sends `NOTIFY leader_changed` with `{cluster_id, agent_id, epoch}`.
 
 `dispatcher/loop.py` `drain` runs the pass for hive clusters with queued requests, no leader row, or a leader that is gone or not ready (one candidate query), and the loop also wakes on `leadership_requested` (plus the existing `agent_free` and poll). README `### Leadership` documents the rules and the new NOTIFY channels.
-- Interrogate item 6: `unready_since` is cleared as soon as the leader is ready again (by the pass, and by the observe path when it marks the leader ready), so two separate short unready windows never add up to a takeover.
+- Interrogate item 6: `unready_since` is cleared as soon as the leader is ready again (by the next leadership pass, within `dispatch_poll_seconds`; amended 2026-10-24: not by the reconciler observe path, which would make it a second writer of `cluster_leaders`), so two separate short unready windows never add up to a takeover.
 - Interrogate item 9: readiness is poll-driven. The initial election and lost-leader detection run on the next drain, so they happen within `dispatch_poll_seconds` of the change. "First ready agent leads" means the lowest-ordinal ready agent at the first pass that sees one ready, within the poll window, not an instantaneous first ready event. README `### Leadership` and the step 1 wording say so.
 
 ## Acceptance conditions
