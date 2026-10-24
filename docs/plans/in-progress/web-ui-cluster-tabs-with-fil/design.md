@@ -327,3 +327,9 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - uvicorn logs an ERROR after every WebSocket denial response: third-party behaviour, dropped (noted, not doing now).
 - anyio imported directly by api/terminals.py: folded into wrapper-security-followups (declare the dependency).
 - verifier role ran its script with an unsupported flag: workflow tooling, outside this epic, dropped.
+
+## Epic review rulings (2026-10-24)
+
+- Acted on (tasks fe-review-fixes, be-review-fixes): Origin refusal shown as refused within two attempts; terminal list refresh on agent readiness and unavailable_agents notice; hook-failed mark and ready/replicas count in tabs; uvicorn ws_max_size 65536; stale ribbon comment.
+- Noted, not doing now: Host allowlist against DNS rebinding on port-forward access (prod ingress host routing blocks it); Origin guard on pre-existing bodyless POST routes in messages.py (pre-existing, outside this epic).
+- For the user at deploy: verify agent pods cannot reach the UI through hairpin NAT (curl the UI host from an agent pod, expect 403).

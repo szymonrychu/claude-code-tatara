@@ -47,12 +47,13 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+uvicorn refuses WebSocket frames above 64 KiB; no comment names the retired ribbon.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the AC tests and run the verify command: they fail.
+- Implement the requirement.
+- Run the verify command: all pass.
 
 ## Notes
 
