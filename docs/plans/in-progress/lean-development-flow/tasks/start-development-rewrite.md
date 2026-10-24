@@ -1,6 +1,6 @@
 ---
 title: Start-development rewrite
-status: in-progress
+status: done
 repo: workbench
 value: "The flow document is what every orchestrator session reads; it must describe only the lean loop"
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/, plugins/workbench/agents/record-writer.md, plugins/workbench/README.md, plugins/workbench/.claude-plugin/plugin.json]
@@ -9,6 +9,7 @@ depends_on: [ticket-lean-tasks, agents-lean-roles]
 owns: []
 uses: []
 model: opus
+verified_head: 06d6a93
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
