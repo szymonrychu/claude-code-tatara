@@ -45,17 +45,24 @@ Design D11: `ticket.py task <epic> <task> --status done --points-actual N` (N Fi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py task <epic> <task> --status <s> [--verified-head <sha>] [--note <text>] [--points-actual N] [--logs DIR]`
+- `agent_usage.aggregate(records) -> dict` keys `minutes`, `tokens`, `roles` (`{"impl": (minutes, tokens), "review": (minutes, tokens)}`)
+- Frontmatter written: `points_actual`, `actual_minutes`, `actual_tokens`, `actual_roles`, `actual_role_tokens`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Marking a task done records its measured time and tokens and its post-delivery points with no arithmetic by the orchestrator.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1-AC6 tests (records written with agent_usage.write_record into a temp logs dir) and run them: they fail.
+2. Implement aggregate and the stamping; amend epic-run step 4 and SKILL.md phase 4 step 4 line-neutrally; document in tickets.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): ticket_cmds/task_cmd.py:run already appends a dated Notes line; ticket.py:_write_task keeps unknown keys; restore `_format_roles` (`impl 2, review 1`) and the span logic of `_run_dir_durations` from `git show 7b187e8 -- plugins/workbench/skills/start-development/scripts/ticket.py` (its Workflow journal input is gone; the input is now `.logs/agents` records).
+- Fix-as-ac (brief): done epics are read-only for task edits (task_cmd.py:23); actuals are stamped at `task --status done`, before `move done`.
+- Values load as strings; write integers through dump.
+- ticket.py already imports workbench from scripts/lib (ticket.py:28-30); import agent_usage the same way.

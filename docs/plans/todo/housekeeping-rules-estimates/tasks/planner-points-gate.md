@@ -39,17 +39,22 @@ Design D7: planner.md tells the planner to give each task Fibonacci storypoints 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- planner.md "Plan" step 2 command line gains `--points <n>`.
+- SKILL.md "The gate" item 2 and the phase 4/5 new-task mentions.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The planner gives one number per task; the gate shows the derived minutes and tokens; every task the flow creates carries points.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1 and AC2 tests (update the pinned gate line in test_lean_flow_docs.py) and run them: they fail.
+2. Amend the texts line-neutrally; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points.
+- Fix-as-ac (brief): test_planner_agent.py:63 forbids "ticket.py estimate" in planner.md; test_lean_flow_docs.py:100 pins the gate line "id, title, value, files, depends_on, model".
+- Fix-as-ac (brief): SKILL.md is at 150 of 150 lines (test_skill_size.py:7); edits are line-neutral.
+- Depends on scratch-locations (it edits planner.md first) and points-required (the flag exists and is required).

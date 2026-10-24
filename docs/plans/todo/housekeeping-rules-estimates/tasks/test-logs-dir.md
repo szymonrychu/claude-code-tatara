@@ -35,17 +35,22 @@ Design D6: `plugins/workbench/scripts/run-tests.sh` keeps a failing component's 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `run-tests.sh [--only <component>]`, env `RUN_TESTS_LOG_DIR` - unchanged contract, new default.
+- `flake-hunt.sh <component> <runs> [parallel]` - unchanged contract, new log location.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Test and flake-hunt logs an agent reads after a failure sit in the gitignored `.logs` of the main checkout.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; adjust the existing log-location tests and add AC2; run `pytest scripts/tests/test_run_tests.py -q` from plugins/workbench: they fail.
+2. Implement in both scripts; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points.
+- The test fixture `tree` copies the scripts into a temp tree; give it a temp main checkout (git init) or set WORKBENCH_ROOT, and clear CLAUDE_PROJECT_DIR.
+- Keep the per-pytest `--basetemp` under the log dir.
+- Depends on workbench-dirs for `workbench.py logs`.

@@ -49,17 +49,23 @@ Design D1: the rules live in a new `plugins/workbench/rules/housekeeping.md` (he
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/harness/agents_md.py:RULE_FILES` - tuple order decides block order; append `housekeeping.md`.
+- `plugins/workbench/rules/housekeeping.md` - same frontmatter shape as rules/tdd.md (parsed by `harness.sources.parse_frontmatter`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every workbench AGENTS.md (through `mise run harness-setup`) carries the housekeeping rules; this repo's AGENTS.md is regenerated and lint:harness is clean.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List every file under Files plus rules/tdd.md and AGENTS.md's ground rules, read them in one pass; write the two tests (AC1, AC2) and run them: they fail on the missing rule file.
+2. Write housekeeping.md, add it to RULE_FILES, amend AGENTS.md ground rule 3 and the writing conventions and non-negotiables.md for consistency, run `mise run harness-setup`, then the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- Do-not-build (brief): separate "never weaken or delete a test", "orchestrator never implements", "full scope" and "no em dashes" statements already exist (implementer.md:59,90, reviewer.md:40-41, non-negotiables.md:8-12, SKILL.md:104,146, AGENTS.md ground rule 3 and Writing conventions, pinned by scripts/tests/test_agents_md.py:90); the rule file restates them consistently and the others are amended, never duplicated.
+- Fix-as-ac: AGENTS.md byte cap (mise-tasks/lint/agents-md, under 24000, 11184 now) and harness-setup drift (lint:harness) - AC3, AC4. Never edit the generated block by hand.
+- The TDD reconciliation wording is D2 (gate Q1); the implementer and reviewer texts follow in agent-discipline.
+- AGENTS.md and rule text are ASCII only; the em dash lint from em-dash-lint now runs on them.

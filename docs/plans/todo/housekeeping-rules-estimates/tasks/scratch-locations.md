@@ -39,17 +39,21 @@ Design D6: every skill, agent and script that names a scratch or log location na
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/tests/test_scratch_and_log_dirs.py`: an `ALLOW` mapping of path to reason; the scan uses `git ls-files` (reuse `scripts/check_personal.py:_tracked`/`_text`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The only scratch and log locations named anywhere in the tracked tooling are `.scratchpad` and `.logs` of the workbench root, and a test keeps it that way.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write the pin test and the planner assertion; run `pytest scripts/tests/test_scratch_and_log_dirs.py -q`: it fails on loops.md, kubectl-logs-query and planner.md.
+2. Amend the three texts; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- Fix-as-ac (brief): planner.md:67 says "the scratchpad" generically and test_planner_agent.py:74 pins the word "scratchpad"; keep the word, add the location.
+- Depends on output-spill-to-logs and test-logs-dir so their fallbacks exist before the allowlist pins them.
+- Exclude tests directories (they legitimately use tmp_path and TMPDIR) and CHANGELOG files.

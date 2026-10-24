@@ -36,17 +36,27 @@ Design D8: a stdlib module `plugins/workbench/scripts/lib/calibration.py` restor
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `calibration.POINTS: tuple[int, ...]`, `calibration.SEED: dict[int, tuple[int, int]]`
+- `calibration._solve(a, b)`, `calibration.refit(rows, target: str) -> tuple[float, float] | None` (intercept, slope over `points`), `calibration.mdape(pairs) -> float | None`
+- `calibration.expected(points: int, rows: list[dict]) -> tuple[int, int]`
+- `calibration.bucket_table(rows: list[dict]) -> dict[int, dict]` with keys `minutes`, `tokens`, `n`, `source`
+- Constants `MIN_BUCKET = 3`, `MIN_REFIT = 5`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One stdlib module turns done-task actuals into expected minutes and tokens per storypoint, used by new-task (estimate-fields) and the deltas report (deltas-command).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files and read `git show 7b187e8^:plugins/workbench/scripts/lib/estimator.py` in one pass; write test_calibration.py and run `pytest scripts/tests/test_calibration.py -q` from plugins/workbench: it fails on the missing module.
+2. Implement; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): restore estimator.py `_solve`, `refit`, `mdape` as logic; drop `task_minutes`, `epic_estimate` and parallelism (retired Time line); `rows_from_plans` is replaced by ticket.py collecting rows (no import of ticket.py here, ticket.py imports this module).
+- Do-not-build: a new regression solver.
+- Fix-as-ac (brief, retirement pins): test_ticket_retired_run_loop.py fails on any tracked file under scripts/lib with "estimator" in its name; this module is `calibration.py`.
+- Legacy done tasks carry `estimate`/`actual` in minutes with no points; they are not rows here (deltas-command reads them as minutes-only rows).
+- Python 3.9 safe (`from __future__ import annotations`): the agent-usage hook path may import scripts/lib modules.

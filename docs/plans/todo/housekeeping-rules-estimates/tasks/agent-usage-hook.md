@@ -46,17 +46,25 @@ Design D9: a new hook `plugins/workbench/hooks/agent-usage-recorder.py` (Python 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Entry: `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/agent-usage-recorder.py"`, stdin the Claude hook payload; reads `hook_event_name`, `agent_id`, `agent_type`, `agent_transcript_path`, `transcript_path`, `session_id`, `cwd`.
+- Uses `agent_usage.summarize`, `parse_marker`, `role_for`, `write_record` and `workbench.logs_dir`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every implementer and reviewer run leaves one accurate, idempotent usage record in the main checkout's `.logs/agents`, without ever blocking or slowing a stop.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass with hooks/subagent-commit-guard.py and hooks/tests/test_py39_safe.py; write the AC1-AC9 tests and run `pytest hooks/tests/test_agent_usage_recorder.py -q` from plugins/workbench and `pytest scripts/tests/harness/test_claude_only_hooks.py -q` from the repo root: they fail.
+2. Implement the entry script, register it, extend the py39 lists, document it; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): hooks/subagent-commit-guard.py stdin parse and fail-open shape (38-43); core.verify_recorder/write_verify_record record-then-write split as the pattern.
+- Fix-as-ac (brief): SubagentStop refires after a commit-guard block and every SendMessage round - keyed by agentId, idempotent overwrite (AC2). Fail open, separate plugin.json entry (AC5, AC7). Root resolution from a worktree (AC6). Role from meta.json agentType is unknown at first stop; role comes from the marker, then agentType (AC6 covers both). Python floor: test_py39_safe.py and test_fail_closed.py (the recorder is fail-open, so it is not a deny hook). Other harnesses keep explicit allowlists (D14, AC9).
+- Hooks brief: SubagentStart fires on spawn and on resume; SubagentStop fires for internal agents with agent_type "" (AC4); agent transcripts live at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl` with `agent-{agentId}.meta.json` beside.
+- Adopted idea (hooks brief): record at SubagentStart and overwrite at every stop, and let the stamp step re-read transcript paths so a missed stop loses nothing (read_records in agent-usage-lib).
+- The recorder is not registered in core.HOOKS (brief reuse entry): it makes no allow/deny/block decision and no harness adapter runs it, so the entry script calls agent_usage directly (my call).
+- Bootstrap: the plugin loads from the main checkout, so this hook records nothing until the epic merges and `/reload-plugins` runs.

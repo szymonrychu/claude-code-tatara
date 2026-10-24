@@ -40,17 +40,27 @@ Design D9: `plugins/workbench/scripts/lib/agent_usage.py` (stdlib, Python 3.9 sa
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_usage.MARKER` (compiled regex), `agent_usage.transcript_lines(path) -> Iterator[dict]`
+- `agent_usage.summarize(path) -> dict` keys `start`, `end`, `model`, `tokens` (`input`, `cache_creation`, `cache_read`, `output`, `total`)
+- `agent_usage.parse_marker(path) -> tuple[str, str, str] | None`, `agent_usage.role_for(marker_role, agent_type) -> str`
+- Record JSON: `agentId`, `agentType`, `model`, `epic`, `task`, `role`, `transcript`, `start`, `end`, `tokens`, `updatedAt`.
+- `agent_usage.write_record(logs_dir, record) -> Path`, `agent_usage.read_records(logs_dir, epic=None, task=None) -> list[dict]`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One shared module reads Claude transcripts correctly (no double counting) and owns the record format the hook writes and ticket.py reads.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass with hooks/worktree_lib.py (how hooks import scripts/lib); write test_agent_usage.py with transcript fixtures and run `pytest scripts/tests/test_agent_usage.py -q` from plugins/workbench: it fails.
+2. Implement; switch core.collect_worktrees to the shared iterator; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): the transcript loop in hooks/lib/core.py:collect_worktrees (450-491); factor the line iterator out, do not write a third walker. Do-not-build: a new transcript JSONL walker.
+- Fix-as-ac (brief): duplicate usage per message (on-disk check: 5 assistant lines, 4 unique ids) - AC1.
+- Hooks brief finding 4: assistant lines carry `timestamp`, `message.model`, `message.usage` with input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens; keep the four components.
+- Do-not-build (hooks brief): per-agent duration from the Agent tool result (no usage for background agents); use transcript timestamps.
+- `aggregate` across records for a task is added by stamp-actuals.

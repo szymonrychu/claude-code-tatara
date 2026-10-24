@@ -43,17 +43,23 @@ Design D12: a new `plugins/workbench/agents/retro-writer.md` (model sonnet) runs
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Agent `workbench:retro-writer` (sonnet): input `{epic, notes}`; output RETRO.md only; report at most 100 words.
+- `references/retro.md`: when it runs, its inputs, how the history feeds proposals, the bootstrap note.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every closed epic gets a RETRO.md whose judgement half is written by an agent from evidence, and whose proposals feed the next plan.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files plus agents/record-writer.md and templates/record.md (the pattern), read them in one pass; write AC1, AC4 and AC5 tests and update KEPT; run them: they fail.
+2. Write the agent, the reference, amend SKILL.md phase 7 line-neutrally, planner.md and README; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): agents/record-writer.md plus templates/record.md are the pattern for a phase 7 sonnet writer; RETRO.md is written after `move done` like record.md.
+- Fix-as-ac (brief): SKILL.md line cap (test_skill_size.py MAX_LINES 150, KEPT exact); test_lean_flow_docs.py:201-217 pins the record-writer phrases (keep them); test_templates.py:97-103 requires ASCII punctuation in templates and writer agents.
+- New agents are pinned in skills/start-review/tests/test_agents_lean.py and skills/start-research/tests/test_start_skills_structure.py only by name lists; if one of them enumerates every agent file, update it and say so.
+- The planner reads proposals; it never edits ROADMAP.md (human-owned).

@@ -35,17 +35,21 @@ Design D10: epic-run step 2 starts every implementer prompt with the fixed first
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Prompt marker line: `[wb <epic>/<task>/<role>]`, role `impl` or `review`, first line of the prompt.
+- Reviewer output field: `pointsActual` (integer, Fibonacci).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every implementer and reviewer run is attributable to its epic, task and role, and every review carries a post-delivery storypoint measure.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files plus scripts/lib/agent_usage.py (MARKER), read them in one pass; write AC1 and AC2 tests and run them: they fail.
+2. Amend epic-run/SKILL.md and reviewer.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points.
+- Fix-as-ac (brief, prompt marker): nothing in epic-run/SKILL.md:23-27 puts epic/task in the prompt today; a structure test pins the marker (AC1).
+- Depends on agent-discipline (reviewer.md, test_agents_lean.py) and planner-points-gate (Fibonacci scale wording).

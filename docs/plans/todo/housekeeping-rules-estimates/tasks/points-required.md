@@ -39,17 +39,21 @@ Design D7: `new-task --points` is required (argparse exits 2 naming `--points` w
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py` new-task parser: `--points` required, `type=int`.
+- `ticket.py:_task_problems` - "task <slug> has no points" for non-done epics.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No task can be created or pass lint without storypoints.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1 and AC2 and run them: they fail.
+2. Make the flag required, add the lint check, add `--points` to every new-task call in the listed tests and helpers; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- The callers are the `"new-task"` invocations in test_ticket_overlap_ignore.py, test_ticket_check.py, test_ticket_naming.py (helper), ticket_repo_helpers.py, test_ticket_worktrees_refresh.py and test_ticket_files.py (helper). If a caller outside Files turns up, report it in `discovered`.
+- Splitting this from estimate-fields keeps each task at most 8 files; the two land in order.

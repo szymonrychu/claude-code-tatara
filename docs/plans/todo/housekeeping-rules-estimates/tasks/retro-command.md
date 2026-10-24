@@ -45,17 +45,26 @@ Design D12: `templates/retro.md` with exactly the H2s Tasks, Deltas, Retro, Impr
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket_cmds/retro.py`: `register(sub, t)`, `run(a, t) -> int`; `ticket.py retro <epic>` and `ticket.py retro --history [--limit N]`.
+- `ticket.py:PATH_KINDS["retro"] = "RETRO.md"`.
+- `templates/retro.md` H2s: Tasks, Deltas, Retro, Improvements; markers `<!-- retro:generated:begin -->` / `<!-- retro:generated:end -->`.
+- Uses `calibration.mdape`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+At close one command writes the measured half of RETRO.md from the task files and the git log, and the history of earlier retros is one command away.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files plus ticket_cmds/close_cmd.py and task_cmd.py, read them in one pass; write test_ticket_retro.py (temp git repo with done commits in non-dependency order) and the template test; run them: they fail.
+2. Implement the module, template and path kind; update the retirement pin and tickets.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 8 points.
+- Reuse (brief): ticket_cmds/__init__.py contract and _load_cmd_modules (1546), modelled on task_cmd.py and close_cmd.py; resolve_epic (253), _phase_of (267), scan (444), _sections (692), _section_replace (906), _template (332), _render (326), PATH_KINDS (45) plus cmd_path (1512), commit_ticket_change (295), require_main_checkout (285).
+- Adopted (brief): delivery order from the git log of `chore(ticket): <epic> task <slug> done` commits that task_cmd.py:36 writes (verified with `git log --grep`).
+- Fix-as-ac (brief): KEPT_MODULES is an exact set; REMOVED contains `estimate` (do not name anything that way); RECORD_H2 stays unchanged, retro.md gets its own exact-H2 test; templates are ASCII (test_templates.py:97-103).
+- Fix-as-ac (brief): only RETRO.md (like record.md) is written after `move done`; task files are never touched by retro.
+- Bootstrap: this epic's own tasks have no estimate fields (planned before they existed); their rows read `not recorded`, and the points come from each task's Notes line `Estimate: <n> points` (the retro-writer copies them in prose).

@@ -38,17 +38,23 @@ Design D13: `ticket.py deltas <epic>` prints, per task, estimate against actual 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket_cmds/deltas.py`: `register(sub, t)`, `run(a, t) -> int`; `ticket.py deltas [<epic> | --all] [--buckets] [--json]`.
+- Uses the ticket.py history-rows helper from estimate-fields and `calibration.bucket_table`, `calibration.mdape`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One read-only command shows how far estimates were off per task, per epic and overall, and the exact table the next `new-task` will use.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write test_ticket_deltas.py (done epics with fields, a legacy task) and run it: it fails.
+2. Implement; update the pin and tickets.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): ticket.py:scan / _tasks_of for done tasks; calibration.py from calibration-lib. Do-not-build: a regression solver, a frontmatter parser.
+- Fix-as-ac (brief, retirement pins): no subcommand named `estimate`; KEPT_MODULES exact.
+- History data on disk (brief): 71 done tasks carry legacy `estimate`, 21 carry `actual` (minutes) - the legacy rows of AC2.
+- Depends on retro-command only because both edit the retirement pin and tickets.md.

@@ -37,17 +37,22 @@ Design D6: the bash-output-filter spill file (the full output of a capped comman
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `hooks/worktree_lib.py:wrap_output_filter(command: str, cap_chars: int, spill_dir: str | None = None) -> str` (or an equivalent that takes the directory), `unwrap_output_filter(command: str) -> str` unchanged in signature.
+- `workbench.logs_dir(start)` from workbench-dirs.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every spilled command output an agent is pointed to sits in the gitignored `.logs/bash-output/` of the main checkout.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; update the spill tests (they set TMPDIR today) and add AC1, AC2, AC4; run `pytest hooks/tests/test_bash_output_filter.py hooks/tests/test_output_filter_unwrap.py -q` from plugins/workbench: they fail.
+2. Implement; update the docstrings and hooks.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- WRAP_HEAD is a constant today (worktree_lib.py:36) and unwrap matches it literally; make the head a pattern with the directory as the only variable part, keeping "the hook that writes it and the code that unwraps it cannot drift apart".
+- Quote the directory safely in the shell snippet (paths with spaces).
+- Tests must clear WORKBENCH_ROOT and CLAUDE_PROJECT_DIR, or set them to a temp main checkout.

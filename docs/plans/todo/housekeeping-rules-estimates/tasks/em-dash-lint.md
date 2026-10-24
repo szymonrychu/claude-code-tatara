@@ -17,7 +17,7 @@ verified_head: ""
 
 User requirement (U1, verbatim): "no em dash characters in any code, comment, commit, message, or content of any kind".
 
-Design D3: a thin entry point `scripts/check_em_dash.py` over `scripts/check_personal.py`'s `_tracked` and `_text` helpers reports `path:line` for every U+2014 in any tracked text file of the repo, with no allow list and no exempt path, and exits 1 on any hit, else 0. `mise-tasks/lint/em-dash` (executable, `#MISE description=...`) runs it, so `mise run lint` picks it up through `lint:*`. The one tracked literal today, in `scripts/tests/test_agents_md.py` (`test_no_personal_or_stale_content`, the banned tuple), becomes the escape `"—"` so the tree passes. Binary files and untracked files are skipped, exactly as check_personal does.
+Design D3: a thin entry point `scripts/check_em_dash.py` over `scripts/check_personal.py`'s `_tracked` and `_text` helpers reports `path:line` for every U+2014 in any tracked text file of the repo, with no allow list and no exempt path, and exits 1 on any hit, else 0. `mise-tasks/lint/em-dash` (executable, `#MISE description=...`) runs it, so `mise run lint` picks it up through `lint:*`. The one tracked literal today, in `scripts/tests/test_agents_md.py` (`test_no_personal_or_stale_content`, the banned tuple), becomes the escape `"\u2014"` so the tree passes. Binary files and untracked files are skipped, exactly as check_personal does.
 
 ## Acceptance conditions
 
@@ -38,17 +38,23 @@ Design D3: a thin entry point `scripts/check_em_dash.py` over `scripts/check_per
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/check_em_dash.py`: `scan(root: Path) -> list[str]` (hits as `path:line: em dash`), `main() -> int`, `--root DIR` like check_personal.
+- Reuses `scripts/check_personal.py:_tracked` and `:_text`; no new walker.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run lint` fails on any tracked U+2014 anywhere in the repo and passes on the current tree.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List every file under Files, read them all in one pass (and check_personal.py), then write test_check_em_dash.py with a temp git repo fixture; run `pytest scripts/tests/test_check_em_dash.py -q` and watch it fail on the missing module.
+2. Add check_em_dash.py and mise-tasks/lint/em-dash; replace the literal in test_agents_md.py with `"\u2014"`; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points.
+- Reuse (brief): check_personal.py `_tracked` (82), `_text` (89), `scan` (106) - import them, do not copy. Do-not-build: a new tracked-file walker.
+- Rejected: a denylist entry in personal-denylist.json (its whole-file allows would exempt docs/plans/** and init_engine).
+- Fix-as-ac: the literal em dash at scripts/tests/test_agents_md.py:107 is the only tracked hit (AC5, AC6).
+- No allow list: tests that need the character write the escape `\u2014`.

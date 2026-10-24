@@ -39,17 +39,24 @@ Design D6: `plugins/workbench/scripts/lib/workbench.py` gains `main_checkout(sta
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `workbench.main_checkout(start: Path | None = None) -> Path | None`
+- `workbench.scratchpad_dir(start: Path | None = None) -> Path | None`, `workbench.logs_dir(start: Path | None = None) -> Path | None` (mkdir parents, exist_ok)
+- CLI: `python3 plugins/workbench/scripts/lib/workbench.py scratchpad|logs [--from DIR]`
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every caller (hooks, ticket.py, scripts, skills) resolves the one `.scratchpad` and `.logs` of the main checkout from anywhere, including an integration tree.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1-AC4 tests (clear WORKBENCH_ROOT and CLAUDE_PROJECT_DIR with monkeypatch in every test, the suite may run inside a Claude session) and run them: they fail.
+2. Implement; add `.scratchpad/` to .gitignore; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- Reuse (brief): workbench.py:find_root (65) honours WORKBENCH_ROOT and CLAUDE_PROJECT_DIR first; hooks import workbench through hooks/worktree_lib.py:16. Do-not-build: a new root resolver in hooks.
+- Fix-as-ac (brief): an integration tree is a superrepo checkout, so it can pass `_is_metarepo` (workbench.py:45) and find_root(cwd) would return the tree; `main_checkout` uses the git common dir instead (AC1).
+- Do-not-build: a new `.logs/` ignore entry; .gitignore:18 already has it, pinned by test_root_config.py:40. Only `.scratchpad/` is new.
+- This template repo is uninitialised (`workbench.py root` prints "kind: none"), so `main_checkout` must not depend on detect_kind.

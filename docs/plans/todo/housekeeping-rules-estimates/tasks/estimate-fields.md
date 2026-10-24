@@ -42,17 +42,26 @@ Design D7: task frontmatter appends, after `verified_head`, in this order: `poin
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py:cmd_new_task` - new `--points` option; `ticket.py` new helper collecting calibration rows from done tasks (through `scan`), and a numeric field validator (restored `_minutes` from 7b187e8).
+- `ticket.py:lint_problems` / `_task_problems` - numeric checks for non-done epics.
+- `ticket.py:derive_tasks` - three more keys in each task dict.
+- `calibration.expected`, `calibration.POINTS` from calibration-lib.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A planner passes one number; every new task file carries points plus expected minutes and tokens from history or the seed table.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files plus calibration.py, read them in one pass; write AC1-AC6 tests and run `pytest skills/start-development/tests/test_ticket_files.py skills/start-development/tests/test_ticket_lint.py -q` from plugins/workbench: they fail.
+2. Implement; update the template and tickets.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Reuse (brief): ticket.py:load/dump/_write_task (values are strings: digits dump bare and load back as "3"), `scan` (444) and `_tasks_of` (933) for history, `_template` (332). Do-not-build: a new frontmatter parser or writer.
+- Restore (brief): the removed `_minutes` whole-minute validator and `_parse_roles`/`_format_roles` from `git show 7b187e8 -- plugins/workbench/skills/start-development/scripts/ticket.py`.
+- Fix-as-ac (brief): LEAN_KEYS (test_ticket_files.py:161-172) is exact and asserted on new-task output (:194) and templates/task.md (:252); append together with cmd_new_task (ticket.py:400-410) and the CLI flags (ticket.py:1591-1595).
+- Fix-as-ac (brief): lint cannot validate numbers today; lint_problems (1453) checks them; done-epic task problems stay skipped (:1489).
+- Retirement pins: no `estimate` subcommand or key; the legacy `estimate` key of done tasks stays readable and is never written.

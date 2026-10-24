@@ -42,17 +42,26 @@ Design D4: `core.protect_files` also denies an edit or write whose new content c
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `hooks/lib/core.py:protect_files(event) -> Decision` - path check first, then content check.
+- `hooks/lib/core.py` new helper: the new content strings of an edit or write from `event.raw["tool_input"]` (Write, Edit, MultiEdit, NotebookEdit, apply_patch).
+- `hooks/lib/apply_patch.py` new helper: the added lines of a patch envelope (header recognition as `patch_paths`).
+- `hooks/lib/harness_io.py:normalize` - sets `raw["tool_input"]` to the normalised dict from `_tool_input` when the payload has no Claude `tool_input`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No agent in any harness can write an em dash into a file through an edit tool.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass with hooks/protect_files.py and hooks/tests/harness_payloads.py; write the AC1-AC7 tests and run `pytest hooks/tests/test_protect_files.py hooks/tests/test_adapter.py -q` from plugins/workbench: they fail.
+2. Implement the content check, the apply_patch added-lines helper and the normalize key; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points.
+- Fix-as-ac (brief): NormalizedEvent (core.py:38) carries only paths and command, not content; read `event.raw` tool_input, with a test per tool shape (AC1-AC4, AC6, AC7).
+- Fix-as-ac (brief, other harnesses): targets keep explicit hook allowlists (copilot.py:36-40, codex.py:20-21, gemini.py:20-23, cursor.py:17-18, antigravity.py:23-27); riding protect-files means no target change (D14).
+- Reuse: harness_io._tool_input / _TOOL_INPUT_KEYS (Copilot sends toolArgs as a JSON string), apply_patch.patch_paths header rules.
+- protect_files.py denies on any internal error (exit 2); keep the content check inside `decide` so that holds.
+- Test data writes the character as the escape `"\u2014"` (the em dash lint scans tests too).

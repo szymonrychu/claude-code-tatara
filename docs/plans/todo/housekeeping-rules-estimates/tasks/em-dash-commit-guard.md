@@ -36,17 +36,22 @@ Design D5: guard-bash denies a `git commit` whose message carries U+2014. When a
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `hooks/lib/core.py:guard_bash(event) -> Decision` - adds the commit-message check after the RULES loop and before the idle no-op check.
+- Reuses `guard_segments`, `_normalize` (`_GIT_GLOBALS` strips `-C <dir>`), `segments`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No agent commits a message with an em dash through Bash, in any harness that emits guard-bash.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1-AC4 tests and run `pytest hooks/tests/test_guard_bash.py -q` from plugins/workbench: they fail.
+2. Implement the check; document it; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points.
+- Fix-as-ac (brief): guard_segments splits on newlines (core.py SEPARATORS 214, segments 230), so heredoc lines are separate segments: match the commit segment, then test the whole command for U+2014. -F <file> is handled by reading the file (D5), not left as a gap.
+- Test data writes the character as the escape `"\u2014"`.
+- Depends on em-dash-edit-guard only because both edit core.py and hooks.md.
