@@ -104,7 +104,7 @@ def test_template_maintenance():
 def test_no_personal_or_stale_content():
     low = AGENTS.lower()
     banned = ("adhd", "superpowers", "engineering:debug", "szy" + "mon", "/us" + "ers/")
-    for bad in (*banned, "—", "’", "→"):
+    for bad in (*banned, "\u2014", "’", "→"):
         assert bad not in low
     assert AGENTS.isascii() and CLAUDE.isascii()
 
