@@ -189,3 +189,66 @@ def test_hook_text_is_generic():
 def test_sops_decrypt_denied_generic_message():
     reason = decide("sops -d secrets.yaml")
     assert reason and "transcript" in reason and "workbench-secrets" in reason
+
+
+# --- em dash commit guard ---------------------------------------------------
+
+DASH = "\u2014"
+
+
+def decide_in(command: str, cwd: Path):
+    """Like decide, with an event cwd. Returns the deny reason, or None."""
+    proc = subprocess.run(
+        [sys.executable, str(HOOK)],
+        input=json.dumps({"tool_input": {"command": command}, "cwd": str(cwd)}),
+        capture_output=True,
+        text=True,
+    )
+    if not proc.stdout.strip():
+        return None
+    hso = json.loads(proc.stdout).get("hookSpecificOutput", {})
+    return hso.get("permissionDecisionReason") if hso.get("permissionDecision") == "deny" else None
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        f'git commit -m "fix {DASH} thing"',
+        f'git -C repo commit -m "fix {DASH} thing"',
+    ],
+)
+def test_commit_message_em_dash_denied(command):
+    reason = decide(command)
+    assert reason is not None
+    assert "U+2014" in reason
+    assert "hyphen" in reason
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        f"git commit -F - <<'EOF'\nfix {DASH} thing\nEOF",
+        f"git commit -m \"$(cat <<'EOF'\nfix {DASH} thing\n\nbody\nEOF\n)\"",
+    ],
+)
+def test_commit_heredoc_em_dash_denied(command):
+    reason = decide(command)
+    assert reason is not None
+    assert "U+2014" in reason
+
+
+@pytest.mark.parametrize("flag", ["-F msg.txt", "-Fmsg.txt", "--file msg.txt", "--file=msg.txt"])
+def test_commit_message_file_em_dash(flag, tmp_path):
+    command = f"git commit {flag}"
+    (tmp_path / "msg.txt").write_text(f"fix {DASH} thing\n", encoding="utf-8")
+    assert "U+2014" in (decide_in(command, tmp_path) or "")
+    (tmp_path / "msg.txt").write_text("fix - thing\n", encoding="utf-8")
+    assert decide_in(command, tmp_path) is None
+    (tmp_path / "msg.txt").unlink()
+    assert decide_in(command, tmp_path) is None
+
+
+def test_commit_without_em_dash_allowed():
+    assert decide('git commit -m "fix - thing"') is None
+    assert decide(f'echo "{DASH}"') is None
+    assert decide(f'git log --grep "{DASH}"') is None

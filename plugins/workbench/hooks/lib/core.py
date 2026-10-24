@@ -320,6 +320,34 @@ def guard_segments(cmd: str, depth: int = 0):
         yield seg, _normalize(seg)
 
 
+_COMMIT_RE = re.compile(r"^git\s+commit\b")
+_COMMIT_FILE_RE = re.compile(r"(?:^|\s)(?:-F|--file)(?:=|\s*)(?![-\s])(\S+)")
+COMMIT_EM_DASH_REASON = (
+    "the commit message contains an em dash (U+2014). Use a plain hyphen (-) instead and retry."
+)
+
+
+def _commit_has_em_dash(cmd: str, commit: str, cwd: str) -> bool:
+    """True when the commit message carries U+2014.
+
+    Inline (`-m`, heredoc, `$(cat <<EOF)`) messages are part of the command text.
+    A `-F <file>` or `--file=<file>` message is read relative to the event cwd.
+    `-F -` (stdin) and a file that is missing or unreadable are out of scope and pass.
+    """
+    if "\u2014" in cmd:
+        return True
+    match = _COMMIT_FILE_RE.search(commit)
+    if not match:
+        return False
+    path = Path(match.group(1).strip("'\""))
+    if not path.is_absolute():
+        path = Path(cwd or ".") / path
+    try:
+        return "\u2014" in path.read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return False
+
+
 def guard_bash(event: NormalizedEvent) -> Decision:
     """Deny destructive shell commands and idle no-op polls.
 
@@ -332,6 +360,9 @@ def guard_bash(event: NormalizedEvent) -> Decision:
         for pattern, reason in COMPILED:
             if pattern.search(norm):
                 return Decision("deny", f"guard-bash: `{seg}` - {reason}")
+    commit = next((seg for seg, norm in guard_segments(cmd) if _COMMIT_RE.match(norm)), None)
+    if commit is not None and _commit_has_em_dash(cmd, commit, event.cwd):
+        return Decision("deny", f"guard-bash: `{commit}` - {COMMIT_EM_DASH_REASON}")
     if is_idle_noop(cmd):
         return Decision("deny", f"guard-bash: `{cmd.strip()}` - {IDLE_NOOP_REASON}")
     return ALLOW

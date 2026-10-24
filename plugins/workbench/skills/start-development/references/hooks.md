@@ -6,7 +6,7 @@ report" reflex; these hooks make the rule mechanical. They ship with the plugin
 
 | Hook | Event | Enforces |
 |---|---|---|
-| `guard-bash.py` | PreToolUse/Bash | denies destructive commands (stash pop, file-scoped restores, force-push without lease, applies, bulk deletes) with an actionable reason |
+| `guard-bash.py` | PreToolUse/Bash | denies destructive commands (stash pop, file-scoped restores, force-push without lease, applies, bulk deletes) and any `git commit` whose message holds an em dash (U+2014; `-m`, heredoc, or a `-F`/`--file` file read relative to the event cwd) with an actionable reason |
 | `bash-output-filter.py` | PreToolUse/Bash | caps noisy test and log output before it reaches context |
 | `protect_files.py` | PreToolUse/Edit,Write | blocks edits to secrets, state files, `.git` and encrypted-secret files, and any edit that adds an em dash (U+2014) |
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file when a formatter for its language is installed |
