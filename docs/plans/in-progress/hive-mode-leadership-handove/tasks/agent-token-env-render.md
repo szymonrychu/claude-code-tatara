@@ -30,6 +30,7 @@ Foundation part F3, credential and env (D1, X1).
 - `tokens.py`: `ClusterTokens.agent = HMAC(master_key, "agent:<cluster_id>")`, masked in repr like the others.
 - `k8s/render.py`: the cluster Secret `agent-<slug>-ccw` gains `ORCH_AGENT_TOKEN`; the container env gains `ORCH_AGENT_TOKEN` (secretKeyRef), `ORCH_CLUSTER_ID` (the cluster id) and, when `settings.agent_api_url` is set, `ORCH_AGENT_URL`; `claude.passthrough_env` becomes `sorted(spec.env keys + ORCH_AGENT_TOKEN, ORCH_AGENT_URL, ORCH_CLUSTER_ID, POD_NAME)` so the any-mcp stdio child of Claude sees them. Rendered for every cluster, never depending on the live replica count. When `agent_api_url` is unset, `ORCH_AGENT_URL` is omitted and the reconciler logs one warning per cluster (my call: dev setups without the agents Service keep working).
 - `spec.py`: `ORCH_*` joins the reserved `spec.env` key patterns, so a user cannot override the agent credential.
+- Interrogate item 8: rendering the agent token into the pod env is part of the same trust domain: the subagent gate (main_agent_only_tools) is a best-effort guard, not a security boundary, because Bash in the pod can read ORCH_AGENT_TOKEN. The wrapper README and design.md Risks say so; nothing here claims isolation from subagents.
 
 ## Acceptance conditions
 
@@ -39,6 +40,7 @@ Foundation part F3, credential and env (D1, X1).
 - AC4: without agent_api_url the env omits ORCH_AGENT_URL and render still succeeds [evidence: test:tests/test_render.py::test_no_agent_url_omits_env]
 - AC5: spec.env keys starting with ORCH_ are rejected [evidence: test:tests/test_spec_hive.py::test_orch_env_reserved]
 - AC6: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC7: a render test documents that the token is readable by the pod's processes (env present) and the README states the gate is best-effort [evidence: test:tests/test_render.py::test_agent_token_trust_domain_documented]
 
 ## Files
 
@@ -66,3 +68,5 @@ Every agent pod and its any-mcp child see the cluster token, the cluster id and 
 
 - `tokens.py:22-34`; Secret at `render.py:201-207`; env at `:135-145`; passthrough at `:59`; reserved keys at `spec.py:150-167`.
 - Terminals scrub env names matching TOKEN (wrapper trust model), so shells never print it.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 8
