@@ -4,7 +4,7 @@ status: blocked
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
-verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py && uv run ruff check . && uv run ruff format --check ."
+verify: "mise x -- uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k 'not release_chart_version_and_needs and not db_secret_matches_rendered_cnpg_cluster' && uv run ruff check . && uv run ruff format --check ."
 depends_on: [kind-e2e-workspace, fe-terminal-panel, fe-agents-strip]
 owns: []
 uses: []
@@ -29,12 +29,14 @@ process_gaps: []
 
 Pin agents-helmfile to this epic's merged agent-orchestrator and claude-code-wrapper builds and allow the UI origin (design D9; precedent `docs/plans/done/cluster-form-defaults-and-ga/tasks/deploy-pin-d5a7738.md`).
 
-The values are the short shas (7 hex) of the agent-orchestrator main merge and the claude-code-wrapper main merge of this epic; the orchestrator supplies them by amending this requirement (`ticket.py amend`) after both PRs merge; until then this task reports `blocked` with `whoCanClear: orchestrator (merge the agent-orchestrator and claude-code-wrapper PRs)`.
+The values: agent-orchestrator main merge `f1baa5b` (szymonrychu/agent-orchestrator#4, full `f1baa5ba4abbf968aff4694f6bbd7bae92eaf7a4`) and claude-code-wrapper main merge `1ced775` (szymonrychu/claude-code-wrapper#2).
 
-- `helmfile.yaml.gotmpl`: release `agent-orchestrator` chart version `0.1.0-main.<orch sha7>`.
-- `values/agent-orchestrator/common.yaml`: `image.tag` `<orch sha7>`; `agentImage` and `env.ORCH_AGENT_IMAGES` `harbor.szymonrichert.pl/containers/claude-code-wrapper:<wrapper sha7>`; `env.ORCH_ALLOWED_ORIGINS: https://agents.szymonrichert.pl`; the ingress timeouts stay 3600 (already set).
+- `helmfile.yaml.gotmpl`: release `agent-orchestrator` chart version `0.1.0-main.f1baa5b`.
+- `values/agent-orchestrator/common.yaml`: `image.tag` `f1baa5b`; `agentImage` and `env.ORCH_AGENT_IMAGES` `harbor.szymonrichert.pl/containers/claude-code-wrapper:1ced775`; `env.ORCH_ALLOWED_ORIGINS: https://agents.szymonrichert.pl`; the ingress timeouts stay 3600 (already set).
 - `tests/test_orchestrator_release.py`: the chart version and image tag agree on the orchestrator sha; `agentImage` and `ORCH_AGENT_IMAGES` agree on the wrapper sha; `ORCH_ALLOWED_ORIGINS` lists the ingress host with https.
 - Nothing else changes. `helmfile apply` and `mise run smoke` are run by the user after the epic.
+
+- The old `test_orchestrator_pin_is_d5a7738` is replaced by the sha-agreement tests. `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts from harbor.szymonrichert.pl and cloudnative-pg.github.io, which this container's network policy blocks; they are deselected in this task's verify and run in CI and locally.
 
 ## Acceptance conditions
 
@@ -69,3 +71,5 @@ The values are the short shas (7 hex) of the agent-orchestrator main merge and t
 - Builder check ruling 10: Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
 
 - 2026-10-24 run web-ui-cluster-tabs-with-fil: dependency-failed on kind-e2e-workspace
+
+- 2026-10-24 amended: orchestrator PR #4 merged as f1baa5b; wrapper 1ced775
