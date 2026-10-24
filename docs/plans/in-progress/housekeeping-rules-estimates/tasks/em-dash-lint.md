@@ -1,6 +1,6 @@
 ---
 title: Em dash lint
-status: in-progress
+status: done
 repo: workbench
 value: mise run lint fails on any em dash anywhere in the tracked tree
 files: [scripts/check_em_dash.py, mise-tasks/lint/em-dash, scripts/tests/test_check_em_dash.py, scripts/tests/test_agents_md.py]
@@ -8,7 +8,7 @@ verify: "mise run test:scripts && mise run lint"
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: a2950c7
 ---
 
 # Em dash lint
@@ -58,3 +58,5 @@ Design D3: a thin entry point `scripts/check_em_dash.py` over `scripts/check_per
 - Rejected: a denylist entry in personal-denylist.json (its whole-file allows would exempt docs/plans/** and init_engine).
 - Fix-as-ac: the literal em dash at scripts/tests/test_agents_md.py:107 is the only tracked hit (AC5, AC6).
 - No allow list: tests that need the character write the escape `\u2014`.
+
+- 2026-10-24 done
