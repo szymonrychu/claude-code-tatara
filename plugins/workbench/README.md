@@ -88,7 +88,6 @@ the caller sets it per call.
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
 | `record-writer` | sonnet | the one agent that writes: fills the record template for a finished run, one file |
-| `verifier` | haiku | relays one run of `scripts/verify-task.py` (task verify command on its committed HEAD plus a debt scan); maxTurns 8 |
 | `implementer` | sonnet | implements one task or the lean path's change test-first and returns `complete`, `undelivered`, `discovered` |
 | `reviewer` | per call | one reviewer for spec and quality, reads the shared review checklist |
 | `spec-reviewer` | per call | spec half of a split review (full or panel tier) |
@@ -132,7 +131,6 @@ every pass, so routine work doesn't pay for them:
 | `start-development` phase 5 | `quality-reviewer` | full or panel tier work (via `start-review`) |
 | `start-development` phase 4 | `scope-auditor` | after implementation, audit of delivered vs planned |
 | `start-development` phase 4 | `worktree-merger` | every worktree merge, sized by `--assess` |
-| `start-development` phase 4 | `verifier` | every implementer and fixer result, via plan-execute |
 | `start-development` phase 5 | `scope-auditor` | before sign-off |
 | `start-development` phase 5 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
 | `start-development` phase 6 | `worktree-merger` | the final merge |
@@ -217,9 +215,8 @@ Releases go through the `release` skill: `skills/release/scripts/release.py --dr
 ## What 1.0.0 adds
 
 - **Tickets**: file-based epics and tasks (above), `ticket.py`, `<epic>-<task>` task worktrees on a per-epic integration worktree, epic review before done, every tree and branch removed on done, dedup of discovered tasks.
-- **Cheaper review flow**: the script+haiku verifier (`scripts/verify-task.py`, relayed by the `verifier` agent) replaces a model re-run; risk tiers pick how much review a task gets (`scripts/triage.py`); gate-only fix rounds re-review through the work gate; findings split into undelivered and discovered; an AC evidence gate requires each acceptance criterion to carry command, file or test evidence; an epic-close audit checks the whole epic; time estimates and actuals are report-only, never a budget.
+- **Cheaper review flow**: the script+haiku verifier replaces a model re-run; risk tiers pick how much review a task gets; gate-only fix rounds re-review through the work gate; findings split into undelivered and discovered; an AC evidence gate requires each acceptance criterion to carry command, file or test evidence; an epic-close audit checks the whole epic; time estimates and actuals are report-only, never a budget.
 - **Discovery**: discovery uses LSP and grep, with no graph probe; LSP first for symbols and references, then grep.
-- **New scripts**: `scripts/lib/claude_json.py` (one `claude -p` JSON call), `scripts/triage.py`, `scripts/verify-task.py`, `skills/start-development/scripts/ticket.py`.
 
 Both SCM families ship deliberately. They are parallel implementations, not drift.
 
@@ -265,9 +262,6 @@ start-debugging supersedes engineering:debug and start-review supersedes /code-r
 | Script | Does |
 |---|---|
 | `lib/workbench.py` | tree discovery and component resolution |
-| `lib/claude_json.py` | one `claude -p` call returning parsed JSON, with usage |
-| `triage.py` | picks the review risk tier for a task |
-| `verify-task.py` | runs a task's verify command on its HEAD, scans for debt, checks AC evidence |
 | `../skills/start-development/scripts/ticket.py` | epic ticket lifecycle (see Documents) |
 | `run-tests.sh` | every skill suite, one process per skill |
 | `flake-hunt.sh` | repeats one component under load to hunt flakes |

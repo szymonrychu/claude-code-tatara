@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 LIB = Path(__file__).resolve().parents[1] / "lib"
-FIX = Path(__file__).resolve().parent / "fixtures" / "estimator_tasks.json"
+FIX = Path(__file__).resolve().parent / "estimator_tasks.json"
 spec = importlib.util.spec_from_file_location("estimator", LIB / "estimator.py")
 est = importlib.util.module_from_spec(spec)
 sys.modules["estimator"] = est

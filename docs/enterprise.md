@@ -77,15 +77,10 @@ directory; it is still subject to the allow and block lists.
 
 ### API key, Bedrock, Vertex
 
-The template's single-turn helper calls (`claude -p --output-format json`, used
-by task verification and triage) inherit the caller's environment, so API key,
-Bedrock and Vertex credentials work as they do for the interactive session. By
-default `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` are passed through. Set
-`WORKBENCH_CLAUDE_JSON_STRIP_KEYS=1` only when you want those two variables
-removed to force the subscription login. Bedrock and Vertex use their own
-variables (`CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` and the cloud
-credentials), which are never stripped. Smoke test in the target environment:
-`python3 plugins/workbench/scripts/lib/claude_json.py smoke`.
+Subagents inherit the caller's environment, so API key, Bedrock and Vertex
+credentials work as they do for the interactive session. Bedrock and Vertex use
+their own variables (`CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` and the
+cloud credentials).
 
 ### Model availability
 

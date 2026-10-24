@@ -144,10 +144,6 @@ def test_readme_describes_1_0_0():
         "<epic>-<task>",
         "integration worktree",
         "epic review before",
-        "claude -p",
-        "scripts/lib/claude_json.py",
-        "scripts/triage.py",
-        "scripts/verify-task.py",
         "skills/start-development/scripts/ticket.py",
         "risk tier",
         "script+haiku verifier",
@@ -161,7 +157,6 @@ def test_readme_describes_1_0_0():
     ):
         assert needle in text, needle
     assert "graphify" not in text.lower()
-    assert re.search(r"`verifier` \| haiku \|.*scripts/verify-task\.py", text)
     assert re.search(r"`scope-auditor` \| sonnet \|.*agent type", text)
 
 

@@ -23,15 +23,13 @@ the research agents write (code in its worktree, a brief at its output path).
 | `quality-reviewer` | full or panel tier work (via `start-review`) | 5 |
 | `scope-auditor` | after implementation, before sign-off | 4, 5 |
 | `worktree-merger` | every worktree merge, sized by `--assess` | 4, 6 |
-| `verifier` | every implementer and fixer result, via `workbench:plan-execute` (`haiku`) | 4 |
 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, hooks | 5 |
 | `tf-planner` | a terraform module changed | 5 |
 | `helmfile-differ` | a chart or release changed | 5 |
 | `scm-shepherd` | a pipeline failed and the cause is not in the log tail | 6 |
 | `k8s-triage` | a workload looks unhealthy after deploy | 6 |
 
-The merge role in workbench:plan-execute is a prompt role, not an agent file; verify runs as the
-verifier agent.
+The merge role in workbench:plan-execute is a prompt role, not an agent file.
 
 `worktree-merger` writes the merge it lands; `record-writer` (phase 7) writes exactly one file, the
 record. None replaces the gate, and every finding is still yours to judge.
