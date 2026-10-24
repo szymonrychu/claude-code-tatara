@@ -1,6 +1,6 @@
 ---
 title: Agents lean roles
-status: in-progress
+status: done
 repo: workbench
 value: "Model quality and instructions replace orchestration machinery; these four files are where scope protection now lives"
 files: [plugins/workbench/agents/implementer.md, plugins/workbench/agents/reviewer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/agents/planner.md, plugins/workbench/agents/spec-reviewer.md, plugins/workbench/agents/quality-reviewer.md, plugins/workbench/skills/start-review/, plugins/workbench/skills/start-research/tests/]
@@ -9,6 +9,7 @@ depends_on: [retire-verifier-scripts]
 owns: []
 uses: []
 model: opus
+verified_head: b79edfd
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
