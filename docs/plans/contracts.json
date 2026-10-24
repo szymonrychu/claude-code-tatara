@@ -237,5 +237,15 @@
       "agents-helmfile"
     ],
     "note": "GET|PUT /api/v1/clusters/{id}/init-scripts; PUT body {scripts}; InitScriptsView {cluster_id, scripts, preset_id, preset_name, status: InitStatus|null, edited_since_run, script_path, log_path, preset_updated}; PUT writes clusters.spec.init_scripts (no generation bump) and the source preset's spec.init_scripts in one transaction; errors invalid_request 422, not_found 404, conflict 409 (deleting); ClusterView.init_edited_since_run; task init-scripts-public-api"
+  },
+  {
+    "name": "orch-agent-init-scripts-api",
+    "kind": "api",
+    "owner": "agent-init-scripts",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/api/agent.py",
+    "consumers": [
+      "any-mcp"
+    ],
+    "note": "GET|PUT /agent/v1/init-scripts behind hive require_agent() (Bearer ORCH_AGENT_TOKEN, X-Orch-Cluster, caller IP = agents.pod_ip); same InitScriptsIn {scripts} and InitScriptsView as the public route, cluster = the token's cluster; consumed by OrchestratorPlugin tools orchestrator_init_scripts_get / orchestrator_init_scripts_edit built by hive F1 against this shape; task init-scripts-agent-api"
   }
 ]
