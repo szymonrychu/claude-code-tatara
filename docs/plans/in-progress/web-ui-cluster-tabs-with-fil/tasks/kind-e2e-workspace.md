@@ -63,6 +63,10 @@ The PR CI e2e job proves on a real cluster with the real wrapper that a headless
 - Run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
 - `uv run ruff check . && uv run ruff format --check .`: clean.
 
+## Ruling
+
+- 2026-10-24 accepted: test-only task; red/green shown on a local real-wrapper stack; kind run happens in PR CI
+
 ## Notes
 
 - No cluster access in this container: kind, helm apply and the e2e run are not possible here; verification here is collection plus lint, the real run is the orchestrator PR CI `e2e` job (`mise run test:e2e`).

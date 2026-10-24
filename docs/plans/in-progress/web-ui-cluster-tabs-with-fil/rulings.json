@@ -10,5 +10,11 @@
     "accept": true,
     "reason": "parking gate false positive: the README states the security limits the task requires (AC5); verified on HEAD 354e669",
     "at": "2026-10-24T00:39:51Z"
+  },
+  {
+    "task": "kind-e2e-workspace",
+    "accept": true,
+    "reason": "test-only task; red/green shown on a local real-wrapper stack; kind run happens in PR CI",
+    "at": "2026-10-24T01:20:45Z"
   }
 ]
