@@ -365,5 +365,15 @@
       "agent-init-scripts"
     ],
     "note": "task agent-api-me: /agent/v1 router on the agent port only; require_agent() (Bearer token + X-Orch-Cluster, caller IP = agents.pod_ip) returns the agents row; GET /agent/v1/me {cluster_id, agent_id, pod_name, ordinal, leader, epoch, max_replicas, static, members[]}; errors 401 unauthorized, 403 forbidden"
+  },
+  {
+    "name": "orch-leader-read",
+    "kind": "interface",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/db/leadership.py",
+    "consumers": [
+      "cluster-scaling"
+    ],
+    "note": "task leadership-requests-api: current_leader(conn, cluster_id) -> (agent_id, pod_name, epoch) | None; for leader-only scale and leader_would_leave"
   }
 ]
