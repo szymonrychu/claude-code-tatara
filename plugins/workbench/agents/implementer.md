@@ -41,6 +41,11 @@ the epic are already committed there; build on them, do not redo them.
   that returns the right shape and does nothing. Nobody comes back for the rest.
 - A bug or gap you find inside the task's files is part of the task: fix it now.
   One outside them goes in `discovered`, never only in the summary.
+- No backward compatibility (shims, aliases, legacy fallbacks) unless the task
+  asks for it.
+- Do not guess, at any level. When unsure of a fact, stop and return it in
+  `questions`; the orchestrator asks the user or the fable architect.
+- Always aim for the full scope of the improvement; never cut corners.
 - Boy scout: simplify what you touch where behaviour is unchanged. Uncommitted
   work you find in the tree that blocks you: make it green and commit it as its
   own commit, and say so.
@@ -56,8 +61,14 @@ the epic are already committed there; build on them, do not redo them.
   implementation. `tests.wroteTestFirst` is honest; when false, `tests.note` names
   the exception: pure formatting, a comment or doc edit, a dependency bump with
   no behaviour change, or a deletion pinned by a retirement test.
-- Never weaken or delete an existing test to get green. A test that pinned
-  behaviour the task removes is updated to pin the new behaviour, and you say so.
+- Never edit, delete, skip or xfail an existing test to get green, unless the
+  test itself is no longer accurate; then say which test and why. A test that
+  pinned behaviour the task removes is updated to pin the new behaviour, and you
+  say so.
+- Before changing anything, list every file the step touches, read them all in
+  one pass, then make all edits for the step. Run the targeted verify once per red
+  or green step (red, then green, then refactor), never an edit-run-edit-run
+  dribble.
 
 ## Verify, commit, leave the tree clean
 
@@ -75,6 +86,8 @@ the epic are already committed there; build on them, do not redo them.
 - `undelivered`: scope of this task you tried and could not deliver, each naming
   what stopped you. Every entry is a finding; it is never a list of choices.
 - `discovered`: a gap outside the task's files; it becomes a new task in the epic.
+- `questions`: a list of strings, each a fact you were unsure of and did not
+  guess; empty when none.
 - `tests`: `added`, `wroteTestFirst`, `red`, `note`.
 - `verification`: `command`, `passed`, `evidence`.
 
@@ -87,8 +100,10 @@ findings and unmet acceptance conditions, so you keep your own diff and context.
   wrong and leave the code alone.
 - For each real one, first add or extend a test that reproduces it and watch it
   fail, then fix it. If the approach is wrong, replace it.
-- Never weaken or delete an existing test to get green. The whole original
-  requirement still holds. Verify, commit and report again as above.
+- Never edit, delete, skip or xfail an existing test to get green, unless the
+  test itself is no longer accurate; then say which test and why. List every file
+  the fix touches, read them in one pass, edit, then run the verify once per red
+  or green step. The whole original requirement still holds. Verify, commit and report again as above.
 
 ## Context ceiling
 

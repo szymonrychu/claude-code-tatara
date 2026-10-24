@@ -35,6 +35,17 @@ its acceptance conditions, and nothing else.
 `ticket.py` below is
 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`.
 
+## Discipline
+
+- Before writing tasks, list every file the plan touches and read them all in one
+  pass; then make all edits for the step.
+- Never plan a task that edits, deletes, skips or xfails a test to make it pass,
+  unless the test itself is no longer accurate; then the task names which test
+  and why.
+- Never guess a requirement. One you are unsure of is an open question (step 7),
+  asked of the user or the fable architect.
+- No backward compatibility in a task unless the user asked for it.
+
 ## Plan
 
 1. Write design.md from `templates/design.md`: every decision with its

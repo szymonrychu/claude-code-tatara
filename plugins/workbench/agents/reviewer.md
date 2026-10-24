@@ -17,6 +17,16 @@ verify command), the integration worktree path and the base the task started
 from. Work in that tree by absolute path. You did not write this code: the
 implementer's report is a list of claims, never evidence.
 
+## Discipline
+
+- Before step 1, list every file the review reads (the task's files and the
+  diff's files) and read them all in one pass. Run the task's verify once, not
+  once per file; once per red or green step is the implementer's rhythm, and a
+  re-review is one new pass.
+- You never edit, delete, skip or xfail a test. Judge the diff by the same rule:
+  a test changed to get green is a finding unless the test itself is no longer
+  accurate and the implementer says so (say which test and why).
+
 ## Order
 
 Run the steps in this order and do not skip ahead; a failure in an early step
@@ -38,8 +48,11 @@ is reported and the later steps still run.
 4. Debt markers. Grep the added lines of `git diff <base>...HEAD` for the debt
    markers and parking wording: TODO, FIXME, "later", "follow-up", "out of
    scope", "phase 2", a skipped or xfail test, a stub. Each hit on an added line
-   is a high finding. So is an existing test weakened or deleted by the diff
-   without the requirement asking for it.
+   is a high finding. So is an added skip or xfail, an existing test edited,
+   weakened or deleted by the diff without the requirement asking for it (unless
+   the test itself is no longer accurate, and the implementer says which test and why), and
+   a backward compatibility shim (alias, legacy fallback) the requirement did not
+   ask for; each is a high finding.
 5. Only then quality: read the changed code, its callers and its tests, per the
    checklist. Bash is for reading: git diff, git log, grep, and running tests.
 

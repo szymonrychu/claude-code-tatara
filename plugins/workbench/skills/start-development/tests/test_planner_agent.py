@@ -95,3 +95,16 @@ def test_planner_sizing_and_heading_index():
     assert "never the full suite" in t
     assert "more than five files" in t
     assert "grep its `^#` headings first, then read only the sections the plan needs" in t
+
+
+def test_planner_discipline():
+    t = " ".join(_text().split())
+    for s in (
+        "list every file",
+        "one pass",
+        "edits, deletes, skips or xfails",
+        "no longer accurate",
+        "open question",
+        "Never guess",
+    ):
+        assert s in t, s

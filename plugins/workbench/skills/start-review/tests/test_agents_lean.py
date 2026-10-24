@@ -67,7 +67,7 @@ def test_implementer_is_lean():
         "main checkout",
         "200 words",
         "same agent",
-        "Never weaken or delete an existing test",
+        "Never edit, delete, skip or xfail an existing test",
         "WIP:",
     ):
         assert phrase in flat, phrase
@@ -147,3 +147,39 @@ def test_start_review_names_no_split_reviewers():
         if name in path.read_text(errors="ignore")
     ]
     assert hits == []
+
+
+def _flat(name):
+    return " ".join(_text(name).split())
+
+
+def test_agents_list_read_once_edit_once():
+    for name in ("implementer", "reviewer"):
+        flat = _flat(name)
+        for phrase in ("list every file", "one pass", "once per red or green step"):
+            assert phrase in flat, (name, phrase)
+
+
+def test_no_test_tampering():
+    for name in ("implementer", "reviewer"):
+        flat = _flat(name)
+        assert "edit, delete, skip or xfail" in flat, name
+        assert "no longer accurate" in flat, name
+        assert "say which test and why" in flat, name
+
+
+def test_reviewer_flags_xfail_and_compat_shims():
+    flat = _flat("reviewer")
+    assert "an added skip or xfail" in flat
+    assert "backward compatibility shim" in flat
+    assert "the requirement did not ask for" in flat
+    assert "high finding" in flat
+
+
+def test_implementer_asks_instead_of_guessing():
+    text = _text("implementer")
+    report = " ".join(_section(_frontmatter("implementer")[1], "Report").split())
+    assert "`questions`" in report
+    flat = " ".join(text.split())
+    assert "do not guess" in flat.lower()
+    assert "backward compatibility" in flat
