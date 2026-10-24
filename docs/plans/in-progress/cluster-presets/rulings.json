@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "kind e2e cannot run in this container (no cluster); verified by collection and lint here; the PR CI e2e job runs it on kind",
     "at": "2026-10-24T03:00:28Z"
+  },
+  {
+    "task": "presets-review-fixes",
+    "accept": true,
+    "reason": "AC3 note present at README.md:313 (doc-section anchor check misfired); red shown by orchestrator: PresetForm early-edit test fails against the pre-fix component (1 failed) and passes on HEAD; migration upgrade test is a characterization test of already-safe SQL",
+    "at": "2026-10-24T03:16:50Z"
   }
 ]

@@ -1,6 +1,6 @@
 ---
 title: presets review fixes
-status: escalated
+status: done
 repo: agent-orchestrator
 value: "the migration is proven on a live database, early form edits survive, and the writers table is accurate"
 files: [tests/test_migrations.py, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx, README.md]
@@ -59,6 +59,10 @@ The migration upgrade path is tested, early PresetForm edits survive /meta loadi
 - Write the AC1 and AC2 tests and run the verify command: they fail.
 - Implement the fixes and the README note.
 - Run the verify command: all pass.
+
+## Ruling
+
+- 2026-10-24 accepted: AC3 note present at README.md:313 (doc-section anchor check misfired); red shown by orchestrator: PresetForm early-edit test fails against the pre-fix component (1 failed) and passes on HEAD; migration upgrade test is a characterization test of already-safe SQL
 
 ## Notes
 
