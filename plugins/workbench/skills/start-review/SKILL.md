@@ -109,9 +109,9 @@ Done when: every finding is in exactly one bucket.
 ## After the verdict
 
 Findings are never applied by the reviewer. Act on items go to an implementer
-as a sharpened requirement: the implementer in the epic's integration tree. Consider items that change scope or product
-behaviour go to the user. Everything else is recorded and closed. Do not
-re-review the same change unless it is materially rewritten.
+as a sharpened requirement: the implementer in the epic's integration tree. Consider items that change
+scope or product behaviour go to the user. Everything else is recorded and
+closed. Do not re-review the same change unless it is materially rewritten.
 
 ## Rules
 

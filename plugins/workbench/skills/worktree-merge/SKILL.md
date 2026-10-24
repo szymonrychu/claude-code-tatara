@@ -30,10 +30,10 @@ human's checkout. When `<base>` is checked out in no worktree it raises
 for an integration branch, or check out <base> in the main checkout`, with nothing
 rebased or merged.
 
-Containment: `merged_into` (used by merge_back's post-merge check, `ticket.py` continue and
-move done gates, and the Sweep) first tests ancestry, then falls back to patch equivalence
+Containment: `merged_into` (used by merge_back's post-merge check, the
+`ticket.py` move done gate, and the Sweep) first tests ancestry, then falls back to patch equivalence
 (`git cherry <target> <head>` printing only `-` lines). This is needed because the epic
-close rebases `<epic>` onto a moved main, after which no task branch is an ancestor of it.
+close rebases `<epic>` onto a moved main, after which the branch is no longer an ancestor of it.
 `git cherry` skips merge commits, so a merge of `<epic>` into a dependent never counts
 against it. Otherwise it reports `<n> commit(s) of <head> have no equivalent in <target>`.
 
@@ -68,7 +68,7 @@ What it does, in order, stopping at the first failure:
 6. **Verifies the merge landed** - every commit on the branch is present in
    base. This is a real check against the repo, not an assumption.
 7. **Removes the worktree and deletes the branch** with `git branch -d` run from the
-   target tree, so a task branch merged into `<epic>` is deleted although the main
+   target tree, so a branch merged into a non-checked-out base is deleted although the main
    checkout's HEAD lacks it. A refusal keeps the branch and is reported. Only after
    step 6 passes. `--keep` merges without cleaning up. Directories left empty by the
    merge are pruned in the target tree.
