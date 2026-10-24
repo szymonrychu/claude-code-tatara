@@ -86,22 +86,22 @@ the gate stops it.
 
 ## Phase 4 - Execute
 
-Invoke the `epic-run` skill. It runs this loop, written once here:
+Invoke the `epic-run` skill; it runs this loop, written once here, and every agent call (implementer, reviewer, each
+continued in a fix round) runs in the background, so the session stays free to plan other epics.
 1. Claim the epic: `ticket.py move <epic> in-progress` creates the integration tree on branch `<epic>`
    (`references/worktrees.md`). Every `ticket.py` call stays in the main checkout.
 2. For each task in `ticket.py tasks <epic>` order, sequential, every dependency before its dependents: note the
-   tree's HEAD as the commit the task started from, then dispatch one `workbench:implementer` in the background, model
-   from the task, with the task file verbatim and the tree path.
-3. On its return, one `workbench:reviewer` (sonnet): the task file, the tree path, the commit the task started from.
-4. While the reviewer reports unmet acceptance conditions or findings, continue the same implementer with
-   `SendMessage` (the findings), then the same reviewer: at most two fix rounds.
-5. Clean: `ticket.py task <epic> <task> --status done --verified-head <head>`. Still open after the cap: `--status
-   escalated --note "<open findings>"`; go on with the tasks that do not depend on it.
+   tree's HEAD, then one `workbench:implementer` (model from the task) with the task file verbatim and the tree path.
+3. On its return, one `workbench:reviewer` (sonnet) with the task file, the tree path and the commit the task started
+   from: the reviewer checks a clean tree at HEAD, runs the task's `verify` on HEAD, checks every acceptance
+   condition against the files, greps for debt markers, then reviews quality. While it reports unmet conditions or
+   findings, continue the same implementer with `SendMessage`, then the same reviewer: at most two fix rounds.
+4. Clean: `ticket.py task <epic> <task> --status done --verified-head <head>`. Still open after the cap: `--status
+   escalated --note "<open findings>"`; go on with tasks not depending on it. After the last: phases 5-7.
 
-Rules: an `undelivered` entry is a finding; a `discovered` entry becomes a new task in the same epic (`ticket.py
-new-task`); an escalated task is yours to judge: a sharper requirement (`ticket.py amend`, then the loop again) or
-`workbench:interrogate` once. The epic cannot close while a task is not `done`. Plan other epics while dispatches run;
-never implement a task yourself and never merge a tree yourself. Then phases 5-7.
+Rules: `undelivered` is a finding; `discovered` becomes a new task in the same epic (`ticket.py new-task`); an
+escalated task is yours to judge: a sharper requirement (`ticket.py amend`) or `workbench:interrogate` once. The epic
+cannot close while a task is not `done`; never implement a task yourself, never merge a tree yourself.
 
 ## Phase 5 - Epic review
 

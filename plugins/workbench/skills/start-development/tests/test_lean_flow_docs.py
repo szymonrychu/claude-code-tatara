@@ -128,6 +128,9 @@ def test_skill_describes_lean_loop():
         "cannot close while a task is not `done`",
         "never implement a task yourself",
         "never merge a tree yourself",
+        "every agent call (implementer, reviewer, each continued in a fix round) runs in the background",
+        "the reviewer checks a clean tree at HEAD, runs the task's `verify` on HEAD, checks every "
+        "acceptance condition against the files, greps for debt markers, then reviews quality",
     ):
         assert item in phase4, f"Phase 4 does not name {item!r}"
     low = text.lower()
