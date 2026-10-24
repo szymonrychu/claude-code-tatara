@@ -15,8 +15,8 @@ actual: 1
 actual_roles: "impl 1, verify 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-deploy-pin/agents-helmfile
-branch: web-ui-cluster-tabs-with-fil-deploy-pin
-verified_head: 38a25433e6ed1237f4cb35e642b2e4ead3230b5b
+branch: "(none; worktree untouched at 38a2543)"
+verified_head: unknown
 run: web-ui-cluster-tabs-with-fil
 provides: []
 acs_for_audit: []

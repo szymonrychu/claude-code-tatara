@@ -1,6 +1,6 @@
 ---
 title: fe review fixes
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "refused terminals say so at once, shells never hide after a late agent, and tabs keep the ribbon's hook-failed and ready marks"
 files: [frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
@@ -11,14 +11,17 @@ uses: []
 model: sonnet
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 6
+actual_roles: "impl 4, verify 1, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-review-fixes/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fe-review-fixes
-verified_head: ""
-run: ""
+verified_head: 6227ccccc4d191c49d2f2f1e4771906651adb473
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 96a6aa1
 ---
 
 # fe review fixes
