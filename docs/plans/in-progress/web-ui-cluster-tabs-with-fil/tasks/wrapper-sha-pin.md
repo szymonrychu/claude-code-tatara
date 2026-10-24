@@ -1,6 +1,6 @@
 ---
 title: wrapper sha pin
-status: blocked
+status: done
 repo: agent-orchestrator
 value: integration and e2e runs exercise the real wrapper with the new file and terminal APIs
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]
@@ -11,16 +11,16 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1"
+actual: 6
+actual_roles: "impl 2, verify 2, review 1, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-sha-pin/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-wrapper-sha-pin
-verified_head: 504b8704f19e958b1e2caf75ed41a1ea0b6b512f
+branch: "current worktree branch (HEAD 8715603)"
+verified_head: 2edeb38eb5b2d6a1f279722387444ec0b6291f04
 run: web-ui-cluster-tabs-with-fil
 provides: []
 acs_for_audit: []
-process_gaps: []
+process_gaps: ["Implementer's report says the Dockerfile pin test was red before the edit, but at 504b870 it was green (all pins ca2ddf3). Correct the report; no red output exists or is needed under the dependency-bump exception."]
 ---
 
 # wrapper sha pin

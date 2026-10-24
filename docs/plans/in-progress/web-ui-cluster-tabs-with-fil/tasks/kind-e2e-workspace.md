@@ -1,6 +1,6 @@
 ---
 title: kind e2e workspace
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: CI proves on a real cluster that files and shells work through the public API alone
 files: [tests/e2e/test_e2e_kind.py]
@@ -11,16 +11,17 @@ uses: [orch-files-api, orch-terminals-api, orch-terminal-ws, wrapper-main-pin]
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 17
+actual_roles: "impl 1, verify 1, review 1, fix 14, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-kind-e2e-workspace/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-kind-e2e-workspace
-verified_head: ""
+verified_head: 5675058d903ed883d5f02c26f4c6db282765278f
 run: web-ui-cluster-tabs-with-fil
 provides: []
-acs_for_audit: []
-process_gaps: []
+acs_for_audit: [AC2]
+process_gaps: ["No red/green evidence recorded; the task is test-only and e2e needs a live cluster", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+fork_point: 2edeb38eb5b2d6a1f279722387444ec0b6291f04
 ---
 
 # kind e2e workspace
