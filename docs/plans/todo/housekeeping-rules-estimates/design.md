@@ -46,10 +46,9 @@ The epic README Goals G1-G7 are the checkable goals; every task maps to one or m
 - Templates and agent files are ASCII only (test_repo_hygiene, test_templates).
 - Retirement pins hold: no subcommand or key named `estimate`, no file named `*estimator*`, KEPT_MODULES is exact.
 - Done epics are read-only for task edits; only RETRO.md (like record.md) is written after `move done`.
-- Bootstrap exception (my call): this epic's own tasks are planned before `--points` exists, so each carries
-  `Estimate: <n> points` in its Notes, and the gate shows the seed-table minutes and tokens for those points. The new
-  hooks and ticket.py load from the main checkout only after the epic merges, so this epic's actuals are not captured;
-  its RETRO.md shows them as "not recorded" and its points come from the Notes.
+- This epic's own tasks are planned before `--points` exists, so each carries `Estimate: <n> points` in its Notes.
+  Its agent runs predate the usage hook (the plugin loads from the main checkout only after the merge); their
+  usage records are written from the marked transcripts by the backfill (D16).
 
 ## Decisions
 
@@ -179,6 +178,15 @@ calibration.py, derived from a probe of this machine's transcripts on 2026-10-24
 tokens) taken as 3 points and scaled linearly: 1: 11 min, 0.75M; 2: 23 min, 1.5M; 3: 34 min, 2.25M; 5: 57 min,
 3.75M; 8: 91 min, 6.0M; 13: 147 min, 9.75M.
 
+### D16: Actuals backfill from marked transcripts (gate Q3)
+
+`agent_usage.backfill(transcripts_dir, logs_dir, refresh=False)` scans the harness subagent transcript dir (Claude
+Code: `~/.claude/projects/<project>/<session>/subagents/`, `<project>` being the workbench root with every
+non-alphanumeric character replaced by `-`, or a dir passed explicitly) for transcripts whose first user prompt
+starts with the `[wb <epic>/<task>/<role>]` marker and writes the missing `.logs/agents` records with the hook's
+summariser, never overwriting a hook record unless `--refresh`. `ticket.py task --status done` backfills before
+stamping when the task has no record; `ticket.py actuals <epic> --backfill [--transcripts <dir>]` runs it by hand.
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -224,6 +232,7 @@ tokens) taken as 3 points and scaled linearly: 1: 11 min, 0.75M; 2: 23 min, 1.5M
 | D13 Deltas | deltas-command |
 | D14 Hooks per harness | agent-usage-hook, em-dash-edit-guard |
 | D15 Seed table | calibration-lib |
+| D16 Actuals backfill | actuals-backfill |
 
 ## Review focus
 

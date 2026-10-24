@@ -44,17 +44,26 @@ Design D16: `plugins/workbench/scripts/lib/agent_usage.py` gains `backfill(trans
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_usage.backfill(transcripts_dir: Path, logs_dir: Path, refresh: bool = False) -> list[dict]`
+- `agent_usage.default_transcripts_dir(root: Path, home: Path | None = None) -> Path`
+- `ticket.py actuals <epic> --backfill [--transcripts DIR] [--refresh] [--logs DIR]` (module `ticket_cmds/actuals.py`)
+- `ticket.py task ... --status done [--transcripts DIR]` backfills before stamping when the task has no record.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Marked runs the hook missed (this epic's own runs, a session without the plugin loaded) still produce usage records, so actuals and the retro are measured.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files, read them in one pass; write AC1-AC7 tests with a fixture transcripts dir and run them: they fail.
+2. Implement backfill, the default dir helper, the done-path call and the `actuals` subcommand; update the pin and tickets.md; run the verify once.
+3. Commit; leave the tree clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points.
+- Reuse: everything from agent-usage-lib (`transcript_lines`, `summarize`, `parse_marker`, `role_for`, `write_record`, `read_records`); do-not-build a second transcript walker or record writer.
+- Hooks brief finding 3: subagent transcripts live at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl` with `agent-{agentId}.meta.json` beside, deleted after `cleanupPeriodDays` (30): backfill before that.
+- Project dir naming checked on disk 2026-10-24: `/Users/x/Documents/workbench` is `-Users-x-Documents-workbench` and `.git` becomes `--git`.
+- Fix-as-ac (brief, retirement pins): KEPT_MODULES is exact; the module name must not contain `estimate`.
+- Tests must not read the real `~/.claude`: pass `--transcripts` or a fake home.

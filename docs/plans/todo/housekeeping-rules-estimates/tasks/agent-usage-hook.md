@@ -67,4 +67,4 @@ Every implementer and reviewer run leaves one accurate, idempotent usage record 
 - Hooks brief: SubagentStart fires on spawn and on resume; SubagentStop fires for internal agents with agent_type "" (AC4); agent transcripts live at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl` with `agent-{agentId}.meta.json` beside.
 - Adopted idea (hooks brief): record at SubagentStart and overwrite at every stop, and let the stamp step re-read transcript paths so a missed stop loses nothing (read_records in agent-usage-lib).
 - The recorder is not registered in core.HOOKS (brief reuse entry): it makes no allow/deny/block decision and no harness adapter runs it, so the entry script calls agent_usage directly (my call).
-- Bootstrap: the plugin loads from the main checkout, so this hook records nothing until the epic merges and `/reload-plugins` runs.
+- Bootstrap: the plugin loads from the main checkout, so this hook records nothing until the epic merges and `/reload-plugins` runs; runs before that are recovered by actuals-backfill (D16).
