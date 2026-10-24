@@ -72,14 +72,15 @@
     "text": "Headless parity: every UI capability (cap, static, replicas) has a documented public API and an API-only e2e test.",
     "decisions": [
       "D2",
-      "D5"
+      "D5",
+      "D13"
     ],
     "tasks": [
-      "public-scale-route",
-      "scale-ui-control",
       "agents-strip-leaving-mark",
       "cap-static-preset-form",
       "kind-e2e-scaling",
+      "public-scale-route",
+      "scale-ui-control",
       "smoke-scale-check"
     ],
     "status": "approved"

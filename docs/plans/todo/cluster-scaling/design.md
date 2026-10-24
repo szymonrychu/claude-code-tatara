@@ -85,6 +85,9 @@ Scaling can be disabled per cluster (static cluster). Static with 1 pod = no hiv
 ### D12: X1 one shared orchestrator plugin
 One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit), with a per-cluster scoped credential in the pod; built once by hive-mode-leadership-handove, the other epics add tools to it. (user decision)
 
+### D13: X2 headless parity
+Headless parity: every UI capability has a documented public API and an API-only e2e test. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -127,6 +130,7 @@ One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool 
 | D10 S2 cap at init, leader scales 1..N | scale-replicas-repo, public-scale-route, agent-scale-route, scale-ui-control, cap-static-preset-form, kind-e2e-scaling |
 | D11 S3 static switch | scale-replicas-repo, scale-tool-allow, cap-static-preset-form, scale-ui-control, kind-e2e-scaling |
 | D12 X1 one shared orchestrator plugin | agent-scale-route, scale-tool-allow |
+| D13 X2 headless parity | public-scale-route, scale-ui-control, agents-strip-leaving-mark, cap-static-preset-form, kind-e2e-scaling, smoke-scale-check |
 
 ## Contracts
 
