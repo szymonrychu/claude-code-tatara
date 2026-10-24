@@ -1,6 +1,6 @@
 ---
 title: Calibration lib
-status: in-progress
+status: done
 repo: workbench
 value: "Expected minutes and tokens per storypoint come from measured history, not reasoning"
 files: [plugins/workbench/scripts/lib/calibration.py, plugins/workbench/scripts/tests/test_calibration.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && bash plug
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 297bdf4
 ---
 
 # Calibration lib
@@ -60,3 +60,5 @@ One stdlib module turns done-task actuals into expected minutes and tokens per s
 - Fix-as-ac (brief, retirement pins): test_ticket_retired_run_loop.py fails on any tracked file under scripts/lib with "estimator" in its name; this module is `calibration.py`.
 - Legacy done tasks carry `estimate`/`actual` in minutes with no points; they are not rows here (deltas-command reads them as minutes-only rows).
 - Python 3.9 safe (`from __future__ import annotations`): the agent-usage hook path may import scripts/lib modules.
+
+- 2026-10-24 done
