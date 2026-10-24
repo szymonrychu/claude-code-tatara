@@ -1,6 +1,6 @@
 ---
 title: wrapper security followups
-status: escalated
+status: done
 repo: claude-code-wrapper
 value: "shells cannot kill unrelated sessions or exceed attach and frame caps, and the README states the real isolation limits"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/service.py, src/claude_code_wrapper/config.py, README.md, tests/test_terminals.py, pyproject.toml, uv.lock]
@@ -71,6 +71,10 @@ A closed exited terminal never signals a reused pid; secret-named env keys never
 - Implement the start-time pid guard, the SECRET_KEY_RE scrub, ws_max_size in service.py and limits.terminal_max_subscribers.
 - Update the README Trust model and config table (AC5).
 - Run the verify command: all pass. tests/test_manager.py::test_shutdown_stops_all fails only in this container (PID 1 does not reap zombies); do not chase it.
+
+## Ruling
+
+- 2026-10-24 accepted: parking gate false positive: the README states the security limits the task requires (AC5); verified on HEAD 354e669
 
 ## Notes
 
