@@ -86,5 +86,19 @@
       "agent-api-me"
     ],
     "status": "approved"
+  },
+  {
+    "id": "X2",
+    "text": "Headless parity: every UI capability has a documented public API and an API-only e2e test.",
+    "decisions": [
+      "D17"
+    ],
+    "tasks": [
+      "leadership-requests-api",
+      "views-leader-stream",
+      "ui-leader-badge",
+      "kind-e2e-hive"
+    ],
+    "status": "approved"
   }
 ]

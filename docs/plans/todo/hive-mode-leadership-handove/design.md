@@ -92,6 +92,9 @@ The fake claude cannot call MCP tools, so agent calls run from inside agent pods
 ### D16: Shared orchestrator plugin with a per-cluster credential
 One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit) with a per-cluster scoped credential in the pod; built once here, the other epics add tools to it. (user decision)
 
+### D17: Headless parity
+Headless parity: every UI capability has a documented public API and an API-only e2e test. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -136,6 +139,7 @@ One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool 
 | D14 Module constants | dispatcher-leadership-pass, hive-state-push-loop |
 | D15 Plugin built into any-mcp | orchestrator-plugin |
 | D16 Shared orchestrator plugin with a per-cluster credential | orchestrator-plugin, plugin-config-merge, agent-token-env-render, agent-api-me |
+| D17 Headless parity | leadership-requests-api, views-leader-stream, ui-leader-badge, kind-e2e-hive |
 
 ## Contracts
 
