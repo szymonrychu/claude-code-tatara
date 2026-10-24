@@ -96,8 +96,8 @@ agent to run init first.
 ## Plugins and packs
 
 The core plugin `workbench` is enabled by default. It brings the development
-flow, the approval ledger, file-based epic tickets, research skills, tiered
-review, debugging flow, verification hooks, per-task git worktrees with an epic integration worktree and
+flow, the epic-run loop, file-based epic tickets, research skills, tiered
+review, debugging flow, verification hooks, an epic integration worktree and
 destructive-command guardrails.
 
 Optional packs, all requiring the core:

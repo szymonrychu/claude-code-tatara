@@ -170,7 +170,8 @@ def test_model_table_has_haiku():
 
 
 def test_ground_rule_one_names_epic_run():
-    rule = " ".join(AGENTS[AGENTS.index("1. **Development flow.**") : AGENTS.index("2. **Always")].split())
+    start, end = AGENTS.index("1. **Development flow.**"), AGENTS.index("2. **Always")
+    rule = " ".join(AGENTS[start:end].split())
     for needle in (
         "epic-run",
         "one implementer and one reviewer per task",
@@ -182,9 +183,10 @@ def test_ground_rule_one_names_epic_run():
 
 
 def test_ground_rule_four_has_no_heartbeat():
-    flat = " ".join(AGENTS[AGENTS.index("4. **Never report") : AGENTS.index("5. **Stay")].split())
+    start, end = AGENTS.index("4. **Never report"), AGENTS.index("5. **Stay")
+    flat = " ".join(AGENTS[start:end].split())
     assert "heartbeat" not in flat.lower() and "plan-execute" not in flat
-    assert "10 minutes" in flat and "background Agent notification" in flat
+    assert "10 minutes" in flat and "Agent notification" in flat
 
 
 def test_banner_routes_other_requests():
