@@ -170,5 +170,19 @@
       "hive-state-push-loop"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q7",
+    "text": "Tools on load hint the hive mode (no CLAUDE.md fragment); the wrapper notes inbox is enabled only for hived agents; a static single-pod cluster gets no hive, peers or messaging tools: the agent is alone.",
+    "decisions": [
+      "D24"
+    ],
+    "tasks": [
+      "orchestrator-plugin",
+      "render-hive-gating",
+      "plugin-config-merge",
+      "wrapper-notes-inbox"
+    ],
+    "status": "approved"
   }
 ]

@@ -113,6 +113,9 @@ Feed: file writes, edits and deletes (paths only), Bash commands with exit statu
 ### D23: Delivery through the notes inbox
 The feed is delivered through the wrapper notes inbox as hook additionalContext at the next tool result (throttled) and the next prompt. (user decision)
 
+### D24: Awareness from tool descriptions; alone clusters
+Tools on load hint the hive mode (no CLAUDE.md fragment); the wrapper notes inbox is enabled only for hived agents; a static single-pod cluster gets no hive, peers or messaging tools: the agent is alone. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -164,6 +167,7 @@ The feed is delivered through the wrapper notes inbox as hook additionalContext 
 | D21 Handover only, epoch fenced | leadership-requests-api, dispatcher-leadership-pass |
 | D22 Feed contents | hive-feed-digest |
 | D23 Delivery through the notes inbox | wrapper-notes-inbox, wrapper-notes-delivery, hive-state-push-loop |
+| D24 Awareness from tool descriptions; alone clusters | orchestrator-plugin, render-hive-gating, plugin-config-merge, wrapper-notes-inbox |
 
 ## Contracts
 
