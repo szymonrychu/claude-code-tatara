@@ -101,6 +101,9 @@ The leader is the only agent that receives untargeted messages; an explicit targ
 ### D19: First ready agent leads
 The first ready agent leads when a hive starts, at epoch 1. (user decision)
 
+### D20: Tools through any-mcp, not ccw
+Leadership and the other agent tools are offered through an any-mcp plugin, not the wrapper's ccw MCP server. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -148,6 +151,7 @@ The first ready agent leads when a hive starts, at epoch 1. (user decision)
 | D17 Headless parity | leadership-requests-api, views-leader-stream, ui-leader-badge, kind-e2e-hive |
 | D18 Leader-only routing | leader-routing |
 | D19 First ready agent leads | dispatcher-leadership-pass |
+| D20 Tools through any-mcp, not ccw | orchestrator-plugin, agent-port-listener |
 
 ## Contracts
 

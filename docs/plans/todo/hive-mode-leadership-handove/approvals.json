@@ -122,5 +122,17 @@
       "dispatcher-leadership-pass"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q3",
+    "text": "Leadership and the other agent tools are offered through an any-mcp plugin, not the wrapper's ccw MCP server.",
+    "decisions": [
+      "D20"
+    ],
+    "tasks": [
+      "orchestrator-plugin",
+      "agent-port-listener"
+    ],
+    "status": "approved"
   }
 ]
