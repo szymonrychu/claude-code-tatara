@@ -116,6 +116,9 @@ The feed is delivered through the wrapper notes inbox as hook additionalContext 
 ### D24: Awareness from tool descriptions; alone clusters
 Tools on load hint the hive mode (no CLAUDE.md fragment); the wrapper notes inbox is enabled only for hived agents; a static single-pod cluster gets no hive, peers or messaging tools: the agent is alone. (user decision)
 
+### D25: No hive switch
+No ClusterSpec hive switch. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -168,6 +171,7 @@ Tools on load hint the hive mode (no CLAUDE.md fragment); the wrapper notes inbo
 | D22 Feed contents | hive-feed-digest |
 | D23 Delivery through the notes inbox | wrapper-notes-inbox, wrapper-notes-delivery, hive-state-push-loop |
 | D24 Awareness from tool descriptions; alone clusters | orchestrator-plugin, render-hive-gating, plugin-config-merge, wrapper-notes-inbox |
+| D25 No hive switch | spec-cap-static |
 
 ## Contracts
 
