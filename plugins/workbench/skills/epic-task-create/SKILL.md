@@ -7,7 +7,6 @@ Thin wrapper over `ticket.py`. `<epic>` is the epic slug.
 
 1. Create the task, every required field given:
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py new-task --epic <epic> --title "<title>" --repo <repo> --value "<value>" --files "<files>" --verify "<command>"`
-   Optional: `--depends-on`, `--owns`, `--uses`, `--model`, `--review`, `--estimate`,
-   `--requirement-file`, `--ac-file`.
+   Optional: `--depends-on`, `--model`, `--review`, `--requirement-file`, `--ac-file`.
 2. Lint the epic and report its output verbatim:
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py lint <epic>`
