@@ -1,0 +1,26 @@
+[
+  {
+    "task": "wrapper-workspace-e2e",
+    "accept": true,
+    "reason": "process-only tdd-skipped on an e2e test over surfaces already landed and verified; verify passes on HEAD",
+    "at": "2026-10-24T00:23:52Z"
+  },
+  {
+    "task": "wrapper-security-followups",
+    "accept": true,
+    "reason": "parking gate false positive: the README states the security limits the task requires (AC5); verified on HEAD 354e669",
+    "at": "2026-10-24T00:39:51Z"
+  },
+  {
+    "task": "kind-e2e-workspace",
+    "accept": true,
+    "reason": "test-only task; red/green shown on a local real-wrapper stack; kind run happens in PR CI",
+    "at": "2026-10-24T01:20:45Z"
+  },
+  {
+    "task": "deploy-pin",
+    "accept": true,
+    "reason": "AC4 failures are the two chart-pull tests blocked by this container's network policy (harbor, cloudnative-pg); diff is exactly the pin; PR CI runs the full suite",
+    "at": "2026-10-24T01:56:08Z"
+  }
+]

@@ -1,0 +1,335 @@
+# web ui cluster tabs with filesystem chat and terminal panels design
+
+## Summary
+
+The agent-orchestrator web UI drops the left cluster ribbon for a top tab bar (one tab per cluster) with a hamburger menu, and each cluster tab becomes a three-panel workspace: filesystem tree, chat (the existing ChatView with an agents strip), and a multi-tab terminal. Two new backend surfaces carry it: the claude-code-wrapper gains a session-scoped file API (list, read) and a terminal API (HTTP lifecycle plus a WebSocket PTY), and the orchestrator api proxies both through one new module, guarded by a mandatory Origin allowlist. Every capability is a documented public API with an API-only end-to-end test (headless parity). The epic ends with the image and chart pins in agents-helmfile; apply and smoke are run by the user.
+
+## Intent and why
+
+The user wants one screen per cluster that shows what the agents changed on disk and lets them run commands beside the chat, and a navigation that scales past a handful of clusters better than a side ribbon (user request 2026-10-23, README Description). Today the UI has no view of the shared workdir and no shell; seeing a file or running `git status` means asking an agent to do it.
+
+## Goals
+
+- The ribbon aside (`frontend/src/layout/Shell.tsx` aside, `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`) is gone from `git ls-files`; a top tab bar shows one tab per cluster with state mark, slug and context gauge; New cluster and Discard are reachable from the bar; no Edit entry point remains in the UI.
+- A hamburger button at the top left opens a drawer: every cluster (session) listed from the top, a settings section pinned to the bottom that renders the categories it is given (none in this epic).
+- A cluster tab shows filesystem, chat and terminal panels split by draggable separators; minimize, maximize and restore follow the rules in D7; the layout persists per cluster in the browser; the phone layout shows one panel at a time with a three-way switch.
+- The chat panel is ChatView with its agent filter chips replaced by an agents strip (pod, state, free since, own gauge, filter toggle).
+- The terminal panel holds several shell tabs, each on a chosen agent pod (first ready agent preselected), over a WebSocket PTY rendered with xterm.js 6; shells survive tab switches and reloads and replay their scrollback on reattach.
+- The filesystem panel shows the cluster workdir as a lazy tree (dotfiles and `.git` included, 2000 entries per page with a "more" row), refreshed from the event stream and by a manual refresh, with a read-only preview.
+- Wrapper: `GET /v1/sessions/{id}/files`, `GET /v1/sessions/{id}/files/content`, `POST|GET /v1/sessions/{id}/terminals`, `DELETE /v1/sessions/{id}/terminals/{terminal_id}`, `WS /v1/sessions/{id}/terminals/{terminal_id}/attach`, each documented in the wrapper README and covered by an API-only e2e test on the real service.
+- Orchestrator: `GET /api/v1/clusters/{cluster_id}/files`, `GET /api/v1/clusters/{cluster_id}/files/content`, `GET /api/v1/clusters/{cluster_id}/terminals`, `POST /api/v1/agents/{agent_id}/terminals`, `DELETE /api/v1/agents/{agent_id}/terminals/{terminal_id}`, `WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach`, documented in the README (the WebSocket route by hand), in OpenAPI and `schema.d.ts`, with API-only tests against FakeWrapper and a kind e2e test.
+- agents-helmfile pins the orchestrator chart and image and the wrapper image of this epic and sets `ORCH_ALLOWED_ORIGINS`.
+
+## Non-goals
+
+- No authentication or user accounts; the UI stays unauthenticated and LAN-only.
+- No file editing, upload, rename or delete; no inotify.
+- No keyboard attached to the Claude TUI PTY; terminals are separate shells.
+- No chat or dispatch behaviour change.
+- No Kubernetes `pods/exec` RBAC and no workspace pod.
+- No removal of `PATCH /api/v1/clusters/{cluster_id}`, `patchCluster` or the ClusterForm edit mode: the cluster-presets epic removes that code. This epic removes only the Edit entry points from the UI.
+- No Presets settings category (cluster-presets adds it to this epic's menu).
+- No wrapper version tag or GitHub release; images are deployed by short sha.
+- Running `helmfile apply`, `mise run smoke` or the kind e2e in this container: the user runs apply and smoke after the epic; the kind e2e runs in the orchestrator PR CI.
+
+## Anti-goals
+
+- A WebSocket route reachable from an arbitrary web page in a LAN browser (cross-site WebSocket hijacking).
+- A file read that escapes the session workdir through `..`, an absolute path or a symlink.
+- A slow terminal client that stalls the PTY reader or the wrapper event loop.
+- The api gaining broad wrapper access: only the one proxy module may use the wrapper client and tokens.
+- A regression in ChatView, dispatch or the existing `/api/v1` routes and tests.
+- Shells or file reads that keep running after their session is destroyed or the service stops.
+
+## Constraints
+
+- Python only except the TypeScript frontend; services talk only through the queue or HTTP (WebSocket counts as HTTP upgrade).
+- Test-first in every repo. Wrapper rules (`code/claude-code-wrapper/CLAUDE.md`): `uv run` always, plain ASCII, tests never use a real claude, only the fake-claude task edits `tests/conftest.py`, never write service files into a session workdir.
+- Wrapper `tests/test_readme_api.py` scrapes routes and `ApiError` codes; every new error code needs an Errors table row and every new `LimitsConfig` key a Configuration reference row (`tests/test_readme_config.py`). Its `_walk` sees only `APIRoute`, so the WebSocket route needs its own README check.
+- Orchestrator `tests/test_readme_api.py` requires a README `### \`METHOD /api/v1...\`` heading per HTTP route and `openapi.json` plus `frontend/src/api/schema.d.ts` regenerated (`uv run python -m agent_orchestrator.api.openapi > openapi.json`, then `npm run gen:api`). WebSocket routes are absent from OpenAPI; document them by hand under a `### \`WS /api/v1/...\`` heading, which the README route regex (GET|POST|PATCH|PUT|DELETE) ignores.
+- `frontend/src/layout/designRules.ts`: no colour literals outside `theme.ts` (the xterm colour map lives there), no decorative Unicode, no `title=` on buttons, fontWeight 400/500 only.
+- Verify commands in this container: orchestrator `uv run pytest -q -p no:cacheprovider <files>` plus the lint (testcontainers, dockerd running); task verifies spell the lint as `uv run ruff check . && uv run ruff format --check .` (what `mise run lint` runs in the Python repos), because the plan validator counts `mise run lint` as a whole suite; frontend `mise x node@24.20.0 -- npm --prefix frontend ci` first, then `run lint`, `test -- <file>`, `run build`, `run check:api`; wrapper targeted test files plus `mise run lint` (the full wrapper suite takes 13 minutes and `tests/test_manager.py::test_shutdown_stops_all` fails only in this container because PID 1 does not reap zombies; it is never a verify target).
+- No cluster access here: helmfile apply, smoke and kind e2e cannot run; the kind test is verified by collection (`-m e2e --collect-only`) and runs in the PR CI `e2e` job.
+- Merge order: the wrapper PR merges before `wrapper-sha-pin` runs; both product PRs merge before `deploy-pin` runs (D9).
+
+## Decisions
+
+### D1: Wrapper file API shape and confinement
+`GET /v1/sessions/{id}/files?path=<rel>&offset=<n>` lists one directory and `GET /v1/sessions/{id}/files/content?path=<rel>` reads one file, for any session whose workdir exists on disk (live or persisted). `path` is relative to the session workdir (empty means the root). One helper in a new `src/claude_code_wrapper/files.py` resolves every path with `realpath` and refuses anything outside the realpath of the workdir (`invalid_path`, 400), so `..`, absolute paths and escaping symlinks fail; entries are listed with type `dir`, `file`, `symlink` or `other` and a symlink is followed only when its target stays inside. Listing: directories first, then names, `limits.files_max_entries` (2000) per page with `next_offset` when more remain; response carries the absolute `root` so clients map event `file_path` values onto the tree. Content: `kind` `text` (UTF-8, no NUL in the first 8 KiB, at most `limits.file_preview_max_bytes` 1 MiB, content inline), `binary` (size and guessed mime only) or `too_large` (size only); FIFOs, sockets and devices are refused with `not_a_file`: after the confinement check the file is opened `O_RDONLY|O_NOFOLLOW|O_NONBLOCK` and refused unless `fstat` on the descriptor says regular file (never stat-then-open by path, so swapping the final component between check and open cannot hang or leak; O_NOFOLLOW guards only the final component, so a parent directory swapped for a symlink in that window is not prevented, accepted because the reader is a trusted bearer holder). File content and terminal frames are not passed through the secret redactor (it would corrupt files and PTY streams; the shell already runs as the agent uid), which the wrapper README Trust model states. Alternatives: a recursive tree endpoint (rejected: unbounded on `node_modules`), reading through the orchestrator PVC (rejected: the api has no mount and must not get one). (my call)
+
+### D2: Terminal WebSocket protocol
+Binary frames carry PTY bytes in both directions (the browser splits input into frames of at most 64 KiB, so a large paste is not one oversized frame); text frames carry JSON control: client `{"type":"resize","cols":C,"rows":R}` and `{"type":"ping"}`, server `{"type":"pong"}` and `{"type":"exit","code":N}` (then close 1000). On attach the server first sends the scrollback ring (256 KiB) as binary frames, then live output. Several clients may attach to one terminal: each gets a bounded queue fed by one PTY reader; a client whose queue overflows is closed with 1013 instead of blocking the PTY. Frames over `limits.terminal_max_frame_bytes` (64 KiB) close with 1009. The browser pings every 20 s to keep ingress-nginx from idling the connection. Alternative: `@xterm/addon-attach` raw bytes (rejected: no resize channel). (my call)
+
+### D3: Terminal lifecycle and identity
+A terminal belongs to the wrapper process and is created under a session, which gives it its cwd (the session workdir, confined by the D1 helper) and its lifetime: it closes when its session is destroyed and at service shutdown (`SessionManager.shutdown`). No new SSE event types are added (the `event-types` contract is untouched). Terminal ids are `term_<12 lowercase hex>`, and both the wrapper routes and the orchestrator routes accept only that format (`^term_[0-9a-f]{12}$`, defined once per side) with 422 `invalid_request` otherwise. (my call; amended by interrogate ruling 4)
+
+### D4: Orchestrator proxy routes and error mapping
+Files are cluster-scoped (`/api/v1/clusters/{cluster_id}/files`, `/files/content`, optional `agent_id`, default the first ready agent by ordinal, since every agent mounts the same RWX workdir). Terminals are agent-scoped like the existing agent commands (`POST /api/v1/agents/{agent_id}/terminals`, `DELETE /api/v1/agents/{agent_id}/terminals/{terminal_id}`, `WS .../attach`), with a cluster-wide `GET /api/v1/clusters/{cluster_id}/terminals` that fans out to every ready agent and reports unreachable ones in `unavailable_agents`. The proxy resolves `agents.url` and `agents.session_id` from the database (no Kubernetes import) and the token with `tokens_for(settings, cluster_id).auth`. Wrapper 4xx answers pass through with their status and code; a transport failure is 502 `wrapper_unreachable`, a wrapper 5xx is 502 `wrapper_error`, no ready agent or an agent without a session is 409 `agent_not_ready`, an unset `ORCH_MASTER_KEY` is 503 `unavailable` on these routes only. The derived token lives in a `WrapperTarget` field with `repr=False`, travels only as an `Authorization` header and appears in no log or response (a DEBUG caplog test pins this); the shared `httpx.AsyncClient` is created lazily so tests without the lifespan work, and is closed in the lifespan shutdown. The terminal id is validated before any upstream request. (my call; amended by interrogate rulings 4, 7, 8)
+
+### D5: Origin rule
+A pure ASGI check in `api/origin.py` applies to every WebSocket upgrade, and a dependency from the same module applies to `POST` and `DELETE` on the terminal routes. A request without an `Origin` header passes (non-browser clients; browsers always send Origin on WebSocket upgrades and on cross-origin POST/DELETE); an `Origin` of `null` or one not in `ORCH_ALLOWED_ORIGINS` is refused: WebSocket close 1008 before accept, HTTP 403 `forbidden_origin`. An empty `ORCH_ALLOWED_ORIGINS` refuses every Origin-bearing upgrade (fail closed). Comparison is exact on scheme, host and port after lower-casing. It runs alongside the existing `SourceAllowlist`, which keeps checking the direct peer. (my call)
+
+### D6: WebSocket client in the orchestrator api
+The relay uses `websockets` (17.3, already in `uv.lock` through `uvicorn[standard]`), now declared as a direct dependency. When either side closes, the relay closes the other with a mapped code: 1000, 1003, 1008, 1009, 1011, 1013 and 4000-4999 pass through, 1005 maps to 1000, and 1006, 1015 and a missing code map to 1011; 1005, 1006 and 1015 are never sent. The upstream connection uses a logger held at WARNING because `websockets` logs handshake headers at DEBUG. Alternative `httpx-ws` 0.9.0 (rejected: one more dependency for the same job). (my call)
+
+### D7: Panel layout rules and persistence
+`react-resizable-panels` 4 `Group` with three collapsible `Panel`s and two `Separator`s, default 25/45/30. Minimize collapses a panel to a narrow vertical strip with its name and a restore button; at most two panels are minimized (the last expanded panel has no minimize control); maximize collapses the other two; double-click on a separator restores 25/45/30. Layout and collapsed set persist per cluster id in localStorage through `frontend/src/layout/storage.ts`, whose reads and writes never throw. Layout is browser-only presentation state with no API; headless parity covers capabilities, not layout. (my call)
+
+### D8: Filesystem refresh plumbing
+The filesystem panel opens its own event stream subscription (`openStream` on the cluster events URL with `tool_call` and `tool_result`) instead of lifting the private stream out of `useClusterChat`, so ChatView stays untouched. A `tool_call` of Write, Edit or NotebookEdit re-fetches the parent directory of `tool_input.file_path` (mapped through the listing `root`) when that directory is loaded; a `tool_result` of Bash re-fetches every expanded directory, debounced to one pass per second. (my call)
+
+### D9: Pins, merge order and deploy
+Merge order: wrapper PR, then `wrapper-sha-pin` pins the orchestrator `claude-code-wrapper` dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` (`BASE_IMAGE`, `WRAPPER_SHA`) and README `## Images` to the wrapper main merge commit (the precedent of `container-images-ci`); the orchestrator PR merges after its CI e2e passes; `deploy-pin` then pins agents-helmfile to both main merge sha7 values (precedent `deploy-pin-d5a7738`) and sets `ORCH_ALLOWED_ORIGINS: https://agents.szymonrichert.pl`. The orchestrator supplies the sha values with `ticket.py amend` when it reaches each pin task; a pin task whose merge does not exist yet reports `blocked` with the orchestrator as `whoCanClear`. Apply and smoke are run by the user after the epic. (my call)
+
+### D10: Tab selection default
+When no tab is selected and clusters exist, the first cluster by slug is selected; a discarded or vanished selected cluster falls back the same way. (my call)
+
+### D11: Shell process
+The shell is `/bin/bash -l` (falling back to `/bin/sh -l` when bash is absent) with `TERM=xterm-256color`, started under `PtyProcess` in the session workdir with the environment `manager._child_env(ctx)` builds for the Claude process (BASE_ENV plus the passthrough set including `spec.env`, plus `TERM`), minus every `ClaudeEnv` name of kind `secret` (`claude_env.py:30`, including `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN`) and `CCW_AUTH_TOKEN`, `CCW_PEER_TOKEN`, `CCW_HOOK_TOKEN`; never the whole service env. Terminals are capped per wrapper process (`limits.terminals_max` 8), which is per pod; `create` reserves its slot synchronously before awaiting the PTY start, and `close` unregisters synchronously before awaiting the close, so the cap holds under concurrency and an attach racing the reaper gets 404 or the exit frame, never a hang. Closing a shell kills every process in the shell's session (session id equals the shell pid), not only its process group, so a `nohup`'d job does not outlive the close, a session destroy or shutdown; a process that leaves the session (`setsid`, a double fork, tmux) is not killed, a documented limit (no cgroup per shell). The close skips the session kill when the shell pid was reused (start time check). The scrub does not cover `/proc/<pid>/environ` of same-uid processes; env names matching the redactor's SECRET_KEY_RE are also dropped (security review 2026-10-24, task wrapper-security-followups). An exited terminal with no client is reaped at the next reaper tick. (my call; amended by interrogate rulings 1, 6, 11)
+
+### D12: Q1 one cluster per tab
+Q1: one cluster is one tab; every cluster is shown, tabs are not closable, the bar scrolls and is ordered by slug. (user decision)
+
+### D13: Q15 no Edit entry point
+Q15: the cluster Edit action is dropped from the UI in this epic; tab actions carry only Discard. PATCH and the ClusterForm edit code stay until the cluster-presets epic removes them. (user decision)
+
+### D14: Q14 hamburger menu with sessions and settings
+Q14: this epic builds the hamburger menu at the top left: every session (cluster) listed from the top and a settings section pinned to the bottom that stays empty until the cluster-presets epic adds Presets. (user decision)
+
+### D15: Q11 minimized strip and separator reset
+Q11: a minimized panel is a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split. (user decision)
+
+### D16: Q12 phone three-way switch
+Q12: on a phone one panel is shown at a time with a three-way switch; the cluster tabs scroll. (user decision)
+
+### D17: Q2 agents strip in the chat header
+Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents strip in the chat panel header, merged with the agent filter chips. (user decision)
+
+### D18: Q3 shell in an agent pod via wrapper and api proxy
+Q3: a terminal is a shell in a chosen agent pod, served by the wrapper and proxied by the orchestrator api; no workspace pod, no Kubernetes pods/exec. (user decision)
+
+### D19: Q4 several shells as tabs with pod choice
+Q4: several concurrent shells as tabs, each with its own pod choice, the first ready agent preselected. (user decision)
+
+### D20: Q5 shell lifetime, replay and cap
+Q5: a shell survives tab switches and page reloads, is reaped 15 minutes after its last client detaches, replays 256 KiB of scrollback on reattach, and at most 8 shells run per pod. (user decision)
+
+### D21: Q6 scrub secrets from the shell env
+Q6: the shell environment drops CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN and CLAUDE_CODE_OAUTH_TOKEN, as defence in depth. (user decision; interrogate ruling 1 widens the set to every secret-kind `ClaudeEnv` name, see D11)
+
+### D22: Q7 LAN-only with mandatory Origin allowlist
+Q7: an unauthenticated LAN-only shell is acceptable with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) on every WebSocket upgrade and the existing source allowlist; authentication stays a separate epic. (user decision)
+
+### D23: Q8 everything, lazy, 2000 entries with more
+Q8: the tree shows everything, dotfiles and .git included, loaded lazily per directory, at most 2000 entries per directory with a more row. (user decision)
+
+### D24: Q9 read-only preview
+Q9: clicking a file opens a read-only preview in the filesystem panel: text up to 1 MiB; binary files show size and type. (user decision)
+
+### D25: Q10 event-driven refresh, no inotify
+Q10: the tree re-fetches directories touched by the cluster event stream plus a manual refresh button; no inotify. (user decision)
+
+### D26: Q13 add @mui/icons-material
+Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons. (user decision)
+
+### D27: N1 api proxy module may call wrappers
+N1 (Q16): the orchestrator api may call wrapper pods for the file and terminal proxies, reversing MEMORY D5 narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; test_api_never_imports_k8s_or_wrapper whitelists exactly that module; README Architecture and MEMORY.md are updated with the date and why. (user decision)
+
+### D28: Headless parity
+Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test. (user decision)
+
+## Research
+
+| Lens | Ran or skipped | Adopted | Rejected |
+|---|---|---|---|
+| research-code-internal | ran (discovery/reuse.md, shared-parts map) | reuse `PtyProcess`, `Ring`, `safe_write_files` pattern, `tokens_for`, `SourceAllowlist`, `openStream`, `useClusters`, `ChatView`, `FakeWrapper` (discovery/reuse.md Plan inputs) | a second PTY or ring; a new token scheme |
+| research-docs | ran (research.md section 3, npm and PyPI registries 2026-10-23) | react-resizable-panels 4.14.8 v4 API (`Group`, `Panel`, `Separator`, https://github.com/bvaughn/react-resizable-panels); `@xterm/xterm` 6.0.0 without canvas renderer (https://github.com/xtermjs/xterm.js/releases/tag/6.0.0); `@mui/x-tree-view` 9.16.0 MIT `SimpleTreeView` with hand-rolled lazy loading (https://mui.com/x/react-tree-view/); `@mui/icons-material` 9.5.0; ingress-nginx WebSocket timeouts (https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/) | `react-arborist` (react-dnd peers, styling outside MUI); `@xterm/addon-attach` (no resize channel) |
+| research-code-external | ran (research.md sections 2 and 5) | OWASP WebSocket cheat sheet: validate Origin on every handshake with an explicit allowlist (https://cheatsheetseries.owasp.org/cheatsheets/WebSocket_Security_Cheat_Sheet.html) | workspace pod (option B) and `pods/exec` (option C), research.md section 5 |
+| research-papers | skipped: UI and infra plumbing, no algorithmic core | none | none |
+
+## Research inputs
+
+| Source | Entry | Lands in |
+|---|---|---|
+| discovery/reuse.md reuse | PtyProcess - W/pty_proc.py:PtyProcess | pty-resize-and-raw-ring, terminal-registry |
+| discovery/reuse.md reuse | Ring - W/ring.py:Ring | pty-resize-and-raw-ring, terminal-registry |
+| discovery/reuse.md reuse | BASE_ENV, passthrough_names - W/session.py:BASE_ENV | terminal-registry (scrub list; the shell env derives from `manager._child_env(ctx)` minus all secret-kind `ClaudeEnv` names and the `CCW_*` tokens) |
+| discovery/reuse.md reuse | safe_write_files pattern - W/workdir.py:safe_write_files | wrapper-file-api |
+| discovery/reuse.md reuse | LimitsConfig - W/config.py:LimitsConfig | wrapper-file-api, terminal-registry |
+| discovery/reuse.md reuse | require_auth, ApiError - W/api/auth.py:require_auth | wrapper-file-api, terminal-websocket-api |
+| discovery/reuse.md reuse | tokens_for - O/tokens.py:tokens_for | wrapper-proxy-seam |
+| discovery/reuse.md reuse | pod_url, Agent.url - O/k8s/render.py:pod_url | wrapper-proxy-seam (reads the stored `agents.url`, never imports k8s) |
+| discovery/reuse.md reuse | WrapperClient - O/wrapper/client.py:WrapperClient | wrapper-proxy-seam |
+| discovery/reuse.md reuse | SourceAllowlist - O/api/allowlist.py:SourceAllowlist | origin-allowlist (kept; Origin check added beside it) |
+| discovery/reuse.md reuse | Settings CsvList pattern - O/settings.py:Settings | origin-allowlist |
+| discovery/reuse.md reuse | validate_spec, fill_resource_defaults, validate_slug - O/spec.py | rejected: presets epic only |
+| discovery/reuse.md reuse | run_migrations - O/db/migrate.py | rejected: presets epic only, no migration here |
+| discovery/reuse.md reuse | openStream - F/api/stream.ts:openStream | fe-filesystem-panel |
+| discovery/reuse.md reuse | useClusters, sortedAgents - F/ribbon/useClusters.ts | fe-top-bar, fe-retire-ribbon, fe-agents-strip, fe-terminal-panel |
+| discovery/reuse.md reuse | ChatView - F/chat/ChatView.tsx | fe-panel-workspace, fe-agents-strip |
+| discovery/reuse.md reuse | ConfirmDialog - F/layout/ConfirmDialog.tsx | fe-retire-ribbon (via DiscardClusterDialog) |
+| discovery/reuse.md reuse | clusterSpecForm helpers - F/clusters/clusterSpecForm.ts | rejected: presets epic only |
+| discovery/reuse.md reuse | FakeWrapper - tests/fakes/fake_wrapper.py | file-proxy-routes, terminal-proxy-routes, terminal-ws-relay |
+| discovery/reuse.md do-not-build | WebSocket timeouts in deployed helmfile values (already 3600) | origin-allowlist (chart README note only), deploy-pin (no timeout change) |
+| discovery/reuse.md do-not-build | chart wiring for new ORCH_* settings | origin-allowlist (README only; values `env:` carries it) |
+| discovery/reuse.md do-not-build | a separate PTY or ring | pty-resize-and-raw-ring |
+| discovery/reuse.md do-not-build | a new token scheme | wrapper-proxy-seam |
+| discovery/reuse.md do-not-build | a WebSocket peer allowlist | origin-allowlist |
+| discovery/reuse.md fix-as-ac | require_auth typed to Request (W/api/auth.py:21) | terminal-websocket-api |
+| discovery/reuse.md fix-as-ac | `_check_spec` private | rejected: presets epic only |
+| discovery/reuse.md fix-as-ac | httpx ASGITransport cannot test WebSocket | terminal-ws-relay, kind-e2e-workspace |
+| discovery/reuse.md fix-as-ac | websockets undeclared in the orchestrator pyproject | terminal-ws-relay |
+| discovery/reuse.md fix-as-ac | PATCH retirement leftovers | rejected: presets epic removes PATCH; this epic removes only the Edit entry points (fe-retire-ribbon) |
+| discovery/reuse.md fix-as-ac | default preset seed idempotent | rejected: presets epic only |
+| discovery/reuse.md ideas | adopted: SSE heartbeat cadence for the 20 s terminal ping | fe-terminal-socket |
+| discovery/reuse.md ideas | adopted: arm_slug sanitising for preset-name slugs | rejected: presets epic only |
+| discovery/reuse.md ideas | rejected: inotify for tree refresh | fe-filesystem-panel (event-stream refresh, D8) |
+| discovery/reuse.md ideas | open: frontend storage.ts wrapper must be built | fe-deps-and-storage |
+| discovery/wrapper.md | require_auth fails on WebSocket routes; retype to HTTPConnection | terminal-websocket-api |
+| discovery/wrapper.md | Ring has no raw accessor; PtyProcess has no resize | pty-resize-and-raw-ring |
+| discovery/wrapper.md | no app lifespan; close terminals from manager shutdown | terminal-registry |
+| discovery/wrapper.md | README WebSocket routes not auto-enforced | terminal-websocket-api |
+| discovery/orchestrator-backend.md | test_api_never_imports_k8s_or_wrapper and MEMORY D5 | wrapper-proxy-seam |
+| discovery/orchestrator-backend.md | ORCH_ALLOWED_ORIGINS plus e2e values | origin-allowlist |
+| discovery/orchestrator-backend.md | wrapper SHA in pyproject, uv.lock, agent-test.Dockerfile | wrapper-sha-pin |
+| discovery/orchestrator-backend.md | README `### Ingress` timeouts | origin-allowlist |
+| discovery/frontend.md | new deps and package-lock | fe-deps-and-storage |
+| discovery/frontend.md | retire Ribbon.test.tsx, ribbon test ids, Edit item, Ribbon wiring test | fe-retire-ribbon |
+| discovery/frontend.md | Vite dev proxy lacks `ws: true` | fe-deps-and-storage |
+| discovery/frontend.md | xterm colours in theme.ts | fe-terminal-panel |
+| discovery/frontend.md | jsdom lacks ResizeObserver, canvas, WebSocket | fe-panel-workspace, fe-terminal-socket, fe-terminal-panel (mock in tests) |
+| research.md section 4 | inotify blind to other CephFS clients | fe-filesystem-panel |
+| research.md section 2 | scrub CLAUDE_CODE_OAUTH_TOKEN, CCW_* from the shell | terminal-registry |
+
+## Decision coverage
+
+| Decision | Tasks |
+|---|---|
+| D1 Wrapper file API shape and confinement | wrapper-file-api, wrapper-workspace-e2e |
+| D2 Terminal WebSocket protocol | pty-resize-and-raw-ring, terminal-websocket-api, terminal-ws-relay, fe-terminal-socket |
+| D3 Terminal lifecycle and identity | terminal-registry, terminal-websocket-api |
+| D4 Orchestrator proxy routes and error mapping | wrapper-proxy-seam, file-proxy-routes, terminal-proxy-routes |
+| D5 Origin rule | origin-allowlist, terminal-proxy-routes, terminal-ws-relay |
+| D6 WebSocket client in the orchestrator api | terminal-ws-relay |
+| D7 Panel layout rules and persistence | fe-deps-and-storage, fe-panel-workspace |
+| D8 Filesystem refresh plumbing | fe-filesystem-panel |
+| D9 Pins, merge order and deploy | wrapper-sha-pin, kind-e2e-workspace, deploy-pin |
+| D10 Tab selection default | fe-retire-ribbon |
+| D11 Shell process | terminal-registry |
+| D12 Q1 one cluster per tab | fe-top-bar, fe-retire-ribbon |
+| D13 Q15 no Edit entry point | fe-top-bar, fe-retire-ribbon |
+| D14 Q14 hamburger menu with sessions and settings | fe-top-bar, fe-retire-ribbon |
+| D15 Q11 minimized strip and separator reset | fe-panel-workspace |
+| D16 Q12 phone three-way switch | fe-panel-workspace |
+| D17 Q2 agents strip in the chat header | fe-agents-strip |
+| D18 Q3 shell in an agent pod via wrapper and api proxy | terminal-registry, terminal-websocket-api, terminal-proxy-routes, terminal-ws-relay |
+| D19 Q4 several shells as tabs with pod choice | terminal-proxy-routes, fe-terminal-panel |
+| D20 Q5 shell lifetime, replay and cap | pty-resize-and-raw-ring, terminal-registry, terminal-websocket-api, fe-terminal-socket, fe-terminal-panel |
+| D21 Q6 scrub secrets from the shell env | terminal-registry, wrapper-workspace-e2e |
+| D22 Q7 LAN-only with mandatory Origin allowlist | origin-allowlist, terminal-ws-relay, deploy-pin |
+| D23 Q8 everything, lazy, 2000 entries with more | wrapper-file-api, file-proxy-routes, fe-filesystem-panel |
+| D24 Q9 read-only preview | wrapper-file-api, fe-filesystem-panel |
+| D25 Q10 event-driven refresh, no inotify | fe-filesystem-panel |
+| D26 Q13 add @mui/icons-material | fe-deps-and-storage, fe-top-bar, fe-panel-workspace, fe-filesystem-panel |
+| D27 N1 api proxy module may call wrappers | wrapper-proxy-seam, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay |
+| D28 Headless parity | wrapper-file-api, terminal-websocket-api, wrapper-workspace-e2e, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay, kind-e2e-workspace |
+
+## Contracts
+
+| Part | Owner | Consumers | Where defined |
+|---|---|---|---|
+| `pty-resize` | pty-resize-and-raw-ring | terminal-registry | `code/claude-code-wrapper/src/claude_code_wrapper/pty_proc.py` |
+| `ring-raw-snapshot` | pty-resize-and-raw-ring | terminal-registry | `code/claude-code-wrapper/src/claude_code_wrapper/ring.py` |
+| `wrapper-path-confinement` | wrapper-file-api | terminal-registry | `code/claude-code-wrapper/src/claude_code_wrapper/files.py` |
+| `wrapper-files-api` | wrapper-file-api | file-proxy-routes, wrapper-workspace-e2e | `code/claude-code-wrapper/README.md` |
+| `terminal-registry` | terminal-registry | terminal-websocket-api | `code/claude-code-wrapper/src/claude_code_wrapper/terminals.py` |
+| `wrapper-terminals-api` | terminal-websocket-api | terminal-proxy-routes, terminal-ws-relay, wrapper-workspace-e2e | `code/claude-code-wrapper/README.md` |
+| `origin-allowlist` | origin-allowlist | terminal-proxy-routes, terminal-ws-relay | `code/agent-orchestrator/src/agent_orchestrator/api/origin.py` |
+| `workspace-proxy-module` | wrapper-proxy-seam | file-proxy-routes, terminal-proxy-routes, terminal-ws-relay | `code/agent-orchestrator/src/agent_orchestrator/api/workspace.py` |
+| `orch-files-api` | file-proxy-routes | fe-filesystem-panel, kind-e2e-workspace | `code/agent-orchestrator/README.md` |
+| `orch-terminals-api` | terminal-proxy-routes | fe-terminal-socket, kind-e2e-workspace | `code/agent-orchestrator/README.md` |
+| `fake-wrapper-terminals` | terminal-proxy-routes | terminal-ws-relay | `code/agent-orchestrator/tests/fakes/fake_wrapper.py` |
+| `orch-terminal-ws` | terminal-ws-relay | fe-terminal-socket, kind-e2e-workspace | `code/agent-orchestrator/README.md` |
+| `wrapper-main-pin` | wrapper-sha-pin | kind-e2e-workspace | `code/agent-orchestrator/pyproject.toml` |
+| `fe-deps` | fe-deps-and-storage | fe-top-bar, fe-panel-workspace, fe-filesystem-panel, fe-terminal-socket, fe-terminal-panel | `code/agent-orchestrator/frontend/package.json` |
+| `fe-storage` | fe-deps-and-storage | fe-panel-workspace | `code/agent-orchestrator/frontend/src/layout/storage.ts` |
+| `fe-sessions-menu` | fe-top-bar | fe-retire-ribbon | `code/agent-orchestrator/frontend/src/layout/SessionsMenu.tsx` |
+| `fe-workspace-slots` | fe-panel-workspace | fe-filesystem-panel, fe-terminal-panel | `code/agent-orchestrator/frontend/src/layout/Workspace.tsx` |
+| `fe-terminal-socket` | fe-terminal-socket | fe-terminal-panel | `code/agent-orchestrator/frontend/src/terminal/terminalSocket.ts` |
+
+Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapper-terminals-api` (consumer agent-orchestrator), `orch-allowed-origins` (consumer agents-helmfile) and `orch-settings-menu` (consumer cluster-presets: its Presets category is one entry in the `settingsCategories` prop of `SessionsMenu`; it also removes PATCH and the ClusterForm edit code this epic leaves in place).
+
+## Review focus
+
+- Path confinement in `files.py`: symlink escapes, `..`, absolute paths, FIFOs and devices (opened `O_NONBLOCK|O_NOFOLLOW`, refused by `fstat`, never stat-then-open), size caps enforced before reading the whole file.
+- Terminal fan-out and reaper in `terminals.py`: no unbounded queue, no PTY stall from a slow client, the reaper never kills an attached shell, every shell (and every process in its session) closed on session destroy and shutdown, the cap holding under concurrent creates, the env scrub.
+- `require_auth` on WebSocket: an unauthenticated upgrade is denied before accept.
+- Origin rule: WebSocket upgrades from unlisted origins never reach the relay; `null` refused; absent Origin allowed only as D5 says.
+- The import whitelist: exactly one api module (`api/workspace.py`) may import `agent_orchestrator.wrapper` and use tokens.
+- The relay: both directions closed when either side closes, close codes mapped (never re-sending 1005, 1006 or 1015), no task leak per connection, no token in logs.
+- Frontend: retirement tests assert on `git ls-files`; no Edit entry point anywhere; ChatView behaviour unchanged apart from the agents strip.
+
+## Left to the builder
+
+- Internal module layout inside the named files (helper names, dataclasses), as long as the routes, fields, error codes and config keys named in the tasks hold.
+- Exact visual sizes of the minimized strip and tab labels within designRules.
+- Whether `layout/Shell.tsx` is rewritten or deleted, as long as no aside remains and the phone top bar works.
+- The reconnect backoff curve of the terminal socket within 1 to 30 s.
+- Mocking strategy for `react-resizable-panels`, `@xterm/xterm` and `@mui/x-tree-view` under jsdom.
+
+### Builder check rulings (my call)
+
+1. Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
+2. The idle clock starts at creation for a never-attached terminal, else at the last detach. terminals_max counts every registered terminal, alive or exited; an exited terminal with no attached client is reaped at the next reaper tick.
+3. Rows or cols outside 1..1000 on create answer 422 with code invalid_size (wrapper, passed through by the orchestrator); a resize control frame out of range or malformed is ignored and logged, the socket stays open.
+4. The shell env is the env `manager._child_env(ctx)` builds for the Claude process (BASE_ENV plus the passthrough set, which includes spec.env, plus TERM) minus every ClaudeEnv name of kind secret and CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN; not the whole service env (widened by interrogate ruling 1).
+5. Terminals exist only for an active session; create or attach on a known but not active session answers 409 session_not_active; 404 only for an unknown session. Stopping or destroying a session closes its shells.
+6. Reconnect on 1006, 1011, 1013 and 4409 with exponential backoff 1 s to 30 s, at most 10 attempts, then state refused; never reconnect on 1000, 1003, 1008, 1009. A refused tab stays with the reason, a Retry and a Close button.
+7. A maximized panel shows one Restore control that returns the layout from before maximize; restoring a single minimized strip returns that panel to its pre-minimize size (Panel.expand()); double-click on a separator still resets 25/45/30.
+8. Symlink entries are leaves that preview through the content route (an escape outside the workdir shows the wrapper error inline); other entries are leaves showing type only, no preview.
+9. Only the active cluster tab's Workspace is mounted; switching away unmounts it and terminals reattach with scrollback replay on return. A minimized panel stays mounted, so its event subscription stays live.
+10. Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
+11. A missing workdir root (not_found for path "") renders as an empty tree with the line "workdir not created yet", not as an error.
+
+## Assumptions and unknowns
+
+- `react-resizable-panels` 4 and `@xterm/xterm` 6 need mocks under jsdom (no ResizeObserver, no canvas): confirmed by the first frontend task that imports them; tests mock them like `react-virtuoso`.
+- Starlette `TestClient` runs the app on its own loop, which conflicts with the async psycopg pool fixture: the relay test serves the api with uvicorn on a loopback port in the test loop and connects with the `websockets` client (probe in terminal-ws-relay).
+- The wrapper image keeps `/bin/bash` and `/etc/profile.d/mise-shims.sh` (wrapper Dockerfile:81): checked by the wrapper e2e test, which runs a login shell.
+- Harbor publishes `claude-code-wrapper:<sha7>` and chart `0.1.0-main.<sha7>` on each main merge: checked by the pin tasks before pinning (`helm show chart` or registry digest where credentials allow; otherwise the user's apply surfaces it).
+
+## Open questions
+- Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [answer: yes, one cluster = one tab (user, 2026-10-23)]
+- Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [answer: agents strip in the chat panel header merged with the agent filter chips (user, 2026-10-23)]
+- Q3: Where does a terminal run? [answer: shell in an agent pod served by the wrapper, proxied by the orchestrator api (user, 2026-10-23)]
+- Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [answer: several concurrent shells as tabs, each with its own pod choice, first ready agent preselected (user, 2026-10-23)]
+- Q5: How long does a shell live? [answer: survives tab switches and reloads, reaped 15 min after last detach, 256 KiB scrollback replayed on reattach, max 8 shells per pod (user, 2026-10-23)]
+- Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [answer: yes, scrub CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN as defence in depth (user, 2026-10-23)]
+- Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [answer: yes, unauthenticated LAN-only with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) (user, 2026-10-23)]
+- Q8: Does "shows everything" include dotfiles and .git? [answer: yes, everything incl. dotfiles and .git, lazy per directory, 2000 entries cap with a more row (user, 2026-10-23)]
+- Q9: What does clicking a file do? [answer: read-only preview, text up to 1 MiB, binary shows size and type (user, 2026-10-23)]
+- Q10: How does the tree stay current? [answer: re-fetch directories touched by the event stream plus manual refresh, no inotify (user, 2026-10-23)]
+- Q11: What does a minimized panel look like? [answer: narrow vertical strip with name and restore button, double-click separator restores 25/45/30 (user, 2026-10-23)]
+- Q12: Phone layout? [answer: phone: one panel at a time with a three-way switch (user, 2026-10-23)]
+- Q13: Add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons? [answer: yes, add @mui/icons-material 9.5.0 (user, 2026-10-23)]
+- Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [answer: yes, this epic builds the hamburger menu (sessions top, settings section bottom, empty until presets) (user, 2026-10-23)]
+- Q15: Drop the cluster Edit action from the UI in this epic, before the presets epic removes the PATCH route? [answer: yes, drop the cluster Edit action from the UI; tab actions carry only Discard (user, 2026-10-23)]
+- Q16: May the orchestrator api call wrapper pods for the file and terminal proxies, reversing MEMORY D5 and README Architecture ("api never calls wrappers or holds their tokens")? [answer: yes, narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; the import test whitelists exactly it; README Architecture and MEMORY.md updated with date and why (user, 2026-10-23)]
+
+## Irreversible operations in scope
+
+- Deleting `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`, `Ribbon.test.tsx`, `AgentRow.tsx` and `frontend/src/chat/AgentFilter.tsx`: git history keeps them; pinned by retirement tests.
+- Live shells on agent pods: an interactive shell can change the shared workdir like any agent; covered by the user's Q7 answer (LAN-only, Origin allowlist).
+- Deploy (helmfile apply) is run by the user after the epic, not by this plan.
+
+## Run 1 rulings on discovered items (2026-10-24)
+
+- uvicorn logs an ERROR after every WebSocket denial response: third-party behaviour, dropped (noted, not doing now).
+- anyio imported directly by api/terminals.py: folded into wrapper-security-followups (declare the dependency).
+- verifier role ran its script with an unsupported flag: workflow tooling, outside this epic, dropped.
+
+## Epic review rulings (2026-10-24)
+
+- Acted on (tasks fe-review-fixes, be-review-fixes): Origin refusal shown as refused within two attempts; terminal list refresh on agent readiness and unavailable_agents notice; hook-failed mark and ready/replicas count in tabs; uvicorn ws_max_size 65536; stale ribbon comment.
+- Noted, not doing now: Host allowlist against DNS rebinding on port-forward access (prod ingress host routing blocks it); Origin guard on pre-existing bodyless POST routes in messages.py (pre-existing, outside this epic).
+- For the user at deploy: verify agent pods cannot reach the UI through hairpin NAT (curl the UI host from an agent pod, expect 403).

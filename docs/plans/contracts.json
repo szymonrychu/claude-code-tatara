@@ -138,5 +138,63 @@
       "agent-orchestrator"
     ],
     "note": "hooks.onStart: instance event fired once per ccw process start before peer join, resume_on_start and any session; blocking deny or on_error deny failure exits 1; envelope like preJoin, runs in the sessions root"
+  },
+  {
+    "name": "wrapper-files-api",
+    "kind": "api",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "claude-code-wrapper GET /v1/sessions/{id}/files (root, path, entries[name,type,size,mtime], next_offset; limits.files_max_entries 2000) and /files/content (kind text|binary|too_large, 1 MiB); errors invalid_path, not_found, not_a_directory, not_a_file; consumed by agent-orchestrator task file-proxy-routes"
+  },
+  {
+    "name": "wrapper-terminals-api",
+    "kind": "api",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "README.md",
+    "consumers": [
+      "agent-orchestrator"
+    ],
+    "note": "claude-code-wrapper POST|GET /v1/sessions/{id}/terminals, DELETE .../{terminal_id}, WS .../{terminal_id}/attach (binary PTY bytes; JSON resize, ping/pong, exit; replay 256 KiB; close 1000/1003/1009/1013); errors terminal_limit 409, terminal_not_found 404; consumed by agent-orchestrator tasks terminal-proxy-routes, terminal-ws-relay"
+  },
+  {
+    "name": "orch-allowed-origins",
+    "kind": "schema",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/settings.py",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "ORCH_ALLOWED_ORIGINS: CSV of scheme://host[:port]; refuses Origin-bearing WebSocket upgrades not listed (1008) and unlisted Origin on terminal POST/DELETE (403 forbidden_origin); agents-helmfile sets https://agents.szymonrichert.pl"
+  },
+  {
+    "name": "orch-settings-menu",
+    "kind": "interface",
+    "owner": "web-ui-cluster-tabs-with-fil",
+    "file": "code/agent-orchestrator/frontend/src/layout/SessionsMenu.tsx",
+    "consumers": [
+      "cluster-presets"
+    ],
+    "note": "SessionsMenu settingsCategories: {id, label, onOpen}[] rendered in the settings section pinned to the drawer bottom; cluster-presets adds Presets; this epic removes only the Edit entry points, cluster-presets removes PATCH and the ClusterForm edit code"
+  },
+  {
+    "name": "orch-presets-api",
+    "kind": "api",
+    "owner": "cluster-presets",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [],
+    "note": "GET|POST /api/v1/presets, GET|PUT|DELETE /api/v1/presets/{preset_id}, POST /api/v1/presets/{preset_id}/copy; PresetView {id, name, is_default, spec (sparse, only set keys), created_at, updated_at}; errors preset_default, last_preset, conflict; task preset-routes"
+  },
+  {
+    "name": "orch-cluster-create-api",
+    "kind": "api",
+    "owner": "cluster-presets",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "POST /api/v1/clusters {slug?, spec? | preset_id?}: exactly one of spec or preset_id, slug required with spec, generated from the preset name otherwise; ClusterView preset_id, preset_name; PATCH /api/v1/clusters/{id} retired (405); smoke.sh keeps the raw spec body; task create-cluster-from-preset"
   }
 ]

@@ -9,3 +9,7 @@ Dated entries, newest last. Supersede an entry rather than deleting it. One line
 2026-10-23: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile; via component add (new scaffold).
 2026-10-23: template update 22ec5df62575.
 2026-10-23: cloud sessions: ported the template's scripts/cloud_session_start.py SessionStart hook and docs/claude-cloud.md runbook (template PR szymonrychu/workbench#1) ahead of the next template update, so the workbench plugins load and submodule pushes work in Claude Code cloud sessions; the next template update merges identical content.
+2026-10-23: standing approval (user): open gate questions the user does not answer are taken at their recommended answer; the epics proceed on that basis without a further ask.
+2026-10-23: cloud test infra: the orchestrator DB tests need Docker (testcontainers); in a cloud session start `dockerd` in the background first, it works there.
+2026-10-23: standing approval (user): run hive-mode-leadership-handove and web-ui-cluster-tabs-with-fil to completion and push to main (pushing main deploys nothing); never deploy - finish with copy-paste deploy commands for the user to run.
+2026-10-24: overnight agent history for web-ui-cluster-tabs-with-fil and cluster-presets was squashed and force-pushed under the user's name (user's request); SHAs in those records are pre-squash. Now: claude-code-wrapper 1ced775 is now e9ffa62, agent-orchestrator 9ab0d60 is now be90ac8 (plus review fixes), agents-helmfile 8bf0b6b is now 13e5ffa.

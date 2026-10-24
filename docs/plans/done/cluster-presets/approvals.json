@@ -1,0 +1,124 @@
+[
+  {
+    "id": "A",
+    "text": "Presets are named, stored ClusterSpec templates that can be created, copied, edited and deleted through /api/v1 and the UI; a preset stores only what the user set and the editor (the former ClusterForm) shows /meta defaults for the rest.",
+    "decisions": [
+      "D2",
+      "D3",
+      "D6",
+      "D17",
+      "D18",
+      "D21"
+    ],
+    "tasks": [
+      "fe-new-cluster-dialog",
+      "fe-preset-form",
+      "fe-presets-page",
+      "preset-routes",
+      "presets-table-and-repo"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "B",
+    "text": "A seeded default preset with 1 pod always exists; it can be edited and copied but not renamed or deleted, and the API refuses to delete the last preset.",
+    "decisions": [
+      "D1",
+      "D3",
+      "D15",
+      "D16"
+    ],
+    "tasks": [
+      "fe-presets-page",
+      "preset-routes",
+      "presets-table-and-repo"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "C",
+    "text": "Scheduling a cluster takes a preset and an optional slug (generated from the preset name when absent); POST /api/v1/clusters keeps a raw spec for headless callers, exactly one of spec or preset_id.",
+    "decisions": [
+      "D4",
+      "D6",
+      "D11",
+      "D12"
+    ],
+    "tasks": [
+      "create-cluster-from-preset",
+      "fe-new-cluster-dialog",
+      "slug-from-name"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "D",
+    "text": "A cluster keeps the spec snapshotted at create, plus which preset it came from; editing or deleting a preset never changes a running cluster.",
+    "decisions": [
+      "D1",
+      "D4",
+      "D13",
+      "D19"
+    ],
+    "tasks": [
+      "create-cluster-from-preset",
+      "fe-new-cluster-dialog",
+      "kind-e2e-presets",
+      "presets-table-and-repo"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "E",
+    "text": "Live cluster edit is removed: PATCH /api/v1/clusters/{id} is retired (405 retirement test), with its schema, repository function, the stored parameter of validate_spec, the client call and the form's edit mode, and a documented exception to the additive-only rule.",
+    "decisions": [
+      "D5",
+      "D14",
+      "D22"
+    ],
+    "tasks": [
+      "fe-preset-form",
+      "presets-table-and-repo",
+      "retire-cluster-patch-route",
+      "retire-spec-update-repo"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "F",
+    "text": "Presets is the first settings category at the bottom of the hamburger menu and opens a full main-area page with a Back button.",
+    "decisions": [
+      "D7",
+      "D20"
+    ],
+    "tasks": [
+      "fe-presets-page"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "G",
+    "text": "Headless parity: every UI capability of this epic is backed by a documented public API (README, OpenAPI) and an API-only end-to-end test.",
+    "decisions": [
+      "D8",
+      "D10"
+    ],
+    "tasks": [
+      "create-cluster-from-preset",
+      "kind-e2e-presets",
+      "preset-routes"
+    ],
+    "status": "approved"
+  },
+  {
+    "id": "H",
+    "text": "Deployed: the agent-orchestrator chart and image are pinned in agents-helmfile; helmfile apply and smoke are run by the user.",
+    "decisions": [
+      "D9"
+    ],
+    "tasks": [
+      "deploy-pin-presets"
+    ],
+    "status": "approved"
+  }
+]

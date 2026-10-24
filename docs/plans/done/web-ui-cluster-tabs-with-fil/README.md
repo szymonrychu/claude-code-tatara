@@ -1,8 +1,8 @@
 ---
 title: web ui cluster tabs with filesystem chat and terminal panels
 blockers: [cluster-form-defaults-and-ga]
-stage: build
-owner: ""
+stage: review
+owner: Claude
 repos: [agent-orchestrator, claude-code-wrapper, agents-helmfile]
 created: 2026-10-23
 ---
@@ -127,8 +127,16 @@ Order: cluster-form-defaults-and-ga (in progress), then this epic, then presets-
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 144 agent-min | Critical path: 47 min | Expected wall at P=1.5: 3.2 h (k=2.0) | Actual: 262 min | Remaining estimate: 5 min
 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-24)
+
+Whole-diff review (sonnet): no blockers; 4 findings acted on in fe-review-fixes and be-review-fixes.
+Scope audit (sonnet): every approved item A-K landed, 186 ACs resolve, no gaps.
+Security: wrapper (opus) no critical/high, 4 low fixed in wrapper-security-followups, 3 limits documented; orchestrator (opus) no critical/high, ws_max_size fixed, DNS-rebinding Host allowlist and pre-existing bodyless POST Origin guards noted not done; hairpin-NAT reachability from agent pods left as a deploy-time check for the user.
+Full suites: wrapper 1653 passed (2 container-only failures, green in CI); orchestrator 472 passed, frontend 164 passed, build and check:api clean; PR CI green on both (incl. kind e2e).
+Merged: claude-code-wrapper#2 (1ced775), agent-orchestrator#4 (f1baa5b); agents-helmfile#6 pin open.
