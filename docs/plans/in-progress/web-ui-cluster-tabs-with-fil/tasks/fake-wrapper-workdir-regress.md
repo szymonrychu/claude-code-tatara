@@ -50,12 +50,13 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The full orchestrator suite passes on the epic branch; sessions report their logical workdir while file and terminal tests use a real backing directory.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Run the verify command: test_session_workdir_matches_rendered_workdir_path fails (red already observed on the integration branch).
+- Split the fake session's reported workdir from its backing directory.
+- Run the verify command: all pass.
 
 ## Notes
 
