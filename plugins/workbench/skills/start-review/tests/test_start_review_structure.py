@@ -10,7 +10,8 @@ ROOT = SKILL_DIR.parents[1]
 SKILL = SKILL_DIR / "SKILL.md"
 CHECKLIST = SKILL_DIR / "references" / "review-checklist.md"
 PANEL = ROOT / "agents" / "panel-reviewer.md"
-REVIEWERS = ("reviewer", "spec-reviewer", "quality-reviewer")
+REVIEWERS = ("reviewer",)
+RETIRED = ("spec-reviewer", "quality-reviewer", "plan-execute")
 PERSONA = ROOT / "agents" / "research-reviewer.md"
 
 CHECKLIST_H2 = [
@@ -61,8 +62,6 @@ SKILL_PHRASES = [
     "stop",
     "suite-lock.sh",
     "`reviewer`",
-    "`spec-reviewer`",
-    "`quality-reviewer`",
     "references/review-checklist.md",
     "400 words",
     "Act on",
@@ -106,8 +105,11 @@ def test_checklist_h1_and_section_order():
 
 def test_checklist_preamble_names_the_three_readers():
     pre = CHECKLIST.read_text().split("\n## ", 1)[0]
-    for reader in ("plan-execute", "panel-reviewer", "start-review", *REVIEWERS):
+    for reader in ("panel-reviewer", "start-review", *REVIEWERS):
         assert reader in pre
+    text = CHECKLIST.read_text()
+    for gone in RETIRED:
+        assert gone not in text, gone
 
 
 def test_checklist_required_phrases():
@@ -221,7 +223,6 @@ def test_reviewer_agents_read_only_and_read_checklist(name):
     body = text.split("\n---\n", 1)[1]
     assert "review-checklist.md" in body
     assert body.index("review-checklist.md") < 400
-    assert "completeness" in body.lower()
     assert path.read_text().isascii()
 
 
@@ -231,14 +232,6 @@ def test_reviewer_agents_do_not_copy_the_checklist():
         text = (ROOT / "agents" / f"{name}.md").read_text()
         for ln in checklist:
             assert ln not in text, (name, ln)
-
-
-def test_reviewer_roles_are_distinct():
-    spec = (ROOT / "agents" / "spec-reviewer.md").read_text()
-    quality = (ROOT / "agents" / "quality-reviewer.md").read_text()
-    assert "acceptance condition" in spec and "file:line" in spec and "undelivered" in spec
-    for word in ("changed path", "caller", "error branch", "regenerated artifact"):
-        assert word in quality, word
 
 
 def test_panel_reviewer_stays_persona_free():

@@ -1,6 +1,6 @@
 # Review checklist
 
-The single source read by the plan-execute reviewer, the panel-reviewer agent, the reviewer, spec-reviewer and quality-reviewer agents, and the start-review skill.
+The single source read by the reviewer agent, the panel-reviewer agent and the start-review skill.
 Apply every section to the diff and the tree; do not substitute your own list.
 
 ## Tests first
@@ -31,8 +31,7 @@ Apply every section to the diff and the tree; do not substitute your own list.
 
 - Swallowed errors: an except or catch that discards the failure, or a status that is never read.
 - A contract defined in two places (a schema, constant, phrase list or format that can drift apart).
-- A shared part rebuilt instead of reused when the task named one to reuse.
-- A shared part reimplemented instead of reused is a finding unless `reimplemented` gives a reason that holds.
+- Existing code reimplemented instead of reused: a second helper, parser or constant for a behaviour the repo has.
 - A debt-marker comment added by this change (the markers are listed under Debt markers below).
 - A stub or skipped test introduced by this change.
 - Debt markers: TODO, FIXME, stub, a skipped or xfail test, a hard-coded value standing in for logic.
@@ -63,5 +62,5 @@ Apply every section to the diff and the tree; do not substitute your own list.
 
 ## Bookkeeping
 
-- A missing note, sweep, ratchet or approval line is a processGaps entry, never a finding.
+- A missing note, sweep or ratchet line is a processGaps entry, never a finding.
 - Do not raise a finding for a record the orchestrator owns.
