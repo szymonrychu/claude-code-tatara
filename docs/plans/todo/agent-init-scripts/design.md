@@ -77,6 +77,9 @@ Exposed to the agent initialised with them, so it knows how it was initialised. 
 ### D11: C3 edit writes cluster spec and source preset
 An agent edit writes to the cluster's stored spec AND to its source preset when there is one. (user decision)
 
+### D12: X1 one shared orchestrator plugin
+One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit), with a per-cluster scoped credential in the pod. Built once, owned by hive-mode-leadership-handove; the other epics add tools to it. (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -117,6 +120,7 @@ An agent edit writes to the cluster's stored spec AND to its source preset when 
 | D9 C1 init scripts field, once per cluster | init-scripts-spec-field, init-job-runner, init-scripts-kind-e2e |
 | D10 C2 exposed to the agent | init-job-runner, init-scripts-agent-api |
 | D11 C3 edit writes cluster spec and source preset | init-scripts-public-api, init-scripts-agent-api |
+| D12 X1 one shared orchestrator plugin | init-scripts-agent-api |
 
 ## Contracts
 

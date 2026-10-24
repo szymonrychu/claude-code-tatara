@@ -71,7 +71,8 @@
     "id": "X1",
     "text": "One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool, with a per-cluster scoped credential in the pod; built once by hive-mode-leadership-handove, the other epics add tools to it.",
     "decisions": [
-      "D6"
+      "D6",
+      "D12"
     ],
     "tasks": [
       "init-scripts-agent-api"
