@@ -904,8 +904,8 @@ def test_no_force_or_capital_d_in_ticket_or_merge_cleanup():
         assert bad not in cleanup, bad
 
 
-def test_tasks_emit_branch_and_verified_head_for_the_epic_close_audit(root):
-    """The auditOnly run reads each task's branch and verified head from `ticket.py tasks`."""
+def test_tasks_emit_status_and_verified_head_and_ignore_legacy_keys(root):
+    """The orchestrator reads each task's status and verified head from `ticket.py tasks`."""
     ep = mk_epic(root)
     p = mk_task(root, ep, "alpha")
     mk_task(root, ep, "beta")
@@ -913,10 +913,8 @@ def test_tasks_emit_branch_and_verified_head_for_the_epic_close_audit(root):
     r = cli("tasks", ep, "--root", root)
     assert r.returncode == 0, r.stderr
     out = {t["id"]: t for t in json.loads(r.stdout)}
-    assert out["alpha"]["branch"] == f"{ep}-alpha"
-    assert out["alpha"]["verifiedHead"] == "abc123"
-    assert out["alpha"]["acsForAudit"] == ["AC1"]
-    assert out["beta"]["branch"] == ""
+    assert out["alpha"]["verifiedHead"] == "abc123" and out["alpha"]["status"] == "todo"
+    assert "branch" not in out["alpha"] and "acsForAudit" not in out["alpha"]
     assert out["beta"]["verifiedHead"] == ""
 
 

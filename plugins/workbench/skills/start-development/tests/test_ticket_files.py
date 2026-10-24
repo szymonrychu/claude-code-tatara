@@ -1,6 +1,7 @@
 """Tests for ticket.py core: layout, slugs, frontmatter, new-epic, new-task, path, guard, commit."""
 
 import importlib.util
+import json
 import re
 import subprocess
 import sys
@@ -534,3 +535,46 @@ def test_cli_commits_in_git_repo(repo):
     files = git(repo, "show", "--name-only", "--format=").stdout.split()
     assert files == ["docs/plans/todo/alpha/tasks/first.md"]
     assert "?? dirty.txt" in git(repo, "status", "--porcelain").stdout
+
+
+# (13) tasks: dependency order
+def _full_task(root, epic, title, deps=""):
+    req, ac = root / "req.txt", root / "ac.txt"
+    req.write_text("Do it.")
+    ac.write_text("- AC1: works [evidence: test:t.py::test_works]")
+    extra = ["--requirement-file", req, "--ac-file", ac]
+    if deps:
+        extra += ["--depends-on", deps]
+    r = new_task(root, epic, title, *extra)
+    assert r.returncode == 0, r.stderr
+    p = Path(r.stdout.strip().splitlines()[-1])
+    text = p.read_text()
+    start, end = text.index("## Steps"), text.index("## Notes")
+    p.write_text(text[:start] + "## Steps\n\n1. test first\n\n" + text[end:])
+    return p
+
+
+def test_tasks_are_in_dependency_order(root):
+    new_epic(root)
+    ep = "cost-and-ticketing"
+    _full_task(root, ep, "Alpha", "mid")
+    _full_task(root, ep, "Beta", "zeta")
+    _full_task(root, ep, "Mid", "zeta")
+    _full_task(root, ep, "Zeta")
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    out = json.loads(r.stdout)
+    order = [x["id"] for x in out]
+    assert order == ["zeta", "beta", "mid", "alpha"]
+    for i, x in enumerate(out):
+        assert set(x["dependsOn"]) <= set(order[:i]), x["id"]
+        assert not {"owns", "uses", "worktree", "branch", "acsForAudit", "forkPoint"} & set(x)
+        assert x["status"] == "todo" and x["verifiedHead"] == ""
+    only = cli("tasks", ep, "--root", root, "--only", "alpha,zeta")
+    assert [x["id"] for x in json.loads(only.stdout)] == ["zeta", "alpha"]
+    readme = root / "todo" / ep / "README.md"
+    assert "## Time" not in readme.read_text()
+    _full_task(root, ep, "Loop one", "loop-two")
+    _full_task(root, ep, "Loop two", "loop-one")
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 1 and "cycle" in r.stderr and "loop-one" in r.stderr

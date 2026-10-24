@@ -733,8 +733,28 @@ def _task_files(epic_dir: Path) -> list[Path]:
     return sorted((epic_dir / "tasks").glob("*.md"))
 
 
+def dependency_order(deps: dict[str, list[str]]) -> list[str]:
+    """Task slugs with every dependency before its dependents, ties in slug order. A dependency
+    outside `deps` does not constrain the order; a cycle is an error naming its tasks."""
+    left = {k: {d for d in v if d in deps and d != k} for k, v in deps.items()}
+    selfloops = sorted(k for k, v in deps.items() if k in v)
+    out: list[str] = []
+    while left and not selfloops:
+        ready = sorted(k for k, v in left.items() if not v)
+        if not ready:
+            break
+        for k in ready:
+            out.append(k)
+            del left[k]
+        for v in left.values():
+            v.difference_update(ready)
+    if selfloops or left:
+        raise TicketError(f"dependency cycle among tasks: {', '.join(selfloops or sorted(left))}")
+    return out
+
+
 def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
-    """The plan-execute task list for an epic, one entry per task file (or per `only` slug)."""
+    """The epic's task list in dependency order, one entry per task file (or per `only` slug)."""
     placeholder = _template_sections()
     out = []
     files = _task_files(epic_dir)
@@ -763,19 +783,16 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
                 "files": m.get("files", []),
                 "verify": m.get("verify", ""),
                 "notes": sec.get("Notes", ""),
-                "owns": m.get("owns", []),
-                "uses": m.get("uses", []),
                 "dependsOn": m.get("depends_on", []),
                 "model": m.get("model", ""),
                 "review": m.get("review", ""),
-                "worktree": m.get("worktree", ""),
-                "acsForAudit": m.get("acs_for_audit", []),
-                "branch": m.get("branch", ""),
+                "status": m.get("status", ""),
                 "verifiedHead": m.get("verified_head", ""),
-                "forkPoint": m.get("fork_point", ""),
             }
         )
-    return out
+    by_id = {x["id"]: x for x in out}
+    graph = {p.stem: list(_read_doc(p).meta.get("depends_on", [])) for p in files}
+    return [by_id[k] for k in dependency_order(graph) if k in by_id]
 
 
 def cmd_tasks(a: argparse.Namespace) -> int:
