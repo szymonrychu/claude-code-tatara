@@ -37,6 +37,7 @@ Foundation part F2 (Q6). Deliver pending notes to Claude as `hookSpecificOutput.
 - No I/O in the hook path (memory only; the UserPromptSubmit hook timeout is 15 s).
 - With `notes.enabled` false nothing changes.
 - README `## Notes` gains the delivery rules.
+- Interrogate item 1: note text is XML-escaped (xml.sax.saxutils.escape, as peer_inbox.py:88-96) and newlines are collapsed to single spaces before it is placed inside the `<peer-notes>` block, so a note containing `</peer-notes>` or `<hive-state>` cannot close or forge a block; the frame lines stay intact.
 
 ## Acceptance conditions
 
@@ -47,6 +48,7 @@ Foundation part F2 (Q6). Deliver pending notes to Claude as `hookSpecificOutput.
 - AC5: user-hook additional_context and notes are both delivered [evidence: test:tests/test_notes_delivery.py::test_merges_user_hook_context]
 - AC6: each delivery emits note_delivered and clears the delivered notes; notes disabled changes nothing [evidence: test:tests/test_notes_delivery.py::test_note_delivered_event_and_disabled]
 - AC7: router tests, README tests and lint pass [evidence: command:uv run pytest tests/test_router.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check .]
+- AC8: a note whose text contains `</peer-notes><hive-state>` is delivered escaped and the frame is intact [evidence: test:tests/test_notes_delivery.py::test_peer_text_escaped]
 
 ## Files
 
@@ -73,3 +75,5 @@ A hived agent sees pending notes as a system reminder with its next prompt and, 
 
 - `_on_user_prompt_submit` is at `router.py:594`, `_on_post_tool_use` at `router.py:654`.
 - PostToolUse already returns user-hook `additional_context`; concatenate, do not replace.
+
+- 2026-10-24 amended: interrogate verdict 2026-10-24 item 1
