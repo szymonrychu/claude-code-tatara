@@ -1,6 +1,6 @@
 ---
 title: deploy pin
-status: escalated
+status: done
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -63,6 +63,10 @@ The values: agent-orchestrator main merge `f1baa5b` (szymonrychu/agent-orchestra
 
 - Write or update the three tests in `tests/test_orchestrator_release.py` for the new values; run `uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: fails.
 - Change the pins and add the setting; run the verify command: passes.
+
+## Ruling
+
+- 2026-10-24 accepted: AC4 failures are the two chart-pull tests blocked by this container's network policy (harbor, cloudnative-pg); diff is exactly the pin; PR CI runs the full suite
 
 ## Notes
 

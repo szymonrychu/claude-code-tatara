@@ -16,5 +16,11 @@
     "accept": true,
     "reason": "test-only task; red/green shown on a local real-wrapper stack; kind run happens in PR CI",
     "at": "2026-10-24T01:20:45Z"
+  },
+  {
+    "task": "deploy-pin",
+    "accept": true,
+    "reason": "AC4 failures are the two chart-pull tests blocked by this container's network policy (harbor, cloudnative-pg); diff is exactly the pin; PR CI runs the full suite",
+    "at": "2026-10-24T01:56:08Z"
   }
 ]
