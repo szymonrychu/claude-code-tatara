@@ -24,9 +24,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-# worktree_lib sits next to lib/ and is shared with the Claude-only wrappers.
+# worktree_lib sits next to lib/ and is shared with the Claude-only wrappers;
+# agent_usage (scripts/lib) owns the transcript walker.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "lib"))
 
+import agent_usage  # noqa: E402
 import worktree_lib as wl  # noqa: E402
 
 from .apply_patch import PATCH_KEYS, patch_added_lines  # noqa: E402
@@ -539,16 +542,10 @@ def collect_worktrees(event: NormalizedEvent) -> list[str]:
         add(event.cwd)
 
     transcript = event.raw.get("agent_transcript_path")
-    if isinstance(transcript, str) and Path(transcript).is_file():
-        try:
-            lines = Path(transcript).read_text(errors="replace").splitlines()
-        except OSError:
-            lines = []
-        for line in lines:
-            try:
-                content = json.loads(line)["message"]["content"]
-            except (ValueError, KeyError, TypeError):
-                continue
+    if isinstance(transcript, str) and transcript:
+        for line in agent_usage.transcript_lines(transcript):
+            message = line.get("message")
+            content = message.get("content") if isinstance(message, dict) else None
             if not isinstance(content, list):
                 continue
             for item in content:
