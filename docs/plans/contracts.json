@@ -354,5 +354,16 @@
       "agent-init-scripts"
     ],
     "note": "task chart-agents-service: ClusterIP <fullname>-agents:8001, never in the ingress; settings ORCH_AGENT_PORT, ORCH_AGENT_API_URL"
+  },
+  {
+    "name": "orch-agent-api-auth",
+    "kind": "api",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/api/agent.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task agent-api-me: /agent/v1 router on the agent port only; require_agent() (Bearer token + X-Orch-Cluster, caller IP = agents.pod_ip) returns the agents row; GET /agent/v1/me {cluster_id, agent_id, pod_name, ordinal, leader, epoch, max_replicas, static, members[]}; errors 401 unauthorized, 403 forbidden"
   }
 ]
