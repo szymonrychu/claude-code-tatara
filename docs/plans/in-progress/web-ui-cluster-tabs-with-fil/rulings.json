@@ -1,0 +1,8 @@
+[
+  {
+    "task": "wrapper-workspace-e2e",
+    "accept": true,
+    "reason": "process-only tdd-skipped on an e2e test over surfaces already landed and verified; verify passes on HEAD",
+    "at": "2026-10-24T00:23:52Z"
+  }
+]

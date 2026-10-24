@@ -61,6 +61,10 @@ A headless client can browse the workdir and run a shell on a real wrapper with 
 - If a test fails because the product deviates from the README, fix the product in its module under this task only when the README is right; otherwise record it as discovered.
 - `uv run ruff check . && uv run ruff format --check .`: clean.
 
+## Ruling
+
+- 2026-10-24 accepted: process-only tdd-skipped on an e2e test over surfaces already landed and verified; verify passes on HEAD
+
 ## Notes
 
 - Tests never use a real claude; the fake claude bin from `tests/conftest.py` is enough to bring a session up. Do not edit `tests/conftest.py`.
