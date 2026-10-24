@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-new-cluster-dialog/agent-orchestrator
+branch: cluster-presets-fe-new-cluster-dialog
 verified_head: ""
 run: ""
 provides: []

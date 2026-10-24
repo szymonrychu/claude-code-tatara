@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-deploy-pin-presets/agents-helmfile
+branch: cluster-presets-deploy-pin-presets
 verified_head: ""
 run: ""
 provides: []

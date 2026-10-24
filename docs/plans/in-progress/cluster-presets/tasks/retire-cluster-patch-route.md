@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-retire-cluster-patch-route/agent-orchestrator
+branch: cluster-presets-retire-cluster-patch-route
 verified_head: ""
 run: ""
 provides: []
