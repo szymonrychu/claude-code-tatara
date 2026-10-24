@@ -33,7 +33,7 @@ User request (2026-10-24), verbatim:
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 15 agent-min | Critical path: 10 min | Expected wall at P=1.5: 0.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 15 min
 
 ## Review
 
