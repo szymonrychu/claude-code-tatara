@@ -127,7 +127,7 @@ Order: cluster-form-defaults-and-ga (in progress), then this epic, then presets-
 
 ## Time
 
-Estimate: 133 agent-min | Critical path: 46 min | Expected wall at P=1.5: 3.0 h (k=2.0) | Actual: 220 min | Remaining estimate: 22 min
+Estimate: 133 agent-min | Critical path: 46 min | Expected wall at P=1.5: 3.0 h (k=2.0) | Actual: 229 min | Remaining estimate: 16 min
 
 ## Review
 

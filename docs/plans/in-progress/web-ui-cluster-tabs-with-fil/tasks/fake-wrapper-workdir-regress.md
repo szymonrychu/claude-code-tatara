@@ -1,6 +1,6 @@
 ---
 title: fake wrapper workdir regression
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the orchestrator suite is green again on the epic branch
 files: [tests/fakes/fake_wrapper.py, tests/test_api_files.py, tests/test_api_terminals.py, tests/test_terminal_relay.py, tests/test_workspace_proxy.py, tests/test_fake_wrapper_contract.py]
@@ -11,14 +11,17 @@ uses: []
 model: sonnet
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 9
+actual_roles: "impl 2, verify 3, review 1, fix 2, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fake-wrapper-workdir-regress/agent-orchestrator
 branch: web-ui-cluster-tabs-with-fil-fake-wrapper-workdir-regress
-verified_head: ""
-run: ""
+verified_head: 18851216ec9bf98b5f86640d64674fa6d3b06ddd
+run: web-ui-cluster-tabs-with-fil
 provides: []
+acs_for_audit: []
+process_gaps: ["Implementer did not run the new root assertion red before the fix; tests.red evidence (commit-first revert/restore tails) not recorded", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+fork_point: 25e24cc
 ---
 
 # fake wrapper workdir regression

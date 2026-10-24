@@ -1,6 +1,6 @@
 ---
 title: deploy pin
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: "the live agents namespace runs the tabs, files and terminal release with the UI origin allowed"
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
