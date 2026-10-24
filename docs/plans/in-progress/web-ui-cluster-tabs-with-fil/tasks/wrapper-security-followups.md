@@ -1,6 +1,6 @@
 ---
 title: wrapper security followups
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "shells cannot kill unrelated sessions or exceed attach and frame caps, and the README states the real isolation limits"
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/service.py, src/claude_code_wrapper/config.py, README.md, tests/test_terminals.py, pyproject.toml, uv.lock]
@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-security-followups/claude-code-wrapper
+branch: web-ui-cluster-tabs-with-fil-wrapper-security-followups
 verified_head: ""
 run: ""
 provides: []
