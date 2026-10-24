@@ -320,6 +320,8 @@ def guard_segments(cmd: str, depth: int = 0):
         yield seg, _normalize(seg)
 
 
+EM_DASH = "\u2014"
+
 _COMMIT_RE = re.compile(r"^git\s+commit\b")
 _COMMIT_FILE_RE = re.compile(r"(?:^|\s)(?:-F|--file)(?:=|\s*)(?![-\s])(\S+)")
 COMMIT_EM_DASH_REASON = (
@@ -334,7 +336,7 @@ def _commit_has_em_dash(cmd: str, commit: str, cwd: str) -> bool:
     A `-F <file>` or `--file=<file>` message is read relative to the event cwd.
     `-F -` (stdin) and a file that is missing or unreadable are out of scope and pass.
     """
-    if "\u2014" in cmd:
+    if EM_DASH in cmd:
         return True
     match = _COMMIT_FILE_RE.search(commit)
     if not match:
@@ -343,7 +345,7 @@ def _commit_has_em_dash(cmd: str, commit: str, cwd: str) -> bool:
     if not path.is_absolute():
         path = Path(cwd or ".") / path
     try:
-        return "\u2014" in path.read_text(encoding="utf-8")
+        return EM_DASH in path.read_text(encoding="utf-8")
     except (OSError, ValueError):
         return False
 
@@ -405,7 +407,6 @@ def blocked_reason(path: str) -> str | None:
     return None
 
 
-EM_DASH = "\u2014"
 
 # Keys holding the new text of an edit or write, across every harness's tool
 # schema: Claude Write/Edit/NotebookEdit, Copilot CLI create/edit, Antigravity
