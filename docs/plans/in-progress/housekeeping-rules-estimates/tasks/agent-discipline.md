@@ -1,6 +1,6 @@
 ---
 title: Agent discipline
-status: in-progress
+status: done
 repo: workbench
 value: "Implementers, reviewers and the planner read once, edit once, never tamper with tests, never add compat shims, and ask instead of guessing"
 files: [plugins/workbench/agents/implementer.md, plugins/workbench/agents/reviewer.md, plugins/workbench/skills/start-review/tests/test_agents_lean.py, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-review && bash
 depends_on: [housekeeping-rules]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b9ee9ba
 ---
 
 # Agent discipline
@@ -67,3 +67,5 @@ The implementer, reviewer and planner texts carry the list, read once, edit all,
 - Fix-as-ac (brief, conflict with TDD): the discipline reads "list, read all, edit all, run verify once per red/green step" and must agree with tdd.md and implementer.md:52-57.
 - Agent files are pinned by test_epic_skills_structure.py (word caps, `acEvidence`) and test_start_skills_structure.py; keep those phrases.
 - `pointsActual` for the reviewer is added later by run-marker-points; do not add it here.
+
+- 2026-10-24 done
