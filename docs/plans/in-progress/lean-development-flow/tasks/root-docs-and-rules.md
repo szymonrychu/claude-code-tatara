@@ -1,6 +1,6 @@
 ---
 title: Root docs and rules
-status: in-progress
+status: done
 repo: workbench
 value: "AGENTS.md is loaded into every session; a stale rule 1 would send agents back to a deleted workflow"
 files: [AGENTS.md, CLAUDE.md, README.md, docs/architecture.md, docs/harnesses.md, docs/enterprise.md, scripts/tests/]
@@ -9,6 +9,7 @@ depends_on: [skills-wording]
 owns: []
 uses: []
 model: sonnet
+verified_head: 8990c8e
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
