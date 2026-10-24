@@ -1,6 +1,6 @@
 ---
 title: Agent usage lib
-status: in-progress
+status: done
 repo: workbench
 value: "Per-agent time and tokens are read from transcripts once, correctly, by one module"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/hooks/lib/core.py, plugins/workbench/hooks/tests/test_core_stop.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && bash plug
 depends_on: [workbench-dirs, output-spill-to-logs]
 model: opus
 review: ""
-verified_head: ""
+verified_head: f34227b
 ---
 
 # Agent usage lib
@@ -64,3 +64,5 @@ One shared module reads Claude transcripts correctly (no double counting) and ow
 - Hooks brief finding 4: assistant lines carry `timestamp`, `message.model`, `message.usage` with input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens; keep the four components.
 - Do-not-build (hooks brief): per-agent duration from the Agent tool result (no usage for background agents); use transcript timestamps.
 - `aggregate` across records for a task is added by stamp-actuals.
+
+- 2026-10-25 done
