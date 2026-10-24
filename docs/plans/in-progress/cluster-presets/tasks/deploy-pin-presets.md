@@ -1,6 +1,6 @@
 ---
 title: deploy pin presets
-status: in-progress
+status: blocked
 repo: agents-helmfile
 value: the live agents namespace runs the presets release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -11,15 +11,15 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 1
+actual_roles: "impl 1, verify 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-deploy-pin-presets/agents-helmfile
 branch: cluster-presets-deploy-pin-presets
-verified_head: ""
+verified_head: 78299cc12d7729fb9897eb93c092ec30d4fdfb7c
 run: cluster-presets
 provides: []
-acs_for_audit: []
+acs_for_audit: [AC2]
 process_gaps: []
 ---
 
