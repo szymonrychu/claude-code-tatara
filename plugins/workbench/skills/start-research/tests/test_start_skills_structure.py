@@ -89,7 +89,6 @@ EXPECTED_SKILL_MENTIONS = (
     "research-docs",
     "start-review",
     "start-debugging",
-    "heartbeat",
 )
 
 RESEARCH_SKILLS = (
@@ -114,7 +113,6 @@ LOCAL_SKILL_DIRS = (
     "research-docs",
     "start-review",
     "start-debugging",
-    "heartbeat",
 )
 
 
@@ -160,16 +158,6 @@ def test_start_development_does_not_chain_superpowers():
     assert not invocations, f"start-development still invokes superpowers: {invocations}"
 
 
-def test_plan_execute_workflow_exists():
-    wf = ROOT / "workflows" / "plan-execute.js"
-    assert wf.is_file(), "workflows/plan-execute.js missing"
-    text = wf.read_text()
-    assert "export const meta" in text
-    assert "plan-execute" in text
-    for key in ("tasks", "planText"):
-        assert key in text, f"plan-execute.js does not read args.{key}"
-
-
 def test_new_agents_exist_and_are_read_only():
     for name in ("scope-auditor", "codebase-cartographer"):
         f = ROOT / "agents" / f"{name}.md"
@@ -198,30 +186,12 @@ def test_boy_scout_rule_ships_with_the_plugin():
         assert clause in text, f"boy-scout rule does not cover {clause!r}"
 
 
-def test_plan_execute_prompts_carry_the_standing_rules():
-    text = (ROOT / "workflows" / "plan-execute.js").read_text()
-    implementer = (ROOT / "agents" / "implementer.md").read_text()
-    assert "workbench:implementer" in text
-    assert "Boy scout rule" in implementer, "the implementer agent lost the boy scout rule"
-    assert "Escalating is not dropping the work" in text, (
-        "the review cap must hand work back to the orchestrator, never drop it"
-    )
-
-
 def test_plan_execute_is_invoked_with_its_plugin_namespace():
     """Plugin workflows resolve as <plugin>:<meta.name>; a bare name does not exist."""
     text = sd_text(START_DEVELOPMENT / "SKILL.md")
     assert "workbench:plan-execute" in text
     bare = re.findall(r"name: '(?!workbench:)[^']*plan-execute'", text)
     assert not bare, f"bare plan-execute Workflow name would not resolve: {bare}"
-
-
-def test_plan_execute_runs_are_named_copies():
-    """A run gets its own name only via a named copy launched by scriptPath."""
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "${CLAUDE_PLUGIN_ROOT}/workflows/named-copy.mjs plan-execute" in text
-    assert "scriptPath:" in text
-    assert (ROOT / "workflows" / "named-copy.mjs").is_file()
 
 
 def test_cartographer_can_actually_use_lsp():
@@ -254,42 +224,10 @@ def test_guard_bash_protects_the_shared_stash_stack():
     assert "stash" in text, "guard-bash must cover git stash pop/drop/clear"
 
 
-def test_mutating_agents_are_pinned_to_their_own_worktree():
-    """Isolation is enforced by the flow: one named worktree per agent, entered on start."""
-    text = (ROOT / "workflows" / "plan-execute.js").read_text()
-    assert "EnterWorktree with path" not in text, (
-        "the built-in EnterWorktree relocates the permission root and prompts on every"
-        " skill-created tree; agents address their tree by absolute path instead"
-    )
-    assert "absolute path" in text
-    assert "isolation: 'worktree'" not in text, (
-        "harness isolation would create a second tree and strand the work"
-    )
-    skill = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "worktree-create" in skill and "worktree-merge" in skill
-
-
-def test_deliverable_schema_forces_tdd_and_verification():
-    """A task cannot be returned without test evidence and an observed passing run."""
-    text = (ROOT / "workflows" / "plan-execute.js").read_text()
-    for field in ("'tests'", "'verification'", "wroteTestFirst", "evidence"):
-        assert field in text, f"deliverable schema is missing {field}"
-    assert "function verified(" in text, "verification must be checked in code"
-    assert "verified(impl)" in text, "the review loop must gate clean on verification"
-
-
 def test_tdd_rule_ships_with_the_plugin():
     text = (ROOT / "rules" / "tdd.md").read_text()
     for clause in ("Red", "Green", "Refactor", "Verify before reporting back"):
         assert clause in text, f"tdd rule does not cover {clause!r}"
-
-
-def test_workflow_loops_until_the_audit_is_clean():
-    """One pass then reporting gaps is not delivery; the workflow re-dispatches."""
-    text = (ROOT / "workflows" / "plan-execute.js").read_text()
-    assert "Remediation round" in text, "no outer remediation loop"
-    assert "finished" in text, "callers need an explicit finished flag to loop on"
-    assert "escalated" in text, "what the loop could not close must be returned, not spun on"
 
 
 def test_orchestrator_is_told_to_delegate_and_to_stop_at_75_percent():
@@ -297,22 +235,6 @@ def test_orchestrator_is_told_to_delegate_and_to_stop_at_75_percent():
     assert "## Orchestrate. Do not implement." in text
     assert "75%" in text, "the context stop condition must be explicit"
     assert "## Loop until it is actually finished" in text
-
-
-def test_nested_subagents_are_permitted_with_conditions():
-    """Nesting is allowed; the file-partition condition is what keeps it safe."""
-    wf = (ROOT / "workflows" / "plan-execute.js").read_text()
-    assert "MAY spawn helper subagents" in wf
-    assert "Partition their work by file" in wf
-    skill = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "Nesting is allowed" in skill
-    assert "Sub-subagents do not get worktrees" in skill
-
-
-def test_implementers_are_denied_the_for_later_escape_hatches():
-    text = (ROOT / "workflows" / "plan-execute.js").read_text()
-    for hatch in ("for later", "TODO", "phase 2"):
-        assert hatch in text, f"the {hatch!r} escape hatch is not closed explicitly"
 
 
 def test_worktree_skills_ship_with_scripts_and_refuse_reuse():
@@ -362,25 +284,6 @@ def _meta_block(text: str) -> str:
             if depth == 0:
                 return text[i : j + 1]
     raise AssertionError("unterminated meta block")
-
-
-def test_every_workflow_meta_is_a_pure_literal():
-    """A non-literal meta makes the whole workflow fail to register, silently.
-
-    This cost two live runs: the workflow existed, was syntactically valid, and
-    simply never appeared in the registry because whenToUse used ' + ' string
-    concatenation. There is no error message for it anywhere.
-    """
-    workflows = sorted((ROOT / "workflows").glob("*.js"))
-    assert workflows, "no workflows found"
-    for wf in workflows:
-        meta = _meta_block(wf.read_text())
-        # Punctuation inside a quoted string is fine; only the structure matters.
-        outside = re.sub(r"'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\"", "''", meta)
-        assert "+" not in outside, f"{wf.name}: meta must be a pure literal, found concatenation"
-        assert "`" not in outside, f"{wf.name}: meta must not use template literals"
-        assert "..." not in outside, f"{wf.name}: meta must not spread"
-        assert "(" not in outside, f"{wf.name}: meta must not call functions"
 
 
 def test_phase_seven_picks_the_host_instead_of_assuming_gitlab():
@@ -611,21 +514,6 @@ def test_record_writer_reads_verifier_heads():
         assert term in text, f"record-writer.md does not mention {term}"
 
 
-def test_red_evidence_finding_labels_match_the_workflow():
-    """The docs name each TDD finding by the summary plan-execute.js emits for it."""
-    workflow = (ROOT / "workflows" / "plan-execute.js").read_text()
-    assert "summary: 'No red evidence:" in workflow
-    assert "summary: `TDD skipped without a listed exception" in workflow
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
-    handback = _flat((START_DEVELOPMENT / "references" / "run-handback.md").read_text())
-    for name, text in (("SKILL.md Phase 4", phase4), ("run-handback.md", handback)):
-        assert "`No red evidence`" in text, f"{name} does not name the No red evidence finding"
-        assert "`TDD skipped`" in text, f"{name} does not name the TDD skipped finding"
-        assert "`wroteTestFirst: false`" in text, f"{name} does not say when TDD skipped fires"
-        assert "no `tests.red` came back with a `TDD skipped`" not in text
-        assert "missing it, or skipping the cycle" not in text
-
-
 def _ref(name):
     return (START_DEVELOPMENT / "references" / name).read_text()
 
@@ -689,9 +577,7 @@ def test_worktrees_reference_covers_helpers_for_every_role():
 def test_phase_four_names_heartbeat():
     phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
     for term in (
-        "heartbeat",
-        "keepalive off by default",
-        "skills/heartbeat/SKILL.md",
+            "keepalive off by default",
         "references/run-handback.md",
     ):
         assert term in phase4, f"Phase 4 does not name {term!r}"

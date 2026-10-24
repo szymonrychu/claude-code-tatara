@@ -82,8 +82,7 @@ Full detail: `references/phases-1-3.md`.
   for consulting-shaped questions). Ask only what no probe can answer. The work is an epic under
   `docs/plans/{todo,in-progress,done}/<epic>/`, owned by `ticket.py`.
 - **Phase 3 - Plan and tasks.** One `workbench:planner` writes the task files and the approval ledger.
-  Lint with `node ${CLAUDE_PLUGIN_ROOT}/workflows/validate-tasks.mjs --epic <epic dir>` (must print
-  `ok`), then the builder check (`references/builder-check.md`); `workbench:interrogate` when the
+  Then the builder check (`references/builder-check.md`); `workbench:interrogate` when the
   design is contested or high-risk, with its verdict in the gate message (before the gate).
 
 ## The gate

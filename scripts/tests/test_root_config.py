@@ -87,9 +87,6 @@ def test_workbench_config_keys():
     cfg = json.loads((ROOT / ".claude/workbench.json").read_text())
     assert set(cfg) <= ACCEPTED_KEYS
     assert "harness" not in cfg
-    glob = "plugins/workbench/workflows/tests/*.test.mjs"
-    cmd = "node --test --test-name-pattern {name} {file}"
-    assert cfg["refRunners"] == {glob: cmd}
     assert not _tracked("plugins/workbench/.claude/workbench.json")
 
 

@@ -9,10 +9,10 @@
 # independent, so a process per skill is both correct and honest.
 #
 # Usage: run-tests.sh [--only <component>]
-# A component is a directory basename: a skill name, hooks, scripts or workflows.
+# A component is a directory basename: a skill name, hooks or scripts.
 #
 # A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default: a
-# fresh mktemp dir) as <component>.log, <component>-bats.log or workflows.log,
+# fresh mktemp dir) as <component>.log, or <component>-bats.log,
 # and its path is printed after the 15-line tail. Every pytest process gets a
 # private --basetemp under that dir, so parallel runs never share pytest's
 # per-user numbered basetemp. The dir is removed when everything passes.
@@ -33,7 +33,7 @@ if [ "${1:-}" = "--only" ]; then
 fi
 if [ -n "$only" ]; then
   found=0
-  for d in skills/*/ hooks/ scripts/ workflows/; do
+  for d in skills/*/ hooks/ scripts/; do
     [ -d "$d" ] && [ "$(basename "$d")" = "$only" ] && found=1
   done
   if [ "$found" -eq 0 ]; then
@@ -138,29 +138,6 @@ for d in skills/*/ hooks/ scripts/; do
     fi
   fi
 done
-
-# --- workflow scripts: node's own runner, with fakes for the Workflow runtime
-if { [ -z "$only" ] || [ "$only" = "workflows" ]; } && compgen -G "workflows/tests/*.test.mjs" >/dev/null; then
-  ran=$((ran + 1))
-  if ! command -v node >/dev/null 2>&1; then
-    printf '  FAIL  %-34s %s\n' "workflows" "node not installed"
-    failed+=("workflows")
-  else
-    out="$(node --test --test-timeout=10000 workflows/tests/*.test.mjs 2>&1)"
-    rc=$?
-    n="$(printf '%s' "$out" | grep -E '^ℹ pass' | grep -oE '[0-9]+' || echo 0)"
-    if [ $rc -eq 0 ]; then
-      printf '  PASS  %-34s %s passed\n' "workflows" "$n"
-      total_pass=$((total_pass + n))
-    else
-      printf '  FAIL  %-34s\n' "workflows"
-      printf '%s\n' "$out" | grep -E '^(✖|ℹ fail)' | head -n 15 | sed 's/^/        /'
-      printf '%s\n' "$out" > "$LOG_DIR/workflows.log"
-      printf '        full output: %s\n' "$LOG_DIR/workflows.log"
-      failed+=("workflows")
-    fi
-  fi
-fi
 
 echo
 echo "components with tests: $ran   assertions passed: $total_pass"

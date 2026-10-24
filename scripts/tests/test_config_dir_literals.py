@@ -19,9 +19,8 @@ SPECIFIC = re.compile(
 )
 EXEMPT_FILES = {
     "plugins/workbench/scripts/lib/workbench.py",
-    "plugins/workbench/workflows/hook-probe.js",
 }
-EXEMPT_DIRS = ("plugins/workbench/skills/heartbeat/",)
+EXEMPT_DIRS = ()
 
 
 def _tracked():
