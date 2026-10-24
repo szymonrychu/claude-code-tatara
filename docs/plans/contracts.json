@@ -217,5 +217,15 @@
       "agents-helmfile"
     ],
     "note": "clusters.status.init {state skipped|running|succeeded|failed, scripts_hash, started_at, finished_at, exit_code, log_tail, reason (job_missing|foreign_object|timeout|job_create_failed: ...), job}; reconciler-written once per cluster via Job agent-<slug>-init; sessions held while absent or running; failed -> degraded, sessions start; task init-job-runner"
+  },
+  {
+    "name": "orch-init-workdir-files",
+    "kind": "interface",
+    "owner": "agent-init-scripts",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/reconciler/init.py",
+    "consumers": [
+      "any-mcp"
+    ],
+    "note": "<workdir_path>/.agent-init/init.sh (scripts as run, sh -eu), init.log, .gitignore '*'; written by the init Job on the shared workdir; the OrchestratorPlugin init_scripts_get description (hive F1) names .agent-init/init.sh and that edits apply to the next cluster; task init-job-runner"
   }
 ]
