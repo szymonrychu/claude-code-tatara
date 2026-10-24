@@ -70,11 +70,11 @@ _WRAP_HEAD_RE = re.compile(
 
 def spill_dir(start: str | None = None) -> str | None:
     """`<main checkout>/.logs/bash-output` (created), or None without a main checkout."""
-    logs = workbench.logs_dir(Path(start) if start else None)
-    if logs is None:
-        return None
-    d = logs / SPILL_SUBDIR
     try:
+        logs = workbench.logs_dir(Path(start) if start else None)
+        if logs is None:
+            return None
+        d = logs / SPILL_SUBDIR
         d.mkdir(parents=True, exist_ok=True)
     except OSError:
         return None

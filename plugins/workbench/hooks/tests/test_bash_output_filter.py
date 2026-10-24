@@ -405,3 +405,17 @@ def test_spill_falls_back_to_tmpdir(tmp_path):
     assert "${TMPDIR:-/tmp}" in new_cmd
     proc, spill = _run_rewritten(new_cmd, bindir)
     assert spill is not None and len(spill) > 8000
+
+
+def test_spill_falls_back_to_tmpdir_when_main_checkout_unwritable(tmp_path):
+    if os.geteuid() == 0:
+        pytest.skip("root ignores directory permissions")
+    main = tmp_path / "ro-main"
+    main.mkdir()
+    main.chmod(0o555)
+    try:
+        new_cmd = rewrite("pytest tests/", cwd=tmp_path, env=_clean_env(WORKBENCH_ROOT=str(main)))
+    finally:
+        main.chmod(0o755)
+    assert new_cmd is not None
+    assert "${TMPDIR:-/tmp}" in new_cmd
