@@ -4,20 +4,20 @@ description: "Execute one planned epic: claim it, run its tasks in dependency or
 ---
 
 Runs the loop of start-development phase 4 (`../start-development/SKILL.md`, read it first; the loop is not
-restated here). `<epic>` is the epic slug and `ticket` is
+restated here). `<epic>` is the epic slug and `ticket.py` is
 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`, always run from the main checkout.
 
 ## Entry conditions
 
 Stop and report the refusal if any fails:
-- `ticket lint <epic>` prints ok.
+- `ticket.py lint <epic>` prints ok.
 - The epic is in `todo` or `in-progress` (a repeat claim reuses the tree).
 - Main is clean and green.
 
 ## Run
 
-1. Claim: `ticket move <epic> in-progress`; it creates the integration tree on branch `<epic>`.
-2. List the order: `ticket tasks <epic>`. For each task, one at a time, dependencies first, note the tree HEAD
+1. Claim: `ticket.py move <epic> in-progress`; it creates the integration tree on branch `<epic>`.
+2. List the order: `ticket.py tasks <epic>`. For each task, one at a time, dependencies first, note the tree HEAD
    (`git -C <tree> rev-parse HEAD`), then dispatch in the background:
    - `workbench:implementer` (model from the task file): the task file verbatim, the tree path, and the
      instruction that every command starts with `cd <tree>`.
@@ -26,15 +26,15 @@ Stop and report the refusal if any fails:
 3. Unmet conditions or findings: continue the same implementer with `SendMessage` (the findings, nothing else),
    then the same reviewer. At most two fix rounds.
 4. Status after each task, from the main checkout:
-   - clean: `ticket task <epic> <task> --status done --verified-head <head>`
-   - open after the cap: `ticket task <epic> <task> --status escalated --note "<open findings>"`, then continue
+   - clean: `ticket.py task <epic> <task> --status done --verified-head <head>`
+   - open after the cap: `ticket.py task <epic> <task> --status escalated --note "<open findings>"`, then continue
      with tasks that do not depend on it.
 
 ## What comes back
 
 - `undelivered` is a finding: send it back in a fix round.
-- `discovered` becomes a new task in the same epic: `ticket new-task`, then lint again.
-- `escalated` is yours to judge: sharpen the requirement (`ticket amend`) and run it again, or
+- `discovered` becomes a new task in the same epic: `ticket.py new-task`, then lint again.
+- `escalated` is yours to judge: sharpen the requirement (`ticket.py amend`) and run it again, or
   `workbench:interrogate` once. The epic cannot close while a task is not `done`.
 - Never implement a task yourself and never merge a tree yourself.
 
