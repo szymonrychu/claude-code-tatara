@@ -1,6 +1,6 @@
 ---
 title: Workbench dirs
-status: in-progress
+status: done
 repo: workbench
 value: "One resolver gives every tool the main checkout's .scratchpad and .logs, even from an integration tree"
 files: [plugins/workbench/scripts/lib/workbench.py, plugins/workbench/scripts/tests/test_workbench_root.py, .gitignore, scripts/tests/test_root_config.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && bash plug
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 35f1ce0
 ---
 
 # Workbench dirs
@@ -60,3 +60,5 @@ Every caller (hooks, ticket.py, scripts, skills) resolves the one `.scratchpad` 
 - Fix-as-ac (brief): an integration tree is a superrepo checkout, so it can pass `_is_metarepo` (workbench.py:45) and find_root(cwd) would return the tree; `main_checkout` uses the git common dir instead (AC1).
 - Do-not-build: a new `.logs/` ignore entry; .gitignore:18 already has it, pinned by test_root_config.py:40. Only `.scratchpad/` is new.
 - This template repo is uninitialised (`workbench.py root` prints "kind: none"), so `main_checkout` must not depend on detect_kind.
+
+- 2026-10-24 done
