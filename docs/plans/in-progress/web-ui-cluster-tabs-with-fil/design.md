@@ -321,3 +321,9 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - Deleting `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`, `Ribbon.test.tsx`, `AgentRow.tsx` and `frontend/src/chat/AgentFilter.tsx`: git history keeps them; pinned by retirement tests.
 - Live shells on agent pods: an interactive shell can change the shared workdir like any agent; covered by the user's Q7 answer (LAN-only, Origin allowlist).
 - Deploy (helmfile apply) is run by the user after the epic, not by this plan.
+
+## Run 1 rulings on discovered items (2026-10-24)
+
+- uvicorn logs an ERROR after every WebSocket denial response: third-party behaviour, dropped (noted, not doing now).
+- anyio imported directly by api/terminals.py: folded into wrapper-security-followups (declare the dependency).
+- verifier role ran its script with an unsupported flag: workflow tooling, outside this epic, dropped.
