@@ -427,5 +427,16 @@
       "cluster-scaling"
     ],
     "note": "task hive-state-push-loop: keyed hive_state note {leader, epoch, you, members[], max_replicas, static} pushed on leader or membership change by the dispatcher"
+  },
+  {
+    "name": "orch-spec-runtime-mutable",
+    "kind": "rule",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task hive-docs-memory: spec.replicas and spec.init_scripts are the only in-place spec fields (no generation bump, no pod roll); writers are the api routes of the consuming epics; PATCH stays 405"
   }
 ]
