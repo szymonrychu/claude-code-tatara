@@ -1,6 +1,6 @@
 ---
 title: Ticket lean tasks
-status: in-progress
+status: done
 repo: workbench
 value: "The task file becomes the whole contract between planner, implementer and reviewer; one status command replaces apply-run"
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/skills/start-development/templates/]
@@ -9,6 +9,7 @@ depends_on: [ticket-drop-run-commands]
 owns: []
 uses: []
 model: opus
+verified_head: 1b76c81caaba63a2b44315677d8a1fce28265f7e
 estimate: 6
 estimate_by: formula
 actual: ""
@@ -16,7 +17,6 @@ actual_roles: ""
 review: ""
 worktree: ""
 branch: ""
-verified_head: ""
 run: ""
 provides: []
 ---
