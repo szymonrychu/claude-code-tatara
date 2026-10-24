@@ -16,9 +16,7 @@ def register(sub, t) -> None:
 
 def run(a, t) -> int:
     if a.status not in t.TASK_STATUSES:
-        raise t.TicketError(
-            f"status {a.status!r} is not one of {', '.join(t.TASK_STATUSES)}"
-        )
+        raise t.TicketError(f"status {a.status!r} is not one of {', '.join(t.TASK_STATUSES)}")
     root = Path(a.root)
     t.require_main_checkout(root)
     epic_dir = t.resolve_epic(a.epic, root)

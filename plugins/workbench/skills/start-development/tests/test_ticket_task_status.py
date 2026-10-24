@@ -23,8 +23,17 @@ def test_task_status_sets_fields_and_commits(repo, root):
     commit_all(repo)
     (repo / "unrelated.txt").write_text("not mine")
     r = cli(
-        "task", ep, "alpha", "--status", "done", "--verified-head", "abc123",
-        "--note", "review clean", "--root", root,
+        "task",
+        ep,
+        "alpha",
+        "--status",
+        "done",
+        "--verified-head",
+        "abc123",
+        "--note",
+        "review clean",
+        "--root",
+        root,
     )
     assert r.returncode == 0, r.stderr
     m = meta(p)
