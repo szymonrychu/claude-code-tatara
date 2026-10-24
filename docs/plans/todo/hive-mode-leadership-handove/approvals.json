@@ -195,5 +195,19 @@
       "spec-cap-static"
     ],
     "status": "approved"
+  },
+  {
+    "id": "Q9",
+    "text": "No forced handover; advise handing over above auto_compact_pct - 15 and keep every agent's context visible.",
+    "decisions": [
+      "D26"
+    ],
+    "tasks": [
+      "orchestrator-plugin",
+      "hive-state-push-loop",
+      "views-leader-stream",
+      "ui-leader-badge"
+    ],
+    "status": "approved"
   }
 ]

@@ -119,6 +119,9 @@ Tools on load hint the hive mode (no CLAUDE.md fragment); the wrapper notes inbo
 ### D25: No hive switch
 No ClusterSpec hive switch. (user decision)
 
+### D26: Advise, never force, handover
+No forced handover; advise handing over above auto_compact_pct - 15 and keep every agent's context visible. (user decision)
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -172,6 +175,7 @@ No ClusterSpec hive switch. (user decision)
 | D23 Delivery through the notes inbox | wrapper-notes-inbox, wrapper-notes-delivery, hive-state-push-loop |
 | D24 Awareness from tool descriptions; alone clusters | orchestrator-plugin, render-hive-gating, plugin-config-merge, wrapper-notes-inbox |
 | D25 No hive switch | spec-cap-static |
+| D26 Advise, never force, handover | orchestrator-plugin, hive-state-push-loop, views-leader-stream, ui-leader-badge |
 
 ## Contracts
 
