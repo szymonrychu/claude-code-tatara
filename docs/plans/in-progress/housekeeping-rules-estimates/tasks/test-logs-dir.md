@@ -1,6 +1,6 @@
 ---
 title: Test logs dir
-status: in-progress
+status: done
 repo: workbench
 value: Failing test and flake-hunt logs land in the gitignored .logs of the workbench root
 files: [plugins/workbench/scripts/run-tests.sh, plugins/workbench/scripts/flake-hunt.sh, plugins/workbench/scripts/tests/test_run_tests.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run 
 depends_on: [workbench-dirs]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 11f9442
 ---
 
 # Test logs dir
@@ -54,3 +54,5 @@ Test and flake-hunt logs an agent reads after a failure sit in the gitignored `.
 - The test fixture `tree` copies the scripts into a temp tree; give it a temp main checkout (git init) or set WORKBENCH_ROOT, and clear CLAUDE_PROJECT_DIR.
 - Keep the per-pytest `--basetemp` under the log dir.
 - Depends on workbench-dirs for `workbench.py logs`.
+
+- 2026-10-24 done
