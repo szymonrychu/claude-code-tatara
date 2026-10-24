@@ -1,6 +1,6 @@
 ---
 title: deploy pin presets
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: the live agents namespace runs the presets release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -17,8 +17,10 @@ review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-deploy-pin-presets/agents-helmfile
 branch: cluster-presets-deploy-pin-presets
 verified_head: ""
-run: ""
+run: cluster-presets
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # deploy pin presets
@@ -65,3 +67,5 @@ The value is the short sha (7 hex) of this epic's agent-orchestrator main merge;
 - `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` build the helmfile and pull charts; they fail here on network policy and are deselected in the verify, not changed.
 - Apply and smoke are not this task's verify; the user runs them.
 - Builder check ruling 10 (2026-10-23): excluded from the build run; it runs after the orchestrator PR merges, its sha filled with ticket.py amend, same as web-ui's deploy-pin.
+
+- 2026-10-24 run cluster-presets: dependency-failed on kind-e2e-presets

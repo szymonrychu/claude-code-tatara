@@ -1,6 +1,6 @@
 ---
 title: slug from name
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: clusters scheduled from a preset get a valid slug without the user typing one
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/bench/runner.py, tests/test_slugs.py]
@@ -11,14 +11,17 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 2
+actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-slug-from-name/agent-orchestrator
 branch: cluster-presets-slug-from-name
-verified_head: ""
-run: ""
-provides: []
+verified_head: eac3b59b3cd94534dff90ae9d44a175617504ddd
+run: cluster-presets
+provides: [slugify-helper]
+acs_for_audit: []
+process_gaps: []
+fork_point: f1baa5b
 ---
 
 # slug from name

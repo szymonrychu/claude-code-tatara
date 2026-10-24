@@ -1,6 +1,6 @@
 ---
 title: retire cluster patch route
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "running clusters can no longer be edited through the API, so they never restart under a live spec change"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_clusters.py, README.md, MEMORY.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -11,14 +11,16 @@ uses: [check-spec-public]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 8
+actual_roles: "impl 3, verify 4, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-retire-cluster-patch-route/agent-orchestrator
 branch: cluster-presets-retire-cluster-patch-route
-verified_head: ""
-run: ""
+verified_head: 97af5310b0335f47c62c74b8a20674460e70dce4
+run: cluster-presets
 provides: []
+acs_for_audit: [AC5]
+process_gaps: []
 ---
 
 # retire cluster patch route

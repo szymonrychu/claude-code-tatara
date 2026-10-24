@@ -1,6 +1,6 @@
 ---
 title: create cluster from preset
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "scheduling a cluster takes only a preset, and later preset changes never touch it"
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/clusters.py, tests/test_api_create_from_preset.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -11,14 +11,16 @@ uses: [slugify-helper, presets-repo, check-spec-public]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 10
+actual_roles: "impl 4, verify 4, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-create-cluster-from-preset/agent-orchestrator
 branch: cluster-presets-create-cluster-from-preset
-verified_head: ""
-run: ""
+verified_head: de2e84784c44399af9c4527956e14425db6917fd
+run: cluster-presets
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # create cluster from preset

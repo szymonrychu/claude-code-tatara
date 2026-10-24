@@ -1,6 +1,6 @@
 ---
 title: kind e2e presets
-status: in-progress
+status: escalated
 repo: agent-orchestrator
 value: CI proves on a real cluster that presets and preset scheduling work through the public API alone
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
@@ -11,14 +11,16 @@ uses: [orch-presets-api, orch-cluster-create-api]
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 8
+actual_roles: "impl 1, verify 1, review 1, fix 5, false-finding 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-kind-e2e-presets/agent-orchestrator
 branch: cluster-presets-kind-e2e-presets
-verified_head: ""
-run: ""
+verified_head: a7b8b4a57173b226cd35ba808218ca707fc4608d
+run: cluster-presets
 provides: []
+acs_for_audit: [AC2, AC5]
+process_gaps: ["No red/green TDD evidence for the e2e additions. The only changed file is a test, so no non-test revert is possible."]
 ---
 
 # kind e2e presets

@@ -1,6 +1,6 @@
 ---
 title: fe preset form
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "presets are edited in the familiar cluster form, which no longer edits running clusters"
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/presets/PresetForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/presets/PresetForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/clusters/DiscardClusterDialog.test.tsx, frontend/src/api/client.ts]
@@ -11,14 +11,16 @@ uses: [fe-preset-client, orch-presets-api]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 12
+actual_roles: "impl 4, verify 5, review 1, fix 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-preset-form/agent-orchestrator
 branch: cluster-presets-fe-preset-form
-verified_head: ""
-run: ""
+verified_head: 9fb81a85a04f4768958d33369b46120fdeaa0b70
+run: cluster-presets
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # fe preset form

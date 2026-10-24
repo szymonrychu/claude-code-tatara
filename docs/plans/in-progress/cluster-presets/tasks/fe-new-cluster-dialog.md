@@ -1,6 +1,6 @@
 ---
 title: fe new cluster dialog
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "New cluster in the UI is one preset choice and an optional slug, and each tab shows its preset"
 files: [frontend/src/api/client.ts, frontend/src/clusters/NewClusterDialog.tsx, frontend/src/clusters/NewClusterDialog.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
@@ -11,14 +11,17 @@ uses: [orch-presets-api, orch-cluster-create-api]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 6
+actual_roles: "impl 3, verify 3, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-new-cluster-dialog/agent-orchestrator
 branch: cluster-presets-fe-new-cluster-dialog
-verified_head: ""
-run: ""
-provides: []
+verified_head: 9a4609272559b15fff2c9f4b82883eb5a08375ef
+run: cluster-presets
+provides: [fe-preset-client]
+acs_for_audit: []
+process_gaps: []
+fork_point: de2e847
 ---
 
 # fe new cluster dialog

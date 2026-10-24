@@ -1,6 +1,6 @@
 ---
 title: presets table and repo
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: presets are stored durably with a Default 1-pod preset that always exists
 files: [src/agent_orchestrator/db/migrations/0002_presets.sql, src/agent_orchestrator/db/presets.py, tests/test_migrations.py, tests/test_presets_repo.py, README.md]
@@ -11,14 +11,17 @@ uses: []
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 5
+actual_roles: "impl 3, verify 2, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-presets-table-and-repo/agent-orchestrator
-branch: cluster-presets-presets-table-and-repo
-verified_head: ""
-run: ""
-provides: []
+branch: "current worktree branch (commit e4aabae)"
+verified_head: 233ff924f80b0f6e4ae4174d5b786adc77ad259f
+run: cluster-presets
+provides: [presets-repo]
+acs_for_audit: [AC8]
+process_gaps: []
+fork_point: eac3b59b3cd94534dff90ae9d44a175617504ddd
 ---
 
 # presets table and repo

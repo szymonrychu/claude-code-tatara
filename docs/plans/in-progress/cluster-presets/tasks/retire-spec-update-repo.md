@@ -1,6 +1,6 @@
 ---
 title: retire spec update repo
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: no dead live-edit code is left to mislead the next change
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/spec.py, tests/test_clusters_repo.py]
@@ -11,14 +11,17 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 7
+actual_roles: "impl 4, verify 1, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-retire-spec-update-repo/agent-orchestrator
 branch: cluster-presets-retire-spec-update-repo
-verified_head: ""
-run: ""
+verified_head: 79cc4d6836fbbe378c988ce7cd24ffdcd5b4950d
+run: cluster-presets
 provides: []
+acs_for_audit: [AC1]
+process_gaps: []
+fork_point: 97af531
 ---
 
 # retire spec update repo

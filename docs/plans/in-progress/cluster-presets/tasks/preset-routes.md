@@ -1,6 +1,6 @@
 ---
 title: preset routes
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "presets can be created, copied, edited and deleted through the documented API"
 files: [src/agent_orchestrator/api/presets.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, tests/test_api_presets.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -11,14 +11,17 @@ uses: [presets-repo]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 9
+actual_roles: "impl 4, verify 3, review 1, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-preset-routes/agent-orchestrator
-branch: cluster-presets-preset-routes
-verified_head: ""
-run: ""
-provides: []
+branch: cluster-presets-preset-routes/agent-orchestrator
+verified_head: dde2170bcce0ebb5903fb981507d343100e24880
+run: cluster-presets
+provides: [check-spec-public, orch-presets-api]
+acs_for_audit: []
+process_gaps: []
+fork_point: 233ff92
 ---
 
 # preset routes

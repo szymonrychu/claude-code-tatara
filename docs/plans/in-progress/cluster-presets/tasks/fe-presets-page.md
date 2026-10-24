@@ -1,6 +1,6 @@
 ---
 title: fe presets page
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "Presets is the first settings category in the hamburger menu, with create, copy, edit and delete"
 files: [frontend/src/presets/PresetsPage.tsx, frontend/src/presets/PresetsPage.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx]
@@ -11,14 +11,17 @@ uses: [fe-preset-form, fe-preset-client, orch-presets-api, orch-settings-menu]
 model: ""
 estimate: 6
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 6
+actual_roles: "impl 3, verify 2, land 1"
 review: ""
 worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-presets-page/agent-orchestrator
 branch: cluster-presets-fe-presets-page
-verified_head: ""
-run: ""
+verified_head: 477e2f527b67d15d63d335c98e433b6103a09883
+run: cluster-presets
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 9fb81a85a04f4768958d33369b46120fdeaa0b70
 ---
 
 # fe presets page
