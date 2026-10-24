@@ -22,15 +22,16 @@
     "decisions": [
       "D1",
       "D2",
-      "D5"
+      "D5",
+      "D10"
     ],
     "tasks": [
-      "scale-replicas-repo",
-      "public-scale-route",
       "agent-scale-route",
-      "scale-ui-control",
       "cap-static-preset-form",
-      "kind-e2e-scaling"
+      "kind-e2e-scaling",
+      "public-scale-route",
+      "scale-replicas-repo",
+      "scale-ui-control"
     ],
     "status": "approved"
   },
