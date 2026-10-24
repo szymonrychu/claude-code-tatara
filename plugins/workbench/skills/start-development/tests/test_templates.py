@@ -141,3 +141,9 @@ def test_other_files_point_to_plan_inputs_instead_of_restating():
         assert "references/plan-inputs.md" not in text, p
         assert "which plan items need it" not in text, p
         assert "what provides it instead" not in text, p
+
+
+def test_task_template_has_no_retired_shared_parts_wording():
+    text = (ROOT / "skills" / "start-development" / "templates" / "task.md").read_text()
+    assert "shared parts" not in text
+    assert "existing code to reuse" in text

@@ -40,4 +40,4 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Context the implementer needs: pitfalls, existing code to reuse, decisions already made.

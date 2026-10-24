@@ -87,7 +87,8 @@ def test_workbench_config_keys():
     cfg = json.loads((ROOT / ".claude/workbench.json").read_text())
     assert set(cfg) <= ACCEPTED_KEYS
     assert "harness" not in cfg
-    assert "refRunners" not in cfg  # the node workflow tests it mapped are gone
+    # refRunners stays a live key (init writes it); the node workflow tests it mapped are gone
+    assert cfg.get("refRunners") == {}
     assert not _tracked("plugins/workbench/.claude/workbench.json")
 
 
