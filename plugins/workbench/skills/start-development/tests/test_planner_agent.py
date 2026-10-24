@@ -72,6 +72,7 @@ def test_planner_rules():
     assert "never write `.py` scratch files" in t.lower() or "Never write `.py` scratch files" in t
     assert "git ls-files <path>" in t
     assert "scratchpad" in t
+    assert "`<workbench root>/.scratchpad`" in t
     assert "LSP and grep" in t
 
 

@@ -75,7 +75,8 @@ its acceptance conditions, and nothing else.
 ## Rules
 
 - Never write `.py` scratch files. Task bodies and input files are `.md` or
-  `.json`, written under the scratchpad.
+  `.json`, written under `<workbench root>/.scratchpad` (resolve it with
+  `workbench.py scratchpad`).
 - Retirement tests assert on `git ls-files <path>`, never on the filesystem.
 - Codebase lookup is LSP and grep.
 
