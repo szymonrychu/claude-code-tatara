@@ -80,6 +80,9 @@ An agent edit writes to the cluster's stored spec AND to its source preset when 
 ### D12: X1 one shared orchestrator plugin
 One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool (leadership, file locks, scale, init-script edit), with a per-cluster scoped credential in the pod. Built once, owned by hive-mode-leadership-handove; the other epics add tools to it. (user decision)
 
+### D13: X2 headless parity
+Headless parity: every UI capability has a documented public API and an API-only e2e test. (user decision)
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -121,6 +124,7 @@ One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool 
 | D10 C2 exposed to the agent | init-job-runner, init-scripts-agent-api |
 | D11 C3 edit writes cluster spec and source preset | init-scripts-public-api, init-scripts-agent-api |
 | D12 X1 one shared orchestrator plugin | init-scripts-agent-api |
+| D13 X2 headless parity | init-scripts-public-api, init-scripts-kind-e2e, fe-preset-init-scripts, fe-cluster-init-dialog |
 
 ## Contracts
 

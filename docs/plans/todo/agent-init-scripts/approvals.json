@@ -84,11 +84,14 @@
     "text": "Headless parity: every UI capability has a documented public API and an API-only e2e test.",
     "decisions": [
       "D5",
-      "D8"
+      "D8",
+      "D13"
     ],
     "tasks": [
-      "init-scripts-public-api",
-      "init-scripts-kind-e2e"
+      "fe-cluster-init-dialog",
+      "fe-preset-init-scripts",
+      "init-scripts-kind-e2e",
+      "init-scripts-public-api"
     ],
     "status": "approved"
   }
