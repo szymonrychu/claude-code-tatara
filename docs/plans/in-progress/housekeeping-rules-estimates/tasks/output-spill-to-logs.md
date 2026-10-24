@@ -1,6 +1,6 @@
 ---
 title: Output spill to logs
-status: in-progress
+status: done
 repo: workbench
 value: Capped command output lands in the gitignored .logs of the workbench root
 files: [plugins/workbench/hooks/worktree_lib.py, plugins/workbench/hooks/bash-output-filter.py, plugins/workbench/hooks/tests/test_bash_output_filter.py, plugins/workbench/hooks/tests/test_output_filter_unwrap.py, plugins/workbench/skills/start-development/references/hooks.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only hooks && bash plugin
 depends_on: [workbench-dirs, em-dash-commit-guard]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 303f638
 ---
 
 # Output spill to logs
@@ -56,3 +56,5 @@ Every spilled command output an agent is pointed to sits in the gitignored `.log
 - WRAP_HEAD is a constant today (worktree_lib.py:36) and unwrap matches it literally; make the head a pattern with the directory as the only variable part, keeping "the hook that writes it and the code that unwraps it cannot drift apart".
 - Quote the directory safely in the shell snippet (paths with spaces).
 - Tests must clear WORKBENCH_ROOT and CLAUDE_PROJECT_DIR, or set them to a temp main checkout.
+
+- 2026-10-25 done
