@@ -375,5 +375,15 @@
       "cluster-scaling"
     ],
     "note": "task leadership-requests-api: current_leader(conn, cluster_id) -> (agent_id, pod_name, epoch) | None; for leader-only scale and leader_would_leave"
+  },
+  {
+    "name": "orch-leadership-pass",
+    "kind": "interface",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/db/leadership.py",
+    "consumers": [
+      "cluster-scaling"
+    ],
+    "note": "task dispatcher-leadership-pass: leadership_pass under the per-cluster claim lock; lost-leader fallback when a leader is gone or unready past 30 s; NOTIFY leader_changed"
   }
 ]
