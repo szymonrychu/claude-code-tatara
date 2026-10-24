@@ -406,5 +406,16 @@
       "cluster-scaling"
     ],
     "note": "task render-hive-gating: peers.static = ordinals 0..max_replicas-1; peers.enabled = spec.peers and hive; notes.enabled = hive"
+  },
+  {
+    "name": "orch-plugin-entry",
+    "kind": "interface",
+    "owner": "hive-mode-leadership-handove",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/k8s/on_start.py",
+    "consumers": [
+      "cluster-scaling",
+      "agent-init-scripts"
+    ],
+    "note": "task plugin-config-merge: orchestrator_allow(spec) is the only extension point (scaling adds scale when scalable, init adds init_scripts_get/edit always); entry omitted when allow is empty"
   }
 ]
