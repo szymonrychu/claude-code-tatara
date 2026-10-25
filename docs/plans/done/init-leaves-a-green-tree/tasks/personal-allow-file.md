@@ -6,22 +6,17 @@ value: "lint:personal accepts a project's own vocabulary without weakening the t
 files: [scripts/check_personal.py, scripts/tests/test_check_personal.py, scripts/tests/init_engine/test_update.py]
 verify: "mise exec -- pytest scripts/tests/test_check_personal.py scripts/tests/init_engine/test_update.py -q && mise run lint:personal"
 depends_on: []
-owns: [personal-allow-local]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-personal-allow-file
-branch: init-leaves-a-green-tree-personal-allow-file
 verified_head: 191d8ecfd47512fccb20c27e27b6656b4286f39f
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: a74b139
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # personal allow file

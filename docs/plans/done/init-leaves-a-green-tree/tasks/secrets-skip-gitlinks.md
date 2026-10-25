@@ -6,21 +6,17 @@ value: "lint:secrets stops scanning component checkouts that scan themselves"
 files: [mise-tasks/lint/secrets, scripts/tests/test_secret_scanning.py]
 verify: "mise exec -- pytest scripts/tests/test_secret_scanning.py -q && mise run lint:secrets"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-secrets-skip-gitlinks
-branch: "current worktree branch (commit 2e13385)"
 verified_head: 18769df0a3587552e11f617b38624f8e0d917c5d
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # secrets skip gitlinks

@@ -6,21 +6,17 @@ value: an already-initialised workbench can take the template update without a r
 files: [scripts/init_engine/cli.py, scripts/tests/init_engine/test_refresh.py, scripts/tests/init_engine/test_update.py]
 verify: "mise exec -- pytest scripts/tests/init_engine/test_refresh.py scripts/tests/init_engine/test_update.py -q && mise run lint:personal"
 depends_on: [init-writes-allow-entries, template-marker-skip, license-every-plugin, personal-allow-file, e2e-init-green]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-refresh-writes-allow-entries
-branch: init-leaves-a-green-tree-refresh-writes-allow-entries
 verified_head: 8bfd79ad2557a25c7f3c73ca2d9e6027773a3fb7
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # refresh writes allow entries

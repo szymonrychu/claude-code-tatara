@@ -6,21 +6,17 @@ value: "init and component add leave lint:personal green by recording the projec
 files: [scripts/init_engine/finalize.py, scripts/init_engine/cli.py, scripts/init_engine/project_files.py, scripts/tests/init_engine/test_new.py, scripts/tests/init_engine/test_adopt.py, scripts/tests/init_engine/test_component.py]
 verify: "mise exec -- pytest scripts/tests/init_engine/test_new.py scripts/tests/init_engine/test_adopt.py scripts/tests/init_engine/test_component.py -q && mise run lint:personal"
 depends_on: [personal-allow-file, license-every-plugin]
-owns: []
-uses: [personal-allow-local]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-init-writes-allow-entries
-branch: init-leaves-a-green-tree-init-writes-allow-entries
 verified_head: 5d7ad13c4af6f8b19ccfb2c9b5b948fd4e937fd7
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init writes allow entries

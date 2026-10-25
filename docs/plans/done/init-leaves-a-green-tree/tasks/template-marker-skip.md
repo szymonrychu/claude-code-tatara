@@ -6,21 +6,17 @@ value: template-only self-tests stop failing in every initialised workbench
 files: [pyproject.toml, scripts/tests/conftest.py, scripts/init_engine/project_files.py, scripts/init_engine/cli.py, scripts/init_engine/update.py, scripts/doctor.py, scripts/tests/test_root_config.py, scripts/tests/init_engine/test_project_files.py]
 verify: "mise exec -- pytest scripts/tests/test_root_config.py scripts/tests/init_engine/test_project_files.py scripts/tests/test_doctor.py -q && mise run lint:root"
 depends_on: [init-writes-allow-entries, secrets-skip-gitlinks, personal-allow-file, license-every-plugin, skill-text-local-bare-move]
-owns: [is-initialised]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-template-marker-skip
-branch: init-leaves-a-green-tree-template-marker-skip
 verified_head: 5619cda9d76f90d8717064e2dddaac772bfe5bdd
-run: init-leaves-a-green-tree
-provides: [is-initialised]
-acs_for_audit: [AC4]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # template marker skip

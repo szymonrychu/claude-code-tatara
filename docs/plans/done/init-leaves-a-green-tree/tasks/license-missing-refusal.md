@@ -6,22 +6,17 @@ value: "init still refuses a first run with no LICENSE, as before the epic"
 files: [scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py]
 verify: mise exec -- pytest scripts/tests/init_engine/test_finalize.py -q
 depends_on: [refresh-writes-allow-entries]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-license-missing-refusal
-branch: init-leaves-a-green-tree-license-missing-refusal
 verified_head: b8c4d961156e31aee4df83055a80b29e20456f66
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 8bfd79ad2557a25c7f3c73ca2d9e6027773a3fb7
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # license missing refusal

@@ -6,21 +6,17 @@ value: proof that a fresh workbench starts green
 files: [scripts/tests/e2e/test_instantiate.py, scripts/tests/e2e/helpers.py, scripts/tests/e2e/conftest.py]
 verify: mise exec -- pytest scripts/tests/e2e/test_instantiate.py -q
 depends_on: [personal-allow-file, init-writes-allow-entries, secrets-skip-gitlinks, license-every-plugin, template-marker-skip, skill-text-local-bare-move]
-owns: []
-uses: [personal-allow-local, is-initialised]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-e2e-init-green
-branch: init-leaves-a-green-tree-e2e-init-green
 verified_head: 27d001e0d8cbaf0335376f2c75492f90f82cc853
-run: init-leaves-a-green-tree
-provides: [e2e-denylist-and-secret-fixtures]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # e2e init green

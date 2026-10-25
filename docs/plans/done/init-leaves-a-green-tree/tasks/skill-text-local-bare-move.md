@@ -6,22 +6,17 @@ value: init and component-add skills tell the truth about local-bare and the --p
 files: [plugins/workbench/skills/init/SKILL.md, plugins/workbench/skills/component-add/SKILL.md, plugins/workbench/skills/init/tests/test_init_skills.py]
 verify: mise exec -- pytest plugins/workbench/skills/init/tests/test_init_skills.py -q
 depends_on: [license-every-plugin]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-skill-text-local-bare-move
-branch: init-leaves-a-green-tree-skill-text-local-bare-move
 verified_head: 9577be0393919b2aa6906bf191ca2e0a3b5da8fd
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 39ae4153525326e2c177f11d6c61b52544fe3179
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # skill text local bare move

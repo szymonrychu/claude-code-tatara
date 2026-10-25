@@ -6,21 +6,17 @@ value: "the template's full suite is green again after the e2e CI job was added"
 files: [scripts/tests/test_ci_workflow.py]
 verify: mise exec -- pytest scripts/tests/test_ci_workflow.py -q
 depends_on: [e2e-behind-slow-marker]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
-branch: init-leaves-a-green-tree-ci-workflow-test-pins-e2e-jo
 verified_head: 9d7de6cc5a869fa4377594c7b7c3bcbf2691d141
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: [tests.red and verification.evidence not populated for this test-only task]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # ci workflow test pins e2e job

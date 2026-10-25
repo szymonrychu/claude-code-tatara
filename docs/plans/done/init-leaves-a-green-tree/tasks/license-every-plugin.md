@@ -6,21 +6,17 @@ value: "the chosen holder appears in every LICENSE, not only the root"
 files: [scripts/init_engine/finalize.py, scripts/init_engine/owned.py, scripts/init_engine/update.py, scripts/tests/init_engine/test_update.py, scripts/tests/init_engine/test_finalize.py, plugins/workbench-secrets/LICENSE, plugins/workbench/skills/init/SKILL.md]
 verify: "mise exec -- pytest scripts/tests/init_engine/test_finalize.py scripts/tests/init_engine/test_update.py plugins/workbench-infra/tests/test_pack_infra.py scripts/tests/test_root_stubs.py -q && mise run lint:personal"
 depends_on: [personal-allow-file]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-license-every-plugin
-branch: init-leaves-a-green-tree-license-every-plugin
 verified_head: "$(see below)"
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: [AC5]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # license every plugin

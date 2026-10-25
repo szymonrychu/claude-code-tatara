@@ -6,22 +6,17 @@ value: "the template's default suite stays fast while the full green-tree proof 
 files: [pyproject.toml, scripts/tests/e2e/test_instantiate.py, .mise.toml, mise-tasks/test/scripts, .github/workflows/ci.yml, scripts/tests/test_root_config.py, scripts/tests/test_root_tooling.py, AGENTS.md]
 verify: "mise exec -- pytest scripts/tests/test_root_config.py scripts/tests/test_root_tooling.py -q && mise exec -- pytest scripts/tests/e2e/test_instantiate.py -q -m 'not slow'"
 depends_on: [refresh-writes-allow-entries]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/init-leaves-a-green-tree-e2e-behind-slow-marker
-branch: init-leaves-a-green-tree-e2e-behind-slow-marker
 verified_head: 3145b85bafedc529a439194f60d7b2c7adcc88b5
-run: init-leaves-a-green-tree
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: b8c4d961156e31aee4df83055a80b29e20456f66
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # e2e behind slow marker
