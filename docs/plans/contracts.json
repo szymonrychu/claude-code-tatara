@@ -566,5 +566,17 @@
       "agents-helmfile"
     ],
     "note": "task web-ci-release: harbor.szymonrichert.pl/containers/agents-web:<sha7> on main; nginx-unprivileged on 8080, non-root, /healthz, /config.json no-cache"
+  },
+  {
+    "name": "orch-ui-retired",
+    "kind": "rule",
+    "owner": "frontend-decoupling",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "configuration-improvements",
+      "agents-webhook-microservice",
+      "agents-schedule-microservice"
+    ],
+    "note": "tasks orch-drop-spa-mount, orch-drop-frontend-build: agent-orchestrator has no frontend/, no SpaStaticFiles, no ORCH_STATIC_DIR, no npm in CI; GET / on the api is a JSON 404; UI work targets code/agents-web (supersedes orch-settings-menu's file path)"
   }
 ]
