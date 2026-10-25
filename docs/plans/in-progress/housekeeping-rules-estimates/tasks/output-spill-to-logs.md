@@ -9,6 +9,11 @@ depends_on: [workbench-dirs, em-dash-commit-guard]
 model: sonnet
 review: ""
 verified_head: 303f638
+points_actual: 3
+actual_minutes: 24
+actual_tokens: 1148960
+actual_roles: "impl 23, review 14"
+actual_role_tokens: "impl 856732, review 292228"
 ---
 
 # Output spill to logs
@@ -56,5 +61,7 @@ Every spilled command output an agent is pointed to sits in the gitignored `.log
 - WRAP_HEAD is a constant today (worktree_lib.py:36) and unwrap matches it literally; make the head a pattern with the directory as the only variable part, keeping "the hook that writes it and the code that unwraps it cannot drift apart".
 - Quote the directory safely in the shell snippet (paths with spaces).
 - Tests must clear WORKBENCH_ROOT and CLAUDE_PROJECT_DIR, or set them to a temp main checkout.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
