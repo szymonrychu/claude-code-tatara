@@ -48,9 +48,15 @@ What is true and observable when the task is done.
 
 ## Steps
 
+1. Read agent_usage.py, workbench.py (`logs_dir`, `_state_dir`), task_cmd.py `_actuals`, retro.py `_fill_from_records`, deltas.py `_logs`, test_epic_run_structure.py `test_prompt_marker`, and the existing tests of the three commands.
+2. Write `test_prompt_marker_parses` and a unit test for the shared records-or-backfill function first; run them and see them fail.
+3. Extract the function, switch the three call sites, add the non-creating logs resolver, run the verify once after committing (some tests count `git ls-files`).
+
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
 ## Notes
+
+Estimate: 2 points
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
