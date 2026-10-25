@@ -9,6 +9,11 @@ depends_on: [retro-command]
 model: opus
 review: ""
 verified_head: 2ddf0d0
+points_actual: 5
+actual_minutes: 16
+actual_tokens: 2043374
+actual_roles: "impl 13, review 3"
+actual_role_tokens: "impl 1897362, review 146012"
 ---
 
 # Deltas command
@@ -58,5 +63,7 @@ One read-only command shows how far estimates were off per task, per epic and ov
 - Fix-as-ac (brief, retirement pins): no subcommand named `estimate`; KEPT_MODULES exact.
 - History data on disk (brief): 71 done tasks carry legacy `estimate`, 21 carry `actual` (minutes) - the legacy rows of AC2.
 - Depends on retro-command only because both edit the retirement pin and tickets.md.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
