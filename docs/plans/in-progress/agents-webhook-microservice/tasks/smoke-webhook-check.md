@@ -1,6 +1,6 @@
 ---
 title: smoke webhook check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live smoke proves the public ingest, the webhook API and the orchestrator service port work after every apply"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py && mise
 depends_on: [helmfile-webhook-releases, helmfile-web-webhooks-entry]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 6d2a9e0
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 11
+actual_tokens: 1042209
+actual_roles: "impl 7, review 5"
+actual_role_tokens: "impl 830158, review 212051"
 ---
 
 # smoke webhook check
@@ -65,3 +65,5 @@ Extend the smoke (design D13, D14; re-plan 2026-10-25: per-webhook endpoints wit
 - Pattern: the existing steps and fakes in `tests/test_smoke_script.py` (`test_agent_me_check_runs_in_pod_with_its_own_env`).
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+- 2026-10-25 done
