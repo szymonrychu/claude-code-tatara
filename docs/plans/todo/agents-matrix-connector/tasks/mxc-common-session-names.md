@@ -40,17 +40,20 @@ Gate item 16 (user 'Go', 2026-10-25): the connector starts before orchestrator-r
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `agents-common` v0.3.0: `agents_common.orchestrator.OrchestratorClient.create_session`, `/api/v1/sessions`, `session_id`, `agents_common.runs.running_session`, `RunRef.session_id`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The connector pins agents-common v0.3.0 and uses only the session names; no cluster-named call or identifier remains in src or tests.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the tag: `git ls-remote --tags https://github.com/szymonrychu/agents-common v0.3.0` prints a ref; otherwise end blocked.
+- Red: run the AC1 command on the v0.2.0 pin; it fails (no `create_session`).
+- Green: pin v0.3.0 (runtime and dev entries), `uv lock`, switch every client and run-tracker call to the session names; rerun AC1 and AC2: pass.
+- Run `mise run test` and `mise run lint`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- agents-common v0.3.0 is tagged on its merge commit 6dd79c8 (2026-10-25) and installs cleanly from the tag.
+- If the scaffold already pinned v0.3.0 (the tag existed when the epic started), this task only verifies AC1-AC3 and removes nothing.
