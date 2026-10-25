@@ -113,7 +113,7 @@ def test_files_shared_with_other_in_progress_epic_fails(root):
     a = epic(root, "Alpha", "in-progress")
     task(root, a, "T one", "shared.py")
     b = epic(root, "Beta")
-    r = check(root, "--epic", b, "--title", "T two", "--files", "shared.py")
+    r = check(root, "--epic", b, "--title", "T two", "--files", "shared.py", "--repo", "p")
     assert r.returncode == 1 and "shared.py" in r.stderr and a in r.stderr
 
 
