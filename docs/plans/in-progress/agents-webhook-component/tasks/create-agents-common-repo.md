@@ -1,6 +1,6 @@
 ---
 title: create agents-common repo
-status: in-progress
+status: done
 repo: superrepo
 value: "the shared trigger library has its own repo and submodule, ready for the agents-webhook-microservice tasks"
 files: [.gitmodules, code/agents-common, AGENTS.md]
@@ -8,11 +8,11 @@ verify: "git config --file .gitmodules --get submodule.agents-common.branch && c
 depends_on: []
 model: ""
 review: full
-verified_head: ""
+verified_head: 4dcb409
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -64,3 +64,7 @@ No other repo is created and no file of another component changes. If the GitHub
 - No TDD cycle applies: repository creation with no behaviour change (the scaffold's own smoke test is the check).
 - After this epic closes, the orchestrator runs `git submodule update --init code/agents-common` in the main checkout before agents-webhook-microservice starts: ticket.py treats a task repo without a `code/<repo>` checkout as a meta task.
 - Precedent: docs/plans/todo/agents-web-component/tasks/create-agents-web-repo.md.
+
+- 2026-10-25 done
+
+- 2026-10-25 actuals: no agent records
