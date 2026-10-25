@@ -6,19 +6,17 @@ value: Cuts ticket.py to the planning and lifecycle commands the user keeps
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/tests/test_estimator.py]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development && bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint"
 depends_on: [remove-workflows]
-owns: []
-uses: []
 model: sonnet
-verified_head: 31559e5841b567af391c1516c94f2cd187bc0340
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 31559e5841b567af391c1516c94f2cd187bc0340
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 20
+actual_tokens: 2889785
+actual_roles: "impl 15, review 5"
+actual_role_tokens: "impl 2483176, review 406609"
 ---
 
 # Ticket drop run commands

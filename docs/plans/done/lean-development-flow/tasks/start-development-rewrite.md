@@ -6,19 +6,17 @@ value: "The flow document is what every orchestrator session reads; it must desc
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/, plugins/workbench/agents/record-writer.md, plugins/workbench/README.md, plugins/workbench/.claude-plugin/plugin.json]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint"
 depends_on: [ticket-lean-tasks, agents-lean-roles]
-owns: []
-uses: []
 model: opus
-verified_head: 06d6a93
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 06d6a93
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 58
+actual_tokens: 25492559
+actual_roles: "impl 58, review 10"
+actual_role_tokens: "impl 25148779, review 343780"
 ---
 
 # Start-development rewrite

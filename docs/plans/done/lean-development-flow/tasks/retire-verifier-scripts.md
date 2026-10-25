@@ -6,19 +6,17 @@ value: "Removes 2500 lines of verifier, triage and claude -p plumbing the lean r
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/triage.py, plugins/workbench/scripts/lib/claude_json.py, plugins/workbench/scripts/tests/, plugins/workbench/agents/verifier.md, plugins/workbench/README.md, docs/enterprise.md, plugins/workbench/skills/start-development/tests/test_release.py]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && pytest plugins/workbench/skills/start-development/tests/test_release.py -q && mise run lint"
 depends_on: [remove-workflows]
-owns: []
-uses: []
 model: sonnet
-verified_head: 94230655c7cc75b77caed68257323627e74a6954
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 94230655c7cc75b77caed68257323627e74a6954
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 102
+actual_tokens: 749173
+actual_roles: "impl 102, review 1"
+actual_role_tokens: "impl 651472, review 97701"
 ---
 
 # Retire verifier scripts

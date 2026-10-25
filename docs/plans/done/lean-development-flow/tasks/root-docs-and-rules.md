@@ -6,19 +6,17 @@ value: "AGENTS.md is loaded into every session; a stale rule 1 would send agents
 files: [AGENTS.md, CLAUDE.md, README.md, docs/architecture.md, docs/harnesses.md, docs/enterprise.md, scripts/tests/]
 verify: "pytest scripts/tests -m \"not slow\" -q && mise run lint"
 depends_on: [skills-wording]
-owns: []
-uses: []
 model: sonnet
-verified_head: 8990c8e
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 8990c8e
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 16
+actual_tokens: 608440
+actual_roles: "impl 11, review 5"
+actual_role_tokens: "impl 498547, review 109893"
 ---
 
 # Root docs and rules

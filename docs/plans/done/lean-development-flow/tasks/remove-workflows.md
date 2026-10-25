@@ -6,19 +6,17 @@ value: Deletes the 12k-line Workflow runtime that every other simplification dep
 files: [plugins/workbench/workflows/, plugins/workbench/skills/heartbeat/, plugins/workbench/scripts/hook-evidence.py, plugins/workbench/scripts/tests/, scripts/harness/fallbacks/, scripts/harness/skills_emit.py, scripts/tests/, plugins/workbench/scripts/run-tests.sh]
 verify: "pytest scripts/tests -m \"not slow\" -q && mise run lint && bash plugins/workbench/scripts/run-tests.sh"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-verified_head: 6f72ab793a614d3a938d3406eb1ac798f820049f
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 6f72ab793a614d3a938d3406eb1ac798f820049f
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 129
+actual_tokens: 4103204
+actual_roles: "impl 99, review 31"
+actual_role_tokens: "impl 3505420, review 597784"
 ---
 
 # Remove workflows

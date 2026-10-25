@@ -6,19 +6,17 @@ value: "The task file becomes the whole contract between planner, implementer an
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/, plugins/workbench/skills/start-development/tests/, plugins/workbench/skills/start-development/templates/]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint"
 depends_on: [ticket-drop-run-commands]
-owns: []
-uses: []
 model: opus
-verified_head: 1b76c81caaba63a2b44315677d8a1fce28265f7e
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 1b76c81caaba63a2b44315677d8a1fce28265f7e
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 32
+actual_tokens: 12635715
+actual_roles: "impl 28, review 4"
+actual_role_tokens: "impl 12344596, review 291119"
 ---
 
 # Ticket lean tasks

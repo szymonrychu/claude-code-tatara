@@ -6,19 +6,17 @@ value: "Model quality and instructions replace orchestration machinery; these fo
 files: [plugins/workbench/agents/implementer.md, plugins/workbench/agents/reviewer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/agents/planner.md, plugins/workbench/agents/spec-reviewer.md, plugins/workbench/agents/quality-reviewer.md, plugins/workbench/skills/start-review/, plugins/workbench/skills/start-research/tests/]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only start-review && bash plugins/workbench/scripts/run-tests.sh --only start-research && mise run lint"
 depends_on: [retire-verifier-scripts]
-owns: []
-uses: []
 model: opus
-verified_head: b79edfd
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: b79edfd
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 40
+actual_tokens: 6075082
+actual_roles: "impl 39, review 12"
+actual_role_tokens: "impl 5836791, review 238291"
 ---
 
 # Agents lean roles

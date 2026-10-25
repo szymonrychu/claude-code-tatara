@@ -6,19 +6,17 @@ value: A skill that still tells the agent to arm a heartbeat or run plan-execute
 files: [plugins/workbench/skills/, plugins/workbench/hooks/, plugins/workbench/rules/concise-orchestrator.md, plugins/workbench/agents/]
 verify: "bash plugins/workbench/scripts/run-tests.sh && mise run lint"
 depends_on: [start-development-rewrite, epic-run-skill]
-owns: []
-uses: []
 model: sonnet
-verified_head: 606b059
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: 606b059
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 31
+actual_tokens: 860510
+actual_roles: "impl 31, review 20"
+actual_role_tokens: "impl 480638, review 379872"
 ---
 
 # Skills wording

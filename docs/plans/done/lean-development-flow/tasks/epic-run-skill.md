@@ -6,19 +6,17 @@ value: The one entry point that decouples executing an epic from planning it
 files: [plugins/workbench/skills/epic-run/, plugins/workbench/skills/start-research/tests/]
 verify: "bash plugins/workbench/scripts/run-tests.sh --only epic-run && bash plugins/workbench/scripts/run-tests.sh --only start-research && mise run lint"
 depends_on: [start-development-rewrite]
-owns: []
-uses: []
 model: sonnet
-verified_head: de33424
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
-run: ""
-provides: []
+verified_head: de33424
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 703360
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 619615, review 83745"
 ---
 
 # Epic-run skill
