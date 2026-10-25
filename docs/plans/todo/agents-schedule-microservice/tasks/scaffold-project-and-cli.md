@@ -26,7 +26,7 @@ actual_role_tokens: ""
 Create the Python project at the root of code/agents-schedule (design D1, D2, D4; approvals A1, A8). `code/agents-schedule` exists before the run: epic agents-schedule-component creates it with `workbench:component-add`.
 
 - uv project `agents-schedule`, src layout, package `agents_schedule` with `__version__`, console script `sched = agents_schedule.cli:main`. Python version: the floor agents-common declares; the Dockerfile base image uses the same minor.
-- Runtime dependencies, every one the epic needs, pinned: `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0` (contract `agents-common-lib`, owned by agents-webhook-microservice), `croniter==6.2.4`, `tzdata` (so `zoneinfo` works in a slim image), `fastapi`, `uvicorn[standard]`, `httpx`, `psycopg[binary,pool]`, `pydantic`, `pydantic-settings`. Dev group: `pytest`, `pytest-asyncio`, `testcontainers[postgres]`, `ruff`. No later task edits pyproject.toml or uv.lock.
+- Runtime dependencies, every one the epic needs, pinned: `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.3.0` (contracts `agents-common-lib` and `agents-common-reuse`, owned by agents-webhook-microservice; v0.3.0 carries the session names and `runs.deliver`), `croniter==6.2.4`, `tzdata` (so `zoneinfo` works in a slim image), `fastapi`, `uvicorn[standard]`, `httpx`, `psycopg[binary,pool]`, `pydantic`, `pydantic-settings`. Dev group: `pytest`, `pytest-asyncio`, `testcontainers[postgres]`, `ruff`. No later task edits pyproject.toml or uv.lock.
 - pytest config: `pythonpath = ["src", "tests"]`, `asyncio_mode = "auto"`, marker `e2e`, `addopts = "-q -m 'not e2e'"`, and the agents-common pytest plugin `agents_common.testing` enabled. ruff: line length 100, rules E, F, I, UP, B, SIM.
 - `.mise.toml` tasks: `test` (`uv run pytest`), `lint` (`uv run ruff check . && uv run ruff format --check .`), `fmt`, `test:e2e` (`bash scripts/e2e.sh`), `test:chart` (`uv run pytest tests/test_chart.py tests/test_chart_ingress.py`), `lint:chart` (`helm lint chart/agents-schedule --set postgres.url=postgresql://x/y --set orchestrator.url=http://o --set orchestrator.token=t`); the files they name arrive with `helm-chart`, `chart-ingress-and-test-hook` and `kind-e2e-api`.
 - `cli.py`: argparse front end with `register(name, func, help, configure=None)`; `sched --version` prints the version; no command prints help and exits 2; an unknown command exits 2; a registered command's return code is the exit code.
@@ -72,3 +72,5 @@ Create the Python project at the root of code/agents-schedule (design D1, D2, D4
 
 - Model on `code/agent-orchestrator/src/agent_orchestrator/cli.py` and its pyproject.
 - The agents-common tag is the one `agents-common-lib` names (agents-webhook-microservice task common-release-v0-1-0); this epic runs after it (README blockers).
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
