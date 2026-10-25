@@ -1,6 +1,6 @@
 ---
 title: overlap check per repo
-status: todo
+status: in-progress
 repo: workbench
 value: independent epics in different repos can run in parallel sessions
 files: [plugins/workbench/skills/start-development/scripts/ticket.py]
