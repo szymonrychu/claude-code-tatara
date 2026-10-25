@@ -46,3 +46,16 @@ Estimate: 86 agent-min | Critical path: 56 min | Expected wall at P=1.5: 1.9 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+- Repo name: user asked about "agents-frontend", then chose "Keep agents-web as is".
+- create repo step and every live apply run by the orchestrator (classifier refuses them in subagents; user approved rules).
+- web-chart-config-ingress: fix rounds: test:chart glob (Node 24), helm test pod pinned and hardened.
+- web-backend-menu: fix round: menu entries memoised (warn per render).
+- orch-drop-frontend-build: AC7 amended (contradicted the requirement's sync:api README note); AC6 evidenced by PR #13 CI e2e pass.
+- deploy-pin-web: first live apply failed on duplicate imagePullSecrets (chart concat of values + global); root fix agents-web PR #2 (dedupe), re-pinned to db1f482; agent-orchestrator untouched by the failed apply.
+- smoke-web-ui: two live bugs fixed after cutover (port-forward hit the SSO sidecar; config.json keyed by id); user confirmed UI loads (Q6).
+- security: MEDIUM regctl-installer@main pinned (fix PR); MEDIUM in-cluster http-insecure port to static UI: dropped (static content, NetworkPolicy is new scope); LOW mutable base tags, missing nginx security headers, origin check scope: dropped (match existing repos / speculative).
+- epic review: whole-diff PASS; findings acted on: chart config.json validation parity with parseConfig and helm test bypassing the sidecar (agents-web PR #4), regctl-installer pinned (PR #3); re-pinned live to cedcbbc (task repin-web-after-review-fixes, helmfile PR #19), smoke OK.
+- PRs merged: agents-web #1 #2 #3 #4, agent-orchestrator #13, agents-helmfile #18 #19. Live: agents-web 0.1.0-main.cedcbbc on /, agent-orchestrator 0.1.0-main.a4be86b (API-only) on /api.
