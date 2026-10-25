@@ -1,6 +1,6 @@
 ---
 title: web schedules menu entry
-status: in-progress
+status: done
 repo: agents-web
 value: Schedules appears in the hamburger menu below Webhooks when the schedule backend is configured
 files: [src/schedules/menu.ts, src/backends/registry.ts, src/backends/registry.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.tes
 depends_on: [web-schedules-page]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 41e62491e04f53d3bea7de396df81f8315ec57bc
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 258058
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 198608, review 59450"
 ---
 
 # web schedules menu entry
@@ -56,3 +56,5 @@ The schedules UI lives in the hamburger menu.
 - `SchedulesPage` accepts `onBack` per the registry's `render(onBack)`.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-26 done
