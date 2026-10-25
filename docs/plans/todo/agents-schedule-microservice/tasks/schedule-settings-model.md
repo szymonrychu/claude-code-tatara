@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Add `agents_schedule.settings` (design D8, D11, D13; approval A1) on agents-common `BaseServiceSettings` (contract `agents-common-lib`: per-service env prefix, `SettingsError` naming each bad variable, `*_FILE` secrets), env prefix `SCHED_`:
 
-- `SCHED_DATABASE_URL` (required), `SCHED_ORCHESTRATOR_URL` (required; the orchestrator's service port, contracts `orch-service-tokens` and `orch-services-service`, live `http://agent-orchestrator-services:8002`), `SCHED_ORCHESTRATOR_TOKEN` or `SCHED_ORCHESTRATOR_TOKEN_FILE` (exactly one required; the base's `*_FILE` rule), `SCHED_ALLOWED_CIDRS` (CSV, default `127.0.0.1/32`), `SCHED_PORT` (default 8000), `SCHED_MAX_IN_PROGRESS` (default 3, 1..50), `SCHED_MAX_PER_SCHEDULE` (default 1, 1..10), `SCHED_DEFAULT_TIMEZONE` (default `Europe/Warsaw`, must be a valid IANA zone), `SCHED_TICK_SECONDS` (default 15, 1..300), `SCHED_POLL_SECONDS` (default 10, 1..300), `SCHED_DISPATCH_MAX_ATTEMPTS` (default 5, 1..20), `SCHED_RUN_TIMEOUT_SECONDS` (default 3600, 60..86400; the webhook's D6 rule, so a stuck turn cannot hold a slot forever).
+- `SCHED_DATABASE_URL` (required), `SCHED_ORCHESTRATOR_URL` (required; the orchestrator's service port, contracts `orch-service-tokens` and `orch-services-service`, live `http://agents-orchestrator-services:8002`), `SCHED_ORCHESTRATOR_TOKEN` or `SCHED_ORCHESTRATOR_TOKEN_FILE` (exactly one required; the base's `*_FILE` rule), `SCHED_ALLOWED_CIDRS` (CSV, default `127.0.0.1/32`), `SCHED_PORT` (default 8000), `SCHED_MAX_IN_PROGRESS` (default 3, 1..50), `SCHED_MAX_PER_SCHEDULE` (default 1, 1..10), `SCHED_DEFAULT_TIMEZONE` (default `Europe/Warsaw`, must be a valid IANA zone), `SCHED_TICK_SECONDS` (default 15, 1..300), `SCHED_POLL_SECONDS` (default 10, 1..300), `SCHED_DISPATCH_MAX_ATTEMPTS` (default 5, 1..20), `SCHED_RUN_TIMEOUT_SECONDS` (default 3600, 60..86400; the webhook's D6 rule, so a stuck turn cannot hold a slot forever).
 - `load_settings()` raises `SettingsError` naming every bad or missing variable at once.
 - README `## Configuration` lists every variable with default and meaning; this is the contract `agents-schedule-settings-env` agents-helmfile consumes.
 
@@ -61,3 +61,5 @@ Every process loads one Settings object; a misconfigured pod exits at startup na
 
 - Never log the token; `repr` of Settings masks it (SecretStr).
 - `SCHED_ALLOWED_CIDRS` mirrors `ORCH_ALLOWED_CIDRS`: only the oauth2-proxy sidecar (127.0.0.1) or a port-forward reaches the api.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
