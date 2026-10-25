@@ -54,8 +54,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Red: in scripts/tests/test_run_tests.py add `test_suite_temp_dirs_are_outside_any_checkout` (make the fixture tree an initialised workbench: `git init`, `code/`, `.gitmodules`; have the fake component record its basetemp and TMPDIR into its output) and `test_temp_dir_kept_on_failure_removed_on_green`; run `bash plugins/workbench/scripts/run-tests.sh --only scripts` and see exactly those two fail.
+2. Green: in run-tests.sh create the mktemp temp dir, pass `--basetemp "$TMP_DIR/<component>"` and export `TMPDIR` for every suite, remove it on green, keep and print `temp dirs:` on red, drop the GIT_CEILING_DIRECTORIES block; update the header comments of run-tests.sh and flake-hunt.sh and the docstring of hooks/bash-output-filter.py; run the same command once and see it green.
+3. Run AC3 and AC4 as written, then the verify on the committed HEAD.
 
 ## Notes
 
