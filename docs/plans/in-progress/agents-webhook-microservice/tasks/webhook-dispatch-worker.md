@@ -1,6 +1,6 @@
 ---
 title: webhook dispatch worker
-status: in-progress
+status: done
 repo: agents-webhook
 value: queued events start clusters from their presets one by one within the limits and end handled or failed
 files: [src/agents_webhook/worker.py, tests/test_worker.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_worker.py -q && uv run ruff check . && uv run 
 depends_on: [webhook-event-store, webhook-prompt-render]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 5bafbda
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 6
+actual_tokens: 1372578
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 1119845, review 252733"
 ---
 
 # webhook dispatch worker
@@ -68,3 +68,5 @@ Queued endpoint events run as agent clusters within the limits and end handled o
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
 
 Orchestrator note (2026-10-25): prompt.render/preview take `timeout=`; pass `settings.template_timeout_seconds` (WEBHOOK_TEMPLATE_TIMEOUT_SECONDS, default 2.0). Rebuild the NormalizedEvent for render from the event row (body/comment_body columns from event-store fix 0002_event_text.sql).
+
+- 2026-10-25 done
