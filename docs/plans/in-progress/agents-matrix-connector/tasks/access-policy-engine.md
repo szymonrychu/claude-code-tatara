@@ -1,6 +1,6 @@
 ---
 title: access policy engine
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "nobody reaches an agent without an explicit allow rule, and a deny rule always wins"
 files: [src/agents_matrix_connector/policy.py, tests/test_policy.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_policy.py -q && uv run ruff check . &
 depends_on: [mxc-scaffold-and-cli]
 model: opus
 review: full
-verified_head: ""
+verified_head: 60ec1f65579d07d7e0d2fae64b28e6063131f354
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 434368
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 365931, review 68437"
 ---
 
 # access policy engine
@@ -70,3 +70,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Security core (review focus): default deny must hold with zero rules; deny always wins; display names never grant.
 - No regex anywhere: identifiers are compared exactly (design D6).
+
+- 2026-10-25 done
