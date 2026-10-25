@@ -256,6 +256,7 @@ Cross-epic (in `docs/plans/contracts.json`): the agents-common parts, `orch-serv
 - Q3: Is incoming auth tatara-new parity (GitHub HMAC, GitLab token, Grafana bearer), one SOPS secret per source, with public ingest at https://lab.szymonrichert.pl/webhooks/<source> in its own Deployment without SSO? [recommended: yes (D3, D12)]
 - Q4: Are events ignored (still listed with the reason) when no mapping matches, the actor is a bot login, the action is closed/merged/labeled/title-only edit, the alert is resolved, a duplicate, or the queue is full? [recommended: yes (D4)]
 - Q5: Add a fifth status failed (create, message or turn failed, or a 1 h timeout) with a reason? [recommended: yes (D5 of the brief, D8)]
+- Q6: Is an event handled when its first turn completes, with the service never deleting clusters (cleanup via configuration-improvements autoclose)? [recommended: yes (D8)]
 
 ## Irreversible operations in scope
 
