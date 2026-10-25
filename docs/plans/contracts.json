@@ -459,5 +459,16 @@
       "agents-web"
     ],
     "note": "task leader-lease-expiry: leadership_pass step 4 hands leadership to _free_longest at the leader's turn boundary once since is older than spec.leader_lease_seconds; reason lease_expired, epoch+1; no takeover, no interrupted turn; amends hive D26 for opted-in clusters"
+  },
+  {
+    "name": "orch-cluster-autoclose",
+    "kind": "interface",
+    "owner": "configuration-improvements",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/db/clusters.py",
+    "consumers": [
+      "agents-web",
+      "agents-helmfile"
+    ],
+    "note": "task autoclose-sweeper: api-process sweeper (AUTOCLOSE_POLL_SECONDS 10) calls close_expired, a status-guarded desired active->deleting flip at created_at + spec.autoclose_after_seconds; the reconciler discards as for DELETE; api stays the only writer of clusters.desired"
   }
 ]
