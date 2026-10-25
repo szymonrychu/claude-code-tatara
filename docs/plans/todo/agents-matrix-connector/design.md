@@ -160,23 +160,25 @@ Each part with its owning task, its consumers and where it is defined (one line 
 
 ## Decision coverage
 
+Split 2026-10-25 (user decision): the agents-helmfile and agents-web tasks moved to epic agents-matrix-connector-depl, which also covers D2 with helmfile-matrix-secrets; D3 with helmfile-matrix-releases, apply-smoke-matrix; D6 with web-chats-access-panels; D12 with web-matrix-api-client, web-chats-rooms-page, web-chats-access-panels, web-chats-menu-entry; D13 with helmfile-matrix-secrets, helmfile-matrix-releases, helmfile-web-chats-entry, smoke-matrix-check, apply-smoke-matrix; D15 with helmfile-matrix-releases. The table lists this epic's tasks only; the Chats page decision is anchored here on the API task it consumes.
+
 | Decision | Tasks |
 |---|---|
 | D1 Component and process layout | mxc-scaffold-and-cli, mxc-service-entrypoints, mxc-dockerfile-and-ci, mxc-chart-workloads |
-| D2 Synapse authentication | matrix-client-and-fake-hs, mxc-settings-model, helmfile-matrix-secrets, mxc-operations-docs |
-| D3 Reaching Facebook | mxc-operations-docs, helmfile-matrix-releases, apply-smoke-matrix |
+| D2 Synapse authentication | matrix-client-and-fake-hs, mxc-settings-model, mxc-operations-docs |
+| D3 Reaching Facebook | mxc-operations-docs |
 | D4 No end-to-end encryption | room-and-event-discovery, access-policy-engine, mxc-e2e-api |
 | D5 Discovery | room-and-event-discovery, directory-repository, matrix-sync-loop |
-| D6 Allow and deny rules | access-policy-engine, rules-and-settings-repo, api-rules-and-settings, web-chats-access-panels |
+| D6 Allow and deny rules | access-policy-engine, rules-and-settings-repo, api-rules-and-settings |
 | D7 Message intake | room-and-event-discovery, inbound-queue-repository, matrix-sync-loop |
 | D8 Conversation mapping | chat-prompt-render, runs-and-outbound-repo, dispatch-worker |
 | D9 Replies | runs-and-outbound-repo, reply-tracker |
 | D10 Data model and writers | mxc-schema-migrations, directory-repository, rules-and-settings-repo, inbound-queue-repository, runs-and-outbound-repo |
 | D11 UI API | api-rooms-and-users, api-rules-and-settings, mxc-openapi-and-readme |
-| D12 Chats page | web-matrix-api-client, web-chats-rooms-page, web-chats-access-panels, web-chats-menu-entry |
-| D13 Deploy | mxc-chart-network, helmfile-matrix-secrets, helmfile-matrix-releases, helmfile-web-chats-entry, smoke-matrix-check, apply-smoke-matrix |
+| D12 Chats page | mxc-openapi-and-readme |
+| D13 Deploy | mxc-chart-network |
 | D14 Headless parity and tests | matrix-client-and-fake-hs, mxc-openapi-and-readme, mxc-e2e-api |
-| D15 Names follow orchestrator-rename-sessions | mxc-scaffold-and-cli, helmfile-matrix-releases |
+| D15 Names follow orchestrator-rename-sessions | mxc-scaffold-and-cli |
 | D16 Model per task | mxc-scaffold-and-cli |
 
 ## Review focus
