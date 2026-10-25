@@ -1,6 +1,6 @@
 ---
 title: web backend menu
-status: in-progress
+status: done
 repo: agents-web
 value: "later services add UI entries by registering them, shown only when configured"
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/App.tsx, src/App.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.tes
 depends_on: [web-runtime-config]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 61c1def
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 595294
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 467564, review 127730"
 ---
 
 # web backend menu
@@ -61,3 +61,5 @@ A later service adds its UI by registering entries under its backend id; the cha
 ## Notes
 
 - No router is introduced; the existing `view` state now holds `'cluster'` or an entry id.
+
+- 2026-10-25 done
