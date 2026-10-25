@@ -1,6 +1,6 @@
 ---
 title: web docs names
-status: in-progress
+status: done
 repo: agents-web
 value: "agents-web's docs and chart say session and agents-orchestrator, guarded"
 files: [README.md, chart/agents-web/README.md, chart/agents-web/values.yaml, MEMORY.md, src/nomenclature.test.ts]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/nomenclature.test.ts && npm run test:chart && npm ru
 depends_on: [web-webhooks-session-fields]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: aac9e39
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 426670
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 281617, review 145053"
 ---
 
 # web docs names
@@ -59,3 +59,5 @@ Every tracked agents-web file passes the guard; MEMORY.md records the rename.
 ## Notes
 
 - "cluster-internal" in chart docs is Kubernetes: allowlisted with a comment.
+
+- 2026-10-25 done
