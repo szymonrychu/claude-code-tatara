@@ -27,6 +27,7 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
+import agent_usage  # noqa: E402
 import calibration  # noqa: E402
 import workbench  # noqa: E402
 
@@ -377,6 +378,20 @@ def _parse_roles(value, task: str, field: str) -> dict[str, int] | None:
 
 def _format_roles(roles: dict[str, int]) -> str:
     return ", ".join(f"{r} {roles[r]}" for r in ROLES if r in roles)
+
+
+def record_actuals(records: list[dict]) -> dict:
+    """A task's measured frontmatter from its agents' records (agent_usage.aggregate):
+    actual_tokens, actual_minutes when an agent is timed, and actual_roles and
+    actual_role_tokens when any record names a role."""
+    sums = agent_usage.aggregate(records)
+    out = {"actual_tokens": str(sums["tokens"])}
+    if sums["minutes"] is not None:
+        out["actual_minutes"] = str(sums["minutes"])
+    if sums["roles"]:
+        out["actual_roles"] = _format_roles({r: m for r, (m, _) in sums["roles"].items()})
+        out["actual_role_tokens"] = _format_roles({r: n for r, (_, n) in sums["roles"].items()})
+    return out
 
 
 def _number_problems(meta: dict, task: str) -> list[str]:

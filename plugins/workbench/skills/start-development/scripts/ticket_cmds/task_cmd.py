@@ -56,13 +56,7 @@ def _actuals(a, t, root: Path, epic: str) -> tuple[dict, list[str]]:
         records = agent_usage.records_for(epic, a.task, logs, transcripts)
     if not records:
         return meta, ["actuals: no agent records"]
-    sums = agent_usage.aggregate(records)
-    if sums["minutes"] is not None:
-        meta["actual_minutes"] = str(sums["minutes"])
-    meta["actual_tokens"] = str(sums["tokens"])
-    if sums["roles"]:
-        meta["actual_roles"] = t._format_roles({r: m for r, (m, _) in sums["roles"].items()})
-        meta["actual_role_tokens"] = t._format_roles({r: n for r, (_, n) in sums["roles"].items()})
+    meta.update(t.record_actuals(records))
     return meta, []
 
 

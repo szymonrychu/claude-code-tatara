@@ -128,12 +128,15 @@ def _estimate_points(t, meta: dict, body: str, slug: str) -> int | None:
     return int(m.group(1)) if m else None
 
 
-def _rows(a, t, root: Path, epic_dir: Path, backfill: bool = True) -> list[dict]:
+def _rows(
+    a, t, root: Path, epic_dir: Path, backfill: bool = True, docs: dict | None = None
+) -> list[dict]:
     """One dict per task in delivery order: title and the six measured values (None = unknown).
-    `backfill=False` only reads the existing records (the read-only `deltas`)."""
+    `backfill=False` only reads the existing records (the read-only `deltas`); `docs` maps a
+    task path to the Doc to read instead of the file (migrate's new values before writing)."""
     tasks = {}
     for path in t._task_files(epic_dir):
-        doc = t._read_doc(path)
+        doc = (docs or {}).get(path) or t._read_doc(path)
         meta, slug = doc.meta, path.stem
         row = {"slug": slug, "title": meta.get("title") or slug, "deps": meta.get("depends_on", [])}
         row["head"] = meta.get("verified_head")
