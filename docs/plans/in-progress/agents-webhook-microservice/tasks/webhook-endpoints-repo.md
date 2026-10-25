@@ -1,6 +1,6 @@
 ---
 title: webhook endpoints repo
-status: in-progress
+status: done
 repo: agents-webhook
 value: "each webhook gets its own URL, type, preset and basic-auth credentials stored as hashes"
 files: [src/agents_webhook/credentials.py, src/agents_webhook/db/__init__.py, src/agents_webhook/db/endpoints.py, tests/test_endpoints_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_endpoints_repo.py -q && uv run ruff check . &&
 depends_on: [webhook-schema-settings]
 model: opus
 review: full
-verified_head: ""
+verified_head: 0b2d909
 points: 3
 expected_minutes: 16
 expected_tokens: 723362
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 1487265
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 1126705, review 360560"
 ---
 
 # webhook endpoints repo
@@ -68,3 +68,5 @@ Endpoints exist in the database with a unique suffix, a type, a preset and hashe
 - scrypt from the standard library (`hashlib.scrypt`), no new dependency.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
