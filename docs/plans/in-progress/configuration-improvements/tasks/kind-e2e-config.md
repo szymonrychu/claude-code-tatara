@@ -1,6 +1,6 @@
 ---
 title: kind e2e config
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "CI proves hooks, idle compact, lease and autoclose on a real cluster through the API"
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/te
 depends_on: [render-wrapper-settings, leader-lease-expiry, autoclose-sweeper, config-cluster-views]
 model: ""
 review: ""
-verified_head: ""
+verified_head: bcd6c9d
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 854980
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 533432, review 321548"
 ---
 
 # kind e2e config
@@ -61,3 +61,5 @@ The PR CI e2e job runs three new API-only tests that prove hooks and idle compac
 ## Notes
 
 The agent test image runs the wrapper's fake claude, which handles `/compact` (`code/claude-code-wrapper/tests/fake_claude/fake_claude.py`). The e2e run is the PR CI `e2e` job; locally only collection is checked.
+
+- 2026-10-25 done
