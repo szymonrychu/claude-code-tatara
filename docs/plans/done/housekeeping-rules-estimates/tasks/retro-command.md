@@ -9,6 +9,9 @@ depends_on: [stamp-actuals, calibration-lib]
 model: opus
 review: ""
 verified_head: d257ca1
+points: 8
+expected_minutes: 91
+expected_tokens: 6000000
 points_actual: 8
 actual_minutes: 16
 actual_tokens: 3112607

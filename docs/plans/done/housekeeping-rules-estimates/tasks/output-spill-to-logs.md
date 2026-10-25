@@ -9,6 +9,9 @@ depends_on: [workbench-dirs, em-dash-commit-guard]
 model: sonnet
 review: ""
 verified_head: 303f638
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 24
 actual_tokens: 1148960

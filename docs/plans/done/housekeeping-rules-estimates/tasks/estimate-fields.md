@@ -9,6 +9,9 @@ depends_on: [calibration-lib]
 model: opus
 review: ""
 verified_head: fb13db0
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 5
 actual_minutes: 15
 actual_tokens: 2032100

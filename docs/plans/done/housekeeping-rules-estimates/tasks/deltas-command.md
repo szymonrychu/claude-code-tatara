@@ -9,6 +9,9 @@ depends_on: [retro-command]
 model: opus
 review: ""
 verified_head: 2ddf0d0
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 5
 actual_minutes: 16
 actual_tokens: 2043374

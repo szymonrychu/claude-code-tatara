@@ -9,6 +9,9 @@ depends_on: [output-spill-to-logs, test-logs-dir, agent-discipline]
 model: sonnet
 review: ""
 verified_head: fd6600a
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 45
 actual_tokens: 723362

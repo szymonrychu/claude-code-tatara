@@ -9,6 +9,9 @@ depends_on: []
 model: opus
 review: ""
 verified_head: 297bdf4
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 5
 actual_minutes: 11
 actual_tokens: 388955

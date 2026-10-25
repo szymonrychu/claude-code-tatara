@@ -9,6 +9,9 @@ depends_on: []
 model: sonnet
 review: ""
 verified_head: 35f1ce0
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 16
 actual_tokens: 451351

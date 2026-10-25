@@ -9,6 +9,9 @@ depends_on: [retro-command, deltas-command, actuals-backfill]
 model: sonnet
 review: ""
 verified_head: f0bdea7
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 7
 actual_tokens: 531208

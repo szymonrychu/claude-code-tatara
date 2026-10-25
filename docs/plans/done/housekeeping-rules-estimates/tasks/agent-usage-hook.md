@@ -9,6 +9,9 @@ depends_on: [agent-usage-lib]
 model: opus
 review: ""
 verified_head: cec85a7
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 5
 actual_minutes: 29
 actual_tokens: 1836811

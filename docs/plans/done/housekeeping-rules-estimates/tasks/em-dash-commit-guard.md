@@ -9,6 +9,9 @@ depends_on: [em-dash-edit-guard]
 model: sonnet
 review: ""
 verified_head: cea87f1
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 28
 actual_tokens: 631476

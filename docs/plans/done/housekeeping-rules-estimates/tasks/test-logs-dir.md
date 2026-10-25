@@ -9,6 +9,9 @@ depends_on: [workbench-dirs]
 model: sonnet
 review: ""
 verified_head: 11f9442
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 4
 actual_tokens: 538938

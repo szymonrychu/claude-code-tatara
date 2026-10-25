@@ -9,6 +9,9 @@ depends_on: [points-required, scratch-locations]
 model: sonnet
 review: ""
 verified_head: 3c983ec
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 15
 actual_tokens: 559738

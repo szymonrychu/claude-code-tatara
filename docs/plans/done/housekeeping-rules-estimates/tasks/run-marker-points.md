@@ -9,6 +9,9 @@ depends_on: [agent-discipline, planner-points-gate, agent-usage-lib]
 model: sonnet
 review: ""
 verified_head: f597bdd
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 5
 actual_tokens: 299770

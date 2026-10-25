@@ -9,6 +9,9 @@ depends_on: [em-dash-lint]
 model: opus
 review: ""
 verified_head: bb010ff
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 23
 actual_tokens: 1105466

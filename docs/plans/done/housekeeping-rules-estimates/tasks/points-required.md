@@ -9,6 +9,9 @@ depends_on: [estimate-fields]
 model: opus
 review: ""
 verified_head: e73b57b
+points: 3
+expected_minutes: 34
+expected_tokens: 2250000
 points_actual: 3
 actual_minutes: 14
 actual_tokens: 1108799

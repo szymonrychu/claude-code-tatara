@@ -9,6 +9,9 @@ depends_on: [housekeeping-rules]
 model: sonnet
 review: ""
 verified_head: b9ee9ba
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 14
 actual_tokens: 691774

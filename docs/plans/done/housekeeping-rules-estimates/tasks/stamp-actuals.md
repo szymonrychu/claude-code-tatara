@@ -9,6 +9,9 @@ depends_on: [run-marker-points, agent-usage-hook, points-required]
 model: opus
 review: ""
 verified_head: fb1bd5b
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 5
 actual_minutes: 12
 actual_tokens: 2552072

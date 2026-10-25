@@ -9,6 +9,9 @@ depends_on: [agent-usage-lib, stamp-actuals]
 model: sonnet
 review: ""
 verified_head: ab86c4b
+points: 2
+expected_minutes: 23
+expected_tokens: 1500000
 points_actual: 2
 actual_minutes: 21
 actual_tokens: 2632742

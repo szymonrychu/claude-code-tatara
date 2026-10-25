@@ -9,6 +9,9 @@ depends_on: [retro-command, planner-points-gate]
 model: opus
 review: ""
 verified_head: 7f31a5a
+points: 5
+expected_minutes: 57
+expected_tokens: 3750000
 points_actual: 3
 actual_minutes: 16
 actual_tokens: 1883475
