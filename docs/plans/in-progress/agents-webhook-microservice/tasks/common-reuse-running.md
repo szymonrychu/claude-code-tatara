@@ -1,6 +1,6 @@
 ---
 title: common reuse running
-status: todo
+status: in-progress
 repo: agents-common
 value: trigger services can tell whether the agent for an event still runs and deliver to it without loss
 files: [src/agents_common/orchestrator.py, src/agents_common/runs.py, src/agents_common/fake_orchestrator.py, README.md, tests/test_reuse.py]
@@ -53,17 +53,21 @@ Shared support for routing a trigger event to the agent still running for it (de
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Extends `agents-common-reuse` (new contract): `agents_common.orchestrator.Preset.{spec, reuse_running_agent}`, `Cluster.status`, `agents_common.runs.{running_cluster, deliver, track_delivery}`, `FakeOrchestrator.{add_preset(spec=), mark_sent, discard_cluster, remove_cluster}`.
+- Keeps every v0.1.0 name of `agents-common-lib` and `preset-mapping-model` unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A trigger service can ask whether the cluster of an earlier run still runs, post a follow-up there, and learn that the cluster went away without its run being failed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_reuse.py`; run `uv run pytest tests/test_reuse.py -q`: fails on the missing names.
+- Green: models, then `running_cluster`, `deliver`, `track_delivery`, then the fake helpers; run the verify command: all pass, the v0.1.0 tests included.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `post_update` stays as it is (it fails the run when the cluster is gone); `deliver` is the variant that hands the decision back to the caller.
+- Cluster `desired` is `active` or `deleting` (`code/agent-orchestrator/src/agent_orchestrator/db/migrations/0001_init.sql` L7); a discarded cluster's row is gone, so GET answers 404.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
