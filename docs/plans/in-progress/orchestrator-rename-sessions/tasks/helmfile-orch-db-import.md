@@ -1,6 +1,6 @@
 ---
 title: helmfile orch db import
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the renamed database is declared as a copy of the live one, with the old one untouched"
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator-db/common.yaml, values/agents-orchestrator-db/default.secrets.yaml, tests/test_db_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_db_release.py && mise run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c1f72b5
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 2
+actual_tokens: 530612
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 376514, review 154098"
 ---
 
 # helmfile orch db import
@@ -62,3 +62,5 @@ The new database release is declared as an import of the old one; nothing about 
 
 - Never apply: deploy-cutover runs the import after the old app is uninstalled (design D7).
 - Encrypted files go through the workbench-secrets secret helper skill, never a raw decrypt to the transcript.
+
+- 2026-10-25 done
