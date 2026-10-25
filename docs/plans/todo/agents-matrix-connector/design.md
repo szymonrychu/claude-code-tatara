@@ -203,6 +203,7 @@ Each part with its owning task, its consumers and where it is defined (one line 
 ## Open questions
 - Q1: Default policy: every discovered chat and person is listed but no message reaches an agent until an allow rule covers its room or sender (MATRIX_DEFAULT_POLICY=deny)? [recommended: yes, default deny; strangers on Messenger never reach an agent unasked]
 - Q2: Agents answer as a dedicated Facebook account (not Hermes' and not yours), logged in to mautrix-meta by the new Matrix user @agents:szymonrichert.pl (user-run U1-U3)? [recommended: yes, a dedicated account, so Hermes and the agents never share a chat or both answer]
+- Q3: One agent session per chat from the room's preset (or a default preset), reused while it runs; queued messages sent as one batch; replies are the turn's final text as plain Messenger messages split at 4000 characters, typing shown while the agent works, a short apology on failure, no token streaming? [recommended: yes]
 
 ## Irreversible operations in scope
 
