@@ -38,7 +38,7 @@ User request (2026-10-25), verbatim. Overall target: "Target getting more and mo
 
 ## Time
 
-Estimate: 157 agent-min | Critical path: 68 min | Expected wall at P=2.9: 2.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 157 min
+Estimate: 0 min | Actual: 0 min | Remaining estimate: 0 min
 
 ## Review
 

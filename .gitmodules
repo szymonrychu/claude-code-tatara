@@ -30,3 +30,7 @@
 	path = code/agents-schedule
 	url = https://github.com/szymonrychu/agents-schedule
 	branch = main
+[submodule "agents-matrix-connector"]
+	path = code/agents-matrix-connector
+	url = https://github.com/szymonrychu/agents-matrix-connector
+	branch = main

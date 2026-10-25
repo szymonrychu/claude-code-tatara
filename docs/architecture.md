@@ -13,6 +13,7 @@ claude-code-tatara/
     agents-common/  (python)
     agents-webhook/  (python)
     agents-schedule/  (python)
+    agents-matrix-connector/  (python)
 ```
 
 - `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks
@@ -23,3 +24,4 @@ claude-code-tatara/
 - `code/agents-common` (python): Python library shared by the trigger services (agents-webhook, agents-schedule): settings, Postgres pool, migrator, guarded queue transitions, orchestrator client, run tracker
 - `code/agents-webhook` (python): Python microservice with its own Postgres database that receives GitHub/GitLab PR, issue and comment webhooks and Grafana alerts, queues them FIFO with dedup and limits, and starts agent clusters from presets through the orchestrator API
 - `code/agents-schedule` (python): Python microservice mapping cron schedules to presets; fires agent clusters through the orchestrator API; own database
+- `code/agents-matrix-connector` (python): Python microservice with its own Postgres database: connects to the Matrix homeserver as a bot user, auto-discovers Messenger chats bridged by mautrix-meta, applies allow/deny rules and routes allowed chats to agents-orchestrator sessions

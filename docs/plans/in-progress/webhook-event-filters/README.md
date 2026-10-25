@@ -40,3 +40,7 @@ Each agents-webhook endpoint gets allow and deny rules over the normalized field
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+## Time
+
+Estimate: 0 min | Actual: 0 min | Remaining estimate: 0 min
