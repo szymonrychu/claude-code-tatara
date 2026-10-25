@@ -1,6 +1,6 @@
 ---
 title: webhook ingest http
-status: in-progress
+status: done
 repo: agents-webhook
 value: "GitHub, GitLab and Grafana deliver events to a per-webhook public URL that only accepts its own basic-auth credentials"
 files: [src/agents_webhook/ingest/__init__.py, src/agents_webhook/ingest/app.py, src/agents_webhook/ingest/ratelimit.py, tests/test_ingest_http.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_ingest_http.py -q && uv run ruff check . && uv
 depends_on: [webhook-event-store]
 model: opus
 review: full
-verified_head: ""
+verified_head: 28c0dbf
 points: 5
 expected_minutes: 15
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 13
+actual_tokens: 3438652
+actual_roles: impl 13
+actual_role_tokens: impl 3438652
 ---
 
 # webhook ingest http
@@ -73,3 +73,5 @@ GitHub, GitLab and Grafana can be pointed at `https://lab.szymonrichert.pl/webho
 - Authenticate before reading the body, so an unauthenticated caller cannot make the pod buffer 5 MiB.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
