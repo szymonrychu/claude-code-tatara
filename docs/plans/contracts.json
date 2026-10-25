@@ -487,5 +487,15 @@
     "file": "code/agents-web/src/App.tsx",
     "consumers": [],
     "note": "task web-clusters-page: settingsCategories order Clusters first, Presets last; the webhook and schedule epics insert their entries between them (they register contract use when planned, blocked by configuration-improvements)"
+  },
+  {
+    "name": "agents-web-repo",
+    "kind": "release",
+    "owner": "agents-web-component",
+    "file": "code/agents-web/MEMORY.md",
+    "consumers": [
+      "frontend-decoupling"
+    ],
+    "note": "task create-agents-web-repo: public github.com/szymonrychu/agents-web, submodule code/agents-web (main), agent-orchestrator frontend/ history at the repo root, MEMORY.md line 'agent-orchestrator <sha40>' names the imported commit; frontend/ in agent-orchestrator frozen from it"
   }
 ]
