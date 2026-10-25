@@ -1,6 +1,6 @@
 ---
 title: web chart config ingress
-status: in-progress
+status: done
 repo: agents-web
 value: "the chart sets the UI's backends and owns / of the host"
 files: [chart/agents-web/values.yaml, chart/agents-web/templates/configmap.yaml, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/ingress.yaml, chart/agents-web/templates/tests/test-connection.yaml, chart/tests/config-ingress.test.mjs, chart/agents-web/README.md]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test chart/tests/ && helm lint ch
 depends_on: [web-chart-workload]
 model: ""
 review: ""
-verified_head: ""
+verified_head: d9aefa2
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 624640
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 507888, review 116752"
 ---
 
 # web chart config ingress
@@ -67,3 +67,5 @@ Complete the agents-web chart: the runtime `config.json` from values, and the In
 
 - Reuse agent-orchestrator `chart/agent-orchestrator/templates/ingress.yaml` (copy its shape, not a shared library chart).
 - `subPath` mounts do not update in place; the checksum annotation is what rolls the pod.
+
+- 2026-10-25 done
