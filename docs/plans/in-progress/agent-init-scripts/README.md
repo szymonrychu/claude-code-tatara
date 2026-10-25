@@ -46,3 +46,10 @@ Estimate: 54 agent-min | Critical path: 32 min | Expected wall at P=1.5: 1.2 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Evidence: Whole-diff review (sonnet), security review (sonnet), CI test/lint/frontend/e2e green on agent-orchestrator PR #10 (e2e 4 init-scripts failures fixed: init Job workingDir created as root; three test-shape bugs), live apply helm rev 11 chart 0.1.0-main.22cf283, post-apply diff clean, smoke OK.
+Acted on: smoke replicas 1 -> 2 (leader step), init Job workingDir, e2e test fixes, MEMORY smoke quote (PR #16), diff evidence in task notes.
+Dropped: security - no server-side main-agent gate (design: any agent may edit, wrapper gates subagents), Default preset rewritten (C3), init Job SA token (matches agent pod), log_tail exposure (C2); review - create_job error permanent (task spec), phase message wording (AC6).
+Follow-up noted, not built (Non-goal: any-mcp changes): any-mcp init_scripts_get description should name .agent-init/init.sh and next-cluster semantics.
