@@ -1,6 +1,6 @@
 ---
 title: helmfile drop source secrets
-status: in-progress
+status: done
 repo: agents-helmfile
 value: no unused per-source webhook secrets are bootstrapped or kept
 files: [scripts/bootstrap-secrets.sh, values/agents-webhook/default.secrets.yaml, tests/test_secrets.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_secrets.py && mise run 
 depends_on: [helmfile-service-token]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ff483ac
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 303477
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 230944, review 72533"
 ---
 
 # helmfile drop source secrets
@@ -60,3 +60,5 @@ No GitHub, GitLab or Grafana source secret is generated or stored for agents-web
 - The values were never applied live (apply-smoke-webhook has not run), so nothing live changes.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
