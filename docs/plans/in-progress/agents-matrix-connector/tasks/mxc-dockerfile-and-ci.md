@@ -1,6 +1,6 @@
 ---
 title: mxc dockerfile and ci
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: main builds publish the connector image and chart to Harbor
 files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_ci.py -q && uv run ruff check . && uv
 depends_on: [mxc-service-entrypoints]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 433e8736a1d65e1fd79790b14a3179a717f4c45e
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 368146
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 205772, review 162374"
 ---
 
 # mxc dockerfile and ci
@@ -65,3 +65,5 @@ After this epic's connector PR merges, main CI publishes the image and the chart
 
 - Copy `code/agents-webhook/.github/workflows/ci.yaml`, `Dockerfile`, `scripts/chart-version.sh` and `tests/test_ci.py`, renaming; keep their action pins.
 - The Harbor secrets are set on the repo by orchestrator step O1.
+
+- 2026-10-25 done
