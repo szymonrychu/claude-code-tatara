@@ -1,6 +1,6 @@
 ---
 title: matrix identity spoofing guards
-status: todo
+status: done
 repo: agents-matrix-connector
 value: senders and rooms from other homeservers cannot borrow an allowed facebook id or alias
 files: [src/agents_matrix_connector/discovery.py, src/agents_matrix_connector/sync.py, src/agents_matrix_connector/matrix.py, src/agents_matrix_connector/fake_homeserver.py, tests/test_discovery.py, tests/test_sync.py, tests/test_matrix_client.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_discovery.py tests/test_sync.py tests
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 3157bce8df164eac1555b1154adcaabdd19fdb13
 points: 3
 expected_minutes: 6
 expected_tokens: 937864
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 2845183
+actual_roles: "impl 9, review 2"
+actual_role_tokens: "impl 2677310, review 167873"
 ---
 
 # matrix identity spoofing guards
@@ -65,3 +65,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
