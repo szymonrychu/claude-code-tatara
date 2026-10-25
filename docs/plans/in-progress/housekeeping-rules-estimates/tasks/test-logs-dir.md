@@ -9,6 +9,11 @@ depends_on: [workbench-dirs]
 model: sonnet
 review: ""
 verified_head: 11f9442
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 538938
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 428235, review 110703"
 ---
 
 # Test logs dir
@@ -56,3 +61,5 @@ Test and flake-hunt logs an agent reads after a failure sit in the gitignored `.
 - Depends on workbench-dirs for `workbench.py logs`.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
