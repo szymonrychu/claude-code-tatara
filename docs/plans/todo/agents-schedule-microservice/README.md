@@ -12,7 +12,7 @@ created: 2026-10-25
 ## Project brief
 
 What: A separate agents-schedule microservice mapping cron schedules to presets, with a web UI entry in the hamburger menu
-How: New Python component with its own DB, cron-to-preset mappings, triggering clusters through the orchestrator API, modelled on agents-webhook
+How: New Python component with its own DB, cron-to-preset mappings, triggering sessions through the orchestrator API, modelled on agents-webhook
 Why: Scheduled agent runs from presets, as in tatara-new
 
 ## Description
@@ -24,7 +24,7 @@ User request (2026-10-25), verbatim. Overall target: "Target getting more and mo
 
 ## Goals
 
-- The agents-schedule service maps 5-field cron schedules (IANA timezone, default Europe/Warsaw) to presets with a prompt, fires each due schedule once, starts a cluster from the preset through the orchestrator service port and tracks the run to handled or failed.
+- The agents-schedule service maps 5-field cron schedules (IANA timezone, default Europe/Warsaw) to presets with a prompt, fires each due schedule once, starts a session from the preset (or, when the preset sets `reuse_running_agent` and the schedule's earlier session still runs, posts the prompt there) through the orchestrator service port and tracks the run to handled or failed.
 - Missed runs collapse into one catch-up run; a fire while the previous run is in flight is recorded ignored (previous_running); at most 3 runs in progress, 1 per schedule.
 - `/schedules/api/v1` is documented with a committed openapi.json and covered route by route by an API-only kind e2e.
 - A Schedules page in agents-web, between Webhooks and Presets in the hamburger menu, manages schedules and shows run history.
@@ -32,7 +32,7 @@ User request (2026-10-25), verbatim. Overall target: "Target getting more and mo
 
 ## Non-goals
 
-- No Kubernetes CronJob, no prompt on presets, no orchestrator API change, no cluster deletion by this service.
+- No Kubernetes CronJob, no prompt on presets, no orchestrator API change, no session deletion by this service.
 - No shared library, orchestrator client, dispatch, fake orchestrator or UI kit code: agents-webhook-microservice and frontend-decoupling own them.
 - The repo creation itself is epic agents-schedule-component.
 

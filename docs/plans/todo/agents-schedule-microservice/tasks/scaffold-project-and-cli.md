@@ -70,7 +70,7 @@ Create the Python project at the root of code/agents-schedule (design D1, D2, D4
 
 ## Notes
 
-- Model on `code/agent-orchestrator/src/agent_orchestrator/cli.py` and its pyproject.
+- Model on `code/agents-orchestrator/src/agents_orchestrator/cli.py` and its pyproject.
 - The agents-common tag is the one `agents-common-lib` names (agents-webhook-microservice task common-release-v0-1-0); this epic runs after it (README blockers).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

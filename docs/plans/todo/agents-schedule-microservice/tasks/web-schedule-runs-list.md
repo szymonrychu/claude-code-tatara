@@ -2,7 +2,7 @@
 title: web schedule runs list
 status: todo
 repo: agents-web
-value: "a user sees each schedule's recent runs, their status and a link to the cluster"
+value: "a user sees each schedule's recent runs, their status and a link to the session"
 files: [src/schedules/ScheduleRuns.tsx, src/schedules/ScheduleRuns.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleRuns.test.tsx && npm run lint"
 depends_on: [web-schedules-api-client]
@@ -42,7 +42,7 @@ Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (
 
 ## Expected outcome
 
-Run history and cluster links are visible per schedule.
+Run history and session links are visible per schedule.
 
 ## Steps
 
@@ -52,6 +52,6 @@ Run history and cluster links are visible per schedule.
 
 ## Notes
 
-- The cluster link uses the cluster view route agents-web already has for the orchestrator.
+- The session link uses the session view route agents-web already has for the orchestrator.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

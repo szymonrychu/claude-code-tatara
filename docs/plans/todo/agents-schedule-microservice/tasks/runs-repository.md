@@ -52,7 +52,7 @@ Add `agents_schedule.db.runs` (design D3, D6, D8, D9, D15; approval A3); every s
 
 ## Interfaces
 
-- `agents_schedule.db.runs`: `Run` dataclass, the functions above (part `sched-runs-repo`).
+- `agents_schedule.db.runs`: `Run` dataclass, the functions above including `latest_with_session` (part `sched-runs-repo`).
 
 ## Expected outcome
 
@@ -61,7 +61,7 @@ The scheduler, dispatcher, tracker and api share one runs module whose writes ar
 ## Steps
 
 - Write tests/test_runs_repo.py; run: fails.
-- Write runs.py; `uv run --frozen pytest tests/test_runs_repo.py -q`: `5 passed`.
+- Write runs.py; `uv run --frozen pytest tests/test_runs_repo.py -q`: `7 passed`.
 - Lint clean.
 
 ## Notes

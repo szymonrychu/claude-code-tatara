@@ -3,7 +3,7 @@ title: schedule service token
 status: todo
 repo: agents-helmfile
 value: "the schedule service authenticates to the orchestrator with its own token, bootstrapped like the other secrets"
-files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agent-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]
+files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agents-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_secrets.py && shellcheck --severity=error scripts/bootstrap-secrets.sh && uv run ruff check ."
 depends_on: []
 model: ""
@@ -44,12 +44,12 @@ Secrets for agents-schedule (design D14; approval A6), the same shape as agents-
 - `scripts/bootstrap-secrets.sh`
 - `tests/test_secrets.py`
 - `values/agents-schedule/default.secrets.yaml`
-- `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml`
+- `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml`
 - `.sops.yaml`
 
 ## Interfaces
 
-- `values/agents-schedule/default.secrets.yaml` `orchestrator.token` and `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml` `serviceApi.tokenHashes.agents-schedule` (part `agents-schedule-token-bootstrap`).
+- `values/agents-schedule/default.secrets.yaml` `orchestrator.token` and `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml` `serviceApi.tokenHashes.agents-schedule` (part `agents-schedule-token-bootstrap`).
 
 ## Expected outcome
 

@@ -45,7 +45,7 @@ Add `agents_schedule.tracker` (design D10, D15; approval A3) on agents-common v0
 
 ## Interfaces
 
-- `agents_schedule.tracker:track_once(pool, client, settings, now) -> int`, `run_tracker(pool, client, settings, stop) -> None` (part `sched-tracker`); consumes `agents_common.runs.track`.
+- `agents_schedule.tracker:track_once(pool, client, settings, now) -> int`, `run_tracker(pool, client, settings, stop) -> None` (part `sched-tracker`); consumes `agents_common.runs.track` and `runs.track_delivery`.
 
 ## Expected outcome
 
@@ -54,11 +54,11 @@ Runs reach a terminal status that matches the orchestrator's view of their first
 ## Steps
 
 - Write tests/test_tracker.py against `agents_common.fake_orchestrator`; run: fails.
-- Write tracker.py; `uv run --frozen pytest tests/test_tracker.py -q`: `4 passed`.
+- Write tracker.py; `uv run --frozen pytest tests/test_tracker.py -q`: `5 passed`.
 - Lint clean.
 
 ## Notes
 
-- do-not-build: a turn-completion callback in the orchestrator; polling the message gives the outcome (`code/agent-orchestrator/src/agent_orchestrator/api/messages.py` L99).
+- do-not-build: a turn-completion callback in the orchestrator; polling the message gives the outcome (`code/agents-orchestrator/src/agents_orchestrator/api/messages.py` L99).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

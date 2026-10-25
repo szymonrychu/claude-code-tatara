@@ -53,7 +53,7 @@ Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-f
 
 ## Notes
 
-- The schedule is created disabled so it never fires on its own; only run-now starts a cluster.
+- The schedule is created disabled so it never fires on its own; only run-now starts a session.
 - The orchestrator step's cleanup pattern (`cleanup` trap with manual line) is reused.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

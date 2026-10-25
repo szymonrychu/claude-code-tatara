@@ -51,7 +51,7 @@ Add the API-only kind e2e (design D11, D15; approval A5), modelled on `code/agen
 
 ## Expected outcome
 
-A headless e2e in kind proves create, validate, preview, fire, overlap, failure, run now, history and delete.
+A headless e2e in kind proves create, validate, preview, fire, overlap, failure, reuse on and off, run now, history and delete.
 
 ## Steps
 

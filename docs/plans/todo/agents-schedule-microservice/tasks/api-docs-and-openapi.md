@@ -48,7 +48,7 @@ Document the API (design D11, D15; approval A5), the pattern of `code/agents-orc
 
 ## Expected outcome
 
-Anything the UI can do is documented as an HTTP call, and a route change without regenerating openapi.json fails the tests.
+Anything the UI can do is documented as an HTTP call, including the run reasons and the reuse rule, and a route change without regenerating openapi.json fails the tests.
 
 ## Steps
 

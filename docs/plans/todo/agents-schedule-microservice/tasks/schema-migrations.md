@@ -62,7 +62,7 @@ Create the schema (design D3, D9; approvals A1, A3) as forward-only SQL in the p
 ## Steps
 
 - Write tests/test_migrations.py and conftest.py; run: fails (no migration).
-- Write 0001_schedules.sql and migrate.py; `uv run --frozen pytest tests/test_migrations.py -q`: `5 passed`.
+- Write 0001_schedules.sql and migrate.py; `uv run --frozen pytest tests/test_migrations.py -q`: `6 passed`.
 - Lint clean.
 
 ## Notes

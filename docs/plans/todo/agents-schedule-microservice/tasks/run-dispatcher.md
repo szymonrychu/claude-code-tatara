@@ -2,7 +2,7 @@
 title: run dispatcher
 status: todo
 repo: agents-schedule
-value: "a new run starts one cluster from its preset and sends its prompt, never twice, within the concurrency caps"
+value: "a new run starts one session from its preset and sends its prompt, never twice, within the concurrency caps"
 files: [src/agents_schedule/dispatcher.py, src/agents_schedule/prompt.py, tests/test_dispatcher.py]
 verify: "uv run --frozen pytest tests/test_dispatcher.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [runs-repository, schedules-repository, schedule-settings-model]
@@ -57,24 +57,24 @@ Add `agents_schedule.dispatcher` and `agents_schedule.prompt` (design D7, D8, D9
 
 ## Interfaces
 
-- `agents_schedule.prompt:render_prompt(template: str, schedule_name: str, fired_at: datetime) -> str`, `cluster_slug(schedule_name: str, run_id: UUID) -> str`, the marker from agents-common `marker("schedule", run_id)`.
+- `agents_schedule.prompt:render_prompt(template: str, schedule_name: str, fired_at: datetime) -> str`, `session_slug(schedule_name: str, run_id: UUID) -> str`, the marker from agents-common `marker("schedule", run_id)`.
 - `agents_schedule.dispatcher:RunsStore` (agents-common `RunStore`), `dispatch_once(pool, client, settings) -> bool`, `run_dispatcher(pool, client, settings, stop) -> None` (part `sched-dispatch`).
-- Consumes `agents_common.runs.dispatch`, `PresetBinding`, `agents_common.orchestrator.OrchestratorClient`.
+- Consumes `agents_common.runs.dispatch`, `running_session`, `deliver`, `PresetBinding`, `agents_common.orchestrator.OrchestratorClient` (`get_preset`, `Preset.reuse_running_agent`), and `db.runs.latest_with_session`.
 
 ## Expected outcome
 
-Each new run yields exactly one cluster and one prompt, under the caps, and every failure has a reason.
+Each new run yields exactly one prompt, in a new session or (preset opt-in) in the schedule's still-running earlier session, under the caps, and every failure has a reason.
 
 ## Steps
 
 - Write tests/test_dispatcher.py against `agents_common.fake_orchestrator` (contract `agents-common-lib`) and a migrated DB; run: fails.
-- Write prompt.py and dispatcher.py; `uv run --frozen pytest tests/test_dispatcher.py -q`: `7 passed`.
+- Write prompt.py and dispatcher.py; `uv run --frozen pytest tests/test_dispatcher.py -q`: `11 passed`.
 - Lint clean.
 
 ## Notes
 
-- The prompt goes as a message after create; presets carry no prompt (`code/agent-orchestrator/src/agent_orchestrator/spec.py:ClusterSpec`). do-not-build: a prompt field on presets.
-- Same dispatch as agents-webhook (its design D8), with this service's marker and slug.
+- The prompt goes as a message after create; presets carry no prompt (`code/agents-orchestrator/src/agents_orchestrator/spec.py:SessionSpec`). do-not-build: a prompt field on presets.
+- Same dispatch as agents-webhook (its design D8), with this service's marker and slug; the reuse branch is the agents-webhook rule keyed by the schedule (its design "Cross-epic impact"). The overlap rule D6 means the earlier run is finished by the time the later one is claimed.
 - If an agents-common signature differs from the names above, use the library's as released; never re-implement dispatch here.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
