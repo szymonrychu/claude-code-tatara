@@ -1,6 +1,6 @@
 ---
 title: orch drop spa mount
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the orchestrator api is API-only
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/settings.py, tests/test_spa.py, tests/test_settings.py, Dockerfile, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_spa.py tests/test_settings.py && uv run ruf
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 9b5d3ae
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 484744
+actual_roles: impl 3
+actual_role_tokens: impl 484744
 ---
 
 # orch drop spa mount
@@ -69,3 +69,5 @@ The api is API-only: `/` is a JSON 404 and the image no longer sets `ORCH_STATIC
 
 - Retirement tests assert on `git ls-files`, never on the filesystem.
 - The live orchestrator keeps serving the UI until deploy-pin-orch-no-spa; the web cutover happens first (design D8).
+
+- 2026-10-25 done
