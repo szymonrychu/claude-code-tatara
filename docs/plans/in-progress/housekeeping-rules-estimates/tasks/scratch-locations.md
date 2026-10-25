@@ -9,6 +9,11 @@ depends_on: [output-spill-to-logs, test-logs-dir, agent-discipline]
 model: sonnet
 review: ""
 verified_head: fd6600a
+points_actual: 3
+actual_minutes: 45
+actual_tokens: 723362
+actual_roles: "impl 39, review 6"
+actual_role_tokens: "impl 590769, review 132593"
 ---
 
 # Scratch locations
@@ -57,5 +62,7 @@ The only scratch and log locations named anywhere in the tracked tooling are `.s
 - Fix-as-ac (brief): planner.md:67 says "the scratchpad" generically and test_planner_agent.py:74 pins the word "scratchpad"; keep the word, add the location.
 - Depends on output-spill-to-logs and test-logs-dir so their fallbacks exist before the allowlist pins them.
 - Exclude tests directories (they legitimately use tmp_path and TMPDIR) and CHANGELOG files.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
