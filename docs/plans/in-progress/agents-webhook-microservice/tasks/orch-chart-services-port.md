@@ -1,6 +1,6 @@
 ---
 title: orch chart services port
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the service port is reachable in-cluster through its own Service and never through the ingress or the SSO sidecar
 files: [chart/agent-orchestrator/templates/service-services.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/configmap.yaml, chart/agent-orchestrator/templates/secret.yaml, chart/agent-orchestrator/values.yaml, tests/test_chart_services_port.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_chart_services_port.py tests/test_chart_deploy
 depends_on: [orch-service-port-auth]
 model: ""
 review: ""
-verified_head: ""
+verified_head: aa094e8
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 483067
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 374081, review 108986"
 ---
 
 # orch chart services port
@@ -64,3 +64,5 @@ Chart support for the service port (design D10). Paths are in code/agent-orchest
 ## Notes
 
 - Model on `templates/service-agents.yaml` and the `agents` port in `deployment.yaml` L79-80.
+
+- 2026-10-25 done
