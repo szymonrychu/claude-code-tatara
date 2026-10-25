@@ -30,7 +30,7 @@ description = "Run test in every component"
 run = [
   "mise run --cd code/claude-code-wrapper test",
   "mise run --cd code/any-mcp test",
-  "mise run --cd code/agent-orchestrator test",
+  "mise run --cd code/agents-orchestrator test",
   "mise run --cd code/agents-helmfile test",
   "mise run --cd code/agents-web test",
   "mise run --cd code/agents-common test",
@@ -44,7 +44,7 @@ description = "Run lint in every component"
 run = [
   "mise run --cd code/claude-code-wrapper lint",
   "mise run --cd code/any-mcp lint",
-  "mise run --cd code/agent-orchestrator lint",
+  "mise run --cd code/agents-orchestrator lint",
   "mise run --cd code/agents-helmfile lint",
   "mise run --cd code/agents-web lint",
   "mise run --cd code/agents-common lint",
@@ -58,7 +58,7 @@ description = "Run fmt in every component"
 run = [
   "mise run --cd code/claude-code-wrapper fmt",
   "mise run --cd code/any-mcp fmt",
-  "mise run --cd code/agent-orchestrator fmt",
+  "mise run --cd code/agents-orchestrator fmt",
   "mise run --cd code/agents-helmfile fmt",
   "mise run --cd code/agents-web fmt",
   "mise run --cd code/agents-common fmt",
