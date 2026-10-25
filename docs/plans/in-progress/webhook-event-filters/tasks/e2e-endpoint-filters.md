@@ -1,6 +1,6 @@
 ---
 title: e2e endpoint filters
-status: in-progress
+status: done
 repo: agents-webhook
 value: "the real stack proves deny, allow, replace and preview end to end without the UI"
 files: [tests/e2e/test_e2e_api.py, tests/e2e/conftest.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/e2e/test_e2e_api.py -q && uv run ruff check . && uv
 depends_on: [ingest-applies-filters, api-endpoint-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 2616d24
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 790550
+actual_roles: impl 7
+actual_role_tokens: impl 790550
 ---
 
 # e2e endpoint filters
@@ -64,3 +64,5 @@ The API-only e2e suite proves deny, allow miss, pass, PUT replacement, Grafana l
 - Test-only task: production behaviour came with ingest-applies-filters and api-endpoint-filters, so the red step is the mutation above; report it as such, with the failing output.
 - The handled path needs the fake orchestrator to complete the turn, as `test_create_endpoint_receive_event_and_complete` does; reuse its waiting helpers.
 - Payload builders are in `tests/payloads.py` (`gh_issues`, `gh_pull_request`, `grafana_alert(labels=...)`).
+
+- 2026-10-25 done
