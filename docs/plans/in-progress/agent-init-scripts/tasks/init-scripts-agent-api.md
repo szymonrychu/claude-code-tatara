@@ -1,6 +1,6 @@
 ---
 title: init scripts agent api
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: an agent can see how its cluster was initialised and improve the scripts for the next cluster
 files: [src/agent_orchestrator/api/agent.py, tests/test_agent_init_scripts.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: init scripts public api
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "people and scripts can read a cluster's init run and edit its scripts for the next cluster through the documented API"
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_init_scripts.py, openapi.json, frontend/src/api/schema.d.ts, README.md]

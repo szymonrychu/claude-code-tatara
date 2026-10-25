@@ -1,6 +1,6 @@
 ---
 title: deploy pin init scripts
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace is pinned to the orchestrator build with init scripts
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]

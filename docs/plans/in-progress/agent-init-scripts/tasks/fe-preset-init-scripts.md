@@ -1,6 +1,6 @@
 ---
 title: fe preset init scripts
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: init scripts can be written and edited in the preset form
 files: [frontend/src/clusters/clusterSpecForm.ts, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx]

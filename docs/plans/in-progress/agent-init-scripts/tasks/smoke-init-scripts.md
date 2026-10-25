@@ -1,6 +1,6 @@
 ---
 title: smoke init scripts
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployed smoke proves init scripts run once and are visible
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

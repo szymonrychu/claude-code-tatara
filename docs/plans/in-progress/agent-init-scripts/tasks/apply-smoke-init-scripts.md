@@ -1,6 +1,6 @@
 ---
 title: apply smoke init scripts
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: init scripts are live in the agents namespace and proven by the smoke
 files: [MEMORY.md]

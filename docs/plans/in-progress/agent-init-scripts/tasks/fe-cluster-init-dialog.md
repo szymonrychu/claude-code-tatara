@@ -1,6 +1,6 @@
 ---
 title: fe cluster init dialog
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a person sees how a running cluster was initialised and can edit its scripts for the next cluster
 files: [frontend/src/clusters/InitScriptsDialog.tsx, frontend/src/clusters/InitScriptsDialog.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx, frontend/src/App.tsx, frontend/src/api/client.ts]

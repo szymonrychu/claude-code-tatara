@@ -1,6 +1,6 @@
 ---
 title: init job runner
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: init scripts run exactly once per cluster and the outcome is recorded
 files: [src/agent_orchestrator/reconciler/init.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/checks.py, tests/test_init_runner.py, README.md, MEMORY.md]

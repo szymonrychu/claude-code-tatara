@@ -1,6 +1,6 @@
 ---
 title: init scripts spec field
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: clusters and presets can carry init scripts that never roll pods
 files: [src/agent_orchestrator/spec.py, tests/test_spec_init_scripts.py, tests/test_render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]

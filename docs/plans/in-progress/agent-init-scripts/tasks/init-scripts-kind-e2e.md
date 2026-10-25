@@ -1,6 +1,6 @@
 ---
 title: init scripts kind e2e
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the whole init scripts flow is proven on a real cluster through the API only
 files: [tests/e2e/test_e2e_kind.py]
