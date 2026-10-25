@@ -1,6 +1,6 @@
 ---
 title: helmfile drop source secrets
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: no unused per-source webhook secrets are bootstrapped or kept
 files: [scripts/bootstrap-secrets.sh, values/agents-webhook/default.secrets.yaml, tests/test_secrets.py]
@@ -43,17 +43,20 @@ Drop the per-source webhook secrets (design D3, D13; re-plan 2026-10-25: per-web
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Changes the output of done task helmfile-service-token: `values/agents-webhook/default.secrets.yaml` keeps only `orchestrator.token`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No GitHub, GitLab or Grafana source secret is generated or stored for agents-webhook.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the two tests; run `uv run pytest -q -p no:cacheprovider tests/test_secrets.py -k webhook`: fail.
+- Green: the script, then the encrypted file through the secret helper; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never print a decrypted value; decrypt only in-process in the tests.
+- The values were never applied live (apply-smoke-webhook has not run), so nothing live changes.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
