@@ -50,21 +50,27 @@ section is still the template's. The skill then dispatches retro-writer (sonnet)
 `ticket.py retro <epic>`, which commits the filled file as `chore(ticket): <epic> retro`. Old epics have no
 orchestrator notes, so retro-writer gains record.md (and the task Notes) as an input.
 
-Design D9: Commit shape, dry run and idempotence (Q9) (verbatim):
+Design D9: Commit shape, write order, dry run and idempotence (Q9; interrogate item 5) (verbatim):
 
-Migrate commits once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
-RETRO.md it wrote; an epic with nothing to change gets no commit. `--dry-run` prints one line per task it
-would change (old and new values of the changed keys, dropped keys) and per RETRO.md it would write,
-changes no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored
-`.logs/agents` cache (my call: the records are regenerable and the dry run must show transcript actuals).
-With nothing to change it prints `migrate: nothing to change`. A second run over migrated files changes
-nothing.
+`migrate --all` covers every epic in every phase, this epic included (builder check Q4); a file already in
+the new scheme is left alone. Per changed epic, the new task frontmatter is computed first, the RETRO.md
+rows are computed from those new values (not from the old files), and then both are written and
+committed together, once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
+RETRO.md it wrote; an epic with nothing to change gets no commit. So `ticket.py retro <epic>` right after
+migrate regenerates the same block, and migrate after that prints `migrate: nothing to change`.
+`--dry-run` prints every problem first (D10), then one line per task it would change (old and new values
+of the changed keys, dropped keys), each `partial:` line (D4) and each RETRO.md it would write; it changes
+no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored `.logs/agents`
+cache (my call: the records are regenerable and the dry run must show transcript actuals). With nothing to
+change it prints `migrate: nothing to change`. A second run over migrated files changes nothing.
 
 Design D10: Validate before writing (verbatim):
 
 Every mapped task runs through `t._number_problems` before anything is written; any problem refuses the
-run (exit 1, the problems listed, nothing written in any epic; my call: all or nothing keeps the commit
-history simple), because `calibration_rows` silently drops a malformed row.
+run (exit 1, every problem listed, nothing written in any epic; my call, kept after builder check Q3: all
+or nothing keeps the commit history simple, the dry run lists every problem first, and dropping legacy
+`actual_roles` (D4) removes the only known offender), because `calibration_rows` silently drops a
+malformed row.
 
 Design D12: Done epics are history, migrate is the one writer (verbatim):
 
@@ -78,19 +84,22 @@ Reuse brief fix-as-ac (verbatim): "\"done epic is history, never rewritten\" - T
 
 Reuse brief fix-as-ac (verbatim, part): "README names subcommand (test_plugin_readme_rules.py:52)"
 
+Interrogate verdict item 5 (verbatim): "Write order and idempotence (C3): task files are rewritten first, retro rows are computed from the new values, both written and committed together; test migrate, then `ticket.py retro <epic>`, then migrate prints nothing to change."
+
 ## Acceptance conditions
 
 - AC1: `migrate <epic>` and `migrate --all` rewrite the old-scheme task files of todo, in-progress and done epics and commit once per changed epic as `chore(ticket): <epic> migrate`, each commit holding exactly that epic's task files and RETRO.md written [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_one_commit_per_epic]
 - AC2: a done epic without RETRO.md gets one from templates/retro.md with retro's generated block; one with RETRO.md gets its generated block regenerated and its Retro and Improvements kept byte for byte; both land in the migrate commit [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_retro_written_in_migrate_commit]
 - AC3: a second run changes no file, makes no commit and prints `migrate: nothing to change` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_second_run_is_noop]
-- AC4: approvals.json, rulings.json, record.md, close.json, README.md and design.md of every epic are byte for byte unchanged [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_side_files_untouched]
-- AC5: migrate prints `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still the template's, and not for one already filled [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_names_epics_needing_retro_writer]
-- AC6: in a linked worktree migrate exits 1 with the main-checkout message and writes nothing [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_refuses_linked_worktree]
-- AC7: without `--transcripts` and `--logs` migrate reads the main checkout's `.logs` and `agent_usage.default_transcripts_dir` under HOME (HOME pointed at a temp dir holding a matched transcript) [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_default_dirs]
-- AC8: with `--all`, a malformed mapping in one epic writes nothing in any epic and exits 1 [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_malformed_epic_blocks_all]
-- AC9: the lint comment in ticket.py names `ticket.py migrate` as the one writer of a done epic's task files, and references/tickets.md documents `migrate` (flags, mapping, commit, idempotence) and drops "nothing writes them" for older done epics' extra keys [evidence: command:grep -q 'ticket.py migrate' plugins/workbench/skills/start-development/scripts/ticket.py && grep -q '^- `migrate`' plugins/workbench/skills/start-development/references/tickets.md && ! grep -q 'nothing writes them' plugins/workbench/skills/start-development/references/tickets.md]
-- AC10: the plugin README names `ticket.py migrate` and the README test checks it [evidence: test:plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py::test_readme_names_new_subcommands]
-- AC11: the start-development suite and lint pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint]
+- AC4: write order: the RETRO.md rows come from the new task values in the same commit, so `migrate`, then `ticket.py retro <epic>` (no new commit, block unchanged), then `migrate` again prints `migrate: nothing to change` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_retro_after_migrate_is_stable]
+- AC5: approvals.json, rulings.json, record.md, close.json, README.md and design.md of every epic are byte for byte unchanged [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_side_files_untouched]
+- AC6: migrate prints `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still the template's, and not for one already filled [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_names_epics_needing_retro_writer]
+- AC7: in a linked worktree migrate exits 1 with the main-checkout message and writes nothing [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_refuses_linked_worktree]
+- AC8: without `--transcripts` and `--logs` migrate reads the main checkout's `.logs` and `agent_usage.default_transcripts_dir` under HOME (HOME pointed at a temp dir holding a matched transcript) [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_default_dirs]
+- AC9: with `--all`, a malformed mapping in one epic writes nothing in any epic and exits 1 [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate.py::test_malformed_epic_blocks_all]
+- AC10: the lint comment in ticket.py names `ticket.py migrate` as the one writer of a done epic's task files, and references/tickets.md documents `migrate` (flags, mapping, commit, idempotence) and drops "nothing writes them" for older done epics' extra keys [evidence: command:grep -q 'ticket.py migrate' plugins/workbench/skills/start-development/scripts/ticket.py && grep -q '^- `migrate`' plugins/workbench/skills/start-development/references/tickets.md && ! grep -q 'nothing writes them' plugins/workbench/skills/start-development/references/tickets.md]
+- AC11: the plugin README names `ticket.py migrate` and the README test checks it [evidence: test:plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py::test_readme_names_new_subcommands]
+- AC12: the start-development suite and lint pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint]
 
 ## Files
 
@@ -128,3 +137,5 @@ Reuse brief fix-as-ac (verbatim, part): "README names subcommand (test_plugin_re
 - The Retro placeholder to detect is the template's: the `## Retro` section of templates/retro.md as written.
 - Retro lesson (housekeeping-rules-estimates): a feature with a default path gets one test without the override flag (AC7); quote the lint and suite lines of a run made after `git add` and commit.
 - README: add `ticket.py migrate` to the sentence listing the further ticket.py commands (README.md around line 201).
+
+- 2026-10-25 amended: interrogate item 5: write order (retro rows from the new task values in the same commit) pinned by new AC4: migrate, ticket.py retro, migrate prints nothing to change; points stay 5
