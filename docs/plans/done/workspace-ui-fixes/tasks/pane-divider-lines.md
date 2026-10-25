@@ -6,21 +6,17 @@ value: "files, chat and terminal panes are visibly separated"
 files: [frontend/src/layout/Workspace.tsx, frontend/src/layout/Workspace.test.tsx]
 verify: "cd frontend && npx vitest run src/layout/Workspace.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 2
-actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-pane-divider-lines/agent-orchestrator
-branch: workspace-ui-fixes-pane-divider-lines
 verified_head: f2b25e81b32c67ea6c32d03ca5b322d5c6f7fe98
-run: workspace-ui-fixes
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 291484
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 200856, review 90628"
 ---
 
 # pane divider lines

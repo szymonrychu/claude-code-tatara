@@ -6,21 +6,17 @@ value: the file tree stays current by itself and the refresh button is gone
 files: [frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, MEMORY.md]
 verify: "cd frontend && npx vitest run src/files/FilesPanel.test.tsx && npm run lint"
 depends_on: [tree-change-only-refresh]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 3
-actual_roles: "impl 2, verify 1, review 1, land 1"
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/workspace-ui-fixes-files-auto-poll-no-button/agent-orchestrator
-branch: workspace-ui-fixes-files-auto-poll-no-button
 verified_head: 0f99a786e0045e77d491887dac203a2ca6c1a98e
-run: workspace-ui-fixes
-provides: []
-acs_for_audit: [AC8]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 714788
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 510779, review 204009"
 ---
 
 # files auto poll no button
