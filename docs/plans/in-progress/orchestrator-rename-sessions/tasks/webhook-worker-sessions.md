@@ -31,12 +31,16 @@ Move agents-webhook onto agents-common v0.3.0 and the session vocabulary in the 
 - tests/: `test_worker.py`, `test_worker_reuse.py`, `tests/e2e/` on the v0.3.0 fake orchestrator (`discard_session`, `remove_session`, `/api/v1/sessions`); tests first: `tests/test_worker_reuse.py::test_gone_session_falls_back_to_new_session` and `tests/test_worker.py::test_missing_session_reason`.
 - Confirm by reading worker.py that `OrchestratorUnavailable` leaves the row queued for a retry (design Assumptions, needed for the cutover window); when no test pins it, add `tests/test_worker.py::test_orchestrator_unavailable_retries`.
 
+
+Orchestrator ruling 2026-10-25 (review of webhook-session-columns): task webhook-session-columns added a temporary `_RunStore` adapter in worker.py (its `set_cluster` forwards to `EventStore.set_session`) and a `RunRef(cluster_id=event.session_id)` shim, because agents-common v0.2.0 still names clusters. With agents-common v0.3.0 pinned, delete `_RunStore`, make `_FallbackStore` a direct store wrapper over `set_session` that keeps the `reuse_fallback` prefix, and drop the shim; no adapter or cluster-named call remains.
+
 ## Acceptance conditions
 
 - AC1: a gone session falls back once to a new session [evidence: test:tests/test_worker_reuse.py::test_gone_session_falls_back_to_new_session]
 - AC2: a missing session fails the event with session_not_found [evidence: test:tests/test_worker.py::test_missing_session_reason]
 - AC3: an unreachable orchestrator leaves the event for a retry [evidence: judgement:the task notes name the test that pins OrchestratorUnavailable retry, existing or added]
 - AC4: the worker suites and lint pass on agents-common v0.3.0 [evidence: command:uv run pytest -q tests/test_worker.py tests/test_worker_reuse.py && uv run ruff check . && uv run ruff format --check .]
+- AC-adapter: the temporary _RunStore adapter and the RunRef shim are gone [evidence: command:! grep -nE "_RunStore|cluster_id=" src/agents_webhook/worker.py]
 
 ## Files
 
@@ -63,3 +67,5 @@ The worker creates, reuses and falls back on sessions through agents-common v0.3
 ## Notes
 
 - Read worker.py for the `OrchestratorUnavailable` path and record in the notes which test pins the retry (design Assumptions).
+
+- 2026-10-25 amended: review of webhook-session-columns: remove the temporary _RunStore adapter
