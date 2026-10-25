@@ -31,6 +31,9 @@ Provision the cache bucket on rook-ceph and wire it into the orchestrator releas
 
 Core tasks in epic workspace-s3-cache that this task depends on (covered by the epic blocker): cache-chart-values.
 
+
+Orchestrator ruling 2026-10-26 (epic security review, medium): nothing bounds the bucket total (5 GiB per key, unbounded keys), so set a bucket quota on the ObjectBucketClaim (rook additionalConfig maxSize, for example 100Gi, and maxObjects if supported by the deployed rook version; verify against the live CRD), configurable in values, and test the render.
+
 ## Acceptance conditions
 
 - AC1: the claim is an ObjectBucketClaim in agents with the fixed bucket name and the rook-ceph-bucket StorageClass [evidence: test:tests/test_workspace_cache.py::test_bucket_claim_shape]
@@ -38,6 +41,7 @@ Core tasks in epic workspace-s3-cache that this task depends on (covered by the 
 - AC3: the orchestrator values point the cache at the rgw endpoint, path style, the claim's bucket and Secret [evidence: test:tests/test_workspace_cache.py::test_orchestrator_cache_values]
 - AC4: no access key or secret literal appears in any plain values file [evidence: test:tests/test_workspace_cache.py::test_no_cache_credentials_in_values]
 - AC5: lint and format pass [evidence: command:uv run ruff check . && uv run ruff format --check .]
+- AC-quota: the bucket claim sets a size quota from values [evidence: test:tests/test_cache_bucket.py::test_bucket_quota_set]
 
 ## Files
 
@@ -62,3 +66,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 amended: epic security review: bucket quota
