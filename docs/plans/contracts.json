@@ -640,5 +640,15 @@
       "agents-web"
     ],
     "note": "task webhook-ui-api: /webhooks/api/v1 events (GET list ?status&source&limit&before_id, GET /{id}), mappings (GET, POST MappingIn{source, kind, repo?, labels?, preset_id, prompt_template?}, DELETE /{id}), meta; openapi.json committed; vendored in agents-web as openapi/webhooks.json"
+  },
+  {
+    "name": "agents-webhook-chart",
+    "kind": "release",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-webhook/chart/agents-webhook/values.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "tasks webhook-chart-workloads, webhook-chart-network, webhook-ci-images: oci://harbor.szymonrichert.pl/charts/agents-webhook (0.1.0-main.<sha7> on main); values image, postgres {url | existingSecret, existingSecretKey}, orchestrator {url, token | tokenSecret}, sources {github, gitlab, grafana | existingSecret}, components {ingest, api, worker} with podAnnotations, ingress {host, tls.secretName}: /webhooks/api -> api, /webhooks/{github,gitlab,grafana} Exact -> ingest"
   }
 ]
