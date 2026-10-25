@@ -1,7 +1,7 @@
 ---
 title: orchestrator-rename-sessions
 blockers: [webhook-event-filters]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-orchestrator, any-mcp, agents-common, agents-webhook, agents-web, agents-helmfile]
 created: 2026-10-25
