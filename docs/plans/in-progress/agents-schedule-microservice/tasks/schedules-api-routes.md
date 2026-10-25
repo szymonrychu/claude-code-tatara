@@ -1,6 +1,6 @@
 ---
 title: schedules api routes
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "schedules are created, edited, previewed, enabled, disabled and deleted over HTTP with reasons for every refusal"
 files: [src/agents_schedule/api/__init__.py, src/agents_schedule/api/app.py, src/agents_schedule/api/schemas.py, src/agents_schedule/api/schedules.py, tests/test_api_schedules.py]

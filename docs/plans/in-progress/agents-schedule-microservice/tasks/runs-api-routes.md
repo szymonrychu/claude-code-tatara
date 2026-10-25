@@ -1,6 +1,6 @@
 ---
 title: runs api routes
-status: todo
+status: in-progress
 repo: agents-schedule
 value: run history and run now are available over HTTP for every schedule
 files: [src/agents_schedule/api/runs.py, src/agents_schedule/api/app.py, src/agents_schedule/api/schemas.py, tests/test_api_runs.py]

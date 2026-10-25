@@ -1,6 +1,6 @@
 ---
 title: scaffold project and cli
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "every later task gets a Python project that builds, lints and tests, and the `sched` command its entrypoints hang on"
 files: [pyproject.toml, uv.lock, .mise.toml, src/agents_schedule/__init__.py, src/agents_schedule/cli.py, tests/test_cli.py, README.md]

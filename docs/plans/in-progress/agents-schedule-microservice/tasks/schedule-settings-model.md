@@ -1,6 +1,6 @@
 ---
 title: schedule settings model
-status: todo
+status: in-progress
 repo: agents-schedule
 value: every process reads one validated configuration and a bad variable is named at startup
 files: [src/agents_schedule/settings.py, tests/test_settings.py, README.md]

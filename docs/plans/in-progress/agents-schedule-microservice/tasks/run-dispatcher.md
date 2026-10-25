@@ -1,6 +1,6 @@
 ---
 title: run dispatcher
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "a new run starts one session from its preset and sends its prompt, never twice, within the concurrency caps"
 files: [src/agents_schedule/dispatcher.py, src/agents_schedule/prompt.py, tests/test_dispatcher.py]

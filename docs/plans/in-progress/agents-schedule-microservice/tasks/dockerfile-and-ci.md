@@ -1,6 +1,6 @@
 ---
 title: dockerfile and ci
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "every main commit is linted, tested and published as an image and chart"
 files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci_workflow.py]

@@ -1,6 +1,6 @@
 ---
 title: service entrypoints
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "the image runs as three commands, and only one worker ever fires schedules"
 files: [src/agents_schedule/cli.py, src/agents_schedule/runtime.py, tests/test_entrypoints.py]

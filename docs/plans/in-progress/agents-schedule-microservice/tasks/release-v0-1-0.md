@@ -1,6 +1,6 @@
 ---
 title: release v0.1.0
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "a fixed, immutable chart and image of agents-schedule exist for the deployment to pin"
 files: [README.md, MEMORY.md]

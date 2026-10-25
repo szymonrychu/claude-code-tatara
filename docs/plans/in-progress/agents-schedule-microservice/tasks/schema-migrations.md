@@ -1,6 +1,6 @@
 ---
 title: schema migrations
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "the service owns its database schema, migrated forward-only before any process starts"
 files: [src/agents_schedule/db/__init__.py, src/agents_schedule/migrations/__init__.py, src/agents_schedule/migrations/0001_schedules.sql, src/agents_schedule/db/migrate.py, tests/conftest.py, tests/test_migrations.py]

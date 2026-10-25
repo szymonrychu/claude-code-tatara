@@ -1,6 +1,6 @@
 ---
 title: schedules repository
-status: todo
+status: in-progress
 repo: agents-schedule
 value: the api reads and writes schedules through one module that keeps armed_at right
 files: [src/agents_schedule/db/schedules.py, tests/test_schedules_repo.py]

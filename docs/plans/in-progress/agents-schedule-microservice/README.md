@@ -2,7 +2,7 @@
 title: agents-schedule microservice
 blockers: [agents-schedule-component, agents-webhook-microservice, frontend-decoupling, configuration-improvements, agent-init-scripts, cluster-scaling]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-schedule]
 created: 2026-10-25
 ---

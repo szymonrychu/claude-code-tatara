@@ -1,6 +1,6 @@
 ---
 title: api docs and openapi
-status: todo
+status: in-progress
 repo: agents-schedule
 value: the schedule API is documented and its contract cannot drift silently
 files: [openapi.json, README.md, src/agents_schedule/api/openapi.py, tests/test_readme_api.py]

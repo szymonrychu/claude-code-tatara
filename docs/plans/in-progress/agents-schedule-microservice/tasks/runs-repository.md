@@ -1,6 +1,6 @@
 ---
 title: runs repository
-status: todo
+status: in-progress
 repo: agents-schedule
 value: runs are inserted exactly once per fire and change state only through guarded transitions
 files: [src/agents_schedule/db/runs.py, tests/test_runs_repo.py]

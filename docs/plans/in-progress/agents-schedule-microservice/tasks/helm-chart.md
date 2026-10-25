@@ -1,6 +1,6 @@
 ---
 title: helm chart
-status: todo
+status: in-progress
 repo: agents-schedule
 value: the service deploys as an api and a worker Deployment with its database and orchestrator token wired from Secrets
 files: [chart/agents-schedule/Chart.yaml, chart/agents-schedule/values.yaml, chart/agents-schedule/templates/_helpers.tpl, chart/agents-schedule/templates/_config.tpl, chart/agents-schedule/templates/deployment.yaml, chart/agents-schedule/templates/service.yaml, chart/agents-schedule/templates/configmap.yaml, tests/test_chart.py]

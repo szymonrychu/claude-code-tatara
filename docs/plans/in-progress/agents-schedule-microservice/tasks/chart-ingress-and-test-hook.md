@@ -1,6 +1,6 @@
 ---
 title: chart ingress and test hook
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "the schedule API is routable on the shared host under its own path, behind the shared SSO"
 files: [chart/agents-schedule/templates/ingress.yaml, chart/agents-schedule/templates/tests/test-connection.yaml, chart/agents-schedule/values.yaml, tests/test_chart_ingress.py]

@@ -1,6 +1,6 @@
 ---
 title: run outcome tracker
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "every in-progress run ends handled or failed with a reason, visible in the API and UI"
 files: [src/agents_schedule/tracker.py, tests/test_tracker.py]

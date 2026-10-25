@@ -1,6 +1,6 @@
 ---
 title: scheduler loop
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "enabled schedules fire on time, once per fire time, with missed runs collapsed and overlaps recorded"
 files: [src/agents_schedule/scheduler.py, tests/test_scheduler.py]

@@ -1,6 +1,6 @@
 ---
 title: kind e2e api
-status: todo
+status: in-progress
 repo: agents-schedule
 value: every capability is proven headlessly against a real deployment in kind
 files: [scripts/e2e.sh, e2e/values-kind.yaml, e2e/fake-orchestrator.yaml, tests/e2e/__init__.py, tests/e2e/test_e2e_kind.py]

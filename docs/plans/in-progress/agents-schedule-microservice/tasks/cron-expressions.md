@@ -1,6 +1,6 @@
 ---
 title: cron expressions
-status: todo
+status: in-progress
 repo: agents-schedule
 value: "a schedule's cron and timezone are validated once and its fire times are computed the same way everywhere"
 files: [src/agents_schedule/cron.py, tests/test_cron.py]
