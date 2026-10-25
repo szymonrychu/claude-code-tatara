@@ -34,6 +34,8 @@ Pin agents-helmfile to this epic's merged builds (precedent: done epic web-ui-cl
 
 The shas are filled in by amendment when the orchestrator and wrapper PRs merge. Chart-pull tests blocked by a container network policy may be deselected in the verify (precedent ruling).
 
+Amended 2026-10-25: orchestrator merge sha7 `a5b5a75` (agent-orchestrator PR #8), so chart `0.1.0-main.a5b5a75` and image tag `a5b5a75`; wrapper 0.2.0 merge sha7 `1f64e9f` (claude-code-wrapper PR #3).
+
 ## Acceptance conditions
 
 - AC1: chart version and image tag agree on the orchestrator sha [evidence: test:tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image]
