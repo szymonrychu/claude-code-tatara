@@ -509,5 +509,17 @@
       "agents-schedule-microservice"
     ],
     "note": "task web-chart-config-ingress: one host lab.szymonrichert.pl, ingress path routing; agents-web owns /, agent-orchestrator /api (/api/v1), each later service one prefix /<prefix>/ with its UI-facing API at /<prefix>/api/v1 (reserved: webhooks, schedules); one Ingress per host carries the cert-manager annotations, the rest reference TLS secret agent-orchestrator-tls; every pod behind the oauth2-proxy webhook with Secret agent-orchestrator-proxy; same origin, no CORS"
+  },
+  {
+    "name": "agents-web-backends-config",
+    "kind": "schema",
+    "owner": "frontend-decoupling",
+    "file": "code/agents-web/src/config/backends.ts",
+    "consumers": [
+      "agents-helmfile",
+      "agents-webhook-microservice",
+      "agents-schedule-microservice"
+    ],
+    "note": "task web-runtime-config: GET /config.json {backends: [{id ^[a-z][a-z0-9-]*$ unique, label, basePath relative /..., no trailing /}]}, orchestrator required; chart value backends renders it (task web-chart-config-ingress); a backend's UI appears only when listed"
   }
 ]
