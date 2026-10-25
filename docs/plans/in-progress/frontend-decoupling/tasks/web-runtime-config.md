@@ -1,6 +1,6 @@
 ---
 title: web runtime config
-status: in-progress
+status: done
 repo: agents-web
 value: "one UI bundle runs anywhere; config.json says where each backend is"
 files: [public/config.json, src/config/backends.ts, src/config/backends.test.ts, src/main.tsx, src/api/client.ts, src/api/terminals.ts, src/api/client.test.ts, vite.config.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/config/backends.test.
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 37e5a1b
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 369002
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 262000, review 107002"
 ---
 
 # web runtime config
@@ -75,3 +75,5 @@ The same bundle runs in dev, kind and live: only `/config.json` decides where ea
 
 - The page and every backend share one origin (design D2): no CORS and no absolute URL anywhere.
 - Dev: list `http://localhost:5173` in the orchestrator's `ORCH_ALLOWED_ORIGINS` for terminal sockets (README of agent-orchestrator `## Security`).
+
+- 2026-10-25 done
