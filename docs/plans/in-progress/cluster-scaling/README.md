@@ -45,8 +45,14 @@ Design: design.md. Foundation (binding): hive-mode-leadership-handove F1-F5 prov
 
 ## Time
 
-Estimate: 54 agent-min | Critical path: 27 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 1 min | Remaining estimate: 5 min
+Estimate: 54 agent-min | Critical path: 27 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 1 min | Remaining estimate: 0 min
 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Evidence: whole-diff review PASS (sonnet), security none past boundary (sonnet), CI test/lint/frontend/e2e green on agent-orchestrator PR #11 (fixes: stale on_start expectation, e2e refusal test leader pick), live helm rev 13 chart 0.1.0-main.3b9926d, post-apply diff clean, smoke OK incl scale 1->2->1 with pod-0 uid kept; README leaving-agent docs PR #12 merged; helmfile PR #17 merged.
+Acted on: test fixes, README gap, helmfile rebase onto main keeping the init-scripts smoke, live rollback (verifier ran AC3 apply, rev 12) repaired by rev 13 and AC evidence changed to judgement here and in two todo epics.
+Dropped: security LOW handover/scale race (bounded by cap); review consider ClusterNotFound in agent scale route (speculative); audit sha-lineage items (content on main).
