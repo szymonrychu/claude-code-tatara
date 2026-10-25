@@ -1,6 +1,6 @@
 ---
 title: orch chart ci rename
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the chart, image and CI publish as agents-orchestrator"
 files: [chart/, .github/workflows/ci.yaml, mise.toml, scripts/, e2e/, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_project_name.py tests/test_chart_ci.py test
 depends_on: [orch-package-rename]
 model: opus
 review: ""
-verified_head: ""
+verified_head: b6e79b8
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 656321
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 535501, review 120820"
 ---
 
 # orch chart ci rename
@@ -64,3 +64,5 @@ Main CI publishes the chart and image under the new names; the chart renders and
 
 - The CI's published-version check and image digest check must name the new repositories, or the first main build fails.
 - `CLUSTER=` in scripts/e2e.sh is the kind cluster's name: keep the variable, change only its value.
+
+- 2026-10-25 done
