@@ -1,6 +1,6 @@
 ---
 title: webhook normalize
-status: in-progress
+status: done
 repo: agents-webhook
 value: "GitHub, GitLab and Grafana payloads become one event shape per endpoint type with the requested dedup keys and ignore reasons"
 files: [src/agents_webhook/normalize.py, tests/payloads.py, tests/test_normalize.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_normalize.py -q && uv run ruff check . && uv r
 depends_on: [webhook-scaffold]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 8ae0a33
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 6
+actual_tokens: 459966
+actual_roles: impl 6
+actual_role_tokens: impl 459966
 ---
 
 # webhook normalize
@@ -68,3 +68,5 @@ Every supported payload of the endpoint type yields one event and a dedup key; a
 - Parity sources: `TN/internal/scm/github.go:DetectAndVerify` L109-163, `ghNormalizeAction` L271, `TN/internal/scm/gitlab.go` L116-129 and L270-300, `TN/internal/webhook/grafana.go` L14-31 and L128-136, `server.go:isBotActor` L1181, L335-341 (TN = /Users/szymonri/Documents/tatara-new/code/tatara-operator).
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+- 2026-10-25 done
