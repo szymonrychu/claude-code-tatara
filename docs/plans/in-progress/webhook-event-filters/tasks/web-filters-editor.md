@@ -1,6 +1,6 @@
 ---
 title: web filters editor
-status: in-progress
+status: done
 repo: agents-web
 value: one editor for allow and deny rules over the fields the backend says apply to the type
 files: [src/webhooks/FiltersEditor.tsx, src/webhooks/FiltersEditor.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/FiltersEdito
 depends_on: [web-vendor-filters-api]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 7c01ade
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 907602
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 845171, review 62431"
 ---
 
 # web filters editor
@@ -67,3 +67,5 @@ A controlled MUI component that edits allow and deny rules for one endpoint type
 - Keep values as one string per line in local state so typing a newline does not lose the cursor; report the split list through `onChange`.
 - The drop-on-type-change can be an effect keyed on `type` and `fields`, or done by the parent; the test renders the editor, rerenders with a new `type`/`fields`, and expects `onChange` with the dropped rules.
 - Follow the MUI imports style of `CreateEndpointDialog.tsx` (per-component default imports).
+
+- 2026-10-25 done
