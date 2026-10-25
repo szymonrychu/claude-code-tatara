@@ -1,6 +1,6 @@
 ---
 title: webhook chart network
-status: in-progress
+status: done
 repo: agents-webhook
 value: the public /webhook/ ingest prefix and the SSO-protected API share the lab host with the right routing
 files: [chart/agents-webhook/templates/service.yaml, chart/agents-webhook/templates/ingress.yaml, chart/agents-webhook/values.yaml, chart/agents-webhook/ci/lint-values.yaml, tests/test_chart_network.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_chart_network.py -q && helm lint chart/agents-
 depends_on: [webhook-chart-workloads, webhook-ingest-http]
 model: ""
 review: full
-verified_head: ""
+verified_head: 1f676e1
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 346609
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 246865, review 99744"
 ---
 
 # webhook chart network
@@ -68,3 +68,5 @@ The chart routes public and SSO traffic to different pods.
 Security review of ingest (2026-10-25): WEBHOOK_TRUSTED_PROXIES must be set to the ingress controller pod CIDR / node CIDR (the hop that sets X-Forwarded-For) for the ingest Deployment; with it empty every caller shares the proxy key and one client can get all forges rate-limited (429). Make it a chart value and set it in the helmfile values; test the render. Also set ingress proxy body size >= the 5 MiB cap and read/send timeouts.
 
 Orchestrator note (2026-10-25): add the chart tests the workloads review found missing: imagePullSecrets duplicated between `global.imagePullSecrets` and `imagePullSecrets` renders once (this exact case broke the agents-web live apply), and assertions for allowPrivilegeEscalation false, drop ALL, seccomp RuntimeDefault on every container incl. the migrate init container.
+
+- 2026-10-25 done
