@@ -1,6 +1,6 @@
 ---
 title: common orchestrator client
-status: in-progress
+status: done
 repo: agents-common
 value: trigger services call the orchestrator through one tested client and test against one fake
 files: [src/agents_common/orchestrator.py, src/agents_common/fake_orchestrator.py, tests/test_orchestrator_client.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_orchestrator_client.py -q && uv run ruff check
 depends_on: [common-scaffold]
 model: ""
 review: ""
-verified_head: ""
+verified_head: bfebd85
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 357699
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 209365, review 148334"
 ---
 
 # common orchestrator client
@@ -61,3 +61,5 @@ Services talk to the orchestrator only through this client; every test uses the 
 ## Notes
 
 - Field names from `code/agent-orchestrator/src/agent_orchestrator/api/schemas.py` (ClusterView, MessageView, PresetView) and `api/messages.py:post_message`, `api/clusters.py:create_cluster` (409 at L186). Slug rules: DNS-1123 label, at most 40 characters (`spec.py:validate_slug`).
+
+- 2026-10-25 done
