@@ -3,7 +3,7 @@
 ## Components
 
 ```
-agents-webhook-component/
+claude-code-tatara/
   code/
     claude-code-wrapper/  (python)
     any-mcp/  (python)
