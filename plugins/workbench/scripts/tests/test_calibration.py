@@ -126,7 +126,10 @@ def test_bucket_table_sources():
 
 @pytest.mark.parametrize(
     "minutes,expected",
-    [(0, 1), (5, 1), (6, 1), (11, 1), (17, 1), (23, 2), (45, 3), (46, 5), (57, 5), (90, 8), (120, 13), (500, 13)],
+    [
+        (0, 1), (5, 1), (6, 1), (11, 1), (17, 1), (23, 2),
+        (45, 3), (46, 5), (57, 5), (90, 8), (120, 13), (500, 13),
+    ],
 )
 def test_points_for_minutes_nearest_seed(minutes, expected):
     assert calibration.points_for_minutes(minutes) == expected
