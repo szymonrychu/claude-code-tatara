@@ -1,6 +1,6 @@
 ---
 title: smoke webhook filters
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live smoke proves filters are stored, evaluated and replaceable without starting a cluster"
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_smoke_script.py -q && mise run lint"
 depends_on: [api-endpoint-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 76b75ff
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 486901
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 344597, review 142304"
 ---
 
 # smoke webhook filters
@@ -60,3 +60,5 @@ Extend the live smoke with an endpoint filter check that cannot start a cluster 
 
 - Retro proposal (recurring): for every cleanup path ask what runs if the producing step fails or a variable is empty. Here: `ENDPOINT_ID` is set only after a successful create; the new steps run after it, so the trap's delete has an id; a failed create leaves `ENDPOINT_ID` empty and the trap must skip the delete (existing behaviour, keep it).
 - Credentials stay on curl stdin as today; the new calls go to the api port-forward, which needs no credentials.
+
+- 2026-10-25 done
