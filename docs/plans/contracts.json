@@ -127,7 +127,8 @@
     "owner": "agent-orchestrator",
     "file": "code/agent-orchestrator/.github/workflows/ci.yaml",
     "consumers": [
-      "agents-helmfile"
+      "agents-helmfile",
+      "configuration-improvements"
     ],
     "note": "harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7> only (no derived agent image); agents run the claude-code-wrapper image set as agentImage / ORCH_AGENT_IMAGE, any-mcp installed by the rendered onStart hook"
   },
