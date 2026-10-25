@@ -450,7 +450,7 @@ def test_dry_run_nothing_to_change(repo, root, tmp_path):
     mk_task(root, ep, "beta")
     write_task(
         root,
-        "done",
+        "in-progress",
         "ep-new",
         "lib",
         bootstrap_meta(points="5", expected_minutes="57", expected_tokens="3750000"),

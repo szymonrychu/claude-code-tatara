@@ -4,7 +4,14 @@ import json
 import sys
 from pathlib import Path
 
-from test_ticket_migrate_map import START, bootstrap_meta, full_records, old_meta, write_task
+from test_ticket_migrate_map import (
+    START,
+    bootstrap_meta,
+    dry_run,
+    full_records,
+    old_meta,
+    write_task,
+)
 from ticket_repo_helpers import cli, commit_all, git, meta, ticket
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
@@ -332,3 +339,67 @@ def test_malformed_epic_blocks_all(repo, root, tmp_path):
     assert git(repo, "status", "--porcelain").stdout == ""
     assert not (root / "done" / "ep-old" / "RETRO.md").exists()
     assert paths  # every other epic was mappable and still was not written
+
+
+def current_done_epic(root, epic):
+    """A done epic whose task file is already in the new scheme."""
+    return write_task(
+        root,
+        "done",
+        epic,
+        "lib",
+        bootstrap_meta(points="3", expected_minutes="34", expected_tokens="2250000"),
+    )
+
+
+def test_dry_run_lists_missing_retro_without_task_changes(repo, root, tmp_path):
+    logs, transcripts = dirs(tmp_path)
+    task = current_done_epic(root, "ep-cur")
+    commit_all(repo)
+    start, before = head(repo), task.read_bytes()
+
+    r = dry_run(root, logs, transcripts, "--all")
+    assert r.returncode == 0, r.stderr
+    lines = r.stdout.splitlines()
+    assert any(line.startswith("retro: ") and "ep-cur/RETRO.md" in line for line in lines)
+    assert not [line for line in lines if line.startswith("ep-cur/lib")]
+    assert "migrate: nothing to change" not in lines
+    assert head(repo) == start
+    assert task.read_bytes() == before
+    assert not (root / "done" / "ep-cur" / "RETRO.md").exists()
+
+
+def test_missing_retro_written_without_task_changes(repo, root, tmp_path):
+    logs, transcripts = dirs(tmp_path)
+    task = current_done_epic(root, "ep-cur")
+    commit_all(repo)
+    start, before = head(repo), task.read_bytes()
+
+    r = migrate(root, logs, transcripts, "--all")
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.splitlines() == ["ep-cur: 0 tasks migrated, RETRO.md", "retro-writer: ep-cur"]
+    retro_md = root / "done" / "ep-cur" / "RETRO.md"
+    assert "<!-- retro:generated:begin -->" in retro_md.read_text()
+    assert subjects(repo, start) == ["chore(ticket): ep-cur migrate"]
+    assert commit_files(repo, "HEAD") == [rel(repo, retro_md)]
+    assert task.read_bytes() == before
+    assert git(repo, "status", "--porcelain").stdout == ""
+
+
+def test_current_epic_with_retro_is_untouched(repo, root, tmp_path):
+    logs, transcripts = dirs(tmp_path)
+    current_done_epic(root, "ep-cur")
+    commit_all(repo)
+    assert migrate(root, logs, transcripts, "ep-cur").returncode == 0
+    retro_md = root / "done" / "ep-cur" / "RETRO.md"
+    retro_md.write_text(retro_md.read_text().replace("| ... | ... |", "| the tests | none |"))
+    commit_all(repo)
+    first = head(repo)
+    before = {p: p.read_bytes() for p in root.rglob("*") if p.is_file()}
+
+    for args in (("--all",), ("ep-cur",)):
+        r = migrate(root, logs, transcripts, *args)
+        assert r.returncode == 0, r.stderr
+        assert r.stdout.splitlines() == ["migrate: nothing to change"]
+    assert head(repo) == first
+    assert {p: p.read_bytes() for p in root.rglob("*") if p.is_file()} == before

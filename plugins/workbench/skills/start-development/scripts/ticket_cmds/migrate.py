@@ -28,7 +28,8 @@ block replaced), its rows read from the new values, and commits exactly those fi
 `chore(ticket): <epic> migrate`; an epic with nothing to change gets no commit, so a second run
 prints `migrate: nothing to change`. It prints `<epic>: <n> tasks migrated[, RETRO.md]` per
 changed epic, then `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still
-the template's. A done epic is history: this is the one writer of its task files.
+the template's. A done epic with no RETRO.md counts as changed even when no task file changes. A done epic
+is history: this is the one writer of its task files.
 """
 
 from __future__ import annotations
@@ -189,6 +190,7 @@ def _plan(a, t, root: Path, epic_dir: Path, names: dict, logs, transcripts) -> d
             epic, logs, transcripts, names=names, tasks=sorted(set(legacy + wanting))
         )
     plan: dict = {"dir": epic_dir, "problems": [], "lines": [], "docs": {}, "all": docs}
+    plan["needs_retro"] = t._phase_of(epic_dir) == "done" and not (epic_dir / retro.FILE).is_file()
     partials = []
     for path, doc in docs.items():
         label = f"{epic}/{path.stem}"
@@ -202,7 +204,8 @@ def _plan(a, t, root: Path, epic_dir: Path, names: dict, logs, transcripts) -> d
             plan["docs"][path] = new_doc
             plan["lines"].append(_change_line(label, doc.meta, new))
     plan["lines"] += partials
-    if a.dry_run and plan["docs"] and t._phase_of(epic_dir) == "done" and not plan["problems"]:
+    changed = plan["docs"] or plan["needs_retro"]
+    if a.dry_run and changed and t._phase_of(epic_dir) == "done" and not plan["problems"]:
         plan["lines"] += _retro_lines(a, t, root, epic_dir, {**docs, **plan["docs"]})
     return plan
 
@@ -248,7 +251,7 @@ def _write(a, t, root: Path, plans: list[dict]) -> list[str]:
     writes = []
     for plan in plans:
         epic_dir = plan["dir"]
-        if not plan["docs"]:
+        if not plan["docs"] and not plan["needs_retro"]:
             continue
         retro_md = None
         if t._phase_of(epic_dir) == "done":
