@@ -1,6 +1,6 @@
 ---
 title: Agent usage hook
-status: in-progress
+status: done
 repo: workbench
 value: Every subagent run leaves an accurate usage record in .logs without the orchestrator doing anything
 files: [plugins/workbench/hooks/agent-usage-recorder.py, plugins/workbench/hooks/tests/test_agent_usage_recorder.py, plugins/workbench/hooks/tests/test_py39_safe.py, plugins/workbench/.claude-plugin/plugin.json, plugins/workbench/skills/start-development/references/hooks.md, scripts/tests/harness/test_claude_only_hooks.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only hooks && bash plugin
 depends_on: [agent-usage-lib]
 model: opus
 review: ""
-verified_head: ""
+verified_head: cec85a7
 ---
 
 # Agent usage hook
@@ -68,3 +68,5 @@ Every implementer and reviewer run leaves one accurate, idempotent usage record 
 - Adopted idea (hooks brief): record at SubagentStart and overwrite at every stop, and let the stamp step re-read transcript paths so a missed stop loses nothing (read_records in agent-usage-lib).
 - The recorder is not registered in core.HOOKS (brief reuse entry): it makes no allow/deny/block decision and no harness adapter runs it, so the entry script calls agent_usage directly (my call).
 - Bootstrap: the plugin loads from the main checkout, so this hook records nothing until the epic merges and `/reload-plugins` runs; runs before that are recovered by actuals-backfill (D16).
+
+- 2026-10-25 done
