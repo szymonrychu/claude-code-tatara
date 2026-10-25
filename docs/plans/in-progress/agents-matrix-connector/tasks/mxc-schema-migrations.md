@@ -1,6 +1,6 @@
 ---
 title: mxc schema migrations
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the connector's own database holds rooms, users, rules, the message queue and replies with one writer per table"
 files: [src/agents_matrix_connector/migrations/__init__.py, src/agents_matrix_connector/migrations/0001_init.sql, tests/test_schema.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_schema.py -q && uv run ruff check . &
 depends_on: [mxc-scaffold-and-cli]
 model: sonnet
 review: full
-verified_head: ""
+verified_head: f60b8d057e4d6bbcf693ba618106a5ef6c2c4b06
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 7
+actual_tokens: 886861
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 670744, review 216117"
 ---
 
 # mxc schema migrations
@@ -72,3 +72,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Follow `code/agents-webhook/src/agents_webhook/migrations/0001_init.sql` style.
 - Use `timestamptz` with `DEFAULT now()` for `*_at` columns that are set on insert.
+
+- 2026-10-25 done
