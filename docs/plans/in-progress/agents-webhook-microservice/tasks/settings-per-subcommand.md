@@ -1,6 +1,6 @@
 ---
 title: settings per subcommand
-status: todo
+status: done
 repo: agents-webhook
 value: the public ingest and migrate run without the orchestrator token
 files: [src/agents_webhook/settings.py, src/agents_webhook/cli.py, tests/test_cli.py, tests/test_schema_settings.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_cli.py tests/test_schema_settings.py -o addopt
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: d8d1322
 points: 2
 expected_minutes: 10
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 329491
+actual_roles: impl 2
+actual_role_tokens: impl 329491
 ---
 
 # settings per subcommand
@@ -54,3 +54,5 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 ## Notes
 
 agents-common BaseServiceSettings requires the orchestrator token; a subclass or a separate settings class without it for migrate/ingest is fine. DB tests: local Postgres postgresql://test@127.0.0.1:55433/postgres via a temporary uncommitted pg_url override.
+
+- 2026-10-25 done
