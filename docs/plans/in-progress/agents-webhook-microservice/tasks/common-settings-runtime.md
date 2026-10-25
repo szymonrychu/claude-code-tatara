@@ -1,6 +1,6 @@
 ---
 title: common settings runtime
-status: in-progress
+status: done
 repo: agents-common
 value: "services share one settings base and one singleton worker runtime, so each runs exactly one dispatcher"
 files: [src/agents_common/settings.py, src/agents_common/runtime.py, tests/test_settings_runtime.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_settings_runtime.py -q && uv run ruff check . 
 depends_on: [common-db-helpers]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 442b1cf
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 556836
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 413742, review 143094"
 ---
 
 # common settings runtime
@@ -58,3 +58,5 @@ A service subclasses one settings base and runs its worker under one singleton l
 ## Notes
 
 - Uses `agents_common.db.open_pool` and the `pg_url` fixture from task common-db-helpers.
+
+- 2026-10-25 done
