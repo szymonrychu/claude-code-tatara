@@ -1,7 +1,7 @@
 ---
 title: Epic and task migration skill
 blockers: ["Housekeeping rules, estimates and retrospectives"]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-25
