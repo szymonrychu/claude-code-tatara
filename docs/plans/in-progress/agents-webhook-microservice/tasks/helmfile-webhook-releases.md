@@ -1,6 +1,6 @@
 ---
 title: helmfile webhook releases
-status: in-progress
+status: done
 repo: agents-helmfile
 value: agents-webhook and its own CNPG database are declared in the agents namespace with SSO on the API and a public ingest
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-webhook-db/common.yaml, values/agents-webhook-db/default.secrets.yaml, tests/test_webhook_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_webhook_release.py -k \
 depends_on: [deploy-pin-orch-service-port, webhook-ci-images, webhook-docs-memory]
 model: ""
 review: full
-verified_head: ""
+verified_head: 6b148a0
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 834792
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 675214, review 159578"
 ---
 
 # helmfile webhook releases
@@ -69,3 +69,5 @@ Precondition, checked first: the agents-webhook PR of this epic is merged to mai
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
 
 Security review of ingest (2026-10-25): WEBHOOK_TRUSTED_PROXIES must be set to the ingress controller pod CIDR / node CIDR (the hop that sets X-Forwarded-For) for the ingest Deployment; with it empty every caller shares the proxy key and one client can get all forges rate-limited (429). Make it a chart value and set it in the helmfile values; test the render. Also set ingress proxy body size >= the 5 MiB cap and read/send timeouts.
+
+- 2026-10-25 done
