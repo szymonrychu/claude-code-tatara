@@ -1,6 +1,6 @@
 ---
 title: common release v0.3.0
-status: in-progress
+status: done
 repo: agents-common
 value: agents-webhook and agents-schedule can pin the session client
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_release.py && uv run ruff check . && uv run
 depends_on: [common-client-sessions]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 931b1de
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 266028
+actual_roles: impl 3
+actual_role_tokens: impl 266028
 ---
 
 # common release v0.3.0
@@ -60,3 +60,5 @@ agents-common 0.3.0 is documented, versioned and, after the release step, tagged
 ## Notes
 
 - Tags are never re-pointed.
+
+- 2026-10-25 done
