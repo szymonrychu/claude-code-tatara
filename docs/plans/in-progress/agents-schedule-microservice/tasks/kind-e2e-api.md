@@ -1,6 +1,6 @@
 ---
 title: kind e2e api
-status: in-progress
+status: done
 repo: agents-schedule
 value: every capability is proven headlessly against a real deployment in kind
 files: [scripts/e2e.sh, e2e/values-kind.yaml, e2e/fake-orchestrator.yaml, tests/e2e/__init__.py, tests/e2e/test_e2e_kind.py]
@@ -8,15 +8,15 @@ verify: "bash -n scripts/e2e.sh && uv run --frozen pytest tests/e2e/test_e2e_kin
 depends_on: [chart-ingress-and-test-hook, dockerfile-and-ci, api-docs-and-openapi]
 model: ""
 review: ""
-verified_head: ""
+verified_head: fc99d8cd9f28eaf0788e219d42a84c624ca9e7e2
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 1908072
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1524024, review 384048"
 ---
 
 # kind e2e api
@@ -66,3 +66,5 @@ A headless e2e in kind proves create, validate, preview, fire, overlap, failure,
 - Real orchestrator coverage is the live smoke (`smoke-schedule-check`).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done: kind run verified statically; real run in the PR CI e2e job before close
