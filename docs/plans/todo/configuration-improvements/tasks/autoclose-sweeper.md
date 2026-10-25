@@ -6,19 +6,17 @@ value: a cluster closes itself after a set time through the normal discard
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/autoclose.py, src/agent_orchestrator/api/app.py, tests/test_autoclose.py, README.md, MEMORY.md]
 verify: "uv run --frozen pytest -q tests/test_autoclose.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-config-fields]
-owns: [orch-cluster-autoclose]
-uses: [orch-spec-config-fields]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # autoclose sweeper

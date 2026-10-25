@@ -6,19 +6,17 @@ value: "users set hooks, idle compact, lease and autoclose in the preset editor"
 files: [openapi/agent-orchestrator.json, src/api/schema.d.ts, src/clusters/clusterSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
 verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run lint && npm run check:api"
 depends_on: [config-cluster-views]
-owns: [web-orch-schema-config]
-uses: [orch-cluster-config-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web form config fields

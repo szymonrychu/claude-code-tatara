@@ -6,19 +6,17 @@ value: "CI proves hooks, idle compact, lease and autoclose on a real cluster thr
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [render-wrapper-settings, leader-lease-expiry, autoclose-sweeper, config-cluster-views]
-owns: []
-uses: [orch-cluster-config-api, orch-leader-lease, orch-cluster-autoclose]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # kind e2e config

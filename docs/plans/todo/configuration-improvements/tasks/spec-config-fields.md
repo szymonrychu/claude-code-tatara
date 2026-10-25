@@ -6,19 +6,17 @@ value: "presets and clusters carry validated wrapper settings, a leader lease an
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/settings.py, tests/test_spec_config.py]
 verify: "uv run --frozen pytest -q tests/test_spec_config.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-spec-config-fields]
-uses: [agent-orchestrator-settings-env]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # spec config fields

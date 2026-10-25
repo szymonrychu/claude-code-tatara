@@ -6,19 +6,17 @@ value: "agents run with the user's hooks, idle auto-compact and other wrapper se
 files: [src/agent_orchestrator/k8s/render.py, tests/test_render.py, README.md, MEMORY.md]
 verify: "uv run --frozen pytest -q tests/test_render.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-config-fields]
-owns: []
-uses: [orch-spec-config-fields, orch-render-hash-invariant]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # render wrapper settings

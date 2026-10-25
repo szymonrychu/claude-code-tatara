@@ -6,19 +6,17 @@ value: the agents namespace runs the configuration improvements
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_agents_web_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_agents_web_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [kind-e2e-config, web-clusters-page, smoke-config-check]
-owns: []
-uses: [agent-orchestrator-chart, agent-orchestrator-image]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deploy pin config

@@ -6,19 +6,17 @@ value: "API callers can set and see every new field, documented"
 files: [src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/views.py, src/agent_orchestrator/api/clusters.py, README.md, openapi.json, tests/test_api_config.py]
 verify: "uv run --frozen pytest -q tests/test_api_config.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-config-fields]
-owns: [orch-cluster-config-api]
-uses: [orch-spec-config-fields, orch-presets-api, orch-cluster-create-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # config cluster views

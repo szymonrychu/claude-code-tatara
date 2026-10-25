@@ -6,19 +6,17 @@ value: "clusters get their own page in the hamburger menu, above Presets"
 files: [src/clusters/ClustersPage.tsx, src/clusters/ClustersPage.test.tsx, src/App.tsx, src/App.test.tsx]
 verify: "npx vitest run src/clusters/ClustersPage.test.tsx src/App.test.tsx && npm run lint"
 depends_on: [web-form-config-fields]
-owns: [web-settings-menu-order]
-uses: [web-orch-schema-config, orch-cluster-config-api, orch-settings-menu]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web clusters page

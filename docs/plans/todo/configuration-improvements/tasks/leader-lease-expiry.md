@@ -6,19 +6,17 @@ value: a hive rotates its leader after a set time without interrupting a turn
 files: [src/agent_orchestrator/db/leadership.py, tests/test_leadership_pass.py, README.md, MEMORY.md]
 verify: "uv run --frozen pytest -q tests/test_leadership_pass.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-config-fields]
-owns: [orch-leader-lease]
-uses: [orch-spec-config-fields, orch-leadership-pass]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # leader lease expiry
