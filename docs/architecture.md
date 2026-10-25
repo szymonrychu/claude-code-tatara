@@ -3,7 +3,7 @@
 ## Components
 
 ```
-agents-web-component-create-agents-web-repo/
+claude-code-tatara/
   code/
     claude-code-wrapper/  (python)
     any-mcp/  (python)
