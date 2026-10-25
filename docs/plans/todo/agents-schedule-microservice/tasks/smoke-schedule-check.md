@@ -23,13 +23,13 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-forward `deploy/agents-schedule-api` (port 8000, like the orchestrator step), then: `GET /readyz` 200; `POST /schedules/api/v1/schedules` a disabled schedule `smoke-<ts>` on the default preset with cron `0 3 * * *`; `POST /schedules/preview` returns 3 times; `POST /schedules/{id}/run` 202; poll `GET /runs/{run_id}` until `in-progress` with a `cluster_id` (bounded by `SMOKE_TIMEOUT_S`); the cleanup trap deletes that cluster through the orchestrator API and the schedule through the schedule API, and prints the manual cleanup line when either is unreachable. tests/test_smoke_script.py extends the fake server with the schedule routes and asserts the step passes, fails on a run that goes `failed`, and cleans up.
+Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-forward `deploy/agents-schedule-api` (port 8000, like the orchestrator step), then: `GET /readyz` 200; `POST /schedules/api/v1/schedules` a disabled schedule `smoke-<ts>` on the default preset with cron `0 3 * * *`; `POST /schedules/preview` returns 3 times; `POST /schedules/{id}/run` 202; poll `GET /runs/{run_id}` until `in-progress` with a `session_id` (bounded by `SMOKE_TIMEOUT_S`); the cleanup trap deletes that session through the orchestrator API and the schedule through the schedule API, and prints the manual cleanup line when either is unreachable. tests/test_smoke_script.py extends the fake server with the schedule routes and asserts the step passes, fails on a run that goes `failed`, and cleans up.
 
 ## Acceptance conditions
 
 - AC1: the smoke step passes against the fake server [evidence: test:tests/test_smoke_script.py::test_schedule_step_passes]
 - AC2: a failed run fails the smoke with its reason [evidence: test:tests/test_smoke_script.py::test_schedule_step_failed_run]
-- AC3: the cleanup trap deletes the cluster and the schedule [evidence: test:tests/test_smoke_script.py::test_schedule_step_cleans_up]
+- AC3: the cleanup trap deletes the session and the schedule [evidence: test:tests/test_smoke_script.py::test_schedule_step_cleans_up]
 - AC4: shellcheck passes [evidence: command:shellcheck --severity=error scripts/smoke.sh]
 
 ## Files
@@ -55,3 +55,5 @@ Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-f
 
 - The schedule is created disabled so it never fires on its own; only run-now starts a cluster.
 - The orchestrator step's cleanup pattern (`cleanup` trap with manual line) is reused.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
