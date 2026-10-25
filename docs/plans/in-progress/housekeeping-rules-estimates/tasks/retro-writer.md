@@ -9,6 +9,11 @@ depends_on: [retro-command, planner-points-gate]
 model: opus
 review: ""
 verified_head: 7f31a5a
+points_actual: 3
+actual_minutes: 16
+actual_tokens: 1883475
+actual_roles: "impl 13, review 10"
+actual_role_tokens: "impl 1615842, review 267633"
 ---
 
 # Retro writer
@@ -63,5 +68,7 @@ Every closed epic gets a RETRO.md whose judgement half is written by an agent fr
 - Fix-as-ac (brief): SKILL.md line cap (test_skill_size.py MAX_LINES 150, KEPT exact); test_lean_flow_docs.py:201-217 pins the record-writer phrases (keep them); test_templates.py:97-103 requires ASCII punctuation in templates and writer agents.
 - New agents are pinned in skills/start-review/tests/test_agents_lean.py and skills/start-research/tests/test_start_skills_structure.py only by name lists; if one of them enumerates every agent file, update it and say so.
 - The planner reads proposals; it never edits ROADMAP.md (human-owned).
+
+- 2026-10-25 done
 
 - 2026-10-25 done
