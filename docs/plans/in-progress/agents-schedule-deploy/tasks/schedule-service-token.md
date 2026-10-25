@@ -1,6 +1,6 @@
 ---
 title: schedule service token
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the schedule service authenticates to the orchestrator with its own token, bootstrapped like the other secrets"
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agents-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_secrets.py && 
 depends_on: []
 model: ""
 review: full
-verified_head: ""
+verified_head: fd8696fbcee140c7bf2338ba83ca06101cfb442c
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 265212
+actual_roles: "impl 1, review 3"
+actual_role_tokens: "impl 174527, review 90685"
 ---
 
 # schedule service token
@@ -66,3 +66,5 @@ One bootstrap run gives the schedule service a working orchestrator credential.
 - The webhook epic adds its own pair of files the same way; the two stay independent. The orchestrator release picks up `service-token-*.secrets.yaml` per `orch-services-service`.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
