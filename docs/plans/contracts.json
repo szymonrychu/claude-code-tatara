@@ -438,5 +438,16 @@
       "agent-init-scripts"
     ],
     "note": "task hive-docs-memory: spec.replicas and spec.init_scripts are the only in-place spec fields (no generation bump, no pod roll); writers are the api routes of the consuming epics; PATCH stays 405"
+  },
+  {
+    "name": "orch-cluster-config-api",
+    "kind": "api",
+    "owner": "configuration-improvements",
+    "file": "code/agent-orchestrator/README.md",
+    "consumers": [
+      "agents-web",
+      "agents-helmfile"
+    ],
+    "note": "task config-cluster-views: ClusterSpec.wrapper (typed wrapper settings: hooks on 21 events command|webhook, auto_compact, system_append, permissions, mcp_servers, plugins, turn_stall_seconds, max_restarts, restart_continue_prompt, turn_max_seconds, agent_commands), leader_lease_seconds (60..604800, hive only), autoclose_after_seconds (>= ORCH_AUTOCLOSE_MIN_SECONDS, default 300) on POST /api/v1/clusters and the preset routes; ClusterView closes_at, leader_since, leader_reason; README ### Cluster configuration"
   }
 ]
