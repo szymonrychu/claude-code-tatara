@@ -1,6 +1,6 @@
 ---
 title: web webhooks session fields
-status: in-progress
+status: done
 repo: agents-web
 value: "the Webhooks events table shows each run's session"
 files: [openapi/webhooks.json, openapi/webhooks.source, src/api/webhooks-schema.d.ts, src/webhooks/, src/nomenclature.test.ts]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run src/webhooks src/nomenclature.test.ts && n
 depends_on: [web-workspace-sessions, webhook-session-columns]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 811f1b7
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 318553
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 261079, review 57474"
 ---
 
 # web webhooks session fields
@@ -61,3 +61,5 @@ The Webhooks events table shows each run's session; all of src passes the guard.
 ## Notes
 
 - webhook-event-filters (the epic's blocker) already changed `src/webhooks/`; start from main.
+
+- 2026-10-25 done
