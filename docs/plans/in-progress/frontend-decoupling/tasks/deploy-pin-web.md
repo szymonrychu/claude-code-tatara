@@ -1,6 +1,6 @@
 ---
 title: deploy pin web
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace gets the agents-web release and the / and /api path split
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, values/agent-orchestrator/common.yaml, tests/test_web_release.py, tests/test_orchestrator_release.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: apply smoke web cutover
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live UI is served by agents-web behind the same SSO, proven by the smoke"
 files: [MEMORY.md]

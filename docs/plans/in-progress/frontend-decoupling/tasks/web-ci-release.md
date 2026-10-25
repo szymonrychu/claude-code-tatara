@@ -1,6 +1,6 @@
 ---
 title: web ci release
-status: todo
+status: in-progress
 repo: agents-web
 value: every agents-web change is tested in CI and main publishes the image and chart
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, scripts/ci.test.mjs, .mise.toml, README.md]

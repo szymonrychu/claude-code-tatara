@@ -1,6 +1,6 @@
 ---
 title: apply smoke orch no spa
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live orchestrator is API-only and the UI keeps working, proven by the smoke"
 files: [MEMORY.md]

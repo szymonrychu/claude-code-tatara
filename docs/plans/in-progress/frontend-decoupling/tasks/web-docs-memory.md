@@ -1,6 +1,6 @@
 ---
 title: web docs memory
-status: todo
+status: in-progress
 repo: agents-web
 value: developers of later services learn from agents-web alone how to add a backend
 files: [README.md, AGENTS.md, MEMORY.md]

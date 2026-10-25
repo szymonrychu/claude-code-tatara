@@ -1,6 +1,6 @@
 ---
 title: orch drop frontend build
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "the orchestrator repo, image and CI carry no UI or node"
 files: [frontend, Dockerfile, .github/workflows/ci.yaml, tests/test_readme_api.py, tests/test_frontend_retired.py, .gitignore, README.md, MEMORY.md]

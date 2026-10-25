@@ -1,6 +1,6 @@
 ---
 title: web backend menu
-status: todo
+status: in-progress
 repo: agents-web
 value: "later services add UI entries by registering them, shown only when configured"
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/App.tsx, src/App.test.tsx]

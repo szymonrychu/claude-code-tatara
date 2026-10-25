@@ -1,6 +1,6 @@
 ---
 title: web chart workload
-status: todo
+status: in-progress
 repo: agents-web
 value: the UI deploys with its own hardened chart
 files: [chart/agents-web/Chart.yaml, chart/agents-web/values.yaml, chart/agents-web/templates/_helpers.tpl, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/service.yaml, chart/tests/workload.test.mjs, package.json, package-lock.json]

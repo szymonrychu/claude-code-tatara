@@ -1,6 +1,6 @@
 ---
 title: orch drop spa mount
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the orchestrator api is API-only
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/settings.py, tests/test_spa.py, tests/test_settings.py, Dockerfile, README.md]

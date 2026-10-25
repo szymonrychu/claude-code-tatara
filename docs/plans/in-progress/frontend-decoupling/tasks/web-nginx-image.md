@@ -1,6 +1,6 @@
 ---
 title: web nginx image
-status: todo
+status: in-progress
 repo: agents-web
 value: "the UI ships as a small non-root static image with the orchestrator's caching rules"
 files: [Dockerfile, .dockerignore, nginx/default.conf, scripts/image-smoke.sh, README.md]

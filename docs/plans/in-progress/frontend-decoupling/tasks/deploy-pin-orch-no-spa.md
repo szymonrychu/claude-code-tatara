@@ -1,6 +1,6 @@
 ---
 title: deploy pin orch no spa
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace is pinned to the API-only orchestrator build
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]

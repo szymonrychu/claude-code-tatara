@@ -1,6 +1,6 @@
 ---
 title: smoke web ui
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live smoke proves the UI, its config and the path routing"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md, mise.toml]

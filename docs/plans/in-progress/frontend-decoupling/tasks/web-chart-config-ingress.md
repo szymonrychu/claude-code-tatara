@@ -1,6 +1,6 @@
 ---
 title: web chart config ingress
-status: todo
+status: in-progress
 repo: agents-web
 value: "the chart sets the UI's backends and owns / of the host"
 files: [chart/agents-web/values.yaml, chart/agents-web/templates/configmap.yaml, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/ingress.yaml, chart/agents-web/templates/tests/test-connection.yaml, chart/tests/config-ingress.test.mjs, chart/agents-web/README.md]

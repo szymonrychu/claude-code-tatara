@@ -1,6 +1,6 @@
 ---
 title: web runtime config
-status: todo
+status: in-progress
 repo: agents-web
 value: "one UI bundle runs anywhere; config.json says where each backend is"
 files: [public/config.json, src/config/backends.ts, src/config/backends.test.ts, src/main.tsx, src/api/client.ts, src/api/terminals.ts, src/api/client.test.ts, vite.config.ts]

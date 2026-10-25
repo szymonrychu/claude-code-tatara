@@ -1,6 +1,6 @@
 ---
 title: web openapi vendor
-status: todo
+status: in-progress
 repo: agents-web
 value: "the UI's API types come from a recorded orchestrator commit inside its own repo"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schema.d.ts, README.md]
