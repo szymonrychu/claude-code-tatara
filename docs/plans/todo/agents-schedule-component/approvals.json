@@ -1,0 +1,3 @@
+[
+  {"id": "A1", "text": "Create the public GitHub repo szymonrychu/agents-schedule via workbench:component-add (outward-facing, listed at the gate), as the submodule code/agents-schedule, with its Harbor CI secrets.", "decisions": [], "tasks": ["create-agents-schedule-repo"], "status": "approved"}
+]

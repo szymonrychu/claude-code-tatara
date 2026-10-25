@@ -52,17 +52,24 @@ Do not touch any other component.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `code/agents-schedule`: submodule, branch main, origin `https://github.com/szymonrychu/agents-schedule` (public). agents-schedule-microservice needs it to exist before its run starts (`ticket.py:_integration_plan`).
+- Repo secrets `HARBOR_USERNAME`, `HARBOR_PASSWORD`, read by the CI workflow agents-schedule-microservice task `dockerfile-and-ci` adds.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`code/agents-schedule` is a submodule with a public GitHub origin and CI secrets; its README and MEMORY say what it is; the superrepo AGENTS.md lists it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `git ls-remote https://github.com/szymonrychu/agents-schedule` fails before the task (repo absent).
+- Run the component-add command of the requirement; AC1 and AC2 commands exit 0.
+- Write README `## What this is` and the MEMORY entry; `cd code/agents-schedule && pytest tests/test_smoke.py -q && ruff check .`: `1 passed`, clean; push main.
+- `gh secret set HARBOR_USERNAME -R szymonrychu/agents-schedule` and `HARBOR_PASSWORD` (values on stdin); AC3 exits 0.
+- Commit `.gitmodules`, the gitlink and AGENTS.md on this task's branch.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Same shape as agents-web-component `create-agents-web-repo` and the agents-webhook D15 step; all new components are public like agent-orchestrator (probed: `gh repo view szymonrychu/agent-orchestrator` is PUBLIC).
+- `mise run component:add` refuses with staged changes in the workbench; start from a clean tree.
+- `scripts/init_engine/scaffold.py:write` writes no pyproject, Dockerfile, CI or chart; agents-schedule-microservice adds them.
+- Never echo secret values.
