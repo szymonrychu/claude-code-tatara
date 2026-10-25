@@ -1,6 +1,6 @@
 ---
 title: apply smoke orch no spa
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live orchestrator is API-only and the UI keeps working, proven by the smoke"
 files: [MEMORY.md]
@@ -8,11 +8,11 @@ verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-orch-no-spa]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 29bd7c7
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -64,3 +64,7 @@ The live orchestrator is API-only and the UI keeps working from agents-web.
 - No TDD cycle applies: an apply and one MEMORY.md line (doc edit exception).
 
 Orchestrator notes (2026-10-25; the orchestrator runs live applies): pre-apply `mise run diff`, every non-label +/- line: 8x `image: ...agent-orchestrator:3b9926d` -> `:a4be86b`, plus "Changes suppressed on sensitive content of type Secret" (label bump); affected release agent-orchestrator only. `mise run apply`: agent-orchestrator 0.1.0-main.a4be86b deployed. Post-apply diff: "No affected releases". `mise run smoke` last line: `smoke: OK`. Port-forward deploy/agent-orchestrator-api 18001:8000: `GET /` -> `{"error":{"code":"not_found","message":"Not Found"}} 404`; `GET /api/v1/openapi.json` -> 200. https://lab.szymonrichert.pl/ -> 302 to auth.szymonrichert.pl (Keycloak).
+
+- 2026-10-25 done
+
+- 2026-10-25 actuals: no agent records
