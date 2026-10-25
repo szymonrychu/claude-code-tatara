@@ -63,12 +63,17 @@ default_log_dir() {
     mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX"
   fi
 }
+# Made before the log dir so a failure here leaves nothing behind. The path is
+# resolved: a trailing slash on TMPDIR would leave a "//" that bats' own paths
+# and a suite's PWD then disagree on.
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/run-tests-tmp.XXXXXX")" \
+  && TMP_DIR="$(cd "$TMP_DIR" && pwd -P)" \
+  && [ -n "$TMP_DIR" ] || {
+  echo "run-tests: cannot create a temp dir under ${TMPDIR:-/tmp}" >&2
+  exit 2
+}
 LOG_DIR="${RUN_TESTS_LOG_DIR:-$(default_log_dir)}"
 mkdir -p "$LOG_DIR"
-# Resolve the path: a trailing slash on TMPDIR would leave a "//" that bats'
-# own paths and a suite's PWD then disagree on.
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/run-tests-tmp.XXXXXX")"
-TMP_DIR="$(cd "$TMP_DIR" && pwd -P)"
 export TMPDIR="$TMP_DIR"
 # The caller's root override only picks the log dir above. Suites build their own
 # fake workbenches and must find those, not the caller's tree.

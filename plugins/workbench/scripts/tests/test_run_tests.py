@@ -270,3 +270,16 @@ def test_temp_dir_kept_on_failure_removed_on_green(tree):
     assert kept.is_dir() and kept.parent == tree.tmpdir.resolve()
     assert (tree.main / ".logs" / "run-tests").is_dir()
     assert len(list((tree.main / ".logs" / "run-tests").glob("*/fake.log"))) == 1
+
+
+def test_mktemp_failure_exits_2_and_removes_nothing(tree):
+    tree.control("pass")
+    tree.env["TMPDIR"] = str(tree.tmpdir / "missing")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert "run-tests: cannot create a temp dir" in r.stderr
+    assert (tree.root / "scripts" / "run-tests.sh").is_file()
+    assert (tree.root / "skills" / "fake" / "tests" / "test_fake.py").is_file()
+    assert list(tree.root.glob("run-tests*")) == []
+    assert list(tree.tmpdir.glob("run-tests*")) == []
+    assert not (tree.main / ".logs").exists()
