@@ -1,6 +1,6 @@
 ---
 title: mxc operations docs
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the operator can create the bot account, connect Facebook and allow a first chat from the README"
 files: [README.md, MEMORY.md, AGENTS.md]
@@ -8,15 +8,15 @@ verify: "grep -q '^## Operations' README.md && grep -q '^## Security' README.md 
 depends_on: [mxc-openapi-and-readme, mxc-service-entrypoints]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 645f6d5e23a4bb82358b42ac4d154cc5c5caeed8
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 694036
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 380288, review 313748"
 ---
 
 # mxc operations docs
@@ -61,3 +61,5 @@ An operator can create the bot account, connect Facebook and allow a first chat 
 - Never put a real token, password or cookie in docs; use placeholders.
 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
+
+- 2026-10-25 done
