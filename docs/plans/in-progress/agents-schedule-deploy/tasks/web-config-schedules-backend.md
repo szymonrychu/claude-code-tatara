@@ -1,6 +1,6 @@
 ---
 title: web config schedules backend
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployed UI lists the schedule backend so its menu entry appears
 files: [values/agents-web/common.yaml, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_web_release.py
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: ead1cde61c9924f44d54f8d9c43bb85a209a48c0
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 226517
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 118722, review 107795"
 ---
 
 # web config schedules backend
@@ -51,3 +51,5 @@ The live UI shows the Schedules entry once deployed.
 ## Notes
 
 - `values/agents-web/common.yaml` and `tests/test_web_release.py` are created by frontend-decoupling; this task only adds the entry.
+
+- 2026-10-25 done
