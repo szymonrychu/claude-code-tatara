@@ -206,6 +206,7 @@ Each part with its owning task, its consumers and where it is defined (one line 
 - Q3: One agent session per chat from the room's preset (or a default preset), reused while it runs; queued messages sent as one batch; replies are the turn's final text as plain Messenger messages split at 4000 characters, typing shown while the agent works, a short apology on failure, no token streaming? [recommended: yes]
 - Q4: Allowing a group chat lets every member talk to the agent, and in groups the agent answers only when mentioned (per-room override to all messages)? [recommended: yes]
 - Q5: Display-name rules are deny-only, since a sender chooses their own display name and could impersonate an allowed person? [recommended: yes]
+- Q6: Denied chats stay joined but inert (nothing stored, nothing answered) instead of being left, because a bridged chat cannot be rejoined without a fresh bridge invite? [recommended: yes]
 
 ## Irreversible operations in scope
 
