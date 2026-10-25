@@ -1,6 +1,6 @@
 ---
 title: Planner points gate
-status: in-progress
+status: done
 repo: workbench
 value: The planner gives one number per task and the gate shows the derived minutes and tokens
 files: [plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/tests/test_lean_flow_docs.py, plugins/workbench/skills/epic-task-create/SKILL.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [points-required, scratch-locations]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3c983ec
 ---
 
 # Planner points gate
@@ -58,3 +58,5 @@ The planner gives one number per task; the gate shows the derived minutes and to
 - Fix-as-ac (brief): test_planner_agent.py:63 forbids "ticket.py estimate" in planner.md; test_lean_flow_docs.py:100 pins the gate line "id, title, value, files, depends_on, model".
 - Fix-as-ac (brief): SKILL.md is at 150 of 150 lines (test_skill_size.py:7); edits are line-neutral.
 - Depends on scratch-locations (it edits planner.md first) and points-required (the flag exists and is required).
+
+- 2026-10-25 done
