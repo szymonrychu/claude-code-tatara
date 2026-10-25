@@ -42,17 +42,18 @@ Also check how a missing archive is reported. A presigned GET for a missing key 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement; no new cross-repo contract.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every acceptance condition holds on the committed HEAD.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the AC tests; run the task verify: they fail.
+- Green: implement the Requirement; rerun the verify: they pass.
+- Run the repo's full suite and lint: green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- See the Requirement and the epic design.md.
