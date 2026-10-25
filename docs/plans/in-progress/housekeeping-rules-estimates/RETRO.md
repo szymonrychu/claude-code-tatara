@@ -69,12 +69,33 @@ Delivery order; written by `ticket.py retro`.
 
 ## Retro
 
-Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
-
 | Went well | Went bad / could be improved |
 |---|---|
-| ... | ... |
+| 17 of 24 tasks passed review in round 0, with a verification tail quoted per task (e.g. calibration-lib, em-dash-lint, retro-command). | 7 of 24 tasks needed one fix round per the notes (em-dash-commit-guard, output-spill-to-logs, agent-usage-lib, planner-points-gate, actuals-backfill, retro-writer, plugin-readme-commands); three were false greens from a tail read or a pre-`git add` run. |
+| Real-run checks by reviewers caught bugs tests missed: actuals-backfill (default transcripts dir derived from the plans root, 0 records; real run then found 38) and plugin-readme-commands (README span was not a real invocation). | agent-usage-lib: implementer reported lint green from a tail read; lint:config-dir was red on a literal path (fixed f34227b). |
+| No task ended with a points delta except retro-writer (-2, est 5 vs 3); MdAPE points 0.0%, so point sizing was sound for this epic. | retro-writer: implementer verified before `git add`, so the retro.md cap pin in test_lean_flow_docs.py went red once tracked (fixed 7f31a5a). |
+| Rulings were explicit with cost-if-wrong: points-required finding deferred to planner-points-gate, scratch-locations `op inject -o <tmp>` kept as the caller's choice, estimate-fields LEAN_KEYS split judged not a weakening. | em-dash-edit-guard: f4b2fb9 alone was red on the new em-dash lint (literal in a test constant), fixed in f45010f; the commit was not green on its own. |
+| Whole-diff review and scope audit found no critical, high or scope gaps against G1-G7 and D1-D16; the two medium findings became task review-seams (2 pt, 0 rounds). | Expected minutes and tokens read "not recorded" for all 24 tasks, so MdAPE minutes and tokens are unmeasured; the epic delivered the fields but could not use them (tasks predate them). |
+| Discovered work was placed as tasks, not dropped: plugin-readme-rules, plugin-readme-commands, review-seams. | The agent-usage hook has not run live: `.logs/agents` records came from the backfill, and live SubagentStart/Stop payload shapes are unverified until /reload-plugins on main. |
+| | Tasks lack a `points` frontmatter key (created before the field); the queued epic epic-and-task-migration-skill fills it. |
 
 ## Improvements
 
-Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+- Code:
+  - plugins/workbench/skills/start-development/scripts (task_cmd._actuals and retro._fill_from_records): the records-or-backfill sequence is written twice; deltas._logs rebuilds the logs path by hand. Tracked in review-seams.
+  - epic-run prose and agent_usage.MARKER: the run marker is defined in both places; review-seams adds a test tying them.
+  - test_ticket_files.py: needed a ruff format commit (879c672) after retro-command; formatting drifted across tasks.
+- Delivered differently:
+  - retro-writer re-pointed from 5 to 3 post-delivery points: smaller than planned because the agent is a prompt file plus a doc, not a subsystem.
+  - Rules 1, 3, 6 and 7 are prose only and the run marker is a prompt convention, as designed; `actuals --backfill` is the fallback when the live hook does not fire. The backfill, not the hook, produced this epic's `.logs/agents` records because the hook loads only after merge and /reload-plugins.
+  - Three tasks (points-required, scratch-locations, em-dash-commit-guard) changed or declined adjacent items by ruling: only the first commit segment's -F is read by the commit guard (declined).
+- Tech debt:
+  - retro backfills per empty task (up to N transcript walks): lives in retro command; remove by a single transcript pass shared across tasks. Accepted at review.
+  - No `points` key and no expected minutes/tokens on this epic's 24 tasks: remove by running epic-and-task-migration-skill.
+  - Live hook payload shapes unverified: remove by one real subagent run after /reload-plugins and checking `.logs/agents`.
+- Workflow:
+  - No history yet (first epic with a RETRO.md), so nothing is marked recurring.
+  - Implementer reports must quote each `[lint:*]` and suite summary line, run after `git add` and commit, not from a tail read or before staging (agent-usage-lib, retro-writer, em-dash-commit-guard); have the reviewer rerun the full lint and `git ls-files` checks instead of trusting the report.
+  - A feature with a default path needs one test without the override flag (actuals-backfill); add it to the implementer checklist.
+  - Reviewers should run the documented command for any README or skill snippet that shows an invocation (plugin-readme-commands).
+  - Create tasks with `--points` and expected minutes/tokens from the start so the next epic's Deltas are measurable.
