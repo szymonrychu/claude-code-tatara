@@ -1,6 +1,6 @@
 ---
 title: mxc service entrypoints
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the connector runs as a migrate step, an API and one singleton bot that refuses a wrong identity"
 files: [src/agents_matrix_connector/cli.py, src/agents_matrix_connector/bot.py, tests/test_cli.py, tests/test_bot_process.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_cli.py tests/test_bot_process.py -q &
 depends_on: [matrix-sync-loop, dispatch-worker, reply-tracker, api-rules-and-settings]
 model: sonnet
 review: full
-verified_head: ""
+verified_head: f9e1156b903abad4cf6735f7e91dcc8f2e703928
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 1275430
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1008403, review 267027"
 ---
 
 # mxc service entrypoints
@@ -62,3 +62,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 ## Notes
 
 - Follow `code/agents-webhook/src/agents_webhook/cli.py` (`run_service`, exit 78) and `agents_common.runtime` (`advisory_singleton`, `LostLock`).
+
+- 2026-10-25 done
