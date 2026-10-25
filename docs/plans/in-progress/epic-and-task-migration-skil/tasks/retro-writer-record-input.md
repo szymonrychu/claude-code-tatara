@@ -1,6 +1,6 @@
 ---
 title: Retro writer record input
-status: in-progress
+status: done
 repo: workbench
 value: retro-writer can write a real retro for epics that have a record but no orchestrator notes
 files: [plugins/workbench/agents/retro-writer.md, plugins/workbench/skills/start-development/references/retro.md, plugins/workbench/skills/start-development/tests/test_templates.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e91ee9a
 points: 2
 expected_minutes: 23
 expected_tokens: 1500000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 227807
+actual_roles: "impl 6, review 3"
+actual_role_tokens: "impl 147520, review 80287"
 ---
 
 # Retro writer record input
@@ -72,3 +72,5 @@ retro-writer can fill a migrated epic's Retro and Improvements from its record.m
 - Fix-as-ac (reuse brief): "retro-writer has no record.md input - agents/retro-writer.md:15-22 - add it".
 - Old epics have record.md (all five) but no orchestrator notes and no rulings beyond rulings.json; record.md is where their review rounds and rulings were written.
 - Keep test_retro_writer_agent's existing needles; add, do not replace.
+
+- 2026-10-25 done
