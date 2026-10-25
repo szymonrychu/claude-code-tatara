@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+Orchestrator notes (2026-10-25): implementer re-pinned (c99cfdc, red: `assert 'db1f482' == 'cedcbbc'`), agents-helmfile PR #19 merged (cc33dd2). Pre-apply diff: agents-web image db1f482 -> cedcbbc, new Service agents-web-test, labels. `mise run apply`: agents-web 0.1.0-main.cedcbbc deployed. Post-apply diff: `No affected releases`. `mise run smoke` last line: `smoke: OK`.
