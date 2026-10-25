@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Finish the chart (design D13; approvals A1, A6):
 
-- `ingress {enabled: false, className, annotations, denySourceRanges, hosts[].paths[] {path, pathType}, tls}` renders an Ingress to the api Service port `http` (as `code/agent-orchestrator/chart/agent-orchestrator/templates/ingress.yaml`). The chart adds no cert-manager annotation of its own: per the URL layout of frontend-decoupling (contract `agents-web-url-layout`), only one Ingress of the host carries it and the others reference the same TLS secret.
+- `ingress {enabled: false, className, annotations, denySourceRanges, hosts[].paths[] {path, pathType}, tls}` renders an Ingress to the api Service port `http` (as `code/agents-orchestrator/chart/agents-orchestrator/templates/ingress.yaml`). The chart adds no cert-manager annotation of its own: per the URL layout of frontend-decoupling (contract `agents-web-url-layout`), only one Ingress of the host carries it and the others reference the same TLS secret.
 - `templates/tests/test-connection.yaml`: a helm test Pod hitting `/healthz` on the api Service.
 - Chart `version: 0.1.0`, `appVersion` set by CI.
 - tests/test_chart_ingress.py asserts the Ingress host, path `/schedules` (Prefix) and TLS secret from values, the deny annotation, no cert-manager annotation by default, and the test hook.
@@ -60,3 +60,5 @@ The chart is complete and publishable; agents-helmfile can route `/schedules` to
 ## Notes
 
 - Prefix `/schedules` owns the service's whole path space per `agents-web-url-layout`; the API answers at `/schedules/api/v1`.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
