@@ -27,7 +27,7 @@ User request (2026-10-25), verbatim, from agents-webhook-microservice: "## agent
 
 - The public GitHub repo szymonrychu/agents-common exists, created by `mise run component:add`, and is the submodule `code/agents-common` (branch main) of the workbench.
 - The public GitHub repo szymonrychu/agents-webhook exists the same way as `code/agents-webhook`.
-- Both scaffolds pass their own `mise run test` and `mise run lint`, and AGENTS.md lists both components with their roles.
+- Both scaffolds pass their smoke test and `mise run lint`, and AGENTS.md lists both components with their roles.
 
 ## Non-goals
 

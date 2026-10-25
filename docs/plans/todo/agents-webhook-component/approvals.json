@@ -1,0 +1,9 @@
+[
+  {
+    "id": "A6",
+    "text": "Creating the public GitHub repos szymonrychu/agents-common and szymonrychu/agents-webhook via workbench:component-add is an outward-facing operation, explicit tasks listed at the agents-webhook-microservice gate (user decision, 2026-10-25).",
+    "decisions": [],
+    "tasks": ["create-agents-common-repo", "create-agents-webhook-repo"],
+    "status": "approved"
+  }
+]
