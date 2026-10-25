@@ -23,18 +23,19 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Service documentation (design D2, D3, D12, D14). Paths are in code/agents-webhook.
+Service documentation (design D2, D3, D7, D12, D14, D16, D18; re-plan 2026-10-25). Paths are in code/agents-webhook.
 
-- README sections: `## Overview` (what, the three processes, the queue), `## Configuration` (every `WEBHOOK_*` variable with default, from `settings.py`), `## Sources` (GitHub, GitLab, Grafana setup: URL `https://lab.szymonrichert.pl/webhooks/<source>`, events to select, where the secret goes), `## Statuses and reasons` (the five statuses and every reason), `## Security` (public ingest without SSO in its own Deployment, constant-time checks, 5 MiB cap, prompt framing, the orchestrator service token), `## Commands`, `## Helm chart`, `## Development` (mise tasks); the existing `## API` stays.
-- MEMORY.md dated 2026-10-25 lines: dedup semantics (D5), limits (D6), the ingest/api split and why (D2), the marker idempotency (D8).
-- AGENTS.md: points at mise test/lint and names the highest-risk surface (public ingest, prompt framing).
-- `tests/test_readme_config.py`: every settings field appears in README Configuration as its env name; every status and reason constant appears in README Statuses and reasons.
+- README sections: `## Overview` (what, the three processes, the queue), `## Configuration` (every `WEBHOOK_*` variable with default, from `settings.py`), `## Endpoints` (the five types and which provider events each accepts; creating one in the UI or API; the URL `https://lab.szymonrichert.pl/webhook/<suffix>`; how to configure basic auth in GitHub (credentials in the payload URL), GitLab (credentials in the URL) and Grafana (contact point webhook username and password); the password is shown once, rotate to replace it), `## Agent reuse` (the preset field `reuse_running_agent`, what counts as running, ordering, the fallback when the cluster goes away), `## Statuses and reasons` (the five statuses and every reason), `## Security` (public ingest without SSO in its own Deployment, scrypt password hashes, constant-time checks, identical 401 for unknown suffixes and wrong credentials, the failed-auth limit and `WEBHOOK_TRUSTED_PROXIES`, 5 MiB cap, prompt framing, the orchestrator service token), `## Commands`, `## Helm chart`, `## Development` (mise tasks); the existing `## API` stays.
+- MEMORY.md dated 2026-10-25 lines: per-webhook endpoints replace source secrets and mappings (D3, D7), dedup semantics (D5), agent reuse opt-in (D16), limits (D6), the ingest/api split and why (D2), the marker idempotency (D8).
+- AGENTS.md: points at mise test/lint and names the highest-risk surface (public ingest and its basic auth, prompt framing).
+- `tests/test_readme_config.py`: every settings field appears in README Configuration as its env name; every status and reason constant appears in README Statuses and reasons; every endpoint type appears in README Endpoints.
 
 ## Acceptance conditions
 
-- AC1: every WEBHOOK_ variable and every status and reason is documented [evidence: command:uv run pytest tests/test_readme_config.py -q]
-- AC2: README has the Security section naming the public ingest exposure [evidence: doc-section:README.md#Security]
-- AC3: MEMORY records the dedup, limits, split and idempotency decisions [evidence: command:grep -q "2026-10-25" MEMORY.md]
+- AC1: every WEBHOOK_ variable, every status and reason and every endpoint type is documented [evidence: command:uv run pytest tests/test_readme_config.py -q]
+- AC2: README has the Security section naming the public ingest exposure and the credential handling [evidence: doc-section:README.md#Security]
+- AC3: README has the Agent reuse section [evidence: doc-section:README.md#Agent reuse]
+- AC4: MEMORY records the endpoint, dedup, reuse, limits, split and idempotency decisions [evidence: command:grep -q "2026-10-25" MEMORY.md && grep -qi "reuse" MEMORY.md]
 
 ## Files
 
@@ -58,3 +59,5 @@ A new operator can wire a forge or Grafana from the README alone.
 ## Notes
 
 - Doc task plus one doc test.
+
+- 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
