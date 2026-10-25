@@ -1,6 +1,6 @@
 ---
 title: Review seams
-status: todo
+status: done
 repo: workbench
 value: "One records-or-backfill path and one marker contract, so capture cannot drift silently"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/lib/workbench.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/task_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/retro.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py, plugins/workbench/skills/epic-run/tests/test_epic_run_structure.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/skills/start-development/tests/test_ticket_deltas.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [retro-command, deltas-command, actuals-backfill]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f0bdea7
 ---
 
 # Review seams
@@ -60,3 +60,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Estimate: 2 points
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
