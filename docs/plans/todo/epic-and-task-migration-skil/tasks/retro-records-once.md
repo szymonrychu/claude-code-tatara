@@ -32,7 +32,7 @@ Design D6: One transcript pass per epic (verbatim):
 `agent_usage.records_by_task(epic, logs_dir, transcripts_dir, backfill=True, names=None)` reads the
 epic's records once, backfills at most once when a task wanted is missing, reads again once, and returns
 `{task: [records]}`. `retro._fill_from_records` uses it instead of `records_for` per task (each empty task
-walked every transcript: 23 x 149 for epic-integration-worktrees), and migrate uses it with `names`.
+walked every transcript: 23 x 1042 for epic-integration-worktrees, 1042 transcripts being on disk), and migrate uses it with `names`.
 `records_for` stays for the single task of `ticket.py task --status done`.
 
 Design D7: Delivery order fallback (Q7) (verbatim):
@@ -43,6 +43,8 @@ committer date of their `verified_head`, oldest first; then the remainder in dep
 init-leaves-a-green-tree/license-every-plugin) puts the task in the remainder, never an error.
 
 Reuse brief fix-as-ac (verbatim): "hot spot: retro._fill_from_records calls records_for per task (C/retro.py:139-142); each empty task triggers a full rglob+parse of every transcript (AU:254,302): O(tasks x transcripts), 23x149 for epic-integration-worktrees. Index once per epic."
+
+Correction (interrogate item 1): 1042 transcripts are on disk (887 under <session>/subagents/workflows/wf_*/), so the cost is 23 x 1042.
 
 Reuse brief fix-as-ac (verbatim): "verified_head \"$(see...\" non-sha - done/init-leaves-a-green-tree/tasks/license-every-plugin.md - fallback tolerates it"
 
@@ -92,3 +94,5 @@ housekeeping-rules-estimates RETRO.md, Tech debt (verbatim): "retro backfills pe
 - Test hint for AC2: drive `ticket.main([...])` in-process with `agent_usage.parse_marker` monkeypatched to count calls; set commit dates with `GIT_COMMITTER_DATE` for AC3.
 - Fixtures (reuse brief): repo and root (conftest), mk_epic, mk_task, set_meta, commit_all (ticket_repo_helpers.py:36,45,96,83); setup_epic in test_ticket_retro.py.
 - Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.
+
+- 2026-10-25 amended: interrogate item 1: 1042 transcripts on disk, not 149; the Notes cost figure reads 23 x 1042, not 23 x 149; ACs unchanged
