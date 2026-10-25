@@ -26,10 +26,10 @@ actual_role_tokens: ""
 Add release `agents-schedule` (design D13, D14; approval A6): chart `oci://harbor.szymonrichert.pl/charts/agents-schedule` (version pinned by `deploy-schedule`; `0.1.0` here), `needs: [agents/agents-schedule-db]`, labels as the db. `values/agents-schedule/common.yaml`:
 
 - `postgres.existingSecret: agents-schedule-db-cluster-app`, `existingSecretKey: uri`.
-- `orchestrator.url: http://agent-orchestrator-services:8002` (the orchestrator's service port, contract `orch-services-service`); `orchestrator.token` comes from SOPS `values/agents-schedule/default.secrets.yaml` (task schedule-service-token).
+- `orchestrator.url: http://agents-orchestrator-services:8002` (the orchestrator's service port, contract `orch-services-service`); `orchestrator.token` comes from SOPS `values/agents-schedule/default.secrets.yaml` (task schedule-service-token).
 - `env.SCHED_ALLOWED_CIDRS: 127.0.0.1/32` (only the sidecar).
-- `components.api.podAnnotations`: the oauth2-proxy injector annotations with the shared secret `agent-orchestrator-proxy` (as `values/agent-orchestrator/common.yaml`).
-- `ingress`: host `lab.szymonrichert.pl`, path `/schedules` Prefix, TLS secret `agent-orchestrator-tls`, no cert-manager annotation (contract `agents-web-url-layout`), the node-IP `denySourceRanges` the orchestrator uses.
+- `components.api.podAnnotations`: the oauth2-proxy injector annotations with the shared secret `agents-orchestrator-proxy` (as `values/agents-orchestrator/common.yaml`).
+- `ingress`: host `lab.szymonrichert.pl`, path `/schedules` Prefix, TLS secret `agents-orchestrator-tls`, no cert-manager annotation (contract `agents-web-url-layout`), the node-IP `denySourceRanges` the orchestrator uses.
 
 ## Acceptance conditions
 
@@ -61,3 +61,5 @@ The schedule service is declared behind the shared SSO under `/schedules` on the
 ## Notes
 
 - Never the orchestrator's port 8000 (403 from its CIDR allowlist); port 8002 takes bearer service tokens (`orch-service-tokens`).
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
