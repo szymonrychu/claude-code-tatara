@@ -34,7 +34,7 @@ User request (2026-10-25), verbatim, from agents-schedule-microservice: "## agen
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 5 agent-min | Critical path: 5 min | Expected wall at P=1.5: 0.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 5 min
 
 ## Review
 
