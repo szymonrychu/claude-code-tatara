@@ -1,6 +1,6 @@
 ---
 title: common run tracker
-status: in-progress
+status: done
 repo: agents-common
 value: "a triggered run starts exactly one cluster and one prompt even across restarts, and ends handled or failed"
 files: [src/agents_common/runs.py, tests/test_runs.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_runs.py -q && uv run ruff check . && uv run ru
 depends_on: [common-orchestrator-client, common-settings-runtime]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 7ae9231
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 625210
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 545416, review 79794"
 ---
 
 # common run tracker
@@ -63,3 +63,5 @@ A service implements three guarded store methods and gets crash-safe dispatch an
 ## Notes
 
 - The orchestrator message has no idempotency key; the marker plus "the cluster belongs to this run" (deterministic slug) is the idempotency (discovery fix-as-ac). No turn-completion callback exists; polling is the design (do-not-build).
+
+- 2026-10-25 done
