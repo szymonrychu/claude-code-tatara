@@ -1,7 +1,7 @@
 ---
 title: agents-webhook microservice
 blockers: [frontend-decoupling, agents-webhook-component, agent-init-scripts, cluster-scaling]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-common, agents-webhook, agent-orchestrator, agents-helmfile, agents-web]
 created: 2026-10-25
