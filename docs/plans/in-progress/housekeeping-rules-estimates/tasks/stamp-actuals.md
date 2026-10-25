@@ -9,6 +9,11 @@ depends_on: [run-marker-points, agent-usage-hook, points-required]
 model: opus
 review: ""
 verified_head: fb1bd5b
+points_actual: 5
+actual_minutes: 12
+actual_tokens: 2552072
+actual_roles: "impl 10, review 3"
+actual_role_tokens: "impl 2365689, review 186383"
 ---
 
 # Stamp actuals
@@ -66,5 +71,7 @@ Marking a task done records its measured time and tokens and its post-delivery p
 - Fix-as-ac (brief): done epics are read-only for task edits (task_cmd.py:23); actuals are stamped at `task --status done`, before `move done`.
 - Values load as strings; write integers through dump.
 - ticket.py already imports workbench from scripts/lib (ticket.py:28-30); import agent_usage the same way.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
