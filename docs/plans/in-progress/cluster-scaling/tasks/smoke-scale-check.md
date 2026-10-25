@@ -1,6 +1,6 @@
 ---
 title: smoke scale check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live smoke proves scaling works on the deployed orchestrator
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

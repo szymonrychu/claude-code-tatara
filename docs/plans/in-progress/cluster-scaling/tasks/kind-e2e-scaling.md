@@ -1,6 +1,6 @@
 ---
 title: kind e2e scaling
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: CI proves on a real cluster that agents join and leave without restarting the others
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]

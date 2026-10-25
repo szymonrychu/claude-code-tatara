@@ -1,6 +1,6 @@
 ---
 title: scale down drain
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: shrinking a hive never cuts an agent off mid-turn
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/settings.py, README.md, MEMORY.md, tests/test_reconciler.py]

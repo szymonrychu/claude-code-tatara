@@ -1,6 +1,6 @@
 ---
 title: deploy pin scaling
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace runs cluster scaling
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]

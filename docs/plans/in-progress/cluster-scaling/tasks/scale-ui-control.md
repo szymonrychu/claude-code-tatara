@@ -1,6 +1,6 @@
 ---
 title: scale ui control
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: users grow or shrink a cluster from the cluster view within its cap
 files: [frontend/src/chat/ScaleControl.tsx, frontend/src/chat/ScaleControl.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/api/client.ts]

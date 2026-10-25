@@ -1,6 +1,6 @@
 ---
 title: agents strip leaving mark
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: users see which agents are leaving and which wait for their turn to finish
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx]

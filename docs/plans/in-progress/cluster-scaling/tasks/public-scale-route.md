@@ -1,6 +1,6 @@
 ---
 title: public scale route
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: users and headless callers scale a cluster through a documented API
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_api_scale.py]

@@ -1,6 +1,6 @@
 ---
 title: scale replicas repo
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "one guarded writer changes a running cluster's agent count without rolling pods"
 files: [src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py, MEMORY.md]

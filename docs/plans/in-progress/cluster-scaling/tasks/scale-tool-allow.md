@@ -1,6 +1,6 @@
 ---
 title: scale tool allow
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "only scalable clusters offer the scale tool, so static and alone agents never see it"
 files: [src/agent_orchestrator/k8s/on_start.py, tests/test_render.py]

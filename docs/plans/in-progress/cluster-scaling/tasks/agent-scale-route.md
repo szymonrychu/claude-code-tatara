@@ -1,6 +1,6 @@
 ---
 title: agent scale route
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: the leader agent grows or shrinks its own hive with a tool
 files: [src/agent_orchestrator/api/agent.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_agent_scale.py]
