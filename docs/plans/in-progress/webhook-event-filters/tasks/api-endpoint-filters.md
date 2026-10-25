@@ -1,6 +1,6 @@
 ---
 title: api endpoint filters
-status: in-progress
+status: done
 repo: agents-webhook
 value: "filters are set on create, replaced later and previewed against an example through the documented API"
 files: [src/agents_webhook/api/schemas.py, src/agents_webhook/api/routes.py, tests/test_api.py, README.md, openapi.json]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_api.py tests/test_readme_api.py -q && uv run r
 depends_on: [endpoint-filters-storage, ingest-applies-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3685ee0
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 7
+actual_tokens: 1536747
+actual_roles: "impl 7, review 4"
+actual_role_tokens: "impl 986455, review 550292"
 ---
 
 # api endpoint filters
@@ -71,3 +71,5 @@ Expose endpoint filters in the UI API (design D6, D10). User decision: "Configur
 - Validate filters in the route with the endpoint type; pass the pydantic model as `model_dump()` into the repo, which validates again (single source `filters.validate`).
 - Existing preview tests send `template`; they must keep passing unchanged (the response gains `filters: null`, `prompt` stays a string).
 - `FilterRule.field` stays a plain `str` in the schema; the per-type check is `filters.validate`'s, so the error names the type.
+
+- 2026-10-25 done
