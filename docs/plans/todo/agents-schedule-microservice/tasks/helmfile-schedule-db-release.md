@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add release `agents-schedule-db` (design D14; approval A6), the pattern of `agent-orchestrator-db` in `helmfile.yaml.gotmpl`: namespace `agents`, chart `cnpg/cluster` 0.9.0, `force: false`, timeout 600, labels `purpose: agents`, `application: agents-schedule`, values `values/common.yaml` and `values/agents-schedule-db/common.yaml` (one instance, storage as the orchestrator db, initdb database `schedule` owner `schedule`). The CNPG app Secret is `agents-schedule-db-cluster-app` with key `uri`.
+Add release `agents-schedule-db` (design D14; approval A6), the pattern of `agents-orchestrator-db` in `helmfile.yaml.gotmpl`: namespace `agents`, chart `cnpg/cluster` 0.9.0, `force: false`, timeout 600, labels `purpose: agents`, `application: agents-schedule`, values `values/common.yaml` and `values/agents-schedule-db/common.yaml` (one instance, storage as the orchestrator db, initdb database `schedule` owner `schedule`). The CNPG app Secret is `agents-schedule-db-cluster-app` with key `uri`.
 
 ## Acceptance conditions
 
@@ -54,3 +54,5 @@ Applying the helmfile creates the schedule database next to the orchestrator's.
 ## Notes
 
 - Creating a database is additive; nothing existing changes. Listed at the gate with the apply.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
