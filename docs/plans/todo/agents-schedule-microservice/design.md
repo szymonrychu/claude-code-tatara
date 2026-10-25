@@ -244,6 +244,7 @@ none
 - Q5: Limits: at most 3 scheduled runs in progress overall and 1 per schedule, the rest waiting FIFO, and a run stuck over 1 hour marked failed (timeout)? [recommended: yes]
 - Q6: The Schedules page lists schedules with enable/disable, run now, edit and delete, and shows each schedule's recent runs with status and a link to the cluster? [recommended: yes]
 - Q7: Menu order Clusters, Webhooks, Schedules, Presets (Schedules directly below Webhooks)? [recommended: yes]
+- Q8: A run is handled when its first turn completes; the schedule service never deletes clusters and cleanup comes from the preset's autoclose (configuration-improvements)? [recommended: yes]
 
 ## Irreversible operations in scope
 
