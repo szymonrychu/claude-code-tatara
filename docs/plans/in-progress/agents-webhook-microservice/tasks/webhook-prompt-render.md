@@ -60,3 +60,6 @@ Every prompt frames the event as escaped data.
 - Parity: `TN/internal/prompt/bundle.go` L220-268.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
+Orchestrator ruling for this task: the endpoint prompt template is Jinja2 rendered in jinja2.sandbox.SandboxedEnvironment (autoescape off, StrictUndefined, no file loader, bounded output size), with a `from_json` filter (parses a JSON string into an object; a parse error is a render error with the message) alongside the built-in `tojson`; the template context is the normalized event (and the raw payload as `payload`). Render errors never crash the worker: the event fails with reason `template_error`. This task delivers: the sandboxed renderer, the `from_json` filter, template syntax validation reused by the API, and tests (filter, sandbox refuses attribute escapes such as `{{ ().__class__ }}`, StrictUndefined error, size bound).

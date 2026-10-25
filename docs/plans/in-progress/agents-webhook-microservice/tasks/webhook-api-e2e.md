@@ -68,3 +68,6 @@ API-only e2e for headless parity (design D14, user decision; re-plan 2026-10-25:
 - Run the 429 case last or with its own client address, so it does not lock out the other cases.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
+Orchestrator ruling for this task: the API e2e also covers template preview (a template using `from_json` against an example payload) and an endpoint created with a template whose rendered prompt reaches the cluster as its first message.

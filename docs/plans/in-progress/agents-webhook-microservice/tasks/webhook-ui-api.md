@@ -72,3 +72,6 @@ Everything the UI does is a documented HTTP call.
 - The api is the only writer of `endpoints`; it never writes `events`. A password leaves the service only in the create and rotate responses.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
+Orchestrator ruling for this task: endpoint create validates the template syntax with the shared renderer (422 naming `prompt_template` and the Jinja error line); add `POST /webhooks/api/v1/templates/preview` taking `{template, type, example}` (example = a JSON payload as the provider would send it; it is normalized for the given type, then rendered) and returning `{prompt}` or a 422 with the render error; preview never stores anything and is behind SSO like the rest of the UI API. Tests for both.

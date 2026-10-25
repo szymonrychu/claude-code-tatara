@@ -59,3 +59,6 @@ The API is documented and drift-tested.
 ## Notes
 
 - Pattern: `code/agent-orchestrator/src/agent_orchestrator/api/openapi.py`, `tests/test_readme_api.py`.
+
+User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
+Orchestrator ruling for this task: document the template language (sandboxed Jinja2, the `from_json` filter, the context variables per type, `template_error`) and the preview route in README and openapi.

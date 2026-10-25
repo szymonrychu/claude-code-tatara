@@ -66,3 +66,6 @@ The Webhooks page lists endpoints and creates, rotates and deletes them, showing
 - Never keep the password in component state after the credentials dialog closes, and never in the list.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
+Orchestrator ruling for this task: the endpoint create dialog has a multiline Jinja2 template editor plus an "Example JSON" editor and a Preview button calling `POST /webhooks/api/v1/templates/preview`, showing the rendered prompt or the error; a per-type sample payload can prefill the example. Tests.
