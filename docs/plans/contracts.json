@@ -115,7 +115,8 @@
     "owner": "agent-orchestrator",
     "file": "code/agent-orchestrator/src/agent_orchestrator/settings.py",
     "consumers": [
-      "agents-helmfile"
+      "agents-helmfile",
+      "configuration-improvements"
     ],
     "note": "ORCH_* env names: ORCH_DATABASE_URL, ORCH_MASTER_KEY(_FILE), ORCH_NAMESPACE (one namespace, no ORCH_CLUSTERS_NAMESPACE), ORCH_AGENT_IMAGE, ORCH_AGENT_IMAGES, ORCH_ALLOWED_CIDRS, ORCH_CLAUDE_SECRET_NAME, ORCH_ANY_MCP_REF, ORCH_ANY_MCP_CONFIG_FILE, ORCH_DISCARD_HOOK_COMMAND, ORCH_DISCARD_HOOK_URL, ORCH_RETRY_BACKOFF_*; set by the chart's settings ConfigMap"
   },
