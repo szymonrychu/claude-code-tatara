@@ -1,6 +1,6 @@
 ---
 title: Minutes to points
-status: in-progress
+status: done
 repo: workbench
 value: "Old tasks' minute estimates map to storypoints by one tested rule"
 files: [plugins/workbench/scripts/lib/calibration.py, plugins/workbench/scripts/tests/test_calibration.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 77abb7a
 points: 1
 expected_minutes: 11
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 183209
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 124825, review 58384"
 ---
 
 # Minutes to points
@@ -75,3 +75,5 @@ One tested function maps a legacy minutes estimate to its storypoints bucket; mi
 - Estimate: 1 point: one pure function and a table test.
 - Reuse (reuse brief): calibration.SEED and POINTS (calibration.py:19,14).
 - The name must not contain `estimate`: the retirement pin in test_ticket_retired_run_loop.py forbids the `estimate` subcommand and any `estimator` file.
+
+- 2026-10-25 done
