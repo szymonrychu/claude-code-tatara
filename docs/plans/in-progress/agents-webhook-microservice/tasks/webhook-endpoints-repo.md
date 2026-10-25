@@ -1,6 +1,6 @@
 ---
 title: webhook endpoints repo
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "each webhook gets its own URL, type, preset and basic-auth credentials stored as hashes"
 files: [src/agents_webhook/credentials.py, src/agents_webhook/db/__init__.py, src/agents_webhook/db/endpoints.py, tests/test_endpoints_repo.py]
@@ -51,17 +51,20 @@ Per-webhook endpoints and their credentials (design D3, D7, D18; user request 20
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-endpoints` (internal): `agents_webhook.credentials.{generate_suffix, generate_username, generate_password, hash_password, verify_password, parse_basic, DUMMY_HASH}`, `agents_webhook.db.endpoints.{Endpoint, EndpointIn, Credentials, SuffixTaken, create, rotate, authenticate, get, get_by_suffix, list_all, delete}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Endpoints exist in the database with a unique suffix, a type, a preset and hashed credentials, and a request can be authenticated against them in constant time.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_endpoints_repo.py`; run `uv run pytest tests/test_endpoints_repo.py -q`: fail.
+- Green: `credentials.py`, then `db/endpoints.py`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The api is the only writer of `endpoints`; ingest only reads.
+- scrypt from the standard library (`hashlib.scrypt`), no new dependency.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
