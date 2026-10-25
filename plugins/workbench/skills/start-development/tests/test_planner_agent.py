@@ -111,6 +111,14 @@ def test_planner_discipline():
         assert s in t, s
 
 
+def test_planner_reads_retro_history():
+    t = " ".join(_text().split())
+    assert "ticket.py retro --history" in t
+    assert "Research inputs" in t
+    assert "proposals" in t
+    assert "never edit ROADMAP.md" in t
+
+
 def test_planner_gives_points():
     t = _text()
     assert "--points" in t

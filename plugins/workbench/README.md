@@ -73,9 +73,9 @@ Every agent and script goes through this, so a new tree needs no code change.
 
 ## Agents
 
-Read-only, except `record-writer` (one file, the epic record), `implementer` (code in the epic's
-integration worktree), `planner` (design.md and task files), `worktree-merger` (a conflicted rebase)
-and the `research-*` agents (a brief at their output path).
+Read-only, except `record-writer` (one file, the epic record), `retro-writer` (one file, RETRO.md),
+`implementer` (code in the epic's integration worktree), `planner` (design.md and task files),
+`worktree-merger` (a conflicted rebase) and the `research-*` agents (a brief at their output path).
 Mechanical ones on sonnet (they exist to keep large output out of the main context);
 research ones on opus (they exist for judgement). The reviewers carry no model of their own:
 the caller sets it per call.
@@ -90,6 +90,7 @@ the caller sets it per call.
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
 | `record-writer` | sonnet | fills the record template for a finished epic from its task files and git log, one file |
+| `retro-writer` | sonnet | fills RETRO.md's Retro table and Improvements for a finished epic from the notes, the deltas and the retro history, one file |
 | `implementer` | sonnet | implements one task test-first in the epic's integration worktree and returns `complete`, `undelivered`, `discovered`; fix rounds continue it |
 | `reviewer` | per call | one reviewer per task: verify on HEAD, every acceptance condition, debt markers, then quality |
 | `panel-reviewer` | per call | one member of an `interrogate` review panel, one per model |
@@ -133,6 +134,7 @@ every pass, so routine work doesn't pay for them:
 | `start-development` phase 6 | `worktree-merger` | `ticket.py close` hit a rebase conflict |
 | `references/merge-hosts.md` | `scm-shepherd` | a pipeline failed and the cause is not in the log tail |
 | `start-development` phase 7 | `record-writer` | always: writes the epic record |
+| `start-development` phase 7 | `retro-writer` | always: fills RETRO.md's Retro table and Improvements after `ticket.py retro` |
 | `interrogate` | `panel-reviewer` | a review panel, one agent per model |
 | `git-submodules-refresh` | `submodule-auditor` | checkout state unknown before refreshing |
 

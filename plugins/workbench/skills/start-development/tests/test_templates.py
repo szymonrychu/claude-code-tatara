@@ -108,11 +108,66 @@ def test_record_writer_agent():
     assert "templates/record.md" in body and "ticket.py path" in body
 
 
+def test_retro_writer_agent():
+    t = read(ROOT / "agents" / "retro-writer.md")
+    assert t.isascii()
+    m = re.match(r"---\n(.*?)\n---\n(.*)", t, re.S)
+    assert m
+    fm, body = m.groups()
+    assert re.search(r"^name: retro-writer$", fm, re.M)
+    assert re.search(r"^model: sonnet$", fm, re.M)
+    assert re.search(r"^description: ", fm, re.M)
+    tools = re.search(r"^tools: \[(.*)\]$", fm, re.M).group(1).split(", ")
+    assert "Edit" in tools and "Write" not in tools
+    flat = " ".join(body.split())
+    for needle in (
+        "## Inputs you are given",
+        "The epic slug",
+        "orchestrator's notes",
+        "review rounds",
+        "verification tail",
+        "ticket.py retro --history",
+        "ticket.py path <epic> retro",
+        "the only file you write",
+        "<!-- retro:generated:begin -->",
+        "<!-- retro:generated:end -->",
+        "never edit the generated block",
+        "| Went well | Went bad / could be improved |",
+        "potential improvements in the code",
+        "delivered differently",
+        "tech debt",
+        "workflow",
+        "recur",
+        "100 words",
+    ):
+        assert needle in flat, needle
+
+
+def test_retro_reference():
+    t = read(SD / "references" / "retro.md")
+    assert t.isascii()
+    flat = " ".join(t.split())
+    for needle in (
+        "ticket.py move <epic> done",
+        "ticket.py retro <epic>",
+        "retro-writer",
+        "record-writer",
+        "ticket.py retro --history",
+        "workflow",
+        "planner",
+        "Research inputs",
+        "Bootstrap",
+    ):
+        assert needle in flat, needle
+
+
 def test_plain_ascii_punctuation():
     for p in [
         *(SD / "templates").glob("*.md"),
         SD / "SKILL.md",
         ROOT / "agents" / "record-writer.md",
+        ROOT / "agents" / "retro-writer.md",
+        SD / "references" / "retro.md",
     ]:
         assert not re.search(r"[\u2014\u2013\u2018\u2019\u201c\u201d\u2192]", read(p)), p
 

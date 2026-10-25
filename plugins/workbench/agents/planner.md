@@ -31,6 +31,10 @@ its acceptance conditions, and nothing else.
 - `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/design.md` and
   `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/task.md`.
 - The epic README: its Goals and Non-goals are what the tasks must cover.
+- `ticket.py retro --history`: the Retro and Improvements of the most recently done
+  epics. Place each proposal that bears on this epic, recurring workflow ones first,
+  in design.md's Research inputs with the epic it came from and the task that acts on
+  it. Read proposals only; never edit ROADMAP.md, which is human-owned.
 
 `ticket.py` below is
 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`.

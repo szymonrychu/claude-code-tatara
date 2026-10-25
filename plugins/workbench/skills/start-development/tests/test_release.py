@@ -95,7 +95,14 @@ def test_readme_dispatch_phases_match_skill():
         assert agent not in packs, f"core README names pack agent {agent}"
         assert f"## Phase {phase} - " in skill, phase
         assert agent in skill, (agent, phase)
-    for agent in ("planner", "implementer", "reviewer", "scope-auditor", "record-writer"):
+    for agent in (
+        "planner",
+        "implementer",
+        "reviewer",
+        "scope-auditor",
+        "record-writer",
+        "retro-writer",
+    ):
         assert agent in {a for _, a in rows}, agent
 
 
