@@ -1,6 +1,6 @@
 ---
 title: Migrate this repo
-status: in-progress
+status: done
 repo: workbench
 value: "This repository's done epics carry the points scheme and a retro, so new estimates calibrate from real history"
 files: [docs/plans/done/epic-integration-worktrees, docs/plans/done/flow-speed-and-token-optimiz, docs/plans/done/init-leaves-a-green-tree, docs/plans/done/lean-development-flow, docs/plans/done/template-update-skill-and-in, docs/plans/done/housekeeping-rules-estimates]
@@ -8,15 +8,15 @@ verify: "mise run test && mise run lint"
 depends_on: [epic-migrate-skill, deltas-legacy-retired]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3c5c5a5
 points: 5
 expected_minutes: 57
 expected_tokens: 3750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 235990
+actual_roles: review 7
+actual_role_tokens: review 235990
 ---
 
 # Migrate this repo
@@ -93,3 +93,5 @@ The six done epics are on the points scheme with a filled RETRO.md each, `deltas
 - The verify is the full gate on purpose: this is the epic's last task.
 
 - 2026-10-25 amended: interrogate items 1 and 7: step 1's dry run walks 1042 transcripts (887 workflow ones); AC1-AC7 run the integration tree's ticket.py against main's docs/plans and are the real check, the verify guards the code only
+
+- 2026-10-25 done
