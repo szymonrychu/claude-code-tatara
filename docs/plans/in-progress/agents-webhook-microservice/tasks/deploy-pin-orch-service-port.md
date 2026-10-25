@@ -1,6 +1,6 @@
 ---
 title: deploy pin orch service port
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployed orchestrator serves the service port and the preset reuse field
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py
 depends_on: [orch-chart-services-port, orch-service-port-e2e, orch-service-port-docs, orch-preset-reuse-field, helmfile-service-token]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 50c82d8
 points: 1
 expected_minutes: 5
 expected_tokens: 703360
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 382565
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 230499, review 152066"
 ---
 
 # deploy pin orch service port
@@ -63,3 +63,5 @@ agents-helmfile pins the orchestrator build that serves the service port and the
 - frontend-decoupling, cluster-scaling and configuration-improvements also pin this release; take the latest orchestrator main merge that contains this epic.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
