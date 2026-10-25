@@ -1,6 +1,6 @@
 ---
 title: scaffold project and cli
-status: in-progress
+status: done
 repo: agents-schedule
 value: "every later task gets a Python project that builds, lints and tests, and the `sched` command its entrypoints hang on"
 files: [pyproject.toml, uv.lock, .mise.toml, src/agents_schedule/__init__.py, src/agents_schedule/cli.py, tests/test_cli.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_cli.py -q && uv run ruff check . && u
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 827b2794d0fb890cbdcb82b7b13da095a5f340aa
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 396283
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 282676, review 113607"
 ---
 
 # scaffold project and cli
@@ -74,3 +74,5 @@ Create the Python project at the root of code/agents-schedule (design D1, D2, D4
 - The agents-common tag is the one `agents-common-lib` names (agents-webhook-microservice task common-release-v0-1-0); this epic runs after it (README blockers).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
