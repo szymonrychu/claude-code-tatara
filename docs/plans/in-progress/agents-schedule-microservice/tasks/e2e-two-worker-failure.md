@@ -1,6 +1,6 @@
 ---
 title: e2e two worker failure
-status: todo
+status: done
 repo: agents-schedule
 value: the kind e2e is a reliable gate for exactly-once firing
 files: [tests/e2e/test_e2e_kind.py, scripts/e2e.sh, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "bash -n scripts/e2e.sh && uv run --frozen pytest tests/e2e/test_e2e_kin
 depends_on: [ci-image-checks-and-worker-t]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 4d085b85d05f8ab542e4a4ad3fd9794cd1089e82
 points: 2
 expected_minutes: 5
 expected_tokens: 502921
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 1326060
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 1264287, review 61773"
 ---
 
 # e2e two worker failure
@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done: PR #1 CI e2e green on 4d085b8
