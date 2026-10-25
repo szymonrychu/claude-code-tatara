@@ -1,6 +1,6 @@
 ---
 title: room and event discovery
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "bridged Messenger DMs and groups, plain Matrix rooms and bridge spaces are told apart, and only real text messages count"
 files: [src/agents_matrix_connector/discovery.py, tests/test_discovery.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_discovery.py -q && uv run ruff check 
 depends_on: [mxc-scaffold-and-cli]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 7a88b5e071f21d4c09c639b681d105ac3fb556fc
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 2
+actual_tokens: 219920
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 151599, review 68321"
 ---
 
 # room and event discovery
@@ -70,3 +70,5 @@ Given a mautrix-meta portal's state, `classify` says `dm` or `group` with the Fa
 
 - Ported semantics from Hermes `roomadmin.py` `room_kind`, `display_name`, `is_message_request` (ConfigMap `ai/hermes-agent-files`; design Research inputs).
 - Ghost ids look like `@facebook_100000241356957:szymonrichert.pl`; the bridge bot is `@facebookbot:szymonrichert.pl`.
+
+- 2026-10-25 done
