@@ -1,6 +1,6 @@
 ---
 title: common db helpers
-status: in-progress
+status: done
 repo: agents-common
 value: "both trigger services get one tested pool, migrator, guarded-transition and test-DB layer instead of copies"
 files: [src/agents_common/db/__init__.py, src/agents_common/db/pool.py, src/agents_common/db/migrate.py, src/agents_common/db/queue.py, src/agents_common/testing.py, tests/conftest.py, tests/test_db.py, pyproject.toml]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_db.py -q && uv run ruff check . && uv run ruff
 depends_on: [common-scaffold]
 model: ""
 review: ""
-verified_head: ""
+verified_head: cf6e8e8
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 253329
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 169537, review 83792"
 ---
 
 # common db helpers
@@ -70,3 +70,5 @@ Any service can migrate its own `migrations/` package, change queue rows only th
 
 - Sources: `code/agent-orchestrator/src/agent_orchestrator/db/{pool,migrate,queue}.py`, `tests/conftest.py`. Keep their behaviour; do not add an ORM (do-not-build).
 - Docker is needed for testcontainers; the 2026-10-25 local baseline had Postgres readiness failures, CI is the fallback.
+
+- 2026-10-25 done
