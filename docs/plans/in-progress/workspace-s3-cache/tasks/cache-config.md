@@ -1,6 +1,6 @@
 ---
 title: cache config
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: presets and sessions can carry a validated cache setting and the orchestrator reads generic S3 settings
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/spec.py, tests/test_cache_config.py]

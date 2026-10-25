@@ -1,6 +1,6 @@
 ---
 title: cache restore runner
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a cached session starts from the previous session's workspace before init and Claude run"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, tests/test_cache_restore.py, tests/fakes/fake_kube.py]

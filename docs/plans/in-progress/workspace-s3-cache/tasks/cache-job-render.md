@@ -1,6 +1,6 @@
 ---
 title: cache job render
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "restore and save Jobs run hardened with no credential, and agent pods never see one"
 files: [src/agents_orchestrator/reconciler/cache.py, tests/test_cache_jobs_render.py]

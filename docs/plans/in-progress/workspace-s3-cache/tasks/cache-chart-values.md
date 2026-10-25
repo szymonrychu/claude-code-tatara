@@ -1,6 +1,6 @@
 ---
 title: cache chart values
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "operators configure any S3 store through chart values, with credentials on the reconciler only"
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, chart/agents-orchestrator/README.md, chart/agents-orchestrator/ci/lint-values.yaml, tests/test_chart_cache.py]

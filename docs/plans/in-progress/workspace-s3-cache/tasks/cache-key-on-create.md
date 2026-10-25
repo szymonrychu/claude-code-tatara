@@ -1,6 +1,6 @@
 ---
 title: cache key on create
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "every cached session gets the user's key or a stable preset-derived one, and clients see whether caching is available"
 files: [src/agents_orchestrator/spec.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/api/schemas.py, openapi.json, tests/test_api_cache.py]

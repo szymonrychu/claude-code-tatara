@@ -2,7 +2,7 @@
 title: workspace s3 cache
 blockers: [orchestrator-rename-sessions, webhook-event-filters]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-orchestrator, agents-web, agents-helmfile]
 created: 2026-10-25
 ---

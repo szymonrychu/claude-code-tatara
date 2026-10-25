@@ -1,6 +1,6 @@
 ---
 title: cache docs
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: users and operators can read how the workspace cache behaves and is configured
 files: [README.md, MEMORY.md, tests/test_readme_api.py]

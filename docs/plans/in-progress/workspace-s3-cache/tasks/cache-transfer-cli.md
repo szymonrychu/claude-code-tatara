@@ -1,6 +1,6 @@
 ---
 title: cache transfer cli
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a Job can restore or save a workspace through one presigned URL with no credential
 files: [src/agents_orchestrator/cache/transfer.py, src/agents_orchestrator/cli.py, tests/test_cache_cli.py]

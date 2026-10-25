@@ -1,6 +1,6 @@
 ---
 title: cache save on discard
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the workspace is uploaded under the same name when a session ends, without ever blocking the discard"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, tests/test_cache_save.py, tests/fakes/fake_kube.py]

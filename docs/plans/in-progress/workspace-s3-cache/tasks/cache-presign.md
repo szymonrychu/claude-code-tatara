@@ -1,6 +1,6 @@
 ---
 title: cache presign
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the reconciler signs one short-lived URL per object, so S3 credentials stay in the reconciler"
 files: [src/agents_orchestrator/cache/presign.py, pyproject.toml, uv.lock, tests/test_cache_presign.py]

@@ -1,6 +1,6 @@
 ---
 title: cache archive
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a workspace packs into a capped tar.zst and unpacks safely, never outside the workdir"
 files: [src/agents_orchestrator/cache/__init__.py, src/agents_orchestrator/cache/archive.py, pyproject.toml, uv.lock, tests/test_cache_archive.py]
