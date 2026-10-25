@@ -1,6 +1,6 @@
 ---
 title: Retro writer
-status: in-progress
+status: done
 repo: workbench
 value: Every closed epic gets a written retro whose proposals feed the next plan
 files: [plugins/workbench/agents/retro-writer.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/retro.md, plugins/workbench/skills/start-development/tests/test_skill_size.py, plugins/workbench/skills/start-development/tests/test_templates.py, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/README.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [retro-command, planner-points-gate]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 7f31a5a
 ---
 
 # Retro writer
@@ -63,3 +63,5 @@ Every closed epic gets a RETRO.md whose judgement half is written by an agent fr
 - Fix-as-ac (brief): SKILL.md line cap (test_skill_size.py MAX_LINES 150, KEPT exact); test_lean_flow_docs.py:201-217 pins the record-writer phrases (keep them); test_templates.py:97-103 requires ASCII punctuation in templates and writer agents.
 - New agents are pinned in skills/start-review/tests/test_agents_lean.py and skills/start-research/tests/test_start_skills_structure.py only by name lists; if one of them enumerates every agent file, update it and say so.
 - The planner reads proposals; it never edits ROADMAP.md (human-owned).
+
+- 2026-10-25 done
