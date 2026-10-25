@@ -6,21 +6,17 @@ value: the agents namespace runs cluster scaling
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [agent-scale-route, scale-tool-allow, agents-strip-leaving-mark, kind-e2e-scaling, smoke-scale-check]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1"
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-deploy-pin-scaling/agents-helmfile
-branch: cluster-scaling-deploy-pin-scaling
 verified_head: "not obtained: the verify script did not run"
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deploy pin scaling

@@ -6,21 +6,17 @@ value: shrinking a hive never cuts an agent off mid-turn
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/settings.py, README.md, MEMORY.md, tests/test_reconciler.py]
 verify: "uv run --frozen pytest -q tests/test_reconciler.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [scale-drain-status]
-uses: [orch-render-hash-invariant, orch-leadership-pass, orch-leader-read]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-down-drain/agent-orchestrator
-branch: cluster-scaling-scale-down-drain
 verified_head: e91c1bba8febbc434c5c80f8f25c214068d62c8c
-run: cluster-scaling
-provides: [scale-drain-status]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1850279
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1687464, review 162815"
 ---
 
 # scale down drain

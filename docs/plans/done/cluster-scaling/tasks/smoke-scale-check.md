@@ -6,21 +6,17 @@ value: the live smoke proves scaling works on the deployed orchestrator
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
 verify: "uv run --frozen pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [public-scale-route]
-owns: []
-uses: [orch-cluster-scale-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-smoke-scale-check/agents-helmfile
-branch: cluster-scaling-smoke-scale-check
 verified_head: 0dd5aa28cc96dbe9ed2a4c8cebc9fa1b800ca49e
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 345284
+actual_roles: "impl 1, review 5"
+actual_role_tokens: "impl 72447, review 272837"
 ---
 
 # smoke scale check

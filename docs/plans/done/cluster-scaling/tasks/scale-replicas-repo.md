@@ -6,21 +6,17 @@ value: "one guarded writer changes a running cluster's agent count without rolli
 files: [src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py, MEMORY.md]
 verify: "uv run --frozen pytest -q tests/test_clusters_repo.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [scale-replicas-write]
-uses: [orch-spec-cap-static, orch-hive-tables, orch-spec-runtime-mutable]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-replicas-repo/agent-orchestrator
-branch: cluster-scaling-scale-replicas-repo
 verified_head: 8446f551f292d48a4b6e209713eae58529722462
-run: cluster-scaling
-provides: [scale-replicas-write]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 602753
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 386053, review 216700"
 ---
 
 # scale replicas repo

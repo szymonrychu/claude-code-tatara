@@ -6,21 +6,17 @@ value: users see which agents are leaving and which wait for their turn to finis
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx]
 verify: "cd frontend && npx vitest run src/chat/AgentsStrip.test.tsx && npm run lint"
 depends_on: [scale-down-drain, scale-ui-control]
-owns: []
-uses: [scale-drain-status]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-agents-strip-leaving-mark/agent-orchestrator
-branch: cluster-scaling-agents-strip-leaving-mark
 verified_head: ffc9148a079b6d12b863d1731a8593e877779772
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 73
+actual_tokens: 671138
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 515757, review 155381"
 ---
 
 # agents strip leaving mark

@@ -6,22 +6,17 @@ value: users and headless callers scale a cluster through a documented API
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_api_scale.py]
 verify: "uv run --frozen pytest -q tests/test_api_scale.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [scale-replicas-repo]
-owns: [orch-cluster-scale-api, scale-schemas]
-uses: [scale-replicas-write]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-public-scale-route/agent-orchestrator
-branch: cluster-scaling-public-scale-route
 verified_head: 126947162cca4e6a9c5241d9b51dcf331a3878aa
-run: cluster-scaling
-provides: [scale-schemas]
-acs_for_audit: []
-process_gaps: []
-fork_point: e91c1bb
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 790807
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 416257, review 374550"
 ---
 
 # public scale route

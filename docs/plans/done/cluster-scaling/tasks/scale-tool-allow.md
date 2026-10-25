@@ -6,22 +6,17 @@ value: "only scalable clusters offer the scale tool, so static and alone agents 
 files: [src/agent_orchestrator/k8s/on_start.py, tests/test_render.py]
 verify: "uv run --frozen pytest -q tests/test_render.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: []
-uses: [orch-plugin-entry, orch-spec-cap-static, orch-render-hash-invariant, any-mcp-orchestrator-plugin]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-tool-allow/agent-orchestrator
-branch: cluster-scaling-scale-tool-allow
 verified_head: 69a3929c7b56c667ac316fb2ffda47fa62ae4b10
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 22cf2836cda5b25385c7cd4b0838e02239118b95
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 431039
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 214326, review 216713"
 ---
 
 # scale tool allow

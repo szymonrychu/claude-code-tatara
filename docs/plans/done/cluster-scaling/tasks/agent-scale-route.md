@@ -6,22 +6,17 @@ value: the leader agent grows or shrinks its own hive with a tool
 files: [src/agent_orchestrator/api/agent.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_agent_scale.py]
 verify: "uv run --frozen pytest -q tests/test_agent_scale.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [scale-replicas-repo, public-scale-route]
-owns: [orch-agent-scale-api]
-uses: [scale-replicas-write, scale-schemas, orch-agent-api-auth, any-mcp-orchestrator-plugin, any-mcp-release-v0-2-0]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-agent-scale-route/agent-orchestrator
-branch: cluster-scaling-agent-scale-route
 verified_head: 0e946497dbd1f4ba9875b743aa1d1157fc2cc441
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: ffc9148
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 1341649
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 902431, review 439218"
 ---
 
 # agent scale route

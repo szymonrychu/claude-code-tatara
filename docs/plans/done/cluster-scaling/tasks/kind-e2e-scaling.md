@@ -6,21 +6,17 @@ value: CI proves on a real cluster that agents join and leave without restarting
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [public-scale-route, agent-scale-route, scale-tool-allow, scale-down-drain]
-owns: []
-uses: [orch-cluster-scale-api, orch-agent-scale-api, scale-drain-status, orch-peer-seeds-cap, orch-hive-state-note, orch-agents-service]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-kind-e2e-scaling/agent-orchestrator
-branch: "current worktree branch (HEAD 41567ec)"
 verified_head: 41567ec89755b9c214ff4523aec02e482d5d8c2b
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 1287308
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 858974, review 428334"
 ---
 
 # kind e2e scaling

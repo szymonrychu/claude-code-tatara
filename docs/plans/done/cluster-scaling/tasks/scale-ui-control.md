@@ -6,21 +6,17 @@ value: users grow or shrink a cluster from the cluster view within its cap
 files: [frontend/src/chat/ScaleControl.tsx, frontend/src/chat/ScaleControl.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/api/client.ts]
 verify: "cd frontend && npx vitest run src/chat/ScaleControl.test.tsx && npm run lint"
 depends_on: [public-scale-route]
-owns: []
-uses: [orch-cluster-scale-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-ui-control/agent-orchestrator
-branch: cluster-scaling-scale-ui-control
 verified_head: b484c95d547ff7f70f72ebe5969a717407413621
-run: cluster-scaling
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 656326
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 556543, review 99783"
 ---
 
 # scale ui control
