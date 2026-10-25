@@ -38,9 +38,13 @@ in the main checkout, the orchestrator runs it there with the integration tree's
 (`python3 <integration tree>/plugins/workbench/skills/start-development/scripts/ticket.py migrate --all
 --root <main>/docs/plans`, after the dry run), the same way ticket commits land on main during any epic.
 The retro-writer agent type loads only after `/reload-plugins` on main, so each retro-writer step is a
-general-purpose sonnet agent told to follow the integration tree's agents/retro-writer.md. The task's
-acceptance conditions run against main's docs/plans; its verify is the full `mise run test && mise run
-lint`.
+general-purpose sonnet agent told to follow the integration tree's agents/retro-writer.md. Step one is
+the dry run over all 1042 transcripts on disk (887 under `<session>/subagents/workflows/wf_*/`). The
+task's acceptance conditions are the real check: they run the integration tree's ticket.py against main's
+docs/plans (interrogate item 7). Its verify, the full `mise run test && mise run lint` in the integration
+tree, guards the code only: that tree cannot see main's migrated docs/plans.
+
+Interrogate verdict item 7 (verbatim): "migrate-this-repo verify (C4): the full suite in the integration tree cannot see main's docs/plans; the AC commands run in the main checkout are the real check and the task says so."
 
 ## Acceptance conditions
 
@@ -51,7 +55,7 @@ lint`.
 - AC5: the migration is complete and idempotent: a dry run over main's docs/plans prints `migrate: nothing to change` [evidence: command:P="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/docs/plans"; python3 plugins/workbench/skills/start-development/scripts/ticket.py migrate --all --dry-run --root "$P" | grep -qx 'migrate: nothing to change']
 - AC6: main carries a `chore(ticket): <epic> migrate` commit for each of the six done epics [evidence: command:test "$(git log main --format=%s | grep -E '^chore\(ticket\): (epic-integration-worktrees|flow-speed-and-token-optimiz|init-leaves-a-green-tree|lean-development-flow|template-update-skill-and-in|housekeeping-rules-estimates) migrate$' | sort -u | wc -l | tr -d ' ')" -eq 6]
 - AC7: main's docs/plans has no uncommitted change [evidence: command:P="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/docs/plans"; test -z "$(git -C "$P" status --porcelain -- .)"]
-- AC8: the full suite and lint pass [evidence: command:mise run test && mise run lint]
+- AC8: the code's full suite and lint pass in the integration tree; that tree cannot see main's migrated docs/plans, so AC1 to AC7 (the integration tree's ticket.py run against main's docs/plans) are the check of the migration itself [evidence: command:mise run test && mise run lint]
 
 ## Files
 
@@ -87,3 +91,5 @@ The six done epics are on the points scheme with a filled RETRO.md each, `deltas
 - approvals.json, rulings.json, record.md, close.json, README.md and design.md must stay unchanged (migrate-command AC4); check `git show --stat` of each migrate commit.
 - housekeeping-rules-estimates RETRO.md: its Retro and Improvements stay byte for byte; only its generated block changes (points and expected values filled).
 - The verify is the full gate on purpose: this is the epic's last task.
+
+- 2026-10-25 amended: interrogate items 1 and 7: step 1's dry run walks 1042 transcripts (887 workflow ones); AC1-AC7 run the integration tree's ticket.py against main's docs/plans and are the real check, the verify guards the code only
