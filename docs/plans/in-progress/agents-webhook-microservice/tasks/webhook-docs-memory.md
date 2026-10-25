@@ -1,6 +1,6 @@
 ---
 title: webhook docs memory
-status: in-progress
+status: done
 repo: agents-webhook
 value: "operators know how to create endpoints and wire GitHub, GitLab and Grafana to them, the exposure, reuse and limits, and the decisions are recorded"
 files: [README.md, MEMORY.md, AGENTS.md, tests/test_readme_config.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_readme_config.py -q && uv run ruff check . && 
 depends_on: [webhook-ci-images, webhook-openapi-readme]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 9b070e3
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 7
+actual_tokens: 871024
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 676647, review 194377"
 ---
 
 # webhook docs memory
@@ -65,3 +65,5 @@ A new operator can wire a forge or Grafana from the README alone.
 Gate Q23 answer (user, 2026-10-25): the limits (max in progress overall, max in progress per endpoint, queue cap, body cap) are settings with defaults 3, 1, 500 and 5 MiB, each set from an agents-webhook Helm chart value (for example `limits.maxInProgress`, `limits.maxInProgressPerEndpoint`, `limits.queueCap`, `limits.maxBodyBytes`) rendered into the ingest and worker env, and documented. This task delivers its part of that.
 
 Orchestrator note (2026-10-25): README must also cover agent reuse (preset reuse_running_agent, same-item routing to a running cluster, ordering, fallback and the `reuse_fallback` reason) and the per-subcommand settings (migrate/ingest need no orchestrator token).
+
+- 2026-10-25 done
