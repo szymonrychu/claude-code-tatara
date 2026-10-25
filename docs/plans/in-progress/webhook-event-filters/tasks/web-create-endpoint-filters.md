@@ -1,6 +1,6 @@
 ---
 title: web create endpoint filters
-status: in-progress
+status: done
 repo: agents-web
 value: filters are set when creating an endpoint and the example preview says whether it passes
 files: [src/webhooks/CreateEndpointDialog.tsx, src/webhooks/samples.ts, src/webhooks/Endpoints.test.tsx, src/webhooks/WebhooksPage.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/Endpoints.te
 depends_on: [web-filters-editor]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1ac0880
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 2
+actual_tokens: 359710
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 267334, review 92376"
 ---
 
 # web create endpoint filters
@@ -62,3 +62,5 @@ The New endpoint dialog sets allow and deny rules, and Preview answers whether t
 
 - Existing tests that preview a template keep passing: the request still carries `template`, and `filters` is omitted when there are no rules.
 - `WebhooksPage.test.tsx` renders the dialog through the page; its fetch mock may need the `/meta` route too.
+
+- 2026-10-25 done
