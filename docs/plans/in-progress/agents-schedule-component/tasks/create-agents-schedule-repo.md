@@ -1,6 +1,6 @@
 ---
 title: create agents-schedule repo
-status: todo
+status: in-progress
 repo: superrepo
 value: "the schedule service has its own public repo with CI secrets, ready for its code, image and chart"
 files: [.gitmodules, code/agents-schedule, AGENTS.md]
