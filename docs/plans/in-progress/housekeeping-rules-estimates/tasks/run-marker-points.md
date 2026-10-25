@@ -9,6 +9,11 @@ depends_on: [agent-discipline, planner-points-gate, agent-usage-lib]
 model: sonnet
 review: ""
 verified_head: f597bdd
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 299770
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 200834, review 98936"
 ---
 
 # Run marker points
@@ -53,5 +58,7 @@ Every implementer and reviewer run is attributable to its epic, task and role, a
 - Estimate: 2 points.
 - Fix-as-ac (brief, prompt marker): nothing in epic-run/SKILL.md:23-27 puts epic/task in the prompt today; a structure test pins the marker (AC1).
 - Depends on agent-discipline (reviewer.md, test_agents_lean.py) and planner-points-gate (Fibonacci scale wording).
+
+- 2026-10-25 done
 
 - 2026-10-25 done
