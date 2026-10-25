@@ -209,6 +209,7 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 ## Open questions
 - Q1: Topology: the UI moves to a new public GitHub component repo agents-web (TypeScript, own image, chart, CI, helmfile release) with the history of agent-orchestrator/frontend kept? [recommended: yes, public like agent-orchestrator]
 - Q2: URL layout: one host lab.szymonrichert.pl with ingress path routing, UI at /, orchestrator at /api (/api/v1 unchanged), one prefix per later service (/webhooks/, /schedules/)? [recommended: yes]
+- Q3: Backends: the UI reads a runtime config.json listing its backends, set by the agents-web chart, so a service's menu entries appear only when it is configured? [recommended: yes]
 
 ## Irreversible operations in scope
 
