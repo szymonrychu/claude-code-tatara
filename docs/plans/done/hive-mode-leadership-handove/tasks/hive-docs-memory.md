@@ -6,21 +6,17 @@ value: the hive rules and the reasons behind them are written down where the nex
 files: [README.md, MEMORY.md]
 verify: "uv run pytest tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [render-hive-gating, plugin-config-merge, leader-routing, hive-state-push-loop, file-locks-api, views-leader-stream]
-owns: [orch-spec-runtime-mutable]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-docs-memory/agent-orchestrator
-branch: hive-mode-leadership-handove-hive-docs-memory
 verified_head: 100946b689179096a5190c5d0f2c9ca6c9ac2997
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 675067
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 432313, review 242754"
 ---
 
 # hive docs memory

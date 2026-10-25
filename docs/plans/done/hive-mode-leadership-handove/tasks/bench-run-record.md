@@ -6,21 +6,17 @@ value: the measured hive result is on record
 files: [MEMORY.md]
 verify: "uv run pytest tests/test_bench.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [helmfile-apply-smoke]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-bench-run-record/agent-orchestrator
-branch: hive-mode-leadership-handove-bench-run-record
 verified_head: 341fa68f3a58cab7b7897e277b3500368da18e97
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 14
+actual_tokens: 812648
+actual_roles: "impl 13, review 1"
+actual_role_tokens: "impl 673239, review 139409"
 ---
 
 # bench run record

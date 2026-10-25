@@ -6,21 +6,17 @@ value: the user sees the leader in the agents strip and can make any agent leade
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/api/client.ts, frontend/src/chat/useClusterChat.ts]
 verify: "cd frontend && npx vitest run src/chat/AgentsStrip.test.tsx && npm run lint"
 depends_on: [views-leader-stream]
-owns: []
-uses: [orch-leader-views]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-ui-leader-badge/agent-orchestrator
-branch: hive-mode-leadership-handove-ui-leader-badge
 verified_head: 1b1b6bbf40ba3f13faf4469eb9c5c5224974dae5
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 14
+actual_tokens: 960546
+actual_roles: "impl 13, review 1"
+actual_role_tokens: "impl 847753, review 112793"
 ---
 
 # ui leader badge

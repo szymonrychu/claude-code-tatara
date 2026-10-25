@@ -6,21 +6,17 @@ value: "an agent can ask the orchestrator who it is, who leads and who is in its
 files: [src/agent_orchestrator/api/agent.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/db/agents.py, tests/test_api_agent.py, tests/test_api_clusters.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "uv run pytest tests/test_api_agent.py tests/test_api_clusters.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [agent-token-env-render, agents-pod-ip-observe]
-owns: [orch-agent-api-auth]
-uses: [orch-agent-env, orch-hive-tables, orch-agent-port]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-api-me/agent-orchestrator
-branch: hive-mode-leadership-handove-agent-api-me
 verified_head: b916d84bd0098d3d2f6ad17c57622609d17e72db
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1369834
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1184759, review 185075"
 ---
 
 # agent api me

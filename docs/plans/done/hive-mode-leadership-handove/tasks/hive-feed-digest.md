@@ -6,21 +6,17 @@ value: "the activity feed carries only what other agents need: paths, commands, 
 files: [src/agent_orchestrator/dispatcher/feed.py, tests/test_hive_feed.py]
 verify: "uv run pytest tests/test_hive_feed.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-feed-digest]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-feed-digest/agent-orchestrator
-branch: hive-mode-leadership-handove-hive-feed-digest
 verified_head: 66b6a62c18389cd5c77d6efef3d6df8e7464f514
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 810129
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 484202, review 325927"
 ---
 
 # hive feed digest

@@ -6,21 +6,17 @@ value: the user talks to the leader by default while explicit targets still work
 files: [src/agent_orchestrator/db/queue.py, tests/test_queue_leader_routing.py, README.md]
 verify: "uv run pytest tests/test_queue_leader_routing.py tests/test_dispatch_queue.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [dispatcher-leadership-pass]
-owns: []
-uses: [orch-leadership-pass]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-leader-routing/agent-orchestrator
-branch: hive-mode-leadership-handove-leader-routing
 verified_head: c4f3303d5b5aebb0ae7294ee5d54aaac8d086f67
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: 941408
+actual_roles: "impl 9, review 5"
+actual_role_tokens: "impl 739361, review 202047"
 ---
 
 # leader routing

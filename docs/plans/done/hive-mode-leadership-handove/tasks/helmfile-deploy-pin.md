@@ -6,21 +6,17 @@ value: the live namespace is pinned to the hive release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, scripts/smoke.sh, tests/test_orchestrator_release.py, tests/test_smoke_script.py]
 verify: "mise x -- uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_smoke_script.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [kind-e2e-hive, ui-leader-badge, spec-form-cap-static, bench-hive-arm, hive-docs-memory]
-owns: []
-uses: [orch-agents-service]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-helmfile-deploy-pin/agents-helmfile
-branch: hive-mode-leadership-handove-helmfile-deploy-pin
 verified_head: 5474b14dd22f6b46d28b4165aa6fec919ca17973
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 724199
+actual_roles: "impl 6, review 3"
+actual_role_tokens: "impl 496250, review 227949"
 ---
 
 # helmfile deploy pin

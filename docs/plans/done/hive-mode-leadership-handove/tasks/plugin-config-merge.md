@@ -6,21 +6,17 @@ value: "hive agents load the orchestrator tools next to the user's own any-mcp p
 files: [src/agent_orchestrator/k8s/on_start.py, tests/test_on_start.py]
 verify: "uv run pytest tests/test_on_start.py tests/test_render.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-cap-static, orch-pin-bumps]
-owns: [orch-plugin-entry]
-uses: [orch-spec-cap-static, orch-hive-pins, any-mcp-orchestrator-plugin]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-plugin-config-merge/agent-orchestrator
-branch: hive-mode-leadership-handove-plugin-config-merge
 verified_head: 167342704becd65f2a3afe28643ba17f258eae7a
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 12
+actual_tokens: 1221956
+actual_roles: "impl 11, review 8"
+actual_role_tokens: "impl 998232, review 223724"
 ---
 
 # plugin config merge

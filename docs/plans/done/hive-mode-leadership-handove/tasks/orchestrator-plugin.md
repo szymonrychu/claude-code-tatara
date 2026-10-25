@@ -6,21 +6,17 @@ value: agents get every orchestrator tool from one plugin whose descriptions tel
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, README.md, MEMORY.md]
 verify: "uv run pytest tests/test_orchestrator_plugin.py tests/test_docs_reference.py tests/test_docs_links.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [any-mcp-orchestrator-plugin]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-orchestrator-plugin/any-mcp
-branch: hive-mode-leadership-handove-orchestrator-plugin
 verified_head: 95f846c6ad38a1cd9f09ab20dac06852620ef6f9
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 734224
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 555379, review 178845"
 ---
 
 # orchestrator plugin

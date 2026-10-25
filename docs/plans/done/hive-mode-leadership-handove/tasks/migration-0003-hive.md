@@ -6,21 +6,17 @@ value: "leadership, locks and pod identity have tables with one writer each"
 files: [src/agent_orchestrator/db/migrations/0003_hive.sql, README.md, tests/test_migrations.py]
 verify: "uv run pytest tests/test_migrations.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-hive-tables]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-migration-0003-hive/agent-orchestrator
-branch: hive-mode-leadership-handove-migration-0003-hive
 verified_head: 05280b3639caae0730efa9f576e7db19eaa2db98
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 662742
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 458939, review 203803"
 ---
 
 # migration 0003 hive

@@ -6,21 +6,17 @@ value: agents see peer activity and hive state at the next prompt or tool result
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/notes.py, README.md, tests/test_notes_delivery.py]
 verify: "uv run pytest tests/test_notes_delivery.py tests/test_router.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-notes-inbox]
-owns: []
-uses: [wrapper-notes-inbox]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-notes-delivery/claude-code-wrapper
-branch: hive-mode-leadership-handove-wrapper-notes-delivery
 verified_head: d4e7fb83413f1d9439ae3512d7bd2e80b68a8237
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 28
+actual_tokens: 1786546
+actual_roles: "impl 27, review 2"
+actual_role_tokens: "impl 1538674, review 247872"
 ---
 
 # wrapper notes delivery

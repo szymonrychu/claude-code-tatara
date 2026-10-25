@@ -6,21 +6,17 @@ value: "hive clusters get peers, notes and lock warnings, alone clusters get non
 files: [src/agent_orchestrator/k8s/render.py, tests/test_render.py]
 verify: "uv run pytest tests/test_render.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [agent-token-env-render, orch-pin-bumps]
-owns: [orch-render-hash-invariant, orch-peer-seeds-cap]
-uses: [orch-agent-env, orch-hive-pins, orch-spec-cap-static, wrapper-main-agent-only-tools, wrapper-notes-inbox]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-render-hive-gating/agent-orchestrator
-branch: hive-mode-leadership-handove-render-hive-gating
 verified_head: a9662b9d88993ecdf401d54cd85e28b803ed594d
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 406308
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 228752, review 177556"
 ---
 
 # render hive gating

@@ -6,21 +6,17 @@ value: every agent pod holds a cluster-scoped credential and the orchestrator UR
 files: [src/agent_orchestrator/tokens.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/spec.py, tests/test_tokens.py, tests/test_render.py, tests/test_spec_hive.py]
 verify: "uv run pytest tests/test_tokens.py tests/test_render.py tests/test_spec_hive.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [spec-cap-static, agent-port-listener]
-owns: [orch-agent-env]
-uses: [orch-spec-cap-static, orch-agent-port]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-token-env-render/agent-orchestrator
-branch: hive-mode-leadership-handove-agent-token-env-render
 verified_head: 278b1486cbd6cefba9680ec938ae812892b096b9
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 12
+actual_tokens: 2324922
+actual_roles: "impl 12, review 3"
+actual_role_tokens: "impl 1944096, review 380826"
 ---
 
 # agent token env render

@@ -6,21 +6,17 @@ value: "exactly one agent leads each hive, changes are epoch-fenced and a lost l
 files: [src/agent_orchestrator/db/leadership.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_leadership_pass.py, README.md]
 verify: "uv run pytest tests/test_leadership_pass.py tests/test_dispatcher.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [leadership-requests-api]
-owns: [orch-leadership-pass]
-uses: [orch-leader-read, orch-hive-tables]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-dispatcher-leadership-pass/agent-orchestrator
-branch: hive-mode-leadership-handove-dispatcher-leadership-pass
 verified_head: f378ca03a4e57563b7cec82807386ef23dfa3677
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 13
+actual_tokens: 3510803
+actual_roles: "impl 11, review 3"
+actual_role_tokens: "impl 3272052, review 238751"
 ---
 
 # dispatcher leadership pass

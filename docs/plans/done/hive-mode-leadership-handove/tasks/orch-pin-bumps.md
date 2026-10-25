@@ -6,21 +6,17 @@ value: the orchestrator renders against the released plugin and wrapper
 files: [pyproject.toml, uv.lock, src/agent_orchestrator/settings.py, README.md, e2e/agent-test.Dockerfile, tests/test_images.py]
 verify: "uv run pytest tests/test_images.py tests/test_render.py tests/test_settings.py tests/test_fake_wrapper_contract.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [any-mcp-release-v0-2-0, wrapper-release-0-2-0, agent-port-listener]
-owns: [orch-hive-pins]
-uses: [any-mcp-release-v0-2-0, wrapper-release-0-2-0]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-orch-pin-bumps/agent-orchestrator
-branch: hive-mode-leadership-handove-orch-pin-bumps
 verified_head: b05d82f95f1a003e128039eedc2c03149214392b
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 476799
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 335019, review 141780"
 ---
 
 # orch pin bumps

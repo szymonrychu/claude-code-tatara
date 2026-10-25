@@ -6,21 +6,17 @@ value: users set the replica cap and the static switch in the preset and cluster
 files: [frontend/src/clusters/clusterSpecForm.ts, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx]
 verify: "cd frontend && npx vitest run src/presets/PresetForm.test.tsx src/clusters/NewClusterDialog.test.tsx && npm run lint"
 depends_on: [spec-cap-static]
-owns: []
-uses: [orch-spec-cap-static]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-spec-form-cap-static/agent-orchestrator
-branch: hive-mode-leadership-handove-spec-form-cap-static
 verified_head: 566a831c6fb3e698ff36f44e7034f6042b6ce1d9
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1025405
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 915139, review 110266"
 ---
 
 # spec form cap static

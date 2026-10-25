@@ -6,21 +6,17 @@ value: the orchestrator can install the plugin from a pinned tag
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]
 verify: "uv run pytest tests/test_release.py -q -k 'versions_agree or pinned_install_line or workflow_shape' && uv run ruff check . && uv run ruff format --check ."
 depends_on: [orchestrator-plugin]
-owns: [any-mcp-release-v0-2-0]
-uses: [any-mcp-orchestrator-plugin]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-any-mcp-release-v0-2-0/any-mcp
-branch: hive-mode-leadership-handove-any-mcp-release-v0-2-0
 verified_head: e273952957235916421683907bb50df9c3f8cdf2
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 634927
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 334384, review 300543"
 ---
 
 # any-mcp release v0.2.0

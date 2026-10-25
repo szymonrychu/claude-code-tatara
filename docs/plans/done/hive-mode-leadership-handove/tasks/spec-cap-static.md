@@ -6,21 +6,17 @@ value: "a cluster declares its replica cap and whether it may scale, and hive mo
 files: [src/agent_orchestrator/spec.py, tests/test_spec_hive.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "uv run pytest tests/test_spec_hive.py tests/test_api_clusters.py tests/test_api_presets.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-spec-cap-static]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-spec-cap-static/agent-orchestrator
-branch: hive-mode-leadership-handove-spec-cap-static
 verified_head: c9fddcce4124a8c0895b177d6f4a6e3a8859c610
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 31
+actual_tokens: 998721
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 823188, review 175533"
 ---
 
 # spec cap static

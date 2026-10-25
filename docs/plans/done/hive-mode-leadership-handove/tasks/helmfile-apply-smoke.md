@@ -6,21 +6,17 @@ value: the hive release runs live and passes smoke
 files: [MEMORY.md, scripts/smoke.sh, tests/test_smoke_script.py]
 verify: mise run smoke
 depends_on: [helmfile-deploy-pin]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-helmfile-apply-smoke/agents-helmfile
-branch: hive-mode-leadership-handove-helmfile-apply-smoke
 verified_head: 9cd6408225cae867a4841151a71939ccec957998
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 38
+actual_tokens: 2129765
+actual_roles: "impl 37, review 2"
+actual_role_tokens: "impl 2034801, review 94964"
 ---
 
 # helmfile apply smoke

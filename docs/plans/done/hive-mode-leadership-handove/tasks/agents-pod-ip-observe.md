@@ -6,21 +6,17 @@ value: the orchestrator knows which pod is calling it
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py]
 verify: "uv run pytest tests/test_reconciler.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [migration-0003-hive]
-owns: []
-uses: [orch-hive-tables]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agents-pod-ip-observe/agent-orchestrator
-branch: hive-mode-leadership-handove-agents-pod-ip-observe
 verified_head: 155cfb2ed7feb3dfa110f2e980ffb3b9f6a3a84f
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 421405
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 286061, review 135344"
 ---
 
 # agents pod ip observe

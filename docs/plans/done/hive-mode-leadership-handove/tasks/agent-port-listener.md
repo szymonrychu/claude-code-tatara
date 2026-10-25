@@ -6,21 +6,17 @@ value: agent pods get their own orchestrator port while the public API stays clo
 files: [src/agent_orchestrator/cli.py, src/agent_orchestrator/api/allowlist.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/settings.py, tests/test_agent_port.py, README.md]
 verify: "uv run pytest tests/test_agent_port.py tests/test_cli.py tests/test_entrypoints.py tests/test_settings.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-agent-port]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-port-listener/agent-orchestrator
-branch: hive-mode-leadership-handove-agent-port-listener
 verified_head: ca28bab67581651f737b3141fe64c9d4ccaa2846
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 21
+actual_tokens: 1320093
+actual_roles: "impl 5, review 15"
+actual_role_tokens: "impl 601031, review 719062"
 ---
 
 # agent port listener

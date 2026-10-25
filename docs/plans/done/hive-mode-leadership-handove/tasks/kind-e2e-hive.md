@@ -6,21 +6,17 @@ value: "CI proves on a real cluster that leadership, locks, notes and the alone 
 files: [tests/e2e/test_e2e_kind.py, tests/e2e/conftest.py, e2e/agent-test.scenario.json]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [render-hive-gating, plugin-config-merge, file-locks-api, hive-state-push-loop, leader-routing, views-leader-stream, chart-agents-service, agent-api-me]
-owns: []
-uses: [orch-agents-service, orch-plugin-entry, orch-hive-state-note]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-kind-e2e-hive/agent-orchestrator
-branch: hive-mode-leadership-handove-kind-e2e-hive
 verified_head: 50324eeba1c08db6a8aeba991179731096bc039f
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 2225134
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 1237176, review 987958"
 ---
 
 # kind e2e hive

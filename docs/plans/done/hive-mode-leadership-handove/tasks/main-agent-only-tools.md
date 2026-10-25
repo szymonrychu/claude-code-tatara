@@ -6,21 +6,17 @@ value: a subagent cannot hand leadership away or scale the cluster
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/router.py, README.md, tests/test_main_agent_only_tools.py]
 verify: "uv run pytest tests/test_main_agent_only_tools.py tests/test_readme_config.py tests/test_config.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [wrapper-main-agent-only-tools]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-main-agent-only-tools/claude-code-wrapper
-branch: hive-mode-leadership-handove-main-agent-only-tools
 verified_head: d5477317adedfb94540a3eab38f9f637b24e1d63
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 13
+actual_tokens: 944479
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 635583, review 308896"
 ---
 
 # main agent only tools

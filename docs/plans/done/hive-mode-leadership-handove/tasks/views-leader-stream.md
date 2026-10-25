@@ -6,21 +6,17 @@ value: "API clients see who leads, the epoch and every agent's context, live"
 files: [src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/views.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/streams.py, tests/test_leader_views.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "uv run pytest tests/test_leader_views.py tests/test_api_streams.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [dispatcher-leadership-pass, file-locks-api]
-owns: [orch-leader-views]
-uses: [orch-leadership-pass]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-views-leader-stream/agent-orchestrator
-branch: hive-mode-leadership-handove-views-leader-stream
 verified_head: b115d6c45da34f9d915a7059481d5f91a21c6e90
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 956261
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 802408, review 153853"
 ---
 
 # views leader stream

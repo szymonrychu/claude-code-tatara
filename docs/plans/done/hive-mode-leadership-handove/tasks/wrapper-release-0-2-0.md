@@ -6,21 +6,17 @@ value: the orchestrator can pin an image with the notes inbox and the main-agent
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
 verify: "uv run pytest tests/test_packaging.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-notes-delivery, main-agent-only-tools]
-owns: [wrapper-release-0-2-0]
-uses: [wrapper-notes-inbox, wrapper-main-agent-only-tools]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-release-0-2-0/claude-code-wrapper
-branch: hive-mode-leadership-handove-wrapper-release-0-2-0
 verified_head: 11d4824d15d2457372587fb30d8a3e786aa1f192
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper release 0.2.0

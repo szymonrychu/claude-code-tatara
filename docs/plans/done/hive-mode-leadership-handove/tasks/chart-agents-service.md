@@ -6,21 +6,17 @@ value: agent pods reach the agent port through a cluster-internal Service that n
 files: [chart/agent-orchestrator/templates/service-agents.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/_config.tpl, chart/agent-orchestrator/values.yaml, tests/test_chart_deployments.py]
 verify: "uv run pytest tests/test_chart_deployments.py tests/test_chart_config.py tests/test_chart_rbac_ingress.py -q && mise run lint:chart && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-agents-service]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-chart-agents-service/agent-orchestrator
-branch: hive-mode-leadership-handove-chart-agents-service
 verified_head: 3b7478c9b948d061a7c717b4fc27289858104f0d
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1118960
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 753333, review 365627"
 ---
 
 # chart agents service

@@ -6,21 +6,17 @@ value: "every hived agent knows the leader, its peers and their recent activity 
 files: [src/agent_orchestrator/dispatcher/hive.py, src/agent_orchestrator/dispatcher/loop.py, src/agent_orchestrator/db/leadership.py, src/agent_orchestrator/wrapper/client.py, tests/fakes/fake_wrapper.py, tests/test_hive_push.py, tests/test_fake_wrapper_contract.py]
 verify: "uv run pytest tests/test_hive_push.py tests/test_wrapper_client.py tests/test_fake_wrapper_contract.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [dispatcher-leadership-pass, hive-feed-digest, orch-pin-bumps]
-owns: [orch-hive-state-note]
-uses: [orch-leadership-pass, orch-feed-digest, orch-hive-pins]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-state-push-loop/agent-orchestrator
-branch: hive-mode-leadership-handove-hive-state-push-loop
 verified_head: 547da35f321ba8e6f2780d40c9b453003b9c21da
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 380
+actual_tokens: 8258986
+actual_roles: "impl 379, review 348"
+actual_role_tokens: "impl 7916191, review 342795"
 ---
 
 # hive state push loop

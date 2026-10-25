@@ -6,21 +6,17 @@ value: the orchestrator can push hive state and activity notes to a hived agent
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/notes.py, src/claude_code_wrapper/api/notes.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/events.py, src/claude_code_wrapper/manager.py, README.md, tests/test_notes_api.py]
 verify: "uv run pytest tests/test_notes_api.py tests/test_readme_api.py tests/test_readme_config.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [main-agent-only-tools]
-owns: [wrapper-notes-inbox]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-notes-inbox/claude-code-wrapper
-branch: hive-mode-leadership-handove-wrapper-notes-inbox
 verified_head: 2f62f2d130cda07a29fd8af3dc50f5d597ff07e7
-run: hand-orchestrated-2026-10-25
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 24
+actual_tokens: 2230234
+actual_roles: "impl 16, review 11"
+actual_role_tokens: "impl 2067298, review 162936"
 ---
 
 # wrapper notes inbox
