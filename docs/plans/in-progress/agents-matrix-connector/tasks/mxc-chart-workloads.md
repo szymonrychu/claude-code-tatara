@@ -1,6 +1,6 @@
 ---
 title: mxc chart workloads
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the connector deploys as an API and a singleton bot with its token only as a bot file mount
 files: [chart/agents-matrix-connector/Chart.yaml, chart/agents-matrix-connector/values.yaml, chart/agents-matrix-connector/templates/_helpers.tpl, chart/agents-matrix-connector/templates/_config.tpl, chart/agents-matrix-connector/templates/configmap.yaml, chart/agents-matrix-connector/templates/deployment.yaml, chart/agents-matrix-connector/templates/secret.yaml, tests/test_chart_workloads.py]
@@ -8,15 +8,15 @@ verify: "helm lint chart/agents-matrix-connector && uv run --frozen pytest tests
 depends_on: [mxc-service-entrypoints]
 model: sonnet
 review: full
-verified_head: ""
+verified_head: 77b1f81dca9c548f64593eca74faa7224b347aaf
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 942728
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 732550, review 210178"
 ---
 
 # mxc chart workloads
@@ -74,3 +74,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Copy the structure of `code/agents-webhook/chart/agents-webhook/` and its `tests/test_chart_workloads.py`.
 - Service and Ingress are task mxc-chart-network.
+
+- 2026-10-25 done
