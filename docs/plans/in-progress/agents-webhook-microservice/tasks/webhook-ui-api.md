@@ -1,22 +1,22 @@
 ---
 title: webhook ui api
-status: in-progress
+status: done
 repo: agents-webhook
-value: the UI and any headless client can create, list, rotate and delete webhook endpoints and list recent events
+value: "the UI and any headless client can create, list, rotate and delete webhook endpoints and list recent events"
 files: [src/agents_webhook/api/__init__.py, src/agents_webhook/api/app.py, src/agents_webhook/api/schemas.py, src/agents_webhook/api/routes.py, tests/test_api.py]
 verify: "uv run pytest tests/test_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-event-store, webhook-prompt-render]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 16aac8f
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 980016
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 701109, review 278907"
 ---
 
 # webhook ui api
@@ -77,3 +77,5 @@ User requirement (2026-10-25), verbatim: "webhook configuration consists of jinj
 Orchestrator ruling for this task: endpoint create validates the template syntax with the shared renderer (422 naming `prompt_template` and the Jinja error line); add `POST /webhooks/api/v1/templates/preview` taking `{template, type, example}` (example = a JSON payload as the provider would send it; it is normalized for the given type, then rendered) and returning `{prompt}` or a 422 with the render error; preview never stores anything and is behind SSO like the rest of the UI API. Tests for both.
 
 Orchestrator note (2026-10-25): prompt.render/preview take `timeout=`; pass `settings.template_timeout_seconds` (WEBHOOK_TEMPLATE_TIMEOUT_SECONDS, default 2.0). Rebuild the NormalizedEvent for render from the event row (body/comment_body columns from event-store fix 0002_event_text.sql).
+
+- 2026-10-25 done
