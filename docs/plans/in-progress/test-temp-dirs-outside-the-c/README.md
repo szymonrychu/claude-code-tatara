@@ -2,7 +2,7 @@
 title: Test temp dirs outside the checkout
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-25
 ---

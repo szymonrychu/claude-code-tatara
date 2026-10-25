@@ -1,6 +1,6 @@
 ---
 title: Suite temp dirs outside the checkout
-status: todo
+status: in-progress
 repo: workbench
 value: "Plugin suites stay green inside initialised workbenches, so template updates can land"
 files: [plugins/workbench/scripts/run-tests.sh, plugins/workbench/scripts/flake-hunt.sh, plugins/workbench/hooks/bash-output-filter.py, plugins/workbench/scripts/tests/test_run_tests.py]
