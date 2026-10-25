@@ -1,6 +1,6 @@
 ---
 title: create agents-web repo
-status: in-progress
+status: done
 repo: superrepo
 value: "the UI has its own repo, with its history, ready for its own image and chart"
 files: [.gitmodules, code/agents-web, AGENTS.md]
@@ -8,15 +8,15 @@ verify: "git config --file .gitmodules --get submodule.agents-web.branch && cd c
 depends_on: []
 model: ""
 review: full
-verified_head: ""
+verified_head: ccba4c6
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 12
+actual_tokens: 597313
+actual_roles: "impl 12, review 11"
+actual_role_tokens: "impl 445096, review 152217"
 ---
 
 # create agents-web repo
@@ -73,3 +73,5 @@ The scripts `gen:api` and `check:api` still point at `../openapi.json` after the
 - `git subtree split` keeps the commit history of `frontend/` with paths rewritten to the root; `git merge --allow-unrelated-histories` joins it to the scaffold commit.
 
 Orchestrator notes (2026-10-25): step 1 is DONE by the orchestrator (the permission classifier refuses public repo creation inside subagents; the user approved a rule): `mise run component:add` created https://github.com/szymonrychu/agents-web (public), added submodule code/agents-web and committed "chore(workbench): add component agents-web" on this task's branch. Start at step 2. If `git push` to the new repo is denied in step 5, stop as blocked with whoCanClear "orchestrator" and leave everything else committed.
+
+- 2026-10-25 done
