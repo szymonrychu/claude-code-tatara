@@ -1,6 +1,6 @@
 ---
 title: webhook reuse routing
-status: todo
+status: in-progress
 repo: agents-webhook
 value: follow-up events for an item go to the agent still working on it when its preset opts in
 files: [pyproject.toml, uv.lock, src/agents_webhook/worker.py, tests/test_worker_reuse.py]
@@ -52,17 +52,21 @@ Route a new event to the agent still running for it (design D16, D17; user requi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `agents-common-reuse` (v0.2.0) and `preset-reuse-running-agent`.
+- Fills `worker.route(row)` of webhook-dispatch-worker.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+With a preset that opts in, every later event for the same PR, MR, issue or alert reaches the agent still running for it; otherwise a new agent starts.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_worker_reuse.py`; run `uv run pytest tests/test_worker_reuse.py -q`: fail.
+- Green: bump the pin and `uv lock`, then the routing; run the verify command (the dispatch tests stay green).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Blocked until tag v0.2.0 exists (task common-release-v0-2-0).
+- The orchestrator queues messages per cluster, so a delivery during a busy turn waits there in order.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
