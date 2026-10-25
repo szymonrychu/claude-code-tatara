@@ -3,7 +3,7 @@ title: web workspace sessions
 status: in-progress
 repo: agents-web
 value: "the chat, top bar, menu, files, terminal and preset form say session"
-files: [src/chat/, src/ribbon/, src/layout/, src/files/, src/terminal/, src/presets/, src/nomenclature.test.ts]
+files: [src/App.tsx, src/App.test.tsx, src/chat/, src/ribbon/, src/layout/, src/files/, src/terminal/, src/presets/, src/nomenclature.test.ts]
 verify: "npx tsc -b && npx vitest run && npm run lint"
 depends_on: [web-sessions-pages]
 model: opus
