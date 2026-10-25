@@ -1,6 +1,6 @@
 ---
 title: mxc scaffold and cli
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the connector has a Python project with agents-common on session names and a console script to grow
 files: [pyproject.toml, uv.lock, .mise.toml, src/agents_matrix_connector/__init__.py, src/agents_matrix_connector/cli.py, tests/conftest.py, tests/test_cli.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv lock --check && uv run --frozen pytest tests/test_cli.py -q && uv ru
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 936fea8e5e92d4fe0f11898164bd4d5d5f45940b
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 436547
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 320124, review 116423"
 ---
 
 # mxc scaffold and cli
@@ -76,3 +76,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - 2026-10-25 amended: gate item 16 (user 'Go' 2026-10-25): start the connector before orchestrator-rename-sessions; pin agents-common v0.2.0 now, bump in mxc-common-session-names
 
 - 2026-10-25 amended: agents-common v0.3.0 is tagged (6dd79c8); pin it directly (main orchestrator, 2026-10-25)
+
+- 2026-10-25 done
