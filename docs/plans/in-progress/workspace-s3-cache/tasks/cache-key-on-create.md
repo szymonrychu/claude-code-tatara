@@ -1,6 +1,6 @@
 ---
 title: cache key on create
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "every cached session gets the user's key or a stable preset-derived one, and clients see whether caching is available"
 files: [src/agents_orchestrator/spec.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/api/schemas.py, openapi.json, tests/test_api_cache.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_api_cache.py tests/test_readme_api.py && uv
 depends_on: [cache-config]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 2bf9fa9
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 996161
+actual_roles: impl 7
+actual_role_tokens: impl 996161
 ---
 
 # cache key on create
@@ -67,3 +67,5 @@ A session created from a preset whose spec is `{"cache": {}}` returns `spec.cach
 
 - Resolve the key in `_create_from_preset` after `check_spec`, with `spec.model_copy(update=...)` on the `cache` sub-model, before the insert.
 - The derivation uses the preset id, not the name: a renamed preset keeps its cache (design D7).
+
+- 2026-10-25 done
