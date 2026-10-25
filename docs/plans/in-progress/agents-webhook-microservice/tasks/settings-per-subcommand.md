@@ -43,13 +43,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`agents-webhook migrate` and `agents-webhook ingest` run with no WEBHOOK_ORCHESTRATOR_* variables; api and worker still require them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `test_settings_per_subcommand`; run `uv run pytest tests/test_cli.py -o addopts= -q -k per_subcommand`: fails (exit 78 for ingest/migrate).
+- Split the settings per subcommand; rerun: passes.
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+agents-common BaseServiceSettings requires the orchestrator token; a subclass or a separate settings class without it for migrate/ingest is fine. DB tests: local Postgres postgresql://test@127.0.0.1:55433/postgres via a temporary uncommitted pg_url override.
