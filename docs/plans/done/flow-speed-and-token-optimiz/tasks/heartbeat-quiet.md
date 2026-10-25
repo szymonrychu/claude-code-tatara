@@ -6,21 +6,17 @@ value: "The waiting orchestrator wakes only on END, STALL or real progress, with
 files: [plugins/workbench/skills/heartbeat/scripts/heartbeat.py, plugins/workbench/skills/heartbeat/SKILL.md, plugins/workbench/skills/heartbeat/tests/test_heartbeat.py, plugins/workbench/skills/heartbeat/tests/test_heartbeat_run.py, AGENTS.md]
 verify: "bash mise-tasks/lint/agents-md && python3 scripts/harness/setup.py --check && cd plugins/workbench && bash scripts/run-tests.sh --only heartbeat && ruff check skills"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-actual: 6
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--heartbeat-quiet
-branch: HEAD
 verified_head: b28fd1767a9f721420d0ebba9a14678a8e68a12d
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 2, verify 3, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Heartbeat quiet

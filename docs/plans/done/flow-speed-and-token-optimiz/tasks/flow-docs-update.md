@@ -6,21 +6,17 @@ value: The references tell the orchestrator how to relaunch in one step and show
 files: [plugins/workbench/skills/start-development/references/task-fields.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/templates/epic.md, plugins/workbench/skills/start-development/templates/record.md, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_flow_docs.py skills/start-development/tests/test_skill_size.py skills/start-development/tests/test_templates.py skills/start-development/tests/test_start_development_generic.py skills/start-development/tests/test_flow_references_remarks.py -q"
 depends_on: [estimate-and-actuals, continue-launch, heartbeat-quiet, cascade-release, planner-sizing-rule]
-owns: []
-uses: [epic-time-line, continue-launch-lines]
 model: sonnet
-estimate: 6
-actual: 6
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--flow-docs-update
-branch: flow-speed-and-token-optimiz--flow-docs-update
 verified_head: cdc932494d88d916a5632a42e06af2454233e5c9
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 4, verify 1, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Flow docs update

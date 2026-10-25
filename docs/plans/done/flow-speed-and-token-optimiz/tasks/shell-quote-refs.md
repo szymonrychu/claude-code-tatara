@@ -6,21 +6,17 @@ value: No ref or path from args or an earlier run reaches a verifier shell comma
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-shell-quoting.test.mjs]
 verify: "cd plugins/workbench && node --test workflows/tests/plan-execute-shell-quoting.test.mjs && bash scripts/run-tests.sh --only workflows"
 depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change, verify-shared-deadline]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-actual: 7
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--shell-quote-refs
-branch: HEAD
 verified_head: 4409cc7a71bfda4e014a3fb013684d7ca497ba5f
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: [AC1, AC2, AC3]
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 4, verify 1, review 1, fix 1"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 494446
+actual_roles: "impl 1, review 3"
+actual_role_tokens: "impl 131352, review 363094"
 ---
 
 # Shell quote refs

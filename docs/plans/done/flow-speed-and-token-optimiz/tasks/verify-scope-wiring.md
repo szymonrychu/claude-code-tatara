@@ -6,21 +6,17 @@ value: "Every verify runs targeted tests, at most two suites contend per repo, l
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-verify-scope.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows"
 depends_on: [verify-task-bounded-runs]
-owns: []
-uses: [verify-task-cli, land-step]
 model: opus
-estimate: 5
-actual: 8
 review: full
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-scope-wiring
-branch: flow-speed-and-token-optimiz--verify-scope-wiring
 verified_head: 3653ea8845aa1a8819f00579e2d6227811a44daf
-run: flow-speed-and-token-optimiz
-provides: [verify-slot-queue, verify-task-invocation]
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 6, verify 1, review 1"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Verify scope wiring

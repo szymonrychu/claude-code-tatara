@@ -6,21 +6,17 @@ value: "Every epic shows its critical path, expected wall and measured actuals p
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/estimate.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/roadmap.py, plugins/workbench/skills/start-development/templates/task.md, plugins/workbench/skills/start-development/tests/test_ticket_estimate.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_roadmap.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_estimate.py skills/start-development/tests/test_ticket_run.py skills/start-development/tests/test_ticket_roadmap.py skills/start-development/tests/test_templates.py skills/start-development/tests/test_ticket_cmd_modules.py -q && ruff check scripts skills"
 depends_on: [estimator-model]
-owns: [epic-time-line]
-uses: [estimator-params]
 model: sonnet
-estimate: 6
-actual: 10
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimate-and-actuals
-branch: flow-speed-and-token-optimiz--estimate-and-actuals
 verified_head: 65c5cb826ba0b06ee7a1101715827f8d252b4c4b
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 4, verify 4, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Estimate and actuals

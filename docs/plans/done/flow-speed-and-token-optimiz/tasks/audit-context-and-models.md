@@ -6,21 +6,17 @@ value: The audit reads task files instead of inlined text and mechanical roles r
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/skills/start-development/scripts/ticket_cmds/args.py, plugins/workbench/skills/start-development/tests/test_ticket_args.py, plugins/workbench/agents/scope-auditor.md, plugins/workbench/workflows/tests/plan-execute-audit-context.test.mjs, plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_args.py -q && ruff check skills && bash scripts/run-tests.sh --only workflows"
 depends_on: [cascade-release]
-owns: []
-uses: [ac-evidence, land-step, epic-run-args]
 model: sonnet
-estimate: 6
-actual: 6
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--audit-context-and-models
-branch: flow-speed-and-token-optimiz--audit-context-and-models
 verified_head: f26be92333627e003c2aa0514252c6630d7e9dc0
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 2, verify 2, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Audit context and models

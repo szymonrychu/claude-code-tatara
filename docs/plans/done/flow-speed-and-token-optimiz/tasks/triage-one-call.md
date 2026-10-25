@@ -6,21 +6,17 @@ value: One haiku round trip per verify instead of three
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/triage.py, plugins/workbench/scripts/tests/test_triage.py, plugins/workbench/scripts/tests/test_verify_triage_one_call.py]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_triage_one_call.py scripts/tests/test_triage.py scripts/tests/test_triage_false_finding.py scripts/tests/test_verify_task.py -q && ruff check scripts"
 depends_on: [gate-provenance]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-actual: 11
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--triage-one-call
-branch: flow-speed-and-token-optimiz--triage-one-call
 verified_head: 4e33d73c22ccb4c07e6b9d9c1c74edeb770ed6bc
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: ["Implementer states tests were written after the implementation (no red-first cycle)"]
-estimate_by: formula
-actual_roles: "impl 2, verify 6, review 2, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Triage one call

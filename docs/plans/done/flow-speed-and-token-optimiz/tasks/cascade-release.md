@@ -6,21 +6,17 @@ value: "A medium finding no longer fails every dependent; the run continues and 
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows"
 depends_on: [review-tiering]
-owns: []
-uses: [land-step]
 model: opus
-estimate: 5
-actual: 6
 review: full
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cascade-release
-branch: "HEAD of worktree flow-speed-and-token-optimiz--cascade-release (commit bae1f36)"
 verified_head: bae1f364c7672d48a9c8d4e2826d3431f0902c83
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 3, verify 1, review 1, fix 2"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Cascade release

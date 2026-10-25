@@ -6,21 +6,17 @@ value: "A renamed test no longer costs a fix round; loose matches are shown to t
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/verify-task.py, plugins/workbench/agents/implementer.md, plugins/workbench/agents/scope-auditor.md, plugins/workbench/scripts/tests/test_verify_ac_evidence.py, plugins/workbench/workflows/tests/plan-execute-ac-evidence.test.mjs]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_ac_evidence.py scripts/tests/test_verify_task.py scripts/tests/test_verify_ref_runner.py -q && ruff check scripts && bash scripts/run-tests.sh --only workflows"
 depends_on: [verify-scope-wiring]
-owns: [ac-evidence]
-uses: []
 model: sonnet
-estimate: 6
-actual: 11
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--ac-evidence-map
-branch: flow-speed-and-token-optimiz--ac-evidence-map
 verified_head: 1f6bbfba60932838ccffaaca3eeee056ee46cefb
-run: flow-speed-and-token-optimiz
-provides: [ac-evidence]
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 4, verify 3, review 2, fix 2"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # AC evidence map

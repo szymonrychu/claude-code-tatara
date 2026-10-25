@@ -6,21 +6,17 @@ value: continue --launch never lands a task with no check
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_continue_launch.py -q && ruff check skills"
 depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-actual: 7
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--launch-land-verify
-branch: flow-speed-and-token-optimiz--launch-land-verify
 verified_head: 560074c9936fc356abc5ae8091fa3c6bede921f8
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 2, verify 3, review 1, fix 2"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 790346
+actual_roles: "impl 4, review 4"
+actual_role_tokens: "impl 567394, review 222952"
 ---
 
 # Launch land verify

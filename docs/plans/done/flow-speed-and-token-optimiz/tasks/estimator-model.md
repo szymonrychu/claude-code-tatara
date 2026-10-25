@@ -6,21 +6,17 @@ value: "Realistic agent-minute estimates from one fitted, refittable parameter f
 files: [plugins/workbench/scripts/lib/estimator.json, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/tests/test_estimator.py, plugins/workbench/scripts/tests/fixtures/estimator_tasks.json]
 verify: "cd plugins/workbench && pytest scripts/tests/test_estimator.py -q && ruff check scripts"
 depends_on: []
-owns: [estimator-params]
-uses: []
 model: sonnet
-estimate: 6
-actual: 3
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--estimator-model
-branch: worktree-flow-speed-and-token-optimiz--estimator-model
 verified_head: 3a1ea040255888a4a4e5e17169fbb748951481d4
-run: flow-speed-and-token-optimiz
-provides: [estimator-params]
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 1, verify 1, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Estimator model

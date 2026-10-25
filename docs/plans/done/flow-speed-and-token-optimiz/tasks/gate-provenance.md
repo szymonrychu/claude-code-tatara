@@ -6,21 +6,17 @@ value: "Dependents are gated only on the lines they wrote, ending the gate-repea
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/scripts/tests/test_verify_provenance.py, plugins/workbench/workflows/tests/plan-execute-provenance.test.mjs]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_provenance.py scripts/tests/test_verify_task.py -q && ruff check scripts && bash scripts/run-tests.sh --only workflows"
 depends_on: [ac-evidence-map]
-owns: []
-uses: [fork-point]
 model: sonnet
-estimate: 6
-actual: 9
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--gate-provenance
-branch: flow-speed-and-token-optimiz--gate-provenance
 verified_head: 5af4a66c1a5f15553932f603c678b34af113427a
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 3, verify 3, review 2, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 9
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Gate provenance

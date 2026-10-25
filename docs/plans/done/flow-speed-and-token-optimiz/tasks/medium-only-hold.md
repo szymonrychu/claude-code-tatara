@@ -6,21 +6,17 @@ value: A task with open medium findings never lands before the orchestrator rule
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-medium-release.test.mjs]
 verify: "cd plugins/workbench && node --test workflows/tests/plan-execute-medium-release.test.mjs && bash scripts/run-tests.sh --only workflows"
 depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change, shell-quote-refs]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-actual: 4
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--medium-only-hold
-branch: flow-speed-and-token-optimiz--medium-only-hold
 verified_head: 6fe6d7ba001735aa25a4bf1aa9d8f55d1b9d9931
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: [AC1, AC2, AC3]
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 1, verify 1, review 1, fix 1, false-finding 1"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 2308247
+actual_roles: "impl 5, review 7"
+actual_role_tokens: "impl 1403909, review 904338"
 ---
 
 # Medium only hold

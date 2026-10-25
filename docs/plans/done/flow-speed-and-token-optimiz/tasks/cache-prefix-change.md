@@ -6,21 +6,17 @@ value: "The cache lever ships only when measured to save; otherwise the no-op is
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-prompt-prefix.test.mjs, MEMORY.md]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows"
 depends_on: [cache-probe, audit-context-and-models]
-owns: []
-uses: [cache-probe-verdict]
 model: sonnet
-estimate: 5
-actual: 3
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--cache-prefix-change
-branch: flow-speed-and-token-optimiz--cache-prefix-change
 verified_head: 0894fff7e69ea51fbcad51628ed425bb531f0465
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: [AC3]
-process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
-estimate_by: formula
-actual_roles: "impl 1, verify 2, review 1, fix 1"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 1925135
+actual_roles: "impl 2, review 5"
+actual_role_tokens: "impl 451245, review 1473890"
 ---
 
 # Cache prefix change

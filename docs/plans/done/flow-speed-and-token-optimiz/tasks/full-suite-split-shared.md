@@ -6,21 +6,17 @@ value: The estimator and the plan lint can no longer disagree on what a full-sui
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/scripts/lib/estimator.py, plugins/workbench/scripts/lib/estimator.json, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/scripts/tests/test_estimator.py]
 verify: "cd plugins/workbench && pytest scripts/tests/test_estimator.py -q && node --test workflows/tests/validate-tasks-sizing.test.mjs && ruff check scripts"
 depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-actual: 3
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--full-suite-split-shared
-branch: flow-speed-and-token-optimiz--full-suite-split-shared
 verified_head: 7937ba8d97fa0c985fafd67ce0b116534273578a
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 1, verify 1, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 537834
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 367157, review 170677"
 ---
 
 # Full suite split shared

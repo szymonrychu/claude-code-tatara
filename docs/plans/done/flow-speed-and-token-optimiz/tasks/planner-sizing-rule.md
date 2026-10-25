@@ -6,21 +6,17 @@ value: New plans cannot schedule full-suite verifies and size tasks by what thei
 files: [plugins/workbench/workflows/validate-tasks.mjs, plugins/workbench/workflows/tests/validate-tasks-sizing.test.mjs, plugins/workbench/skills/start-development/references/phases-1-3.md, plugins/workbench/agents/planner.md, plugins/workbench/skills/start-development/tests/test_planner_agent.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_planner_agent.py skills/start-development/tests/test_review_flow_docs.py -q && bash scripts/run-tests.sh --only workflows"
 depends_on: [estimator-model]
-owns: []
-uses: [estimator-params]
 model: sonnet
-estimate: 6
-actual: 8
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--planner-sizing-rule
-branch: flow-speed-and-token-optimiz--planner-sizing-rule
 verified_head: b90c434c154199a211e1c0523f47a0634be517f6
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 6, verify 1, review 1, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Planner sizing rule

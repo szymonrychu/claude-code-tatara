@@ -6,21 +6,17 @@ value: "No verifier dies at the Bash cap and TDD-revert costs one short run, not
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/scripts/tests/test_verify_tdd_revert_dirs.py, plugins/workbench/scripts/tests/test_verify_task.py, plugins/workbench/agents/verifier.md]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_bounded.py scripts/tests/test_verify_tdd_revert_dirs.py scripts/tests/test_verify_task.py scripts/tests/test_verify_ref_runner.py scripts/tests/test_verify_command_tail.py -q && ruff check scripts"
 depends_on: []
-owns: [verify-task-cli]
-uses: []
 model: sonnet
-estimate: 6
-actual: 12
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-task-bounded-runs
-branch: flow-speed-and-token-optimiz--verify-task-bounded-runs
 verified_head: d7962ed841c161d2f01d674424f7baf11361abd7
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 4, verify 5, review 2, fix 1"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 12
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Verify task bounded runs

@@ -6,21 +6,17 @@ value: "One command between runs: apply, auto-accept, land the clean tasks, prin
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue_launch.py]
 verify: "cd plugins/workbench && pytest skills/start-development/tests/test_ticket_continue_launch.py skills/start-development/tests/test_ticket_continue.py -q && ruff check skills"
 depends_on: []
-owns: [continue-launch-lines]
-uses: [merge-target-worktree]
 model: sonnet
-estimate: 5
-actual: 11
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--continue-launch
-branch: flow-speed-and-token-optimiz--continue-launch
 verified_head: e5ec85e53c596b77938b213c41f305bbfa2b2520
-run: flow-speed-and-token-optimiz
-provides: [continue-launch-lines]
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 3, verify 3, review 2, fix 4"
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Continue launch

@@ -6,21 +6,17 @@ value: "A verifier never dies at the 600 s Bash cap: one deadline covers every c
 files: [plugins/workbench/scripts/verify-task.py, plugins/workbench/scripts/tests/test_verify_bounded.py, plugins/workbench/agents/verifier.md, plugins/workbench/workflows/plan-execute.js]
 verify: "cd plugins/workbench && pytest scripts/tests/test_verify_bounded.py -q && ruff check scripts"
 depends_on: [audit-context-and-models, review-tiering, triage-one-call, flow-docs-update, cache-probe, cache-prefix-change]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-actual: 12
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/flow-speed-and-token-optimiz--verify-shared-deadline
-branch: flow-speed-and-token-optimiz--verify-shared-deadline
 verified_head: cc58bb40abfa3b3357b353a66a33926094e99848
-run: flow-speed-and-token-optimiz
-provides: []
-acs_for_audit: []
-process_gaps: []
-estimate_by: formula
-actual_roles: "impl 3, verify 3, review 4, fix 2"
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 12
+actual_tokens: 1628788
+actual_roles: "impl 6, review 7"
+actual_role_tokens: "impl 690250, review 938538"
 ---
 
 # Verify shared deadline
