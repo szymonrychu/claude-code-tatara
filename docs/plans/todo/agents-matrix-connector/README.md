@@ -1,6 +1,6 @@
 ---
 title: agents matrix connector
-blockers: []
+blockers: [webhook-event-filters]
 stage: build
 owner: ""
 repos: [agents-matrix-connector, agents-helmfile, agents-web]
