@@ -23,15 +23,15 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Secrets for the connector (design D2, D13; user-run step U2). Paths are in code/agents-helmfile.
+Secrets for the connector (design D2, D13, revision R1). Paths are in code/agents-helmfile.
 
-Precondition, checked first: the U2 token file `/Users/szymonri/Documents/claude-code-tatara/.scratchpad/agents-matrix-connector/matrix-token` exists and is non-empty (never print it). Otherwise end `blocked`, whoCanClear "user: user-run steps U1 and U2 of agents-matrix-connector design.md".
+Precondition, checked first: Secret `hermes-agent-matrix` in namespace `ai` has a non-empty key `MATRIX_ACCESS_TOKEN` (read-only kubectl, never printed) and `GET /_matrix/client/v3/account/whoami` with it answers `@hermes:szymonrichert.pl` (the token only through a file or a pipe; only the returned user id is shown). Otherwise end `blocked`, whoCanClear "user: Secret ai/hermes-agent-matrix has no working MATRIX_ACCESS_TOKEN".
 
-- `scripts/bootstrap-secrets.sh` gains `bootstrap_matrix_connector`: when neither `values/agents-matrix-connector/default.secrets.yaml` nor `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml` exists, it requires `MATRIX_CONNECTOR_TOKEN_FILE` (path to the U2 token file; missing or empty exits 1 naming the variable), generates one service token (`openssl rand -hex 32`) and writes, SOPS-encrypted through the existing `encrypt_to`:
+- `scripts/bootstrap-secrets.sh` gains `bootstrap_matrix_connector`: when neither `values/agents-matrix-connector/default.secrets.yaml` nor `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml` exists, it requires `MATRIX_CONNECTOR_TOKEN_FILE` (path to a file holding the Matrix access token; missing or empty exits 1 naming the variable), generates one service token (`openssl rand -hex 32`) and writes, SOPS-encrypted through the existing `encrypt_to`:
   - `values/agents-matrix-connector/default.secrets.yaml`: `orchestrator.token` and `matrix.accessToken` (chart values of task mxc-chart-workloads).
   - `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`: `serviceApi.tokenHashes.agents-matrix-connector: <sha256 hex of the service token>` (contract `orch-service-tokens`).
   When both exist it does nothing; when exactly one exists it exits 1 naming both (never rotates, never half-writes). Values only travel through pipes and files, as the script's header requires; nothing is printed.
-- Run the script with `MATRIX_CONNECTOR_TOKEN_FILE` set to the U2 file, writing the two files; `.sops.yaml` covers the new paths if its rules do not already.
+- Pipe Secret `ai/hermes-agent-matrix` key `MATRIX_ACCESS_TOKEN` into a mode-600 file under `/Users/szymonri/Documents/claude-code-tatara/.scratchpad/agents-matrix-connector/` (never printed), run the script with `MATRIX_CONNECTOR_TOKEN_FILE` set to it, delete the file afterwards, writing the two files; `.sops.yaml` covers the new paths if its rules do not already.
 - `tests/test_secrets.py`: the new files are SOPS-encrypted with the expected keys; the orchestrator hash is the sha256 of the connector's service token (checked in-process as the existing tests read encrypted files, never printed); re-running never rotates; one-of-two exits 1; a missing token file exits 1; no value is printed.
 
 User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge.'
@@ -70,3 +70,5 @@ Both files are committed encrypted; the orchestrator will accept the connector's
 - Same shape as agents-webhook-microservice task helmfile-service-token (`bootstrap_webhook`).
 - After this task is done the orchestrator deletes the U2 token file (design U2).
 - The values dir is `values/agents-orchestrator/` after orchestrator-rename-sessions (design D15).
+
+- 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
