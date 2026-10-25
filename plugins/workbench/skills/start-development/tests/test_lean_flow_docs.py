@@ -242,3 +242,16 @@ def test_plugin_json_and_readme_describe_the_lean_loop():
         assert s in readme, s
     for gone in ("approval ledger", "script+haiku", "risk tier", "forward-merged", "<epic>-<task>"):
         assert gone not in readme, gone
+
+
+def test_every_new_task_command_carries_points():
+    root = Path(__file__).resolve().parents[3]
+    files = [*root.glob("agents/*.md"), *root.glob("skills/**/*.md")]
+    found = 0
+    for f in files:
+        if "/tests/" in str(f) or f.name == "CHANGELOG.md":
+            continue
+        for span in re.findall(r"`([^`]*ticket\.py new-task[^`]*)`", f.read_text(), re.S):
+            found += 1
+            assert "--points" in span, f"{f}: {span!r}"
+    assert found >= 5

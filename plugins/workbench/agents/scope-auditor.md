@@ -67,7 +67,7 @@ Every gap as `{what, where, evidence, suggestedTask}`:
 - `where`: the file or area it should have landed in.
 - `evidence`: `file:line`, or the grep or command that came back empty or failed.
 - `suggestedTask`: one line the orchestrator can turn into a new task in the
-  same epic with `ticket.py new-task`.
+  same epic with `ticket.py new-task --points <n>`.
 
 Gaps become new tasks in this epic and get built before it closes; never call one
 a follow-up, a known issue or a later epic's work. If everything landed, say so in

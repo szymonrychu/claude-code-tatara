@@ -138,4 +138,4 @@ run in the main checkout, not a linked worktree` inside a linked worktree. After
 
 Work an implementer finds outside its task's files is returned as `{what, where, why}`: what the gap is,
 where it sits (file or repo), and why the task could not fix it. The orchestrator adds it as a new task in
-the same epic with `ticket.py new-task`. It is never a way to leave agreed scope undone.
+the same epic with `ticket.py new-task --points <n>`. It is never a way to leave agreed scope undone.

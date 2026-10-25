@@ -27,7 +27,7 @@ answers no at the gate, the orchestrator commits them). Details: `references/tic
 Say the size and why in one line; borderline starts lean. Both are one epic with task files, one gate, one loop.
 - **Lean** when all hold: one repo, about ten files you can name, no new cross-repo interface, schema or
   deployment-topology change, nothing expensive to reverse, no design fork. Lean skips the lenses and design.md: phase
-  1 is your own recon, you write the tasks with `epic-task-create` (`ticket.py new-task`).
+  1 is your own recon, you write the tasks with `epic-task-create` (`ticket.py new-task --points <n>`).
 - **Full** when any holds: more than one `code/` submodule, a cross-repo contract, a genuine fork worth a human
   decision, authz, secrets, cluster exposure or container privilege, or files you cannot name yet.
 
