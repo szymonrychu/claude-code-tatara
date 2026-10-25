@@ -1,6 +1,6 @@
 ---
 title: orch service port docs
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: operators and the next service know how to get and use a service token
 files: [README.md, MEMORY.md, tests/test_readme_api.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_readme_api.py -q && uv run ruff check . && uv 
 depends_on: [orch-service-port-auth, orch-chart-services-port]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 0f45a86
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 10
+actual_tokens: 553911
+actual_roles: "impl 7, review 3"
+actual_role_tokens: "impl 446128, review 107783"
 ---
 
 # orch service port docs
@@ -59,3 +59,5 @@ A reader can mint a token, configure both sides and knows which routes the port 
 ## Notes
 
 - Doc task plus one doc test.
+
+- 2026-10-25 done
