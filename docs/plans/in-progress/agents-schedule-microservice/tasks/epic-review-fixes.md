@@ -1,6 +1,6 @@
 ---
 title: epic review fixes
-status: todo
+status: done
 repo: agents-schedule
 value: "one bad run never stops all schedules, and the api allowlist really sees the socket peer behind the SSO sidecar"
 files: [src/agents_schedule/dispatcher.py, src/agents_schedule/tracker.py, src/agents_schedule/scheduler.py, src/agents_schedule/db/runs.py, src/agents_schedule/api/runs.py, src/agents_schedule/runtime.py, Dockerfile, tests/test_dispatcher.py, tests/test_tracker.py, tests/test_entrypoints.py, tests/test_ci_workflow.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_dispatcher.py tests/test_tracker.py t
 depends_on: [kind-e2e-api]
 model: ""
 review: ""
-verified_head: ""
+verified_head: d4f6a925b17988e300da312ac8fa3b2a70d6744e
 points: 2
 expected_minutes: 6
 expected_tokens: 494911
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 544297
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 419704, review 124593"
 ---
 
 # epic review fixes
@@ -68,3 +68,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
