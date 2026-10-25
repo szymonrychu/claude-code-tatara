@@ -1,6 +1,6 @@
 ---
 title: public scale route
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: users and headless callers scale a cluster through a documented API
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_api_scale.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-public-scale-route/agent-orchestrator
 branch: cluster-scaling-public-scale-route
-verified_head: ""
-run: ""
-provides: []
+verified_head: 126947162cca4e6a9c5241d9b51dcf331a3878aa
+run: cluster-scaling
+provides: [scale-schemas]
+acs_for_audit: []
+process_gaps: []
+fork_point: e91c1bb
 ---
 
 # public scale route

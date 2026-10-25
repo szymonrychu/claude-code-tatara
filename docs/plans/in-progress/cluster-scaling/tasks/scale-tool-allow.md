@@ -1,6 +1,6 @@
 ---
 title: scale tool allow
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "only scalable clusters offer the scale tool, so static and alone agents never see it"
 files: [src/agent_orchestrator/k8s/on_start.py, tests/test_render.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-tool-allow/agent-orchestrator
 branch: cluster-scaling-scale-tool-allow
-verified_head: ""
-run: ""
+verified_head: 69a3929c7b56c667ac316fb2ffda47fa62ae4b10
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: 22cf2836cda5b25385c7cd4b0838e02239118b95
 ---
 
 # scale tool allow

@@ -1,6 +1,6 @@
 ---
 title: smoke scale check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live smoke proves scaling works on the deployed orchestrator
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-smoke-scale-check/agents-helmfile
 branch: cluster-scaling-smoke-scale-check
-verified_head: ""
-run: ""
+verified_head: 0dd5aa28cc96dbe9ed2a4c8cebc9fa1b800ca49e
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # smoke scale check

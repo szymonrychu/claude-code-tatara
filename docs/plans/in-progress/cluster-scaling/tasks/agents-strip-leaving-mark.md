@@ -1,6 +1,6 @@
 ---
 title: agents strip leaving mark
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: users see which agents are leaving and which wait for their turn to finish
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-agents-strip-leaving-mark/agent-orchestrator
 branch: cluster-scaling-agents-strip-leaving-mark
-verified_head: ""
-run: ""
+verified_head: ffc9148a079b6d12b863d1731a8593e877779772
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # agents strip leaving mark

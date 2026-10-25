@@ -1,6 +1,6 @@
 ---
 title: deploy pin scaling
-status: in-progress
+status: blocked
 repo: agents-helmfile
 value: the agents namespace runs cluster scaling
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-deploy-pin-scaling/agents-helmfile
 branch: cluster-scaling-deploy-pin-scaling
-verified_head: ""
-run: ""
+verified_head: 0dd5aa28cc96dbe9ed2a4c8cebc9fa1b800ca49e
+run: cluster-scaling
 provides: []
+acs_for_audit: [AC5]
+process_gaps: []
 ---
 
 # deploy pin scaling

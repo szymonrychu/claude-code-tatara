@@ -1,6 +1,6 @@
 ---
 title: scale ui control
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: users grow or shrink a cluster from the cluster view within its cap
 files: [frontend/src/chat/ScaleControl.tsx, frontend/src/chat/ScaleControl.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/api/client.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-ui-control/agent-orchestrator
 branch: cluster-scaling-scale-ui-control
-verified_head: ""
-run: ""
+verified_head: b484c95d547ff7f70f72ebe5969a717407413621
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # scale ui control

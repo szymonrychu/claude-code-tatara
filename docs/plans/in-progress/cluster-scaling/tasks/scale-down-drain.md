@@ -1,6 +1,6 @@
 ---
 title: scale down drain
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: shrinking a hive never cuts an agent off mid-turn
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/settings.py, README.md, MEMORY.md, tests/test_reconciler.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-down-drain/agent-orchestrator
 branch: cluster-scaling-scale-down-drain
-verified_head: ""
-run: ""
-provides: []
+verified_head: e91c1bba8febbc434c5c80f8f25c214068d62c8c
+run: cluster-scaling
+provides: [scale-drain-status]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # scale down drain

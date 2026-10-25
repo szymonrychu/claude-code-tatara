@@ -1,6 +1,6 @@
 ---
 title: scale replicas repo
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "one guarded writer changes a running cluster's agent count without rolling pods"
 files: [src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py, MEMORY.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-replicas-repo/agent-orchestrator
 branch: cluster-scaling-scale-replicas-repo
-verified_head: ""
-run: ""
-provides: []
+verified_head: 8446f551f292d48a4b6e209713eae58529722462
+run: cluster-scaling
+provides: [scale-replicas-write]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # scale replicas repo

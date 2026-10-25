@@ -1,6 +1,6 @@
 ---
 title: kind e2e scaling
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: CI proves on a real cluster that agents join and leave without restarting the others
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-kind-e2e-scaling/agent-orchestrator
-branch: cluster-scaling-kind-e2e-scaling
-verified_head: ""
-run: ""
+branch: "current worktree branch (HEAD 41567ec)"
+verified_head: 41567ec89755b9c214ff4523aec02e482d5d8c2b
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
 ---
 
 # kind e2e scaling

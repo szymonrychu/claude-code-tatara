@@ -1,6 +1,6 @@
 ---
 title: agent scale route
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the leader agent grows or shrinks its own hive with a tool
 files: [src/agent_orchestrator/api/agent.py, README.md, openapi.json, frontend/src/api/schema.d.ts, tests/test_agent_scale.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-agent-scale-route/agent-orchestrator
 branch: cluster-scaling-agent-scale-route
-verified_head: ""
-run: ""
+verified_head: 0e946497dbd1f4ba9875b743aa1d1157fc2cc441
+run: cluster-scaling
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: ffc9148
 ---
 
 # agent scale route
