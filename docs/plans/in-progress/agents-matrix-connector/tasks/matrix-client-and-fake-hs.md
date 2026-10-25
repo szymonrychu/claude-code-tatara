@@ -1,6 +1,6 @@
 ---
 title: matrix client and fake hs
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the connector talks to Synapse as a bot user, and every Matrix path is testable against an in-memory homeserver"
 files: [src/agents_matrix_connector/matrix.py, src/agents_matrix_connector/fake_homeserver.py, tests/test_matrix_client.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_matrix_client.py -q && uv run ruff ch
 depends_on: [mxc-scaffold-and-cli]
 model: opus
 review: ""
-verified_head: ""
+verified_head: f136e440a270d369d80c8f0450c2a05aa90357e4
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 7
+actual_tokens: 1326880
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 1208109, review 118771"
 ---
 
 # matrix client and fake hs
@@ -75,3 +75,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - Matrix v3 client-server shapes: `/sync` body `{"next_batch", "rooms": {"join": {id: {"state": {"events": []}, "timeline": {"events": [], "limited": false}}}, "invite": {id: {"invite_state": {"events": []}}}, "leave": {}}}`.
 - Hermes' `roomadmin.py` (ConfigMap `ai/hermes-agent-files`, key `scripts__hermes-rooms__roomadmin.py`) uses the same endpoints with urllib against the live Synapse; read it with `kubectl -n ai get cm hermes-agent-files -o go-template='{{index .data "scripts__hermes-rooms__roomadmin.py"}}'` for shapes (read-only).
 - Keep the fake deterministic: no wall-clock sleeps except the long-poll wait bounded by the request timeout.
+
+- 2026-10-25 done
