@@ -63,3 +63,5 @@ A new operator can wire a forge or Grafana from the README alone.
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
 
 Gate Q23 answer (user, 2026-10-25): the limits (max in progress overall, max in progress per endpoint, queue cap, body cap) are settings with defaults 3, 1, 500 and 5 MiB, each set from an agents-webhook Helm chart value (for example `limits.maxInProgress`, `limits.maxInProgressPerEndpoint`, `limits.queueCap`, `limits.maxBodyBytes`) rendered into the ingest and worker env, and documented. This task delivers its part of that.
+
+Orchestrator note (2026-10-25): README must also cover agent reuse (preset reuse_running_agent, same-item routing to a running cluster, ordering, fallback and the `reuse_fallback` reason) and the per-subcommand settings (migrate/ingest need no orchestrator token).
