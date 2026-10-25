@@ -1,6 +1,6 @@
 ---
 title: runs repository
-status: in-progress
+status: done
 repo: agents-schedule
 value: runs are inserted exactly once per fire and change state only through guarded transitions
 files: [src/agents_schedule/db/runs.py, tests/test_runs_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_runs_repo.py -q && uv run ruff check 
 depends_on: [schema-migrations]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 587efb110ef5737c2e67bffdfabb721bf7dc5951
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 911884
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 650336, review 261548"
 ---
 
 # runs repository
@@ -69,3 +69,5 @@ The scheduler, dispatcher, tracker and api share one runs module whose writes ar
 - `runs` is the only multi-writer table (api inserts manual runs, worker the rest), and every change is status-guarded (AGENTS.md hard rule).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
