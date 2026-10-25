@@ -261,6 +261,7 @@ Cross-epic (in `docs/plans/contracts.json`): the agents-common parts, `orch-serv
 - Q8: Add an optional global author allowlist that ignores issue and comment events from other authors when set (off by default)? [recommended: yes (D4)]
 - Q9: Use bearer service tokens on a dedicated orchestrator port 8002 (sha256 hashes in ORCH_SERVICE_TOKENS) serving only the routes a trigger service needs? [recommended: yes (D10)]
 - Q10: Put shared code in a new library component agents-common pinned by git tag v0.1.0? [recommended: yes (D1)]
+- Q11: Create szymonrychu/agents-common and szymonrychu/agents-webhook as public repos with workbench:component-add in the meta epic agents-webhook-component? [recommended: yes (D15)]
 
 ## Irreversible operations in scope
 
