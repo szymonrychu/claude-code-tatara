@@ -6,21 +6,17 @@ value: the smoke proves any-mcp is connected in a real agent session
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
 verify: "uv run pytest tests/test_smoke_script.py -q -p no:cacheprovider && mise run lint"
 depends_on: [db-secret-name-from-cnpg, smoke-script]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-smoke-session-mcp-check/agents-helmfile
-branch: agents-helmfile-smoke-session-mcp-check
 verified_head: c45fd6ee57ddfd48145a62a9651b5c3743f26fde
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 235329
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 127584, review 107745"
 ---
 
 # smoke session mcp check

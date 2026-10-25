@@ -6,21 +6,17 @@ value: "The Claude token, master key and backup credentials exist encrypted in g
 files: [scripts/bootstrap-secrets.sh, values/agent-orchestrator/default.secrets.yaml, values/agent-orchestrator-db/default.secrets.yaml, tests/test_secrets.py]
 verify: "uv run pytest tests/test_secrets.py tests/test_repo_hygiene.py -q && mise run lint"
 depends_on: [helmfile-base]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-secrets-bootstrap/agents-helmfile
-branch: HEAD
 verified_head: bc4e0d317f1aedade99bfd0a70633790275f3d37
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: ["Token exposed in an implementer transcript. The committed orchestrator secret holds that exposed token, so rotation and a regenerate commit are still owed."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # secrets bootstrap

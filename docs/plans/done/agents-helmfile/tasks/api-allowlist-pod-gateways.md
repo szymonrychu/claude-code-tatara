@@ -6,21 +6,17 @@ value: LAN users reach the UI while agent pods stay refused
 files: [values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest tests/test_orchestrator_release.py -q -p no:cacheprovider && mise run lint"
 depends_on: [db-secret-name-from-cnpg, orchestrator-release]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-api-allowlist-pod-gateways/agents-helmfile
-branch: agents-helmfile-api-allowlist-pod-gateways
 verified_head: 02b3cc90b1113e4c5b9e1840b2d206e1676c8b1e
-run: agents-helmfile
-provides: []
-acs_for_audit: [AC2]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 312768
+actual_roles: "impl 1, review 2"
+actual_role_tokens: "impl 152479, review 160289"
 ---
 
 # api allowlist pod gateways

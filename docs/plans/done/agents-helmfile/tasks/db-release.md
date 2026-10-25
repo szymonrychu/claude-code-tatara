@@ -6,21 +6,17 @@ value: A backed-up Postgres for the orchestrator in namespace agents.
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator-db/common.yaml, tests/test_db_release.py]
 verify: "uv run pytest tests/test_db_release.py -q && mise run lint"
 depends_on: [hook-missing-namespace, secrets-bootstrap]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-release/agents-helmfile
-branch: agents-helmfile-db-release
 verified_head: 1544c272131989687db0f9aa02024cd3ca7074f7
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 560910
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 331423, review 229487"
 ---
 
 # db release

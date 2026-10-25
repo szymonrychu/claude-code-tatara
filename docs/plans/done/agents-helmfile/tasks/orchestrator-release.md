@@ -6,21 +6,17 @@ value: "The orchestrator runs in namespace agents and answers at agents.szymonri
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest tests/test_orchestrator_release.py tests/test_db_release.py -q && mise run lint"
 depends_on: [db-release]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-orchestrator-release/agents-helmfile
-branch: agents-helmfile-orchestrator-release
 verified_head: fa002cae130bc3a28a8d7d713d91aceb9e12b712
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: ["No red-then-green evidence for the TDD check: release, values and tests came from earlier commits (7fb17c5, 2bdd700), and the only change in this round is a lint fix to a test file."]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: 1982025
+actual_roles: "impl 5, review 4"
+actual_role_tokens: "impl 1245755, review 736270"
 ---
 
 # orchestrator release

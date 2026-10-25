@@ -6,21 +6,17 @@ value: the orchestrator connects to the database CNPG actually created
 files: [values/agent-orchestrator/common.yaml, values/agent-orchestrator-db/common.yaml, tests/test_orchestrator_release.py, scripts/smoke.sh, README.md]
 verify: "uv run pytest tests/test_orchestrator_release.py tests/test_db_release.py -q -p no:cacheprovider && mise run lint"
 depends_on: [db-release, mise-tasks, orchestrator-release, smoke-script]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-db-secret-name-from-cnpg/agents-helmfile
-branch: agents-helmfile-db-secret-name-from-cnpg
 verified_head: 375635a217c2ade60efe6ebffee99dd121d70fa8
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: ["mise run lint fails on 2 errors outside this task's files (FURB167 re.M at tests/test_helmfile_base.py:121, PLW1510 at tests/test_mise_tasks.py:87). The new code in tests/test_orchestrator_release.py is lint-clean (it carries noqa PLW1510). Fix in the integrating branch."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 394558
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 250539, review 144019"
 ---
 
 # db secret name from cnpg

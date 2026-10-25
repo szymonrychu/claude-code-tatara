@@ -6,22 +6,17 @@ value: apply can only ever hit the homelab cluster and nothing sensitive gets co
 files: [mise.toml, .gitignore, .hook.sh, tests/test_mise_tasks.py, tests/test_repo_hygiene.py, tests/test_helmfile_base.py]
 verify: "uv run pytest tests/test_mise_tasks.py tests/test_repo_hygiene.py tests/test_helmfile_base.py -q -p no:cacheprovider && mise run lint"
 depends_on: [helmfile-base, hook-missing-namespace, mise-tasks, scaffold-repo, smoke-script]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-apply-guard-and-hygiene/agents-helmfile
-branch: agents-helmfile-apply-guard-and-hygiene
 verified_head: cdc29e5562c37f5dcf2af56b8d35d46d3c1f3f11
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 6b8fa017763c2ea130a9a77556e7e14e88cdfb7e
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 462557
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 351319, review 111238"
 ---
 
 # apply guard and hygiene

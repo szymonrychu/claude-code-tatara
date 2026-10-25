@@ -6,22 +6,17 @@ value: "A tested, secret-safe repo skeleton with lint, test and the helmfile rep
 files: [pyproject.toml, uv.lock, mise.toml, .gitignore, .sops.yaml, .gitleaks.toml, .pre-commit-config.yaml, tests/test_repo_hygiene.py]
 verify: "uv run pytest tests/test_repo_hygiene.py -q && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-scaffold-repo/agents-helmfile
-branch: agents-helmfile-scaffold-repo
 verified_head: 4f155da761f11325817e9d628bce76eb0d80a1cb
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: ["No red run was recorded. The implementer says tests were written together with the config, and the verifier asked for a revert-to-merge-base red/green proof in tests.red and verification.evidence.", The independent verify-task.py call was blocked by the guard-bash hook because the requirement text mentions sops. It needs a re-run or a hand verification.]
-fork_point: 3224685
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # scaffold repo

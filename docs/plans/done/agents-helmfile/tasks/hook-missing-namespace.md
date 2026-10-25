@@ -6,21 +6,17 @@ value: a first deploy into an empty cluster works
 files: [.hook.sh, tests/test_helmfile_base.py]
 verify: "uv run pytest tests/test_helmfile_base.py -q && mise run lint"
 depends_on: [helmfile-base]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-hook-missing-namespace/agents-helmfile
-branch: agents-helmfile-hook-missing-namespace
 verified_head: 1fcd489ba971394e2d64fdca49f904ba730a3f11
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1654691
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 1214032, review 440659"
 ---
 
 # hook missing namespace

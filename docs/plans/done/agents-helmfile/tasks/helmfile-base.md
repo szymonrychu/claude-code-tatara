@@ -6,21 +6,17 @@ value: "The namespace-agents helmfile skeleton with the regcred hook, so release
 files: [helmfile.yaml.gotmpl, .hook.sh, values/common.yaml, raw/regcred.pre.secrets.yaml, tests/conftest.py, tests/test_helmfile_base.py]
 verify: "uv run pytest tests/test_helmfile_base.py -q && mise run lint"
 depends_on: [scaffold-repo]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-helmfile-base/agents-helmfile
-branch: agents-helmfile-helmfile-base
 verified_head: bccbbef451145660efb6091b91ad618385eed8d4
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile base

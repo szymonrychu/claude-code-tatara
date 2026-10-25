@@ -6,21 +6,17 @@ value: A repeatable proof that the deployed UI answers and a fresh agent pod lis
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py]
 verify: "uv run pytest tests/test_smoke_script.py -q && mise run lint"
 depends_on: [orchestrator-release, mise-tasks]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-smoke-script/agents-helmfile
-branch: agents-helmfile-smoke-script
 verified_head: 6b8fa017763c2ea130a9a77556e7e14e88cdfb7e
-run: agents-helmfile
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 854683
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 603822, review 250861"
 ---
 
 # smoke script

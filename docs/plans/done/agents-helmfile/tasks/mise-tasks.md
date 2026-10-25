@@ -6,21 +6,17 @@ value: "One command each to diff and apply the namespace locally, guarded by lin
 files: [mise.toml, README.md, tests/test_mise_tasks.py]
 verify: "uv run pytest tests/test_mise_tasks.py -q && mise run lint"
 depends_on: [helmfile-base]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-helmfile-mise-tasks/agents-helmfile
-branch: agents-helmfile-mise-tasks
 verified_head: 05c971cbc6dfcb03a0a6f259508d894dd6f1b8db
-run: agents-helmfile
-provides: []
-acs_for_audit: [AC4]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # mise tasks
