@@ -9,6 +9,11 @@ depends_on: [stamp-actuals, calibration-lib]
 model: opus
 review: ""
 verified_head: d257ca1
+points_actual: 8
+actual_minutes: 16
+actual_tokens: 3112607
+actual_roles: "impl 13, review 4"
+actual_role_tokens: "impl 2792506, review 320101"
 ---
 
 # Retro command
@@ -69,5 +74,7 @@ At close one command writes the measured half of RETRO.md from the task files an
 - Fix-as-ac (brief): KEPT_MODULES is an exact set; REMOVED contains `estimate` (do not name anything that way); RECORD_H2 stays unchanged, retro.md gets its own exact-H2 test; templates are ASCII (test_templates.py:97-103).
 - Fix-as-ac (brief): only RETRO.md (like record.md) is written after `move done`; task files are never touched by retro.
 - This epic's own tasks carry points only in their Notes (`Estimate: <n> points`) and were marked done by the ticket.py on main, which does not stamp; AC10 covers them through the backfilled `.logs/agents` records (D16).
+
+- 2026-10-25 done
 
 - 2026-10-25 done
