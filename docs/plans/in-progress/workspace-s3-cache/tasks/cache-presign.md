@@ -1,6 +1,6 @@
 ---
 title: cache presign
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the reconciler signs one short-lived URL per object, so S3 credentials stay in the reconciler"
 files: [src/agents_orchestrator/cache/presign.py, pyproject.toml, uv.lock, tests/test_cache_presign.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_presign.py && uv run ruff check . && 
 depends_on: [cache-config, cache-transfer-cli]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 781151a
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 959207
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 842702, review 116505"
 ---
 
 # cache presign
@@ -68,3 +68,5 @@ With endpoint `http://rgw:80`, path style on and bucket `b`, `presign(s, "PUT", 
 - `boto3.client("s3", endpoint_url=..., region_name=..., aws_access_key_id=..., aws_secret_access_key=..., verify=..., config=botocore.config.Config(signature_version="s3v4", s3={"addressing_style": ...}))`, then `generate_presigned_url("get_object"|"put_object", Params={"Bucket", "Key"}, ExpiresIn=...)`.
 - For the PUT, do not sign a ContentType the CLI does not send; if signing it, the CLI's `application/zstd` must match.
 - Build the client per call or cache it on the settings identity; presigning is local.
+
+- 2026-10-26 done: Moto does not enforce SigV4, so single-method and single-object scoping is unproven against real RGW; check it in the live smoke (workspace-s3-cache-deploy).
