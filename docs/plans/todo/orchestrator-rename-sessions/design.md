@@ -366,7 +366,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 - Q1: Rename the DB tables and columns too (clusters to sessions, cluster_id to session_id) through two forward migrations, rather than keeping cluster in the DB? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q2: Move the live database to a new CNPG cluster agents-orchestrator-db imported from the old one after the old app is uninstalled, rather than keeping the old agent-orchestrator-db name? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q3: After a green smoke, keep the old database hibernated (pods stopped, PVCs and S3 backups kept, reversible) rather than deleting it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q4: Rename the SSO Secret and Keycloak client to agents-orchestrator(-proxy) through a user-run terraform change in the infrastructure repo (add the new client before the cutover, remove the old one after)? [recommended: yes]
+- Q4: Rename the SSO Secret and Keycloak client to agents-orchestrator(-proxy) through a user-run terraform change in the infrastructure repo (add the new client before the cutover, remove the old one after)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q5: Keep the ORCH_ env prefix, the orch CLI and the X-Orch- header family (they abbreviate orchestrator)? [recommended: yes]
 - Q6: Let webhook-event-filters land first and start this epic's agents-webhook and agents-web tasks after it? [recommended: yes]
 - Q7: The wrapper's own session id becomes wrapper_session_id in the orchestrator DB and API, so session means only the orchestrator's unit? [recommended: yes]
