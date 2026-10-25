@@ -1,6 +1,6 @@
 ---
 title: Plugin readme commands
-status: todo
+status: done
 repo: workbench
 value: "The plugin README shows the ticket.py commands as they now are, so nobody copies a command that exits 2"
 files: [plugins/workbench/README.md, plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [retro-command, deltas-command, actuals-backfill]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e68d094
 ---
 
 # Plugin readme commands
@@ -51,3 +51,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Estimate: 1 points
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
