@@ -1,7 +1,7 @@
 ---
 title: "Housekeeping rules, estimates and retrospectives"
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-24
