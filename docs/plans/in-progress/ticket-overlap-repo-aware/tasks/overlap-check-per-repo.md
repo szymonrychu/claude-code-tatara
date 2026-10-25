@@ -27,8 +27,8 @@ In plugins/workbench/skills/start-development/scripts/ticket.py, the in-progress
 
 ## Acceptance conditions
 
-- AC1: same path in different repos does not refuse a claim or new-task [evidence: command:cd plugins/workbench && python3 -m pytest -q -k overlap]
-- AC2: the workbench lint and plugin tests pass [evidence: command:mise run lint]
+- AC1: same path in different repos does not refuse a claim or new-task [evidence: command:cd plugins/workbench && python3 -m pytest -q skills/start-development/tests -k overlap]
+- AC2: the workbench lint and plugin tests pass [evidence: command:mise run lint && mise run test:plugin]
 
 ## Files
 
@@ -36,17 +36,20 @@ In plugins/workbench/skills/start-development/scripts/ticket.py, the in-progress
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- ticket.py `run_check(..., repo="")`, `candidates()` yielding `(repo, files, label)`, `check --repo`; overlap message `file 'x' in repo 'r' is also in task ...`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Epics touching same-named files in different repos can be in progress together; same repo and path still refuses.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the overlap-by-repo tests under plugins/workbench/skills/start-development/tests; `cd plugins/workbench && python3 -m pytest -q skills/start-development/tests -k overlap` fails.
+- Green: compare (repo, path) pairs in ticket.py; rerun: passes.
+- Run `mise run test:plugin` and `mise run lint`: green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The ticket.py tests live in plugins/workbench/skills/start-development/tests; `mise run test:plugin` runs one pytest process per skill.
+
+- 2026-10-25 amended: AC1 evidence path corrected to the real test location; template sections filled
