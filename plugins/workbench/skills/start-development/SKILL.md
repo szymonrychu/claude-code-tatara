@@ -96,8 +96,8 @@ continued in a fix round) runs in the background, so the session stays free to p
    from: the reviewer checks a clean tree at HEAD, runs the task's `verify` on HEAD, checks every acceptance
    condition against the files, greps for debt markers, then reviews quality. While it reports unmet conditions or
    findings, continue the same implementer with `SendMessage`, then the same reviewer: at most two fix rounds.
-4. Clean: `ticket.py task <epic> <task> --status done --verified-head <head>`. Still open after the cap: `--status
-   escalated --note "<open findings>"`; go on with tasks not depending on it. After the last: phases 5-7.
+4. Clean: `ticket.py task <epic> <task> --status done --verified-head <head> --points-actual <reviewer's pointsActual>`.
+   Open after the cap: `--status escalated --note "<open findings>"`; skip its dependents. After the last: phases 5-7.
 
 Rules: `undelivered` is a finding; `discovered` becomes a new task in the same epic (`ticket.py new-task --points <n>`); an
 escalated task is yours to judge: a sharper requirement (`ticket.py amend`) or `workbench:interrogate` once. The epic

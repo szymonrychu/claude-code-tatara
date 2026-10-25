@@ -30,8 +30,8 @@ Stop and report the refusal if any fails:
 3. Unmet conditions or findings: continue the same implementer with `SendMessage` (the findings, nothing else),
    then the same reviewer. At most two fix rounds; every agent call, fix rounds via SendMessage
    included, runs in the background.
-4. Status after each task, from the main checkout:
-   - clean: `ticket.py task <epic> <task> --status done --verified-head <head>`
+4. Status after each task, from the main checkout (`<n>` is the reviewer's `pointsActual`):
+   - clean: `ticket.py task <epic> <task> --status done --verified-head <head> --points-actual <n>`
    - open after the cap: `ticket.py task <epic> <task> --status escalated --note "<open findings>"`, then continue
      with tasks that do not depend on it.
 

@@ -8,12 +8,15 @@ lines with the same `message.id` and identical usage, so usage is counted once p
 The first `user` line opens with the run marker `[wb <epic>/<task>/<role>]`.
 
 Records live at `<logs>/agents/<agentId>.json`, one per agent, overwritten whole on
-every write. Stdlib only, Python 3.9 safe: the hooks import it.
+every write; `aggregate` turns one task's records into its actual minutes and tokens.
+Stdlib only, Python 3.9 safe: the hooks import it.
 """
 
 from __future__ import annotations
 
+import datetime
 import json
+import math
 import os
 import re
 import tempfile
@@ -168,3 +171,48 @@ def read_records(
             record["tokens"] = summary["tokens"]
         records.append(record)
     return records
+
+
+def _instant(stamp: Any) -> datetime.datetime | None:
+    """An ISO timestamp (`Z` or offset) as an aware datetime, else None."""
+    if not isinstance(stamp, str) or not stamp:
+        return None
+    try:
+        when = datetime.datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return when if when.tzinfo else when.replace(tzinfo=datetime.timezone.utc)
+
+
+def _minutes(seconds: float) -> int:
+    return math.ceil(seconds / 60)
+
+
+def aggregate(records: list[dict]) -> dict:
+    """One task's actuals from its agents' records.
+
+    `minutes`: first start to last end across all agents, ceiling minutes (None without a
+    timed agent). `tokens`: every agent's total. `roles`: role -> (minutes, tokens), the
+    minutes the ceiling of the summed spans of that role's agents.
+    """
+    starts, ends = [], []
+    role_seconds: dict[str, float] = {}
+    role_tokens: dict[str, int] = {}
+    total = 0
+    for record in records:
+        tokens = record.get("tokens")
+        count = _count(tokens.get("total")) if isinstance(tokens, dict) else 0
+        total += count
+        role = role_for(record.get("role"), record.get("agentType"))
+        start, end = _instant(record.get("start")), _instant(record.get("end"))
+        seconds = 0.0
+        if start and end and end >= start:
+            starts.append(start)
+            ends.append(end)
+            seconds = (end - start).total_seconds()
+        if role:
+            role_seconds[role] = role_seconds.get(role, 0.0) + seconds
+            role_tokens[role] = role_tokens.get(role, 0) + count
+    minutes = _minutes((max(ends) - min(starts)).total_seconds()) if starts else None
+    roles = {r: (_minutes(role_seconds[r]), role_tokens[r]) for r in role_seconds}
+    return {"minutes": minutes, "tokens": total, "roles": roles}

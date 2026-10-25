@@ -234,3 +234,33 @@ def test_read_records_resummarises(tmp_path):
     ]
     assert len(agent_usage.read_records(logs)) == 4
     assert agent_usage.read_records(tmp_path / "no-logs") == []
+
+
+def test_aggregate():
+    def span(agent_id, start, end, total, role="impl", **extra):
+        return record(agent_id, role=role, total=total, start=start, end=end, **extra)
+
+    records = [
+        # impl continued in a fix round: one agent, one record, 10:00:00 to 10:20:30 (1230 s).
+        span("a1", "2026-10-24T10:00:00.000Z", "2026-10-24T10:20:30.000Z", 100),
+        span("a2", "2026-10-24T10:21:00.000Z", "2026-10-24T10:30:10.000Z", 200, role="review"),
+        # A second implementer, 541 s: impl minutes are the ceiling of the summed spans.
+        span("a3", "2026-10-24T10:31:00.000Z", "2026-10-24T10:40:01.000Z", 50),
+        # No marker role: the agent type decides.
+        span(
+            "a4",
+            "2026-10-24T10:35:00.000Z",
+            "2026-10-24T10:36:00.000Z",
+            7,
+            role="",
+            agentType="workbench:reviewer",
+        ),
+        # No timestamps: its tokens count, its time cannot.
+        span("a5", None, None, 3),
+    ]
+    assert agent_usage.aggregate(records) == {
+        "minutes": 41,
+        "tokens": 360,
+        "roles": {"impl": (30, 153), "review": (11, 207)},
+    }
+    assert agent_usage.aggregate([]) == {"minutes": None, "tokens": 0, "roles": {}}

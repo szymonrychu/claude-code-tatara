@@ -68,3 +68,13 @@ def test_prompt_marker():
     text = re.sub(r"\s+", " ", SKILL.read_text())
     assert "first line `[wb <epic>/<task>/impl]`" in text
     assert "first line `[wb <epic>/<task>/review]`" in text
+
+
+def test_done_passes_points_actual():
+    text = re.sub(r"\s+", " ", SKILL.read_text())
+    step4 = text[text.index("4. Status after each task") : text.index("## What comes back")]
+    assert (
+        "ticket.py task <epic> <task> --status done --verified-head <head> --points-actual <n>"
+        in step4
+    )
+    assert "`<n>` is the reviewer's `pointsActual`" in step4

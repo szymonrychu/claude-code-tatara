@@ -32,8 +32,14 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
 - `tasks`: `tasks <epic>` prints the tasks as JSON in dependency order (every dependency before its
   dependents; a cycle exits 1); each carries `points`, `expected_minutes` and `expected_tokens` (numbers,
   or null when unset).
-- `task`: `task <epic> <task> --status <s> [--verified-head <sha>] [--note <text>]` records a task's
-  outcome; the note is appended under `## Notes` as a dated line.
+- `task`: `task <epic> <task> --status <s> [--verified-head <sha>] [--note <text>] [--points-actual N]
+  [--logs DIR]` records a task's outcome; the note is appended under `## Notes` as a dated line.
+  `--status done` needs `--points-actual N` (Fibonacci, the reviewer's `pointsActual`; refused with any
+  other status) and stamps `points_actual` plus the actuals measured from the task's `.logs/agents`
+  records (`--logs` overrides the main checkout's `.logs`): `actual_minutes` (first start to last end
+  across its agents, ceiling minutes), `actual_tokens` (every agent, every round), and per role
+  `actual_roles` and `actual_role_tokens` (`impl N, review N`; a role's minutes sum its agents' spans).
+  With no records it stamps `points_actual` only and notes `actuals: no agent records`, never a guess.
 - `move`: `move <epic> in-progress` claims the epic, sets every todo task to in-progress and creates the
   integration tree; `move <epic> done` needs the pass verdict, every task done and the epic on main, then
   removes the integration tree and branch.

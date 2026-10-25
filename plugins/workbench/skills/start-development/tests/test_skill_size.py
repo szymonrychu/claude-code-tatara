@@ -17,8 +17,11 @@ KEPT = (
 
 
 def test_skill_md_within_line_cap():
-    n = len((SKILL_DIR / "SKILL.md").read_text().splitlines())
+    text = (SKILL_DIR / "SKILL.md").read_text()
+    n = len(text.splitlines())
     assert n <= MAX_LINES, f"SKILL.md is {n} lines, cap {MAX_LINES}"
+    phase4 = text[text.index("## Phase 4 - Execute") : text.index("## Phase 5")]
+    assert "--status done --verified-head <head> --points-actual" in phase4
 
 
 def test_named_references_exist():
