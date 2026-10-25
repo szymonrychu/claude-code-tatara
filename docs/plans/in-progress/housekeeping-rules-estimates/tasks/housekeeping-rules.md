@@ -9,6 +9,11 @@ depends_on: [em-dash-lint]
 model: opus
 review: ""
 verified_head: bb010ff
+points_actual: 3
+actual_minutes: 23
+actual_tokens: 1105466
+actual_roles: "impl 12, review 11"
+actual_role_tokens: "impl 945585, review 159881"
 ---
 
 # Housekeeping rules
@@ -71,3 +76,5 @@ Every workbench AGENTS.md (through `mise run harness-setup`) carries the houseke
 - AGENTS.md and rule text are ASCII only; the em dash lint from em-dash-lint now runs on them.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
