@@ -1,6 +1,6 @@
 ---
 title: mxc settings model
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: every connector knob is one validated MATRIX_ variable with default deny and the token only from a file
 files: [src/agents_matrix_connector/settings.py, tests/test_settings.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_settings.py -q && uv run ruff check .
 depends_on: [mxc-scaffold-and-cli]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ded949caaec86772e6698b18fa9be720043d7792
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 365053
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 264962, review 100091"
 ---
 
 # mxc settings model
@@ -67,3 +67,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Follow `code/agents-webhook/src/agents_webhook/settings.py` (`WebhookSettings`, `LocalSettings`) and `agents_common.settings` (`CsvList`, `_token_from_file` pattern, `SettingsError`).
 - The puppet pattern is operator config, compiled with stdlib `re`; it never comes from a chat user.
+
+- 2026-10-25 done
