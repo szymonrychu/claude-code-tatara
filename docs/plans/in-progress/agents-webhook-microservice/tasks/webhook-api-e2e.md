@@ -1,6 +1,6 @@
 ---
 title: webhook api e2e
-status: todo
+status: in-progress
 repo: agents-webhook
 value: every webhook capability is proven headless through HTTP against the real processes
 files: [tests/e2e/__init__.py, tests/e2e/conftest.py, tests/e2e/test_e2e_api.py]
@@ -51,17 +51,20 @@ API-only e2e for headless parity (design D14, user decision; re-plan 2026-10-25:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `webhook-cli`, `webhook-api`, `webhook-ingest-url`, `agents-common-reuse`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run test:e2e` proves every capability through HTTP against the real processes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the e2e cases; run `uv run pytest tests/e2e -q`: fail where a capability is missing.
+- Green: fix fixtures only (product code belongs to earlier tasks); run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep timings bounded: every wait polls the api with a 30 s cap.
+- Run the 429 case last or with its own client address, so it does not lock out the other cases.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
