@@ -1,6 +1,6 @@
 ---
 title: deploy pin config
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the agents namespace runs the configuration improvements
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_agents_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [kind-e2e-config, web-clusters-page, smoke-config-check]
 model: ""
 review: ""
-verified_head: ""
+verified_head: a128670
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 193721
+actual_roles: impl 1
+actual_role_tokens: impl 193721
 ---
 
 # deploy pin config
@@ -61,3 +61,5 @@ The agents namespace runs this epic's orchestrator and agents-web builds, and th
 The agents-web values and release test file names follow frontend-decoupling's deploy task; amend if they differ (design D12). `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts and are deselected in the verify. `mise run apply` is guarded by lint, test and the kube-context check.
 
 Orchestrator notes (2026-10-25; the orchestrator runs live applies): pins e3b2f3c + 7a1654e (agents-web tag quoted; all-digit 1343836 rendered as 1.343836e+06). Pre-apply `mise run diff`, every non-label line: 8x orchestrator image a4be86b -> 60cb11c, agents-web image cedcbbc -> 1343836, checksum/settings (derived), Secret content suppressed (label bump); affected releases agent-orchestrator and agents-web. `mise run apply`: agents-web 0.1.0-main.1343836 and agent-orchestrator 0.1.0-main.60cb11c deployed. Post-apply diff: `No affected releases`. `mise run smoke` last line `smoke: OK` (includes the config check). MEMORY line: agents-helmfile PR #20.
+
+- 2026-10-25 done
