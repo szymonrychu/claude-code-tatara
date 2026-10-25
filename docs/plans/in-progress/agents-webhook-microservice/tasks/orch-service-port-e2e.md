@@ -1,6 +1,6 @@
 ---
 title: orch service port e2e
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the service port is proven in a real cluster: an in-cluster pod with a token gets in, without one it does not"
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/e2e/test_e2e_kind.py --collect-only -q && uv run ru
 depends_on: [orch-service-port-auth, orch-chart-services-port]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 52eb949
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 366486
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 267571, review 98915"
 ---
 
 # orch service port e2e
@@ -56,3 +56,5 @@ The kind e2e proves token access on the services Service and the unchanged allow
 ## Notes
 
 - cluster-scaling also edits `tests/e2e/test_e2e_kind.py` and `e2e/values-kind.yaml`; rebase on whichever lands first.
+
+- 2026-10-25 done
