@@ -1,6 +1,6 @@
 ---
 title: web workspace sessions
-status: in-progress
+status: done
 repo: agents-web
 value: "the chat, top bar, menu, files, terminal and preset form say session"
 files: [src/App.tsx, src/App.test.tsx, src/chat/, src/ribbon/, src/layout/, src/files/, src/terminal/, src/presets/, src/nomenclature.test.ts]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run && npm run lint"
 depends_on: [web-sessions-pages]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 020ff1a
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 6
+actual_tokens: 1875101
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 1788927, review 86174"
 ---
 
 # web workspace sessions
@@ -73,3 +73,5 @@ Every chat, top bar, menu, files, terminal and preset text says session; src out
 - Saved layouts under old storage keys are dropped once (no migration, no fallback).
 
 - 2026-10-25 amended: receives the App.tsx/App.test.tsx renames from web-sessions-pages
+
+- 2026-10-25 done
