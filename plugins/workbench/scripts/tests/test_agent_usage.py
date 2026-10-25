@@ -335,6 +335,6 @@ def test_backfill_refresh_overwrites(tmp_path):
 
 
 def test_default_transcripts_dir(tmp_path):
-    root = Path("/Users/x/Documents/work bench/.git")
-    want = tmp_path / ".claude" / "projects" / "-Users-x-Documents-work-bench--git"
+    root = Path("/srv/proj/work bench/.git")
+    want = tmp_path / ".claude" / "projects" / "-srv-proj-work-bench--git"
     assert agent_usage.default_transcripts_dir(root, home=tmp_path) == want
