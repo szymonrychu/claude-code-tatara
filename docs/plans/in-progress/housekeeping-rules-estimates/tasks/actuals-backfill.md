@@ -9,6 +9,11 @@ depends_on: [agent-usage-lib, stamp-actuals]
 model: sonnet
 review: ""
 verified_head: ab86c4b
+points_actual: 2
+actual_minutes: 21
+actual_tokens: 2632742
+actual_roles: "impl 18, review 14"
+actual_role_tokens: "impl 2418884, review 213858"
 ---
 
 # Actuals backfill
@@ -67,5 +72,7 @@ Marked runs the hook missed (this epic's own runs, a session without the plugin 
 - Project dir naming checked on disk 2026-10-24: `/Users/x/Documents/workbench` is `-Users-x-Documents-workbench` and `.git` becomes `--git`.
 - Fix-as-ac (brief, retirement pins): KEPT_MODULES is exact; the module name must not contain `estimate`.
 - Tests must not read the real `~/.claude`: pass `--transcripts` or a fake home.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
