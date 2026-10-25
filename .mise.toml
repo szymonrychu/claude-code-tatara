@@ -32,6 +32,7 @@ run = [
   "mise run --cd code/any-mcp test",
   "mise run --cd code/agent-orchestrator test",
   "mise run --cd code/agents-helmfile test",
+  "mise run --cd code/agents-web test",
 ]
 
 [tasks."code:lint"]
@@ -41,6 +42,7 @@ run = [
   "mise run --cd code/any-mcp lint",
   "mise run --cd code/agent-orchestrator lint",
   "mise run --cd code/agents-helmfile lint",
+  "mise run --cd code/agents-web lint",
 ]
 
 [tasks."code:fmt"]
@@ -50,5 +52,6 @@ run = [
   "mise run --cd code/any-mcp fmt",
   "mise run --cd code/agent-orchestrator fmt",
   "mise run --cd code/agents-helmfile fmt",
+  "mise run --cd code/agents-web fmt",
 ]
 # workbench:code-tasks:end

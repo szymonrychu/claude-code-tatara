@@ -14,3 +14,7 @@
 	path = code/agents-helmfile
 	url = https://github.com/szymonrychu/agents-helmfile
 	branch = main
+[submodule "agents-web"]
+	path = code/agents-web
+	url = https://github.com/szymonrychu/agents-web
+	branch = main
