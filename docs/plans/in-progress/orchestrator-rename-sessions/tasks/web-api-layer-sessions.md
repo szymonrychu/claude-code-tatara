@@ -1,6 +1,6 @@
 ---
 title: web api layer sessions
-status: in-progress
+status: done
 repo: agents-web
 value: the UI talks to the renamed orchestrator API with session types and routes
 files: [scripts/sync-api.mjs, scripts/sync-api.test.mjs, openapi/orchestrator.json, openapi/orchestrator.source, src/]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run && node --test scripts/sync-api.test.mjs &
 depends_on: [orch-agent-api-sessions]
 model: opus
 review: ""
-verified_head: ""
+verified_head: c4b7edb
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 2569535
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 2399813, review 169722"
 ---
 
 # web api layer sessions
@@ -63,3 +63,5 @@ The UI compiles and passes its tests against the session API; no client call nam
 
 - design.md D15: types and every importer move together; never keep an alias type.
 - Visible texts and component names are the next two tasks; rename identifiers only here.
+
+- 2026-10-25 done
