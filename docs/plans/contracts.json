@@ -480,7 +480,8 @@
     "file": "code/agent-orchestrator/src/agent_orchestrator/db/clusters.py",
     "consumers": [
       "agents-web",
-      "agents-helmfile"
+      "agents-helmfile",
+      "agents-schedule-microservice"
     ],
     "note": "task autoclose-sweeper: api-process sweeper (AUTOCLOSE_POLL_SECONDS 10) calls close_expired, a status-guarded desired active->deleting flip at created_at + spec.autoclose_after_seconds; the reconciler discards as for DELETE; api stays the only writer of clusters.desired"
   },
