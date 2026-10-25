@@ -1,6 +1,6 @@
 ---
 title: api rules and settings
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: allow and deny lists and the default preset are editable over HTTP
 files: [src/agents_matrix_connector/api/rules.py, src/agents_matrix_connector/api/app.py, src/agents_matrix_connector/api/schemas.py, tests/test_api_rules.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_rules.py -q && uv run ruff check 
 depends_on: [api-rooms-and-users]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 38223425a5ee0681dce02bcc347e659f10957202
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 1003544
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 813058, review 190486"
 ---
 
 # api rules and settings
@@ -68,3 +68,5 @@ Allowing a room through `POST /rules {"list": "allow", "kind": "room", "value": 
 ## Notes
 
 - Never echo a rule value into logs beyond its id; values are personal identifiers.
+
+- 2026-10-25 done
