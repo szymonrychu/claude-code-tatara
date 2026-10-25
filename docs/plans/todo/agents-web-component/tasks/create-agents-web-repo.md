@@ -1,0 +1,71 @@
+---
+title: create agents-web repo
+status: todo
+repo: superrepo
+value: "the UI has its own repo, with its history, ready for its own image and chart"
+files: [.gitmodules, code/agents-web, AGENTS.md]
+verify: "git config --file .gitmodules --get submodule.agents-web.branch && cd code/agents-web && npm ci --no-audit --no-fund && npx vitest run src/App.test.tsx && npm run lint"
+depends_on: []
+owns: []
+uses: []
+model: ""
+estimate: 5
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: full
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# create agents-web repo
+
+## Requirement
+
+Create the component `agents-web` (TypeScript) with `workbench:component-add` and give its main the full history of `agent-orchestrator/frontend` at the repo root. Runs in the superrepo (meta mode). Outward-facing: it creates the public GitHub repo `szymonrychu/agents-web` (approved at the gate by name) and pushes its main.
+
+Precondition, checked first: agent-orchestrator main contains the merges of agent-init-scripts (PR agent-orchestrator#10) and cluster-scaling (`gh pr list -R szymonrychu/agent-orchestrator --state merged --search agent-init-scripts` and the cluster-scaling PR both merged). Otherwise end `blocked`, whoCanClear "orchestrator: land agent-init-scripts and cluster-scaling first".
+
+1. From the workbench root of this worktree: `mise run component:add -- --component agents-web:typescript --remote github --forge-owner szymonrychu --public --confirm-forge --role "agents-web=Web UI of the agents system (React/MUI SPA served as static files by nginx-unprivileged), reaching each backend (agent-orchestrator first) through its documented HTTP API on one host"`. It scaffolds `code/agents-web`, creates and pushes the GitHub origin and adds the submodule (`.gitmodules`, branch main).
+2. In `code/agents-web`: `git fetch https://github.com/szymonrychu/agent-orchestrator main`, then `git subtree split --prefix=frontend FETCH_HEAD -b ao-frontend`. Record the fetched agent-orchestrator commit (`git rev-parse FETCH_HEAD`) as `<ao-sha>`.
+3. `git rm` the scaffold placeholders `index.js`, `index.test.js`, then `git merge --allow-unrelated-histories ao-frontend` with these resolutions inside the merge commit: `package.json` is the frontend's, with `name` set to `agents-web` and a `fmt` script `eslint src --fix` added (the scaffold `.mise.toml` runs `npm run fmt`); `.gitignore` is the union (`node_modules/`, `dist/`); scaffold `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, `ROADMAP.md`, `README.md`, `.mise.toml` are kept. The merge message names `<ao-sha>`.
+4. `MEMORY.md` gets a dated 2026-10-25 entry: "imported frontend/ from agent-orchestrator <ao-sha> with history (git subtree split); agent-orchestrator/frontend is frozen from this commit until frontend-decoupling deletes it".
+5. `npm ci --no-audit --no-fund && npm test && npm run lint` pass in `code/agents-web`; then push main to origin (a fast-forward of the scaffold commit; the repo is new and has no CI yet).
+6. Commit the superrepo changes (`.gitmodules`, the `code/agents-web` gitlink, the `AGENTS.md` components row component-add writes) on this task's branch. Fill the role in the `AGENTS.md` project block if component-add left a placeholder.
+
+The scripts `gen:api` and `check:api` still point at `../openapi.json` after the import; frontend-decoupling task web-openapi-vendor fixes them. Do not touch any file of agent-orchestrator.
+
+## Acceptance conditions
+
+- AC1: the public GitHub repo szymonrychu/agents-web exists and its main is the local main [evidence: command:gh repo view szymonrychu/agents-web --json visibility -q .visibility | grep -qx PUBLIC && cd code/agents-web && git fetch -q origin && test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"]
+- AC2: code/agents-web is a submodule of the workbench tracking main [evidence: command:git config --file .gitmodules --get submodule.agents-web.branch | grep -qx main && git ls-files --stage code/agents-web | grep -q '^160000']
+- AC3: the frontend history is kept at the repo root [evidence: command:cd code/agents-web && test "$(git rev-list --count HEAD -- src/api/client.ts)" -ge 2 && test -n "$(git ls-files src/App.tsx)" && test -z "$(git ls-files index.js index.test.js frontend)"]
+- AC4: the moved UI passes its own tests and lint [evidence: command:cd code/agents-web && npm ci --no-audit --no-fund && npm test && npm run lint]
+- AC5: MEMORY.md records the imported agent-orchestrator commit and the freeze [evidence: command:grep -Eq 'agent-orchestrator [0-9a-f]{40}' code/agents-web/MEMORY.md && grep -q frozen code/agents-web/MEMORY.md]
+- AC6: no agent-orchestrator file changed and no repo other than szymonrychu/agents-web was created [evidence: judgement:the task diff and the gh calls in the task notes reviewed against the requirement]
+
+## Files
+
+- `.gitmodules`
+- `code/agents-web`
+- `AGENTS.md`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
