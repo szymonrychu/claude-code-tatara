@@ -1,6 +1,6 @@
 ---
 title: webhook prompt render
-status: in-progress
+status: done
 repo: agents-webhook
 value: "agents get the event as clearly framed, escaped data, never as instructions from an outside author"
 files: [src/agents_webhook/prompt.py, tests/test_prompt.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_prompt.py -q && uv run ruff check . && uv run 
 depends_on: [webhook-normalize]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 45f0a93
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 1164598
+actual_roles: "impl 10, review 7"
+actual_role_tokens: "impl 862317, review 302281"
 ---
 
 # webhook prompt render
@@ -63,3 +63,5 @@ Every prompt frames the event as escaped data.
 
 User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
 Orchestrator ruling for this task: the endpoint prompt template is Jinja2 rendered in jinja2.sandbox.SandboxedEnvironment (autoescape off, StrictUndefined, no file loader, bounded output size), with a `from_json` filter (parses a JSON string into an object; a parse error is a render error with the message) alongside the built-in `tojson`; the template context is the normalized event (and the raw payload as `payload`). Render errors never crash the worker: the event fails with reason `template_error`. This task delivers: the sandboxed renderer, the `from_json` filter, template syntax validation reused by the API, and tests (filter, sandbox refuses attribute escapes such as `{{ ().__class__ }}`, StrictUndefined error, size bound).
+
+- 2026-10-25 done
