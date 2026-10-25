@@ -1,6 +1,6 @@
 ---
 title: apply smoke init scripts
-status: blocked
+status: done
 repo: agents-helmfile
 value: init scripts are live in the agents namespace and proven by the smoke
 files: [MEMORY.md]
@@ -65,6 +65,8 @@ The live agents namespace runs the pinned build and the smoke, including the ini
 ## Ruling
 
 - 2026-10-25 accepted: applied by the orchestrator after user allowed mise run apply: helm rev 11 chart 0.1.0-main.22cf283; post-apply diff 'No affected releases'; mise run smoke 'smoke: OK' incl init scripts succeeded; MEMORY via agents-helmfile PR #15 merged
+
+- 2026-10-25 accepted: applied live by orchestrator after user approval; diff clean, smoke OK, MEMORY PR #15 merged
 
 ## Notes
 
