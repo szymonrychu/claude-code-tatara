@@ -51,8 +51,10 @@ def _actuals(a, t, root: Path, epic: str) -> tuple[dict, list[str]]:
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
     records = agent_usage.read_records(logs, epic, a.task) if logs else []
     if logs and not records:
-        transcripts = a.transcripts or agent_usage.default_transcripts_dir(root)
-        agent_usage.backfill(transcripts, logs, epic=epic)
+        main = t.workbench.main_checkout(root)
+        transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
+        if transcripts:
+            agent_usage.backfill(transcripts, logs, epic=epic)
         records = agent_usage.read_records(logs, epic, a.task)
     if not records:
         return meta, ["actuals: no agent records"]

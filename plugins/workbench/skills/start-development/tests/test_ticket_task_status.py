@@ -271,3 +271,32 @@ def test_actuals_backfill_command(repo, root, tmp_path):
     assert again.returncode == 0 and again.stdout.strip() == ""
     assert cli(*args, "--refresh", "--root", root).stdout.strip() == lines[0]
     assert cli("actuals", ep, "--root", root).returncode != 0
+
+
+def test_default_transcripts_dir_is_the_main_checkouts(repo, root, tmp_path, monkeypatch):
+    ep = mk_epic(root)
+    p = mk_task(root, ep, "alpha")
+    commit_all(repo)
+    monkeypatch.delenv("WORKBENCH_ROOT", raising=False)
+    monkeypatch.delenv("CLAUDE_PROJECT_DIR", raising=False)
+    home = tmp_path / "fake-home"
+    monkeypatch.setenv("HOME", str(home))
+    slug = agent_usage.default_transcripts_dir(repo.resolve(), home=home)
+    sub = slug / "sess" / "subagents"
+    sub.mkdir(parents=True)
+    body = [
+        transcript_line("user", "2026-10-24T10:00:00.000Z", f"[wb {ep}/alpha/impl]\nGo"),
+        transcript_line("assistant", "2026-10-24T10:03:00.000Z", msg_id="m1", tokens=5),
+    ]
+    (sub / "agent-x.jsonl").write_text("\n".join(body) + "\n")
+    logs = tmp_path / "logs"
+    r = cli("actuals", ep, "--backfill", "--logs", logs, "--root", root)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == f"x {ep}/alpha/impl 3 5"
+    (logs / "agents" / "x.json").unlink()
+    r = cli(
+        "task", ep, "alpha", "--status", "done", "--points-actual", "2",
+        "--logs", logs, "--root", root,
+    )  # fmt: skip
+    assert r.returncode == 0, r.stderr
+    assert meta(p)["actual_tokens"] == "5"

@@ -28,9 +28,13 @@ def run(a, t) -> int:
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
     if logs is None:
         raise t.TicketError("actuals: no logs dir; pass --logs")
-    transcripts = (
-        Path(a.transcripts) if a.transcripts else agent_usage.default_transcripts_dir(root)
-    )
+    main = t.workbench.main_checkout(root)
+    if a.transcripts:
+        transcripts = Path(a.transcripts)
+    elif main:
+        transcripts = agent_usage.default_transcripts_dir(main)
+    else:
+        raise t.TicketError("actuals: not in a git checkout; pass --transcripts")
     for record in agent_usage.backfill(transcripts, logs, refresh=a.refresh, epic=epic):
         minutes = agent_usage.aggregate([record])["minutes"]
         label = f"{record['epic']}/{record['task']}/{record['role']}"
