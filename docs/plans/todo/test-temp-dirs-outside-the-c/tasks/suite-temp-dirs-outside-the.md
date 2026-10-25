@@ -29,6 +29,8 @@ Observed failure (2026-10-25, claude-code-tatara after merging template 5bd67d1)
 
 Design (my call, lean): `run-tests.sh` keeps `LOG_DIR` as is (`RUN_TESTS_LOG_DIR` override, else `<main>/.logs/run-tests/<stamp>-<pid>`, else mktemp), but creates `TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/run-tests-tmp.XXXXXX")"` and passes `--basetemp "$TMP_DIR/<component>"` with `TMPDIR="$TMP_DIR"` exported to every suite (pytest and bats alike). On an all-green run both LOG_DIR and TMP_DIR are removed; on a red run both are kept and the summary prints `temp dirs: <TMP_DIR>` after the `full output:` lines. `GIT_CEILING_DIRECTORIES` is no longer set by run-tests.sh (no shim, no fallback). The header comments of run-tests.sh and flake-hunt.sh and the docstring of hooks/bash-output-filter.py state that logs go to `.logs/run-tests` and temp dirs to a mktemp dir outside any checkout. No other file changes; root finders stay as they are.
 
+Builder check answers (my call, 2026-10-25): (1) `${TMPDIR:-/tmp}` is trusted as given; the test only asserts the suite's temp dir is not under the fabricated tree and under no directory holding `.gitmodules`. (2) bats suites get the exported `TMPDIR` only; `--basetemp` is pytest's. (3) With `RUN_TESTS_LOG_DIR` overridden the temp dir is still its own mktemp dir, kept and printed on red exactly as without the override; flake-hunt keeps surfacing only its logs. (4) The temp dir is removed whenever run-tests.sh exits 0 (all green or skip-only), kept otherwise.
+
 ## Acceptance conditions
 
 - AC1: run from a fabricated initialised workbench (a git repo with `code/` and `.gitmodules`, WORKBENCH_ROOT pointing at it), the fake component's pytest basetemp and its `TMPDIR` are outside that tree and under no directory holding `.gitmodules`, while `<tree>/.logs/run-tests/<stamp>/fake.log` holds the log [evidence: test:plugins/workbench/scripts/tests/test_run_tests.py::test_suite_temp_dirs_are_outside_any_checkout]
@@ -61,3 +63,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 amended: builder check: TMPDIR trusted, bats get TMPDIR only, temp dir kept on red regardless of RUN_TESTS_LOG_DIR, removed on exit 0
