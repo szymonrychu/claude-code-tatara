@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agent-orchestrator/chart/agent-orchestrator` (components loop in `templates/deployment.yaml`, postgres source in `_config.tpl`):
+Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agents-orchestrator/chart/agents-orchestrator` (components loop in `templates/deployment.yaml`, postgres source in `_config.tpl`):
 
 - values: `image {repository: harbor.szymonrichert.pl/containers/agents-schedule, tag}`, `postgres {url | existingSecret, existingSecretKey | host, port, database, user, password}` (required), `orchestrator {url, token | tokenSecret {name, key}}` (url and one token source required; the agents-webhook chart shape), `env` (extra `SCHED_*`), `components {api {replicas, port 8000, podAnnotations, resources}, worker {replicas: 1, resources}}`, `service`, `serviceAccount`, `ingress` (see `chart-ingress-and-test-hook`).
 - One Deployment per component: api runs `sched api`, worker `sched worker`; both have a `sched migrate` initContainer (the advisory-locked migrator makes concurrent runs safe); readiness `/readyz` and liveness `/healthz` on the api; the worker has no Service.
@@ -67,3 +67,5 @@ Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agent-o
 ## Notes
 
 - do-not-build: an in-chart CNPG; agents-helmfile deploys `agents-schedule-db` as a separate cnpg/cluster release.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
