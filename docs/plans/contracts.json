@@ -693,5 +693,15 @@
       "agents-helmfile"
     ],
     "note": "task dockerfile-and-ci: harbor.szymonrichert.pl/containers/agents-schedule:<sha7> on main; entrypoint sched (migrate|api|worker), USER 1000"
+  },
+  {
+    "name": "agents-schedule-settings-env",
+    "kind": "schema",
+    "owner": "agents-schedule-microservice",
+    "file": "code/agents-schedule/README.md",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task schedule-settings-model: SCHED_DATABASE_URL, SCHED_ORCHESTRATOR_URL, SCHED_ORCHESTRATOR_TOKEN(_FILE), SCHED_ALLOWED_CIDRS, SCHED_PORT, SCHED_MAX_IN_PROGRESS, SCHED_MAX_PER_SCHEDULE, SCHED_DEFAULT_TIMEZONE, SCHED_TICK_SECONDS, SCHED_POLL_SECONDS, SCHED_DISPATCH_MAX_ATTEMPTS, SCHED_RUN_TIMEOUT_SECONDS"
   }
 ]
