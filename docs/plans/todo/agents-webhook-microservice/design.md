@@ -252,6 +252,7 @@ Cross-epic (in `docs/plans/contracts.json`): the agents-common parts, `orch-serv
 
 ## Open questions
 - Q1: Dedup: while the earlier event with the same key is new, does the newer payload replace it (keeping its FIFO place), and while it is in-progress, is the newer one sent as an update message to the same cluster and recorded handled? [recommended: yes, latest wins while new; update message while in-progress (D5)]
+- Q2: Do limits mean concurrency caps (3 in progress, 1 per mapping, FIFO with alerts first), a 5 MiB body cap and a 500-event queue cap, with no per-minute rate limit? [recommended: yes (D6)]
 
 ## Irreversible operations in scope
 
