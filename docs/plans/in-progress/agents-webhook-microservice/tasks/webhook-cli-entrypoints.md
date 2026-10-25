@@ -61,3 +61,5 @@ The image runs every process by subcommand.
 - Pattern: `code/agent-orchestrator/src/agent_orchestrator/cli.py` `build_uvicorn_config`, `_cmd_migrate`.
 
 Discovered by webhook-ingest-http (2026-10-25): the `ingest` command must run uvicorn with `access_log=False` (or a filter that drops the path), because the access log would print the endpoint suffix of failed requests. Deliver it in this task with a test.
+
+Security review of ingest (2026-10-25): also set uvicorn `timeout_keep_alive` (e.g. 5 s) and h11 limits (max incomplete event size) for the ingest server, and a request body read timeout, so slow bodies cannot hold connections; test the server config.

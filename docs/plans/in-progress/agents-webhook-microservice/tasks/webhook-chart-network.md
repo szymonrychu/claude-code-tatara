@@ -64,3 +64,5 @@ The chart routes public and SSO traffic to different pods.
 - One cert-manager annotation per host (frontend-decoupling brief A4); the orchestrator or agents-web Ingress owns it.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+Security review of ingest (2026-10-25): WEBHOOK_TRUSTED_PROXIES must be set to the ingress controller pod CIDR / node CIDR (the hop that sets X-Forwarded-For) for the ingest Deployment; with it empty every caller shares the proxy key and one client can get all forges rate-limited (429). Make it a chart value and set it in the helmfile values; test the render. Also set ingress proxy body size >= the 5 MiB cap and read/send timeouts.
