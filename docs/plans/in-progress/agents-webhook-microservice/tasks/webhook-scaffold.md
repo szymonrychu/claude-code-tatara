@@ -68,3 +68,5 @@ Precondition, checked first: `code/agents-webhook` is a submodule with origin `h
 ## Notes
 
 - Model on `code/agent-orchestrator/Dockerfile` (Python stage only) and `mise.toml`.
+
+Orchestrator notes (2026-10-25): AC3 (docker build) could not run locally (Docker disk full, build has no network); evidenced later by the agents-webhook CI images job (task webhook-ci-images).
