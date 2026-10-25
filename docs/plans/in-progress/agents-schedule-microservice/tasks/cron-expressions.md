@@ -1,6 +1,6 @@
 ---
 title: cron expressions
-status: in-progress
+status: done
 repo: agents-schedule
 value: "a schedule's cron and timezone are validated once and its fire times are computed the same way everywhere"
 files: [src/agents_schedule/cron.py, tests/test_cron.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_cron.py -q && uv run ruff check . && 
 depends_on: [scaffold-project-and-cli]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 13b3e3c83368826891aa2802d195496a5584a3db
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 232787
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 141703, review 91084"
 ---
 
 # cron expressions
@@ -64,3 +64,5 @@ The api validates and previews schedules and the scheduler decides firings with 
 
 - croniter 6.2.4 is maintained (released 2026-07-10, probed on PyPI 2026-10-25); cronsim 2.7 was the alternative (my call, design D4).
 - All datetimes are tz-aware; compare in UTC, compute in the schedule's zone.
+
+- 2026-10-25 done
