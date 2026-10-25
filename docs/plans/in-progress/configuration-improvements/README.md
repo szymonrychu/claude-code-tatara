@@ -47,3 +47,8 @@ Estimate: 57 agent-min | Critical path: 29 min | Expected wall at P=1.5: 1.3 h (
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Evidence: per-task implementer + sonnet reviewer, fix rounds: openapi regen (spec-config-fields), ccw MCP name reserved (render-wrapper-settings). Whole-diff review clean (A1-A8). PR #14 CI incl. kind e2e green; agents-web PR #5 green; live apply orchestrator 0.1.0-main.60cb11c + agents-web 0.1.0-main.1343836, no drift, smoke OK incl config check (helmfile PR #20 merged).
+Security: no critical/high. MEDIUM plaintext webhook secrets / MCP headers returned by cluster and preset views: noted, not done now (same model as existing spec.env; masking is a new feature, user to decide). LOW _escape docstring overstates MCP env protection (within the accepted command-hook exposure): noted. LOW onTick interval has no floor / timeouts uncapped: affects only the user's own pod (wrapper skips overlapping ticks): dropped.
