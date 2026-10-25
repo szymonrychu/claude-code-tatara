@@ -6,19 +6,17 @@ value: "A template update never deletes a user's local notes and only merges fro
 files: [scripts/init_engine/update.py, scripts/tests/init_engine/test_update_safety.py, plugins/workbench/skills/template-update/SKILL.md, plugins/workbench/skills/template-update/tests/test_template_update_skill.py]
 verify: "pytest scripts/tests/init_engine/test_update_safety.py plugins/workbench/skills/template-update/tests/test_template_update_skill.py -q && ruff check scripts plugins/workbench/skills/template-update"
 depends_on: [e2e-template-update, template-update-skill, docs-update-flow]
-owns: []
-uses: []
 model: opus
-estimate: ""
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-safety
-branch: template-update-skill-and-in--update-safety
 verified_head: 322a9eed6457410b23d312f78c2f8fc4db7d0b91
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: [AC4]
-process_gaps: []
+points: ""
+expected_minutes: ""
+expected_tokens: ""
+points_actual: ""
+actual_minutes: 11
+actual_tokens: 1422602
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 1179548, review 243054"
 ---
 
 # Update safety

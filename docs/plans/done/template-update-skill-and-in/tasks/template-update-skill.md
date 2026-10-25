@@ -6,19 +6,17 @@ value: "Users update a workbench by asking for it; the skill runs the engine and
 files: [plugins/workbench/skills/template-update/SKILL.md, plugins/workbench/skills/template-update/tests/test_template_update_skill.py, plugins/workbench/README.md]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only template-update && pytest skills/start-development/tests/test_release.py -q -k readme"
 depends_on: [update-unrelated-history]
-owns: []
-uses: [init-update-command]
 model: sonnet
-estimate: 6
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--template-update-skill
-branch: template-update-skill-and-in--template-update-skill
 verified_head: efddaf2cc90f64aeeab3532c577861fb6808608d
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Template update skill

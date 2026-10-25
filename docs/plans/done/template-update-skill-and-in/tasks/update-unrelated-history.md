@@ -6,19 +6,17 @@ value: "Projects copied from the template, with no shared history, can still tak
 files: [scripts/init_engine/update.py, scripts/init_engine/cli.py, scripts/tests/init_engine/test_update_unrelated.py]
 verify: "pytest scripts/tests/init_engine/test_update.py scripts/tests/init_engine/test_update_conflicts.py scripts/tests/init_engine/test_update_unrelated.py -q && ruff check scripts"
 depends_on: [update-conflicts-and-abort]
-owns: []
-uses: [init-update-command]
 model: opus
-estimate: 8
-actual: ""
 review: full
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--update-unrelated-history
-branch: template-update-skill-and-in--update-unrelated-history
 verified_head: a9f002008b61a02e9994fcdc9fc927e539eb704c
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 8
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Update unrelated history

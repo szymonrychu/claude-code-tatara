@@ -6,19 +6,17 @@ value: "New workbenches start with no template plans, contracts, research or mem
 files: [scripts/init_engine/owned.py, scripts/init_engine/finalize.py, scripts/tests/init_engine/test_finalize.py]
 verify: "pytest scripts/tests/init_engine/test_finalize.py -q && ruff check scripts"
 depends_on: []
-owns: [instance-owned-paths]
-uses: []
 model: sonnet
-estimate: 8
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--instance-owned-paths
-branch: template-update-skill-and-in--instance-owned-paths
 verified_head: e0fb748de0937120b442903737d78c5904383dc9
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 8
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Instance owned paths

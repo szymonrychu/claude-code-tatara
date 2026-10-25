@@ -6,19 +6,17 @@ value: The whole init cleanup and update round trip is proven on a real template
 files: [scripts/tests/e2e/test_template_update.py, scripts/init_engine/update.py]
 verify: "pytest scripts/tests/e2e/test_template_update.py -q && ruff check scripts"
 depends_on: [update-unrelated-history]
-owns: []
-uses: [init-update-command]
 model: sonnet
-estimate: 8
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--e2e-template-update
-branch: template-update-skill-and-in--e2e-template-update
 verified_head: 1be9a6d434dd1cda928369c68cfede426be62d33
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 8
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # E2e template update

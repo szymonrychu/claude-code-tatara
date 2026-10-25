@@ -6,19 +6,17 @@ value: "An update never rewrites the user's template remote"
 files: [scripts/tests/init_engine/test_update.py]
 verify: "pytest scripts/tests/init_engine/test_update.py -q && ruff check scripts"
 depends_on: [update-safety, e2e-template-update]
-owns: []
-uses: []
 model: sonnet
-estimate: ""
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--existing-remote-kept
-branch: template-update-skill-and-in--existing-remote-kept
 verified_head: a8d952468624aa0afef9b2865629c635253cc411
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: []
-process_gaps: ["No red phase recorded; exception is a pin of existing behaviour, with no non-test file changed", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+points: ""
+expected_minutes: ""
+expected_tokens: ""
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 362093
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 202888, review 159205"
 ---
 
 # Existing remote kept

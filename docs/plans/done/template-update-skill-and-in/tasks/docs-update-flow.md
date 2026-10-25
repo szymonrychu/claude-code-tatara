@@ -6,19 +6,17 @@ value: "The README tells users to run the skill instead of a manual merge, and t
 files: [README.md, MEMORY.md]
 verify: "python3 scripts/check_personal.py && grep -q init:update README.md"
 depends_on: [template-update-skill]
-owns: []
-uses: [init-update-command]
 model: sonnet
-estimate: 5
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/template-update-skill-and-in--docs-update-flow
-branch: template-update-skill-and-in--docs-update-flow
 verified_head: cb97b45f8415de6adf8a35e2bea84a4a7736b989
-run: template-update-skill-and-in
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Docs update flow
