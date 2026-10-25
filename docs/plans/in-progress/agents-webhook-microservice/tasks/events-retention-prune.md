@@ -1,6 +1,6 @@
 ---
 title: events retention prune
-status: todo
+status: done
 repo: agents-webhook
 value: the events table stays bounded by the retention window
 files: [src/agents_webhook/worker.py, src/agents_webhook/db/events.py, tests/test_worker.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_worker.py -o addopts= -q -k retention && uv ru
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 8669596
 points: 2
 expected_minutes: 8
 expected_tokens: 538938
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 9
+actual_tokens: 695386
+actual_roles: "impl 4, review 6"
+actual_role_tokens: "impl 336533, review 358853"
 ---
 
 # events retention prune
@@ -53,3 +53,5 @@ Final events older than WEBHOOK_EVENTS_RETENTION_DAYS disappear within an hour o
 ## Notes
 
 DB tests use the local Postgres at postgresql://test@127.0.0.1:55433/postgres via a temporary, uncommitted pg_url override. The worker is the events queue's claimer; ingest inserts; deletes belong to the worker as the single maintenance writer (document it in the migration header comment).
+
+- 2026-10-25 done
