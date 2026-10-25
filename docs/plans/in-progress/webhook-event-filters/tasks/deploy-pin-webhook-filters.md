@@ -1,6 +1,6 @@
 ---
 title: deploy pin webhook filters
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the helmfile pins the filter-capable builds and stops setting the retired env var
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-web/common.yaml, tests/test_webhook_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_webhook_release.py tests/test_web_release.py -
 depends_on: [retire-allowed-authors, e2e-endpoint-filters, web-create-endpoint-filters, web-edit-endpoint-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5ee3612
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 399415
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 317342, review 82073"
 ---
 
 # deploy pin webhook filters
@@ -67,3 +67,5 @@ Precondition, checked first: the agents-webhook and agents-web PRs of this epic 
 - Take the latest agents-webhook and agents-web main merges that contain this epic (another epic may have merged after).
 - The migration 0004 runs in the migrate initContainer on apply (additive column, approved at the gate).
 - Never run `mise run apply`; apply-smoke-webhook-filters and the orchestrator do.
+
+- 2026-10-25 done
