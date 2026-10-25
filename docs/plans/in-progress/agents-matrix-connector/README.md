@@ -42,6 +42,19 @@ The connector has one image and two long-running processes: `api` (UI API, SSO) 
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 
+Verdict: pass (2026-10-25)
+
+Checks: whole-diff review PASS; full suite 188 passed (suite-lock, local Postgres override; Docker disk full so testcontainers not exercised locally); mise run lint, lint:chart, test:chart, uv lock --check green; scope audit: no gaps (G1, G5 and the live half of G6 moved to agents-matrix-connector-depl by the split); security review done.
+
+Acted on (new tasks, reviewed clean):
+- matrix-identity-spoofing-gua: HIGH facebook-id spoof via foreign-server ghost ids; MEDIUM unverified canonical alias.
+- review-cleanups: duplicate utcnow (scope audit); upstream error text in 502 bodies; Dockerfile uv:latest and floating base tag.
+
+Dropped:
+- RuleExists noqa N818: the task spec fixes the name RuleExists; accepted in its task review.
+- Untrusted-input preamble only on the first turn: by design (D8).
+- No oauth2-proxy sidecar / NetworkPolicy in the chart: SSO comes from pod annotations set by depl task helmfile-matrix-releases; the CIDR allowlist fails closed.
+
 ## Time
 
 Estimate: 0 min | Actual: 0 min | Remaining estimate: 0 min
