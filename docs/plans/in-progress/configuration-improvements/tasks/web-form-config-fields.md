@@ -1,6 +1,6 @@
 ---
 title: web form config fields
-status: in-progress
+status: done
 repo: agents-web
 value: "users set hooks, idle compact, lease and autoclose in the preset editor"
 files: [openapi/agent-orchestrator.json, src/api/schema.d.ts, src/clusters/clusterSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run lint && npm r
 depends_on: [config-cluster-views]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 2752663
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 596054
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 473215, review 122839"
 ---
 
 # web form config fields
@@ -61,3 +61,5 @@ The preset editor in agents-web has inputs for every new field, saves a sparse s
 ## Notes
 
 Paths assume frontend-decoupling moved `frontend/` to agents-web with its layout; if its plan names other paths, this task is amended with `ticket.py amend` before the run (design D12).
+
+- 2026-10-25 done
