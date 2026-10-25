@@ -36,7 +36,7 @@ User request (2026-10-25), verbatim, from agents-webhook-microservice: "## agent
 
 ## Time
 
-Estimate: 74 agent-min | Critical path: 74 min | Expected wall at P=1.5: 2.5 h (k=2.0) | Actual: 0 min | Remaining estimate: 74 min
+Estimate: 10 agent-min | Critical path: 10 min | Expected wall at P=1.5: 0.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 10 min
 
 ## Review
 

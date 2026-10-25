@@ -9,7 +9,7 @@ depends_on: []
 owns: []
 uses: []
 model: ""
-estimate: 37
+estimate: 5
 estimate_by: formula
 actual: ""
 actual_roles: ""
