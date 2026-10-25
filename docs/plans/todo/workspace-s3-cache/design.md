@@ -282,7 +282,7 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
 ## Open questions
 
 - Q1: Concurrent sessions sharing one cache key (the default for every session of a preset): last finished save wins, with no locking, as GitLab runner caches do? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q2: Cap one cache archive at 5 GiB compressed (the single-PUT limit) by default, where a bigger save fails and keeps the previous archive? [recommended: yes, 5 GiB default, configurable lower]
+- Q2: Cap one cache archive at 5 GiB compressed (the single-PUT limit) by default, where a bigger save fails and keeps the previous archive? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 
 ## Irreversible operations in scope
 
