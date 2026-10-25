@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke sessions
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live smoke proves the renamed releases and session routes, and a guard keeps the names"
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py, tests/test_nomenclature.py, README.md, AGENTS.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_smoke_script.py tests/test_mise_tasks.py te
 depends_on: [helmfile-consumers-rename]
 model: opus
 review: ""
-verified_head: ""
+verified_head: acd8432
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 22
+actual_tokens: 3528192
+actual_roles: "impl 20, review 9"
+actual_role_tokens: "impl 3284690, review 243502"
 ---
 
 # helmfile smoke sessions
@@ -63,3 +63,5 @@ The offline smoke tests and the guard pass on the new names; the live smoke runs
 
 - The smoke's wrapper "session config dir" check is the wrapper's session: keep it, it is not the unit.
 - Each allowlist entry gets a comment saying why (Kubernetes, CNPG, or the hibernated old db, design D6).
+
+- 2026-10-25 done
