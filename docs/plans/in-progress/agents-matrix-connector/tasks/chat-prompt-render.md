@@ -1,6 +1,6 @@
 ---
 title: chat prompt render
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the agent gets chat messages as clearly marked untrusted data it cannot be tricked out of
 files: [src/agents_matrix_connector/prompt.py, tests/test_prompt.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_prompt.py -q && uv run ruff check . &
 depends_on: [inbound-queue-repository]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fb28795c9a706472b5625eaefc2b95ab4fed5cd6
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 203559
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 132301, review 71258"
 ---
 
 # chat prompt render
@@ -60,3 +60,5 @@ A two-message burst from a Messenger DM becomes one prompt with the untrusted-in
 ## Notes
 
 - Same untrusted-data framing as agents-webhook `prompt.py` (design D9 there); do not import it.
+
+- 2026-10-25 done
