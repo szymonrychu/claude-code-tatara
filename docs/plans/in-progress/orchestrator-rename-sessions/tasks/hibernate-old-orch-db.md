@@ -1,6 +1,6 @@
 ---
 title: hibernate old orch db
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the pre-rename database is kept as a reversible cold copy instead of being deleted
 files: [values/agent-orchestrator-db/common.yaml, tests/test_db_release.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_db_release.py && mise run lint && mise run 
 depends_on: [deploy-cutover]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 0f96c62
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 12
+actual_tokens: 312491
+actual_roles: impl 12
+actual_role_tokens: impl 312491
 ---
 
 # hibernate old orch db
@@ -60,3 +60,5 @@ The old CNPG cluster runs no pods, keeps its PVCs and S3 backups, and can be wok
 
 - Deleting the old cluster is out of scope (design D6, Non-goals).
 - Check with `helm show values cnpg/cluster --version 0.9.0` that `cluster.annotations` reaches the Cluster metadata; if not, end `blocked` with the chart's key list.
+
+- 2026-10-25 done
