@@ -40,6 +40,7 @@ KEPT = [
     "task",
     "actuals",
     "retro",
+    "deltas",
 ]
 CMDS = "plugins/workbench/skills/start-development/scripts/ticket_cmds"
 KEPT_MODULES = {
@@ -47,6 +48,7 @@ KEPT_MODULES = {
     "actuals.py",
     "amend.py",
     "close_cmd.py",
+    "deltas.py",
     "questions.py",
     "retro.py",
     "roadmap.py",

@@ -110,8 +110,9 @@ def _estimate_points(t, meta: dict, body: str, slug: str) -> int | None:
     return int(m.group(1)) if m else None
 
 
-def _rows(a, t, root: Path, epic_dir: Path) -> list[dict]:
-    """One dict per task in delivery order: title and the six measured values (None = unknown)."""
+def _rows(a, t, root: Path, epic_dir: Path, backfill: bool = True) -> list[dict]:
+    """One dict per task in delivery order: title and the six measured values (None = unknown).
+    `backfill=False` only reads the existing records (the read-only `deltas`)."""
     tasks = {}
     for path in t._task_files(epic_dir):
         doc = t._read_doc(path)
@@ -122,19 +123,19 @@ def _rows(a, t, root: Path, epic_dir: Path) -> list[dict]:
         for key in t.COUNT_KEYS:
             row[key] = t._count(meta.get(key), slug, key)
         tasks[slug] = row
-    _fill_from_records(a, t, root, epic_dir.name, tasks)
+    _fill_from_records(a, t, root, epic_dir.name, tasks, backfill)
     deps = {s: list(r["deps"]) for s, r in tasks.items()}
     return [tasks[s] for s in _delivery_order(t, root, epic_dir.name, list(tasks), deps)]
 
 
-def _fill_from_records(a, t, root: Path, epic: str, tasks: dict) -> None:
+def _fill_from_records(a, t, root: Path, epic: str, tasks: dict, backfill: bool = True) -> None:
     """Empty actual minutes and tokens from the task's `.logs/agents` records."""
     wanting = [r for r in tasks.values() if None in (r["actual_minutes"], r["actual_tokens"])]
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
     if not wanting or logs is None:
         return
     found = {r["slug"]: agent_usage.read_records(logs, epic, r["slug"]) for r in wanting}
-    if not all(found.values()):
+    if backfill and not all(found.values()):
         main = t.workbench.main_checkout(root)
         transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
         if transcripts:
