@@ -1,6 +1,6 @@
 ---
 title: common release v0.1.0
-status: in-progress
+status: done
 repo: agents-common
 value: "agents-webhook and later agents-schedule pin one tagged, documented library version"
 files: [pyproject.toml, uv.lock, README.md, CHANGELOG.md, MEMORY.md, tests/test_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_release.py -q && uv run ruff check . && uv run
 depends_on: [common-db-helpers, common-settings-runtime, common-orchestrator-client, common-run-tracker]
 model: ""
 review: ""
-verified_head: ""
+verified_head: df9cb19
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 280505
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 204591, review 75914"
 ---
 
 # common release v0.1.0
@@ -64,3 +64,5 @@ The library is documented and tagged; agents-webhook can pin it.
 ## Notes
 
 - Precedent: docs/plans/done/hive-mode-leadership-handove/tasks/any-mcp-release-v0-2-0.md.
+
+- 2026-10-25 done
