@@ -1,6 +1,6 @@
 ---
 title: retire allowed authors
-status: in-progress
+status: done
 repo: agents-webhook
 value: "one way to allowlist authors: per-endpoint rules, with the global env var gone"
 files: [src/agents_webhook/settings.py, src/agents_webhook/normalize.py, src/agents_webhook/ingest/app.py, README.md, tests/test_normalize.py, tests/test_schema_settings.py, tests/test_readme_config.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_normalize.py tests/test_schema_settings.py tes
 depends_on: [e2e-endpoint-filters]
 model: opus
 review: ""
-verified_head: ""
+verified_head: d11f887
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 7
+actual_tokens: 1119542
+actual_roles: impl 7
+actual_role_tokens: impl 1119542
 ---
 
 # retire allowed authors
@@ -73,3 +73,5 @@ The only author allowlist is a per-endpoint filter rule; the service no longer r
 - Removal with a pinning test, not a file deletion, so the TDD cycle applies normally.
 - e2e-endpoint-filters already moved the e2e stack and its reasons test off the setting; `tests/test_event_store.py` was moved by ingest-applies-filters.
 - Ask of every removed line (retro proposal): what reads this value if it is still set in a live environment? `extra="ignore"` in `WebhookSettings.model_config` makes a leftover env var inert; the helmfile values drop it in deploy-pin-webhook-filters.
+
+- 2026-10-25 done
