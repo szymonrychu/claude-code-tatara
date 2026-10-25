@@ -1,6 +1,6 @@
 ---
 title: helm chart
-status: in-progress
+status: done
 repo: agents-schedule
 value: the service deploys as an api and a worker Deployment with its database and orchestrator token wired from Secrets
 files: [chart/agents-schedule/Chart.yaml, chart/agents-schedule/values.yaml, chart/agents-schedule/templates/_helpers.tpl, chart/agents-schedule/templates/_config.tpl, chart/agents-schedule/templates/deployment.yaml, chart/agents-schedule/templates/service.yaml, chart/agents-schedule/templates/configmap.yaml, tests/test_chart.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_chart.py -q && uv run ruff check . &&
 depends_on: [service-entrypoints, schedule-settings-model]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 1504e8202ca2afd30e290b0192835d4735748307
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 432388
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 328948, review 103440"
 ---
 
 # helm chart
@@ -69,3 +69,5 @@ Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agents-
 - do-not-build: an in-chart CNPG; agents-helmfile deploys `agents-schedule-db` as a separate cnpg/cluster release.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
