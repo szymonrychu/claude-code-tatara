@@ -1,6 +1,6 @@
 ---
 title: cache transfer cli
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a Job can restore or save a workspace through one presigned URL with no credential
 files: [src/agents_orchestrator/cache/transfer.py, src/agents_orchestrator/cli.py, tests/test_cache_cli.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_cli.py && uv run ruff check . && uv r
 depends_on: [cache-archive]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 53a14e9
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 19
+actual_tokens: 2574263
+actual_roles: impl 19
+actual_role_tokens: impl 2574263
 ---
 
 # cache transfer cli
@@ -69,3 +69,5 @@ Add the Job-side transfer CLI `orch cache restore|save` (contract orch-cache-job
 - Keep the import of `transfer` lazy inside the command, like the other subcommands, so `orch --help` stays light.
 - Strip the query string from any URL in errors (`httpx.URL(url).copy_with(query=None)`).
 - httpx is already a dependency; no new one here.
+
+- 2026-10-26 done
