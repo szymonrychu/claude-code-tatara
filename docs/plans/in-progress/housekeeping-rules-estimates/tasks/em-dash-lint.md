@@ -9,6 +9,11 @@ depends_on: []
 model: opus
 review: ""
 verified_head: a2950c7
+points_actual: 2
+actual_minutes: 18
+actual_tokens: 426098
+actual_roles: "impl 11, review 7"
+actual_role_tokens: "impl 351647, review 74451"
 ---
 
 # Em dash lint
@@ -60,3 +65,5 @@ Design D3: a thin entry point `scripts/check_em_dash.py` over `scripts/check_per
 - No allow list: tests that need the character write the escape `\u2014`.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
