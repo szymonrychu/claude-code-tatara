@@ -23,22 +23,22 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Schema and settings of agents-webhook (design D3, D5, D6, D7). Paths are in code/agents-webhook.
+Schema and settings of agents-webhook (design D3, D5, D6, D7, D16, D18; re-plan 2026-10-25: per-webhook endpoints replace sources and mappings). Paths are in code/agents-webhook.
 
 - `migrations/0001_init.sql`:
-  - `mappings(id bigserial pk, source text check in (github,gitlab,grafana), kind text check in (mr,issue,comment,alert), repo text null, labels jsonb not null default '{}', preset_id text not null, prompt_template text null, created_at timestamptz default now())`. Writer: the api only.
-  - `events(id bigserial pk, seq bigserial, priority smallint not null, received_at, updated_at, source, kind, action, repo, number int null, title, url, author, actor, labels jsonb, payload jsonb not null, dedup_key text not null, status text not null check in (new,in-progress,handled,ignored,failed), reason text null, mapping_id bigint null references mappings on delete set null, preset_id text null, prompt_template text null, update_of bigint null references events, duplicate_of bigint null references events, deliveries int not null default 1, cluster_id text null, cluster_slug text null, message_id text null, started_at timestamptz null, finished_at timestamptz null)`. A queue table: ingest inserts and replaces payloads of `new` rows, the worker moves status; every status change is a status-guarded UPDATE.
-  - Partial unique index `events_live_key ON events(dedup_key) WHERE status IN ('new','in-progress') AND update_of IS NULL`; index `(status, priority, seq)`; index `(received_at desc)`.
+  - `endpoints(id bigserial pk, suffix text not null unique check (suffix ~ '^[A-Za-z0-9._~-]{1,128}$'), type text not null check in ('grafana-alert','gitlab-issue','gitlab-mr','github-issue','github-pr'), preset_id text not null, prompt_template text null, username text not null, password_hash text not null, created_at timestamptz not null default now(), credentials_rotated_at timestamptz null)`. Writer: the api only. No plaintext password column.
+  - `events(id bigserial pk, seq bigserial, priority smallint not null, received_at, updated_at, endpoint_id bigint null references endpoints on delete set null, endpoint_suffix text not null, type text not null, source text not null check in (github,gitlab,grafana), kind text not null check in (mr,issue,comment,alert), action, repo, number int null, title, url, author, actor, labels jsonb, payload jsonb not null, delivery_id text null, dedup_key text not null, status text not null check in (new,in-progress,handled,ignored,failed), reason text null, preset_id text null, prompt_template text null, update_of bigint null references events, duplicate_of bigint null references events, deliveries int not null default 1, cluster_id text null, cluster_slug text null, message_id text null, started_at timestamptz null, finished_at timestamptz null)`. A queue table: ingest inserts and replaces payloads of `new` rows, the worker moves status; every status change is a status-guarded UPDATE.
+  - Partial unique index `events_new_key ON events(endpoint_id, dedup_key) WHERE status = 'new'`; index `(endpoint_id, delivery_id)`; index `(endpoint_id, dedup_key, id desc)` (latest run per key); index `(status, priority, seq)`; index `(received_at desc)`.
   - A header comment names each table's writers.
-- `settings.py`: `WebhookSettings(BaseServiceSettings)` with prefix `WEBHOOK_`: `github_secret`, `gitlab_token`, `grafana_token` (SecretStr, each with `_FILE`), `bot_logins: CsvList`, `allowed_authors: CsvList`, `max_in_progress=3`, `max_queue=500`, `max_body_bytes=5242880`, `run_timeout_seconds=3600`, `poll_seconds=5`, `events_retention_days=30` (only for the list default window), plus the inherited database and orchestrator fields.
+- `settings.py`: `WebhookSettings(BaseServiceSettings)` with prefix `WEBHOOK_`: `public_base_url` (default `https://lab.szymonrichert.pl`, no trailing slash), `bot_logins: CsvList`, `allowed_authors: CsvList`, `max_in_progress=3`, `max_in_progress_per_endpoint=1`, `max_queue=500`, `max_body_bytes=5242880`, `run_timeout_seconds=3600`, `poll_seconds=5`, `events_retention_days=30` (only for the list default window), `auth_failures_per_minute=10`, `trusted_proxies: CsvList` of CIDRs (default empty; each validated), `min_password_length=16`, plus the inherited database and orchestrator fields. No per-source secret settings.
 - `tests/conftest.py`: `db` fixture from `agents_common.testing.migrated_db("agents_webhook.migrations")`.
-- `tests/test_schema_settings.py`: migration applies; the live-key index rejects a second `new` row with the same key but allows an update message and a handled row; status check rejects unknown statuses; settings defaults, `_FILE` secrets, every bad variable named.
+- `tests/test_schema_settings.py`: migration applies; the new-key index rejects a second `new` row with the same endpoint and key but allows it for another endpoint and alongside an `in-progress` or `handled` row; status, type and suffix checks reject bad values; settings defaults, a bad CIDR in `WEBHOOK_TRUSTED_PROXIES` named, every bad variable named.
 
 ## Acceptance conditions
 
-- AC1: only one live (new or in-progress) non-update message row per dedup key can exist [evidence: command:uv run pytest tests/test_schema_settings.py -q -k live_key]
-- AC2: status and source values are constrained [evidence: command:uv run pytest tests/test_schema_settings.py -q -k check]
-- AC3: settings defaults are 3 in progress, 500 queued, 5 MiB, 3600 s timeout, and secrets load from _FILE [evidence: command:uv run pytest tests/test_schema_settings.py -q -k settings]
+- AC1: only one new row per endpoint and dedup key can exist, and other endpoints or in-progress rows do not collide [evidence: command:uv run pytest tests/test_schema_settings.py -q -k new_key]
+- AC2: status, type, source and suffix values are constrained and no plaintext password column exists [evidence: command:uv run pytest tests/test_schema_settings.py -q -k check]
+- AC3: settings defaults are 3 in progress, 1 per endpoint, 500 queued, 5 MiB, 3600 s timeout, 10 auth failures per minute, 16-char minimum password, and bad CIDRs are named [evidence: command:uv run pytest tests/test_schema_settings.py -q -k settings]
 - AC4: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
 ## Files
@@ -64,3 +64,5 @@ Schema and settings of agents-webhook (design D3, D5, D6, D7). Paths are in code
 ## Notes
 
 - Later schema changes are new files `0002_*.sql`; never edit 0001 after it ships.
+
+- 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
