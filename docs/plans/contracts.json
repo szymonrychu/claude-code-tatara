@@ -592,7 +592,8 @@
     "owner": "agents-webhook-microservice",
     "file": "code/agents-common/pyproject.toml",
     "consumers": [
-      "agents-schedule-microservice"
+      "agents-schedule-microservice",
+      "agents-matrix-connector"
     ],
     "note": "task common-release-v0-1-0: package agents-common, tag v0.1.0 (pip: agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0, requires-python >=3.12); modules agents_common.settings (BaseServiceSettings, per-service env_prefix, CsvList, SettingsError, *_FILE secrets), db (open_pool, notify, listen, run_migrations(url, '<pkg>.migrations'), transition, claim), runtime (advisory_singleton, LostLock, run_service), orchestrator (OrchestratorClient: list_presets, get_preset, create_cluster(preset_id, slug) 409->existing, get_cluster, list_messages, post_message, get_message; OrchestratorError, NotFound, OrchestratorUnavailable), fake_orchestrator (FakeOrchestrator), runs, testing (pytest plugin: pg_url, migrated_db); task common-release-v0-2-0 (re-plan 2026-10-25): tag v0.2.0, additive: orchestrator Preset.spec, Preset.reuse_running_agent, Cluster.status; runs.running_cluster, runs.deliver, runs.track_delivery; FakeOrchestrator add_preset(spec=), mark_sent, discard_cluster, remove_cluster; v0.1.0 unchanged"
   },
