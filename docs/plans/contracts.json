@@ -556,5 +556,15 @@
       "agents-helmfile"
     ],
     "note": "tasks web-chart-workload, web-chart-config-ingress, web-ci-release: oci://harbor.szymonrichert.pl/charts/agents-web (0.1.0-main.<sha7> on main, X.Y.Z on tag); values image {repository, tag required}, imagePullSecrets, podAnnotations, backends, ingress {enabled, className, annotations, denySourceRanges, hosts, tls}, service.port 8080; container port name http, probes /healthz by number"
+  },
+  {
+    "name": "agents-web-image",
+    "kind": "release",
+    "owner": "frontend-decoupling",
+    "file": "code/agents-web/.github/workflows/ci.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task web-ci-release: harbor.szymonrichert.pl/containers/agents-web:<sha7> on main; nginx-unprivileged on 8080, non-root, /healthz, /config.json no-cache"
   }
 ]
