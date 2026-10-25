@@ -64,6 +64,9 @@ At most 250 words, as JSON-shaped fields:
 - `verifyPassed`: true or false, with `verifyTail` (the real tail from step 2).
 - `unmetAcs`: `[{id, evidence}]`, empty when every condition is met.
 - `findings`: `[{severity, file:line, what, why}]` per the checklist.
+- `pointsActual`: the task's post-delivery complexity in Fibonacci storypoints
+  (1, 2, 3, 5, 8, 13), judged from the diff you reviewed against the requirement, on the
+  planner's scale.
 - `declined`: what you chose not to judge, with the reason.
 - `cannotVerify`: what the diff and the tree cannot show.
 

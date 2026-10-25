@@ -183,3 +183,10 @@ def test_implementer_asks_instead_of_guessing():
     flat = " ".join(text.split())
     assert "do not guess" in flat.lower()
     assert "backward compatibility" in flat
+
+
+def test_reviewer_reports_points_actual():
+    output = _text("reviewer").split("## Output")[1].split("\n## ")[0]
+    flat = " ".join(output.split())
+    assert "`pointsActual`" in flat
+    assert "(1, 2, 3, 5, 8, 13)" in flat

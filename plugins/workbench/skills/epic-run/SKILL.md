@@ -20,10 +20,10 @@ Stop and report the refusal if any fails:
 2. List the order: `ticket.py tasks <epic>` (it emits each task's `status`; skip tasks already `done`, so a
    rerun resumes). For each remaining task, one at a time, dependencies first, note the tree HEAD
    (`git -C <tree> rev-parse HEAD`), then dispatch in the background:
-   - `workbench:implementer` (model from the task file): the task file verbatim, the tree path, branch `<epic>`,
+   - `workbench:implementer` (model from the task file): first line `[wb <epic>/<task>/impl]`, then the task file verbatim, the tree path, branch `<epic>`,
      the instruction that every command starts with `cd <tree>`, the override "work only in the integration
      tree, never the main checkout, never docs/plans", and "report in at most 200 words".
-   - On its return, `workbench:reviewer` (sonnet): the task file, the tree path, branch `<epic>`, the commit range
+   - On its return, `workbench:reviewer` (sonnet): first line `[wb <epic>/<task>/review]`, then the task file, the tree path, branch `<epic>`, the commit range
      `<start-head>..HEAD`, the same override, and "report in at most 250 words". The reviewer works in this
      order: clean tree at HEAD, run the task's verify on HEAD, check every acceptance condition against the
      files, grep for debt markers, then review quality.

@@ -62,3 +62,9 @@ def test_no_retired_words():
     text = SKILL.read_text()
     for word in ("plan-execute", "heartbeat", "Workflow(", "approvals"):
         assert word not in text, f"SKILL.md still contains {word!r}"
+
+
+def test_prompt_marker():
+    text = re.sub(r"\s+", " ", SKILL.read_text())
+    assert "first line `[wb <epic>/<task>/impl]`" in text
+    assert "first line `[wb <epic>/<task>/review]`" in text
