@@ -1,6 +1,6 @@
 ---
 title: Migrate command
-status: in-progress
+status: done
 repo: workbench
 value: "One command moves every epic to the points scheme with one commit per epic, and running it again changes nothing"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/migrate.py, plugins/workbench/skills/start-development/tests/test_ticket_migrate.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/README.md, plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [migrate-dry-run]
 model: opus
 review: ""
-verified_head: ""
+verified_head: b92409c
 points: 5
 expected_minutes: 57
 expected_tokens: 3750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 15
+actual_tokens: 3344971
+actual_roles: "impl 12, review 3"
+actual_role_tokens: "impl 3228188, review 116783"
 ---
 
 # Migrate command
@@ -139,3 +139,5 @@ Interrogate verdict item 5 (verbatim): "Write order and idempotence (C3): task f
 - README: add `ticket.py migrate` to the sentence listing the further ticket.py commands (README.md around line 201).
 
 - 2026-10-25 amended: interrogate item 5: write order (retro rows from the new task values in the same commit) pinned by new AC4: migrate, ticket.py retro, migrate prints nothing to change; points stay 5
+
+- 2026-10-25 done
