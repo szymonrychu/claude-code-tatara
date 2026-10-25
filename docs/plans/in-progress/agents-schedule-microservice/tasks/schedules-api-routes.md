@@ -1,6 +1,6 @@
 ---
 title: schedules api routes
-status: in-progress
+status: done
 repo: agents-schedule
 value: "schedules are created, edited, previewed, enabled, disabled and deleted over HTTP with reasons for every refusal"
 files: [src/agents_schedule/api/__init__.py, src/agents_schedule/api/app.py, src/agents_schedule/api/schemas.py, src/agents_schedule/api/schedules.py, tests/test_api_schedules.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_schedules.py -q && uv run ruff ch
 depends_on: [schedules-repository, runs-repository, cron-expressions, schedule-settings-model]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 0a5e30924cd023fe1c5bdf3d73c333423eb29044
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 1046729
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 857007, review 189722"
 ---
 
 # schedules api routes
@@ -71,3 +71,5 @@ Schedules are managed headlessly over HTTP with the same validation the UI shows
 - Tests use `agents_common.fake_orchestrator` for the preset check.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
