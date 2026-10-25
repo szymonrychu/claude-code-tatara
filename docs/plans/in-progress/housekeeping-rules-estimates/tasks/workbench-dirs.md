@@ -9,6 +9,11 @@ depends_on: []
 model: sonnet
 review: ""
 verified_head: 35f1ce0
+points_actual: 3
+actual_minutes: 16
+actual_tokens: 451351
+actual_roles: "impl 8, review 8"
+actual_role_tokens: "impl 348484, review 102867"
 ---
 
 # Workbench dirs
@@ -62,3 +67,5 @@ Every caller (hooks, ticket.py, scripts, skills) resolves the one `.scratchpad` 
 - This template repo is uninitialised (`workbench.py root` prints "kind: none"), so `main_checkout` must not depend on detect_kind.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
