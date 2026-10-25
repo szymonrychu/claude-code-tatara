@@ -1,22 +1,22 @@
 ---
 title: webhook schema settings
-status: in-progress
+status: done
 repo: agents-webhook
-value: the service has its own database schema for webhook endpoints and the event queue, and validated settings
+value: "the service has its own database schema for webhook endpoints and the event queue, and validated settings"
 files: [src/agents_webhook/migrations/__init__.py, src/agents_webhook/migrations/0001_init.sql, src/agents_webhook/settings.py, tests/conftest.py, tests/test_schema_settings.py]
 verify: "uv run pytest tests/test_schema_settings.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-scaffold]
 model: ""
 review: ""
-verified_head: ""
+verified_head: e1fd2c4
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 11
+actual_tokens: 629191
+actual_roles: impl 11
+actual_role_tokens: impl 629191
 ---
 
 # webhook schema settings
@@ -68,3 +68,5 @@ Schema and settings of agents-webhook (design D3, D5, D6, D7, D16, D18; re-plan 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
 
 Gate Q23 answer (user, 2026-10-25): the limits (max in progress overall, max in progress per endpoint, queue cap, body cap) are settings with defaults 3, 1, 500 and 5 MiB, each set from an agents-webhook Helm chart value (for example `limits.maxInProgress`, `limits.maxInProgressPerEndpoint`, `limits.queueCap`, `limits.maxBodyBytes`) rendered into the ingest and worker env, and documented. This task delivers its part of that.
+
+- 2026-10-25 done
