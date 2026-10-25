@@ -31,6 +31,9 @@ Rename the sessions settings page and its dialogs (design D2, D12; user decision
 - New `src/nomenclature.test.ts` (D12): `git ls-files` over `src/sessions`, `src/backends`, `src/App.tsx` and `src/App.test.tsx` has no line matching `/cluster/i`; web-workspace-sessions and web-docs-names widen the guarded list.
 - Tests first: the renamed page and dialog tests fail on the old texts before the rename.
 
+
+Orchestrator ruling 2026-10-25 (review of this task): src/App.tsx and src/App.test.tsx keep their cluster identifiers until web-workspace-sessions renames useClusters, TopBar and the cluster props they import; they compile only together. This task guards src/sessions and src/backends only; the App.tsx and App.test.tsx renames and their guard move to web-workspace-sessions.
+
 ## Acceptance conditions
 
 - AC1: the sessions page shows Sessions, New session and No sessions yet [evidence: test:src/sessions/SessionsPage.test.tsx::lists sessions]
@@ -65,3 +68,5 @@ Settings > Sessions lists sessions with New session and discard; every text says
 ## Notes
 
 - Test titles used as AC refs: "lists sessions" in SessionsPage.test.tsx, "sessions entry" in registry.test.ts.
+
+- 2026-10-25 amended: App.tsx/App.test.tsx renames move to web-workspace-sessions (compile dependency)
