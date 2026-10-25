@@ -1,6 +1,6 @@
 ---
 title: webhook session columns
-status: in-progress
+status: done
 repo: agents-webhook
 value: webhook runs record and show the session they started
 files: [src/agents_webhook/migrations/0005_sessions.sql, src/agents_webhook/db/events.py, src/agents_webhook/api/schemas.py, src/agents_webhook/worker.py, openapi.json, README.md, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_event_store.py tests/test_api.py tests/test
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 7c630a9
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 2973199
+actual_roles: impl 8
+actual_role_tokens: impl 2973199
 ---
 
 # webhook session columns
@@ -66,3 +66,5 @@ Webhook runs store and serve their session; migration 0005 keeps every row.
 
 - 0004 belongs to webhook-event-filters (merged first, the epic's blocker); never renumber it.
 - The worker still calls agents-common v0.2.0 here; keep its call shapes.
+
+- 2026-10-25 done
