@@ -1,6 +1,6 @@
 ---
 title: reply tracker
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the agent's answer arrives in the Messenger chat exactly once, with typing while it works"
 files: [src/agents_matrix_connector/chunks.py, src/agents_matrix_connector/tracker.py, tests/test_tracker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_tracker.py -q && uv run ruff check . 
 depends_on: [mxc-settings-model, matrix-client-and-fake-hs, inbound-queue-repository, runs-and-outbound-repo]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 301300a5537f9f49649b90c4561a29f2c876b14f
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 2555962
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 2194371, review 361591"
 ---
 
 # reply tracker
@@ -77,3 +77,5 @@ After `FakeOrchestrator.complete_turn(message_id, "Hello")` one tick posts `Hell
 
 - Review focus: replies use the deterministic transaction ids of `add_outbound`; the run and its rows finish in the same transaction that stores the outbound rows.
 - Plain text body only, markdown left as written (design D9).
+
+- 2026-10-25 done
