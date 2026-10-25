@@ -2,7 +2,7 @@
 title: webhook chart network
 status: in-progress
 repo: agents-webhook
-value: the public ingest paths and the SSO-protected API share the lab host with the right routing
+value: the public /webhook/ ingest prefix and the SSO-protected API share the lab host with the right routing
 files: [chart/agents-webhook/templates/service.yaml, chart/agents-webhook/templates/ingress.yaml, chart/agents-webhook/values.yaml, chart/agents-webhook/ci/lint-values.yaml, tests/test_chart_network.py]
 verify: "uv run pytest tests/test_chart_network.py -q && helm lint chart/agents-webhook -f chart/agents-webhook/ci/lint-values.yaml && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-chart-workloads, webhook-ingest-http]

@@ -2,7 +2,7 @@
 title: webhook schema settings
 status: in-progress
 repo: agents-webhook
-value: the service has its own database schema for the event queue and mappings and validated settings
+value: the service has its own database schema for webhook endpoints and the event queue, and validated settings
 files: [src/agents_webhook/migrations/__init__.py, src/agents_webhook/migrations/0001_init.sql, src/agents_webhook/settings.py, tests/conftest.py, tests/test_schema_settings.py]
 verify: "uv run pytest tests/test_schema_settings.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-scaffold]
@@ -51,11 +51,11 @@ Schema and settings of agents-webhook (design D3, D5, D6, D7, D16, D18; re-plan 
 
 ## Interfaces
 
-- Owns `webhook-events-schema` (`migrations/0001_init.sql`) and `webhook-settings-env` (`WEBHOOK_*` names, documented in README by webhook-docs-memory).
+- Owns `webhook-events-schema` (`migrations/0001_init.sql`: `endpoints`, `events`) and `webhook-settings-env` (`WEBHOOK_*` names, documented in README by webhook-docs-memory).
 
 ## Expected outcome
 
-`agents-webhook migrate` (wired later) creates both tables; settings validate.
+`agents-webhook migrate` (wired later) creates the endpoints and events tables; settings validate.
 
 ## Steps
 

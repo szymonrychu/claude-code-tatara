@@ -2,7 +2,7 @@
 title: webhook docs memory
 status: in-progress
 repo: agents-webhook
-value: "operators know how to configure each source, the exposure and the limits, and the decisions are recorded"
+value: "operators know how to create endpoints and wire GitHub, GitLab and Grafana to them, the exposure, reuse and limits, and the decisions are recorded"
 files: [README.md, MEMORY.md, AGENTS.md, tests/test_readme_config.py]
 verify: "uv run pytest tests/test_readme_config.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-ci-images, webhook-openapi-readme]

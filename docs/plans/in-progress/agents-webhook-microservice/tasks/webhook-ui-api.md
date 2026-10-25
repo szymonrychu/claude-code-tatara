@@ -2,7 +2,7 @@
 title: webhook ui api
 status: in-progress
 repo: agents-webhook
-value: the UI and any headless client can list recent events and create and remove event-to-preset mappings
+value: the UI and any headless client can create, list, rotate and delete webhook endpoints and list recent events
 files: [src/agents_webhook/api/__init__.py, src/agents_webhook/api/app.py, src/agents_webhook/api/schemas.py, src/agents_webhook/api/routes.py, tests/test_api.py]
 verify: "uv run pytest tests/test_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-event-store, webhook-prompt-render]
@@ -57,7 +57,7 @@ The UI API under `/webhooks/api/v1` (design D7, D11, D12, D14, D17; re-plan 2026
 
 ## Interfaces
 
-- Owns `webhook-api`: the routes and schemas above, documented in README `## API` and `openapi.json` by webhook-openapi-readme.
+- Owns `webhook-api` (cross-epic, consumer agents-web): `/webhooks/api/v1` endpoints (GET, POST, POST /{id}/rotate, DELETE /{id}), events (GET list, GET /{id}), meta; openapi.json committed by webhook-openapi-readme; vendored in agents-web as `openapi/webhooks.json`.
 
 ## Expected outcome
 
@@ -69,6 +69,6 @@ Everything the UI does is a documented HTTP call.
 
 ## Notes
 
-- The api is the only writer of `mappings`; it never writes `events`.
+- The api is the only writer of `endpoints`; it never writes `events`. A password leaves the service only in the create and rotate responses.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)

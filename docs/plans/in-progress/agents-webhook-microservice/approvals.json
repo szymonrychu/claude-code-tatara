@@ -2,71 +2,219 @@
   {
     "id": "A1",
     "text": "A separate microservice agents-webhook with its own database receives GitHub/GitLab MR/PR created/updated, issue created/updated and comment added webhooks, and Grafana alerts (user request, 2026-10-25).",
-    "decisions": ["D1", "D2", "D3", "D4"],
-    "tasks": ["webhook-scaffold", "webhook-schema-settings", "webhook-normalize", "webhook-ingest-http", "webhook-cli-entrypoints", "webhook-chart-workloads", "webhook-docs-memory"],
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ],
+    "tasks": [
+      "webhook-scaffold",
+      "webhook-schema-settings",
+      "webhook-normalize",
+      "webhook-ingest-http",
+      "webhook-cli-entrypoints",
+      "webhook-chart-workloads",
+      "webhook-docs-memory",
+      "webhook-endpoints-repo"
+    ],
     "status": "approved"
   },
   {
     "id": "A2",
     "text": "Events are cached in a FIFO queue with content-aware dedup (platform/repo/mr-id, platform/repo/issue-id, alert labels) and limits (user request, 2026-10-25).",
-    "decisions": ["D4", "D5", "D6"],
-    "tasks": ["webhook-schema-settings", "webhook-normalize", "webhook-event-store", "webhook-dispatch-worker"],
+    "decisions": [
+      "D4",
+      "D5",
+      "D6"
+    ],
+    "tasks": [
+      "webhook-schema-settings",
+      "webhook-normalize",
+      "webhook-event-store",
+      "webhook-dispatch-worker"
+    ],
     "status": "approved"
   },
   {
     "id": "A3",
-    "text": "Queued events are sent into the scheduler API (the orchestrator's /api/v1): a mapped event triggers an agent cluster defined by its preset (user request, 2026-10-25).",
-    "decisions": ["D7", "D8", "D9"],
-    "tasks": ["webhook-mappings-repo", "common-orchestrator-client", "common-run-tracker", "webhook-prompt-render", "webhook-dispatch-worker"],
-    "status": "approved"
+    "text": "Queued events are sent into the scheduler API (the orchestrator's /api/v1): a mapped event triggers an agent cluster defined by its preset (user request, 2026-10-25). Re-plan 2026-10-25: the event triggers the agent cluster defined by its webhook endpoint's preset (the endpoint replaces the mapping).",
+    "decisions": [
+      "D7",
+      "D8",
+      "D9"
+    ],
+    "tasks": [
+      "common-orchestrator-client",
+      "common-run-tracker",
+      "webhook-prompt-render",
+      "webhook-dispatch-worker",
+      "webhook-endpoints-repo"
+    ],
+    "status": "pending"
   },
   {
     "id": "A4",
-    "text": "A web UI entry between Clusters and Presets shows recent events with their status (new/in-progress/handled/ignored), maps an event to a preset and removes a mapping (user request, 2026-10-25).",
-    "decisions": ["D7", "D11", "D12"],
-    "tasks": ["webhook-ui-api", "web-trigger-ui-kit", "web-webhook-api-client", "web-webhook-events-page", "web-webhook-mappings", "web-webhook-menu-entry", "helmfile-web-webhooks-entry"],
-    "status": "approved"
+    "text": "A web UI entry between Clusters and Presets manages webhook endpoints (create with type, preset, optional suffix and optional credentials, show the full URL and the credentials once, rotate credentials, delete) and shows recent events with their status (new/in-progress/handled/ignored/failed) (user request and re-plan decision, 2026-10-25).",
+    "decisions": [
+      "D7",
+      "D11",
+      "D12",
+      "D18"
+    ],
+    "tasks": [
+      "webhook-ui-api",
+      "web-trigger-ui-kit",
+      "web-webhook-api-client",
+      "web-webhook-events-page",
+      "web-webhook-menu-entry",
+      "helmfile-web-webhooks-entry",
+      "web-webhook-endpoints"
+    ],
+    "status": "pending"
   },
   {
     "id": "A5",
     "text": "The orchestrator's service-to-service auth change (other services are refused today) is a task of this epic in agent-orchestrator, reviewed at the full/panel tier (user decision, 2026-10-25).",
-    "decisions": ["D10"],
-    "tasks": ["orch-service-port-auth", "orch-chart-services-port", "orch-service-port-e2e", "orch-service-port-docs"],
+    "decisions": [
+      "D10"
+    ],
+    "tasks": [
+      "orch-service-port-auth",
+      "orch-chart-services-port",
+      "orch-service-port-e2e",
+      "orch-service-port-docs"
+    ],
     "status": "approved"
   },
   {
     "id": "A6",
     "text": "Creating the public GitHub repos szymonrychu/agents-webhook and szymonrychu/agents-common via workbench:component-add (epic agents-webhook-component), and the Harbor image and chart repos with CI secrets on agents-webhook, are explicit outward-facing tasks (user decision, 2026-10-25).",
-    "decisions": ["D15"],
-    "tasks": ["common-scaffold", "webhook-scaffold", "webhook-ci-images"],
+    "decisions": [
+      "D15"
+    ],
+    "tasks": [
+      "common-scaffold",
+      "webhook-scaffold",
+      "webhook-ci-images"
+    ],
     "status": "approved"
   },
   {
     "id": "A7",
-    "text": "The public webhook endpoints https://lab.szymonrichert.pl/webhooks/{github,gitlab,grafana} sit in their own Deployment without SSO (user decision, 2026-10-25: exposure listed for the gate).",
-    "decisions": ["D2", "D3", "D12"],
-    "tasks": ["webhook-chart-workloads", "webhook-chart-network", "helmfile-webhook-releases", "apply-smoke-webhook"],
-    "status": "approved"
+    "text": "The public webhook ingest https://lab.szymonrichert.pl/webhook/<suffix> sits in its own Deployment without SSO, protected per endpoint by HTTP basic auth (user decision, 2026-10-25; re-plan 2026-10-25 replaces the per-source paths /webhooks/{github,gitlab,grafana}).",
+    "decisions": [
+      "D2",
+      "D3",
+      "D12",
+      "D18"
+    ],
+    "tasks": [
+      "webhook-chart-workloads",
+      "webhook-chart-network",
+      "helmfile-webhook-releases",
+      "apply-smoke-webhook",
+      "webhook-ingest-http"
+    ],
+    "status": "pending"
   },
   {
     "id": "A8",
     "text": "Releases, pin bumps, the CNPG database and the helmfile apply plus smoke are tasks of this epic (user decision, 2026-10-25).",
-    "decisions": ["D13"],
-    "tasks": ["common-release-v0-1-0", "webhook-ci-images", "helmfile-service-token", "deploy-pin-orch-service-port", "helmfile-webhook-releases", "helmfile-web-webhooks-entry", "smoke-webhook-check", "apply-smoke-webhook"],
+    "decisions": [
+      "D13"
+    ],
+    "tasks": [
+      "common-release-v0-1-0",
+      "webhook-ci-images",
+      "helmfile-service-token",
+      "deploy-pin-orch-service-port",
+      "helmfile-webhook-releases",
+      "helmfile-web-webhooks-entry",
+      "smoke-webhook-check",
+      "apply-smoke-webhook",
+      "helmfile-drop-source-secrets"
+    ],
     "status": "approved"
   },
   {
     "id": "A9",
     "text": "Headless parity: a documented API and an API-only e2e for every capability (user decision, 2026-10-25).",
-    "decisions": ["D14"],
-    "tasks": ["webhook-ui-api", "webhook-openapi-readme", "webhook-api-e2e", "orch-service-port-e2e", "webhook-docs-memory"],
+    "decisions": [
+      "D14"
+    ],
+    "tasks": [
+      "webhook-ui-api",
+      "webhook-openapi-readme",
+      "webhook-api-e2e",
+      "orch-service-port-e2e",
+      "webhook-docs-memory",
+      "orch-preset-reuse-field"
+    ],
     "status": "approved"
   },
   {
     "id": "A10",
     "text": "Shared parts later used by agents-schedule-microservice (DB/queue helpers, orchestrator client, preset mapping model, UI page pattern) are owned and built by this epic and registered as contracts (orchestrator ruling, 2026-10-25).",
-    "decisions": ["D1", "D11"],
-    "tasks": ["common-db-helpers", "common-settings-runtime", "common-orchestrator-client", "common-run-tracker", "common-release-v0-1-0", "web-trigger-ui-kit"],
+    "decisions": [
+      "D1",
+      "D11",
+      "D19"
+    ],
+    "tasks": [
+      "common-db-helpers",
+      "common-settings-runtime",
+      "common-orchestrator-client",
+      "common-run-tracker",
+      "common-release-v0-1-0",
+      "web-trigger-ui-kit",
+      "common-reuse-running",
+      "common-release-v0-2-0"
+    ],
     "status": "approved"
+  },
+  {
+    "id": "A11",
+    "text": "Per-webhook endpoints https://<base>/webhook/<suffix> (suffix random by default or user-supplied and unique), each created with exactly one type (grafana-alert, gitlab-issue, gitlab-mr, github-issue, github-pr) and one required preset, protected by HTTP basic auth (random username and password by default, user may override both), are the only ingest path and each URL is unique per assignment; credentials stored as hashes, constant-time checks, brute-force and enumeration protection (user request and re-plan decision, 2026-10-25).",
+    "decisions": [
+      "D3",
+      "D4",
+      "D5",
+      "D7",
+      "D12",
+      "D18"
+    ],
+    "tasks": [
+      "webhook-schema-settings",
+      "webhook-normalize",
+      "webhook-endpoints-repo",
+      "webhook-event-store",
+      "webhook-ingest-http",
+      "webhook-ui-api",
+      "web-webhook-endpoints",
+      "helmfile-drop-source-secrets",
+      "webhook-api-e2e"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "A12",
+    "text": "As long as an agent handling a specific event is running, it receives any new webhooks/events instead of a new one being created; agent reuse is optional and set during preset creation (user requirement and clarification, 2026-10-25).",
+    "decisions": [
+      "D16",
+      "D17",
+      "D19"
+    ],
+    "tasks": [
+      "common-reuse-running",
+      "common-release-v0-2-0",
+      "orch-preset-reuse-field",
+      "web-preset-reuse-row",
+      "webhook-event-store",
+      "webhook-reuse-routing",
+      "webhook-api-e2e",
+      "deploy-pin-orch-service-port"
+    ],
+    "status": "pending"
   }
 ]

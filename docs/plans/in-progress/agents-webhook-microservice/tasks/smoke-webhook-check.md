@@ -54,7 +54,7 @@ Extend the smoke (design D13, D14; re-plan 2026-10-25: per-webhook endpoints wit
 
 ## Expected outcome
 
-`mise run smoke` covers the webhook service end to end without side effects beyond one ignored event row.
+`mise run smoke` covers the webhook service end to end without side effects beyond one ignored event row and a temporary endpoint it deletes.
 
 ## Steps
 

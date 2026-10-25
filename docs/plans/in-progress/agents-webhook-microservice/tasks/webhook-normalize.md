@@ -2,7 +2,7 @@
 title: webhook normalize
 status: in-progress
 repo: agents-webhook
-value: "GitHub, GitLab and Grafana payloads become one event shape with the requested dedup keys and ignore reasons"
+value: "GitHub, GitLab and Grafana payloads become one event shape per endpoint type with the requested dedup keys and ignore reasons"
 files: [src/agents_webhook/normalize.py, tests/payloads.py, tests/test_normalize.py]
 verify: "uv run pytest tests/test_normalize.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-scaffold]
@@ -53,11 +53,11 @@ Pure parsing of provider payloads into `NormalizedEvent` for an endpoint's type,
 
 ## Interfaces
 
-- Owns `webhook-normalized-event`: `agents_webhook.normalize.{NormalizedEvent, normalize_github, normalize_gitlab, normalize_grafana, classify, Unsupported}`.
+- Owns `webhook-normalized-event`: `agents_webhook.normalize.{NormalizedEvent, normalize, classify, TypeMismatch, Unsupported, ENDPOINT_TYPES}`.
 
 ## Expected outcome
 
-Every supported payload yields one event and a dedup key; every unsupported one raises Unsupported.
+Every supported payload of the endpoint type yields one event and a dedup key; another type raises TypeMismatch, anything else Unsupported.
 
 ## Steps
 

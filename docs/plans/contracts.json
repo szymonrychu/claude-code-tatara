@@ -515,7 +515,7 @@
       "agents-webhook-microservice",
       "agents-schedule-microservice"
     ],
-    "note": "task web-chart-config-ingress: one host lab.szymonrichert.pl, ingress path routing; agents-web owns /, agent-orchestrator /api (/api/v1), each later service one prefix /<prefix>/ with its UI-facing API at /<prefix>/api/v1 (reserved: webhooks, schedules); one Ingress per host carries the cert-manager annotations, the rest reference TLS secret agent-orchestrator-tls; every pod behind the oauth2-proxy webhook with Secret agent-orchestrator-proxy; same origin, no CORS"
+    "note": "task web-chart-config-ingress: one host lab.szymonrichert.pl, ingress path routing; agents-web owns /, agent-orchestrator /api (/api/v1), each later service one prefix /<prefix>/ with its UI-facing API at /<prefix>/api/v1 (reserved: webhooks, schedules); one Ingress per host carries the cert-manager annotations, the rest reference TLS secret agent-orchestrator-tls; every pod behind the oauth2-proxy webhook with Secret agent-orchestrator-proxy; same origin, no CORS; exception recorded by agents-webhook-microservice D12 (re-plan 2026-10-25): agents-webhook also owns the public ingest prefix /webhook/ (the user URL form https://<base>/webhook/<suffix>), beside /webhooks/"
   },
   {
     "name": "agents-web-backends-config",
@@ -594,7 +594,7 @@
     "consumers": [
       "agents-schedule-microservice"
     ],
-    "note": "task common-release-v0-1-0: package agents-common, tag v0.1.0 (pip: agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0, requires-python >=3.12); modules agents_common.settings (BaseServiceSettings, per-service env_prefix, CsvList, SettingsError, *_FILE secrets), db (open_pool, notify, listen, run_migrations(url, '<pkg>.migrations'), transition, claim), runtime (advisory_singleton, LostLock, run_service), orchestrator (OrchestratorClient: list_presets, get_preset, create_cluster(preset_id, slug) 409->existing, get_cluster, list_messages, post_message, get_message; OrchestratorError, NotFound, OrchestratorUnavailable), fake_orchestrator (FakeOrchestrator), runs, testing (pytest plugin: pg_url, migrated_db)"
+    "note": "task common-release-v0-1-0: package agents-common, tag v0.1.0 (pip: agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0, requires-python >=3.12); modules agents_common.settings (BaseServiceSettings, per-service env_prefix, CsvList, SettingsError, *_FILE secrets), db (open_pool, notify, listen, run_migrations(url, '<pkg>.migrations'), transition, claim), runtime (advisory_singleton, LostLock, run_service), orchestrator (OrchestratorClient: list_presets, get_preset, create_cluster(preset_id, slug) 409->existing, get_cluster, list_messages, post_message, get_message; OrchestratorError, NotFound, OrchestratorUnavailable), fake_orchestrator (FakeOrchestrator), runs, testing (pytest plugin: pg_url, migrated_db); task common-release-v0-2-0 (re-plan 2026-10-25): tag v0.2.0, additive: orchestrator Preset.spec, Preset.reuse_running_agent, Cluster.status; runs.running_cluster, runs.deliver, runs.track_delivery; FakeOrchestrator add_preset(spec=), mark_sent, discard_cluster, remove_cluster; v0.1.0 unchanged"
   },
   {
     "name": "preset-mapping-model",
@@ -644,9 +644,10 @@
     "owner": "agents-webhook-microservice",
     "file": "code/agents-webhook/README.md",
     "consumers": [
+      "agents-helmfile",
       "agents-web"
     ],
-    "note": "task webhook-ui-api: /webhooks/api/v1 events (GET list ?status&source&limit&before_id, GET /{id}), mappings (GET, POST MappingIn{source, kind, repo?, labels?, preset_id, prompt_template?}, DELETE /{id}), meta; openapi.json committed; vendored in agents-web as openapi/webhooks.json"
+    "note": "task webhook-ui-api (re-plan 2026-10-25): /webhooks/api/v1 endpoints (GET list EndpointView{id, suffix, url, type, preset_id, prompt_template, username, created_at, credentials_rotated_at}; POST EndpointIn{type grafana-alert|gitlab-issue|gitlab-mr|github-issue|github-pr, preset_id, suffix?, username?, password?, prompt_template?} -> 201 EndpointCreated{...password} once; POST /{id}/rotate; DELETE /{id}), events (GET list ?status&endpoint_id&limit&before_id, GET /{id}), meta; no mappings routes; openapi.json committed; vendored in agents-web as openapi/webhooks.json"
   },
   {
     "name": "agents-webhook-chart",
@@ -656,7 +657,7 @@
     "consumers": [
       "agents-helmfile"
     ],
-    "note": "tasks webhook-chart-workloads, webhook-chart-network, webhook-ci-images: oci://harbor.szymonrichert.pl/charts/agents-webhook (0.1.0-main.<sha7> on main); values image, postgres {url | existingSecret, existingSecretKey}, orchestrator {url, token | tokenSecret}, sources {github, gitlab, grafana | existingSecret}, components {ingest, api, worker} with podAnnotations, ingress {host, tls.secretName}: /webhooks/api -> api, /webhooks/{github,gitlab,grafana} Exact -> ingest"
+    "note": "tasks webhook-chart-workloads, webhook-chart-network, webhook-ci-images: oci://harbor.szymonrichert.pl/charts/agents-webhook (0.1.0-main.<sha7> on main); values image, postgres {url | existingSecret, existingSecretKey}, orchestrator {url, token | tokenSecret}, publicBaseUrl, trustedProxies, components {ingest, api, worker} with podAnnotations, ingress {host, tls.secretName}: /webhooks/api Prefix -> api, /webhook Prefix -> ingest; no sources block (re-plan 2026-10-25)"
   },
   {
     "name": "agents-webhook-image",
@@ -708,5 +709,36 @@
       "agents-helmfile"
     ],
     "note": "task schedule-settings-model: SCHED_DATABASE_URL, SCHED_ORCHESTRATOR_URL, SCHED_ORCHESTRATOR_TOKEN(_FILE), SCHED_ALLOWED_CIDRS, SCHED_PORT, SCHED_MAX_IN_PROGRESS, SCHED_MAX_PER_SCHEDULE, SCHED_DEFAULT_TIMEZONE, SCHED_TICK_SECONDS, SCHED_POLL_SECONDS, SCHED_DISPATCH_MAX_ATTEMPTS, SCHED_RUN_TIMEOUT_SECONDS"
+  },
+  {
+    "name": "webhook-ingest-url",
+    "kind": "api",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-webhook/README.md",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task webhook-ingest-http: POST https://<base>/webhook/<suffix> with HTTP basic auth per endpoint -> 202 {id, status, reason} | 400 | 401 (identical for unknown suffix and wrong credentials, WWW-Authenticate Basic realm agents-webhook) | 413 | 429 Retry-After | 503; replaces /webhooks/{github,gitlab,grafana}"
+  },
+  {
+    "name": "agents-common-reuse",
+    "kind": "interface",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-common/src/agents_common/runs.py",
+    "consumers": [
+      "agents-schedule-microservice"
+    ],
+    "note": "task common-reuse-running (agents-common v0.2.0): running_cluster(client, cluster_id) -> Cluster|None (exists and desired active); deliver(client, store, run, cluster_id, text, marker) -> RunRef|None (None, run left open, when the cluster is gone); track_delivery(...) -> handled on sent | gone on cancelled/failed/404 | failed timeout; Preset.reuse_running_agent"
+  },
+  {
+    "name": "preset-reuse-running-agent",
+    "kind": "schema",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/spec.py",
+    "consumers": [
+      "agents-schedule-microservice",
+      "agents-web"
+    ],
+    "note": "task orch-preset-reuse-field: ClusterSpec.reuse_running_agent bool|None, sparse, default false; served in PresetView.spec; the orchestrator never acts on it; trigger services route a new event to the cluster still running for its item when set; agents-web PresetForm switch (task web-preset-reuse-row)"
   }
 ]

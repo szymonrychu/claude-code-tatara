@@ -51,7 +51,7 @@ Vendor the webhook API and write its client (design D11, D14; contract `agents-w
 
 ## Interfaces
 
-- Owns `web-webhook-client`: `src/webhooks/api.ts`. Uses `webhook-api` (agents-webhook `openapi.json`).
+- Owns `web-webhook-client`: `src/webhooks/api.ts` `{listEndpoints, createEndpoint, rotateEndpoint, deleteEndpoint, listEvents, getEvent, getMeta}`.
 
 ## Expected outcome
 
@@ -64,6 +64,6 @@ The UI has a typed webhook client pinned to a recorded agents-webhook commit.
 
 ## Notes
 
-- Requires `code/agents-webhook` checked out next to `code/agents-web` with this epic's API merged to its main.
+- Vendors from this epic's agents-webhook checkout next to agents-web (`../agents-webhook` in the integration tree).
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)

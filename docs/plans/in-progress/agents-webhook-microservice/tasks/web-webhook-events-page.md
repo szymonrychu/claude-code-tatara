@@ -45,7 +45,7 @@ The Webhooks page with recent events (design D11; request: "recent events (along
 
 ## Interfaces
 
-- `WebhooksPage({onBack})` rendered by the menu entry (task web-webhook-menu-entry).
+- `src/webhooks/WebhooksPage.tsx` `WebhooksPage({onBack})`, `src/webhooks/EventsTable.tsx` `EventsTable({events})`; consumes `web-webhook-client` and `trigger-ui-page-pattern`.
 
 ## Expected outcome
 

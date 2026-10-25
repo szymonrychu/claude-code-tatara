@@ -51,11 +51,11 @@ The singleton worker: first dispatch and tracking (design D6, D8; re-plan 2026-1
 
 ## Interfaces
 
-- `agents_webhook.worker.run_worker(settings, pool, client)`; wired as `agents-webhook worker` by webhook-cli-entrypoints.
+- `agents_webhook.worker.run_worker(settings, pool, client)` with the `route(row)` hook filled by webhook-reuse-routing; wired as `agents-webhook worker` by webhook-cli-entrypoints.
 
 ## Expected outcome
 
-Queued mapped events run as agent clusters within the limits and end handled or failed.
+Queued endpoint events run as agent clusters within the limits and end handled or failed.
 
 ## Steps
 
