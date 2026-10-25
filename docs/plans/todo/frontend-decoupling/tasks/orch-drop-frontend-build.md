@@ -6,19 +6,17 @@ value: "the orchestrator repo, image and CI carry no UI or node"
 files: [frontend, Dockerfile, .github/workflows/ci.yaml, tests/test_readme_api.py, tests/test_frontend_retired.py, .gitignore, README.md, MEMORY.md]
 verify: "uv run pytest -q tests/test_frontend_retired.py tests/test_readme_api.py tests/test_images.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [orch-drop-spa-mount]
-owns: [orch-no-ui]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # orch drop frontend build

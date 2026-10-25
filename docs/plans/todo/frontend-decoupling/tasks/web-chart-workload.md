@@ -6,19 +6,17 @@ value: the UI deploys with its own hardened chart
 files: [chart/agents-web/Chart.yaml, chart/agents-web/values.yaml, chart/agents-web/templates/_helpers.tpl, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/service.yaml, chart/tests/workload.test.mjs, package.json, package-lock.json]
 verify: "npm ci --no-audit --no-fund && node --test chart/tests/workload.test.mjs && helm lint chart/agents-web --set image.tag=ci"
 depends_on: [web-nginx-image, web-openapi-vendor]
-owns: [web-chart]
-uses: [web-image]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web chart workload

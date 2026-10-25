@@ -6,19 +6,17 @@ value: "later services add UI entries by registering them, shown only when confi
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/App.tsx, src/App.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.test.ts src/App.test.tsx && npm run lint"
 depends_on: [web-runtime-config]
-owns: [backend-registry]
-uses: [backends-config]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web backend menu

@@ -6,19 +6,17 @@ value: every agents-web change is tested in CI and main publishes the image and 
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, scripts/ci.test.mjs, .mise.toml, README.md]
 verify: "npm ci --no-audit --no-fund && node --test scripts/ci.test.mjs && shellcheck --severity=error scripts/*.sh"
 depends_on: [web-chart-config-ingress, web-nginx-image, web-openapi-vendor]
-owns: []
-uses: [web-image, web-chart, openapi-vendor]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web ci release

@@ -6,19 +6,17 @@ value: "the UI ships as a small non-root static image with the orchestrator's ca
 files: [Dockerfile, .dockerignore, nginx/default.conf, scripts/image-smoke.sh, README.md]
 verify: "docker build -t agents-web:smoke . && bash scripts/image-smoke.sh agents-web:smoke && shellcheck --severity=error scripts/image-smoke.sh"
 depends_on: [web-runtime-config]
-owns: [web-image]
-uses: [backends-config]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web nginx image

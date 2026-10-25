@@ -6,19 +6,17 @@ value: "one UI bundle runs anywhere; config.json says where each backend is"
 files: [public/config.json, src/config/backends.ts, src/config/backends.test.ts, src/main.tsx, src/api/client.ts, src/api/terminals.ts, src/api/client.test.ts, vite.config.ts]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/config/backends.test.ts src/api/client.test.ts src/terminal/terminalSocket.test.ts && npm run lint"
 depends_on: []
-owns: [backends-config]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web runtime config

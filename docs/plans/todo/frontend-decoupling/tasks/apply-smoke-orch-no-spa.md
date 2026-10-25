@@ -6,19 +6,17 @@ value: "the live orchestrator is API-only and the UI keeps working, proven by th
 files: [MEMORY.md]
 verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-orch-no-spa]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # apply smoke orch no spa

@@ -6,19 +6,17 @@ value: "the chart sets the UI's backends and owns / of the host"
 files: [chart/agents-web/values.yaml, chart/agents-web/templates/configmap.yaml, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/ingress.yaml, chart/agents-web/templates/tests/test-connection.yaml, chart/tests/config-ingress.test.mjs, chart/agents-web/README.md]
 verify: "npm ci --no-audit --no-fund && node --test chart/tests/ && helm lint chart/agents-web --set image.tag=ci"
 depends_on: [web-chart-workload]
-owns: [url-layout]
-uses: [web-chart, backends-config, web-image]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web chart config ingress

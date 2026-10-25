@@ -6,19 +6,17 @@ value: "the live smoke proves the UI, its config and the path routing"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md, mise.toml]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py tests/test_mise_tasks.py && uv run ruff check . && uv run ruff format --check . && shellcheck --severity=error scripts/smoke.sh"
 depends_on: [web-chart-config-ingress]
-owns: []
-uses: [web-chart, backends-config, url-layout]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # smoke web ui

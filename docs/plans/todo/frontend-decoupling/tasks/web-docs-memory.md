@@ -6,19 +6,17 @@ value: developers of later services learn from agents-web alone how to add a bac
 files: [README.md, AGENTS.md, MEMORY.md]
 verify: "grep -q '^## Runtime config' README.md && grep -q '^## Backends and menu' README.md && grep -q '^## URL layout' README.md && grep -q react-resizable-panels MEMORY.md"
 depends_on: [web-backend-menu, web-ci-release]
-owns: []
-uses: [backend-registry, url-layout]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web docs memory

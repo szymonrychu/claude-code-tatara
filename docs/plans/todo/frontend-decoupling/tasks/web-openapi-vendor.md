@@ -6,19 +6,17 @@ value: "the UI's API types come from a recorded orchestrator commit inside its o
 files: [openapi/orchestrator.json, openapi/orchestrator.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schema.d.ts, README.md]
 verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs && npm run check:api && npm run lint"
 depends_on: []
-owns: [openapi-vendor]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web openapi vendor
