@@ -1,6 +1,6 @@
 ---
 title: Retro command
-status: in-progress
+status: done
 repo: workbench
 value: "Epic close writes RETRO.md's measured tasks table and deltas in delivery order with one command"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/retro.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/templates/retro.md, plugins/workbench/skills/start-development/tests/test_ticket_retro.py, plugins/workbench/skills/start-development/tests/test_templates.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [stamp-actuals, calibration-lib]
 model: opus
 review: ""
-verified_head: ""
+verified_head: d257ca1
 ---
 
 # Retro command
@@ -69,3 +69,5 @@ At close one command writes the measured half of RETRO.md from the task files an
 - Fix-as-ac (brief): KEPT_MODULES is an exact set; REMOVED contains `estimate` (do not name anything that way); RECORD_H2 stays unchanged, retro.md gets its own exact-H2 test; templates are ASCII (test_templates.py:97-103).
 - Fix-as-ac (brief): only RETRO.md (like record.md) is written after `move done`; task files are never touched by retro.
 - This epic's own tasks carry points only in their Notes (`Estimate: <n> points`) and were marked done by the ticket.py on main, which does not stamp; AC10 covers them through the backfilled `.logs/agents` records (D16).
+
+- 2026-10-25 done
