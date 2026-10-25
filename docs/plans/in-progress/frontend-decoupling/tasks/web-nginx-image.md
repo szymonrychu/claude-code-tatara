@@ -1,6 +1,6 @@
 ---
 title: web nginx image
-status: in-progress
+status: done
 repo: agents-web
 value: "the UI ships as a small non-root static image with the orchestrator's caching rules"
 files: [Dockerfile, .dockerignore, nginx/default.conf, scripts/image-smoke.sh, README.md]
@@ -8,15 +8,15 @@ verify: "docker build -t agents-web:smoke . && bash scripts/image-smoke.sh agent
 depends_on: [web-runtime-config]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 42dd178
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 689196
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 611071, review 78125"
 ---
 
 # web nginx image
@@ -73,3 +73,5 @@ Ship the UI as a static image served by nginx-unprivileged, with the cache and f
 - Reuse: agent-orchestrator `src/agent_orchestrator/api/spa.py:SpaStaticFiles` and `tests/test_spa.py` are the rule set.
 - The oauth2-proxy injector renames the container port `http` to its sidecar; probes therefore use the port number 8080 (agents-helmfile `values/agent-orchestrator/common.yaml` comment).
 - `readOnlyRootFilesystem` in the chart needs writable `/tmp` (pid and temp paths of nginx-unprivileged); keep every nginx temp path under `/tmp`.
+
+- 2026-10-25 done
