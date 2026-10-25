@@ -66,3 +66,5 @@ Queued endpoint events run as agent clusters within the limits and end handled o
 - Never delete clusters (D8, non-goal). The service token goes in `WEBHOOK_ORCHESTRATOR_TOKEN`; the URL is the orchestrator's services Service.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+Orchestrator note (2026-10-25): prompt.render/preview take `timeout=`; pass `settings.template_timeout_seconds` (WEBHOOK_TEMPLATE_TIMEOUT_SECONDS, default 2.0). Rebuild the NormalizedEvent for render from the event row (body/comment_body columns from event-store fix 0002_event_text.sql).

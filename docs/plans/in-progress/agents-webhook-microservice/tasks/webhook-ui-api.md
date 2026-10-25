@@ -75,3 +75,5 @@ Everything the UI does is a documented HTTP call.
 
 User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
 Orchestrator ruling for this task: endpoint create validates the template syntax with the shared renderer (422 naming `prompt_template` and the Jinja error line); add `POST /webhooks/api/v1/templates/preview` taking `{template, type, example}` (example = a JSON payload as the provider would send it; it is normalized for the given type, then rendered) and returning `{prompt}` or a 422 with the render error; preview never stores anything and is behind SSO like the rest of the UI API. Tests for both.
+
+Orchestrator note (2026-10-25): prompt.render/preview take `timeout=`; pass `settings.template_timeout_seconds` (WEBHOOK_TEMPLATE_TIMEOUT_SECONDS, default 2.0). Rebuild the NormalizedEvent for render from the event row (body/comment_body columns from event-store fix 0002_event_text.sql).
