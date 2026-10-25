@@ -1,6 +1,6 @@
 ---
 title: apply smoke webhook
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the webhook service, its database, the orchestrator service port and the UI are live and proven by the smoke"
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [smoke-webhook-check, helmfile-service-token, helmfile-drop-source-secrets, deploy-pin-orch-service-port, helmfile-webhook-releases, helmfile-web-webhooks-entry]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3bfc1dc
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 27
+actual_tokens: 453019
+actual_roles: impl 27
+actual_role_tokens: impl 453019
 ---
 
 # apply smoke webhook
@@ -61,3 +61,5 @@ The live namespace runs agents-webhook with its database, the orchestrator servi
 - The CNPG cluster creation and the public ingest path were approved at the gate (A7, A8); `mise run apply` never appears in AC evidence.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
