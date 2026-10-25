@@ -1,6 +1,6 @@
 ---
 title: Suite temp dirs outside the checkout
-status: in-progress
+status: done
 repo: workbench
 value: "Plugin suites stay green inside initialised workbenches, so template updates can land"
 files: [plugins/workbench/scripts/run-tests.sh, plugins/workbench/scripts/flake-hunt.sh, plugins/workbench/hooks/bash-output-filter.py, plugins/workbench/scripts/tests/test_run_tests.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6f40f47
 points: 3
 expected_minutes: 23
 expected_tokens: 723362
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 11
+actual_tokens: 1193328
+actual_roles: "impl 9, review 3"
+actual_role_tokens: "impl 899494, review 293834"
 ---
 
 # Suite temp dirs outside the checkout
@@ -65,3 +65,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-25 amended: builder check: TMPDIR trusted, bats get TMPDIR only, temp dir kept on red regardless of RUN_TESTS_LOG_DIR, removed on exit 0
+
+- 2026-10-25 done
