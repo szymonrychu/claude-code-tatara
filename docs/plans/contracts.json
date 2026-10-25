@@ -650,5 +650,15 @@
       "agents-helmfile"
     ],
     "note": "tasks webhook-chart-workloads, webhook-chart-network, webhook-ci-images: oci://harbor.szymonrichert.pl/charts/agents-webhook (0.1.0-main.<sha7> on main); values image, postgres {url | existingSecret, existingSecretKey}, orchestrator {url, token | tokenSecret}, sources {github, gitlab, grafana | existingSecret}, components {ingest, api, worker} with podAnnotations, ingress {host, tls.secretName}: /webhooks/api -> api, /webhooks/{github,gitlab,grafana} Exact -> ingest"
+  },
+  {
+    "name": "agents-webhook-image",
+    "kind": "release",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-webhook/.github/workflows/ci.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task webhook-ci-images: harbor.szymonrichert.pl/containers/agents-webhook:<sha7>; entrypoint agents-webhook {migrate, ingest, api, worker}"
   }
 ]
