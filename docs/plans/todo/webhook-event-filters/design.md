@@ -182,7 +182,7 @@ Cross-epic: none changed. agents-schedule-microservice consumes the agents-commo
 ## Open questions
 
 - Q1: Retire WEBHOOK_ALLOWED_AUTHORS (and reason author_not_allowed) in favour of per-endpoint author allow rules, but keep WEBHOOK_BOT_LOGINS as the global self-loop guard? [answer: yes (user: 'Go for webhook filter', 2026-10-25): retire WEBHOOK_ALLOWED_AUTHORS, keep WEBHOOK_BOT_LOGINS]
-- Q2: Run the built-in ignore rules (self_event, action_ignored, resolved) before the endpoint filters, so a filter reason only appears on events that would otherwise start an agent? [recommended: yes]
+- Q2: Run the built-in ignore rules (self_event, action_ignored, resolved) before the endpoint filters, so a filter reason only appears on events that would otherwise start an agent? [answer: yes (user gate approval 2026-10-25): built-in ignore rules run before the filters]
 - Q3: Combine allow rules with AND (author in list AND repo in list) and a rule's values with OR, with no OR-groups across rules? [recommended: yes]
 
 ## Irreversible operations in scope
