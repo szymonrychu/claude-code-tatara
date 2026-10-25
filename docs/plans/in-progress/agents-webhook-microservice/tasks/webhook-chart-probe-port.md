@@ -1,6 +1,6 @@
 ---
 title: webhook chart probe port
-status: todo
+status: done
 repo: agents-webhook
 value: the api pod becomes Ready behind the oauth2-proxy sidecar
 files: [chart/agents-webhook/templates/deployment.yaml, tests/test_chart_workloads.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_chart_workloads.py -o addopts= -q && uv run ru
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 7369648
 points: 1
 expected_minutes: 5
 expected_tokens: 691322
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 448223
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 346418, review 101805"
 ---
 
 # webhook chart probe port
@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
