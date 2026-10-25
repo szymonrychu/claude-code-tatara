@@ -1,7 +1,7 @@
 ---
 title: agents matrix connector
 blockers: [webhook-event-filters]
-stage: review
+stage: build
 owner: Szymon Richert
 repos: [agents-matrix-connector, agents-helmfile, agents-web]
 created: 2026-10-25
