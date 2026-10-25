@@ -1,7 +1,7 @@
 ---
 title: agent init scripts
 blockers: [hive-mode-leadership-handove]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agent-orchestrator, any-mcp, claude-code-wrapper, agents-helmfile]
 created: 2026-10-24
