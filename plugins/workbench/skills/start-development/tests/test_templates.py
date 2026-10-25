@@ -32,6 +32,7 @@ RECORD_H2 = [
     "Not pushed",
     "Lessons routed to",
 ]
+RETRO_H2 = ["Tasks", "Deltas", "Retro", "Improvements"]
 
 
 def read(p):
@@ -70,6 +71,19 @@ def test_record_template():
     assert t.splitlines()[0] == "# <Topic> record"
     assert h2s(t) == RECORD_H2
     assert "Lessons routed to" in t
+
+
+def test_retro_template():
+    t = read(SD / "templates" / "retro.md")
+    assert t.isascii()
+    assert t.splitlines()[0] == "# <Topic> retro"
+    assert h2s(t) == RETRO_H2
+    begin, end = "<!-- retro:generated:begin -->", "<!-- retro:generated:end -->"
+    assert t.count(begin) == 1 and t.count(end) == 1
+    assert t.index(begin) < t.index("## Tasks") < t.index("## Deltas") < t.index(end)
+    assert t.index(end) < t.index("## Retro") < t.index("## Improvements")
+    for phrase in ("Went well", "Went bad / could be improved", "tech debt", "workflow"):
+        assert phrase.lower() in t.lower(), phrase
 
 
 def test_builder_check():

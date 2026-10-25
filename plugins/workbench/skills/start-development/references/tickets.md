@@ -11,6 +11,7 @@ docs/plans/<phase>/<epic>/design.md        full size only
 docs/plans/<phase>/<epic>/tasks/<task>.md  agent-facing task files
 docs/plans/<phase>/<epic>/close.json       written by `ticket.py close`
 docs/plans/<phase>/<epic>/record.md        written by record-writer at phase 7
+docs/plans/<phase>/<epic>/RETRO.md         `ticket.py retro` (Tasks, Deltas) and retro-writer, phase 7
 docs/plans/index.json                      generated, gitignored
 ```
 
@@ -18,7 +19,7 @@ docs/plans/index.json                      generated, gitignored
   twice in an epic's life.
 - `--root <dir>` overrides `<docs_root>/docs/plans` (tests).
 - Legacy `docs/plans/<date>-*` files were removed; only the three phase folders live under `docs/plans/`.
-- `ticket.py path <epic> readme|design|record|tasks` prints the absolute path inside the epic's current
+- `ticket.py path <epic> readme|design|record|retro|tasks` prints the absolute path inside the epic's current
   phase. Every subcommand that takes an epic accepts its slug or its directory.
 
 ## Subcommands
@@ -68,6 +69,20 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
   `integrationVerify`, `mainVerify`, `at`). A failed verify is exit 4; main does not move. Component mode
   closes through the MR instead.
 - `reap`: `reap --epic <epic> [--dry-run]` removes a done epic's merged, clean trees.
+- `retro`: `retro <epic> [--logs DIR] [--transcripts DIR]` (epic in-progress or done) writes RETRO.md
+  from templates/retro.md: the Tasks table in delivery order (the `chore(ticket): <epic> task <slug> done`
+  commits, oldest first; tasks never marked done follow in dependency order) with task title, points
+  (planned), points (post-delivery), minutes (expected), minutes (actual), tokens (expected), tokens
+  (actual) and a totals line, and the Deltas section (per task the points difference and the minutes and
+  tokens ratios, actual over expected, then the MdAPE per metric). Empty actual minutes and tokens come from
+  the task's `.logs/agents` records (backfilled from the harness transcripts first when it has none), a
+  missing `points` from a Notes line `Estimate: <n> points`; anything else missing reads `not recorded`.
+  Both sections sit between `<!-- retro:generated:begin -->` and `<!-- retro:generated:end -->`; a rerun
+  regenerates only that block, keeps the Retro and Improvements sections retro-writer fills, refuses a
+  file without exactly one block, and commits exactly RETRO.md as `chore(ticket): <epic> retro`. Task
+  files are never written. `retro --history [--limit N]` prints, as JSON (`epic`, `retro`,
+  `improvements`), the Retro and Improvements sections of the N (default 5) most recently done epics
+  (by their `move done` commit) that have a RETRO.md.
 
 ## Naming
 
@@ -145,7 +160,8 @@ epic branch. Every mutating subcommand calls `require_main_checkout(root)`, whic
 run in the main checkout, not a linked worktree` inside a linked worktree. After it succeeds,
 `commit_ticket_change(epic, event, paths)` commits exactly the `docs/plans/` paths it wrote as
 `chore(ticket): <epic> <event>`; unrelated dirty files stay uncommitted. Outside git both are no-ops.
-`design.md` and `record.md` (record-writer) are written directly, in the main checkout.
+`design.md`, `record.md` (record-writer) and RETRO.md's Retro and Improvements (retro-writer) are written
+directly, in the main checkout.
 
 ## The `discovered` entry
 

@@ -52,6 +52,7 @@ PATH_KINDS = {
     "readme": "README.md",
     "design": "design.md",
     "record": "record.md",
+    "retro": "RETRO.md",
     "tasks": "tasks",
 }
 
