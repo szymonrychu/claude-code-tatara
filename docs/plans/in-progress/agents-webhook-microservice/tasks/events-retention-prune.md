@@ -42,13 +42,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Final events older than WEBHOOK_EVENTS_RETENTION_DAYS disappear within an hour of expiring; nothing in flight is touched.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `test_retention_prunes_old_final_events`; run `uv run pytest tests/test_worker.py -o addopts= -q -k retention`: fails.
+- Implement the prune in events.py and call it from the worker tick at most hourly; rerun: passes.
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+DB tests use the local Postgres at postgresql://test@127.0.0.1:55433/postgres via a temporary, uncommitted pg_url override. The worker is the events queue's claimer; ingest inserts; deletes belong to the worker as the single maintenance writer (document it in the migration header comment).
