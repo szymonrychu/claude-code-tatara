@@ -1,6 +1,6 @@
 ---
 title: cache key reserved prefix
-status: todo
+status: done
 repo: agents-orchestrator
 value: "no caller can read or poison another preset's workspace cache"
 files: [src/agents_orchestrator/spec.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/api/presets.py, tests/test_api_cache.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -o addopts='-m \"not integration and not e2e\"' tests/
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 8d8b2c3
 points: 2
 expected_minutes: 5
 expected_tokens: 531208
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 19
+actual_tokens: 1950993
+actual_roles: "impl 19, review 11"
+actual_role_tokens: "impl 1357100, review 593893"
 ---
 
 # cache key reserved prefix
@@ -56,3 +56,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 done
