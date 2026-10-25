@@ -1,6 +1,6 @@
 ---
 title: ci image checks and worker test flake
-status: todo
+status: done
 repo: agents-schedule
 value: "the image's non-root and no-dev-deps guarantees are checked on every PR, and the suite does not flake"
 files: [.github/workflows/ci.yaml, tests/test_ci_workflow.py, tests/test_entrypoints.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_ci_workflow.py tests/test_entrypoints
 depends_on: [epic-review-fixes]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 814ba207c6aefac7bd672185812afe27dfc3c476
 points: 1
 expected_minutes: 5
 expected_tokens: 671138
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 297736
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 203178, review 94558"
 ---
 
 # ci image checks and worker test flake
@@ -55,3 +55,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done: CI images job green on 814ba20 incl. uid/no-pytest step
