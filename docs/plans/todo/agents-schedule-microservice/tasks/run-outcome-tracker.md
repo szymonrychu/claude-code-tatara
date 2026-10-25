@@ -23,19 +23,20 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add `agents_schedule.tracker` (design D10; approval A3) on agents-common `runs.track` and `OrchestratorClient` (contracts `preset-mapping-model`, `agents-common-lib`; reference poller `code/agent-orchestrator/bench/runner.py:_finished`).
+Add `agents_schedule.tracker` (design D10, D15; approval A3) on agents-common v0.3.0 `runs.track`, `runs.track_delivery` and `OrchestratorClient` (contracts `preset-mapping-model`, `agents-common-lib`, `agents-common-reuse`; reference poller `code/agents-orchestrator/bench/runner.py:_finished`).
 
-- `track_once(pool, client, settings, now) -> int`: for each `in-progress` run with a `message_id`, `GET /api/v1/messages/{message_id}`: `turn.status = completed` -> `handled`, `finished_at = turn.completed_at`; message `failed` or `cancelled` -> `failed` reason `message_<status>`; `turn.status = failed` -> `failed` reason `turn_failed`; 404 -> `failed` reason `message_gone`; in progress longer than `SCHED_RUN_TIMEOUT_SECONDS` -> `failed` reason `timeout`; anything else leaves the run in-progress. Transient orchestrator errors leave it unchanged and are logged once per run per minute.
+- `track_once(pool, client, settings, now) -> int`: for each `in-progress` run with a `message_id`, `GET /api/v1/messages/{message_id}`: `turn.status = completed` -> `handled`, `finished_at = turn.completed_at`; message `failed` or `cancelled` -> `failed` reason `message_<status>`; `turn.status = failed` -> `failed` reason `turn_failed`; 404 -> `failed` reason `session_not_found`; in progress longer than `SCHED_RUN_TIMEOUT_SECONDS` -> `failed` reason `timeout`; anything else leaves the run in-progress. A run with `reuse = delivered` is tracked with `runs.track_delivery(client, store, run, timeout_seconds=SCHED_RUN_TIMEOUT_SECONDS, now=now)` instead: `handled` when its message is `sent`; `timeout` finishes it failed; `"gone"` (message cancelled, failed or missing, the reused session went away) sets `reuse = fallback` and clears `session_id` and `message_id` through one guarded update, so the dispatcher resumes the run and creates a new session; still queued leaves it in-progress. Transient orchestrator errors leave it unchanged and are logged once per run per minute.
 - Every change is the guarded `in-progress -> handled|failed` transition; a run already moved by another process is left alone.
 - `run_tracker(pool, client, settings, stop)` loops every `SCHED_POLL_SECONDS`.
-- The service never deletes clusters (gate Q8); cleanup is the preset's autoclose from configuration-improvements (contract `orch-cluster-autoclose`).
+- The service never deletes sessions (gate Q8); cleanup is the preset's autoclose from configuration-improvements (contract `orch-cluster-autoclose`).
 
 ## Acceptance conditions
 
 - AC1: a completed first turn marks the run handled with finished_at [evidence: test:tests/test_tracker.py::test_completed_turn_handled]
 - AC2: failed or cancelled messages, failed turns and timeouts mark the run failed with the reason [evidence: test:tests/test_tracker.py::test_failures_have_reasons]
 - AC3: a running turn or a transient error leaves the run in-progress [evidence: test:tests/test_tracker.py::test_running_unchanged]
-- AC4: the tracker never calls DELETE on the orchestrator [evidence: test:tests/test_tracker.py::test_never_deletes_clusters]
+- AC4: the tracker never calls DELETE on the orchestrator [evidence: test:tests/test_tracker.py::test_never_deletes_sessions]
+- AC5: a reused run whose message is sent is handled, and a reused run whose message is gone is reset to reuse fallback with session and message cleared [evidence: test:tests/test_tracker.py::test_reused_run_tracked_by_delivery]
 
 ## Files
 
@@ -59,3 +60,5 @@ Runs reach a terminal status that matches the orchestrator's view of their first
 ## Notes
 
 - do-not-build: a turn-completion callback in the orchestrator; polling the message gives the outcome (`code/agent-orchestrator/src/agent_orchestrator/api/messages.py` L99).
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
