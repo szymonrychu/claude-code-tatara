@@ -23,6 +23,7 @@ KEPT = {
     "merge-hosts.md",
     "user-run-steps.md",
     "workbench-config.md",
+    "retro.md",
 }
 DELETED = (
     "phase-4-execute.md",
@@ -81,7 +82,7 @@ def test_skill_is_lean():
     lines = SKILL.read_text().splitlines()
     assert len(lines) <= 150, f"SKILL.md is {len(lines)} lines, cap 150"
     names = {Path(p).name for p in tracked(REFS)}
-    assert len(names) <= 7, sorted(names)
+    assert len(names) <= 8, sorted(names)
     assert names == KEPT, sorted(names ^ KEPT)
     for name in DELETED:
         assert not tracked(f"{REFS}/{name}"), f"references/{name} is still tracked"
