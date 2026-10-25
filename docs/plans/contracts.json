@@ -552,7 +552,8 @@
       "agent-orchestrator",
       "configuration-improvements",
       "agents-webhook-microservice",
-      "agents-schedule-microservice"
+      "agents-schedule-microservice",
+      "agents-matrix-connector"
     ],
     "note": "task web-openapi-vendor: openapi/<backend>.json + openapi/<backend>.source '<repo> <sha40>'; npm run sync:api -- <backend> [--from <checkout>]; npm run check:api in agents-web CI; an orchestrator route change is followed by sync:api in agents-web"
   },
