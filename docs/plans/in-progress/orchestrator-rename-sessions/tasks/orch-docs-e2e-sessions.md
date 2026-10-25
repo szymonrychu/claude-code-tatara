@@ -1,6 +1,6 @@
 ---
 title: orch docs e2e sessions
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the orchestrator's docs and e2e say session and agents-orchestrator, and a guard keeps it so"
 files: [README.md, AGENTS.md, MEMORY.md, chart/agents-orchestrator/, e2e/, scripts/e2e.sh, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_nomenclature.py tests/test_project_name.py 
 depends_on: [orch-agent-api-sessions]
 model: opus
 review: ""
-verified_head: ""
+verified_head: c27b228
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 21
+actual_tokens: 2420546
+actual_roles: "impl 20, review 1"
+actual_role_tokens: "impl 2264986, review 155560"
 ---
 
 # orch docs e2e sessions
@@ -64,3 +64,5 @@ Every tracked file of agents-orchestrator passes both guards, MEMORY.md records 
 
 - MEMORY.md, ROADMAP.md and CHANGELOG.md keep their dated history (allowlisted); ROADMAP.md is human-owned, never edited.
 - Kind and Kubernetes clusters keep their word (D12).
+
+- 2026-10-25 done
