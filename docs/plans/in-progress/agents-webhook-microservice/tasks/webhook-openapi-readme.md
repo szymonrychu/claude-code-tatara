@@ -1,6 +1,6 @@
 ---
 title: webhook openapi readme
-status: in-progress
+status: done
 repo: agents-webhook
 value: "the webhook API is documented and its committed schema cannot drift, so the UI and scripts can rely on it"
 files: [src/agents_webhook/api/openapi.py, openapi.json, README.md, tests/test_readme_api.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_readme_api.py -q && uv run ruff check . && uv 
 depends_on: [webhook-ui-api]
 model: ""
 review: ""
-verified_head: ""
+verified_head: caaa41a
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 1087807
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 801839, review 285968"
 ---
 
 # webhook openapi readme
@@ -62,3 +62,5 @@ The API is documented and drift-tested.
 
 User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
 Orchestrator ruling for this task: document the template language (sandboxed Jinja2, the `from_json` filter, the context variables per type, `template_error`) and the preview route in README and openapi.
+
+- 2026-10-25 done
