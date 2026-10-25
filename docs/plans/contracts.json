@@ -614,7 +614,8 @@
     "file": "code/agent-orchestrator/README.md",
     "consumers": [
       "agents-schedule-microservice",
-      "agents-helmfile"
+      "agents-helmfile",
+      "agents-matrix-connector"
     ],
     "note": "task orch-service-port-auth: ORCH_SERVICE_PORT 8002, ORCH_SERVICE_TOKENS(_FILE) CSV <name>:<sha256 hex>; Authorization: Bearer <token> compared by hmac.compare_digest; serves only GET /api/v1/meta, GET /api/v1/presets[/{id}], GET|POST /api/v1/clusters, GET /api/v1/clusters/{id}, GET|POST /api/v1/clusters/{id}/messages, GET /api/v1/messages/{id}, /healthz, /readyz; 401 unauthorized, 403 forbidden; no WebSocket, never /agent/v1; main and agent ports unchanged"
   },
