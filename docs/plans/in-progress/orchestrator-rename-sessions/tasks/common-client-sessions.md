@@ -1,6 +1,6 @@
 ---
 title: common client sessions
-status: in-progress
+status: done
 repo: agents-common
 value: "the trigger services' shared client speaks the session API"
 files: [src/agents_common/orchestrator.py, src/agents_common/fake_orchestrator.py, src/agents_common/runs.py, README.md, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_orchestrator_client.py tests/test_runs.py t
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: a7b12ed
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 1048800
+actual_roles: impl 4
+actual_role_tokens: impl 1048800
 ---
 
 # common client sessions
@@ -63,3 +63,5 @@ agents-common speaks only the session API; its guard passes.
 ## Notes
 
 - Routes and codes follow design.md D2 exactly; the fake must not answer `/clusters`.
+
+- 2026-10-25 done
