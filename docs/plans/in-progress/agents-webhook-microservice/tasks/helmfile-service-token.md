@@ -1,6 +1,6 @@
 ---
 title: helmfile service token
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the webhook service and the orchestrator share a service token and the three source secrets exist, without rotating any existing secret"
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-webhook/default.secrets.yaml, values/agent-orchestrator/service-token-agents-webhook.secrets.yaml, .sops.yaml]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_secrets.py && mise run 
 depends_on: [orch-service-port-auth]
 model: ""
 review: full
-verified_head: ""
+verified_head: 4f572d6
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 198625
+actual_roles: impl 2
+actual_role_tokens: impl 198625
 ---
 
 # helmfile service token
@@ -63,3 +63,5 @@ Both releases have their secrets; nothing existing changed.
 ## Notes
 
 - The SOPS key setup is the repo's existing one (`.sops.yaml`); never commit plaintext; never decrypt to stdout in a transcript.
+
+- 2026-10-25 done
