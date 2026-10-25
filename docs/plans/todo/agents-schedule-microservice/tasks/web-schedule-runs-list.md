@@ -23,12 +23,12 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (`listScheduleRuns`), newest first, each with fire time in the schedule's zone, trigger (scheduled or manual), `RunStatusChip` from the trigger UI kit (contract `trigger-ui-page-pattern`), the reason when present, and a link to the cluster in the orchestrator view when `cluster_id` is set. Refreshes with `usePoll` every 10 s while mounted and on `refreshKey` change.
+Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (`listScheduleRuns`), newest first, each with fire time in the schedule's zone, trigger (scheduled or manual), `RunStatusChip` from the trigger UI kit (contract `trigger-ui-page-pattern`), the reason when present, and a link to the session in the orchestrator view when `session_id` is set. Refreshes with `usePoll` every 10 s while mounted and on `refreshKey` change.
 
 ## Acceptance conditions
 
 - AC1: runs render newest first with status, trigger and reason [evidence: command:npx vitest run src/schedules/ScheduleRuns.test.tsx -t 'renders']
-- AC2: a run with a cluster links to that cluster [evidence: command:npx vitest run src/schedules/ScheduleRuns.test.tsx -t 'cluster link']
+- AC2: a run with a session links to that session [evidence: command:npx vitest run src/schedules/ScheduleRuns.test.tsx -t 'session link']
 - AC3: the list refreshes on its interval and on refreshKey [evidence: command:npx vitest run src/schedules/ScheduleRuns.test.tsx -t 'refresh']
 
 ## Files
@@ -53,3 +53,5 @@ Run history and cluster links are visible per schedule.
 ## Notes
 
 - The cluster link uses the cluster view route agents-web already has for the orchestrator.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
