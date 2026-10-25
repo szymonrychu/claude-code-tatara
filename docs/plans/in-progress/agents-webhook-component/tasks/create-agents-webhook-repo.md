@@ -1,6 +1,6 @@
 ---
 title: create agents-webhook repo
-status: todo
+status: in-progress
 repo: superrepo
 value: "the webhook service has its own repo and submodule, ready for the agents-webhook-microservice tasks"
 files: [.gitmodules, code/agents-webhook, AGENTS.md]

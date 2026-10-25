@@ -1,6 +1,6 @@
 ---
 title: create agents-common repo
-status: todo
+status: in-progress
 repo: superrepo
 value: "the shared trigger library has its own repo and submodule, ready for the agents-webhook-microservice tasks"
 files: [.gitmodules, code/agents-common, AGENTS.md]
