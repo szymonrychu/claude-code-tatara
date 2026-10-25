@@ -1,6 +1,6 @@
 ---
 title: web schedule form
-status: in-progress
+status: done
 repo: agents-web
 value: a user creates or edits a schedule and sees its next fire times before saving
 files: [src/schedules/ScheduleForm.tsx, src/schedules/ScheduleForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleFor
 depends_on: [web-schedules-api-client]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 79d015f10dbd55c935c064e6ff015a99060252c7
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 865307
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 659993, review 205314"
 ---
 
 # web schedule form
@@ -58,3 +58,5 @@ Schedules are created and edited in the UI with a preview of when they fire.
 ## Notes
 
 - Reuse `PresetSelect` from the kit; do not write another preset picker.
+
+- 2026-10-26 done
