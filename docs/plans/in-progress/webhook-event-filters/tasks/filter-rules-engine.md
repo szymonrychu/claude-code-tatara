@@ -1,6 +1,6 @@
 ---
 title: filter rules engine
-status: in-progress
+status: done
 repo: agents-webhook
 value: "allow and deny rules per endpoint type, validated and evaluated on RE2 so no user regex can stall ingest"
 files: [src/agents_webhook/filters.py, tests/test_filters.py, pyproject.toml, uv.lock]
@@ -8,15 +8,15 @@ verify: "uv sync && uv run pytest tests/test_filters.py -q && uv run ruff check 
 depends_on: [normalize-branch-fields]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 07aba14
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 13
+actual_tokens: 2424236
+actual_roles: "impl 13, review 4"
+actual_role_tokens: "impl 2264841, review 159395"
 ---
 
 # filter rules engine
@@ -82,3 +82,5 @@ New module `src/agents_webhook/filters.py`:
 - Grafana `labels` is a `dict[str, str]`; forge `labels` is a `list[str]` (see `normalize.py`). The type of `event.labels` follows `event.type`.
 - Keep `filters.py` free of I/O and of FastAPI/pydantic imports; the API layer has its own schema (api-endpoint-filters).
 - No stored filter JSON exists yet; storage is the next task.
+
+- 2026-10-25 done
