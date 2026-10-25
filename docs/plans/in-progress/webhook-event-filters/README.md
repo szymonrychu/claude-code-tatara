@@ -41,6 +41,25 @@ Each agents-webhook endpoint gets allow and deny rules over the normalized field
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 
+Verdict: pass (2026-10-25)
+
+Epic review of webhook-event-filters, 2026-10-25.
+
+- Scope audit: CLEAN. Every type and every D3 field is covered across API, UI create/edit, preview, deploy and smoke.
+- Whole-diff review: 1 medium finding. A stale preview verdict stayed after a filter edit; fixed by web-preview-stale-on-filter (da936ab, agents-web bc47dee), reviewed PASS.
+- Security review: 1 medium finding. Filter evaluation ran on the event loop with no total work cap; fixed by filters-off-event-loop (9f048aa, agents-webhook 206cf8e): to_thread, MAX_TOTAL_VALUES=200, MAX_LIST_ITEMS=100 fail-closed. Reviewed PASS.
+- Per-task fixes earlier in the epic:
+  - truncation now fails closed;
+  - the preview mirrors ingest (built-in rules first, filter_error).
+- Full suites:
+  - agents-helmfile `mise run test`: 122 passed, lint clean.
+  - agents-webhook PR #6 CI: green including e2e.
+  - agents-web PR #8 CI: green.
+- Live:
+  - agents-webhook 0.1.0-main.206cf8e (rev 4) and agents-web 0.1.0-main.bc47dee (rev 6) applied.
+  - Post-apply diff: "No affected releases".
+  - Smoke: OK, including the filter checks (last line "smoke: deleted webhook endpoint 4").
+
 ## Time
 
 Estimate: 0 min | Actual: 0 min | Remaining estimate: 0 min
