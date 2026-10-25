@@ -1,6 +1,6 @@
 ---
 title: Run marker points
-status: in-progress
+status: done
 repo: workbench
 value: "Every implementer and reviewer run is attributable to its task, and every review measures post-delivery points"
 files: [plugins/workbench/skills/epic-run/SKILL.md, plugins/workbench/skills/epic-run/tests/test_epic_run_structure.py, plugins/workbench/agents/reviewer.md, plugins/workbench/skills/start-review/tests/test_agents_lean.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only epic-run && bash plu
 depends_on: [agent-discipline, planner-points-gate, agent-usage-lib]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f597bdd
 ---
 
 # Run marker points
@@ -53,3 +53,5 @@ Every implementer and reviewer run is attributable to its epic, task and role, a
 - Estimate: 2 points.
 - Fix-as-ac (brief, prompt marker): nothing in epic-run/SKILL.md:23-27 puts epic/task in the prompt today; a structure test pins the marker (AC1).
 - Depends on agent-discipline (reviewer.md, test_agents_lean.py) and planner-points-gate (Fibonacci scale wording).
+
+- 2026-10-25 done
