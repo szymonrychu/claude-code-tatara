@@ -1,9 +1,9 @@
 ---
 title: agents-schedule microservice
-blockers: []
+blockers: [agents-schedule-component, agents-webhook-microservice, frontend-decoupling, configuration-improvements, agent-init-scripts, cluster-scaling]
 stage: build
 owner: ""
-repos: [agents-schedule, agent-orchestrator, agents-helmfile]
+repos: [agents-schedule, agents-web, agents-helmfile]
 created: 2026-10-25
 ---
 
@@ -24,15 +24,21 @@ User request (2026-10-25), verbatim. Overall target: "Target getting more and mo
 
 ## Goals
 
-
+- The agents-schedule service maps 5-field cron schedules (IANA timezone, default Europe/Warsaw) to presets with a prompt, fires each due schedule once, starts a cluster from the preset through the orchestrator service port and tracks the run to handled or failed.
+- Missed runs collapse into one catch-up run; a fire while the previous run is in flight is recorded ignored (previous_running); at most 3 runs in progress, 1 per schedule.
+- `/schedules/api/v1` is documented with a committed openapi.json and covered route by route by an API-only kind e2e.
+- A Schedules page in agents-web, between Webhooks and Presets in the hamburger menu, manages schedules and shows run history.
+- v0.1.0 is released and deployed with its own CNPG database to the agents namespace; the live smoke covers it.
 
 ## Non-goals
 
-
+- No Kubernetes CronJob, no prompt on presets, no orchestrator API change, no cluster deletion by this service.
+- No shared library, orchestrator client, dispatch, fake orchestrator or UI kit code: agents-webhook-microservice and frontend-decoupling own them.
+- The repo creation itself is epic agents-schedule-component.
 
 ## Time
 
-Derived by `ticket.py estimate`, `tasks` and `apply-run` from the task `estimate` and `actual` fields into one line (`Estimate | Critical path | Expected wall at P= | Actual | Remaining estimate`); never edit by hand. Report only, never a budget.
+Estimate: 157 agent-min | Critical path: 68 min | Expected wall at P=2.9: 2.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 157 min
 
 ## Review
 

@@ -3,13 +3,13 @@ title: schedule service token
 status: todo
 repo: agents-helmfile
 value: "the schedule service authenticates to the orchestrator with its own token, bootstrapped like the other secrets"
-files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py]
+files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agent-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_secrets.py && shellcheck --severity=error scripts/bootstrap-secrets.sh && uv run ruff check ."
 depends_on: []
 owns: [agents-schedule-token-bootstrap]
-uses: [orch-service-tokens]
+uses: [orch-service-tokens, orch-services-service]
 model: ""
-estimate: 5
+estimate: 6
 estimate_by: formula
 actual: ""
 actual_roles: ""
@@ -25,12 +25,19 @@ provides: []
 
 ## Requirement
 
-Extend `scripts/bootstrap-secrets.sh` (design D14; approval A6): generate a random service token for agents-schedule once (kept when it exists), store it in Secret `agents-schedule-orchestrator-token` key `token` in namespace `agents`, and add the same token to the orchestrator's service-token list in the form and Secret the contract `orch-service-tokens` defines (name `agents-schedule`). Idempotent: a second run changes nothing; prints no secret value.
+Secrets for agents-schedule (design D14; approval A6), the same shape as agents-webhook task helmfile-service-token (contracts `orch-service-tokens`, `orch-services-service`). Paths are in code/agents-helmfile.
+
+- `scripts/bootstrap-secrets.sh` gains `bootstrap_schedule`: when neither `values/agents-schedule/default.secrets.yaml` nor `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml` exists, generate one service token (`openssl rand -hex 32`) and write, SOPS-encrypted through the existing `encrypt_to`:
+  - `values/agents-schedule/default.secrets.yaml`: `orchestrator.token` (chart values shape of task helm-chart).
+  - `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml`: `serviceApi.tokenHashes.agents-schedule: <sha256 hex of the token>` (orchestrator chart values of `orch-services-service`).
+  When both exist it does nothing; when exactly one exists it exits 1 naming both (never rotates, never half-writes). Values only travel through pipes, as the script's header requires.
+- `.sops.yaml` covers the new paths if its rules do not already.
+- `tests/test_secrets.py`: the new files are encrypted with the expected keys; the script is idempotent; one-of-two existing exits 1; the hash in the orchestrator file is the sha256 of the token in the schedule file (checked in-process the way the existing tests read encrypted files, never printed); no value printed.
 
 ## Acceptance conditions
 
-- AC1: the script creates the schedule token Secret and the orchestrator entry [evidence: test:tests/test_secrets.py::test_schedule_service_token_bootstrapped]
-- AC2: a second run keeps the existing token [evidence: test:tests/test_secrets.py::test_schedule_service_token_idempotent]
+- AC1: the script writes both encrypted files with the token and its hash [evidence: test:tests/test_secrets.py::test_schedule_service_token_bootstrapped]
+- AC2: a second run changes nothing and one-of-two existing exits 1 [evidence: test:tests/test_secrets.py::test_schedule_service_token_idempotent]
 - AC3: no token value is printed [evidence: test:tests/test_secrets.py::test_schedule_service_token_not_printed]
 - AC4: shellcheck passes [evidence: command:shellcheck --severity=error scripts/bootstrap-secrets.sh]
 
@@ -38,20 +45,24 @@ Extend `scripts/bootstrap-secrets.sh` (design D14; approval A6): generate a rand
 
 - `scripts/bootstrap-secrets.sh`
 - `tests/test_secrets.py`
+- `values/agents-schedule/default.secrets.yaml`
+- `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml`
+- `.sops.yaml`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-schedule/default.secrets.yaml` `orchestrator.token` and `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml` `serviceApi.tokenHashes.agents-schedule` (part `agents-schedule-token-bootstrap`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One bootstrap run gives the schedule service a working orchestrator credential.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests to tests/test_secrets.py the way the existing secret tests run the script; they fail.
+- Extend the script; they pass.
+- shellcheck clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The webhook epic adds its own pair of files the same way; the two stay independent. The orchestrator release picks up `service-token-*.secrets.yaml` per `orch-services-service`.
