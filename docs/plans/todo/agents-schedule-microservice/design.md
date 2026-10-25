@@ -246,6 +246,7 @@ none
 - Q7: Menu order Clusters, Webhooks, Schedules, Presets (Schedules directly below Webhooks)? [recommended: yes]
 - Q8: A run is handled when its first turn completes; the schedule service never deletes clusters and cleanup comes from the preset's autoclose (configuration-improvements)? [recommended: yes]
 - Q9: The schedule API lives at lab.szymonrichert.pl/schedules/api/v1 behind the same SSO as the UI? [recommended: yes]
+- Q10: Release agents-schedule as tag v0.1.0 (immutable chart 0.1.0) and deploy that, rather than a main-build pin? [recommended: yes]
 
 ## Irreversible operations in scope
 
