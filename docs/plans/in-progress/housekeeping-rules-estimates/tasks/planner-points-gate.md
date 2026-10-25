@@ -9,6 +9,11 @@ depends_on: [points-required, scratch-locations]
 model: sonnet
 review: ""
 verified_head: 3c983ec
+points_actual: 2
+actual_minutes: 15
+actual_tokens: 559738
+actual_roles: "impl 13, review 10"
+actual_role_tokens: "impl 429012, review 130726"
 ---
 
 # Planner points gate
@@ -58,5 +63,7 @@ The planner gives one number per task; the gate shows the derived minutes and to
 - Fix-as-ac (brief): test_planner_agent.py:63 forbids "ticket.py estimate" in planner.md; test_lean_flow_docs.py:100 pins the gate line "id, title, value, files, depends_on, model".
 - Fix-as-ac (brief): SKILL.md is at 150 of 150 lines (test_skill_size.py:7); edits are line-neutral.
 - Depends on scratch-locations (it edits planner.md first) and points-required (the flag exists and is required).
+
+- 2026-10-25 done
 
 - 2026-10-25 done
