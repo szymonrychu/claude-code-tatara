@@ -1,6 +1,6 @@
 ---
 title: deploy pin init scripts
-status: blocked
+status: done
 repo: agents-helmfile
 value: the agents namespace is pinned to the orchestrator build with init scripts
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -11,12 +11,12 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 1
+actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-deploy-pin-init-scripts/agents-helmfile
 branch: agent-init-scripts-deploy-pin-init-scripts
-verified_head: 7dcb257f503dc6d4cf0e50acba8d3f013408e051
+verified_head: f161544b29e6212610ab174496076d93f64fc477
 run: agent-init-scripts
 provides: []
 acs_for_audit: [AC2, AC3]

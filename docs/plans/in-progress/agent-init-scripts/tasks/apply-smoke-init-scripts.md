@@ -1,6 +1,6 @@
 ---
 title: apply smoke init scripts
-status: in-progress
+status: blocked
 repo: agents-helmfile
 value: init scripts are live in the agents namespace and proven by the smoke
 files: [MEMORY.md]
@@ -11,15 +11,15 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 1
+actual_roles: "impl 1, verify 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-apply-smoke-init-scripts/agents-helmfile
 branch: agent-init-scripts-apply-smoke-init-scripts
-verified_head: ""
+verified_head: f161544b29e6212610ab174496076d93f64fc477
 run: agent-init-scripts
 provides: []
-acs_for_audit: []
+acs_for_audit: [AC4]
 process_gaps: []
 ---
 
