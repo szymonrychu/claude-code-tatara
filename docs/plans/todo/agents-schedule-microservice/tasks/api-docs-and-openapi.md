@@ -1,0 +1,62 @@
+---
+title: api docs and openapi
+status: todo
+repo: agents-schedule
+value: the schedule API is documented and its contract cannot drift silently
+files: [openapi.json, README.md, src/agents_schedule/api/openapi.py, tests/test_readme_api.py]
+verify: "uv run --frozen pytest tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
+depends_on: [runs-api-routes]
+owns: [agents-schedule-api]
+uses: [sched-api-app, sched-runs-api]
+model: ""
+estimate: 6
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# api docs and openapi
+
+## Requirement
+
+Document the API (design D11; approval A5), the pattern of `code/agent-orchestrator/tests/test_readme_api.py`:
+
+- `python -m agents_schedule.api.openapi` prints the OpenAPI document; `openapi.json` is committed.
+- `tests/test_readme_api.py`: the committed `openapi.json` equals the generated one (drift test), and every route in it is named in README `## API` with method and path.
+- README `## API`: base path `/schedules/api/v1`, each route with request body, response, status codes and error codes; the run statuses and reasons (`previous_running`, `schedule_disabled`, `preset_missing`, `orchestrator_refused`, `orchestrator_unavailable`, `message_failed`, `message_cancelled`, `turn_failed`, `message_gone`); the placeholders `{schedule_name}`, `{fired_at}`; and a `### Versioning` note that `/schedules/api/v1` is additive-only. README `## Commands` names `sched migrate|api|worker`.
+
+## Acceptance conditions
+
+- AC1: the committed openapi.json matches the app [evidence: test:tests/test_readme_api.py::test_openapi_matches_app]
+- AC2: every route is documented in README ## API [evidence: test:tests/test_readme_api.py::test_every_route_documented]
+- AC3: README documents the API, run reasons and versioning [evidence: doc-section:README.md#API]
+
+## Files
+
+- `openapi.json`
+- `README.md`
+- `src/agents_schedule/api/openapi.py`
+- `tests/test_readme_api.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
