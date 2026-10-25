@@ -9,6 +9,11 @@ depends_on: [retro-command, deltas-command, actuals-backfill]
 model: sonnet
 review: ""
 verified_head: e68d094
+points_actual: 1
+actual_minutes: 11
+actual_tokens: 452093
+actual_roles: "impl 8, review 8"
+actual_role_tokens: "impl 310750, review 141343"
 ---
 
 # Plugin readme commands
@@ -51,5 +56,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Estimate: 1 points
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
