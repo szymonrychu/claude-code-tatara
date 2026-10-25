@@ -1,6 +1,6 @@
 ---
 title: web webhook endpoints
-status: in-progress
+status: done
 repo: agents-web
 value: "webhook URLs are created, shown with their credentials once, rotated and deleted from the UI"
 files: [src/webhooks/EndpointsList.tsx, src/webhooks/CreateEndpointDialog.tsx, src/webhooks/CredentialsDialog.tsx, src/webhooks/WebhooksPage.tsx, src/webhooks/Endpoints.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/Endpoints.te
 depends_on: [web-webhook-events-page]
 model: opus
 review: ""
-verified_head: ""
+verified_head: a2c9c86
 points: 5
 expected_minutes: 15
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 7
+actual_tokens: 1264282
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1013967, review 250315"
 ---
 
 # web webhook endpoints
@@ -71,3 +71,5 @@ User requirement (2026-10-25), verbatim: "webhook configuration consists of jinj
 Orchestrator ruling for this task: the endpoint create dialog has a multiline Jinja2 template editor plus an "Example JSON" editor and a Preview button calling `POST /webhooks/api/v1/templates/preview`, showing the rendered prompt or the error; a per-type sample payload can prefill the example. Tests.
 
 Orchestrator note (2026-10-25): web-webhook-api-client did not add a client function for `POST /templates/preview` (it was outside its 7 functions); add `previewTemplate({template, type, example})` to src/webhooks/api.ts with a test in this task.
+
+- 2026-10-25 done
