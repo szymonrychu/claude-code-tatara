@@ -1,6 +1,6 @@
 ---
 title: Migrate dry run
-status: in-progress
+status: done
 repo: workbench
 value: The exact old-to-new mapping of every task is computed and shown before anything is written
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/migrate.py, plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [legacy-transcript-matcher, minutes-to-points, retro-records-once]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 494d702
 points: 8
 expected_minutes: 91
 expected_tokens: 6000000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 8
+actual_minutes: 11
+actual_tokens: 3197775
+actual_roles: "impl 9, review 3"
+actual_role_tokens: "impl 2978332, review 219443"
 ---
 
 # Migrate dry run
@@ -186,3 +186,5 @@ Constraint (verbatim, part): "migrate.py added to KEPT and KEPT_MODULES in test_
 - Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.
 
 - 2026-10-25 amended: interrogate items 2-4 and builder answers Q3-Q5: legacy actual_roles dropped in every form (supersedes the fold notes and the Q1 note above; no fold parser needed), tokens and roles only from records covering impl and review with partial lines, names map filtered (no HEAD, empty or free text), SEED fill for empty expected values, every problem listed first, --all covers every phase; points stay 8
+
+- 2026-10-25 done
