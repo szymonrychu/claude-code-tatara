@@ -1,6 +1,6 @@
 ---
 title: web webhook menu entry
-status: in-progress
+status: done
 repo: agents-web
 value: the Webhooks page is reachable from the menu between Clusters and Presets
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/webhooks/menu.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.tes
 depends_on: [web-webhook-endpoints]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bf34a4a
 points: 1
 expected_minutes: 5
 expected_tokens: 703360
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 108480
+actual_roles: impl 2
+actual_role_tokens: impl 108480
 ---
 
 # web webhook menu entry
@@ -60,3 +60,5 @@ Webhooks appears in the menu between Clusters and Presets when the webhooks back
 - configuration-improvements (done) registered Clusters at slot 10.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
