@@ -1,6 +1,6 @@
 ---
 title: Legacy transcript matcher
-status: in-progress
+status: done
 repo: workbench
 value: "Old epics' implementer and reviewer transcripts count toward their tasks' actuals even without the run marker"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: a408f1e
 points: 3
 expected_minutes: 34
 expected_tokens: 2250000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 463178
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 311869, review 151309"
 ---
 
 # Legacy transcript matcher
@@ -99,3 +99,5 @@ Given a names map, backfill writes `.logs/agents` records for the old epics' imp
 - Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.
 
 - 2026-10-25 amended: interrogate items 1-3: match precedence (task file path, then one tree name), workbench:verifier counts as review, workflow transcripts under <session>/subagents/workflows/wf_*/ (887 of 1042) covered by new AC4; Steps now mean five new tests; points stay 3
+
+- 2026-10-25 done
