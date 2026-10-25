@@ -1,6 +1,6 @@
 ---
 title: web schedules page
-status: in-progress
+status: done
 repo: agents-web
 value: "a user manages every schedule from one page: enable, disable, run now, edit, delete"
 files: [src/schedules/SchedulesPage.tsx, src/schedules/SchedulesPage.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/SchedulesPa
 depends_on: [web-schedule-form, web-schedule-runs-list]
 model: ""
 review: ""
-verified_head: ""
+verified_head: c8fb37f17022a103f76c0183c9b88ea9bfa4d6f0
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 992696
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 664747, review 327949"
 ---
 
 # web schedules page
@@ -54,3 +54,5 @@ Schedules are fully managed from one page.
 ## Notes
 
 - Mirror the webhook pages' layout (contract `trigger-ui-page-pattern`) so both trigger pages look alike.
+
+- 2026-10-26 done
