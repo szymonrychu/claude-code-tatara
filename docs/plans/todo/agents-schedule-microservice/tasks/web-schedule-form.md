@@ -4,7 +4,7 @@ status: todo
 repo: agents-web
 value: a user creates or edits a schedule and sees its next fire times before saving
 files: [src/schedules/ScheduleForm.tsx, src/schedules/ScheduleForm.test.tsx]
-verify: "npx vitest run src/schedules/ScheduleForm.test.tsx && npm run lint"
+verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleForm.test.tsx && npm run lint"
 depends_on: [web-schedules-api-client]
 owns: [web-schedule-form]
 uses: [web-schedules-client, trigger-ui-page-pattern, orch-presets-api]
@@ -25,9 +25,9 @@ provides: []
 
 ## Requirement
 
-Add `ScheduleForm` (design D4, D7, D12; approvals A2, A4), built on the trigger mapping page pattern agents-webhook-microservice puts in agents-web (contract `trigger-ui-page-pattern`: preset picker, form layout, error display).
+Add `ScheduleForm` (design D4, D7, D12; approvals A2, A4) on the trigger UI kit agents-webhook-microservice puts in agents-web (contract `trigger-ui-page-pattern`, `src/triggers/index.ts`: `PresetSelect`, `RunStatusChip`, `usePoll`).
 
-- Fields: name, cron (5 fields, with a one-line syntax hint), timezone (select over `Intl.supportedValuesOf('timeZone')`, default `Europe/Warsaw`), preset (picker over the orchestrator's `GET /api/v1/presets`), prompt (textarea, hint naming `{schedule_name}` and `{fired_at}`), enabled.
+- Fields: name, cron (5 fields, with a one-line syntax hint), timezone (select over `Intl.supportedValuesOf('timeZone')`, default `Europe/Warsaw`), preset (`PresetSelect` over the orchestrator's `GET /api/v1/presets`), prompt (textarea, hint naming `{schedule_name}` and `{fired_at}`), enabled.
 - Live preview: on cron or timezone change (debounced 300 ms) calls `previewSchedule` and lists the next 3 fire times in the chosen zone; a 422 shows the server's reason under the cron or timezone field.
 - Save calls create or update; server errors (422 codes, 409 name conflict) appear on the matching field; success calls `onSaved(schedule)`.
 
@@ -45,17 +45,18 @@ Add `ScheduleForm` (design D4, D7, D12; approvals A2, A4), built on the trigger 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ScheduleForm({schedule?: ScheduleView, onSaved, onCancel})` (part `web-schedule-form`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are created and edited in the UI with a preview of when they fire.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ScheduleForm.test.tsx; `npx vitest run src/schedules/ScheduleForm.test.tsx` fails.
+- Write ScheduleForm.tsx; the test passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `PresetSelect` from the kit; do not write another preset picker.

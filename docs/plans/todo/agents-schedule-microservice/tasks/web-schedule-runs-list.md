@@ -4,7 +4,7 @@ status: todo
 repo: agents-web
 value: "a user sees each schedule's recent runs, their status and a link to the cluster"
 files: [src/schedules/ScheduleRuns.tsx, src/schedules/ScheduleRuns.test.tsx]
-verify: "npx vitest run src/schedules/ScheduleRuns.test.tsx && npm run lint"
+verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleRuns.test.tsx && npm run lint"
 depends_on: [web-schedules-api-client]
 owns: [web-schedule-runs]
 uses: [web-schedules-client, trigger-ui-page-pattern]
@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (`listScheduleRuns`), newest first, each with fire time in the schedule's zone, trigger (scheduled or manual), a status chip (new, in-progress, handled, failed, ignored, the webhook page's chip component from `trigger-ui-page-pattern`), the reason when present, and a link to the cluster in the orchestrator UI when `cluster_id` is set. Refreshes every 10 s while mounted and on `refreshKey` change.
+Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (`listScheduleRuns`), newest first, each with fire time in the schedule's zone, trigger (scheduled or manual), `RunStatusChip` from the trigger UI kit (contract `trigger-ui-page-pattern`), the reason when present, and a link to the cluster in the orchestrator view when `cluster_id` is set. Refreshes with `usePoll` every 10 s while mounted and on `refreshKey` change.
 
 ## Acceptance conditions
 
@@ -40,17 +40,18 @@ Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ScheduleRuns({scheduleId, timezone, refreshKey})` (part `web-schedule-runs`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Run history and cluster links are visible per schedule.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ScheduleRuns.test.tsx; it fails.
+- Write ScheduleRuns.tsx; it passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The cluster link uses the cluster view route agents-web already has for the orchestrator.

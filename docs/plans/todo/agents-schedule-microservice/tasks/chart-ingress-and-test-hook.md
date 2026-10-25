@@ -7,7 +7,7 @@ files: [chart/agents-schedule/templates/ingress.yaml, chart/agents-schedule/temp
 verify: "uv run --frozen pytest tests/test_chart_ingress.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [helm-chart]
 owns: [agents-schedule-chart]
-uses: [agents-schedule-chart-core, web-ingress-path-layout]
+uses: [agents-schedule-chart-core, agents-web-url-layout]
 model: ""
 estimate: 6
 estimate_by: formula
@@ -27,10 +27,10 @@ provides: []
 
 Finish the chart (design D13; approvals A1, A6):
 
-- `ingress {enabled: false, className, annotations, hosts[].paths[] {path, pathType}, tls}` renders an Ingress to the api Service port `http` (as `code/agent-orchestrator/chart/agent-orchestrator/templates/ingress.yaml`). The chart adds no cert-manager annotation of its own: per the frontend-decoupling path layout (contract `web-ingress-path-layout`), only the web Ingress carries it and the others reference the shared TLS secret.
+- `ingress {enabled: false, className, annotations, denySourceRanges, hosts[].paths[] {path, pathType}, tls}` renders an Ingress to the api Service port `http` (as `code/agent-orchestrator/chart/agent-orchestrator/templates/ingress.yaml`). The chart adds no cert-manager annotation of its own: per the URL layout of frontend-decoupling (contract `agents-web-url-layout`), only one Ingress of the host carries it and the others reference the same TLS secret.
 - `templates/tests/test-connection.yaml`: a helm test Pod hitting `/healthz` on the api Service.
 - Chart `version: 0.1.0`, `appVersion` set by CI.
-- tests/test_chart_ingress.py asserts the Ingress host, path `/schedules/api` (Prefix) and TLS secret from values, no cert-manager annotation by default, and the test hook.
+- tests/test_chart_ingress.py asserts the Ingress host, path `/schedules` (Prefix) and TLS secret from values, the deny annotation, no cert-manager annotation by default, and the test hook.
 
 ## Acceptance conditions
 
@@ -47,17 +47,18 @@ Finish the chart (design D13; approvals A1, A6):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `agents-schedule-chart`: `oci://harbor.szymonrichert.pl/charts/agents-schedule` (versions `X.Y.Z` on tag, `X.Y.Z-main.<sha7>` on main), values as in `helm-chart` plus `ingress` (file `code/agents-schedule/chart/agents-schedule/values.yaml`), consumed by agents-helmfile.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chart is complete and publishable; agents-helmfile can route `/schedules` to it on the lab host.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart_ingress.py; run: fails.
+- Write ingress.yaml, the test hook and the values; `uv run --frozen pytest tests/test_chart_ingress.py -q`: `3 passed`.
+- `helm lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Prefix `/schedules` owns the service's whole path space per `agents-web-url-layout`; the API answers at `/schedules/api/v1`.

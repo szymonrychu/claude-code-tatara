@@ -3,7 +3,7 @@ title: schema migrations
 status: todo
 repo: agents-schedule
 value: "the service owns its database schema, migrated forward-only before any process starts"
-files: [src/agents_schedule/db/__init__.py, src/agents_schedule/db/migrations/0001_schedules.sql, src/agents_schedule/db/migrate.py, tests/conftest.py, tests/test_migrations.py]
+files: [src/agents_schedule/db/__init__.py, src/agents_schedule/migrations/__init__.py, src/agents_schedule/migrations/0001_schedules.sql, src/agents_schedule/db/migrate.py, tests/conftest.py, tests/test_migrations.py]
 verify: "uv run --frozen pytest tests/test_migrations.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [schedule-settings-model]
 owns: [sched-schema, sched-db-fixture]
@@ -25,13 +25,13 @@ provides: []
 
 ## Requirement
 
-Create the schema (design D3, D9; approvals A1, A3) as forward-only SQL run by the agents-common migrator under its advisory lock (contract `agents-common-lib`, the pattern of `code/agent-orchestrator/src/agent_orchestrator/db/migrate.py:run_migrations`).
+Create the schema (design D3, D9; approvals A1, A3) as forward-only SQL in the package `agents_schedule.migrations`, run by agents-common `run_migrations(url, "agents_schedule.migrations")` under its advisory lock (contract `agents-common-lib`).
 
 `0001_schedules.sql`, idempotent statements:
 - `schedules` (writer: the api only): `id uuid pk`, `name text unique not null` (1..100 chars), `cron text not null`, `timezone text not null`, `preset_id uuid not null`, `prompt text not null` (1..16384 chars), `enabled boolean not null default true`, `armed_at timestamptz not null` (the instant from which firings count: create, enable, cron or timezone change), `created_at`, `updated_at`.
-- `runs` (a queue table: the api inserts manual runs, the worker inserts scheduled runs; every status change is a status-guarded UPDATE): `id uuid pk`, `schedule_id uuid not null references schedules on delete cascade`, `trigger text check in ('scheduled','manual')`, `fire_time timestamptz not null`, `status text check in ('new','in-progress','handled','failed','ignored')`, `reason text`, `attempts int not null default 0`, `cluster_slug text`, `cluster_id uuid`, `message_id uuid`, `created_at`, `updated_at`, `started_at`, `finished_at`; `unique (schedule_id, fire_time)`; index `(status, fire_time)`.
+- `runs` (a queue table: the api inserts manual runs, the worker inserts scheduled runs; every status change is a status-guarded UPDATE): `id uuid pk`, `schedule_id uuid not null references schedules on delete cascade`, `trigger text check in ('scheduled','manual')`, `fire_time timestamptz not null`, `status text check in ('new','in-progress','handled','failed','ignored')`, `reason text`, `attempts int not null default 0`, `cluster_slug text`, `cluster_id uuid`, `message_id uuid`, `created_at`, `updated_at`, `started_at`, `finished_at`; `unique (schedule_id, fire_time)`; index `(status, fire_time)`. Add any column the agents-common `RunStore` protocol requires (contract `preset-mapping-model`).
 - `agents_schedule.db.migrate:migrate(settings) -> list[str]` applies pending files and returns their names.
-- `tests/conftest.py`: testcontainers Postgres with a migrated template database and a per-test database cloned from it (the agents-common fixture if it ships one, else the pattern of `code/agent-orchestrator/tests/conftest.py`).
+- `tests/conftest.py`: the migrated template database and per-test clone from the `agents_common.testing` pytest plugin (`pg_url`, `migrated_db`), pointed at `agents_schedule.migrations`.
 
 ## Acceptance conditions
 
@@ -44,24 +44,30 @@ Create the schema (design D3, D9; approvals A1, A3) as forward-only SQL run by t
 ## Files
 
 - `src/agents_schedule/db/__init__.py`
-- `src/agents_schedule/db/migrations/0001_schedules.sql`
+- `src/agents_schedule/migrations/__init__.py`
+- `src/agents_schedule/migrations/0001_schedules.sql`
 - `src/agents_schedule/db/migrate.py`
 - `tests/conftest.py`
 - `tests/test_migrations.py`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tables `schedules`, `runs` (part `sched-schema`, file `src/agents_schedule/migrations/0001_schedules.sql`); later schema changes are 0002+.
+- `agents_schedule.db.migrate:migrate(settings: Settings) -> list[str]`.
+- Fixtures `db_url`, `conn` in tests/conftest.py (part `sched-db-fixture`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`migrate` creates both tables once, concurrently safe, and every DB test gets a fresh migrated database.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_migrations.py and conftest.py; run: fails (no migration).
+- Write 0001_schedules.sql and migrate.py; `uv run --frozen pytest tests/test_migrations.py -q`: `5 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The last-fired stamp is not a column on `schedules`: it is the latest `runs.fire_time` with `trigger = 'scheduled'`, else `schedules.armed_at`, so `schedules` keeps one writer (the api) (design D3).
+- Tests need Docker for testcontainers; in a cloud session start dockerd first (superrepo MEMORY 2026-10-23).
+- do-not-build: a DB layer; agents-common provides pool, migrate, transition and claim.

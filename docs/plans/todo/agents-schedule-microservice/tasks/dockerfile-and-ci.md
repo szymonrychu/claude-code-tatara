@@ -7,7 +7,7 @@ files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-vers
 verify: "uv run --frozen pytest tests/test_ci_workflow.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [service-entrypoints]
 owns: [agents-schedule-image]
-uses: [sched-entrypoints, agents-schedule-repo]
+uses: [sched-entrypoints]
 model: ""
 estimate: 6
 estimate_by: formula
@@ -48,17 +48,19 @@ Add the image and CI (design D13; approvals A1, A6), modelled on `code/agent-orc
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `agents-schedule-image`: `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` (file `code/agents-schedule/.github/workflows/ci.yaml`), consumed by agents-helmfile.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Main builds publish the image and a `-main.<sha7>` chart; a `v*` tag publishes the release chart.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_ci_workflow.py; run: fails.
+- Write Dockerfile, .dockerignore, ci.yaml, chart-version.sh; `uv run --frozen pytest tests/test_ci_workflow.py -q`: `2 passed`.
+- `docker build` and the --help smoke pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The CI secrets are set by epic agents-schedule-component (task create-agents-schedule-repo).
+- The chart and e2e jobs call mise tasks that `helm-chart` and `kind-e2e-api` fill; CI on the epic branch is green only once those land.

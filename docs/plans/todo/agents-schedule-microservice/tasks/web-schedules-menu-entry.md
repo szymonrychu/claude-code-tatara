@@ -3,11 +3,11 @@ title: web schedules menu entry
 status: todo
 repo: agents-web
 value: Schedules appears in the hamburger menu below Webhooks when the schedule backend is configured
-files: [src/App.tsx, src/App.test.tsx]
-verify: "npx vitest run src/App.test.tsx && npm run lint"
+files: [src/schedules/menu.ts, src/backends/registry.ts, src/backends/registry.test.ts]
+verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.test.ts src/App.test.tsx && npm run lint"
 depends_on: [web-schedules-page]
 owns: [web-schedules-menu]
-uses: [web-schedules-page, web-menu-entries, web-backends-config]
+uses: [web-schedules-page, agents-web-backend-registry, web-settings-menu-order]
 model: ""
 estimate: 5
 estimate_by: formula
@@ -25,32 +25,34 @@ provides: []
 
 ## Requirement
 
-Register the Schedules entry (design D12; approval A4, gate Q7) through the frontend-decoupling menu mechanism (contract `web-menu-entries`, successor of `orch-settings-menu`): label `Schedules`, position directly below the webhook entry, giving Clusters, Webhooks, Schedules, Presets; it opens `SchedulesPage`. The entry is present only when `config.json` lists the `schedules` backend (`web-backends-config`); without the webhook entry it sits directly above Presets.
+Register the Schedules entry (design D12; approval A4, gate Q7) in the frontend-decoupling backend registry (contract `agents-web-backend-registry`, `src/backends/registry.ts`; order rule `web-settings-menu-order` of configuration-improvements): `src/schedules/menu.ts` exports `schedulesMenu: MenuEntry = {id: 'schedules', label: 'Schedules', order: 30, backend: 'schedules', render: (onBack) => createElement(SchedulesPage, {onBack})}` (a `.ts` file, so no JSX), and `src/backends/registry.ts` sets `BACKEND_MENUS.schedules = [schedulesMenu]` (the agents-webhook web-webhook-menu-entry shape). `src/App.test.tsx` stays green. Order 30 is the slot the registry reserves for Schedules, between Webhooks (20) and Presets (40), giving Clusters, Webhooks, Schedules, Presets (gate Q7). The entry appears only when `config.json` lists the `schedules` backend.
 
 ## Acceptance conditions
 
-- AC1: with the schedules backend configured the menu shows Clusters, Webhooks, Schedules, Presets in order [evidence: command:npx vitest run src/App.test.tsx -t 'schedules menu order']
-- AC2: without the backend there is no Schedules entry [evidence: command:npx vitest run src/App.test.tsx -t 'schedules hidden']
-- AC3: the entry opens the schedules page [evidence: command:npx vitest run src/App.test.tsx -t 'opens schedules']
+- AC1: with the schedules backend configured, Schedules sorts after Webhooks and before Presets [evidence: command:npx vitest run src/backends/registry.test.ts -t 'schedules order']
+- AC2: without the schedules backend there is no Schedules entry [evidence: command:npx vitest run src/backends/registry.test.ts -t 'schedules hidden']
+- AC3: the entry renders the schedules page [evidence: command:npx vitest run src/backends/registry.test.ts -t 'schedules render']
 
 ## Files
 
-- `src/App.tsx`
-- `src/App.test.tsx`
+- `src/schedules/menu.ts`
+- `src/backends/registry.ts`
+- `src/backends/registry.test.ts`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/schedules/menu.ts:schedulesMenu`, `BACKEND_MENUS.schedules` in `src/backends/registry.ts` (part `web-schedules-menu`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The schedules UI lives in the hamburger menu.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests to src/backends/registry.test.ts; they fail.
+- Register the entry; they pass.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `SchedulesPage` accepts `onBack` per the registry's `render(onBack)`.

@@ -25,13 +25,13 @@ provides: []
 
 ## Requirement
 
-Add `agents_schedule.db.runs` (design D3, D6, D8, D9; approval A3), every status change through the agents-common guarded transition (`UPDATE ... WHERE id = $1 AND status = $expected`, the pattern of `code/agent-orchestrator/src/agent_orchestrator/db/queue.py:_transition`):
+Add `agents_schedule.db.runs` (design D3, D6, D8, D9; approval A3); every status change goes through agents-common `transition()` and the claim through its `claim()` with `FOR UPDATE SKIP LOCKED` (contract `agents-common-lib`):
 
 - `insert_scheduled(conn, schedule_id, fire_time, status, reason=None) -> Run | None`: `INSERT ... ON CONFLICT (schedule_id, fire_time) DO NOTHING RETURNING`; None means the fire was already recorded. `status` is `new` or `ignored`.
 - `insert_manual(conn, schedule_id, now, status, reason=None) -> Run` (fire_time = now, trigger manual).
 - `last_scheduled_fire(conn, schedule_id) -> datetime | None`.
 - `in_flight(conn, schedule_id) -> int`: runs in `new` or `in-progress`.
-- `claim_next(conn, max_in_progress, max_per_schedule) -> Run | None`: the oldest `new` run by `(fire_time, created_at)`, `FOR UPDATE SKIP LOCKED`, only when the global `in-progress` count is below `max_in_progress` and its schedule has fewer than `max_per_schedule` runs `in-progress`.
+- `claim_next(conn, max_in_progress, max_per_schedule, now) -> Run | None`: moves the oldest `new` run by `(fire_time, created_at)` to `in-progress` (`started_at = now`), only when the global `in-progress` count is below `max_in_progress` and its schedule has fewer than `max_per_schedule` runs `in-progress`.
 - `transition(conn, run_id, expected, new, **fields) -> bool` (False when the row was not in `expected`); `set_fields(conn, run_id, expected, **fields) -> bool` for `cluster_slug`, `cluster_id`, `message_id`, `attempts` without a status change.
 - `list_for_schedule(conn, schedule_id, limit)`, `list_recent(conn, status=None, limit=50)`, `get(conn, run_id)`, `list_in_progress(conn)`.
 
@@ -50,17 +50,18 @@ Add `agents_schedule.db.runs` (design D3, D6, D8, D9; approval A3), every status
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_schedule.db.runs`: `Run` dataclass, the functions above (part `sched-runs-repo`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The scheduler, dispatcher, tracker and api share one runs module whose writes are exactly-once and status-guarded.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_runs_repo.py; run: fails.
+- Write runs.py; `uv run --frozen pytest tests/test_runs_repo.py -q`: `5 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `runs` is the only multi-writer table (api inserts manual runs, worker the rest), and every change is status-guarded (AGENTS.md hard rule).

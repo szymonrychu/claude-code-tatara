@@ -53,17 +53,21 @@ Add the FastAPI app (design D11; approvals A2, A5). Every route is under `/sched
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_schedule.api.app:create_app(settings, pool, client) -> FastAPI` (part `sched-api-app`), routers mounted under `/schedules/api/v1`.
+- `agents_schedule.api.schemas`: `ScheduleIn`, `ScheduleView`, `RunView`, `PreviewIn`, `PreviewView`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are managed headlessly over HTTP with the same validation the UI shows.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_api_schedules.py with httpx ASGI transport, a migrated DB and a fake orchestrator client; run: fails.
+- Write the api package; `uv run --frozen pytest tests/test_api_schedules.py -q`: `6 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The api is the only writer of `schedules`.
+- `/schedules/api/v1` is the reserved prefix of the frontend-decoupling URL layout (contract `agents-web-url-layout`: each later service owns `/<prefix>/`, its UI-facing API at `/<prefix>/api/v1`, reserved `schedules`).
+- Tests use `agents_common.fake_orchestrator` for the preset check.

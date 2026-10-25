@@ -49,17 +49,19 @@ Add `agents_schedule.scheduler` (design D5, D6, D9; approval A3). `tick(pool, se
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_schedule.scheduler:tick(pool, settings, now: datetime) -> TickResult(created: int, ignored: int, skipped: int)`, `run_scheduler(pool, settings, stop: asyncio.Event) -> None` (part `sched-scheduler`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules fire on time exactly once per fire time; overlaps and missed runs behave per the gate answers.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_scheduler.py driving `tick` with fixed `now` values; run: fails.
+- Write scheduler.py; `uv run --frozen pytest tests/test_scheduler.py -q`: `6 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Prior art: `TN/internal/controller/projectscan.go:activityDue` (L480) and `inflightRefineTask` (L1807).
+- Per-repo phase-shift jitter (`scanOffset`) is not built: not requested (design Research).

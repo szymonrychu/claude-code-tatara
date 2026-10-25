@@ -27,9 +27,9 @@ provides: []
 
 Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agent-orchestrator/chart/agent-orchestrator` (components loop in `templates/deployment.yaml`, postgres source in `_config.tpl`):
 
-- values: `image {repository: harbor.szymonrichert.pl/containers/agents-schedule, tag}`, `postgres {url | existingSecret, existingSecretKey | host, port, database, user, password}` (required), `orchestrator {url, token {existingSecret, key}}` (required), `env` (extra `SCHED_*`), `components {api {replicas, port 8000, podAnnotations, resources}, worker {replicas: 1, resources}}`, `service`, `serviceAccount`, `ingress` (see `chart-ingress-and-test-hook`).
+- values: `image {repository: harbor.szymonrichert.pl/containers/agents-schedule, tag}`, `postgres {url | existingSecret, existingSecretKey | host, port, database, user, password}` (required), `orchestrator {url, token | tokenSecret {name, key}}` (url and one token source required; the agents-webhook chart shape), `env` (extra `SCHED_*`), `components {api {replicas, port 8000, podAnnotations, resources}, worker {replicas: 1, resources}}`, `service`, `serviceAccount`, `ingress` (see `chart-ingress-and-test-hook`).
 - One Deployment per component: api runs `sched api`, worker `sched worker`; both have a `sched migrate` initContainer (the advisory-locked migrator makes concurrent runs safe); readiness `/readyz` and liveness `/healthz` on the api; the worker has no Service.
-- ConfigMap of the non-secret `SCHED_*` settings; `SCHED_DATABASE_URL` and `SCHED_ORCHESTRATOR_TOKEN_FILE` come from the Secrets (token mounted as a file).
+- ConfigMap of the non-secret `SCHED_*` settings; `SCHED_DATABASE_URL` comes from the postgres Secret; the orchestrator token is rendered into the chart's own Secret from `orchestrator.token` (or taken from `orchestrator.tokenSecret`) and mounted as the file `SCHED_ORCHESTRATOR_TOKEN_FILE` names.
 - Service `<fullname>-api` port name `http` (the oauth2-proxy injector hands that port to the sidecar).
 - `mise run test:chart` and `mise run lint:chart` (defined by `scaffold-project-and-cli`) pass once this task and `chart-ingress-and-test-hook` land.
 - tests/test_chart.py renders with `helm template` and asserts the Deployments, commands, initContainers, env sources and that a missing postgres or orchestrator value fails the render.
@@ -37,9 +37,9 @@ Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agent-o
 ## Acceptance conditions
 
 - AC1: the api and worker Deployments render with their commands and migrate initContainers [evidence: test:tests/test_chart.py::test_components_render]
-- AC2: database URL and orchestrator token come only from Secrets [evidence: test:tests/test_chart.py::test_secrets_wired]
+- AC2: database URL and orchestrator token reach the pods only through Secrets, never the ConfigMap [evidence: test:tests/test_chart.py::test_secrets_wired]
 - AC3: a missing postgres or orchestrator value fails the render [evidence: test:tests/test_chart.py::test_required_values]
-- AC4: helm lint passes [evidence: command:helm lint chart/agents-schedule --set postgres.url=postgresql://x/y --set orchestrator.url=http://o --set orchestrator.token.existingSecret=t]
+- AC4: helm lint passes [evidence: command:helm lint chart/agents-schedule --set postgres.url=postgresql://x/y --set orchestrator.url=http://o --set orchestrator.token=t]
 
 ## Files
 
@@ -54,17 +54,18 @@ Add `chart/agents-schedule` (design D13; approval A1), modelled on `code/agent-o
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Part `agents-schedule-chart-core`: chart values listed above (file `chart/agents-schedule/values.yaml`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` renders a working api and worker from values, with no secret in a ConfigMap.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_chart.py; run: fails (no chart).
+- Write the chart; `uv run --frozen pytest tests/test_chart.py -q`: `3 passed`.
+- `helm lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- do-not-build: an in-chart CNPG; agents-helmfile deploys `agents-schedule-db` as a separate cnpg/cluster release.

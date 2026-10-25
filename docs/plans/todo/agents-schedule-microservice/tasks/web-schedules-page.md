@@ -4,7 +4,7 @@ status: todo
 repo: agents-web
 value: "a user manages every schedule from one page: enable, disable, run now, edit, delete"
 files: [src/schedules/SchedulesPage.tsx, src/schedules/SchedulesPage.test.tsx]
-verify: "npx vitest run src/schedules/SchedulesPage.test.tsx && npm run lint"
+verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/SchedulesPage.test.tsx && npm run lint"
 depends_on: [web-schedule-form, web-schedule-runs-list]
 owns: [web-schedules-page]
 uses: [web-schedules-client, web-schedule-form, web-schedule-runs, trigger-ui-page-pattern]
@@ -41,17 +41,18 @@ Add `SchedulesPage` (design D12; approvals A2, A4, gate Q6): a list of schedules
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `SchedulesPage({onBack})` (part `web-schedules-page`); `onBack` comes from the registry `render(onBack)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are fully managed from one page.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write SchedulesPage.test.tsx; it fails.
+- Write SchedulesPage.tsx; it passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Mirror the webhook pages' layout (contract `trigger-ui-page-pattern`) so both trigger pages look alike.

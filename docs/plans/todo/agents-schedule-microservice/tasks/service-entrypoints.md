@@ -25,7 +25,7 @@ provides: []
 
 ## Requirement
 
-Register the service commands (design D9, D13; approval A1) through `sched-cli`, on agents-common `run_service` and `advisory_singleton` (patterns `code/agent-orchestrator/src/agent_orchestrator/runtime/run.py:run_service`, `runtime/singleton.py:advisory_singleton`):
+Register the service commands (design D9, D13; approval A1) through `sched-cli`, on agents-common `runtime.run_service` and `runtime.advisory_singleton` (contract `agents-common-lib`):
 
 - `sched migrate`: runs `db.migrate.migrate`, exits 0, prints applied file names.
 - `sched api`: uvicorn on `SCHED_PORT` serving `create_app`.
@@ -48,17 +48,18 @@ Register the service commands (design D9, D13; approval A1) through `sched-cli`,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Commands `sched migrate`, `sched api`, `sched worker` (part `sched-entrypoints`); `agents_schedule.runtime:worker_main(settings) -> int`, `api_main(settings) -> int`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The image's three commands run the service; firing is single-instance with failover.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_entrypoints.py; run: fails.
+- Write runtime.py and register the commands in cli.py; `uv run --frozen pytest tests/test_entrypoints.py -q`: `4 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The singleton plus the unique `(schedule_id, fire_time)` key together make a double fire impossible (design D9).

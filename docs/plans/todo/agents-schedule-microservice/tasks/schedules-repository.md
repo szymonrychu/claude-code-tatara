@@ -41,17 +41,18 @@ Add `agents_schedule.db.schedules` (design D3; approval A2): `create`, `get`, `l
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_schedule.db.schedules`: `Schedule` (dataclass of the row), `create(conn, *, name, cron, timezone, preset_id, prompt, enabled) -> Schedule`, `get(conn, id) -> Schedule | None`, `list_all(conn)`, `list_enabled(conn)`, `update(conn, id, **fields) -> Schedule`, `delete(conn, id) -> None`, `ScheduleConflict`, `ScheduleNotFound` (part `sched-schedules-repo`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are stored and edited with armed_at semantics the scheduler relies on.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_schedules_repo.py; run: fails.
+- Write schedules.py; `uv run --frozen pytest tests/test_schedules_repo.py -q`: `4 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Only the api process calls the write functions (one writer per table).

@@ -46,17 +46,18 @@ Document the API (design D11; approval A5), the pattern of `code/agent-orchestra
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `agents-schedule-api` (file `code/agents-schedule/README.md`, `openapi.json`): consumed by agents-web (vendored as `openapi/agents-schedule.json`) and the agents-helmfile smoke.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Anything the UI can do is documented as an HTTP call, and a route change without regenerating openapi.json fails the tests.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_readme_api.py; run: fails (no openapi.json).
+- Write openapi.py, generate openapi.json, write README ## API; `uv run --frozen pytest tests/test_readme_api.py -q`: `2 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `/schedules/api/v1` is additive-only from its first release; agents-web vendors this file.

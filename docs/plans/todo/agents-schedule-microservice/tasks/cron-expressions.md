@@ -50,17 +50,19 @@ Add `agents_schedule.cron` (design D4, D5; approvals A2, A3), pure functions ove
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_schedule.cron:validate_cron(expr: str) -> str`, `validate_timezone(name: str) -> ZoneInfo`, `next_fires(expr: str, tz: ZoneInfo, after: datetime, n: int = 3) -> list[datetime]`, `due(expr: str, tz: ZoneInfo, stamp: datetime, now: datetime) -> Due`, `Due(fire_time: datetime | None, skipped: int)`, `CronError(code: str, message: str)` (part `sched-cron`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The api validates and previews schedules and the scheduler decides firings with the same functions.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_cron.py with the seven named tests (fixed instants, no clock); run it: fails.
+- Write cron.py; `uv run --frozen pytest tests/test_cron.py -q`: `7 passed`.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- croniter 6.2.4 is maintained (released 2026-07-10, probed on PyPI 2026-10-25); cronsim 2.7 was the alternative (my call, design D4).
+- All datetimes are tz-aware; compare in UTC, compute in the schedule's zone.

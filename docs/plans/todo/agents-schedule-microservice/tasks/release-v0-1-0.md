@@ -41,17 +41,19 @@ Release agents-schedule v0.1.0 (design D14; approval A6). Runs after this epic's
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Part `agents-schedule-release`: chart `0.1.0`, image `<sha7>` of tag v0.1.0; consumed by `deploy-schedule`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Chart 0.1.0 and its image are published and recorded.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm main CI is green on the merged commit (`gh run list -R szymonrychu/agents-schedule -b main -L 1`).
+- `git tag v0.1.0 <merged sha> && git push origin v0.1.0`; wait for `chart-publish-tag` to succeed.
+- AC2 and AC3 commands exit 0; write README ## Releases and the MEMORY entry.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Irreversible: published chart versions are immutable and the tag is public (listed at the gate).
+- The release sha is filled with `ticket.py amend` once the merge lands, as the precedent deploy-pin tasks do.

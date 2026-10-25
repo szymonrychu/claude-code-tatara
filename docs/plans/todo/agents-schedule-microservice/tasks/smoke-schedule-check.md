@@ -41,17 +41,19 @@ Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-f
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/smoke.sh` schedule step; parameters by env as the existing steps (part `agents-schedule-smoke`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` covers the schedule service end to end with the real orchestrator.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests; they fail.
+- Add the step and cleanup; they pass.
+- shellcheck clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The schedule is created disabled so it never fires on its own; only run-now starts a cluster.
+- The orchestrator step's cleanup pattern (`cleanup` trap with manual line) is reused.
