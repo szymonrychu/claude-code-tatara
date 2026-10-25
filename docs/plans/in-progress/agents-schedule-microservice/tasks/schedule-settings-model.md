@@ -1,6 +1,6 @@
 ---
 title: schedule settings model
-status: in-progress
+status: done
 repo: agents-schedule
 value: every process reads one validated configuration and a bad variable is named at startup
 files: [src/agents_schedule/settings.py, tests/test_settings.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_settings.py -q && uv run ruff check .
 depends_on: [scaffold-project-and-cli]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 75df33c7aa9d883494cf74c57d05551c8ca1eccc
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 319893
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 258620, review 61273"
 ---
 
 # schedule settings model
@@ -63,3 +63,5 @@ Every process loads one Settings object; a misconfigured pod exits at startup na
 - `SCHED_ALLOWED_CIDRS` mirrors `ORCH_ALLOWED_CIDRS`: only the oauth2-proxy sidecar (127.0.0.1) or a port-forward reaches the api.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
