@@ -1,6 +1,6 @@
 ---
 title: chart ingress and test hook
-status: in-progress
+status: done
 repo: agents-schedule
 value: "the schedule API is routable on the shared host under its own path, behind the shared SSO"
 files: [chart/agents-schedule/templates/ingress.yaml, chart/agents-schedule/templates/tests/test-connection.yaml, chart/agents-schedule/values.yaml, tests/test_chart_ingress.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_chart_ingress.py -q && uv run ruff ch
 depends_on: [helm-chart]
 model: ""
 review: ""
-verified_head: ""
+verified_head: e2b75eb99625dbc15c2ca39e02708ad02bd6dfe8
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 420519
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 252349, review 168170"
 ---
 
 # chart ingress and test hook
@@ -62,3 +62,5 @@ The chart is complete and publishable; agents-helmfile can route `/schedules` to
 - Prefix `/schedules` owns the service's whole path space per `agents-web-url-layout`; the API answers at `/schedules/api/v1`.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
