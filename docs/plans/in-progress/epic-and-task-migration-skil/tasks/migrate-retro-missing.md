@@ -51,8 +51,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Red: add the three tests named in the acceptance conditions to tests/test_ticket_migrate.py (a done fixture epic with new-scheme task files and no RETRO.md; one with current files and a RETRO.md); run `bash plugins/workbench/scripts/run-tests.sh --only start-development` and see exactly those three fail.
+2. Green: in ticket_cmds/migrate.py let `_plan` mark a done epic as changed when its RETRO.md is absent (retro lines in the dry run, the file in the write), make `_write` skip only epics with neither task changes nor a missing RETRO.md, and print `<epic>: 0 tasks migrated, RETRO.md`; keep `migrate: nothing to change` for a run where no epic needs anything; run the same command once and see it green.
+3. Verify on the committed HEAD: `bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint`.
 
 ## Notes
 
