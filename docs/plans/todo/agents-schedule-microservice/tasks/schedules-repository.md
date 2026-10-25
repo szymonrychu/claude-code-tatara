@@ -6,19 +6,17 @@ value: the api reads and writes schedules through one module that keeps armed_at
 files: [src/agents_schedule/db/schedules.py, tests/test_schedules_repo.py]
 verify: "uv run --frozen pytest tests/test_schedules_repo.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [schema-migrations]
-owns: [sched-schedules-repo]
-uses: [sched-schema, sched-db-fixture]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # schedules repository

@@ -6,19 +6,17 @@ value: "a fixed, immutable chart and image of agents-schedule exist for the depl
 files: [README.md, MEMORY.md]
 verify: "git ls-remote --exit-code --tags origin v0.1.0 && uv run ruff check ."
 depends_on: [kind-e2e-api, dockerfile-and-ci, chart-ingress-and-test-hook, api-docs-and-openapi, service-entrypoints]
-owns: [agents-schedule-release]
-uses: [agents-schedule-image, agents-schedule-chart]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # release v0.1.0

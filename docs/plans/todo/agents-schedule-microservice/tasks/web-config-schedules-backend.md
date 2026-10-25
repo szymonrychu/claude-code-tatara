@@ -6,19 +6,17 @@ value: the deployed UI lists the schedule backend so its menu entry appears
 files: [values/agents-web/common.yaml, tests/test_web_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_web_release.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [agents-web-schedules-config]
-uses: [agents-web-backends-config]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web config schedules backend

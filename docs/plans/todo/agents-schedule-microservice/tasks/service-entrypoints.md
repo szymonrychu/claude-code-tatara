@@ -6,19 +6,17 @@ value: "the image runs as three commands, and only one worker ever fires schedul
 files: [src/agents_schedule/cli.py, src/agents_schedule/runtime.py, tests/test_entrypoints.py]
 verify: "uv run --frozen pytest tests/test_entrypoints.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [scheduler-loop, run-dispatcher, run-outcome-tracker, runs-api-routes]
-owns: [sched-entrypoints]
-uses: [sched-cli, sched-scheduler, sched-dispatch, sched-tracker, sched-api-app, agents-common-lib]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # service entrypoints

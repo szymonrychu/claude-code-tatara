@@ -6,19 +6,17 @@ value: "schedules are created, edited, previewed, enabled, disabled and deleted 
 files: [src/agents_schedule/api/__init__.py, src/agents_schedule/api/app.py, src/agents_schedule/api/schemas.py, src/agents_schedule/api/schedules.py, tests/test_api_schedules.py]
 verify: "uv run --frozen pytest tests/test_api_schedules.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [schedules-repository, runs-repository, cron-expressions, schedule-settings-model]
-owns: [sched-api-app]
-uses: [sched-schedules-repo, sched-runs-repo, sched-cron, agents-common-lib, orch-presets-api, orch-service-tokens]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # schedules api routes

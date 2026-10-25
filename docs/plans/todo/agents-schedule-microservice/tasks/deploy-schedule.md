@@ -6,19 +6,17 @@ value: the agents namespace runs the schedule service and the UI with its Schedu
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, values/agents-web/common.yaml, tests/test_schedule_release.py, tests/test_web_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_release.py tests/test_web_release.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [release-v0-1-0, helmfile-schedule-release, schedule-service-token, web-config-schedules-backend, smoke-schedule-check, web-schedules-menu-entry]
-owns: []
-uses: [agents-schedule-release, agents-schedule-release-values, agents-web-schedules-config, agents-web-chart, agents-web-image]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deploy schedule

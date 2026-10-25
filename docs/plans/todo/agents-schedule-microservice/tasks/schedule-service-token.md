@@ -6,19 +6,17 @@ value: "the schedule service authenticates to the orchestrator with its own toke
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agent-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_secrets.py && shellcheck --severity=error scripts/bootstrap-secrets.sh && uv run ruff check ."
 depends_on: []
-owns: [agents-schedule-token-bootstrap]
-uses: [orch-service-tokens, orch-services-service]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # schedule service token

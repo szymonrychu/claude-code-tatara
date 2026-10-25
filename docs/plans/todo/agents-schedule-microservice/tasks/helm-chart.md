@@ -6,19 +6,17 @@ value: the service deploys as an api and a worker Deployment with its database a
 files: [chart/agents-schedule/Chart.yaml, chart/agents-schedule/values.yaml, chart/agents-schedule/templates/_helpers.tpl, chart/agents-schedule/templates/_config.tpl, chart/agents-schedule/templates/deployment.yaml, chart/agents-schedule/templates/service.yaml, chart/agents-schedule/templates/configmap.yaml, tests/test_chart.py]
 verify: "uv run --frozen pytest tests/test_chart.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [service-entrypoints, schedule-settings-model]
-owns: [agents-schedule-chart-core]
-uses: [sched-entrypoints, agents-schedule-settings-env]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helm chart

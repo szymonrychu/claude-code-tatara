@@ -6,19 +6,17 @@ value: "a user sees each schedule's recent runs, their status and a link to the 
 files: [src/schedules/ScheduleRuns.tsx, src/schedules/ScheduleRuns.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleRuns.test.tsx && npm run lint"
 depends_on: [web-schedules-api-client]
-owns: [web-schedule-runs]
-uses: [web-schedules-client, trigger-ui-page-pattern]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web schedule runs list

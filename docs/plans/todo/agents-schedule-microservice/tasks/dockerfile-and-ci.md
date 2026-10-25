@@ -6,19 +6,17 @@ value: "every main commit is linted, tested and published as an image and chart"
 files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci_workflow.py]
 verify: "uv run --frozen pytest tests/test_ci_workflow.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [service-entrypoints]
-owns: [agents-schedule-image]
-uses: [sched-entrypoints]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # dockerfile and ci

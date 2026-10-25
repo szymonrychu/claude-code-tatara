@@ -6,19 +6,17 @@ value: the UI talks to the schedule API with generated types through one client 
 files: [openapi/schedules.json, openapi/schedules.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schedules-schema.d.ts, src/schedules/api.ts, src/schedules/api.test.ts]
 verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs && npx vitest run src/schedules/api.test.ts && npm run check:api && npm run lint"
 depends_on: [api-docs-and-openapi]
-owns: [web-schedules-client]
-uses: [agents-schedule-api, agents-web-backends-config, agents-web-openapi-vendor]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web schedules api client

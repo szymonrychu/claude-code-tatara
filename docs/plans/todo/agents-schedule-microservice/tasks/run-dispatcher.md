@@ -6,19 +6,17 @@ value: "a new run starts one cluster from its preset and sends its prompt, never
 files: [src/agents_schedule/dispatcher.py, src/agents_schedule/prompt.py, tests/test_dispatcher.py]
 verify: "uv run --frozen pytest tests/test_dispatcher.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [runs-repository, schedules-repository, schedule-settings-model]
-owns: [sched-dispatch]
-uses: [sched-runs-repo, sched-schedules-repo, preset-mapping-model, agents-common-lib, orch-service-tokens, orch-cluster-create-api]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # run dispatcher

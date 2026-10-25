@@ -6,19 +6,17 @@ value: every capability is proven headlessly against a real deployment in kind
 files: [scripts/e2e.sh, e2e/values-kind.yaml, e2e/fake-orchestrator.yaml, tests/e2e/__init__.py, tests/e2e/test_e2e_kind.py]
 verify: "bash -n scripts/e2e.sh && uv run --frozen pytest tests/e2e/test_e2e_kind.py --collect-only -q -m e2e && uv run ruff check . && uv run ruff format --check ."
 depends_on: [chart-ingress-and-test-hook, dockerfile-and-ci, api-docs-and-openapi]
-owns: [sched-kind-e2e]
-uses: [agents-schedule-chart, agents-schedule-image, agents-schedule-api, agents-common-lib]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # kind e2e api

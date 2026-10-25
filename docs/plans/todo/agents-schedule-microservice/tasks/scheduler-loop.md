@@ -6,19 +6,17 @@ value: "enabled schedules fire on time, once per fire time, with missed runs col
 files: [src/agents_schedule/scheduler.py, tests/test_scheduler.py]
 verify: "uv run --frozen pytest tests/test_scheduler.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [cron-expressions, schedules-repository, runs-repository]
-owns: [sched-scheduler]
-uses: [sched-cron, sched-schedules-repo, sched-runs-repo]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # scheduler loop

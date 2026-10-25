@@ -6,19 +6,17 @@ value: "the service owns its database schema, migrated forward-only before any p
 files: [src/agents_schedule/db/__init__.py, src/agents_schedule/migrations/__init__.py, src/agents_schedule/migrations/0001_schedules.sql, src/agents_schedule/db/migrate.py, tests/conftest.py, tests/test_migrations.py]
 verify: "uv run --frozen pytest tests/test_migrations.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [schedule-settings-model]
-owns: [sched-schema, sched-db-fixture]
-uses: [agents-common-lib, agents-schedule-settings-env]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # schema migrations

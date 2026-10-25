@@ -6,19 +6,17 @@ value: "every in-progress run ends handled or failed with a reason, visible in t
 files: [src/agents_schedule/tracker.py, tests/test_tracker.py]
 verify: "uv run --frozen pytest tests/test_tracker.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [runs-repository, schedule-settings-model]
-owns: [sched-tracker]
-uses: [sched-runs-repo, preset-mapping-model, agents-common-lib, orch-service-tokens]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # run outcome tracker

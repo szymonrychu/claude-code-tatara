@@ -6,19 +6,17 @@ value: every process reads one validated configuration and a bad variable is nam
 files: [src/agents_schedule/settings.py, tests/test_settings.py, README.md]
 verify: "uv run --frozen pytest tests/test_settings.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [scaffold-project-and-cli]
-owns: [agents-schedule-settings-env]
-uses: [agents-common-lib]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # schedule settings model

@@ -6,19 +6,17 @@ value: the schedule API is documented and its contract cannot drift silently
 files: [openapi.json, README.md, src/agents_schedule/api/openapi.py, tests/test_readme_api.py]
 verify: "uv run --frozen pytest tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [runs-api-routes]
-owns: [agents-schedule-api]
-uses: [sched-api-app, sched-runs-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # api docs and openapi

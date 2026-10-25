@@ -6,19 +6,17 @@ value: Schedules appears in the hamburger menu below Webhooks when the schedule 
 files: [src/schedules/menu.ts, src/backends/registry.ts, src/backends/registry.test.ts]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.test.ts src/App.test.tsx && npm run lint"
 depends_on: [web-schedules-page]
-owns: [web-schedules-menu]
-uses: [web-schedules-page, agents-web-backend-registry, web-settings-menu-order]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web schedules menu entry

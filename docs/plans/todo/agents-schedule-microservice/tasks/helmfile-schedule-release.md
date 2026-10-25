@@ -6,19 +6,17 @@ value: "the schedule service is declared in the agents namespace, wired to its d
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, tests/test_schedule_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_release.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [helmfile-schedule-db-release, chart-ingress-and-test-hook, schedule-service-token]
-owns: [agents-schedule-release-values]
-uses: [agents-schedule-token-bootstrap, agents-schedule-db-release, agents-schedule-chart, agents-schedule-settings-env, orch-services-service, agents-web-url-layout]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile schedule release

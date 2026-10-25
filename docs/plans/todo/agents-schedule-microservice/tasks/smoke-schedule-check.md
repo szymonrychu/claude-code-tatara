@@ -6,19 +6,17 @@ value: "the live smoke proves a schedule can be created, previewed and run again
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.py && shellcheck --severity=error scripts/smoke.sh && uv run ruff check ."
 depends_on: [api-docs-and-openapi]
-owns: [agents-schedule-smoke]
-uses: [agents-schedule-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # smoke schedule check

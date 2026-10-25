@@ -6,19 +6,17 @@ value: a user creates or edits a schedule and sees its next fire times before sa
 files: [src/schedules/ScheduleForm.tsx, src/schedules/ScheduleForm.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleForm.test.tsx && npm run lint"
 depends_on: [web-schedules-api-client]
-owns: [web-schedule-form]
-uses: [web-schedules-client, trigger-ui-page-pattern, orch-presets-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web schedule form

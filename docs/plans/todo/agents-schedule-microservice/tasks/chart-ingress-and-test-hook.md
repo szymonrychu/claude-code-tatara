@@ -6,19 +6,17 @@ value: "the schedule API is routable on the shared host under its own path, behi
 files: [chart/agents-schedule/templates/ingress.yaml, chart/agents-schedule/templates/tests/test-connection.yaml, chart/agents-schedule/values.yaml, tests/test_chart_ingress.py]
 verify: "uv run --frozen pytest tests/test_chart_ingress.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [helm-chart]
-owns: [agents-schedule-chart]
-uses: [agents-schedule-chart-core, agents-web-url-layout]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # chart ingress and test hook

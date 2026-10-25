@@ -6,19 +6,17 @@ value: the schedule service gets its own CNPG database in the agents namespace
 files: [helmfile.yaml.gotmpl, values/agents-schedule-db/common.yaml, tests/test_schedule_db_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_db_release.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [agents-schedule-db-release]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile schedule db release
