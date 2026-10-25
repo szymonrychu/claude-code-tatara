@@ -1,6 +1,6 @@
 ---
 title: orch preset reuse field
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a preset can opt in to sending new events to the agent still running for them
 files: [src/agent_orchestrator/spec.py, openapi.json, README.md, tests/test_spec_config.py, tests/test_api_presets.py]
@@ -48,17 +48,20 @@ The preset setting for agent reuse (design D17; user clarification 2026-10-25: "
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `preset-reuse-running-agent` (new contract): `ClusterSpec.reuse_running_agent: bool | None` in `src/agent_orchestrator/spec.py`, served in `PresetView.spec` on `GET /api/v1/presets/{id}` (main and service port).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A preset can carry `reuse_running_agent: true`; the orchestrator stores and returns it and otherwise ignores it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tests; run `uv run pytest tests/test_spec_config.py tests/test_api_presets.py -q`: fail.
+- Green: the field, then `uv run python -m agent_orchestrator.api.openapi > openapi.json`, then the README; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Sparse like `autoclose_after_seconds` (`spec.py` L377, the `_cap` validator keeps presets sparse).
+- Additive-only `/api/v1` (`code/agent-orchestrator/MEMORY.md`).
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
