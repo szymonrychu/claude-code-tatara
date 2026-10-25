@@ -52,17 +52,17 @@ API-only e2e for headless parity (design D14, user decision). Paths are in code/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `webhook-cli`, `webhook-api`, `webhook-ingest-api`, `agents-common-fake-orchestrator`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run test:e2e` proves headless parity for every capability.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the e2e; run it against the wired processes; fix gaps it finds in the owning modules only through this task's diff if trivial, else name them.
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Keep timings bounded: every wait polls the api with a 30 s cap.

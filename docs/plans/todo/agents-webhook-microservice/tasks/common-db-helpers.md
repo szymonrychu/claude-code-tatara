@@ -56,17 +56,19 @@ The database layer of agents-common (design D1), copied from agent-orchestrator'
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `agents-common-db`: `agents_common.db.{open_pool, notify, listen, run_migrations, MigrationError, transition, claim}` and the pytest plugin `agents_common.testing` (`pg_url`, `migrated_db`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Any service can migrate its own `migrations/` package, change queue rows only through guarded updates and test against a migrated template DB.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_db.py`; run `uv run pytest tests/test_db.py -q`: import errors.
+- Green: port the modules from agent-orchestrator, generalise table and package names; tests pass.
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Sources: `code/agent-orchestrator/src/agent_orchestrator/db/{pool,migrate,queue}.py`, `tests/conftest.py`. Keep their behaviour; do not add an ORM (do-not-build).
+- Docker is needed for testcontainers; the 2026-10-25 local baseline had Postgres readiness failures, CI is the fallback.

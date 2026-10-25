@@ -48,17 +48,16 @@ Committed OpenAPI and the API reference (design D14). Paths are in code/agents-w
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `openapi.json` is vendored by agents-web (web-webhook-api-client).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The API is documented and drift-tested.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: generator, `python -m agents_webhook.api.openapi > openapi.json`, README; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Pattern: `code/agent-orchestrator/src/agent_orchestrator/api/openapi.py`, `tests/test_readme_api.py`.

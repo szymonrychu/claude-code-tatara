@@ -53,17 +53,17 @@ Vendor the webhook API and write its client (design D11, D14; contract `agents-w
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `web-webhook-client`: `src/webhooks/api.ts`. Uses `webhook-api` (agents-webhook `openapi.json`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI has a typed webhook client pinned to a recorded agents-webhook commit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `api.test.ts` and the sync-api case; run: fail.
+- Green: script mapping, `npm run sync:api -- webhooks`, client; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Requires `code/agents-webhook` checked out next to `code/agents-web` with this epic's API merged to its main.

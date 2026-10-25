@@ -55,17 +55,18 @@ Precondition, checked first: `code/agents-webhook` is a submodule with origin `h
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `agents-common-lib` (tag v0.1.0). Console script `agents-webhook`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv run agents-webhook --help` and the image work; later tasks fill the subcommands.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the preconditions.
+- Red: `tests/test_cli.py`; run: fails.
+- Green: pyproject, lock, cli; tests pass. Dockerfile; build it. Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Model on `code/agent-orchestrator/Dockerfile` (Python stage only) and `mise.toml`.

@@ -52,17 +52,16 @@ Secrets for agents-webhook (design D3, D10, D13). Paths are in code/agents-helmf
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `orch-service-tokens` (`<name>:<sha256 hex>`); writes `serviceApi.tokenHashes.agents-webhook` for the orchestrator release and `orchestrator.token`, `sources.*` for the agents-webhook release.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Both releases have their secrets; nothing existing changed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: script; run it; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The SOPS key setup is the repo's existing one (`.sops.yaml`); never commit plaintext; never decrypt to stdout in a transcript.

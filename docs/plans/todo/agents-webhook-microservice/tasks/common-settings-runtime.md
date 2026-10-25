@@ -46,17 +46,17 @@ Settings base and worker runtime of agents-common (design D1). Paths are in code
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns part `agents-common-settings-runtime`: `agents_common.settings.{BaseServiceSettings, CsvList, SettingsError, load_settings}`, `agents_common.runtime.{advisory_singleton, LostLock, run_service}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A service subclasses one settings base and runs its worker under one singleton lock.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the tests; run them: import errors.
+- Green: port and generalise; tests pass. Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Uses `agents_common.db.open_pool` and the `pg_url` fixture from task common-db-helpers.

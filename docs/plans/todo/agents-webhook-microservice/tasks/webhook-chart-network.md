@@ -51,17 +51,16 @@ Services and Ingresses (design D12). Paths are in code/agents-webhook.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Paths `/webhooks/api` and `/webhooks/{github,gitlab,grafana}` on the shared host; agents-helmfile sets host `lab.szymonrichert.pl` and TLS secret `agent-orchestrator-tls`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chart routes public and SSO traffic to different pods.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: templates and values; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- One cert-manager annotation per host (frontend-decoupling brief A4); the orchestrator or agents-web Ingress owns it.

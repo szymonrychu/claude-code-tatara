@@ -47,17 +47,19 @@ An async HTTP client of the orchestrator's service API and a fake orchestrator f
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `agents-common-orchestrator-client`: `agents_common.orchestrator.{OrchestratorClient, Preset, Cluster, Message, OrchestratorError, NotFound, OrchestratorUnavailable}`.
+- Owns `agents-common-fake-orchestrator`: `agents_common.fake_orchestrator.FakeOrchestrator`.
+- Mirrors orchestrator routes (contracts `orch-presets-api`, `orch-cluster-create-api`, `orch-service-tokens`): `POST /api/v1/clusters {preset_id, slug}` 201 ClusterView, 409 `conflict`; `POST /api/v1/clusters/{id}/messages {text}` 202 `{message_id, status}`; `GET /api/v1/messages/{id}` MessageView with `status` and `turn{status, completed_at, final_text}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Services talk to the orchestrator only through this client; every test uses the fake.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the tests against the fake's expected behaviour; run: import errors.
+- Green: write the fake, then the client; tests pass. Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Field names from `code/agent-orchestrator/src/agent_orchestrator/api/schemas.py` (ClusterView, MessageView, PresetView) and `api/messages.py:post_message`, `api/clusters.py:create_cluster` (409 at L186). Slug rules: DNS-1123 label, at most 40 characters (`spec.py:validate_slug`).

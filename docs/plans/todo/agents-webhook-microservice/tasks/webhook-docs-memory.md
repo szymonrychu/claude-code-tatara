@@ -47,17 +47,16 @@ Service documentation (design D2, D3, D12, D14). Paths are in code/agents-webhoo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- README defines `webhook-ingest-api` and `webhook-api` for consumers.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A new operator can wire a forge or Grafana from the README alone.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_readme_config.py`; run: fails. Green: docs; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Doc task plus one doc test.

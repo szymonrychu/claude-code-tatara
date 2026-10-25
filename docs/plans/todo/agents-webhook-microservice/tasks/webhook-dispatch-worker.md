@@ -52,17 +52,16 @@ The singleton worker: dispatch and tracking (design D6, D8). Paths are in code/a
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_webhook.worker.run_worker(settings, pool, client)`; wired as `agents-webhook worker` by webhook-cli-entrypoints.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Queued mapped events run as agent clusters within the limits and end handled or failed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests with the fake orchestrator; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Never delete clusters (D8, non-goal). The service token goes in `WEBHOOK_ORCHESTRATOR_TOKEN`; the URL is the orchestrator's services Service.

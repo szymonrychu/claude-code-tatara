@@ -27,12 +27,12 @@ provides: []
 
 Chart support for the service port (design D10). Paths are in code/agent-orchestrator.
 
-- `values.yaml`: `serviceApi: {port: 8002, existingSecret: "", existingSecretKey: "service-tokens", tokens: ""}` (`tokens` only for dev; existingSecret wins).
+- `values.yaml`: `serviceApi: {port: 8002, existingSecret: "", existingSecretKey: "service-tokens", tokenHashes: {}}`; `tokenHashes` maps a service name to the sha256 hex of its token, so each service's SOPS values file adds its own key and helmfile merges them; existingSecret wins when set.
 - `templates/service-services.yaml`: ClusterIP Service `<fullname>-services`, port `serviceApi.port`, targetPort and port name `services`, selector the api component; header comment "never referenced by the ingress", like `service-agents.yaml`.
 - `templates/deployment.yaml`: the api container gets containerPort `services` (`serviceApi.port`). The port name is never `http`, so the oauth2-proxy injector (which fronts the port named `http`) does not proxy it.
 - `templates/configmap.yaml`: `ORCH_SERVICE_PORT`.
-- `templates/secret.yaml` / env: `ORCH_SERVICE_TOKENS` from `serviceApi.existingSecret` key `existingSecretKey`, or from the chart Secret when `serviceApi.tokens` is set; absent when neither is set.
-- `tests/test_chart_services_port.py` (with `tests/helm_render.py`): the Service renders with port 8002 and name `services`; the api container exposes it; the Ingress never references `-services`; env wiring for existingSecret and inline tokens; nothing renders the token in a ConfigMap.
+- `templates/secret.yaml` / env: `ORCH_SERVICE_TOKENS` from `serviceApi.existingSecret` key `existingSecretKey`, or from the chart Secret as the CSV `<name>:<hash>` of `serviceApi.tokenHashes` sorted by name; absent when neither is set; a hash that is not 64 lowercase hex fails the render.
+- `tests/test_chart_services_port.py` (with `tests/helm_render.py`): the Service renders with port 8002 and name `services`; the api container exposes it; the Ingress never references `-services`; env wiring for existingSecret and for two `tokenHashes` entries from two values files (sorted CSV); a malformed hash fails the render; nothing renders the token in a ConfigMap.
 
 ## Acceptance conditions
 
@@ -52,17 +52,17 @@ Chart support for the service port (design D10). Paths are in code/agent-orchest
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `orch-services-service`: Service `<fullname>-services:8002` (port name `services`), values `serviceApi.{port, existingSecret, existingSecretKey, tokenHashes}`; in agents-helmfile the URL is `http://agent-orchestrator-services:8002`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` shows the services Service and port; the ingress is unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_chart_services_port.py`; run: fails.
+- Green: templates and values; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Model on `templates/service-agents.yaml` and the `agents` port in `deployment.yaml` L79-80.

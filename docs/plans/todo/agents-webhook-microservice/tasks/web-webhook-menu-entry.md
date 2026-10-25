@@ -46,17 +46,16 @@ Register the Webhooks menu entry (design D11; request: "webUI entry between clus
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `agents-web-backend-registry` (order slot 20) and `agents-web-backends-config` (backend id `webhooks`, basePath `/webhooks/api/v1`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+With the webhooks backend configured, the menu shows Clusters, Webhooks, Presets.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: registry test cases; run: fail. Green: register; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- configuration-improvements adds Clusters at slot 10; the order is correct with or without it.

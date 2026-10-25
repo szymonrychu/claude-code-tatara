@@ -47,17 +47,16 @@ Prompt rendering (design D9). Paths are in code/agents-webhook. No I/O.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-prompt`: `agents_webhook.prompt.{render, validate_template}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every prompt frames the event as escaped data.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Parity: `TN/internal/prompt/bundle.go` L220-268.

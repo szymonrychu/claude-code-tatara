@@ -48,17 +48,16 @@ Wire the subcommands (design D2). Paths are in code/agents-webhook.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-cli`: `agents-webhook {migrate, ingest, api, worker}`, used by the chart and the e2e.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The image runs every process by subcommand.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Pattern: `code/agent-orchestrator/src/agent_orchestrator/cli.py` `build_uvicorn_config`, `_cmd_migrate`.

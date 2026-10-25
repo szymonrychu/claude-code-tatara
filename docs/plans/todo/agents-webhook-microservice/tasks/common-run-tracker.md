@@ -6,7 +6,7 @@ value: "a triggered run starts exactly one cluster and one prompt even across re
 files: [src/agents_common/runs.py, tests/test_runs.py]
 verify: "uv run pytest tests/test_runs.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [common-orchestrator-client, common-settings-runtime]
-owns: [agents-common-run-tracker]
+owns: [agents-common-run-tracker, preset-mapping-model]
 uses: [agents-common-orchestrator-client, agents-common-fake-orchestrator]
 model: opus
 estimate: 5
@@ -51,17 +51,17 @@ The preset binding model and the idempotent dispatch and tracking of one run (de
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `agents-common-run-tracker` and `preset-mapping-model` (`PresetBinding`, the cross-epic name agents-schedule uses): `agents_common.runs.{PresetBinding, RunRef, RunStore, marker, dispatch, post_update, track}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A service implements three guarded store methods and gets crash-safe dispatch and tracking.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_runs.py` with crash injection (raise after a given client call); run: fails.
+- Green: implement; tests pass. Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The orchestrator message has no idempotency key; the marker plus "the cluster belongs to this run" (deterministic slug) is the idempotency (discovery fix-as-ac). No turn-completion callback exists; polling is the design (do-not-build).

@@ -55,17 +55,18 @@ The event queue: recording deliveries with dedup, claiming under limits, guarded
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-event-queue`: `agents_webhook.db.events.{record, Recorded, claim_next, Event, EventStore (RunStore), list_events, get_event, in_progress}`.
+- Implements `agents_common.runs.RunStore`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The queue holds the D5 and D6 rules under concurrency; ingest and the worker only call this module.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests, including the concurrency ones; run: fail.
+- Green: implement with plain SQL; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Multi-writer queue table: ingest inserts and replaces `new` payloads, the worker transitions; every UPDATE carries `AND status=<expected>` (hard rule). Pattern: `code/agent-orchestrator/src/agent_orchestrator/db/queue.py` header L1-9, `_PICK` L196-209.

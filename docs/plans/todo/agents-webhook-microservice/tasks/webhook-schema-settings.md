@@ -53,17 +53,16 @@ Schema and settings of agents-webhook (design D3, D5, D6, D7). Paths are in code
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-events-schema` (`migrations/0001_init.sql`) and `webhook-settings-env` (`WEBHOOK_*` names, documented in README by webhook-docs-memory).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`agents-webhook migrate` (wired later) creates both tables; settings validate.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: SQL and settings; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Later schema changes are new files `0002_*.sql`; never edit 0001 after it ships.

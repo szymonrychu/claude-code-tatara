@@ -48,17 +48,16 @@ Event-to-preset mappings in the UI (design D7, D11; request: "allows to map even
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `MapEventDialog`, `MappingsList` inside `WebhooksPage`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The full request is usable from the UI: see events, map one to a preset, remove a mapping.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: components; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `PresetSelect` and `FormError` from `src/triggers`.

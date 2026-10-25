@@ -58,17 +58,20 @@ Service-to-service authentication for agent-orchestrator on a dedicated internal
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `orch-service-tokens`: port `ORCH_SERVICE_PORT` (8002); `ORCH_SERVICE_TOKENS` = CSV `<name>:<sha256 hex>`; Bearer auth; the route list above; errors 401 `unauthorized`, 403 `forbidden`. Documented in README by task orch-service-port-docs.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -H "Authorization: Bearer $T" http://<api>:8002/api/v1/presets` answers 200 from any pod; without the token 401; the main and agent ports are unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_service_port.py`; run it: fails.
+- Green: settings, middleware, PortGate and SourceAllowlist changes, socket binding; tests pass.
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Model on `api/allowlist.py:PortGate` and the agent port's `skip_port` handling in `app.py` L84-86; `api/agent.py:require_agent` L57 for constant-time token checks.
+- No route changes shape: `openapi.json` stays byte-identical (`tests/test_readme_api.py`).
+- cluster-scaling and configuration-improvements also edit `settings.py`; rebase on whichever lands first.

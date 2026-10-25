@@ -56,17 +56,16 @@ The UI API under `/webhooks/api/v1` (design D7, D11, D12, D14). Paths are in cod
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-api`: the routes and schemas above, documented in README `## API` and `openapi.json` by webhook-openapi-readme.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Everything the UI does is a documented HTTP call.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The api is the only writer of `mappings`; it never writes `events`.

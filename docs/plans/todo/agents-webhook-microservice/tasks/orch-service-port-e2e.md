@@ -27,7 +27,7 @@ provides: []
 
 Kind e2e for the service port (design D10, D14). Paths are in code/agent-orchestrator.
 
-- `e2e/values-kind.yaml`: `serviceApi.tokens: "e2e:<sha256 of a fixed e2e token>"`.
+- `e2e/values-kind.yaml`: `serviceApi.tokenHashes.e2e: <sha256 of a fixed e2e token>`.
 - `tests/e2e/test_e2e_kind.py::test_in_cluster_service_token`: from an in-cluster pod (as `test_in_cluster_pod_refused_by_allowlist` L616 does), `GET http://<release>-services:8002/api/v1/presets` with the e2e token answers 200; without it 401; `DELETE /api/v1/clusters/<id>` with it 403; the same pod on the main Service port still gets 403 from the allowlist.
 - `mise run test:e2e` passes (in CI the `e2e` job; locally when kind is available).
 
@@ -44,17 +44,17 @@ Kind e2e for the service port (design D10, D14). Paths are in code/agent-orchest
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `orch-service-tokens` and `orch-services-service`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The kind e2e proves token access on the services Service and the unchanged allowlist on the main Service.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the test; with the old chart values it fails (no services Service).
+- Green: values-kind token; `mise run test:e2e` passes (or the CI e2e job; quote its result).
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- cluster-scaling also edits `tests/e2e/test_e2e_kind.py` and `e2e/values-kind.yaml`; rebase on whichever lands first.

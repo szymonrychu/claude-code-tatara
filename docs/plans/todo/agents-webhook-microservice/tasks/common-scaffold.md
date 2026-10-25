@@ -55,17 +55,20 @@ Precondition, checked first: `code/agents-common` is a submodule of the superrep
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Package `agents_common`, `agents_common.__version__`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv run pytest` and `mise run lint` pass in code/agents-common; CI has lint and test jobs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition (submodule and origin).
+- Red: write `tests/test_package.py`; `uv run pytest tests/test_package.py -q` fails (no package).
+- Green: pyproject, `uv lock`, package `__init__`; the test passes.
+- Add mise tasks, CI and README; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Model on `code/agent-orchestrator/pyproject.toml`, `mise.toml` and `.github/workflows/ci.yaml`; no Dockerfile or chart (a library).
+- component:add writes AGENTS, CLAUDE, MEMORY, ROADMAP, README, `.mise.toml`, `.gitignore` and a smoke test; keep them, extend README.

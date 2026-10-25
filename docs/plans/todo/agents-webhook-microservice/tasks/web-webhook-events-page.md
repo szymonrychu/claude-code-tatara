@@ -47,17 +47,16 @@ The Webhooks page with recent events (design D11; request: "recent events (along
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `WebhooksPage({onBack})` rendered by the menu entry (task web-webhook-menu-entry).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user sees the live event list with statuses.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: components; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse `RunStatusChip`, `usePoll`, `FormError` from `src/triggers`.

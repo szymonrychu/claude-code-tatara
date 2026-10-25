@@ -47,17 +47,17 @@ Precondition, checked first: this epic's agents-web PR is merged to main and cha
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `agents-web-backends-config` (`backends[]` value) and `agents-web-chart`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After apply, the menu shows Webhooks.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition.
+- Red: tests; run: fail. Green: values and pin; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- frontend-decoupling task deploy-pin-web created `values/agents-web/common.yaml` and `tests/test_web_release.py`; keep its tests green (the pin test name may differ: follow the file).

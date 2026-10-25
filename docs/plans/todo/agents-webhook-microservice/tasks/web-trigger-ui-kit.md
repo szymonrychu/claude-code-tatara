@@ -52,17 +52,17 @@ The shared trigger page pattern in agents-web (design D11; contract `trigger-ui-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `trigger-ui-page-pattern`: `src/triggers/index.ts` exports `RunStatusChip`, `PresetSelect`, `usePoll`, `FormError`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Trigger pages reuse four tested building blocks.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/triggers/triggers.test.tsx`; run `npx vitest run src/triggers/triggers.test.tsx`: fails.
+- Green: components; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Uses the orchestrator client and backend base path set up by frontend-decoupling (contracts `agents-web-backends-config`, `agents-web-backend-registry`).

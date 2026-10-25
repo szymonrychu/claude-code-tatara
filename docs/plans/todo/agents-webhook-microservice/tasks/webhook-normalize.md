@@ -50,17 +50,16 @@ Pure parsing of provider payloads into `NormalizedEvent` plus the ignore classif
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-normalized-event`: `agents_webhook.normalize.{NormalizedEvent, normalize_github, normalize_gitlab, normalize_grafana, classify, Unsupported}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every supported payload yields one event and a dedup key; every unsupported one raises Unsupported.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: payload builders and tests; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Parity sources: `TN/internal/scm/github.go:DetectAndVerify` L109-163, `ghNormalizeAction` L271, `TN/internal/scm/gitlab.go` L116-129 and L270-300, `TN/internal/webhook/grafana.go` L14-31 and L128-136, `server.go:isBotActor` L1181, L335-341 (TN = /Users/szymonri/Documents/tatara-new/code/tatara-operator).

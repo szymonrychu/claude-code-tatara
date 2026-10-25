@@ -28,9 +28,9 @@ provides: []
 Helm chart workloads (design D2, D13). Paths are in code/agents-webhook.
 
 - `Chart.yaml`: `agents-webhook`, version `0.1.0`, appVersion `0.1.0`.
-- `values.yaml`: `image {repository harbor.szymonrichert.pl/containers/agents-webhook, tag, pullPolicy}`, `imagePullSecrets`, `postgres {url | existingSecret, existingSecretKey}` (required; no in-chart CNPG), `orchestrator {url, tokenSecret {name, key}}`, `sources {existingSecret, githubKey, gitlabKey, grafanaKey}`, `env` (extra WEBHOOK_*), `components {ingest {replicas 2, podAnnotations {}, resources}, api {replicas 1, podAnnotations {}, resources}, worker {replicas 1, resources}}`, `service`, `ingress` (used by webhook-chart-network), security contexts as agent-orchestrator (non-root 1000, read-only root FS).
+- `values.yaml`: `image {repository harbor.szymonrichert.pl/containers/agents-webhook, tag, pullPolicy}`, `imagePullSecrets`, `postgres {url | existingSecret, existingSecretKey}` (required; no in-chart CNPG), `orchestrator {url, token | tokenSecret {name, key}}`, `sources {github, gitlab, grafana | existingSecret, githubKey, gitlabKey, grafanaKey}` (inline values go to the chart Secret; agents-helmfile sets them from SOPS), `env` (extra WEBHOOK_*), `components {ingest {replicas 2, podAnnotations {}, resources}, api {replicas 1, podAnnotations {}, resources}, worker {replicas 1, resources}}`, `service`, `ingress` (used by webhook-chart-network), security contexts as agent-orchestrator (non-root 1000, read-only root FS).
 - `templates/deployment.yaml`: one Deployment per component running `agents-webhook <component>`, port `http` 8000 for ingest and api, liveness/readiness on `/healthz`/`/readyz` (worker: exec probe or none), an initContainer `agents-webhook migrate`, env from the ConfigMap plus secrets: `WEBHOOK_DATABASE_URL` from `postgres`, `WEBHOOK_ORCHESTRATOR_TOKEN` from `orchestrator.tokenSecret` (api and worker only), source secrets as `WEBHOOK_*_FILE` mounted only into ingest. `podAnnotations` per component, so oauth2-proxy annotations go on `api` only.
-- `templates/configmap.yaml`: `WEBHOOK_ORCHESTRATOR_URL`, limits and `env`. `templates/secret.yaml`: only for an inline `postgres.url` in dev.
+- `templates/configmap.yaml`: `WEBHOOK_ORCHESTRATOR_URL`, limits and `env`. `templates/secret.yaml`: the inline `orchestrator.token`, `sources.*` and `postgres.url` values, when set.
 - `tests/test_chart_workloads.py` (helm template via a small `helm_render` helper as agent-orchestrator's `tests/helm_render.py`): three Deployments with the right args; migrate initContainer; ingest gets the source secrets and no orchestrator token, worker and api get the token and no source secrets; component podAnnotations land only on their pods; missing postgres fails the render with a clear message; no secret value in the ConfigMap.
 
 ## Acceptance conditions
@@ -53,17 +53,16 @@ Helm chart workloads (design D2, D13). Paths are in code/agents-webhook.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `agents-webhook-chart`: values shape above; published as `oci://harbor.szymonrichert.pl/charts/agents-webhook` by webhook-ci-images.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` renders the three workloads with the right secrets split.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: chart; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Model on `code/agent-orchestrator/chart/agent-orchestrator/templates/{deployment.yaml,_config.tpl}` (components loop, postgres source).

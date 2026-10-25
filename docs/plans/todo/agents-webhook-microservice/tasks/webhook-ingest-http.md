@@ -57,17 +57,16 @@ The public ingest app (design D3, D4, D12). Paths are in code/agents-webhook.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-ingest-api`: `POST /webhooks/{github,gitlab,grafana}` -> 202 `{id, status, reason}` | 400 | 401 | 404 | 413 | 503; documented in README by webhook-docs-memory.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Forges and Grafana can be pointed at `https://lab.szymonrichert.pl/webhooks/<source>` with their secret.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: verify, then app; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Parity: `TN/internal/webhook/server.go:handle` L138-207, `readBody` L1640-1658, `github.go:verifyGitHubSig` L281-299, `gitlab.go:DetectAndVerify` L101-111, `server.go:handleGrafanaAlert` L1233-1246.

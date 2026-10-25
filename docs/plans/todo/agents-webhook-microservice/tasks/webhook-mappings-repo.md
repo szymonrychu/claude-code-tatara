@@ -47,17 +47,16 @@ Mapping storage and matching (design D7). Paths are in code/agents-webhook.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-mapping-match`: `agents_webhook.db.mappings.{Mapping, MappingIn, create, delete, list_all, get, match}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Ingest can pick one mapping per event; the api can manage mappings.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: tests; run: fail. Green: implement; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The api is the only writer of `mappings`; ingest and the worker only read.

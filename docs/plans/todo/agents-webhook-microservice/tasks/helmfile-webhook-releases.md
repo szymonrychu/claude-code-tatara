@@ -52,17 +52,18 @@ Precondition, checked first: the agents-webhook PR of this epic is merged to mai
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `agents-webhook-chart`, `agents-webhook-image`, `orch-services-service`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run diff` shows the two new releases.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition.
+- Red: `tests/test_webhook_release.py`; run: fail. Green: releases and values; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Pattern: the `agent-orchestrator-db` / `agent-orchestrator` pair and `tests/test_orchestrator_release.py`, `tests/test_db_release.py`.
+- The public ingest exposure was approved at the gate (A7).
