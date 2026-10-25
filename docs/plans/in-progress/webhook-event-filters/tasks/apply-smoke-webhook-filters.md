@@ -1,6 +1,6 @@
 ---
 title: apply smoke webhook filters
-status: in-progress
+status: done
 repo: agents-helmfile
 value: endpoint filters are live and proven by the smoke
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-webhook-filters, smoke-webhook-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: a8686f7
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 348400
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 238388, review 110012"
 ---
 
 # apply smoke webhook filters
@@ -60,3 +60,5 @@ The live namespace runs the filter-capable agents-webhook and agents-web, the en
 - No TDD cycle applies: this task runs deploy checks and writes one MEMORY.md line (doc edit exception).
 - The migration 0004 (additive column) runs on apply in the migrate initContainer; it was listed at the gate as the epic's irreversible operation.
 - `mise run apply` never appears in AC evidence.
+
+- 2026-10-25 done
