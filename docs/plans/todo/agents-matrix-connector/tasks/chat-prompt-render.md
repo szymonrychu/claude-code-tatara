@@ -34,7 +34,7 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Acceptance conditions
 
-- AC1: the first prompt starts with the preamble and a follow-up starts with "New messages in the chat:" [evidence: test:tests/test_prompt.py::test_first_and_follow_up]
+- AC1: the first prompt starts with the preamble and a later prompt starts with "New messages in the chat:" [evidence: test:tests/test_prompt.py::test_first_and_later_prompts]
 - AC2: messages render in id order with sender name, Facebook id and timestamp [evidence: test:tests/test_prompt.py::test_messages_in_order_with_attributes]
 - AC3: a body containing </message>, </chat>, quotes and ampersands is escaped and cannot close the block [evidence: test:tests/test_prompt.py::test_escaping_cannot_break_out]
 
@@ -45,17 +45,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/prompt.py`: `PREAMBLE`, `render`. Used by dispatch-worker.
+- Reads `InboundRow` from `db/inbound.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A two-message burst from a Messenger DM becomes one prompt with the untrusted-input preamble and both messages escaped inside `<chat>`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_prompt.py` with the three tests. Fails on the missing module.
+- Green: write `prompt.py`. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same untrusted-data framing as agents-webhook `prompt.py` (design D9 there); do not import it.

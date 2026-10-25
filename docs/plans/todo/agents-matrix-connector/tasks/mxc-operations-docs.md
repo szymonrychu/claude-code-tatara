@@ -46,17 +46,16 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- README `## Operations` is what the orchestrator hands the user for U1-U4.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An operator can create the bot account, connect Facebook and allow a first chat from the README alone.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Doc-only task (TDD exception: a doc edit). Write the sections; run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never put a real token, password or cookie in docs; use placeholders.

@@ -52,17 +52,19 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/api/app.py`: `create_api_app` (extended by api-rules-and-settings, served by mxc-service-entrypoints).
+- `src/agents_matrix_connector/api/schemas.py` and `rooms.py`: the views above (contract `matrix-connector-api`, documented by mxc-openapi-and-readme, consumed by agents-web).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI can list discovered rooms with their access state, open one with members and recent messages, and set its preset and trigger.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_api_rooms.py` with the seven tests: `httpx.AsyncClient(transport=ASGITransport(app))`, a migrated database with seeded rows, `FakeOrchestrator` for presets. Fails on the missing package.
+- Green: write the app, schemas and routes. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/src/agents_webhook/api/app.py` for the CIDR middleware and error handlers.
+- Room ids in paths contain `!` and `:`; FastAPI path params accept them URL-encoded.

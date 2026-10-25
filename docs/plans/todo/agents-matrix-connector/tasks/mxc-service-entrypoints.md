@@ -47,17 +47,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Console script `agents-matrix-connector {migrate, api, bot}` (contract `agents-matrix-connector-image` entrypoint, used by the chart).
+- `src/agents_matrix_connector/bot.py`: `run_bot`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`agents-matrix-connector bot` against the fake homeserver and fake orchestrator syncs, dispatches and replies; `agents-matrix-connector api` serves `/matrix/api/v1`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend `tests/test_cli.py` and add `tests/test_bot_process.py` (run `run_bot` in-process with the fakes on ASGI transports, or the fakes served by uvicorn on free ports). Fails: no subcommands.
+- Green: write `bot.py` and the cli wiring. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/src/agents_webhook/cli.py` (`run_service`, exit 78) and `agents_common.runtime` (`advisory_singleton`, `LostLock`).

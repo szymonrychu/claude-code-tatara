@@ -58,17 +58,20 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/sync.py`: `SyncLoop` (`run_once`, `run`, `last_sync_at`). Started by mxc-service-entrypoints in the `bot` process.
+- Uses `MatrixClient`, `discovery`, `policy`, `db.directory`, `db.rules`, `db.inbound`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Running the loop against the fake homeserver, an invite to a Messenger DM portal becomes a joined, classified room; its messages land in `inbound` as `new` only when a rule allows them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_sync.py` with the nine tests, `FakeHomeserver` via `httpx.ASGITransport`, a migrated database, and a fixed clock. Fails on the missing module.
+- Green: write `sync.py`. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Review focus: the since token and the inbound inserts commit in one transaction; denied bodies are never written.
+- To simulate a crash before commit, make a repository call raise inside the transaction on the first attempt and run `run_once` again.
+- Joining is done after commit so a slow join never holds the transaction open.

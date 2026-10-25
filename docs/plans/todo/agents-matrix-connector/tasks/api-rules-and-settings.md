@@ -53,17 +53,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/api/rules.py`: the routes above (contract `matrix-connector-api`).
+- Uses `db.rules` and `policy`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Allowing a room through `POST /rules {"list": "allow", "kind": "room", "value": "!x:szymonrichert.pl"}` flips its access in `GET /rooms` to allowed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_api_rules.py` with the five tests. Fails on the missing routes.
+- Green: write the routes and schemas. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never echo a rule value into logs beyond its id; values are personal identifiers.

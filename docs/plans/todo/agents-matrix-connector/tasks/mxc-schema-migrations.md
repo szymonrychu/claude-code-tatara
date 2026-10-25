@@ -57,17 +57,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/migrations/0001_init.sql` (contract `matrix-connector-schema`): read by every repository task and by mxc-service-entrypoints (`migrate`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`run_migrations(url, "agents_matrix_connector.migrations")` creates the ten tables of design D10 with their constraints, indexes and writer comments.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_schema.py` using the `migrated_db` / `pg_url` fixtures of `agents_common.testing`; it fails on the missing package.
+- Green: write the SQL. Run the verify (needs Docker for testcontainers).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/src/agents_webhook/migrations/0001_init.sql` style.
+- Use `timestamptz` with `DEFAULT now()` for `*_at` columns that are set on insert.

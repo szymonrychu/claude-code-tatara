@@ -47,17 +47,17 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Values `service`, `ingress` (contract `agents-matrix-connector-chart`), consumed by helmfile-matrix-releases.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+With `ingress.enabled` and host `lab.szymonrichert.pl`, `https://lab.szymonrichert.pl/matrix/api/v1/...` reaches the api pods; nothing reaches the bot.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_chart_network.py` with the three tests. Fails: no templates.
+- Green: write the templates and values. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/chart/agents-webhook/templates/{service,ingress}.yaml` and its `tests/test_chart_network.py`; the connector has no public ingest.

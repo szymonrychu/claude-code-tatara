@@ -58,17 +58,20 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/matrix.py`: `MatrixClient`, `MatrixError`, `MatrixAuthError`, `MatrixForbidden`, `MatrixNotFound`, `MatrixUnavailable` (contract `matrix-client`; used by matrix-sync-loop, dispatch-worker, reply-tracker, mxc-service-entrypoints).
+- `src/agents_matrix_connector/fake_homeserver.py`: `FakeHomeserver` and helpers (used by every Matrix-facing test and by mxc-e2e-api, served by uvicorn there).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`MatrixClient(..., transport=httpx.ASGITransport(fake.app))` drives the fake through invites, joins, syncs and sends exactly as the live Synapse would for these eight calls.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_matrix_client.py` with the seven tests; fails on the missing modules.
+- Green: write `matrix.py`, then `fake_homeserver.py` (FastAPI or Starlette, already installed with fastapi). Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Matrix v3 client-server shapes: `/sync` body `{"next_batch", "rooms": {"join": {id: {"state": {"events": []}, "timeline": {"events": [], "limited": false}}}, "invite": {id: {"invite_state": {"events": []}}}, "leave": {}}}`.
+- Hermes' `roomadmin.py` (ConfigMap `ai/hermes-agent-files`, key `scripts__hermes-rooms__roomadmin.py`) uses the same endpoints with urllib against the live Synapse; read it with `kubectl -n ai get cm hermes-agent-files -o go-template='{{index .data "scripts__hermes-rooms__roomadmin.py"}}'` for shapes (read-only).
+- Keep the fake deterministic: no wall-clock sleeps except the long-poll wait bounded by the request timeout.

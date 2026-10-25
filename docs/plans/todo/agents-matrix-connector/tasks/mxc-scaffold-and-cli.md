@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Turn the component-add scaffold of `code/agents-matrix-connector` (orchestrator step O1) into the Python project of the connector (design D1, D15). Paths are in code/agents-matrix-connector.
 
-- `pyproject.toml`: project `agents-matrix-connector`, `requires-python >=3.12`, version `0.1.0`; dependencies `agents-common @ git+https://github.com/szymonrychu/agents-common@<tag>` where `<tag>` is the newest agents-common tag whose `agents_common.orchestrator.OrchestratorClient` has `create_session` (released by epic orchestrator-rename-sessions; find it with `git ls-remote --tags https://github.com/szymonrychu/agents-common`), `fastapi`, `uvicorn[standard]`, `httpx`; dev group `agents-common[testing] @ git+...@<same tag>`, `ruff`, `pytest`, `pytest-asyncio` (the agents-webhook `pyproject.toml` layout: `[tool.pytest.ini_options] pythonpath = ["src", "tests"]`, `asyncio_mode = "auto"`, the same ruff settings); console script `agents-matrix-connector = "agents_matrix_connector.cli:main"`.
+- `pyproject.toml`: project `agents-matrix-connector`, `requires-python >=3.12`, version `0.1.0`; dependencies `agents-common @ git+https://github.com/szymonrychu/agents-common@<tag>` where `<tag>` is `v0.3.0`, the agents-common release with session names (orchestrator-rename-sessions tasks common-client-sessions and common-release-v0-3-0; confirm with `git ls-remote --tags https://github.com/szymonrychu/agents-common v0.3.0`), `fastapi`, `uvicorn[standard]`, `httpx`; dev group `agents-common[testing] @ git+...@<same tag>`, `ruff`, `pytest`, `pytest-asyncio` (the agents-webhook `pyproject.toml` layout: `[tool.pytest.ini_options] pythonpath = ["src", "tests"]`, `asyncio_mode = "auto"`, the same ruff settings); console script `agents-matrix-connector = "agents_matrix_connector.cli:main"`.
 - `uv.lock` from `uv lock`.
 - `.mise.toml` (the scaffold's mise config): tasks `install`, `test`, `lint`, `fmt`, `test:chart`, `lint:chart` as agents-webhook's `mise.toml`, chart path `chart/agents-matrix-connector`.
 - `src/agents_matrix_connector/__init__.py`: `__version__` read from the installed package metadata.
@@ -55,17 +55,20 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/cli.py`: `main(argv: Sequence[str] | None = None) -> int`, `SUBCOMMANDS`, `EXIT_BAD_SETTINGS`. Extended by mxc-service-entrypoints.
+- `pyproject.toml` console script `agents-matrix-connector` (contract `agents-matrix-connector-image` entrypoint).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv run agents-matrix-connector --version` prints `agents-matrix-connector 0.1.0`; `uv run pytest tests/test_cli.py` passes; the project installs agents-common with session names.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cli.py` (`test_version`, `test_unknown_subcommand_exits_2`, calling `main([...])` and capturing output). `uv run pytest tests/test_cli.py -q` fails: no package.
+- Green: write `pyproject.toml`, `uv lock`, the package and `cli.py`, `tests/conftest.py`, the mise tasks and README section. Run the verify: tests pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `code/agents-webhook/pyproject.toml` and `mise.toml`; do not copy its modules.
+- If no agents-common tag with `create_session` exists yet, end `blocked`, whoCanClear "orchestrator: orchestrator-rename-sessions must release agents-common with session names" (this epic is blocked by that epic, design D15).
+- Design D16: model choice per task is recorded in design.md.

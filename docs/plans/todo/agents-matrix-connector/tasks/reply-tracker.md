@@ -60,17 +60,20 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/chunks.py`: `split`.
+- `src/agents_matrix_connector/tracker.py`: `Tracker.tick`. Started by mxc-service-entrypoints in the `bot` process.
+- Uses `OrchestratorClient.get_message` (`Message.status`, `Turn.status`, `Turn.final_text`), `FakeOrchestrator.complete_turn` / `fail_turn` / the session discard helper in tests.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After `FakeOrchestrator.complete_turn(message_id, "Hello")` one tick posts `Hello` to the fake room exactly once.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_tracker.py` with the eight tests (fixed clock, seeded runs and rows). Fails on the missing modules.
+- Green: write `chunks.py` and `tracker.py`. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Review focus: replies use the deterministic transaction ids of `add_outbound`; the run and its rows finish in the same transaction that stores the outbound rows.
+- Plain text body only, markdown left as written (design D9).

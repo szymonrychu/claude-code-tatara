@@ -1,0 +1,58 @@
+[
+  {
+    "id": "A1",
+    "text": "A new microservice, agents-matrix-connector: its own public repo and submodule (orchestrator step O1), one image with migrate, api and a singleton bot, its own database, on agents-common with the agents-orchestrator session names.",
+    "decisions": ["D1", "D15", "D16"],
+    "tasks": ["mxc-scaffold-and-cli", "mxc-service-entrypoints", "mxc-dockerfile-and-ci", "mxc-chart-workloads"],
+    "status": "approved"
+  },
+  {
+    "id": "A2",
+    "text": "It connects to the existing Matrix deployment as the plain bot user @agents:szymonrichert.pl with an access token, like Hermes; no appservice and no Synapse configuration change beyond creating the account (user-run U1, U2).",
+    "decisions": ["D2"],
+    "tasks": ["matrix-client-and-fake-hs", "mxc-settings-model", "helmfile-matrix-secrets", "mxc-operations-docs"],
+    "status": "approved"
+  },
+  {
+    "id": "A3",
+    "text": "Users talk to agents through Facebook via the existing mautrix-meta bridge, with the bot logged in to the bridge with its own Facebook account (user-run U3, U4 if needed); encrypted rooms are marked and never answered.",
+    "decisions": ["D3", "D4"],
+    "tasks": ["mxc-operations-docs", "helmfile-matrix-releases", "apply-smoke-matrix", "room-and-event-discovery"],
+    "status": "approved"
+  },
+  {
+    "id": "A4",
+    "text": "Users, chats and rooms are auto-discovered: invites are joined, rooms classified (dm, group, matrix, infrastructure), members and Facebook ids recorded, and only text messages taken in, without replaying history.",
+    "decisions": ["D5", "D7"],
+    "tasks": ["room-and-event-discovery", "directory-repository", "inbound-queue-repository", "matrix-sync-loop"],
+    "status": "approved"
+  },
+  {
+    "id": "A5",
+    "text": "There is an allowlist and a denylist over Matrix user id, Facebook id, room id and alias (display name deny only); deny wins and the default is deny.",
+    "decisions": ["D6"],
+    "tasks": ["access-policy-engine", "rules-and-settings-repo", "api-rules-and-settings", "web-chats-access-panels"],
+    "status": "approved"
+  },
+  {
+    "id": "A6",
+    "text": "Each chat maps to one agents-orchestrator session from its preset, reused while it runs, falling back to a new one when gone; the agent's final text of each turn is posted back to the chat exactly once, with typing while it works.",
+    "decisions": ["D8", "D9", "D10"],
+    "tasks": ["mxc-schema-migrations", "chat-prompt-render", "runs-and-outbound-repo", "dispatch-worker", "reply-tracker"],
+    "status": "approved"
+  },
+  {
+    "id": "A7",
+    "text": "A UI API under /matrix/api/v1 and a Chats page in agents-web show discovered rooms and users with their decisions and recent messages, and edit the rules, room presets and triggers and the default preset.",
+    "decisions": ["D11", "D12"],
+    "tasks": ["api-rooms-and-users", "api-rules-and-settings", "mxc-openapi-and-readme", "web-matrix-api-client", "web-chats-rooms-page", "web-chats-access-panels", "web-chats-menu-entry"],
+    "status": "approved"
+  },
+  {
+    "id": "A8",
+    "text": "Headless parity (README API, openapi.json, API e2e against fakes) and a live deploy into namespace agents through agents-helmfile with a green smoke that never sends a chat message.",
+    "decisions": ["D13", "D14"],
+    "tasks": ["matrix-client-and-fake-hs", "mxc-e2e-api", "mxc-chart-network", "helmfile-matrix-secrets", "helmfile-matrix-releases", "helmfile-web-chats-entry", "smoke-matrix-check", "apply-smoke-matrix"],
+    "status": "approved"
+  }
+]

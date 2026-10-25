@@ -52,17 +52,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/settings.py`: `ConnectorSettings`, `BotSettings`, `ApiSettings` (contract `matrix-connector-settings-env`, consumed by mxc-chart-workloads and helmfile-matrix-releases).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`BotSettings()` built from env with `MATRIX_DATABASE_URL`, `MATRIX_ORCHESTRATOR_URL`, `MATRIX_ORCHESTRATOR_TOKEN`, `MATRIX_HOMESERVER_URL`, `MATRIX_USER_ID` and `MATRIX_ACCESS_TOKEN_FILE` loads with default-deny policy; every bad variable is named in one error.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_settings.py` with the six tests (use `monkeypatch.setenv` and `tmp_path` token files). `uv run --frozen pytest tests/test_settings.py -q` fails on the missing module.
+- Green: write `settings.py` and the README table. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/src/agents_webhook/settings.py` (`WebhookSettings`, `LocalSettings`) and `agents_common.settings` (`CsvList`, `_token_from_file` pattern, `SettingsError`).
+- The puppet pattern is operator config, compiled with stdlib `re`; it never comes from a chat user.

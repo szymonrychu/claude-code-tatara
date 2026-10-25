@@ -56,17 +56,19 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/worker.py`: `Worker.tick`. Started by mxc-service-entrypoints in the `bot` process.
+- Uses `agents_common.runs.dispatch`, `deliver`, `running_session`, `marker` and `OrchestratorClient` of the pinned agents-common (session names, design D15); `db.inbound`, `db.runs`, `db.rules`, `prompt`, `MatrixClient.typing`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Against `FakeOrchestrator` and `FakeHomeserver`, two messages in an allowed DM produce one session and one prompt; a third message while it runs is delivered to the same session.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_worker.py` with the seven tests; agents-common's `FakeOrchestrator` served through `httpx.ASGITransport`, a migrated database with seeded `rooms`, `room_settings`, `settings` and `inbound` rows. Fails on the missing module.
+- Green: write `worker.py`. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `code/agents-webhook/src/agents_webhook/worker.py` (claim, dispatch, reuse, fallback), adapted to per-room batches; do not copy run tracking that agents-common already provides.
+- Reuse is always on for chats regardless of the preset's `reuse_running_agent` (design D8).

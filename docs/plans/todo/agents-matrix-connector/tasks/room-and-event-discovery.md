@@ -55,17 +55,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/discovery.py`: `RoomInfo`, `classify`, `facebook_id`, `Candidate`, `Skip`, `Unsupported`, `parse_message`, `mentions_self`, `effective_trigger`, `truncate`. Used by directory-repository, matrix-sync-loop, chat-prompt-render.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Given a mautrix-meta portal's state, `classify` says `dm` or `group` with the Facebook thread name; spaces are `infrastructure`; Element rooms are `matrix`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_discovery.py` with the eight tests, fixtures shaped like mautrix-meta portal state (`m.bridge` content with `bridgebot`, `protocol`, `channel` and `com.beeper.room_type.v2`). Fails on the missing module.
+- Green: write `discovery.py`. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ported semantics from Hermes `roomadmin.py` `room_kind`, `display_name`, `is_message_request` (ConfigMap `ai/hermes-agent-files`; design Research inputs).
+- Ghost ids look like `@facebook_100000241356957:szymonrichert.pl`; the bridge bot is `@facebookbot:szymonrichert.pl`.

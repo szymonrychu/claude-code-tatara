@@ -51,17 +51,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes contracts `agents-matrix-connector-chart`, `agents-matrix-connector-image`, `matrix-connector-settings-env`, `orch-service-tokens`, `orch-services-service`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run diff` (run later by apply-smoke-matrix) shows the two new releases and the orchestrator's added token hash.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_matrix_connector_release.py` with the four tests. Fails: no releases.
+- Green: edit the helmfile and write the values. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same shape as agents-webhook-microservice task helmfile-webhook-releases; copy the oauth2-proxy annotations and source ranges from `values/agents-webhook/common.yaml` rather than retyping them.
+- No NetworkPolicy exists in `agents` or `messaging` (probed 2026-10-25); none is added.

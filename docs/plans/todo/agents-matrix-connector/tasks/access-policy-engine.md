@@ -55,17 +55,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/policy.py` (contract `matrix-access-policy`): `KINDS`, `Rule`, `Subject`, `Decision`, `validate_rule`, `evaluate`, reason constants. Used by rules-and-settings-repo (validate on write), matrix-sync-loop (evaluate per message), api-rooms-and-users and api-rules-and-settings (views, 422 on invalid rules).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`evaluate(Subject(room_id="!a:hs", ..., sender_id="@facebook_1:hs", sender_facebook_id="1", ...), [], "deny")` returns `Decision(False, "not_allowed", None, "default")`; adding `Rule(1, "allow", "room", "!a:hs")` makes it allowed; adding `Rule(2, "deny", "facebook", "1")` refuses it with `denied: facebook`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_policy.py` with the eight tests. Fails on the missing module.
+- Green: write `policy.py`. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Security core (review focus): default deny must hold with zero rules; deny always wins; display names never grant.
+- No regex anywhere: identifiers are compared exactly (design D6).

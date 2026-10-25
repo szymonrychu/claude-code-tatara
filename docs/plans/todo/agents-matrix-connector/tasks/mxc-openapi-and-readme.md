@@ -47,17 +47,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `openapi.json` (vendored by agents-web task web-matrix-api-client as `openapi/matrix.json`), README `## API` (contract `matrix-connector-api`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`python -m agents_matrix_connector.api.openapi` reproduces the committed `openapi.json` byte for byte; README documents every route and reason.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_readme_api.py` with the three tests. Fails: no export module, no README section.
+- Green: write `openapi.py`, generate `openapi.json`, write README `## API`. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `code/agents-webhook/src/agents_webhook/api/openapi.py` and `tests/test_readme_api.py`.
+- Reason constants: import them from their modules in the test rather than listing strings twice.

@@ -50,17 +50,17 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/db/rules.py`: `RuleExists`, `add_rule`, `delete_rule`, `list_rules`, `list_rule_rows`, `RoomSettings`, `get_room_settings`, `set_room_settings`, `get_default_preset`, `set_default_preset`. Writers used only by the API; readers also by matrix-sync-loop and dispatch-worker.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Rules and settings persist exactly in the shape `policy.evaluate` and the worker consume.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_rules_repo.py` with the four tests on a migrated database. Fails on the missing module.
+- Green: write the module. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Accept either an `AsyncConnection` or an `AsyncConnectionPool` for the readers (a small helper), so the sync loop can read inside its transaction.

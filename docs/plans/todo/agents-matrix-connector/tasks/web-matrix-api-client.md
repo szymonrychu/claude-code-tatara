@@ -53,17 +53,17 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/matrix/api.ts` (used by web-chats-rooms-page and web-chats-access-panels); `openapi/matrix.json` vendored from contract `matrix-connector-api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI can call every connector route with generated types.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend `scripts/sync-api.test.mjs`; write `src/matrix/api.test.ts` (describe/it names as in the ACs). Both fail.
+- Green: map the backend, vendor the schema, generate types, write `api.ts`. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same shape as agents-webhook-microservice task web-webhook-api-client and `src/webhooks/api.ts`.

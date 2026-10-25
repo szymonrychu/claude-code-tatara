@@ -59,17 +59,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `chart/agents-matrix-connector/values.yaml` (contract `agents-matrix-connector-chart`): the values shape above, consumed by helmfile-matrix-releases; env names from contract `matrix-connector-settings-env`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` renders an api and a singleton bot wired to Postgres, the orchestrator service port and the homeserver, with the Matrix token only as a bot file mount.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_chart_workloads.py` with the five tests. Fails: no chart.
+- Green: write the chart files. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy the structure of `code/agents-webhook/chart/agents-webhook/` and its `tests/test_chart_workloads.py`.
+- Service and Ingress are task mxc-chart-network.

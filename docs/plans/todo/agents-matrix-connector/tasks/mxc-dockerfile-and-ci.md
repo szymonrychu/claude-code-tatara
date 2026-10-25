@@ -50,17 +50,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `harbor.szymonrichert.pl/containers/agents-matrix-connector:<sha7>` (contract `agents-matrix-connector-image`) and `oci://harbor.szymonrichert.pl/charts/agents-matrix-connector` `0.1.0-main.<sha7>` (contract `agents-matrix-connector-chart`), consumed by helmfile-matrix-releases.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After this epic's connector PR merges, main CI publishes the image and the chart to Harbor.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_ci.py` with the three tests parsing the workflow YAML and the Dockerfile. Fails: no files.
+- Green: write the four files, copying agents-webhook's shape. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy `code/agents-webhook/.github/workflows/ci.yaml`, `Dockerfile`, `scripts/chart-version.sh` and `tests/test_ci.py`, renaming; keep their action pins.
+- The Harbor secrets are set on the repo by orchestrator step O1.

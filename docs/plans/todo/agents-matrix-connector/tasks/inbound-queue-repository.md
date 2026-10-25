@@ -55,17 +55,17 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/db/inbound.py`: `InboundRow`, `insert`, `count_new`, `rooms_ready`, `claim_room`, `finish_run_rows`, `requeue_run_rows`, `ignore_new`, `list_messages`, `prune`. Used by matrix-sync-loop (insert, count_new), dispatch-worker, reply-tracker, api routes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A burst of messages in one room is claimed as one batch; a failed delivery puts the batch back in place.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_inbound_repo.py` with the five tests on a migrated database (insert `runs` rows with SQL where needed). Fails on the missing module.
+- Green: write the module. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Read `code/agents-common/src/agents_common/db/queue.py` first and use `transition` / `claim` where their shape fits; a batch claim by room may need its own guarded `UPDATE ... WHERE room_id = %s AND status = 'new' RETURNING *`.

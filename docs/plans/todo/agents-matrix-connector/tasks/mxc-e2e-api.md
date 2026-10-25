@@ -57,17 +57,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes every public surface of the connector: console script, settings env, `/matrix/api/v1`, `FakeHomeserver` helpers, `FakeOrchestrator` (`add_preset`, `complete_turn`, the session discard helper).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`uv run --frozen pytest tests/e2e -m e2e -q` passes the seven scenarios against real processes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the conftest and the seven tests; run them: they fail until the processes behave (this task lands after mxc-service-entrypoints, so a failure here is a real defect: fix it in the module it belongs to and say which).
+- Green: make them pass. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep `MATRIX_POLL_SECONDS` and `MATRIX_SYNC_TIMEOUT_SECONDS` small in the e2e env (for example 0.2 and 1) so the suite stays fast.
+- A defect found here that sits outside this task's files is returned as a `discovered` entry, never left undone.

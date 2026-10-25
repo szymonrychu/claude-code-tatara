@@ -52,17 +52,18 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/db/runs.py`: `PgRunStore`, `RunRow`, `OutboundRow`, `create_run`, `latest_session`, `in_progress`, `count_first_in_progress`, `finish`, `add_outbound`, `pending`, `mark_sent`, `mark_failed`, `list_outbound`, `prune`. Used by dispatch-worker, reply-tracker, api-rooms-and-users.
+- Implements `agents_common.runs.RunStore` (contract `agents-common-lib`, session names per design D15).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The worker can create, adopt and finish runs idempotently, and replies are stored with transaction ids that make re-sending safe.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_runs_repo.py` with the five tests on a migrated database. Fails on the missing module.
+- Green: write the module. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Read the pinned `agents_common/runs.py` first; the protocol method names come from there, never guessed.

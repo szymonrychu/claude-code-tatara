@@ -48,17 +48,19 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/db/directory.py`: writers `upsert_room`, `set_membership`, `upsert_members`, `touch_room`, `get_sync_state`, `set_sync_state` (matrix-sync-loop); readers `list_rooms`, `get_room`, `list_users`, `room_exists`, `last_sync_at` (api-rooms-and-users, mxc-service-entrypoints readiness).
+- Reads `RoomInfo` from `discovery.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The directory tables reflect what sync saw, and the API can list rooms with their queue and session state in one query each.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_directory_repo.py` on a migrated database (`migrated_db("agents_matrix_connector.migrations")`); insert `inbound` and `runs` rows with plain SQL for the counts. Fails on the missing module.
+- Green: write the module. Run the verify (Docker).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Writers never commit; the caller owns the transaction (`async with conn.transaction()`).
+- Use `agents_common.db.pool.open_pool` in tests as agents-webhook's repository tests do.
