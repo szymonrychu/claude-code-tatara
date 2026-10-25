@@ -2,7 +2,8 @@
 
 `--status done` also stamps the task's actuals: `points_actual` from `--points-actual`, and
 minutes and tokens measured from its agents' `.logs/agents` records (agent_usage), never
-guessed: with no record it notes so instead.
+guessed: with no record it first backfills the epic's records from the harness transcripts
+(`--transcripts`, default the project's dir), and only then notes the gap.
 """
 
 import datetime
@@ -27,6 +28,11 @@ def register(sub, t) -> None:
     sp.add_argument(
         "--logs", help="the logs dir holding agents/ (default: the main checkout's .logs)"
     )
+    sp.add_argument(
+        "--transcripts",
+        help="harness subagent transcripts to backfill from when the task has no record "
+        "(default: the project's dir under the harness home)",
+    )
 
 
 def _actuals(a, t, root: Path, epic: str) -> tuple[dict, list[str]]:
@@ -44,6 +50,10 @@ def _actuals(a, t, root: Path, epic: str) -> tuple[dict, list[str]]:
     meta = {"points_actual": str(points)}
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
     records = agent_usage.read_records(logs, epic, a.task) if logs else []
+    if logs and not records:
+        transcripts = a.transcripts or agent_usage.default_transcripts_dir(root)
+        agent_usage.backfill(transcripts, logs, epic=epic)
+        records = agent_usage.read_records(logs, epic, a.task)
     if not records:
         return meta, ["actuals: no agent records"]
     sums = agent_usage.aggregate(records)

@@ -264,3 +264,77 @@ def test_aggregate():
         "roles": {"impl": (30, 153), "review": (11, 207)},
     }
     assert agent_usage.aggregate([]) == {"minutes": None, "tokens": 0, "roles": {}}
+
+
+def backfill_fixture(tmp_path):
+    """A transcripts dir shaped like the harness's: one marked agent, one unmarked."""
+    sub = tmp_path / "projects" / "-p" / "sess1" / "subagents"
+    sub.mkdir(parents=True)
+    write(
+        sub / "agent-m1.jsonl",
+        [
+            user("2026-10-24T10:00:00.000Z", "[wb ep/t1/impl]\nDo it."),
+            assistant("2026-10-24T10:00:01.000Z", usage(2, 100, 1000, 10), "msg_1"),
+            assistant("2026-10-24T10:00:02.000Z", usage(2, 100, 1000, 10), "msg_1"),
+            assistant("2026-10-24T10:05:30.000Z", usage(3, 200, 2000, 20), "msg_2"),
+        ],
+    )
+    (sub / "agent-m1.meta.json").write_text(json.dumps({"agentType": "workbench:implementer"}))
+    write(
+        sub / "agent-u1.jsonl",
+        [
+            user("2026-10-24T10:00:00.000Z", "No marker here."),
+            assistant("2026-10-24T10:00:01.000Z", usage(1, 1, 1, 1), "msg_9"),
+        ],
+    )
+    return tmp_path / "projects" / "-p", tmp_path / "logs"
+
+
+def test_backfill_writes_marked_only(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    written = agent_usage.backfill(transcripts, logs)
+    assert [r["agentId"] for r in written] == ["m1"]
+    assert sorted(p.name for p in (logs / "agents").glob("*.json")) == ["m1.json"]
+    saved = json.loads((logs / "agents" / "m1.json").read_text())
+    assert saved == written[0]
+    assert (saved["epic"], saved["task"], saved["role"]) == ("ep", "t1", "impl")
+    assert saved["agentType"] == "workbench:implementer"
+    assert saved["model"] == "claude-sonnet-5-5"
+    assert saved["start"] == "2026-10-24T10:00:00.000Z"
+    assert saved["end"] == "2026-10-24T10:05:30.000Z"
+    assert saved["transcript"].endswith("agent-m1.jsonl")
+    assert saved["tokens"] == {
+        "input": 5,
+        "cache_creation": 300,
+        "cache_read": 3000,
+        "output": 30,
+        "total": 3335,
+    }
+
+
+def test_backfill_is_idempotent(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    hook = {"agentId": "m1", "epic": "ep", "task": "t1", "role": "impl", "tokens": {"total": 1}}
+    agent_usage.write_record(logs, hook)
+    assert agent_usage.backfill(transcripts, logs) == []
+    assert json.loads((logs / "agents" / "m1.json").read_text()) == hook
+    (logs / "agents" / "m1.json").unlink()
+    assert len(agent_usage.backfill(transcripts, logs)) == 1
+    assert agent_usage.backfill(transcripts, logs) == []
+
+
+def test_backfill_refresh_overwrites(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    agent_usage.write_record(
+        logs, {"agentId": "m1", "epic": "ep", "task": "t1", "role": "impl", "tokens": {"total": 1}}
+    )
+    written = agent_usage.backfill(transcripts, logs, refresh=True)
+    assert [r["agentId"] for r in written] == ["m1"]
+    saved = json.loads((logs / "agents" / "m1.json").read_text())
+    assert saved["tokens"]["total"] == 3335
+
+
+def test_default_transcripts_dir(tmp_path):
+    root = Path("/Users/x/Documents/work bench/.git")
+    want = tmp_path / ".claude" / "projects" / "-Users-x-Documents-work-bench--git"
+    assert agent_usage.default_transcripts_dir(root, home=tmp_path) == want

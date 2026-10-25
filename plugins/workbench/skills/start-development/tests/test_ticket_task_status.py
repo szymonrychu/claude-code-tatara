@@ -224,3 +224,50 @@ def test_stamp_reads_only_its_task(repo, root, tmp_path):
     m = meta(alpha)
     assert m["actual_minutes"] == "10" and m["actual_tokens"] == "70"
     assert m["actual_roles"] == "impl 10" and m["actual_role_tokens"] == "impl 70"
+
+
+def marked_transcripts(tmp_path, ep, task="alpha"):
+    sub = tmp_path / "projects" / "-p" / "sess" / "subagents"
+    sub.mkdir(parents=True)
+    (sub / "agent-b1.jsonl").write_text(
+        "\n".join(
+            [
+                transcript_line("user", "2026-10-24T10:00:00.000Z", f"[wb {ep}/{task}/impl]\nGo"),
+                transcript_line("assistant", "2026-10-24T10:09:30.000Z", msg_id="m1", tokens=70),
+            ]
+        )
+        + "\n"
+    )
+    return tmp_path / "projects" / "-p"
+
+
+def test_done_backfills_before_stamping(repo, root, tmp_path):
+    ep = mk_epic(root)
+    p = mk_task(root, ep, "alpha")
+    commit_all(repo)
+    transcripts, logs = marked_transcripts(tmp_path, ep), tmp_path / "logs"
+    r = cli(
+        "task", ep, "alpha", "--status", "done", "--points-actual", "3",
+        "--transcripts", transcripts, "--logs", logs, "--root", root,
+    )  # fmt: skip
+    assert r.returncode == 0, r.stderr
+    m = meta(p)
+    assert m["actual_minutes"] == "10" and m["actual_tokens"] == "70"
+    assert m["actual_roles"] == "impl 10"
+    assert "no agent records" not in p.read_text()
+    assert (logs / "agents" / "b1.json").is_file()
+
+
+def test_actuals_backfill_command(repo, root, tmp_path):
+    ep = mk_epic(root)
+    commit_all(repo)
+    transcripts, logs = marked_transcripts(tmp_path, ep), tmp_path / "logs"
+    args = ("actuals", ep, "--backfill", "--transcripts", transcripts, "--logs", logs)
+    r = cli(*args, "--root", root)
+    assert r.returncode == 0, r.stderr
+    lines = r.stdout.strip().splitlines()
+    assert lines == [f"b1 {ep}/alpha/impl 10 70"]
+    again = cli(*args, "--root", root)
+    assert again.returncode == 0 and again.stdout.strip() == ""
+    assert cli(*args, "--refresh", "--root", root).stdout.strip() == lines[0]
+    assert cli("actuals", ep, "--root", root).returncode != 0

@@ -39,7 +39,14 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
   records (`--logs` overrides the main checkout's `.logs`): `actual_minutes` (first start to last end
   across its agents, ceiling minutes), `actual_tokens` (every agent, every round), and per role
   `actual_roles` and `actual_role_tokens` (`impl N, review N`; a role's minutes sum its agents' spans).
-  With no records it stamps `points_actual` only and notes `actuals: no agent records`, never a guess.
+  With no records it first backfills the epic's records from the harness transcripts (`--transcripts DIR`,
+  default the project's dir under the harness home), and only then stamps `points_actual` alone and notes
+  `actuals: no agent records`, never a guess.
+- `actuals`: `actuals <epic> --backfill [--transcripts DIR] [--refresh] [--logs DIR]` writes the
+  `.logs/agents` records the recorder hook missed, from the marked (`[wb <epic>/<task>/<role>]`) subagent
+  transcripts still on disk (the harness deletes them after about 30 days), with the hook's summariser and
+  record format. It keeps existing records unless `--refresh`, skips unmarked transcripts, and prints one
+  line per record written: `<agentId> <epic>/<task>/<role> <minutes> <tokens>`.
 - `move`: `move <epic> in-progress` claims the epic, sets every todo task to in-progress and creates the
   integration tree; `move <epic> done` needs the pass verdict, every task done and the epic on main, then
   removes the integration tree and branch.

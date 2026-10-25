@@ -9,6 +9,7 @@ The first `user` line opens with the run marker `[wb <epic>/<task>/<role>]`.
 
 Records live at `<logs>/agents/<agentId>.json`, one per agent, overwritten whole on
 every write; `aggregate` turns one task's records into its actual minutes and tokens.
+`backfill` writes the records the hook missed from the transcripts still on disk.
 Stdlib only, Python 3.9 safe: the hooks import it.
 """
 
@@ -23,6 +24,8 @@ import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
+
+import workbench
 
 MARKER = re.compile(r"^\[wb ([^\s/\]]+)/([^\s/\]]+)/(impl|review)\]")
 
@@ -216,3 +219,63 @@ def aggregate(records: list[dict]) -> dict:
     minutes = _minutes((max(ends) - min(starts)).total_seconds()) if starts else None
     roles = {r: (_minutes(role_seconds[r]), role_tokens[r]) for r in role_seconds}
     return {"minutes": minutes, "tokens": total, "roles": roles}
+
+
+def default_transcripts_dir(root: str | os.PathLike, home: str | os.PathLike | None = None) -> Path:
+    """Where the harness keeps `root`'s sessions: projects/<root, non-alphanumerics as ->."""
+    base = Path(home) if home is not None else Path.home()
+    slug = re.sub(r"[^A-Za-z0-9]", "-", str(root))
+    return base / workbench.HARNESS_DIRS["claude"] / "projects" / slug
+
+
+def _agent_type(transcript: Path, agent_id: str) -> str:
+    try:
+        meta = json.loads((transcript.parent / f"agent-{agent_id}.meta.json").read_text("utf-8"))
+    except (OSError, ValueError):
+        return ""
+    value = meta.get("agentType") if isinstance(meta, dict) else None
+    return value if isinstance(value, str) else ""
+
+
+def backfill(
+    transcripts_dir: str | os.PathLike,
+    logs_dir: str | os.PathLike,
+    refresh: bool = False,
+    epic: str | None = None,
+) -> list[dict]:
+    """Write the records the hook did not: one per marked `agent-*.jsonl` under the dir.
+
+    Same summariser and record shape as the hook. An existing record is kept unless
+    `refresh`; unmarked transcripts and (with `epic`) other epics' are skipped. Returns
+    the records written.
+    """
+    folder = Path(logs_dir) / "agents"
+    written = []
+    for path in sorted(Path(transcripts_dir).rglob("agent-*.jsonl")):
+        agent_id = path.name[len("agent-") : -len(".jsonl")]
+        marker = parse_marker(path)
+        if marker is None or (epic is not None and marker[0] != epic):
+            continue
+        if not refresh and (folder / f"{agent_id}.json").exists():
+            continue
+        summary = summarize(path)
+        agent_type = _agent_type(path, agent_id)
+        record = {
+            "agentId": agent_id,
+            "agentType": agent_type,
+            "transcript": str(path),
+            "updatedAt": summary["end"],
+            "start": summary["start"],
+            "end": summary["end"],
+            "model": summary["model"],
+            "epic": marker[0],
+            "task": marker[1],
+            "role": role_for(marker[2], agent_type),
+            "tokens": summary["tokens"],
+        }
+        try:
+            write_record(logs_dir, record)
+        except ValueError:
+            continue
+        written.append(record)
+    return written
