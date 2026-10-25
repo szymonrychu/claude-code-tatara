@@ -264,6 +264,7 @@ lint`.
 
 none
 - Q1: Old four-role actual_roles (19 flow-speed tasks, e.g. 'impl 4, verify 3, review 2, fix 2'): fold fix into impl and verify into review instead of dropping them, since no transcripts survive for that epic? [recommended: yes, fold; records-derived roles still win (D4)]
+- Q2: The real run (task migrate-this-repo) writes docs/plans on main, which only the orchestrator may do: does the orchestrator run it in the main checkout with the integration tree's ticket.py before the epic review, with the reviewer checking the acceptance commands against main's docs/plans? [recommended: yes (D13)]
 
 ## Irreversible operations in scope
 
