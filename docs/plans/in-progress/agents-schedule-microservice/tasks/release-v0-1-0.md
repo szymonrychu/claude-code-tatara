@@ -1,6 +1,6 @@
 ---
 title: release v0.1.0
-status: in-progress
+status: done
 repo: agents-schedule
 value: "a fixed, immutable chart and image of agents-schedule exist for the deployment to pin"
 files: [README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "git ls-remote --exit-code --tags origin v0.1.0 && uv run ruff check ."
 depends_on: [kind-e2e-api, dockerfile-and-ci, chart-ingress-and-test-hook, api-docs-and-openapi, service-entrypoints]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 7b17349b71b1dd2c74e13fe97735259089f2e8c2
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 8
+actual_tokens: 300650
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 203219, review 97431"
 ---
 
 # release v0.1.0
@@ -57,3 +57,5 @@ Chart 0.1.0 and its image are published and recorded.
 - The release sha is filled with `ticket.py amend` once the merge lands, as the precedent deploy-pin tasks do.
 
 - 2026-10-25 amended: AC3 evidence resolved the annotated tag object, not its commit; peel with ^{}
+
+- 2026-10-25 done
