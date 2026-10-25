@@ -1,7 +1,7 @@
 ---
 title: agents-schedule component
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: []
 created: 2026-10-25
