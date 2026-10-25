@@ -33,6 +33,9 @@ Rename the session workspace UI: chat, ribbon, top bar, menu, files, terminal an
 - Every test in these directories follows the rename, test names included.
 - `src/nomenclature.test.ts`: guard all of `src/` except `src/webhooks/` and `src/api/webhooks-schema.d.ts` (web-webhooks-session-fields adds them).
 
+
+Orchestrator ruling 2026-10-25 (moved from web-sessions-pages): also rename every cluster identifier, text, data attribute and test name in src/App.tsx and src/App.test.tsx (useClusters, clusters, clusterId, New cluster, Cluster actions, data-cluster, cluster-row-*), and the src-wide guard must cover both files.
+
 ## Acceptance conditions
 
 - AC1: the composer invites a message to the session [evidence: test:src/chat/Composer.test.tsx::placeholder names the session]
@@ -68,3 +71,5 @@ Every chat, top bar, menu, files, terminal and preset text says session; src out
 
 - Test titles used as AC refs: "placeholder names the session" (Composer.test.tsx), "new session button" (TopBar.test.tsx), "help texts name the session" (PresetForm.test.tsx).
 - Saved layouts under old storage keys are dropped once (no migration, no fallback).
+
+- 2026-10-25 amended: receives the App.tsx/App.test.tsx renames from web-sessions-pages
