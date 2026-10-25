@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Add the image and CI (design D13; approvals A1, A6), modelled on `code/agent-orchestrator/Dockerfile` and `.github/workflows/ci.yaml`:
+Add the image and CI (design D13; approvals A1, A6), modelled on `code/agents-orchestrator/Dockerfile` and `.github/workflows/ci.yaml`:
 
 - Dockerfile: `python:<agents-common minor>-slim`, uv sync from the lock (no dev group), `USER 1000`, entrypoint `sched`; no node stage.
 - ci.yaml on pull requests and push to main and tags `v*`: jobs `lint` (`mise run lint`), `test` (`mise run test`, Docker available for testcontainers), `images` (docker build, `docker run --rm <image> --help` smoke, push `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` on main with secrets `HARBOR_USERNAME`/`HARBOR_PASSWORD`, regctl chunked push as the orchestrator does), `chart` (`mise run lint:chart` and `mise run test:chart`), `e2e` (`mise run test:e2e`, kind), `chart-publish` (`<version>-main.<sha7>` on main via `scripts/chart-version.sh`), `chart-publish-tag` (`X.Y.Z` on tag `vX.Y.Z`) to `oci://harbor.szymonrichert.pl/charts/agents-schedule`.
@@ -62,3 +62,5 @@ Main builds publish the image and a `-main.<sha7>` chart; a `v*` tag publishes t
 
 - The CI secrets are set by epic agents-schedule-component (task create-agents-schedule-repo).
 - The chart and e2e jobs call mise tasks that `helm-chart` and `kind-e2e-api` fill; CI on the epic branch is green only once those land.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
