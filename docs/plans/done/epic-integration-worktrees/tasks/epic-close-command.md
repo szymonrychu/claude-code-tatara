@@ -6,19 +6,17 @@ value: "main only ever moves to an epic tip that passed the full suite, after ev
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/close_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/continue_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_close_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py]
 verify: "mise run test && mise run lint"
 depends_on: [epic-close-sweep, merge-contained-check]
-owns: []
-uses: [contained-check, merge-target-worktree, integration-tree]
 model: sonnet
-estimate: 85
-actual: ""
 review: full
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-command
-branch: epic-integration-worktrees--epic-close-command
 verified_head: e0debe5f11dd7737db06e93373335a740d489b00
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 8
+expected_minutes: 85
+expected_tokens: 6000000
+points_actual: ""
+actual_minutes: 48
+actual_tokens: 3239047
+actual_roles: "impl 17, review 28"
+actual_role_tokens: "impl 2801545, review 437502"
 ---
 
 # Epic close command

@@ -6,19 +6,17 @@ value: "A remediated dependency reaches its dependents through the epic branch, 
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-forward-merge.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [fork-point-diffs]
-owns: []
-uses: [land-step, fork-point]
 model: sonnet
-estimate: 65
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--forward-merge-via-epic
-branch: epic-integration-worktrees--forward-merge-via-epic-landed
 verified_head: 7624d1d036f51b01d9c806215f24a9169fd1738c
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
+points: 5
+expected_minutes: 65
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1362954
+actual_roles: "impl 3, review 4"
+actual_role_tokens: "impl 1084705, review 278249"
 ---
 
 # Forward merge via epic

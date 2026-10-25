@@ -6,19 +6,17 @@ value: "Claiming an epic gives it its own integration worktree, the base every t
 files: [plugins/workbench/skills/worktree-create/scripts/create.py, plugins/workbench/skills/worktree-create/tests/test_create.py, plugins/workbench/skills/worktree-create/tests/test_fast_forward.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_integration.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]
 verify: "mise run test && mise run lint"
 depends_on: [name-lookup-parsers]
-owns: [integration-tree]
-uses: []
 model: sonnet
-estimate: 75
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--integration-tree-create
-branch: epic-integration-worktrees--integration-tree-create
 verified_head: 49daf3ed2297d08202c012f393e2af0761991bed
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 8
+expected_minutes: 75
+expected_tokens: 6000000
+points_actual: ""
+actual_minutes: 33
+actual_tokens: 689331
+actual_roles: "impl 3, review 30"
+actual_role_tokens: "impl 175095, review 514236"
 ---
 
 # Integration tree create

@@ -6,19 +6,17 @@ value: "A delivered epic leaves no worktree or branch behind, and nothing unmerg
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/epic-worktrees-remove/SKILL.md, plugins/workbench/skills/epic-move/SKILL.md]
 verify: "mise run test && mise run lint"
 depends_on: [epic-base-wiring, merge-target-worktree, merge-contained-check]
-owns: []
-uses: [ticket-name-lookup, integration-tree, merge-target-worktree, contained-check]
 model: sonnet
-estimate: 90
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--epic-close-sweep
-branch: epic-integration-worktrees--epic-close-sweep
 verified_head: fe94d96b8e939cecca93bb7b7332feb4cf3ae30e
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 8
+expected_minutes: 90
+expected_tokens: 6000000
+points_actual: ""
+actual_minutes: 23
+actual_tokens: 1097360
+actual_roles: "impl 2, review 21"
+actual_role_tokens: "impl 375887, review 721473"
 ---
 
 # Epic close sweep

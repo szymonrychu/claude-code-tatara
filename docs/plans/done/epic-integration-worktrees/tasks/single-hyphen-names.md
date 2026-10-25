@@ -6,19 +6,17 @@ value: "Task trees and branches carry the name the user asked for, <epic>-<task>
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py, plugins/workbench/skills/start-development/tests/test_ticket_continue.py, plugins/workbench/skills/start-development/tests/test_run_status_fixes.py, plugins/workbench/skills/start-development/tests/test_ticket_run.py, plugins/workbench/skills/start-development/tests/test_ticket_worktrees_refresh.py, plugins/workbench/skills/start-development/tests/test_ticket_reap_task.py]
 verify: "mise run test && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 70
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--single-hyphen-names
-branch: epic-integration-worktrees--single-hyphen-names
 verified_head: 29d1c794f025f8eb5a8444e9efa2cacc9aeee612
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 70
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Single hyphen names

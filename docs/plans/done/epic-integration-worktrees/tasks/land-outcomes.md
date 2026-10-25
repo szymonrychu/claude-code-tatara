@@ -6,19 +6,17 @@ value: "A task already on the epic branch, a rebase re-conflict and a legacy tre
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land-outcomes.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [land-in-run, merge-contained-check]
-owns: []
-uses: [land-step, contained-check]
 model: sonnet
-estimate: 50
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-outcomes
-branch: epic-integration-worktrees--land-outcomes-landed
 verified_head: c5a069a2c814c53a0a8ada10af54bdf9313848c4
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 50
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 133
+actual_tokens: 2388965
+actual_roles: "impl 6, review 62"
+actual_role_tokens: "impl 812164, review 1576801"
 ---
 
 # Land outcomes

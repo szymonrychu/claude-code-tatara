@@ -6,19 +6,17 @@ value: "The orchestrator's flow docs describe exactly the lifecycle the tools no
 files: [plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/start-development/references/phase-4-execute.md, plugins/workbench/skills/start-development/references/phases-5-7.md, plugins/workbench/skills/start-development/references/multi-epic.md, plugins/workbench/skills/start-development/references/run-handback.md, plugins/workbench/skills/start-research/tests/test_start_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/skills/start-development/tests/test_start_development_generic.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only start-research && cd ../.. && mise run lint"
 depends_on: [epic-close-sweep, epic-close-command, forward-merge-via-epic, common-worktree-path-py, common-worktree-path-sh]
-owns: []
-uses: []
 model: sonnet
-estimate: 70
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-flow-phases
-branch: HEAD
 verified_head: e5270eb1649c3fd84ff6b321455fb8ba1986ae98
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 70
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 74
+actual_tokens: 1997602
+actual_roles: "impl 21, review 53"
+actual_role_tokens: "impl 1062916, review 934686"
 ---
 
 # Docs flow phases

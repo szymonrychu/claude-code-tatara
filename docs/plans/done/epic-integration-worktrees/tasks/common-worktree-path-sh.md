@@ -6,19 +6,17 @@ value: git-worktrees-push pushes the same integration tree the claim creates
 files: [plugins/workbench/skills/_lib/common.sh, plugins/workbench/skills/_lib/tests/test_common.bats, plugins/workbench/skills/_lib/tests/test_common.sh, plugins/workbench/skills/git-worktrees-push/tests/test_push.bats, plugins/workbench/skills/git-worktrees-push/tests/test_push.sh, plugins/workbench/skills/git-worktrees-push/SKILL.md, plugins/workbench/hooks/subagent-commit-guard.py]
 verify: "mise run test && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 45
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--common-worktree-path-sh
-branch: epic-integration-worktrees--common-worktree-path-sh
 verified_head: 4d8582ea7c39819c0f5069be7ae5f276ed7ce516
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 45
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Common worktree path sh

@@ -6,19 +6,17 @@ value: Reviews and verifies of a landed task still show exactly its own change
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-fork-point.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [land-outcomes]
-owns: [fork-point]
-uses: [land-step]
 model: sonnet
-estimate: 60
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-diffs
-branch: epic-integration-worktrees--fork-point-diffs-landed
 verified_head: 739bb65444108908be1ec0387059ae71f9d52db0
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 60
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 1348080
+actual_roles: "impl 2, review 4"
+actual_role_tokens: "impl 525847, review 822233"
 ---
 
 # Fork point diffs

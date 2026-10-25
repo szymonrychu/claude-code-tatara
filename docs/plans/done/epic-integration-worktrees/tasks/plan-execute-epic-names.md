@@ -6,19 +6,17 @@ value: "The run accepts the new <epic>-<task> trees and rejects the old form"
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-epic.test.mjs, plugins/workbench/workflows/tests/plan-execute-epic-audit.test.mjs]
 verify: "mise run test && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 40
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--plan-execute-epic-names
-branch: epic-integration-worktrees--plan-execute-epic-names
 verified_head: 772697036c84a9d79930eb78a307cb84c37a4add
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 40
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Plan execute epic names

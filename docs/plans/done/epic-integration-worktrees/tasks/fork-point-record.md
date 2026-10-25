@@ -6,19 +6,17 @@ value: A later run diffs a landed task from the same fork point the landing reco
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_fork_point.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && cd ../.. && mise run lint"
 depends_on: [slug-collision-guard, fork-point-diffs]
-owns: []
-uses: [fork-point]
 model: sonnet
-estimate: 35
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--fork-point-record
-branch: epic-integration-worktrees--fork-point-record-landed
 verified_head: 7fcb7c5ee698ada342f8e6f72870d84bb079cfa1
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 35
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: 24
+actual_tokens: 1320815
+actual_roles: "impl 10, review 15"
+actual_role_tokens: "impl 700375, review 620440"
 ---
 
 # Fork point record

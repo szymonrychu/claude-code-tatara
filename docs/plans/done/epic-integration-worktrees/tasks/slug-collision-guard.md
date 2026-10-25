@@ -6,19 +6,17 @@ value: "Two tickets can never produce the same branch, so no task lands on anoth
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_naming.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && cd ../.. && mise run lint"
 depends_on: [epic-close-sweep]
-owns: []
-uses: [ticket-name-lookup]
 model: sonnet
-estimate: 50
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--slug-collision-guard
-branch: epic-integration-worktrees--slug-collision-guard-landed
 verified_head: 72b58a39928b86aff24ddf0f13b43800016c6ad2
-run: epic-integration-worktrees
-provides: [name-clashes]
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 50
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 145
+actual_tokens: 2544733
+actual_roles: "impl 17, review 33"
+actual_role_tokens: "impl 1766580, review 778153"
 ---
 
 # Slug collision guard

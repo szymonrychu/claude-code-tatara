@@ -6,19 +6,17 @@ value: READMEs and the off-Claude fallback run the same epic lifecycle as Claude
 files: [README.md, plugins/workbench/README.md, AGENTS.md, scripts/harness/fallbacks/plan-execute/SKILL.md, plugins/workbench/skills/start-development/tests/test_release.py, plugins/workbench/skills/start-development/tests/test_review_flow_docs.py, scripts/tests/harness/test_fallbacks.py]
 verify: "mise run test && mise run lint"
 depends_on: [epic-close-sweep, epic-close-command, forward-merge-via-epic]
-owns: []
-uses: []
 model: sonnet
-estimate: 55
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-readmes-fallback
-branch: epic-integration-worktrees--docs-readmes-fallback-landed
 verified_head: 60906119073242a54bdd65606893945f5759d255
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 5
+expected_minutes: 55
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 41
+actual_tokens: 740257
+actual_roles: "impl 2, review 40"
+actual_role_tokens: "impl 433368, review 306889"
 ---
 
 # Docs readmes fallback

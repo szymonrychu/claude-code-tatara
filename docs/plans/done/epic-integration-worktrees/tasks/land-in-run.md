@@ -6,19 +6,17 @@ value: "Dependents build on the epic branch and every review diff shows only the
 files: [plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs, plugins/workbench/workflows/tests/plan-execute-verify.test.mjs, plugins/workbench/workflows/tests/plan-execute-rulings.test.mjs]
 verify: "mise run test && mise run lint"
 depends_on: [plan-execute-epic-names, merge-target-worktree, epic-base-wiring]
-owns: [land-step]
-uses: [merge-target-worktree, epic-run-args]
 model: opus
-estimate: 90
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--land-in-run
-branch: epic-integration-worktrees--land-in-run
 verified_head: 307ed018d5f324b7d090491d3d81acdb10d0e4ed
-run: epic-integration-worktrees
-provides: [land-step, land-prompt]
-acs_for_audit: []
-process_gaps: []
+points: 8
+expected_minutes: 90
+expected_tokens: 6000000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Land in run

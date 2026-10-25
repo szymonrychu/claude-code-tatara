@@ -6,19 +6,17 @@ value: "Closing an epic can never delete a trunk branch or a tree that is not th
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_close.py, plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_target.py, plugins/workbench/workflows/plan-execute.js, plugins/workbench/workflows/tests/plan-execute-land.test.mjs]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only worktree-merge && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 45
-actual: ""
 review: full
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--sweep-guard
-branch: epic-integration-worktrees--sweep-guard-landed
 verified_head: 0c240451044087f3061aa077b3b95b80e38b43c7
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: [tests.red and verification.evidence were never filled with the revert-and-run output the verifier asks for]
+points: 3
+expected_minutes: 45
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: 64
+actual_tokens: 2409145
+actual_roles: "impl 29, review 35"
+actual_role_tokens: "impl 1365115, review 1044030"
 ---
 
 # Sweep guard

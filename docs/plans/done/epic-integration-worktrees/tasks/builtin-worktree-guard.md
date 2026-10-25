@@ -6,19 +6,17 @@ value: Any future use of the harness built-in worktree feature turns the suite r
 files: [scripts/tests/test_builtin_worktree_guard.py, plugins/workbench/skills/start-development/tests/test_repo_hygiene.py, plugins/workbench/.claude-plugin/plugin.json, .claude-plugin/marketplace.json]
 verify: "mise run test && mise run lint"
 depends_on: [docs-flow-phases, docs-worktree-refs, docs-readmes-fallback]
-owns: []
-uses: []
 model: sonnet
-estimate: 60
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--builtin-worktree-guard
-branch: epic-integration-worktrees--builtin-worktree-guard-2
 verified_head: 61bcaef2c5435998973842fbad6a5fee53374360
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: [AC5]
-process_gaps: ["The implementer states the tests were written with the implementation and never seen red, so the TDD rule was not followed. No exception was claimed."]
+points: 5
+expected_minutes: 60
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 43
+actual_tokens: 698275
+actual_roles: "impl 1, review 42"
+actual_role_tokens: "impl 138447, review 559828"
 ---
 
 # Builtin worktree guard

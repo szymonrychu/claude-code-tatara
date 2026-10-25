@@ -6,19 +6,17 @@ value: git-worktrees-create and -commit work on the same integration tree the cl
 files: [plugins/workbench/skills/_lib/common.py, plugins/workbench/skills/_lib/tests/test_common.py, plugins/workbench/skills/git-worktrees-create/tests/test_create.py, plugins/workbench/skills/git-worktrees-commit/tests/test_commit.py, plugins/workbench/skills/git-worktrees-create/SKILL.md, plugins/workbench/skills/git-worktrees-commit/SKILL.md]
 verify: "mise run test && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 40
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--common-worktree-path-py
-branch: epic-integration-worktrees--common-worktree-path-py
 verified_head: 36c3e72778efec20c81409eee0f273ff6cbd96fe
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 40
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Common worktree path py

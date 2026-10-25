@@ -6,19 +6,17 @@ value: "Merged checks survive the close rebase, and a task already on the epic b
 files: [plugins/workbench/skills/worktree-merge/scripts/merge.py, plugins/workbench/skills/worktree-merge/tests/test_merge_contained.py, plugins/workbench/skills/worktree-merge/SKILL.md]
 verify: "mise run test && mise run lint"
 depends_on: [merge-target-worktree]
-owns: [contained-check]
-uses: [merge-target-worktree]
 model: sonnet
-estimate: 45
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--merge-contained-check
-branch: epic-integration-worktrees--merge-contained-check
 verified_head: f0bf47ba2c859ad5bfa3a907b59b9c75edfe4050
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 45
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # Merge contained check

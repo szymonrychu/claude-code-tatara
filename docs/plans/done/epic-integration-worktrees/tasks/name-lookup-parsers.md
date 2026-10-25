@@ -6,19 +6,17 @@ value: "No code guesses an epic from a name, so single-hyphen names can never be
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_names.py, plugins/workbench/skills/start-development/tests/test_ticket_check.py, plugins/workbench/skills/start-development/tests/test_ticket_overlap_ignore.py, plugins/workbench/skills/start-development/tests/test_ticket_move.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && cd ../.. && mise run lint"
 depends_on: [single-hyphen-names]
-owns: [ticket-name-lookup]
-uses: []
 model: sonnet
-estimate: 45
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--name-lookup-parsers
-branch: epic-integration-worktrees--name-lookup-parsers
 verified_head: 97192abc1ba9aa7faeec3d43e698b831248f5bba
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 3
+expected_minutes: 45
+expected_tokens: 2250000
+points_actual: ""
+actual_minutes: 12
+actual_tokens: 221162
+actual_roles: "impl 3, review 9"
+actual_role_tokens: "impl 94514, review 126648"
 ---
 
 # Name lookup parsers

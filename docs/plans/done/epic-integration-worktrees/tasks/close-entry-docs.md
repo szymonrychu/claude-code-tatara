@@ -6,19 +6,17 @@ value: "An epic close always passes ticket.py close's gates; no doc offers a way
 files: [plugins/workbench/agents/worktree-merger.md, plugins/workbench/skills/worktree-merge/SKILL.md, plugins/workbench/skills/worktree-merge/tests/test_close_entry_docs.py, plugins/workbench/skills/start-development/scripts/ticket.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only worktree-merge && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [sweep-guard]
-owns: []
-uses: []
 model: sonnet
-estimate: 25
-actual: ""
 review: light
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--close-entry-docs
-branch: epic-integration-worktrees--close-entry-docs-landed
 verified_head: c6f82cd125dc21f376866c469b6583880a728aa1
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 2
+expected_minutes: 25
+expected_tokens: 1500000
+points_actual: ""
+actual_minutes: 39
+actual_tokens: 767823
+actual_roles: "impl 17, review 22"
+actual_role_tokens: "impl 484697, review 283126"
 ---
 
 # Close entry docs

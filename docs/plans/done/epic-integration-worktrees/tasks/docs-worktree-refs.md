@@ -6,19 +6,17 @@ value: "The worktree and ticket references match the new names, tree and landing
 files: [plugins/workbench/skills/start-development/references/worktrees.md, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/skills/start-development/references/hooks.md, plugins/workbench/agents/implementer.md, plugins/workbench/skills/start-development/tests/test_ticket_files.py, plugins/workbench/skills/worktree-create/SKILL.md, plugins/workbench/skills/start-development/tests/test_ticket_run.py]
 verify: "cd plugins/workbench && bash scripts/run-tests.sh --only start-development && bash scripts/run-tests.sh --only workflows && cd ../.. && mise run lint"
 depends_on: [slug-collision-guard, land-in-run, epic-base-wiring, common-worktree-path-sh, epic-close-command, fork-point-record]
-owns: []
-uses: []
 model: sonnet
-estimate: 55
-actual: ""
 review: ""
-worktree: /Users/szymonri/Documents/workbench/.claude/worktrees/epic-integration-worktrees--docs-worktree-refs
-branch: epic-integration-worktrees--docs-worktree-refs-landed
 verified_head: cdc965c3d5981ff89cf00e9c0b0c00a7166d3ee9
-run: epic-integration-worktrees
-provides: []
-acs_for_audit: []
-process_gaps: [Implementer reports no red run and no captured pytest summary]
+points: 5
+expected_minutes: 55
+expected_tokens: 3750000
+points_actual: ""
+actual_minutes: 37
+actual_tokens: 1151664
+actual_roles: "impl 5, review 33"
+actual_role_tokens: "impl 286033, review 865631"
 ---
 
 # Docs worktree refs
