@@ -491,7 +491,7 @@ def cmd_new_task(a: argparse.Namespace) -> int:
     worktree_name(epic_dir.name, task)
     numbers = _point_fields(root, a.points, task)
     files = _csv(a.files)
-    if report(run_check(root, a.title, epic_dir.name, files)):
+    if report(run_check(root, a.title, epic_dir.name, files, repo=a.repo)):
         return 1
     doc = _template("task.md")
     doc.meta.update(
@@ -603,6 +603,9 @@ def _live_worktrees(root: Path) -> list[str]:
     return [Path(line[9:]).name for line in r.stdout.splitlines() if line.startswith("worktree ")]
 
 
+SUPERREPO = "(superrepo)"  # how the overlap message names a task without a repo
+
+
 class CheckResult(NamedTuple):
     failures: list[str]
     warnings: list[str]
@@ -642,9 +645,11 @@ def run_check(
     files: list[str] | None = None,
     blockers: list[str] | None = None,
     goals: str = "",
+    repo: str = "",
 ) -> CheckResult:
     """Dedup rules. `epic` None with a title is a new epic; with an epic, a title is a new task
-    and no title checks every task of that epic."""
+    and no title checks every task of that epic. Files overlap only within one repo: `repo` is the
+    new task's, an empty repo is the superrepo (meta)."""
     root = Path(root)
     fails: list[str] = []
     warns: list[str] = []
@@ -659,12 +664,12 @@ def run_check(
         named |= set(epics[epic].meta.get("blockers", []))
     own_blockers = {_blocker_slug(b, epics) for b in named}
 
-    def candidates() -> list[tuple[list[str], str]]:
-        """(files, label) to run the cross-epic file overlap check on."""
+    def candidates() -> list[tuple[str, list[str], str]]:
+        """(repo, files, label) to run the cross-epic file overlap check on."""
         if title is not None:
-            return [(files or [], f"task {slug(title)!r}")]
+            return [(repo, files or [], f"task {slug(title)!r}")]
         return [
-            (list(t.meta.get("files", [])), f"task {t.slug!r}")
+            (t.meta.get("repo", ""), list(t.meta.get("files", [])), f"task {t.slug!r}")
             for t in tickets
             if t.kind == "task" and t.epic == epic
         ]
@@ -699,15 +704,18 @@ def run_check(
                 )
 
     if epic is not None:
-        for tfiles, label in candidates():
+        for trepo, tfiles, label in candidates():
             for t in tickets:
                 if t.kind != "task" or t.epic == epic or t.epic in own_blockers:
+                    continue
+                if t.meta.get("repo", "") != trepo:
                     continue
                 shared = sorted(set(tfiles) & set(t.meta.get("files", [])))
                 if t.phase == "in-progress" and shared:
                     for f in _counting_overlaps(root, t, shared):
                         fails.append(
-                            f"{label}: file {f!r} is also in task {t.slug!r} of "
+                            f"{label}: file {f!r} in repo {trepo or SUPERREPO!r} is also in "
+                            f"task {t.slug!r} of "
                             f"in-progress epic {t.epic!r}"
                         )
 
@@ -743,6 +751,7 @@ def cmd_check(a: argparse.Namespace) -> int:
             _csv(a.files),
             _csv(a.blockers),
             _read(a.goals_file),
+            a.repo or "",
         )
     )
 
@@ -1703,7 +1712,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         "expected_tokens from calibration",
     )
     sp = add("check", cmd_check)
-    for opt in ("title", "epic", "files", "blockers", "goals-file"):
+    for opt in ("title", "epic", "files", "blockers", "goals-file", "repo"):
         sp.add_argument(f"--{opt}")
     add("index", cmd_index)
     add("existing", cmd_existing)
