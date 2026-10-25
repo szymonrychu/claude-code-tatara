@@ -6,21 +6,17 @@ value: "Every API response becomes a predictable, size-bounded MCP result withou
 files: [src/any_mcp/response.py, tests/test_response.py]
 verify: "uv run --frozen pytest tests/test_response.py -q && mise run lint"
 depends_on: [core-types]
-owns: [response-shaper]
-uses: [tool-types]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-response-shaping/any-mcp
-branch: any-mcp-response-shaping
 verified_head: 58062304fb74846de59abb3fda0bb62641ad5449
-run: any-mcp
-provides: [response-shaper]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: 174195
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 137988, review 36207"
 ---
 
 # Response shaping

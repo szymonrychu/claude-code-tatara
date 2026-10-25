@@ -6,21 +6,17 @@ value: "A plugin can ask the client for more input mid-call with one optional ho
 files: [src/any_mcp/types.py, src/any_mcp/plugin.py, src/any_mcp/pipeline.py, src/any_mcp/__init__.py, tests/test_input_required.py]
 verify: "uv run --frozen pytest tests/test_input_required.py tests/test_pipeline.py tests/test_plugin.py -q && mise run lint"
 depends_on: [call-pipeline]
-owns: [input-required-hook]
-uses: [tool-types, plugin-abc, call-pipeline]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-input-required-core/any-mcp
-branch: any-mcp-input-required-core
 verified_head: 2782d30fe76cda719a4d2a43b9c46153c54c0a22
-run: any-mcp
-provides: [input-required-hook]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 546527
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 394901, review 151626"
 ---
 
 # Input-required core

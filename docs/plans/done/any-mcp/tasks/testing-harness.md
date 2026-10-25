@@ -6,21 +6,17 @@ value: "Plugin authors test a plugin in memory, offline, through the real server
 files: [src/any_mcp/testing.py, tests/test_testing_harness.py]
 verify: "uv run --frozen pytest tests/test_testing_harness.py tests/test_import_boundary.py -q && mise run lint"
 depends_on: [fastmcp-adapter]
-owns: [plugin-harness]
-uses: [fastmcp-adapter, plugin-loader, plugin-abc]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-testing-harness/any-mcp
-branch: any-mcp-testing-harness
 verified_head: 7e77db37513a859b82807664851dfd74f1ef4fa3
-run: any-mcp
-provides: [plugin-harness]
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 20
+actual_tokens: 1293647
+actual_roles: "impl 3, review 4"
+actual_role_tokens: "impl 753831, review 539816"
 ---
 
 # Testing harness

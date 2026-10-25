@@ -6,21 +6,17 @@ value: Plugins describe an endpoint declaratively and write no HTTP code
 files: [src/any_mcp/http.py, tests/test_http_binding.py]
 verify: "uv run --frozen pytest tests/test_http_binding.py -q && mise run lint"
 depends_on: [core-types]
-owns: [http-executor]
-uses: [tool-types, tool-errors]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-binding/any-mcp
-branch: current worktree branch
 verified_head: d93aa2262b6f913bac7ab107ca6483fe5bd3b484
-run: any-mcp
-provides: [http-executor]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 505489
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 269712, review 235777"
 ---
 
 # HTTP binding

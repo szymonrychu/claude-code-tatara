@@ -6,22 +6,17 @@ value: a large or hostile upstream cannot exhaust memory
 files: [src/any_mcp/http.py, src/any_mcp/openapi.py, src/any_mcp/config.py, tests/test_http_binding.py, tests/test_openapi.py]
 verify: "uv run --frozen pytest tests/test_http_binding.py tests/test_openapi.py -q && mise run lint"
 depends_on: [config-model, http-binding, openapi-credential-hosts, openapi-plugin]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-bounded-upstream-bodies/any-mcp
-branch: any-mcp-bounded-upstream-bodies
 verified_head: 3d8772836ffe7068e9755c12d8196f2449fc158c
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: ["Tests written after implementation, no red run (self-reported)"]
-fork_point: 5a6d804
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 822315
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 480972, review 341343"
 ---
 
 # bounded upstream bodies

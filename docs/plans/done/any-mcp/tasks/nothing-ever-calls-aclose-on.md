@@ -6,22 +6,17 @@ value: "Each plugin's HTTP client and its connection pool leak at shutdown. The 
 files: [src/any_mcp/discovery.py, src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, src/any_mcp/testing.py, tests/test_discovery.py]
 verify: "uv run --frozen pytest tests/test_discovery.py tests/test_cli.py tests/test_adapter.py -q && mise run lint"
 depends_on: [cli-stdio, fastmcp-adapter, http-transport, input-required-adapter, plugin-discovery, registry, testing-harness]
-owns: []
-uses: []
 model: ""
-estimate: ""
-estimate_by: ""
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-nothing-ever-calls-aclose-on/any-mcp
-branch: any-mcp-nothing-ever-calls-aclose-on
 verified_head: 89302aa01c106a3959fd2fb1513b82c1af0dab1c
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 8a45132a95d1d4a37fa57236fa4cf7462a2c2ec4
+points: ""
+expected_minutes: ""
+expected_tokens: ""
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1111288
+actual_roles: "impl 4, review 4"
+actual_role_tokens: "impl 706053, review 405235"
 ---
 
 # Nothing ever calls aclose() on the per-plugin httpx.AsyncClient that load_plugins creates for each PluginContext.http.

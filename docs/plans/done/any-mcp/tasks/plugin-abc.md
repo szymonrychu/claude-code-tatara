@@ -6,21 +6,17 @@ value: "Writing a plugin is one class with one method; every other hook has a wo
 files: [src/any_mcp/plugin.py, src/any_mcp/context.py, src/any_mcp/__init__.py, tests/test_plugin.py]
 verify: "uv run --frozen pytest tests/test_plugin.py -q && mise run lint"
 depends_on: [http-binding, response-shaping]
-owns: [plugin-abc]
-uses: [tool-types, tool-errors, http-executor, response-shaper]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-plugin-abc/any-mcp
-branch: HEAD
 verified_head: 6f038a3bb72ba71e3c7e4706c4cda44a33c7f605
-run: any-mcp
-provides: [plugin-context, no-config]
-acs_for_audit: []
-process_gaps: ["No red-phase evidence for the bytes fix: the implementer says the new test was not run before the fix (TDD rule)"]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 1394817
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 902293, review 492524"
 ---
 
 # Plugin ABC

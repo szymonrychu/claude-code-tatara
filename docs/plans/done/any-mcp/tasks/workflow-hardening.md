@@ -6,21 +6,17 @@ value: CI and release tokens get least privilege and the release cannot be shell
 files: [.github/workflows/ci.yml, .github/workflows/release.yml, tests/test_release.py]
 verify: "uv run --frozen pytest tests/test_release.py -q && mise run lint"
 depends_on: [release, scaffold]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-workflow-hardening/any-mcp
-branch: "HEAD (detached in worktree /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-workflow-hardening/any-mcp)"
 verified_head: 5a6d804fa2e16f7632ca7c442791c95bd4002601
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 323876
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 198121, review 125755"
 ---
 
 # workflow hardening

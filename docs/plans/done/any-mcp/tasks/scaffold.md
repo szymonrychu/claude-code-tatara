@@ -6,21 +6,17 @@ value: "A working any-mcp repo with locked deps, lint, tests and CI from the fir
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yml, src/any_mcp/__init__.py, tests/test_package.py, README.md]
 verify: "uv run --frozen pytest tests/test_package.py -q && mise run lint"
 depends_on: []
-owns: []
-uses: [sonnet]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-scaffold/any-mcp
-branch: any-mcp-scaffold
 verified_head: da45c0d319324199f8d736aa8192a84c5f5f69cb
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 671337
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 377598, review 293739"
 ---
 
 # Scaffold

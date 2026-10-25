@@ -6,21 +6,17 @@ value: "InputRequiredResult round trips work through a real stdio client and a r
 files: [src/any_mcp/_fastmcp_adapter.py, examples/confirm_delete.py, tests/test_input_required_transports.py]
 verify: "uv run --frozen pytest tests/test_input_required_transports.py tests/test_adapter.py tests/test_import_boundary.py -q && mise run lint"
 depends_on: [input-required-core, http-transport, testing-harness]
-owns: []
-uses: [input-required-hook, fastmcp-adapter, any-mcp-cli, plugin-harness]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-input-required-adapter/any-mcp
-branch: "current worktree branch (HEAD 8a45132)"
 verified_head: 8a45132a95d1d4a37fa57236fa4cf7462a2c2ec4
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1998267
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 1651580, review 346687"
 ---
 
 # Input-required adapter

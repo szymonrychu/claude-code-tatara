@@ -6,21 +6,17 @@ value: "A README that installs and runs any-mcp in a minute, and a concepts guid
 files: [README.md, docs/concepts.md, tests/test_docs_links.py]
 verify: "uv run --frozen pytest tests/test_docs_links.py -q && mise run lint"
 depends_on: [docs-authoring, docs-reference]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-readme-concepts/any-mcp
-branch: "HEAD (worktree any-mcp-docs-readme-concepts)"
 verified_head: b51a31886360dd2981d51350e29364f0d13d6c95
-run: any-mcp
-provides: []
-acs_for_audit: [AC9]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 880389
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 722391, review 157998"
 ---
 
 # Docs README concepts

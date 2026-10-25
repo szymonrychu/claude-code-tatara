@@ -6,21 +6,17 @@ value: "any-mcp also serves streamable HTTP, safe by default and never relaying 
 files: [src/any_mcp/cli.py, src/any_mcp/_fastmcp_adapter.py, tests/test_http_transport.py]
 verify: "uv run --frozen pytest tests/test_http_transport.py tests/test_cli.py -q && mise run lint"
 depends_on: [cli-stdio]
-owns: []
-uses: [any-mcp-cli, fastmcp-adapter, any-mcp-config]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-transport/any-mcp
-branch: any-mcp-http-transport
 verified_head: cfe0936dc636a3024bf665e3ef20bfe70d25423b
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1842320
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 1535322, review 306998"
 ---
 
 # HTTP transport

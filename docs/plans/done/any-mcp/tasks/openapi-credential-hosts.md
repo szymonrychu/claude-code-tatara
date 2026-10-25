@@ -6,21 +6,17 @@ value: credentials never reach a host the operator did not configure
 files: [src/any_mcp/openapi.py, src/any_mcp/http.py, tests/test_openapi.py]
 verify: "uv run --frozen pytest tests/test_openapi.py tests/test_http_binding.py -q && mise run lint"
 depends_on: [http-binding, openapi-plugin]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-openapi-credential-hosts/any-mcp
-branch: "HEAD (worktree any-mcp-openapi-credential-hosts)"
 verified_head: 4ece80b7a74121ff60ee4cd0c3183d465793c388
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 443299
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 309025, review 134274"
 ---
 
 # openapi credential hosts

@@ -6,22 +6,17 @@ value: MCP clients of both protocol eras see the tools while plugins stay free o
 files: [src/any_mcp/_fastmcp_adapter.py, tests/test_adapter.py, tests/test_import_boundary.py]
 verify: "uv run --frozen pytest tests/test_adapter.py tests/test_import_boundary.py -q && mise run lint"
 depends_on: [call-pipeline]
-owns: [fastmcp-adapter]
-uses: [tool-registry, call-pipeline]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-fastmcp-adapter/any-mcp
-branch: any-mcp-fastmcp-adapter
 verified_head: 58ff97cb6b61feea251dfb91e643300a9c7ed0e1
-run: any-mcp
-provides: [in-memory-mcp-client, protocol-error]
-acs_for_audit: []
-process_gaps: []
-fork_point: 2782d30fe76cda719a4d2a43b9c46153c54c0a22
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 14
+actual_tokens: 9981430
+actual_roles: "impl 13, review 2"
+actual_role_tokens: "impl 9690375, review 291055"
 ---
 
 # FastMCP adapter

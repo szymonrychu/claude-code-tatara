@@ -6,21 +6,17 @@ value: "any-mcp runs as a well-behaved local stdio MCP server, the default trans
 files: [src/any_mcp/cli.py, src/any_mcp/__main__.py, src/any_mcp/log.py, tests/test_cli.py, tests/fixtures/stdio_plugin.py]
 verify: "uv run --frozen pytest tests/test_cli.py -q && mise run lint"
 depends_on: [fastmcp-adapter]
-owns: [any-mcp-cli]
-uses: [fastmcp-adapter, plugin-loader, any-mcp-config]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-cli-stdio/any-mcp
-branch: any-mcp-cli-stdio
 verified_head: cf2da9985f746f05b97de50e00b1c155c1484fc4
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 1012044
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 845217, review 166827"
 ---
 
 # CLI stdio

@@ -6,21 +6,17 @@ value: "Every config key, flag and transport behaviour has one documented meanin
 files: [docs/configuration.md, docs/transports.md, tests/test_docs_reference.py]
 verify: "uv run --frozen pytest tests/test_docs_reference.py -q && mise run lint"
 depends_on: [http-transport]
-owns: []
-uses: [any-mcp-config, any-mcp-cli]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-reference/any-mcp
-branch: any-mcp-docs-reference
 verified_head: c967152e0452d4791aa8fe420a58207ecd21d791
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 733697
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 595081, review 138616"
 ---
 
 # Docs reference

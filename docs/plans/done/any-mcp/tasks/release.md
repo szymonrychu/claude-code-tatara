@@ -6,21 +6,17 @@ value: "any-mcp is a standard pip package and tag v0.1.0 is a verified, installa
 files: [CHANGELOG.md, .github/workflows/release.yml, tests/test_release.py]
 verify: "uv run --frozen pytest tests/test_release.py -q && mise run lint"
 depends_on: [docs-readme-concepts, input-required-adapter, config-model]
-owns: []
-uses: [any-mcp-cli, any-mcp-config]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-release/any-mcp
-branch: any-mcp-release
 verified_head: 9e90317fc354518208d8eaac0f3ecd00e00f3710
-run: any-mcp
-provides: []
-acs_for_audit: [AC1, AC6]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 9
+actual_tokens: 661202
+actual_roles: "impl 4, review 5"
+actual_role_tokens: "impl 400898, review 260304"
 ---
 
 # Release

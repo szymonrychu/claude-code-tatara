@@ -6,21 +6,17 @@ value: an HTTP server reachable beyond loopback is never unauthenticated by acci
 files: [src/any_mcp/_fastmcp_adapter.py, src/any_mcp/cli.py, src/any_mcp/config.py, docs/transports.md, tests/test_http_transport.py]
 verify: "uv run --frozen pytest tests/test_http_transport.py tests/test_docs_reference.py -q && mise run lint"
 depends_on: [bounded-upstream-bodies, cli-stdio, config-model, docs-reference, fastmcp-adapter, http-transport, input-required-adapter, nothing-ever-calls-aclose-on]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-http-auth-on-non-loopback/any-mcp
-branch: HEAD
 verified_head: 8a5f4f4347254122f277294241df94ff43e7aa1a
-run: any-mcp
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 639211
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 351087, review 288124"
 ---
 
 # http auth on non loopback

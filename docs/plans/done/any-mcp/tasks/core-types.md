@@ -6,21 +6,17 @@ value: "One shared vocabulary of tool, call, response and error types for core a
 files: [src/any_mcp/types.py, src/any_mcp/errors.py, tests/test_types.py]
 verify: "uv run --frozen pytest tests/test_types.py -q && mise run lint"
 depends_on: [scaffold]
-owns: [tool-types, tool-errors]
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-core-types/any-mcp
-branch: any-mcp-core-types
 verified_head: 162fcc2a50e939ac2e3dd9c5cd224fe31f818a2f
-run: any-mcp
-provides: [tool-types, tool-errors]
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 435175
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 312552, review 122623"
 ---
 
 # Core types

@@ -6,22 +6,17 @@ value: "Client-safe tool names and schemas, and no unvalidated argument ever rea
 files: [src/any_mcp/schema.py, src/any_mcp/validation.py, tests/test_schema.py]
 verify: "uv run --frozen pytest tests/test_schema.py -q && mise run lint"
 depends_on: [core-types]
-owns: [schema-tools, arg-validator]
-uses: [tool-types]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-schemas-and-validation/any-mcp
-branch: any-mcp-schemas-and-validation
 verified_head: ecfba3da606af638502b8943ec1f728050a8df7a
-run: any-mcp
-provides: [schema-tools, arg-validator]
-acs_for_audit: []
-process_gaps: []
-fork_point: d93aa22
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 845523
+actual_roles: "impl 3, review 4"
+actual_role_tokens: "impl 360745, review 484778"
 ---
 
 # Schemas and validation

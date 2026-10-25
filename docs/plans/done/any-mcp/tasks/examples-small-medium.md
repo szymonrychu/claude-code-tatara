@@ -6,21 +6,17 @@ value: "Runnable, tested small and medium plugins users can copy"
 files: [examples/hello/hello.py, examples/hello/any-mcp.yaml, examples/single_endpoint/zippopotam.py, examples/single_endpoint/any-mcp.yaml, examples/github_issues/github_issues.py, examples/github_issues/any-mcp.yaml, tests/test_examples_small.py]
 verify: "uv run --frozen pytest tests/test_examples_small.py tests/test_import_boundary.py -q && mise run lint"
 depends_on: [testing-harness, cli-stdio]
-owns: []
-uses: [plugin-abc, plugin-harness, any-mcp-cli]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-small-medium/any-mcp
-branch: any-mcp-examples-small-medium
 verified_head: 2fbcb2701e0cb3ad5e5dc7d348e2345d26c68dc0
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 532682
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 393828, review 138854"
 ---
 
 # Examples small medium

@@ -6,21 +6,17 @@ value: tool errors never echo credentials and HTTP clients always close
 files: [src/any_mcp/errors.py, src/any_mcp/discovery.py, src/any_mcp/cli.py, src/any_mcp/openapi.py, docs/configuration.md, tests/test_pipeline.py, tests/test_cli.py, tests/test_discovery.py]
 verify: "uv run --frozen pytest tests/test_pipeline.py tests/test_cli.py tests/test_discovery.py tests/test_docs_reference.py -q && mise run lint"
 depends_on: [bounded-upstream-bodies, call-pipeline, cli-stdio, core-types, docs-reference, http-auth-on-non-loopback, http-transport, nothing-ever-calls-aclose-on, openapi-credential-hosts, openapi-plugin, plugin-discovery]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-error-redaction-and-cleanup/any-mcp
-branch: "HEAD (worktree any-mcp-error-redaction-and-cleanup)"
 verified_head: 18adc9d12e8fbad91862311fb6d3e64726ede3c5
-run: any-mcp
-provides: []
-acs_for_audit: [AC4]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 9
+actual_tokens: 1218095
+actual_roles: "impl 4, review 4"
+actual_role_tokens: "impl 691010, review 527085"
 ---
 
 # error redaction and cleanup

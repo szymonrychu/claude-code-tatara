@@ -6,21 +6,17 @@ value: "Many plugins appear as one sorted, collision-free tool list that reloads
 files: [src/any_mcp/registry.py, tests/test_registry.py]
 verify: "uv run --frozen pytest tests/test_registry.py -q && mise run lint"
 depends_on: [plugin-discovery, schemas-and-validation]
-owns: [tool-registry]
-uses: [plugin-abc, schema-tools, any-mcp-config, tool-types, plugin-loader]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-registry/any-mcp
-branch: any-mcp-registry
 verified_head: 81e3ae51a740f7ea05963022147256ba8d997a36
-run: any-mcp
-provides: []
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 1281899
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1100203, review 181696"
 ---
 
 # Registry

@@ -6,21 +6,17 @@ value: Every tool call is validated and every failure is an error result the mod
 files: [src/any_mcp/pipeline.py, tests/test_pipeline.py]
 verify: "uv run --frozen pytest tests/test_pipeline.py -q && mise run lint"
 depends_on: [registry]
-owns: [call-pipeline]
-uses: [tool-registry, arg-validator, tool-errors, plugin-abc, tool-types]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-call-pipeline/any-mcp
-branch: any-mcp-call-pipeline
 verified_head: 3a3161beb881479beaf6baf3df4e43da144bfa95
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: ["The round-2 fixes were written test-after, against the TDD rule. The new tests do assert the fixed behaviour."]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 998614
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 696535, review 302079"
 ---
 
 # Call pipeline

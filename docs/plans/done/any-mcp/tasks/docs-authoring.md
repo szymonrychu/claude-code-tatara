@@ -6,21 +6,17 @@ value: A plugin authoring guide from small to big plugins whose samples are the 
 files: [docs/plugin-authoring.md, docs/testing-plugins.md, tests/test_docs_snippets.py]
 verify: "uv run --frozen pytest tests/test_docs_snippets.py -q && mise run lint"
 depends_on: [examples-big-group, input-required-adapter]
-owns: []
-uses: [plugin-harness, input-required-hook]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-docs-authoring/any-mcp
-branch: any-mcp-docs-authoring
 verified_head: 78faf4eeb3e7f8f3de762e26fc196bc49875ed64
-run: any-mcp
-provides: []
-acs_for_audit: [AC9]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 1168965
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 633686, review 535279"
 ---
 
 # Docs authoring

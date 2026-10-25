@@ -6,21 +6,17 @@ value: A runnable packaged OpenAPI plugin and a group-of-APIs config users can c
 files: [examples/petstore/pyproject.toml, examples/petstore/src/petstore_plugin/__init__.py, examples/petstore/src/petstore_plugin/petstore.yaml, examples/petstore/any-mcp.yaml, examples/group/any-mcp.yaml, tests/test_examples_big.py]
 verify: "uv run --frozen pytest tests/test_examples_big.py tests/test_import_boundary.py -q && mise run lint"
 depends_on: [openapi-plugin, examples-small-medium]
-owns: []
-uses: [openapi-plugin, plugin-harness, any-mcp-cli, plugin-abc]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-examples-big-group/any-mcp
-branch: any-mcp-examples-big-group
 verified_head: 11ffef9e9030b82f7b7d33c3c282e917e9e9ae0b
-run: any-mcp
-provides: []
-acs_for_audit: [AC1]
-process_gaps: [No red-first test run was recorded for this task]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 576382
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 433158, review 143224"
 ---
 
 # Examples big group

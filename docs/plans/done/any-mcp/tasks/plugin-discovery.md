@@ -6,21 +6,17 @@ value: Plugins load from installed packages or plain files named in the config
 files: [src/any_mcp/discovery.py, tests/test_discovery.py]
 verify: "uv run --frozen pytest tests/test_discovery.py -q && mise run lint"
 depends_on: [plugin-abc, config-model]
-owns: [plugin-loader]
-uses: [plugin-abc, any-mcp-config]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-plugin-discovery/any-mcp
-branch: "HEAD (worktree any-mcp-plugin-discovery)"
 verified_head: f3d1086a323ba4837aaee166eba7f4b51ff49411
-run: any-mcp
-provides: [plugin-loader]
-acs_for_audit: [AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 592706
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 323524, review 269182"
 ---
 
 # Plugin discovery

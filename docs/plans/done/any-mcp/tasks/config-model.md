@@ -6,22 +6,17 @@ value: "One validated YAML file configures the server and every plugin, with cle
 files: [src/any_mcp/config.py, tests/test_config.py]
 verify: "uv run --frozen pytest tests/test_config.py -q && mise run lint"
 depends_on: [core-types]
-owns: [any-mcp-config]
-uses: [tool-errors]
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-config-model/any-mcp
-branch: any-mcp-config-model
 verified_head: bf625c2976d329d1e1d970d09302ab44200c4be5
-run: any-mcp
-provides: [any-mcp-config]
-acs_for_audit: []
-process_gaps: []
-fork_point: 58062304fb74846de59abb3fda0bb62641ad5449
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 214114
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 175368, review 38746"
 ---
 
 # Config model

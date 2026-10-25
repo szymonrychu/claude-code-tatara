@@ -6,21 +6,17 @@ value: Any OpenAPI 3 API becomes a curated set of tools with config only
 files: [src/any_mcp/openapi.py, tests/test_openapi.py, tests/fixtures/openapi/petstore.yaml, tests/fixtures/openapi/recursive.json]
 verify: "uv run --frozen pytest tests/test_openapi.py -q && mise run lint"
 depends_on: [testing-harness]
-owns: [openapi-plugin]
-uses: [plugin-abc, schema-tools, tool-types, plugin-harness]
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/any-mcp-openapi-plugin/any-mcp
-branch: any-mcp-openapi-plugin
 verified_head: 5d7213c7b2e773d8785c7628c7841c164ae6a187
-run: any-mcp
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 751328
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 649444, review 101884"
 ---
 
 # OpenAPI plugin
