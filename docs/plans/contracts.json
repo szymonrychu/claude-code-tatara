@@ -537,7 +537,8 @@
     "consumers": [
       "configuration-improvements",
       "agents-webhook-microservice",
-      "agents-schedule-microservice"
+      "agents-schedule-microservice",
+      "agents-matrix-connector"
     ],
     "note": "task web-backend-menu: BACKEND_MENUS[backendId] = MenuEntry {id, label, order, backend, render(onBack)}; menuEntries(config) sorted by order then label; order slots 10 Clusters (configuration-improvements, contract web-settings-menu-order), 20 Webhooks, 30 Schedules, 40 Presets; feeds SessionsMenu settingsCategories {id, label, onOpen}; successor of orch-settings-menu"
   },
