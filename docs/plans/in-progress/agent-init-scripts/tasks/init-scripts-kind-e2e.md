@@ -62,6 +62,10 @@ Four API-only e2e tests cover run once, edit without roll or re-run, failure and
 - Add the four tests and their teardown; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py -k init_scripts`: four tests listed.
 - Run the verify command: collection and lint pass.
 
+## Ruling
+
+- 2026-10-25 accepted: test-only deliverable (the e2e test is the change); TDD red not applicable to a pure test file; the test is run for real against kind in phase 5
+
 ## Notes
 
 - Check `e2e/values-kind.yaml` `ORCH_MAX_CLUSTERS` against the extra clusters; raise it there only if needed (that file then joins this task's diff).

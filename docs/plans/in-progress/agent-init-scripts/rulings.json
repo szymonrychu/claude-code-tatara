@@ -1,0 +1,8 @@
+[
+  {
+    "task": "init-scripts-kind-e2e",
+    "accept": true,
+    "reason": "test-only deliverable (the e2e test is the change); TDD red not applicable to a pure test file; the test is run for real against kind in phase 5",
+    "at": "2026-10-25T06:35:04Z"
+  }
+]
