@@ -449,5 +449,15 @@
       "agents-helmfile"
     ],
     "note": "task config-cluster-views: ClusterSpec.wrapper (typed wrapper settings: hooks on 21 events command|webhook, auto_compact, system_append, permissions, mcp_servers, plugins, turn_stall_seconds, max_restarts, restart_continue_prompt, turn_max_seconds, agent_commands), leader_lease_seconds (60..604800, hive only), autoclose_after_seconds (>= ORCH_AUTOCLOSE_MIN_SECONDS, default 300) on POST /api/v1/clusters and the preset routes; ClusterView closes_at, leader_since, leader_reason; README ### Cluster configuration"
+  },
+  {
+    "name": "orch-leader-lease",
+    "kind": "interface",
+    "owner": "configuration-improvements",
+    "file": "code/agent-orchestrator/src/agent_orchestrator/db/leadership.py",
+    "consumers": [
+      "agents-web"
+    ],
+    "note": "task leader-lease-expiry: leadership_pass step 4 hands leadership to _free_longest at the leader's turn boundary once since is older than spec.leader_lease_seconds; reason lease_expired, epoch+1; no takeover, no interrupted turn; amends hive D26 for opted-in clusters"
   }
 ]
