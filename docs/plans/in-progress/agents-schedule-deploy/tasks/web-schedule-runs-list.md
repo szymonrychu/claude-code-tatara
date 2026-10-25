@@ -1,6 +1,6 @@
 ---
 title: web schedule runs list
-status: in-progress
+status: done
 repo: agents-web
 value: "a user sees each schedule's recent runs, their status and a link to the session"
 files: [src/schedules/ScheduleRuns.tsx, src/schedules/ScheduleRuns.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/schedules/ScheduleRun
 depends_on: [web-schedules-api-client]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 31166c920afe01eca9ea3d971264731a1a4ebc00
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 468088
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 360200, review 107888"
 ---
 
 # web schedule runs list
@@ -55,3 +55,5 @@ Run history and session links are visible per schedule.
 - The session link uses the session view route agents-web already has for the orchestrator.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-26 done
