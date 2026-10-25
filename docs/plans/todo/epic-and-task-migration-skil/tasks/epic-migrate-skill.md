@@ -71,17 +71,25 @@ Reuse brief fix-as-ac (verbatim, part): "SKILLS dict, <=45 lines, frontmatter ex
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `plugins/workbench/skills/epic-migrate/SKILL.md`, frontmatter `name` and `description` only, at most 45 lines, ASCII. Body, in order: dry run (`ticket.py migrate --all --dry-run`, read the plan, stop on a refusal and show its problems); `ticket.py migrate --all`; for each `retro-writer: <epic>` line, dispatch `workbench:retro-writer` (sonnet) with the epic slug and its record.md as the notes, then `ticket.py retro <epic>`; finally `ticket.py deltas --all --buckets` and report which buckets left the seed.
+- `test_epic_skills_structure.py`: SKILLS gains `"epic-migrate"` with those needles; a new `test_epic_migrate_names_only_real_flags` modelled on `test_epic_task_create_names_only_flags_new_task_has`.
+- `test_ticket_flow_docs.py`: `epic-migrate` added to the needles of `test_start_development_names_epic_skills` and `test_readme_names_epic_skills`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One skill walks a workbench from the old scheme to the new one with the right commands in the right order, and the flow docs and README point to it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read the five files under Files plus skills/epic-move/SKILL.md (the shape to copy) and the migrate, retro and deltas `--help` output, in one pass.
+2. Update the two tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_epic_skills_structure.py skills/start-development/tests/test_ticket_flow_docs.py -q`: they fail.
+3. Write the skill and the two doc mentions; run the verify once.
+4. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points: a short skill, two doc mentions, four test edits.
+- start-development SKILL.md is at 149 of 150 lines: add `epic-migrate` to an existing line (the Phase 7 sentence naming `ticket.py retro <epic>` and `retro-writer` fits: epics from before RETRO.md come through `epic-migrate`), adding no line.
+- Plugin README: add `epic-migrate` to the skills block (README.md around line 160, the `epic-move, epic-worktrees-remove` row or a row of its own).
+- Retro lesson (housekeeping-rules-estimates): reviewers run the documented command for any README or skill snippet; AC4 makes the flags mechanical, and the reviewer also runs `ticket.py migrate --all --dry-run --root <a fixture plans dir>`.
+- Until the epic merges and /reload-plugins runs, `workbench:retro-writer` is not loaded; the skill text still names it (it is the steady-state flow).

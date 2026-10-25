@@ -142,17 +142,30 @@ Constraint (verbatim, part): "migrate.py added to KEPT and KEPT_MODULES in test_
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `skills/start-development/scripts/ticket_cmds/migrate.py`: `register(sub, t)`, `run(a, t) -> int`; `ticket.py migrate [<epic>] [--all] [--dry-run] [--transcripts DIR] [--logs DIR]` (`--root` comes from the module facade). An epic and `--all` together, or neither, exit 1.
+- `migrate_meta(t, meta: dict, body: str, records: list[dict]) -> dict`: the new frontmatter in template order (pure; no I/O).
+- `names_map(t, root: Path) -> dict[str, tuple[str, str | None]]`: built before any key is dropped.
+- Uses `agent_usage.records_by_task` (task retro-records-once), `agent_usage.aggregate`, `calibration.points_for_minutes` (task minutes-to-points), `calibration.SEED`, `retro.NOTES_POINTS`, `t._template("task.md")`, `t._number_problems`, `t._format_roles`, `t.ticket_names`, `t._task_files`, `t._read_doc`.
+- Without `--dry-run`, this task's `run` exits 1 with `migrate: writing lands with the write path; pass --dry-run`; task migrate-command replaces that with the write path.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py migrate --all --dry-run` shows the exact new frontmatter of every old-scheme task in every phase, with values traced to a legacy number, a Notes line, a record or SEED, and changes nothing tracked.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files: the three under Files plus ticket.py, ticket_cmds/retro.py, ticket_cmds/deltas.py, scripts/lib/agent_usage.py, scripts/lib/calibration.py, templates/task.md, ticket_repo_helpers.py and test_ticket_deltas.py (for the `edit(drop=)` fixture); read them in one pass.
+2. Write test_ticket_migrate_map.py (old-scheme fixtures copied from the shapes in docs/plans/done/*/tasks, a bootstrap-style task with only a Notes line, a transcripts dir with a lean-development-flow style prompt) and the pin change; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_migrate_map.py skills/start-development/tests/test_ticket_retired_run_loop.py -q`: they fail.
+3. Implement migrate.py; run the verify once.
+4. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 8 points: a new command module with the whole mapping (keys, points, expected, actuals, roles, names, validation) and eleven tests.
+- Reuse (reuse brief): load, dump, Doc, _read_doc (ticket.py:212,234,137,523); _template("task.md") key order (ticket.py:339, templates/task.md:1-20); _task_files, _tasks_of, scan (ticket.py:805,1018,527); _points, _count, _format_roles, _number_problems (ticket.py:353,344,378,382); calibration.SEED and POINTS; ticket_names and LEGACY_SEP (ticket.py:544,40); retro._estimate_points and NOTES_POINTS (retro.py:105,28); records to actual_* mapping as in task_cmd._actuals (task_cmd.py:53-63): call the same aggregate and _format_roles, do not copy the block.
+- Do not build (reuse brief): a frontmatter parser or writer (load, dump), a commit helper (commit_ticket_change), a record writer or summariser (agent_usage), a worktree-name splitter (ticket_names).
+- Fix-as-ac (reuse brief): calibration_rows silently drops malformed rows (ticket.py:400), hence AC8.
+- Old shapes on disk: `estimate` is minutes (5, 6, 8 for formula estimates; 45 to 90 for overrides; `""` in 3 tasks); numeric `actual` only in flow-speed-and-token-optimiz; 19 flow-speed tasks carry a four-role actual_roles; housekeeping-rules-estimates has actuals and Notes `Estimate: N points` but no `points`.
+- `_parse_roles` rejects verify and fix, so fold the legacy value with its own small parser before formatting it with `_format_roles`.
+- Open question Q1 in design.md (fold versus drop of four-role values) is answered at the gate; the AC encodes the recommended fold.
+- Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.

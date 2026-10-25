@@ -58,17 +58,20 @@ Reuse brief idea (verbatim): "noted: no minutes-to-bucket inverse exists; tie ru
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `calibration.points_for_minutes(minutes: int) -> int`, one of `calibration.POINTS` (plugins/workbench/scripts/lib/calibration.py); stdlib, Python 3.9 safe.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One tested function maps a legacy minutes estimate to its storypoints bucket; migrate (task migrate-dry-run) uses it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read calibration.py and test_calibration.py. Write the two tests; run `cd plugins/workbench && pytest scripts/tests/test_calibration.py -q`: they fail (no function).
+2. Implement over `SEED` and `POINTS`; run the verify once: `bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint`.
+3. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 1 point: one pure function and a table test.
+- Reuse (reuse brief): calibration.SEED and POINTS (calibration.py:19,14).
+- The name must not contain `estimate`: the retirement pin in test_ticket_retired_run_loop.py forbids the `estimate` subcommand and any `estimator` file.

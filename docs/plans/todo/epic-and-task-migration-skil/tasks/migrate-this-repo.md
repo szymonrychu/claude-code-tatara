@@ -64,17 +64,26 @@ lint`.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Commands only, the epic-migrate skill's sequence with the integration tree's ticket.py: `WT=<integration tree>`, `TK="python3 $WT/plugins/workbench/skills/start-development/scripts/ticket.py"`, run from the main checkout (`--root` defaults to main's docs/plans there).
+- Writes, on main only: docs/plans/done/<epic>/tasks/*.md and docs/plans/done/<epic>/RETRO.md of the six done epics, in `chore(ticket): <epic> migrate` and `chore(ticket): <epic> retro` commits; `.logs/agents` records (gitignored).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The six done epics are on the points scheme with a filled RETRO.md each, `deltas --all --buckets` shows calibrated buckets, and a rerun changes nothing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Orchestrator, main checkout, clean tree: `$TK migrate --all --dry-run`; read the plan per epic (points, expected, actuals only where a legacy number, Notes line or matched transcript exists; folded roles per Q1's answer). On a refusal, stop and report the problems.
+2. `$TK migrate --all`; note the `retro-writer: <epic>` lines (expected: the five old epics; the bootstrap epic's Retro is already filled).
+3. Per listed epic: dispatch a general-purpose agent on sonnet told to follow `$WT/plugins/workbench/agents/retro-writer.md` (the `workbench:retro-writer` type loads only after /reload-plugins on main) with the epic slug and its record.md; then `$TK retro <epic>`, which commits the filled RETRO.md.
+4. `$TK deltas --all --buckets`; record which buckets left the seed.
+5. Run AC1 to AC7 from the integration tree, then the verify `mise run test && mise run lint` there; quote each summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points: no code, but six epics, five retro-writer dispatches and a full-suite verify.
+- Writer rule (references/tickets.md): only the orchestrator writes tickets, only through ticket.py, only in the main checkout; the commits land on main like every ticket commit during an epic, while the code stays on the integration branch until close. Open question Q2 in design.md confirms this at the gate.
+- `files` lists the six epic dirs because the task rewrites every task file and the RETRO.md under each.
+- approvals.json, rulings.json, record.md, close.json, README.md and design.md must stay unchanged (migrate-command AC4); check `git show --stat` of each migrate commit.
+- housekeeping-rules-estimates RETRO.md: its Retro and Improvements stay byte for byte; only its generated block changes (points and expected values filled).
+- The verify is the full gate on purpose: this is the epic's last task.

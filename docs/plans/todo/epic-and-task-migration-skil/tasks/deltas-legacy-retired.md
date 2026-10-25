@@ -52,17 +52,22 @@ Constraint (verbatim, part): "deltas._legacy removal with a retirement pin"
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket_cmds/deltas.py`: `_legacy` and `WHOLE` removed; `_report` rows lose the `legacy` key; `_epic_text` loses the `(legacy)` suffix; the `--all` help drops "legacy tasks included".
+- The module docstring drops the legacy sentence.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+deltas reads only the points scheme; pre-points tasks show `not recorded` until `ticket.py migrate` moves them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read deltas.py, test_ticket_deltas.py and references/tickets.md in one pass. Replace test_all_includes_legacy_minutes with the two new tests and drop the `legacy` assertion in test_epic_deltas; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_deltas.py -q`: the new tests fail while `_legacy` exists.
+2. Remove the code and the doc text; run the verify once.
+3. `git add`, commit, rerun the verify and quote its summary lines. TDD exception that applies to the code change: deletion pinned by a retirement test.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points: a deletion with its pin and a doc edit.
+- Fix-as-ac (reuse brief): "deltas._legacy dead after migrate - C/deltas.py:81, test_ticket_deltas.py:119 - remove (no back-compat)"; user decision Q10.
+- test_all_includes_legacy_minutes is replaced, not weakened: the behaviour it pinned is retired by Q10; say so in the commit message.
+- Keep the rest of test_all_includes_legacy_minutes' coverage (the live epic is excluded from `--all`, the overall MdAPE) in the replacement test.

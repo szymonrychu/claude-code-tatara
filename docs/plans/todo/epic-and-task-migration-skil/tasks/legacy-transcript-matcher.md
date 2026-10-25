@@ -64,17 +64,26 @@ Reuse brief fix-as-ac (verbatim): "unmarked skipped - AU:257; pinned by test_age
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_usage.legacy_task(path: str | os.PathLike, names: dict[str, tuple[str, str | None]]) -> tuple[str, str] | None` (plugins/workbench/scripts/lib/agent_usage.py).
+- `agent_usage.backfill(transcripts_dir, logs_dir, refresh=False, epic=None, names=None) -> list[dict]`: new keyword `names`; `None` keeps today's marked-only behaviour.
+- Record shape unchanged: agentId, agentType, transcript, updatedAt, start, end, model, epic, task, role, tokens.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Given a names map, backfill writes `.logs/agents` records for the old epics' implementer and reviewer transcripts that name one task (lean-development-flow's name their task files); without one, nothing changes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read agent_usage.py and test_agent_usage.py in one pass. Write the four new tests and the fixture change; run `cd plugins/workbench && pytest scripts/tests/test_agent_usage.py -q`: the new tests fail (no `legacy_task`, no `names` keyword).
+2. Implement `legacy_task` and the `names` path in `backfill`; run the verify once: `bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint`.
+3. `git add`, commit, rerun the verify and quote the `[lint:*]` and suite summary lines from that run.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 3 points: one lib function plus a keyword on backfill, four tests in one file.
+- Reuse (reuse brief): parse_marker, _first_text, transcript_lines, _agent_type, role_for, summarize, write_record (agent_usage.py:107,96,45,231,121,69,128); AGENT_ROLES maps the two agent types to impl and review; fixtures usage, assistant, user, write, backfill_fixture (test_agent_usage.py:12,22,32,43,269).
+- Do not build (reuse brief): a summariser or record writer (summarize, write_record); a worktree-name splitter (ticket.ticket_names lives in ticket.py; the caller, migrate, builds `names` with it).
+- Real prompt shapes (on-disk sample of ~/.claude/projects/-Users-szymonri-Documents-workbench): lean-development-flow implementers and reviewers name `.../docs/plans/in-progress/lean-development-flow/tasks/<task>.md` plus the epic tree `.claude/worktrees/lean-development-flow` (epic only, which matches nothing alone); the epic-integration-worktrees transcripts naming `worktrees/epic-integration-worktrees--<task>` are all worktree-merger, so skipped.
+- The phase dir varies (in-progress at run time, done now), so `names` holds `<epic>/tasks/<task>.md` without the phase.
+- Stdlib only and Python 3.9 safe (hooks import agent_usage).
+- Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.

@@ -68,17 +68,27 @@ housekeeping-rules-estimates RETRO.md, Tech debt (verbatim): "retro backfills pe
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agent_usage.records_by_task(epic: str, logs_dir, transcripts_dir, backfill: bool = True, names: dict | None = None) -> dict[str, list[dict]]` (plugins/workbench/scripts/lib/agent_usage.py), next to `records_for`.
+- `ticket_cmds/retro.py`: `_fill_from_records` calls `records_by_task` once per epic; `_delivery_order(t, root, epic, slugs, deps)` gains the verified_head step (it needs each task's verified_head; pass it in from `_rows`).
+- `records_for` keeps its signature and behaviour (ticket.py task --status done uses it for one task).
+- deltas keeps calling `retro._rows(..., backfill=False)`: read-only, never backfills.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py retro` walks the transcripts at most once per epic, and an epic with no `task <slug> done` commits lists its tasks in the order their work was verified.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read agent_usage.py, ticket_cmds/retro.py, test_ticket_retro.py and references/tickets.md in one pass. Write the four new tests; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_retro.py -q`: they fail.
+2. Implement `records_by_task`, switch `_fill_from_records` to it, add the verified_head step to `_delivery_order`, update tickets.md; run the verify once.
+3. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points: a lib helper, two retro changes, four git-fixture tests with dated commits.
+- Hot spot (reuse brief): `retro._fill_from_records` calls `records_for` per task (retro.py:139-142), and each empty task triggers a full rglob and parse of every transcript (agent_usage.py:254,302): O(tasks x transcripts), 23 x 149 for epic-integration-worktrees. housekeeping-rules-estimates retro, tech debt: "remove by a single transcript pass shared across tasks".
+- Reuse (reuse brief): retro._git_lines (retro.py:83), ticket.dependency_order (ticket.py:809), agent_usage.read_records and backfill.
+- Commit date: check the value against `[0-9a-f]{4,40}` before handing it to git (never pass an option-like string), then `git show -s --format=%ct <sha>`; a non-zero exit means unknown. The non-sha case is real: docs/plans/done/init-leaves-a-green-tree/tasks/license-every-plugin.md has `verified_head: "$(see below)"`.
+- Test hint for AC2: drive `ticket.main([...])` in-process with `agent_usage.parse_marker` monkeypatched to count calls; set commit dates with `GIT_COMMITTER_DATE` for AC3.
+- Fixtures (reuse brief): repo and root (conftest), mk_epic, mk_task, set_meta, commit_all (ticket_repo_helpers.py:36,45,96,83); setup_epic in test_ticket_retro.py.
+- Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.

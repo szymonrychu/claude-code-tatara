@@ -53,17 +53,22 @@ Reuse brief fix-as-ac (verbatim): "retro-writer has no record.md input - agents/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- agents/retro-writer.md "## Inputs you are given": a record.md bullet; Limits unchanged (record.md is read with Read, not Bash).
+- references/retro.md "## Bootstrap": the migrated-epic path.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+retro-writer can fill a migrated epic's Retro and Improvements from its record.md when no orchestrator notes exist, and the reference says how old epics get a RETRO.md.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Read agents/retro-writer.md, references/retro.md and test_templates.py in one pass. Add the needles to test_retro_writer_agent and test_retro_reference; run `cd plugins/workbench && pytest skills/start-development/tests/test_templates.py -q`: they fail.
+2. Edit the two docs; run the verify once.
+3. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 2 points: two prose edits pinned by needles in one test file.
+- Fix-as-ac (reuse brief): "retro-writer has no record.md input - agents/retro-writer.md:15-22 - add it".
+- Old epics have record.md (all five) but no orchestrator notes and no rulings beyond rulings.json; record.md is where their review rounds and rulings were written.
+- Keep test_retro_writer_agent's existing needles; add, do not replace.

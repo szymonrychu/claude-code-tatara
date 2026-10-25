@@ -103,17 +103,28 @@ Reuse brief fix-as-ac (verbatim, part): "README names subcommand (test_plugin_re
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py migrate [<epic>] [--all] [--dry-run] [--transcripts DIR] [--logs DIR]`: without `--dry-run` it calls `t.require_main_checkout(root)` first, maps and validates every task of every epic in scope, then per changed epic writes the task files (`t.dump`) and, for a done epic, RETRO.md, and calls `t.commit_ticket_change(epic, "migrate", paths, root)`.
+- Output: one line per changed epic (`<epic>: <n> tasks migrated[, RETRO.md]`), then `retro-writer: <epic>` lines, or `migrate: nothing to change`.
+- RETRO.md: `retro._rows`, `retro._generated`, `retro._splice` and the template read as in `retro._write`; extract a shared helper in retro.py only if it removes duplication (the file is not in this task's list, so call the existing functions).
+- `ticket.py` lint comment: "a done epic is history: only `ticket.py migrate` rewrites its task files".
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py migrate --all` moves every old-scheme epic to the points scheme in one commit per epic, gives every done epic a RETRO.md generated block, names the epics retro-writer must fill, and a second run is a no-op.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. List the files under Files plus ticket_cmds/retro.py, templates/retro.md, test_ticket_migrate_map.py and ticket_repo_helpers.py; read them in one pass.
+2. Write test_ticket_migrate.py and the README test change; run `cd plugins/workbench && pytest skills/start-development/tests/test_ticket_migrate.py skills/start-development/tests/test_plugin_readme_rules.py -q`: they fail.
+3. Implement the write path, the lint comment, tickets.md and the README sentence; run the verify once.
+4. `git add`, commit, rerun the verify and quote its summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Estimate: 5 points: the write path over an existing mapping, plus RETRO.md reuse, docs and eight command tests.
+- Reuse (reuse brief): commit_ticket_change (ticket.py:302), require_main_checkout (ticket.py:292), retro run and _write (retro.py:236) for the RETRO.md shape, fixtures repo, root, mk_epic, mk_task, set_meta, commit_all (ticket_repo_helpers.py) and edit(drop=) and to_done (test_ticket_deltas.py:18,38).
+- Do not build (reuse brief): a commit helper or a frontmatter writer.
+- Fix-as-ac (reuse brief): "done epic is history, never rewritten" in ticket.py:1575 and references/tickets.md:130 now names migrate as the one writer (AC9).
+- The Retro placeholder to detect is the template's: the `## Retro` section of templates/retro.md as written.
+- Retro lesson (housekeeping-rules-estimates): a feature with a default path gets one test without the override flag (AC7); quote the lint and suite lines of a run made after `git add` and commit.
+- README: add `ticket.py migrate` to the sentence listing the further ticket.py commands (README.md around line 201).

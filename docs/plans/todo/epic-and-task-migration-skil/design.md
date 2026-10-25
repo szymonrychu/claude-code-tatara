@@ -27,7 +27,7 @@ epic as the removal of that tech debt.
   actuals per D3 and D4, never inventing a value.
 - G2: Each done epic gets a RETRO.md: migrate writes its generated block in the epic's one
   `chore(ticket): <epic> migrate` commit, and retro-writer fills Retro and Improvements from record.md.
-- G3: A second run changes nothing (idempotent), and a dry run writes and commits nothing.
+- G3: A second run changes nothing (idempotent), and a dry run changes no tracked file and commits nothing.
 - G4: A thin `epic-migrate` skill (at most 45 lines) wraps the commands, and the plugin README, the flow
   docs and references/tickets.md name it and `migrate`.
 - G5: This repository's six done epics are migrated: `ticket.py lint` prints `lint: ok`,
@@ -46,7 +46,7 @@ epic as the removal of that tech debt.
 
 - A migrated task with a malformed number that `calibration_rows` then silently drops (D10).
 - An actual or a role guessed where no number, no record and no transcript exists.
-- Writing or committing anything in a dry run or on a second run.
+- Changing a tracked file or committing in a dry run, or anything at all on a second run.
 - A per-task walk of every transcript (O(tasks x transcripts)) when one pass per epic suffices (D6).
 - Touching the Retro and Improvements text of a RETRO.md that already has them (the bootstrap epic).
 
@@ -156,13 +156,16 @@ orchestrator notes, so retro-writer gains record.md (and the task Notes) as an i
 Migrate commits once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
 RETRO.md it wrote; an epic with nothing to change gets no commit. `--dry-run` prints one line per task it
 would change (old and new values of the changed keys, dropped keys) and per RETRO.md it would write,
-writes no file, writes no `.logs` record and makes no commit. With nothing to change it prints
-`migrate: nothing to change`. A second run over migrated files changes nothing.
+changes no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored
+`.logs/agents` cache (my call: the records are regenerable and the dry run must show transcript actuals).
+With nothing to change it prints `migrate: nothing to change`. A second run over migrated files changes
+nothing.
 
 ### D10: Validate before writing
 
-Every mapped task runs through `t._number_problems`; any problem refuses the epic (exit 1, the problems
-listed, nothing written for that epic), because `calibration_rows` silently drops a malformed row.
+Every mapped task runs through `t._number_problems` before anything is written; any problem refuses the
+run (exit 1, the problems listed, nothing written in any epic; my call: all or nothing keeps the commit
+history simple), because `calibration_rows` silently drops a malformed row.
 
 ### D11: deltas legacy rows retired (Q10)
 
@@ -238,7 +241,7 @@ lint`.
 
 - Never invented: every planned and actual value traces to a legacy number, a Notes line, a record or
   SEED; check the empty cases in migrate-dry-run's tests.
-- Idempotence and dry run: no write, no `.logs` record and no commit on a dry run or a second run.
+- Idempotence and dry run: no tracked change and no commit on a dry run, nothing at all on a second run.
 - Byte-for-byte keeps: title through verified_head, the task body, RETRO.md Retro and Improvements, and
   every side file.
 - The matcher's skip rules (no task, two tasks, epic-only tree, non implementer/reviewer types).
@@ -262,7 +265,6 @@ lint`.
 
 ## Open questions
 
-none
 - Q1: Old four-role actual_roles (19 flow-speed tasks, e.g. 'impl 4, verify 3, review 2, fix 2'): fold fix into impl and verify into review instead of dropping them, since no transcripts survive for that epic? [recommended: yes, fold; records-derived roles still win (D4)]
 - Q2: The real run (task migrate-this-repo) writes docs/plans on main, which only the orchestrator may do: does the orchestrator run it in the main checkout with the integration tree's ticket.py before the epic review, with the reviewer checking the acceptance commands against main's docs/plans? [recommended: yes (D13)]
 
