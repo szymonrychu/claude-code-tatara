@@ -662,5 +662,16 @@
       "agents-helmfile"
     ],
     "note": "task webhook-ci-images: harbor.szymonrichert.pl/containers/agents-webhook:<sha7>; entrypoint agents-webhook {migrate, ingest, api, worker}"
+  },
+  {
+    "name": "agents-schedule-api",
+    "kind": "api",
+    "owner": "agents-schedule-microservice",
+    "file": "code/agents-schedule/README.md",
+    "consumers": [
+      "agents-web",
+      "agents-helmfile"
+    ],
+    "note": "task api-docs-and-openapi: /schedules/api/v1 (additive-only): schedules CRUD, POST /schedules/preview {cron,timezone}->{next_fires[3]}, POST /schedules/{id}/run -> 202 RunView, GET /schedules/{id}/runs, GET /runs, GET /runs/{id}; statuses new|in-progress|handled|failed|ignored with reasons; errors {error:{code,message}}; openapi.json committed, vendored by agents-web as openapi/schedules.json"
   }
 ]
