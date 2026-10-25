@@ -1,6 +1,6 @@
 ---
 title: cache save on discard
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the workspace is uploaded under the same name when a session ends, without ever blocking the discard"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, tests/test_cache_save.py, tests/fakes/fake_kube.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_save.py tests/test_discard_hook.py te
 depends_on: [cache-restore-runner]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 52b5a1a
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 15
+actual_tokens: 1291181
+actual_roles: "impl 12, review 3"
+actual_role_tokens: "impl 1121914, review 169267"
 ---
 
 # cache save on discard
@@ -70,3 +70,5 @@ Deleting a cached session shows phase deleting with "saving the workspace cache"
 - `_quiesce` today returns True at once when no hook is owed; the new condition is `hook owed or save owed`; the existing ingester drain wait (`discard_drain_seconds`) stays as it is for both (it only adds seconds).
 - The save must run before `_prune(..., DISCARD_ORDER)`, which deletes the PVC.
 - Retro: a save must never act on an empty workdir path; `render_cache_job` takes it from `workdir_path(spec)`.
+
+- 2026-10-26 done
