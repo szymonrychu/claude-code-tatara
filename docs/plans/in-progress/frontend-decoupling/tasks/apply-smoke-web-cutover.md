@@ -1,6 +1,6 @@
 ---
 title: apply smoke web cutover
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live UI is served by agents-web behind the same SSO, proven by the smoke"
 files: [MEMORY.md]
@@ -8,11 +8,11 @@ verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-web, smoke-web-ui]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 863180f
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -74,3 +74,7 @@ Orchestrator notes (2026-10-25; the orchestrator runs live applies, the classifi
 - AC3 cookie comparison: 1 distinct line for both sidecars.
 - `mise run smoke` (after smoke fixes 14a1d94 and the id-key fix): last line `smoke: OK`.
 - User browser check (Q6): user confirmed the UI loads after login.
+
+- 2026-10-25 done
+
+- 2026-10-25 actuals: no agent records
