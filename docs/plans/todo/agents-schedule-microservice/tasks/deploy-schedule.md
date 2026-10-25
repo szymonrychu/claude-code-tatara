@@ -31,7 +31,7 @@ Release and deploy this epic (design D14; approval A6). Pin release `agents-sche
 
 - AC1: the schedule chart and image pins agree on the v0.1.0 sha [evidence: test:tests/test_schedule_release.py::test_schedule_pin_matches_release]
 - AC2: the agents-web chart and image pins agree on one sha [evidence: test:tests/test_web_release.py::test_web_pin_matches_image]
-- AC3: helmfile apply of the agents namespace succeeds [evidence: command:mise run apply]
+- AC3: helmfile apply of the agents namespace succeeds [evidence: judgement:the apply output (helm revision and chart) quoted in the task notes; never run apply as AC evidence]
 - AC4: the live smoke passes, including the schedule step [evidence: command:mise run smoke]
 - AC5: the diff shows only the new schedule releases and the agents-web pin [evidence: judgement:the task diff and mise run diff output reviewed]
 

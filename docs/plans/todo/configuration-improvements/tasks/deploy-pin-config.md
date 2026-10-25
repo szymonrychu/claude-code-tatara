@@ -32,7 +32,7 @@ Release and deploy this epic to the agents namespace (design D10; approval A7). 
 - AC1: the orchestrator chart version and image tag agree on the merged sha, read offline [evidence: test:tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image]
 - AC2: the agents-web chart version and image tag agree on the merged sha, read offline [evidence: test:tests/test_agents_web_release.py::test_agents_web_pin_matches_image]
 - AC3: the published orchestrator chart exists for the pinned version [evidence: command:v=$(grep -A3 'name: agent-orchestrator$' helmfile.yaml.gotmpl | sed -n 's/.*version: //p'); helm show chart oci://harbor.szymonrichert.pl/charts/agent-orchestrator --version "$v"]
-- AC4: helmfile apply of the agents namespace succeeds [evidence: command:mise run apply]
+- AC4: helmfile apply of the agents namespace succeeds [evidence: judgement:the apply output (helm revision and chart) quoted in the task notes; never run apply as AC evidence]
 - AC5: the live smoke passes, including the config step [evidence: command:mise run smoke]
 - AC6: only the two chart versions and image tags change [evidence: judgement:the task diff and mise run diff output reviewed]
 
