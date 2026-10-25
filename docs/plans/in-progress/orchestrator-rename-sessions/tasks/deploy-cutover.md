@@ -32,6 +32,9 @@ Move the live namespace to the renamed releases and prove it (design D5, D7, D8,
 - Step 5 (orchestrator): once `kubectl -n agents get certificate agents-orchestrator-tls` is Ready, `kubectl -n agents delete secret agent-orchestrator-tls`.
 - `MEMORY.md`: a dated line: cut over to agents-orchestrator `0.1.0-main.<sha7>` with database `agents-orchestrator-db` imported from `agent-orchestrator-db` (preset count), agents-webhook and agents-web pins, the old TLS Secret removed, smoke green (quote its last line). No other file changes.
 
+
+Orchestrator ruling 2026-10-25 (review of webhook-session-columns): agents-webhook migration 0005 renames events.cluster_id/cluster_slug while old pods still run the old SQL under the default RollingUpdate. During the cutover, scale the agents-webhook Deployments (ingest, api, worker) to 0, or apply that release with a Recreate strategy, before upgrading it to the session-named build. Queued rows wait and nothing is lost. Record which option was used in the task notes.
+
 ## Acceptance conditions
 
 - AC1: the preconditions held before any apply [evidence: judgement:the task notes quote the four precondition probe outputs]
@@ -63,3 +66,5 @@ The live namespace runs agents-orchestrator on agents-orchestrator-db (presets c
 - No TDD cycle applies: a deploy check plus one MEMORY.md line (doc edit exception).
 - If a step fails, stop: the old database is the rollback point; never retry an apply blindly, read the helm error and report its tail.
 - User step U1 (Keycloak client agents-orchestrator) must be done before; U2 (remove the old client) comes after a green smoke and is the user's.
+
+- 2026-10-25 amended: review of webhook-session-columns: stop agents-webhook during the column-rename upgrade
