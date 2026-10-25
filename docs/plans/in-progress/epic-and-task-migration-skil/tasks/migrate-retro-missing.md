@@ -1,6 +1,6 @@
 ---
 title: Migrate retro missing
-status: todo
+status: done
 repo: workbench
 value: "A done epic that is already on the new scheme still gets its RETRO.md from migrate, as G2 promises"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/migrate.py, plugins/workbench/skills/start-development/tests/test_ticket_migrate.py]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [migrate-command]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b1072ef
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 14
+actual_tokens: 777962
+actual_roles: "impl 11, review 3"
+actual_role_tokens: "impl 694982, review 82980"
 ---
 
 # Migrate retro missing
@@ -58,3 +58,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
