@@ -1,6 +1,6 @@
 ---
 title: ingest applies filters
-status: in-progress
+status: done
 repo: agents-webhook
 value: "deliveries that fail an endpoint's filters are accepted and stored ignored with a reason instead of starting an agent"
 files: [src/agents_webhook/ingest/app.py, tests/test_ingest_http.py, README.md, tests/test_readme_config.py, tests/test_event_store.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_ingest_http.py tests/test_readme_config.py tes
 depends_on: [endpoint-filters-storage]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5afc237
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 933000
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 720364, review 212636"
 ---
 
 # ingest applies filters
@@ -70,3 +70,5 @@ An endpoint with `{"deny": [{"field": "title", "match": "regex", "values": ["^WI
 - `classify` still takes `allowed_authors` here; retire-allowed-authors removes it later. Do not touch it in this task.
 - Keep the module docstring's step list accurate (it names the per-request order).
 - The README field table is design D3's table; copy its applicability and the "not offered" list.
+
+- 2026-10-25 done
