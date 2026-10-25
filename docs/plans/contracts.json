@@ -640,7 +640,8 @@
     "owner": "agents-webhook-microservice",
     "file": "code/agents-web/src/triggers/index.ts",
     "consumers": [
-      "agents-schedule-microservice"
+      "agents-schedule-microservice",
+      "agents-matrix-connector"
     ],
     "note": "task web-trigger-ui-kit: RunStatusChip({status new|in-progress|handled|ignored|failed, reason}), PresetSelect({value, onChange}) over the orchestrator presets, usePoll(fn, intervalMs, deps), FormError({error}) for {error: {code, message}}"
   },
