@@ -1,6 +1,6 @@
 ---
 title: web docs memory
-status: in-progress
+status: done
 repo: agents-web
 value: developers of later services learn from agents-web alone how to add a backend
 files: [README.md, AGENTS.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "grep -q '^## Runtime config' README.md && grep -q '^## Backends and men
 depends_on: [web-backend-menu, web-ci-release]
 model: ""
 review: ""
-verified_head: ""
+verified_head: e20b79d
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 302943
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 199804, review 103139"
 ---
 
 # web docs memory
@@ -60,3 +60,5 @@ A developer of a later service learns from agents-web's README alone how to add 
 ## Notes
 
 - No TDD cycle applies: doc edit exception.
+
+- 2026-10-25 done
