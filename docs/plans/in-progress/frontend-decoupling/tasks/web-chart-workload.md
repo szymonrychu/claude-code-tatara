@@ -1,6 +1,6 @@
 ---
 title: web chart workload
-status: in-progress
+status: done
 repo: agents-web
 value: the UI deploys with its own hardened chart
 files: [chart/agents-web/Chart.yaml, chart/agents-web/values.yaml, chart/agents-web/templates/_helpers.tpl, chart/agents-web/templates/deployment.yaml, chart/agents-web/templates/service.yaml, chart/tests/workload.test.mjs, package.json, package-lock.json]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test chart/tests/workload.test.mj
 depends_on: [web-nginx-image, web-openapi-vendor]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 77a42eb
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 250545
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 196094, review 54451"
 ---
 
 # web chart workload
@@ -68,3 +68,5 @@ Add the agents-web Helm chart's workload: Deployment and Service (design D4, D10
 
 - Reuse the shape of agent-orchestrator `chart/agent-orchestrator/templates/service.yaml` and `deployment.yaml` (port name `http`, probes by number).
 - The ConfigMap, the config mount and the Ingress are web-chart-config-ingress.
+
+- 2026-10-25 done
