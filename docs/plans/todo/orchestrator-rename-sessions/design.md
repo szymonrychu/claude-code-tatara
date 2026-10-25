@@ -354,6 +354,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 ## Open questions
 - Q1: Rename the DB tables and columns too (clusters to sessions, cluster_id to session_id) through two forward migrations, rather than keeping cluster in the DB? [recommended: yes]
 - Q2: Move the live database to a new CNPG cluster agents-orchestrator-db imported from the old one after the old app is uninstalled, rather than keeping the old agent-orchestrator-db name? [recommended: yes]
+- Q3: After a green smoke, keep the old database hibernated (pods stopped, PVCs and S3 backups kept, reversible) rather than deleting it? [recommended: yes]
 
 ## Irreversible operations in scope
 
