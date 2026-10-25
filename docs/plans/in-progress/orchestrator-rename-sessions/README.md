@@ -36,3 +36,18 @@ The orchestrator is the only component not named agents-*, and its unit is calle
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review of orchestrator-rename-sessions, 2026-10-25.
+
+- Scope audit: CLEAN. No "cluster" meaning the unit is left in any repo (only Kubernetes/CNPG wording, applied migrations, changelogs and retirement guards). The GitHub repo and submodule are renamed, the live releases are renamed, the old DB is hibernated (not deleted), and terraform main has only the agents-orchestrator Keycloak client.
+- Security review: no medium-or-higher findings. SSO returns 302 on /api/v1/sessions, /webhooks/api/ and /. ORCH_ALLOWED_CIDRS is 127.0.0.1/32. Service port 8002 is ClusterIP with an exact allowlist. The agent API requires X-Orch-Session. The old DB has no endpoints. The new CNPG uses verify-full TLS and its own S3 path.
+  - LOW: the old Secret agent-orchestrator-proxy is pending deletion by the U2 terraform apply (MR !260).
+  - LOW, noted and not done now: no NetworkPolicies in the namespace, a shared S3 backup key, enableSuperuserAccess on the new cluster.
+- Every task was reviewed alone, with fix rounds where findings came up: the sweep guard missed migration 0005, the bootstrap DB path, the stale smoke any-mcp pin, a MEMORY wording error, and the App.tsx split.
+- Full suites (main CI green):
+  - agents-orchestrator bba074f: 787 passed locally, e2e 36 passed.
+  - agents-webhook 838ba1f, agents-web 5a8d6c8 (335 passed), agents-common v0.3.0, any-mcp v0.3.0.
+  - agents-helmfile: 136 passed.
+- Live: cutover applied, imported DB with 2 presets and schema 0001-0005, diff "No affected releases", smoke OK.
