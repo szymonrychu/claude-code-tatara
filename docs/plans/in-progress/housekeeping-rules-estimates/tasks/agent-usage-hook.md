@@ -9,6 +9,11 @@ depends_on: [agent-usage-lib]
 model: opus
 review: ""
 verified_head: cec85a7
+points_actual: 5
+actual_minutes: 29
+actual_tokens: 1836811
+actual_roles: "impl 23, review 6"
+actual_role_tokens: "impl 1670146, review 166665"
 ---
 
 # Agent usage hook
@@ -68,5 +73,7 @@ Every implementer and reviewer run leaves one accurate, idempotent usage record 
 - Adopted idea (hooks brief): record at SubagentStart and overwrite at every stop, and let the stamp step re-read transcript paths so a missed stop loses nothing (read_records in agent-usage-lib).
 - The recorder is not registered in core.HOOKS (brief reuse entry): it makes no allow/deny/block decision and no harness adapter runs it, so the entry script calls agent_usage directly (my call).
 - Bootstrap: the plugin loads from the main checkout, so this hook records nothing until the epic merges and `/reload-plugins` runs; runs before that are recovered by actuals-backfill (D16).
+
+- 2026-10-25 done
 
 - 2026-10-25 done
