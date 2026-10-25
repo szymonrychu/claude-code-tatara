@@ -1,6 +1,6 @@
 ---
 title: web openapi vendor
-status: in-progress
+status: done
 repo: agents-web
 value: "the UI's API types come from a recorded orchestrator commit inside its own repo"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schema.d.ts, README.md]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs &&
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: b2d2d30
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 267341
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 212819, review 54522"
 ---
 
 # web openapi vendor
@@ -68,3 +68,5 @@ Vendor the orchestrator's OpenAPI document into agents-web and generate the UI t
 
 - The script must not run `gen:api` through a shell string built from the backend id (fixed map only).
 - agent-orchestrator `/api/v1` is additive-only (README Versioning), so a UI built against an older copy keeps working.
+
+- 2026-10-25 done
