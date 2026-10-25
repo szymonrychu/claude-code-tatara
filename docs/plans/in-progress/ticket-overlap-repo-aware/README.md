@@ -1,7 +1,7 @@
 ---
 title: ticket overlap repo aware
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [workbench]
 created: 2026-10-25
