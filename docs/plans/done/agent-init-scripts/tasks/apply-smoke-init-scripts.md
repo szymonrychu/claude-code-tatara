@@ -6,21 +6,17 @@ value: init scripts are live in the agents namespace and proven by the smoke
 files: [MEMORY.md]
 verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-init-scripts, smoke-init-scripts]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1"
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-apply-smoke-init-scripts/agents-helmfile
-branch: agent-init-scripts-apply-smoke-init-scripts
 verified_head: f161544b29e6212610ab174496076d93f64fc477
-run: agent-init-scripts
-provides: []
-acs_for_audit: [AC4]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: 190576
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 150911, review 39665"
 ---
 
 # apply smoke init scripts

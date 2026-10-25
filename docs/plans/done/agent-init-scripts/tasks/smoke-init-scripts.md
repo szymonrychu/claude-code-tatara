@@ -6,22 +6,17 @@ value: the deployed smoke proves init scripts run once and are visible
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-smoke-init-scripts/agents-helmfile
-branch: "current worktree branch (commit ce31b78)"
 verified_head: ce31b78b15b14faee9019662ad3cbfacb90ee18b
-run: agent-init-scripts
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 7dcb257
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # smoke init scripts

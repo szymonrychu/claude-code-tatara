@@ -6,22 +6,17 @@ value: the whole init scripts flow is proven on a real cluster through the API o
 files: [tests/e2e/test_e2e_kind.py]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-job-runner, init-scripts-agent-api]
-owns: []
-uses: [orch-cluster-status-init, orch-init-workdir-files, orch-cluster-init-scripts-api, orch-agent-init-scripts-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-kind-e2e/agent-orchestrator
-branch: agent-init-scripts-init-scripts-kind-e2e
 verified_head: 39a5210d6cc3074d957eabc547aca6215c48560f
-run: agent-init-scripts
-provides: []
-acs_for_audit: []
-process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
-fork_point: 36d4fed9a4856bed44ceec5026b58c52fabe83bc
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init scripts kind e2e

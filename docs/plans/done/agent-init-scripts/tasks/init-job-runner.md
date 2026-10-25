@@ -6,22 +6,17 @@ value: init scripts run exactly once per cluster and the outcome is recorded
 files: [src/agent_orchestrator/reconciler/init.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/checks.py, tests/test_init_runner.py, README.md, MEMORY.md]
 verify: "uv run pytest tests/test_init_runner.py tests/test_reconciler.py tests/test_checks.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-spec-field]
-owns: [orch-cluster-status-init, orch-init-workdir-files]
-uses: [orch-cluster-spec-init-scripts, orch-render-hash-invariant]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-job-runner/agent-orchestrator
-branch: agent-init-scripts-init-job-runner
 verified_head: 36d4fed9a4856bed44ceec5026b58c52fabe83bc
-run: agent-init-scripts
-provides: [init-gate, init-sh-render]
-acs_for_audit: []
-process_gaps: ["The independent verification report said 'Worktree not clean at verification', but `git status --short` in the worktree printed nothing at review time. The two verification findings only say the top-level pass/exit were not captured. I re-ran the targeted pytest, ruff check and ruff format --check myself: 50 tests passed, 'All checks passed!', '130 files already formatted'."]
-fork_point: 1bf5c9636de7f32da8e68faf1291b0622da5386b
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init job runner

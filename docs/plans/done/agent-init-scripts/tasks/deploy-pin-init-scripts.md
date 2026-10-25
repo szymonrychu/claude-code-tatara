@@ -6,21 +6,17 @@ value: the agents namespace is pinned to the orchestrator build with init script
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-job-runner, init-scripts-public-api, init-scripts-agent-api, init-scripts-kind-e2e, fe-preset-init-scripts, fe-cluster-init-dialog]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-deploy-pin-init-scripts/agents-helmfile
-branch: agent-init-scripts-deploy-pin-init-scripts
 verified_head: f161544b29e6212610ab174496076d93f64fc477
-run: agent-init-scripts
-provides: []
-acs_for_audit: [AC2, AC3]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deploy pin init scripts

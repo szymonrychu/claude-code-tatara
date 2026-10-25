@@ -6,22 +6,17 @@ value: clusters and presets can carry init scripts that never roll pods
 files: [src/agent_orchestrator/spec.py, tests/test_spec_init_scripts.py, tests/test_render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
 verify: "uv run pytest tests/test_spec_init_scripts.py tests/test_render.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-cluster-spec-init-scripts]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-spec-field/agent-orchestrator
-branch: agent-init-scripts-init-scripts-spec-field
 verified_head: 41da5fab4a7a94ff18382e55a34abc388750a041
-run: agent-init-scripts
-provides: [orch-cluster-spec-init-scripts]
-acs_for_audit: []
-process_gaps: []
-fork_point: 918dc0afbfcd97f7909cafcb971dfe2bb365cecc
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init scripts spec field

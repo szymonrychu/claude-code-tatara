@@ -6,22 +6,17 @@ value: a person sees how a running cluster was initialised and can edit its scri
 files: [frontend/src/clusters/InitScriptsDialog.tsx, frontend/src/clusters/InitScriptsDialog.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx, frontend/src/App.tsx, frontend/src/api/client.ts]
 verify: "cd frontend && npx vitest run src/clusters/InitScriptsDialog.test.tsx src/layout/TopBar.test.tsx && npm run lint"
 depends_on: [init-scripts-public-api, fe-preset-init-scripts]
-owns: []
-uses: [orch-cluster-init-scripts-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-fe-cluster-init-dialog/agent-orchestrator
-branch: agent-init-scripts-fe-cluster-init-dialog
 verified_head: ec7dd9a246cbbb48a196977ad22b94200661ff87
-run: agent-init-scripts
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: a38fbb6
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe cluster init dialog

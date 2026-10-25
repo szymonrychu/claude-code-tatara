@@ -6,21 +6,17 @@ value: "people and scripts can read a cluster's init run and edit its scripts fo
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_init_scripts.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
 verify: "uv run pytest tests/test_api_init_scripts.py tests/test_api_clusters.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-spec-field]
-owns: [orch-cluster-init-scripts-api]
-uses: [orch-cluster-spec-init-scripts, orch-spec-runtime-mutable]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-public-api/agent-orchestrator
-branch: agent-init-scripts-init-scripts-public-api
 verified_head: a38fbb6535ea1bfebfab92bfa3a8febcfb04bcbc
-run: agent-init-scripts
-provides: [orch-cluster-init-scripts-api]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init scripts public api

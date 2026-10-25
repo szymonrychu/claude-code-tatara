@@ -6,21 +6,17 @@ value: an agent can see how its cluster was initialised and improve the scripts 
 files: [src/agent_orchestrator/api/agent.py, tests/test_agent_init_scripts.py, README.md]
 verify: "uv run pytest tests/test_agent_init_scripts.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [init-scripts-public-api]
-owns: [orch-agent-init-scripts-api]
-uses: [orch-cluster-init-scripts-api, orch-agent-api-auth]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-agent-api/agent-orchestrator
-branch: "HEAD of worktree agent-init-scripts-init-scripts-agent-api (c779559)"
 verified_head: 1bf5c9636de7f32da8e68faf1291b0622da5386b
-run: agent-init-scripts
-provides: []
-acs_for_audit: []
-process_gaps: ["Record the discovered entry for hive F1: the any-mcp v0.2.0 init_scripts_get description lacks .agent-init/init.sh and next-cluster semantics"]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # init scripts agent api
