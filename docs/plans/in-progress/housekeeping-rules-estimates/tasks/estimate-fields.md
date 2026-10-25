@@ -9,6 +9,11 @@ depends_on: [calibration-lib]
 model: opus
 review: ""
 verified_head: fb13db0
+points_actual: 5
+actual_minutes: 15
+actual_tokens: 2032100
+actual_roles: "impl 11, review 4"
+actual_role_tokens: "impl 1914934, review 117166"
 ---
 
 # Estimate fields
@@ -67,3 +72,5 @@ A planner passes one number; every new task file carries points plus expected mi
 - Retirement pins: no `estimate` subcommand or key; the legacy `estimate` key of done tasks stays readable and is never written.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
