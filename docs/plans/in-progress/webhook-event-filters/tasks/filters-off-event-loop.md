@@ -1,6 +1,6 @@
 ---
 title: filters off event loop
-status: todo
+status: done
 repo: agents-webhook
 value: a large rule set or event cannot stall webhook ingest
 files: [src/agents_webhook/filters.py, src/agents_webhook/ingest/app.py, src/agents_webhook/api/routes.py, tests/test_filters.py, tests/test_ingest_http.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_filters.py tests/test_ingest_http.py -o addopt
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 9f048aa
 points: 3
 expected_minutes: 8
 expected_tokens: 849076
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 592137
+actual_roles: impl 6
+actual_role_tokens: impl 592137
 ---
 
 # filters off event loop
@@ -63,3 +63,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
