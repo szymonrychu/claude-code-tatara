@@ -36,3 +36,21 @@ Original user request (2026-10-25), verbatim: "## agents-schedule microservice
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Acted on:
+- web-schedule-form: a tsc error and a missing Intl fallback.
+- web-schedules-page: "cluster" wording broke the nomenclature test, plus a type cast.
+- deploy-schedule: a stale test_values_dir_moved list blocked the apply guard.
+Dropped:
+- Security medium "SSO bypass via http-insecure 8080". The app allowlist checks only the socket peer: proxy_headers=False, tested against a real uvicorn server in agents-schedule.
+- A NetworkPolicy backstop for the namespace (cross-service, not this epic).
+- Shared S3 backup credentials with agents-webhook-db (same accepted practice).
+- TLS Secret reuse (per the URL layout).
+- Scope audit claim that menu.ts drops onOpenSession: wrong, menu.ts:10 passes it.
+Evidence:
+- agents-helmfile `mise run test` 155 passed, lint clean.
+- agents-web main CI green, npm test 373 passed.
+- Live apply at e16b726 (agents-schedule rev 1, agents-schedule-db rev 1, agents-web rev 8, agents-orchestrator rev 2).
+- smoke: OK after an agents-orchestrator api restart.
