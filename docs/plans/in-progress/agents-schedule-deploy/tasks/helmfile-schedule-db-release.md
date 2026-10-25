@@ -1,6 +1,6 @@
 ---
 title: helmfile schedule db release
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the schedule service gets its own CNPG database in the agents namespace
 files: [helmfile.yaml.gotmpl, values/agents-schedule-db/common.yaml, tests/test_schedule_db_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_db_re
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 0ccc7146051842687fc017cb39992bb8d9a6c264
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 387346
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 304212, review 83134"
 ---
 
 # helmfile schedule db release
@@ -56,3 +56,5 @@ Applying the helmfile creates the schedule database next to the orchestrator's.
 - Creating a database is additive; nothing existing changes. Listed at the gate with the apply.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
