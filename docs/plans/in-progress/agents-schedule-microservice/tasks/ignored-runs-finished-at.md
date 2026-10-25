@@ -1,6 +1,6 @@
 ---
 title: ignored runs finished at
-status: todo
+status: done
 repo: agents-schedule
 value: "every terminal run records when it ended, including runs ignored at insert"
 files: [src/agents_schedule/db/runs.py, tests/test_runs_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_runs_repo.py tests/test_scheduler.py 
 depends_on: [scheduler-loop]
 model: ""
 review: ""
-verified_head: ""
+verified_head: adc6cf13dd97435999d67e850aa84aa4a4179a59
 points: 1
 expected_minutes: 5
 expected_tokens: 673202
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 202047
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 145594, review 56453"
 ---
 
 # ignored runs finished at
@@ -54,3 +54,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
