@@ -1,6 +1,6 @@
 ---
 title: repin web after review fixes
-status: todo
+status: done
 repo: agents-helmfile
 value: the live UI runs the chart with config.json parity checks and a working helm test
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, tests/test_web_release.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest -q -p no:cacheprovider && uv run ruff check ."
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: c99cfdc
 points: 1
 expected_minutes: 5
 expected_tokens: 728948
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -55,3 +55,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 Orchestrator notes (2026-10-25): implementer re-pinned (c99cfdc, red: `assert 'db1f482' == 'cedcbbc'`), agents-helmfile PR #19 merged (cc33dd2). Pre-apply diff: agents-web image db1f482 -> cedcbbc, new Service agents-web-test, labels. `mise run apply`: agents-web 0.1.0-main.cedcbbc deployed. Post-apply diff: `No affected releases`. `mise run smoke` last line: `smoke: OK`.
+
+- 2026-10-25 done
+
+- 2026-10-25 actuals: no agent records
