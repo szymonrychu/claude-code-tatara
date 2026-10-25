@@ -1,6 +1,6 @@
 ---
 title: leader lease expiry
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: a hive rotates its leader after a set time without interrupting a turn
 files: [src/agent_orchestrator/db/leadership.py, tests/test_leadership_pass.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_leadership_pass.py && uv run ruff 
 depends_on: [spec-config-fields]
 model: opus
 review: full
-verified_head: ""
+verified_head: 7c02669
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 712523
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 596109, review 116414"
 ---
 
 # leader lease expiry
@@ -67,3 +67,5 @@ In a hive with `leader_lease_seconds`, the cluster view shows a new leader with 
 ## Notes
 
 The dispatcher runs `_drain_leadership` on every wake, at least every `dispatch_poll_seconds`, so no new timer is needed. Draining agents from cluster-scaling are never ready, so `_free_longest` never picks them. Concurrency-sensitive: keep every read inside the pass's transaction and lock.
+
+- 2026-10-25 done
