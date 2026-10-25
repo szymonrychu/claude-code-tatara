@@ -23,18 +23,18 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Helm chart workloads (design D2, D13). Paths are in code/agents-webhook.
+Helm chart workloads (design D2, D13; re-plan 2026-10-25: no per-source secrets; ingest authenticates endpoints from the database). Paths are in code/agents-webhook.
 
 - `Chart.yaml`: `agents-webhook`, version `0.1.0`, appVersion `0.1.0`.
-- `values.yaml`: `image {repository harbor.szymonrichert.pl/containers/agents-webhook, tag, pullPolicy}`, `imagePullSecrets`, `postgres {url | existingSecret, existingSecretKey}` (required; no in-chart CNPG), `orchestrator {url, token | tokenSecret {name, key}}`, `sources {github, gitlab, grafana | existingSecret, githubKey, gitlabKey, grafanaKey}` (inline values go to the chart Secret; agents-helmfile sets them from SOPS), `env` (extra WEBHOOK_*), `components {ingest {replicas 2, podAnnotations {}, resources}, api {replicas 1, podAnnotations {}, resources}, worker {replicas 1, resources}}`, `service`, `ingress` (used by webhook-chart-network), security contexts as agent-orchestrator (non-root 1000, read-only root FS).
-- `templates/deployment.yaml`: one Deployment per component running `agents-webhook <component>`, port `http` 8000 for ingest and api, liveness/readiness on `/healthz`/`/readyz` (worker: exec probe or none), an initContainer `agents-webhook migrate`, env from the ConfigMap plus secrets: `WEBHOOK_DATABASE_URL` from `postgres`, `WEBHOOK_ORCHESTRATOR_TOKEN` from `orchestrator.tokenSecret` (api and worker only), source secrets as `WEBHOOK_*_FILE` mounted only into ingest. `podAnnotations` per component, so oauth2-proxy annotations go on `api` only.
-- `templates/configmap.yaml`: `WEBHOOK_ORCHESTRATOR_URL`, limits and `env`. `templates/secret.yaml`: the inline `orchestrator.token`, `sources.*` and `postgres.url` values, when set.
-- `tests/test_chart_workloads.py` (helm template via a small `helm_render` helper as agent-orchestrator's `tests/helm_render.py`): three Deployments with the right args; migrate initContainer; ingest gets the source secrets and no orchestrator token, worker and api get the token and no source secrets; component podAnnotations land only on their pods; missing postgres fails the render with a clear message; no secret value in the ConfigMap.
+- `values.yaml`: `image {repository harbor.szymonrichert.pl/containers/agents-webhook, tag, pullPolicy}`, `imagePullSecrets`, `postgres {url | existingSecret, existingSecretKey}` (required; no in-chart CNPG), `orchestrator {url, token | tokenSecret {name, key}}`, `publicBaseUrl` (`WEBHOOK_PUBLIC_BASE_URL`), `trustedProxies` (list of CIDRs, `WEBHOOK_TRUSTED_PROXIES`), `env` (extra WEBHOOK_*), `components {ingest {replicas 2, podAnnotations {}, resources}, api {replicas 1, podAnnotations {}, resources}, worker {replicas 1, resources}}`, `service`, `ingress` (used by webhook-chart-network), security contexts as agent-orchestrator (non-root 1000, read-only root FS). No `sources` block.
+- `templates/deployment.yaml`: one Deployment per component running `agents-webhook <component>`, port `http` 8000 for ingest and api, liveness/readiness on `/healthz`/`/readyz` (worker: exec probe or none), an initContainer `agents-webhook migrate`, env from the ConfigMap plus secrets: `WEBHOOK_DATABASE_URL` from `postgres` (all three), `WEBHOOK_ORCHESTRATOR_TOKEN` from `orchestrator.tokenSecret` (api and worker only, never ingest). `podAnnotations` per component, so oauth2-proxy annotations go on `api` only.
+- `templates/configmap.yaml`: `WEBHOOK_ORCHESTRATOR_URL`, `WEBHOOK_PUBLIC_BASE_URL`, `WEBHOOK_TRUSTED_PROXIES`, limits and `env`. `templates/secret.yaml`: the inline `orchestrator.token` and `postgres.url` values, when set.
+- `tests/test_chart_workloads.py` (helm template via a small `helm_render` helper as agent-orchestrator's `tests/helm_render.py`): three Deployments with the right args; migrate initContainer; ingest gets the database URL and no orchestrator token; worker and api get the token; component podAnnotations land only on their pods; missing postgres fails the render with a clear message; no secret value in the ConfigMap; no `sources` value or `WEBHOOK_*_SECRET`/`_TOKEN` source variable rendered.
 
 ## Acceptance conditions
 
 - AC1: ingest, api and worker Deployments run their subcommands after a migrate initContainer [evidence: command:uv run pytest tests/test_chart_workloads.py -q -k deployments]
-- AC2: only ingest mounts source secrets and only api and worker get the orchestrator token [evidence: command:uv run pytest tests/test_chart_workloads.py -q -k secrets]
+- AC2: only api and worker get the orchestrator token and no source secrets are rendered [evidence: command:uv run pytest tests/test_chart_workloads.py -q -k secrets]
 - AC3: pod annotations are per component, so SSO can be put on api only [evidence: command:uv run pytest tests/test_chart_workloads.py -q -k annotations]
 - AC4: helm lint and ruff pass [evidence: command:helm lint chart/agents-webhook && uv run ruff check . && uv run ruff format --check .]
 
@@ -64,3 +64,5 @@ Helm chart workloads (design D2, D13). Paths are in code/agents-webhook.
 ## Notes
 
 - Model on `code/agent-orchestrator/chart/agent-orchestrator/templates/{deployment.yaml,_config.tpl}` (components loop, postgres source).
+
+- 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
