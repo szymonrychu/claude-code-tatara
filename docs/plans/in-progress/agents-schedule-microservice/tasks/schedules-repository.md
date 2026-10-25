@@ -1,6 +1,6 @@
 ---
 title: schedules repository
-status: in-progress
+status: done
 repo: agents-schedule
 value: the api reads and writes schedules through one module that keeps armed_at right
 files: [src/agents_schedule/db/schedules.py, tests/test_schedules_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_schedules_repo.py -q && uv run ruff c
 depends_on: [schema-migrations]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 96559369e583329419cb210f600dd12b139a81ea
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 243936
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 161037, review 82899"
 ---
 
 # schedules repository
@@ -54,3 +54,5 @@ Schedules are stored and edited with armed_at semantics the scheduler relies on.
 ## Notes
 
 - Only the api process calls the write functions (one writer per table).
+
+- 2026-10-25 done
