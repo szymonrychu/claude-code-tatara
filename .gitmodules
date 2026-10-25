@@ -22,3 +22,7 @@
 	path = code/agents-common
 	url = https://github.com/szymonrychu/agents-common
 	branch = main
+[submodule "agents-webhook"]
+	path = code/agents-webhook
+	url = https://github.com/szymonrychu/agents-webhook
+	branch = main

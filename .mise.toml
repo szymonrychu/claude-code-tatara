@@ -34,6 +34,7 @@ run = [
   "mise run --cd code/agents-helmfile test",
   "mise run --cd code/agents-web test",
   "mise run --cd code/agents-common test",
+  "mise run --cd code/agents-webhook test",
 ]
 
 [tasks."code:lint"]
@@ -45,6 +46,7 @@ run = [
   "mise run --cd code/agents-helmfile lint",
   "mise run --cd code/agents-web lint",
   "mise run --cd code/agents-common lint",
+  "mise run --cd code/agents-webhook lint",
 ]
 
 [tasks."code:fmt"]
@@ -56,5 +58,6 @@ run = [
   "mise run --cd code/agents-helmfile fmt",
   "mise run --cd code/agents-web fmt",
   "mise run --cd code/agents-common fmt",
+  "mise run --cd code/agents-webhook fmt",
 ]
 # workbench:code-tasks:end

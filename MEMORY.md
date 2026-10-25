@@ -19,3 +19,4 @@ Dated entries, newest last. Supersede an entry rather than deleting it. One line
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile; via init:refresh.
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web; via component add (new scaffold).
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common; via component add (new scaffold).
+2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common, agents-webhook; via component add (new scaffold).
