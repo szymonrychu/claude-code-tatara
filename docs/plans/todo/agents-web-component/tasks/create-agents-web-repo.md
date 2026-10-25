@@ -55,17 +55,21 @@ The scripts `gen:api` and `check:api` still point at `../openapi.json` after the
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Provides contract `agents-web-repo` (docs/plans/contracts.json): `code/agents-web`, origin https://github.com/szymonrychu/agents-web, the frontend at the repo root with its history, and the import line `agent-orchestrator <sha40>` in its `MEMORY.md`, read by frontend-decoupling tasks web-openapi-vendor and orch-drop-frontend-build.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`code/agents-web` is a workbench submodule whose main holds the moved UI with its git history, green on `npm test` and `npm run lint`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition.
+- `mise run component:add -- ...` as in the requirement; confirm `gh repo view szymonrychu/agents-web`.
+- Subtree split and merge in `code/agents-web`; `npm ci && npm test && npm run lint`: pass; push main.
+- Commit the superrepo changes; run the AC commands.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- No TDD cycle applies: repository creation and a history import with no behaviour change (the moved code's own tests are the check).
+- After this epic closes, the orchestrator runs `git submodule update --init code/agents-web` in the main checkout before frontend-decoupling starts: ticket.py treats a task repo without a `code/<repo>` checkout as a meta task.
+- `git subtree split` keeps the commit history of `frontend/` with paths rewritten to the root; `git merge --allow-unrelated-histories` joins it to the scaffold commit.

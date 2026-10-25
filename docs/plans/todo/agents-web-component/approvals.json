@@ -1,0 +1,9 @@
+[
+  {
+    "id": "G1",
+    "text": "Create the public GitHub repo szymonrychu/agents-web via workbench:component-add (outward-facing, approved by name) as submodule code/agents-web, with the agent-orchestrator frontend history at its root.",
+    "decisions": ["D1"],
+    "tasks": ["create-agents-web-repo"],
+    "status": "approved"
+  }
+]
