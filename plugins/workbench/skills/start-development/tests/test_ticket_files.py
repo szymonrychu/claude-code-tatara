@@ -332,8 +332,9 @@ def test_new_task_expected_from_history(t, root):
     for name, minutes, tokens in (("h1", 10, 100), ("h2", 20, 200), ("h3", 40, 900)):
         _history_task(root, "old", name, points=3, actual_minutes=minutes, actual_tokens=tokens)
     # rows that do not count: not done, missing an actual, a non-numeric actual
-    _history_task(root, "old", "open", "in-progress", points=3, actual_minutes=999,
-                  actual_tokens=999)
+    _history_task(
+        root, "old", "open", "in-progress", points=3, actual_minutes=999, actual_tokens=999
+    )
     _history_task(root, "old", "half", points=3, actual_minutes=999)
     _history_task(root, "old", "junk", points=3, actual_minutes="lots", actual_tokens=999)
     r = new_task(root, "cost-and-ticketing", "Ticket core", points="3")
