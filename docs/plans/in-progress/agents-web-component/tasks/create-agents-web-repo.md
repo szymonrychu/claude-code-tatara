@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-web-component-create-agents-web-repo
+branch: agents-web-component-create-agents-web-repo
 verified_head: ""
 run: ""
 provides: []
