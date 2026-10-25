@@ -1,6 +1,6 @@
 ---
 title: helmfile consumers rename
-status: in-progress
+status: done
 repo: agents-helmfile
 value: agents-webhook and agents-web reach the renamed orchestrator and share its renamed Secrets
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-web/common.yaml, tests/test_webhook_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_webhook_release.py tests/test_web_release.p
 depends_on: [helmfile-orch-release-rename, webhook-docs-sessions, web-docs-names]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4fbd057
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 405865
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 285372, review 120493"
 ---
 
 # helmfile consumers rename
@@ -65,3 +65,5 @@ agents-webhook and agents-web are declared against the renamed orchestrator, Sec
 ## Notes
 
 - agents-web and agents-webhook ingresses carry no cert-manager annotation; the orchestrator ingress owns `agents-orchestrator-tls`.
+
+- 2026-10-25 done
