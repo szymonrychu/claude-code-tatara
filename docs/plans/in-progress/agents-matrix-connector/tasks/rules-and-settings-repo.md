@@ -1,6 +1,6 @@
 ---
 title: rules and settings repo
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "allow and deny rules, room presets and the default preset persist validated"
 files: [src/agents_matrix_connector/db/rules.py, tests/test_rules_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_rules_repo.py -q && uv run ruff check
 depends_on: [directory-repository, access-policy-engine]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 88b5ca0fc8e637a17e460550569ba3231104b04b
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 367266
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 251893, review 115373"
 ---
 
 # rules and settings repo
@@ -64,3 +64,5 @@ Rules and settings persist exactly in the shape `policy.evaluate` and the worker
 ## Notes
 
 - Accept either an `AsyncConnection` or an `AsyncConnectionPool` for the readers (a small helper), so the sync loop can read inside its transaction.
+
+- 2026-10-25 done
