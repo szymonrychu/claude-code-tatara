@@ -1,6 +1,6 @@
 ---
 title: directory repository
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "discovered rooms, users and members are stored and listable with their queue and session state"
 files: [src/agents_matrix_connector/db/__init__.py, src/agents_matrix_connector/db/directory.py, tests/test_directory_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_directory_repo.py -q && uv run ruff c
 depends_on: [mxc-schema-migrations, room-and-event-discovery]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 60cb4a770e48b31f0cd91cbee8e8c77364262f02
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 538798
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 374335, review 164463"
 ---
 
 # directory repository
@@ -64,3 +64,5 @@ The directory tables reflect what sync saw, and the API can list rooms with thei
 
 - Writers never commit; the caller owns the transaction (`async with conn.transaction()`).
 - Use `agents_common.db.pool.open_pool` in tests as agents-webhook's repository tests do.
+
+- 2026-10-25 done
