@@ -6,21 +6,17 @@ value: "malformed statusline input is a 400, never a 500"
 files: [src/claude_code_wrapper/internal_api.py, README.md, tests/test_internal_api.py]
 verify: "uv run pytest tests/test_internal_api.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse, on-start-instance-hook]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-input-validation/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-statusline-input-validation
 verified_head: 195bfaced052cb7ef199dc40e34ccbfc6cafe1c7
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 955673
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 487616, review 468057"
 ---
 
 # statusline input validation

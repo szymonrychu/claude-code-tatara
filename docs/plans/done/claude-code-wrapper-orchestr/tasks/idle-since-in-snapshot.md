@@ -6,21 +6,17 @@ value: Orchestrator can route to the agent idle the longest
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, README.md, tests/test_idle_since.py]
 verify: "uv run pytest tests/test_idle_since.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [wrapper-idle-since]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-idle-since-in-snapshot/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-idle-since-in-snapshot
 verified_head: 9961bc9094a8a0bd2a7a92b12a9d6b83eb14661f
-run: claude-code-wrapper-orchestr
-provides: [wrapper-idle-since]
-acs_for_audit: []
-process_gaps: ["No red run: tests were written after the implementation, as the implementer disclosed", Branch not rebased onto origin/main before the PR]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 15
+actual_tokens: 1575357
+actual_roles: "impl 13, review 2"
+actual_role_tokens: "impl 1374236, review 201121"
 ---
 
 # Idle since in snapshot

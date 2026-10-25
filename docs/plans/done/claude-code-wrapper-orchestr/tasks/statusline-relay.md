@@ -6,22 +6,17 @@ value: Wrapper receives real context-window usage from Claude Code
 files: [src/claude_code_wrapper/cli.py, src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/internal_api.py, src/claude_code_wrapper/bootstrap/settings.py, src/claude_code_wrapper/router.py, README.md, tests/test_statusline_relay.py]
 verify: "uv run pytest tests/test_statusline_relay.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [history-before-seq-and-types]
-owns: [wrapper-statusline-callback]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-relay/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-statusline-relay
 verified_head: 8fa8c5f8e53c17685750536ccacf4435f2715684
-run: claude-code-wrapper-orchestr
-provides: [wrapper-statusline-callback]
-acs_for_audit: []
-process_gaps: []
-fork_point: e6c6e4be81099264628a95b4e3d26e8d443c7991
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 682094
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 578522, review 103572"
 ---
 
 # Statusline relay

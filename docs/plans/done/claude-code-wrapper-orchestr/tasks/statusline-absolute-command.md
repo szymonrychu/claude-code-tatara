@@ -6,22 +6,17 @@ value: "the context gauge and chained statusline work in pods where ccw is not o
 files: [src/claude_code_wrapper/statusline.py, src/claude_code_wrapper/bootstrap/settings.py, tests/test_statusline_relay.py]
 verify: "uv run pytest tests/test_statusline_relay.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse, on-start-instance-hook]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-statusline-absolute-command/claude-code-wrapper
-branch: HEAD
 verified_head: 8cad3c4dd7df7e779d784cd4edefe50c23179382
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: ["The README-only diff command in the prompt covers 28 lines; the code and test changes sit in sibling commit 976c968 and were reviewed via the full merge-base diff (src and tests)."]
-fork_point: d41dd76a6710d1ffe7121ad1817075acdd6ec3ce
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 655202
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 341869, review 313333"
 ---
 
 # statusline absolute command

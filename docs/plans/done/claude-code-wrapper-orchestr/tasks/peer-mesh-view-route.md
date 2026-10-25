@@ -6,21 +6,17 @@ value: Orchestrator can read the peer mesh without holding peers.token
 files: [src/claude_code_wrapper/api/peers.py, src/claude_code_wrapper/peer_membership.py, README.md, tests/test_api_peers_view.py]
 verify: "uv run pytest tests/test_api_peers_view.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [wrapper-peers-view]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-peer-mesh-view-route/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-peer-mesh-view-route
 verified_head: 892610075f08ff303a9f9b8481777d143a0c53e7
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 463866
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 303856, review 160010"
 ---
 
 # Peer mesh view route

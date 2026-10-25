@@ -6,21 +6,17 @@ value: "Chat UI can load newest and scroll back, headless clients can filter"
 files: [src/claude_code_wrapper/events.py, src/claude_code_wrapper/api/events.py, README.md, tests/test_history_backward.py]
 verify: "uv run pytest tests/test_history_backward.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [user-message-event]
-owns: [wrapper-history-backward]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-history-before-seq-and-types/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-history-before-seq-and-types
 verified_head: e6c6e4be81099264628a95b4e3d26e8d443c7991
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 532785
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 408272, review 124513"
 ---
 
 # History before_seq and types

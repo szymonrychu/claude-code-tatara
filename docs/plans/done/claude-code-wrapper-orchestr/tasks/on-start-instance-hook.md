@@ -6,21 +6,17 @@ value: "Agent clusters can install tools such as any-mcp once per pod start, bef
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/service.py, README.md, tests/test_on_start_hook.py]
 verify: "uv run pytest tests/test_on_start_hook.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [wrapper-on-start-hook]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-on-start-instance-hook/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-on-start-instance-hook
 verified_head: 7f04ddc0f40f92c634deb7fac4c9eb243f536e67
-run: claude-code-wrapper-orchestr
-provides: [wrapper-on-start-hook]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 982654
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 844659, review 137995"
 ---
 
 # On start instance hook

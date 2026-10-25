@@ -6,21 +6,17 @@ value: the wrapper full suite is green with the new hook and event vocabulary
 files: [tests/test_command_vocabulary.py, tests/test_event_log.py, src/claude_code_wrapper/hooks.py, src/claude_code_wrapper/events.py]
 verify: "uv run pytest tests/test_command_vocabulary.py tests/test_event_log.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [history-scan-off-event-loop, statusline-absolute-command, statusline-input-validation, idle-since-in-snapshot, user-message-event, history-before-seq-and-types, peer-mesh-view-route, statusline-relay, context-in-snapshot-and-sse, on-start-instance-hook]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-vocabulary-pins/claude-code-wrapper
-branch: "HEAD (worktree claude-code-wrapper-orchestr-vocabulary-pins), commit 4d1989e"
 verified_head: 4d1989edeb1f30843536f0ab583b5d2d5484c445
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: ["No recorded red run for the 20 to 21 pin change. The pre-change failure is in full-suite.log, but tests.red is empty."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 545223
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 355351, review 189872"
 ---
 
 # vocabulary pins

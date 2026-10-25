@@ -6,21 +6,17 @@ value: Orchestrator draws the 0-100 percent context gauge from the wrapper
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_context_surface.py]
 verify: "uv run pytest tests/test_context_surface.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [statusline-relay]
-owns: [wrapper-context-surface]
-uses: [wrapper-statusline-callback]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-context-in-snapshot-and-sse/claude-code-wrapper
-branch: "HEAD (worktree claude-code-wrapper-orchestr-context-in-snapshot-and-sse)"
 verified_head: 25d4cc1897fb1f8e82e8a433ae8fe60572ac05f4
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 917196
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 560408, review 356788"
 ---
 
 # Context in snapshot and SSE

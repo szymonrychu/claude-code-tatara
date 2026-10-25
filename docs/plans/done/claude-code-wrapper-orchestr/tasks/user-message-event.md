@@ -6,22 +6,17 @@ value: Chat UI shows every prompt including peer and restart prompts
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_user_message_event.py]
 verify: "uv run pytest tests/test_user_message_event.py tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [idle-since-in-snapshot]
-owns: [wrapper-user-message-event]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/claude-code-wrapper-orchestr-user-message-event/claude-code-wrapper
-branch: claude-code-wrapper-orchestr-user-message-event
 verified_head: d9c061f9c42ec7fe7afeba4ec13fc127eee5e2c4
-run: claude-code-wrapper-orchestr
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 7e90a15
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: 1579624
+actual_roles: "impl 5, review 6"
+actual_role_tokens: "impl 1051874, review 527750"
 ---
 
 # User message event
