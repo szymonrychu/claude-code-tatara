@@ -1,6 +1,6 @@
 ---
 title: deploy cutover
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live namespace runs agents-orchestrator with the presets carried over, proven by the smoke"
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [helmfile-smoke-sessions]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bfc675b
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 21
+actual_tokens: 864017
+actual_roles: "impl 20, review 1"
+actual_role_tokens: "impl 779669, review 84348"
 ---
 
 # deploy cutover
@@ -68,3 +68,5 @@ The live namespace runs agents-orchestrator on agents-orchestrator-db (presets c
 - User step U1 (Keycloak client agents-orchestrator) must be done before; U2 (remove the old client) comes after a green smoke and is the user's.
 
 - 2026-10-25 amended: review of webhook-session-columns: stop agents-webhook during the column-rename upgrade
+
+- 2026-10-25 done: Preconditions 2026-10-25: (1) active clusters query on old DB printed 0, presets 2; (2) secret/agents-orchestrator-proxy exists (U1 via terraform MR !259); (3) helm show chart found agents-orchestrator 0.1.0-main.bba074f, agents-webhook 0.1.0-main.838ba1f, agents-web 0.1.0-main.5a8d6c8; (4) mise run diff (.logs/rename-prediff.log): only old app release removed, agents-orchestrator and agents-orchestrator-db added, agents-webhook and agents-web changed. agents-webhook scaled to 0 by the orchestrator before step 2 (option used); after step 4 agents_webhook events has session_id/session_slug (0005 applied). Imported DB: 2 presets, schema_migrations 0001-0005. Smoke OK after the any-mcp pin fix f1cba73 (.logs/rename-smoke2.log).
