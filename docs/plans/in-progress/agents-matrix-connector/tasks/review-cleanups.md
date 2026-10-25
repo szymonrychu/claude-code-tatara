@@ -1,6 +1,6 @@
 ---
 title: review cleanups
-status: todo
+status: done
 repo: agents-matrix-connector
 value: "one clock helper, no upstream error text in API bodies, pinned build images"
 files: [src/agents_matrix_connector/clock.py, src/agents_matrix_connector/worker.py, src/agents_matrix_connector/tracker.py, src/agents_matrix_connector/sync.py, src/agents_matrix_connector/api/rooms.py, src/agents_matrix_connector/api/rules.py, Dockerfile, tests/test_api_rules.py, tests/test_ci.py, openapi.json, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_rules.py tests/test_ci.py tests/t
 depends_on: [matrix-identity-spoofing-gua]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 04b817250a0eed375dd9bd96c9ba8ca955e2c3fe
 points: 2
 expected_minutes: 5
 expected_tokens: 531208
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 793921
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 648629, review 145292"
 ---
 
 # review cleanups
@@ -67,3 +67,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
