@@ -1,6 +1,6 @@
 ---
 title: web schedules api client
-status: in-progress
+status: done
 repo: agents-web
 value: the UI talks to the schedule API with generated types through one client module
 files: [openapi/schedules.json, openapi/schedules.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schedules-schema.d.ts, src/schedules/api.ts, src/schedules/api.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs &&
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 10581e41777795dc1c87e1832e488881d897f0a3
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 555608
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 425162, review 130446"
 ---
 
 # web schedules api client
@@ -67,3 +67,5 @@ The UI has a typed client for every schedule route, configured at runtime.
 - Layout per agents-webhook's `src/webhooks/api.ts` (contract `web-webhook-client`): one folder per backend.
 - No CORS: the API is same-origin under its path prefix.
 - Split 2026-10-25: depends_on `api-docs-and-openapi` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.
+
+- 2026-10-25 done
