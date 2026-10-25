@@ -1,6 +1,6 @@
 ---
 title: api docs and openapi
-status: in-progress
+status: done
 repo: agents-schedule
 value: the schedule API is documented and its contract cannot drift silently
 files: [openapi.json, README.md, src/agents_schedule/api/openapi.py, tests/test_readme_api.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py -q && uv run ruff check
 depends_on: [runs-api-routes]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 2b5ab47badff7a4bdbe495fb4f751fe9690f0518
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 854267
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 701066, review 153201"
 ---
 
 # api docs and openapi
@@ -61,3 +61,5 @@ Anything the UI can do is documented as an HTTP call, including the run reasons 
 - `/schedules/api/v1` is additive-only from its first release; agents-web vendors this file.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
