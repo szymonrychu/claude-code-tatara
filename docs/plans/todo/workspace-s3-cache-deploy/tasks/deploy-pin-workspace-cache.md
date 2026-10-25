@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: the deployment pins the orchestrator and web builds that carry the workspace cache
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_web_release.py tests/test_workspace_cache.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster and not test_web_release_chart\" && uv run ruff check . && uv run ruff format --check ."
-depends_on: [cache-docs, web-preset-cache-fields, helmfile-cache-bucket]
+depends_on: [web-preset-cache-fields, helmfile-cache-bucket]
 model: sonnet
 review: ""
 verified_head: ""
@@ -31,6 +31,8 @@ Precondition, checked first: this epic's agents-orchestrator PR and agents-web P
 - `values/agents-orchestrator/common.yaml`: `image.tag` `<orchestrator sha7>`.
 - `values/agents-web/common.yaml`: `image.tag` `<web sha7>`.
 - `tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image` and `tests/test_web_release.py::test_web_pin_matches_image` stay the pin checks (update them only if they hard-code a sha).
+
+Core task in epic workspace-s3-cache that this task depends on (covered by the epic blocker): cache-docs.
 
 ## Acceptance conditions
 

@@ -248,10 +248,10 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
 | D6 Size cap and timeout | cache-config, cache-archive, cache-job-render |
 | D7 Spec field and cache key | cache-config, cache-key-on-create |
 | D8 Generic S3 configuration | cache-config, cache-key-on-create, cache-chart-values |
-| D9 Rook-ceph lives only in agents-helmfile | helmfile-cache-bucket, deploy-pin-workspace-cache, apply-smoke-workspace-cache |
-| D10 Web preset form | web-preset-cache-fields |
+| D9 Rook-ceph lives only in agents-helmfile | cache-chart-values |
+| D10 Web preset form | cache-key-on-create |
 | D11 Failure policy | cache-restore-runner, cache-save-on-discard, cache-docs |
-| D12 Contracts | cache-docs, smoke-workspace-cache |
+| D12 Contracts | cache-docs |
 
 ## Review focus
 
