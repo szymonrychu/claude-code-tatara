@@ -1,6 +1,6 @@
 ---
 title: render wrapper settings
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "agents run with the user's hooks, idle auto-compact and other wrapper settings, with credentials safe from interpolation"
 files: [src/agent_orchestrator/k8s/render.py, tests/test_render.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_render.py && uv run ruff check . &
 depends_on: [spec-config-fields]
 model: ""
 review: full
-verified_head: ""
+verified_head: b655a64
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 1387191
+actual_roles: "impl 8, review 4"
+actual_role_tokens: "impl 1085166, review 302025"
 ---
 
 # render wrapper settings
@@ -67,3 +67,5 @@ A cluster whose spec sets `wrapper` gets a wrapper config.yaml with its hooks an
 ## Notes
 
 The existing `test_rendered_ccw_config_validates` shows how to load the rendered YAML with the wrapper's `load_config`; extend that pattern for a full wrapper block. Highest-risk surface: credentials. Keep the helper pure.
+
+- 2026-10-25 done
