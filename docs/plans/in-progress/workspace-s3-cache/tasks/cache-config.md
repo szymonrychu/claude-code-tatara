@@ -1,6 +1,6 @@
 ---
 title: cache config
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: presets and sessions can carry a validated cache setting and the orchestrator reads generic S3 settings
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/spec.py, tests/test_cache_config.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_config.py && uv run ruff check . && u
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: de8fe0a
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 1255699
+actual_roles: "impl 7, review 3"
+actual_role_tokens: "impl 942319, review 313380"
 ---
 
 # cache config
@@ -67,3 +67,5 @@ Add the workspace cache configuration surface (design D6, D7, D8). Runs after th
 - Follow the existing settings validators (`_Bad`, `SettingsError` naming the variable) and `require_agent_image()`.
 - Use `_Strict` for `WorkspaceCache` so unknown keys are refused; keep the field sparse the way `reuse_running_agent` and `max_replicas` are (unset not dumped).
 - `cache_s3_secret_access_key`: `Field(repr=False)` or `SecretStr`; never log it.
+
+- 2026-10-25 done
