@@ -243,6 +243,7 @@ none
 - Q4: Each schedule carries a required prompt with placeholders {schedule_name} and {fired_at}, sent as the first message to the new cluster? [recommended: yes]
 - Q5: Limits: at most 3 scheduled runs in progress overall and 1 per schedule, the rest waiting FIFO, and a run stuck over 1 hour marked failed (timeout)? [recommended: yes]
 - Q6: The Schedules page lists schedules with enable/disable, run now, edit and delete, and shows each schedule's recent runs with status and a link to the cluster? [recommended: yes]
+- Q7: Menu order Clusters, Webhooks, Schedules, Presets (Schedules directly below Webhooks)? [recommended: yes]
 
 ## Irreversible operations in scope
 
