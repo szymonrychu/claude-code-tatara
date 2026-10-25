@@ -1,6 +1,6 @@
 ---
 title: anymcp release v0.3.0
-status: in-progress
+status: done
 repo: any-mcp
 value: the orchestrator can pin an any-mcp release that speaks the session agent API
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_release.py -k \"versions_agree or pinned_in
 depends_on: [anymcp-plugin-session]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 53b7a66
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 455700
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 270828, review 184872"
 ---
 
 # anymcp release v0.3.0
@@ -62,3 +62,5 @@ any-mcp 0.3.0 is documented, versioned and, after the orchestrator's release ste
 ## Notes
 
 - Tags are never re-pointed; a wrong tag means v0.3.1.
+
+- 2026-10-25 done
