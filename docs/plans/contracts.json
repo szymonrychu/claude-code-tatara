@@ -175,7 +175,8 @@
     "owner": "web-ui-cluster-tabs-with-fil",
     "file": "code/agent-orchestrator/frontend/src/layout/SessionsMenu.tsx",
     "consumers": [
-      "cluster-presets"
+      "cluster-presets",
+      "configuration-improvements"
     ],
     "note": "SessionsMenu settingsCategories: {id, label, onOpen}[] rendered in the settings section pinned to the drawer bottom; cluster-presets adds Presets; this epic removes only the Edit entry points, cluster-presets removes PATCH and the ClusterForm edit code"
   },
