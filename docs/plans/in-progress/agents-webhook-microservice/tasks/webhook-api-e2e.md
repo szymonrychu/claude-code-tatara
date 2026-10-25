@@ -1,6 +1,6 @@
 ---
 title: webhook api e2e
-status: in-progress
+status: done
 repo: agents-webhook
 value: every webhook capability is proven headless through HTTP against the real processes
 files: [tests/e2e/__init__.py, tests/e2e/conftest.py, tests/e2e/test_e2e_api.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/e2e -q && uv run ruff check . && uv run ruff format
 depends_on: [webhook-cli-entrypoints, webhook-openapi-readme, webhook-reuse-routing]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d3bace8
 points: 5
 expected_minutes: 15
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 1142023
+actual_roles: impl 5
+actual_role_tokens: impl 1142023
 ---
 
 # webhook api e2e
@@ -71,3 +71,5 @@ API-only e2e for headless parity (design D14, user decision; re-plan 2026-10-25:
 
 User requirement (2026-10-25), verbatim: "webhook configuration consists of jinja2 template for initial prompt. Jinja2 must include JSON parsing filter. it must be possible to provide an example JSON to check how Jinja templae compiles."
 Orchestrator ruling for this task: the API e2e also covers template preview (a template using `from_json` against an example payload) and an endpoint created with a template whose rendered prompt reaches the cluster as its first message.
+
+- 2026-10-25 done
