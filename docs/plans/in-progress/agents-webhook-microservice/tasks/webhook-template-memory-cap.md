@@ -1,6 +1,6 @@
 ---
 title: webhook template memory cap
-status: todo
+status: done
 repo: agents-webhook
 value: a hostile prompt template cannot OOM the webhook pods
 files: [src/agents_webhook/prompt.py, src/agents_webhook/settings.py, chart/agents-webhook/values.yaml, chart/agents-webhook/templates/_config.tpl, tests/test_prompt.py, tests/test_chart_workloads.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_prompt.py tests/test_chart_workloads.py -o add
 depends_on: [webhook-api-source-allowlist]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 379f315
 points: 2
 expected_minutes: 9
 expected_tokens: 538938
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 14
+actual_tokens: 1332063
+actual_roles: "impl 13, review 11"
+actual_role_tokens: "impl 1157969, review 174094"
 ---
 
 # webhook template memory cap
@@ -61,3 +61,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
