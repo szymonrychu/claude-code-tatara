@@ -1,6 +1,6 @@
 ---
 title: service entrypoints
-status: in-progress
+status: done
 repo: agents-schedule
 value: "the image runs as three commands, and only one worker ever fires schedules"
 files: [src/agents_schedule/cli.py, src/agents_schedule/runtime.py, tests/test_entrypoints.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_entrypoints.py -q && uv run ruff chec
 depends_on: [scheduler-loop, run-dispatcher, run-outcome-tracker, runs-api-routes]
 model: ""
 review: full
-verified_head: ""
+verified_head: 200e17c6b3a08e5c92350a6ea606c65cbb75c4e1
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 575230
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 485110, review 90120"
 ---
 
 # service entrypoints
@@ -61,3 +61,5 @@ The image's three commands run the service; firing is single-instance with failo
 ## Notes
 
 - The singleton plus the unique `(schedule_id, fire_time)` key together make a double fire impossible (design D9).
+
+- 2026-10-25 done
