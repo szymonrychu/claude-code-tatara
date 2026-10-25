@@ -9,6 +9,11 @@ depends_on: [em-dash-edit-guard]
 model: sonnet
 review: ""
 verified_head: cea87f1
+points_actual: 3
+actual_minutes: 28
+actual_tokens: 631476
+actual_roles: "impl 23, review 18"
+actual_role_tokens: "impl 478146, review 153330"
 ---
 
 # Em dash commit guard
@@ -57,3 +62,5 @@ No agent commits a message with an em dash through Bash, in any harness that emi
 - Depends on em-dash-edit-guard only because both edit core.py and hooks.md.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
