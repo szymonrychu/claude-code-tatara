@@ -68,7 +68,6 @@ def test_epic_deltas(repo, root, tmp_path):
     rows = by_slug(report)
     assert set(rows) == {"alpha", "beta", "gamma"}
     alpha = rows["alpha"]
-    assert alpha["legacy"] is False
     assert alpha["points"] == {
         "estimate": 3,
         "actual": 5,
@@ -116,18 +115,15 @@ def test_epic_deltas(repo, root, tmp_path):
     assert "- MdAPE tokens: 75.0%" in lines
 
 
-def test_all_includes_legacy_minutes(repo, root, tmp_path):
+def test_pre_points_tasks_are_not_read(repo, root, tmp_path):
     logs = tmp_path / "logs"
     first = mk_epic(root, "First epic")
     mk_task(root, first, "alpha")
     measured(root, first, "alpha", "3", "68", "2250000")
     mk_task(root, first, "old")
     old = task_path(root, first, "old")
-    legacy_keys = ("points", "expected_minutes", "expected_tokens")
-    edit(old, drop=legacy_keys, notes="- Estimate: 5 points.", status="done",
-         estimate="45", actual="60")  # fmt: skip
-    mk_task(root, first, "bare")
-    edit(task_path(root, first, "bare"), drop=legacy_keys, status="done", estimate="6", actual="")
+    drop = ("points", "expected_minutes", "expected_tokens")
+    edit(old, drop=drop, status="done", estimate="45", actual="60")
     second = mk_epic(root, "Second epic")
     mk_task(root, second, "beta")
     measured(root, second, "beta", "3", "34", "4500000")
@@ -142,43 +138,31 @@ def test_all_includes_legacy_minutes(repo, root, tmp_path):
     report = as_json(deltas(root, logs, "--all", "--json"))
     assert [e["epic"] for e in report["epics"]] == [first, second]  # the live epic is not done
     rows = by_slug(report["epics"][0])
-    legacy = rows["old"]
-    assert legacy["legacy"] is True
-    assert legacy["minutes"] == {
-        "estimate": 45,
-        "actual": 60,
-        "difference": 15,
-        "ratio": pytest.approx(4 / 3),
-    }
-    # minutes only: the Notes points estimate is ignored, so the row is never bucketed by points
-    for metric in ("points", "tokens"):
-        assert legacy[metric] == {
-            "estimate": None,
-            "actual": None,
-            "difference": None,
-            "ratio": None,
-        }
-    assert rows["bare"]["legacy"] is False  # an empty `actual` is not a legacy measurement
-    assert rows["bare"]["minutes"]["actual"] is None
-    assert rows["alpha"]["legacy"] is False
-    # minutes (34, 68), (45, 60), (34, 34): 0.5, 0.25, 0 -> 0.25; tokens 0, 0.5 -> 0.25
-    assert report["epics"][0]["mdape"]["minutes"] == pytest.approx(0.375)
-    assert report["mdape"] == {
-        "points": pytest.approx(0.0),
-        "minutes": pytest.approx(0.25),
-        "tokens": pytest.approx(0.25),
-    }
-    # never written, and never in the rows new-task buckets by points
+    blank = {"estimate": None, "actual": None, "difference": None, "ratio": None}
+    assert all(rows["old"][metric] == blank for metric in METRICS)
+    assert all("legacy" not in row for e in report["epics"] for row in e["rows"])
+    # alpha minutes (34, 68) -> 0.5; beta (34, 34) -> 0; the old row counts toward nothing
+    assert report["epics"][0]["mdape"]["minutes"] == pytest.approx(0.5)
+    assert report["mdape"]["minutes"] == pytest.approx(0.25)
     assert (root / "done" / first / "tasks" / "old.md").read_bytes() == before
-    assert "old" not in json.dumps(ticket.calibration_rows(root))
-    buckets = as_json(deltas(root, logs, "--buckets", "--json"))
-    assert sum(b["n"] for b in buckets.values()) == 3  # alpha, beta, gamma; never the legacy row
 
     r = deltas(root, logs, "--all")
     assert r.returncode == 0, r.stderr
-    assert "| old (legacy) |" in r.stdout
+    assert "legacy" not in r.stdout
+    old_line = next(ln for ln in r.stdout.splitlines() if ln.startswith("| old |"))
+    assert old_line.count(NR) == 12
     assert f"## {first}" in r.stdout and f"## {second}" in r.stdout
-    assert "- MdAPE minutes: 25.0%" in r.stdout.split("## All done epics", 1)[1]
+
+
+def test_legacy_rows_retired():
+    import inspect
+
+    from ticket_cmds import deltas as deltas_mod
+
+    assert not hasattr(deltas_mod, "_legacy")
+    source = inspect.getsource(deltas_mod)
+    assert 'get("estimate"' not in source
+    assert 'get("actual"' not in source
 
 
 def test_buckets_match_new_task(repo, root, tmp_path):

@@ -90,10 +90,8 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
   planned) and ratio (actual / planned) for points (`points` vs `points_actual`), minutes
   (`expected_minutes` vs `actual_minutes`) and tokens (`expected_tokens` vs `actual_tokens`), then the
   MdAPE per metric; a missing value reads `not recorded`. `--all` does that for every done epic and
-  adds the MdAPE over all of them. A task without `points` whose two legacy minutes keys (planned and
-  `actual`, from before points) are whole numbers is a minutes-only row marked `(legacy)`: it counts
-  toward the minutes MdAPE, is never bucketed by points and is never written. `--buckets` prints the
-  per-points table the next `new-task` uses (`calibration.bucket_table` over the done tasks with points
+  adds the MdAPE over all of them. A task without `points` reads `not recorded`; `ticket.py migrate` is the path for pre-points tasks.
+  `--buckets` prints the per-points table the next `new-task` uses (`calibration.bucket_table` over the done tasks with points
   and both actuals: points, minutes, tokens, n, source). `--json` prints any mode as JSON (`epic`,
   `rows`, `mdape`; `--all`: `epics`, `mdape`; `--buckets` alone: the table keyed by points, else under
   `buckets`).

@@ -5,17 +5,13 @@
 (`expected_tokens` vs `actual_tokens`) with the difference (actual - estimate) and the ratio
 (actual / estimate), then the MdAPE per metric. The rows are retro's (`retro._rows`), reading
 the existing `.logs/agents` records but never backfilling them. `deltas --all` does that for
-every done epic and adds the MdAPE over all of them. A task without `points` that carries
-numeric legacy `estimate` and `actual` (minutes) is a minutes-only row marked legacy: it counts
-toward the minutes MdAPE, is never bucketed by points and is never written. `deltas --buckets`
-prints `calibration.bucket_table` over `ticket.calibration_rows`, the rows `new-task` uses.
+every done epic and adds the MdAPE over all of them. `deltas --buckets` prints `calibration.bucket_table` over `ticket.calibration_rows`, the rows `new-task` uses.
 `--json` prints any mode as JSON. Read-only: no file is written and nothing is committed.
 """
 
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -29,14 +25,13 @@ LABELS = {
     "minutes": ("Minutes", "expected"),
     "tokens": ("Tokens", "expected"),
 }
-WHOLE = re.compile(r"[0-9]+")
 
 
 def register(sub, t) -> None:
     sp = sub.add_parser("deltas", help="estimate against actual per task, and the bucket table")
     sp.set_defaults(fn=lambda a: run(a, t))
     sp.add_argument("epic", nargs="?")
-    sp.add_argument("--all", action="store_true", help="every done epic, legacy tasks included")
+    sp.add_argument("--all", action="store_true", help="every done epic")
     sp.add_argument(
         "--buckets", action="store_true", help="the per-points table new-task estimates from"
     )
@@ -78,15 +73,6 @@ def _logs(a, t, root: Path) -> str | None:
     return str(found) if found else None
 
 
-def _legacy(meta: dict) -> tuple[int, int] | None:
-    """(estimate, actual) minutes of a pre-points task, when it has no `points` and both
-    legacy keys are whole numbers."""
-    if meta.get("points") not in (None, ""):
-        return None
-    pair = (str(meta.get("estimate", "")), str(meta.get("actual", "")))
-    return (int(pair[0]), int(pair[1])) if all(WHOLE.fullmatch(v) for v in pair) else None
-
-
 def _metric(estimate, actual) -> dict:
     known = None not in (estimate, actual)
     return {
@@ -99,14 +85,9 @@ def _metric(estimate, actual) -> dict:
 
 def _report(a, t, root: Path, epic_dir: Path) -> dict:
     ns = SimpleNamespace(logs=_logs(a, t, root), transcripts=None)
-    metas = {p.stem: meta for p, meta in t._tasks_of(epic_dir)}
     rows = []
     for r in retro._rows(ns, t, root, epic_dir, backfill=False):
-        legacy = _legacy(metas[r["slug"]])
-        if legacy:
-            r = {**r, **{k: None for _, est, act in METRICS for k in (est, act)}}
-            r["expected_minutes"], r["actual_minutes"] = legacy
-        row = {"slug": r["slug"], "title": r["title"], "legacy": bool(legacy)}
+        row = {"slug": r["slug"], "title": r["title"]}
         row.update({name: _metric(r[est], r[act]) for name, est, act in METRICS})
         rows.append(row)
     return {"epic": epic_dir.name, "rows": rows, "mdape": _mdape(rows)}
@@ -135,7 +116,7 @@ def _epic_text(report: dict, heading: str) -> list[str]:
         header += [f"{label} (difference)", f"{label} (ratio)"]
     cells = []
     for row in report["rows"]:
-        line = [row["title"] + (" (legacy)" if row["legacy"] else "")]
+        line = [row["title"]]
         for name, _, _ in METRICS:
             m = row[name]
             line += [retro._cell(m["estimate"]), retro._cell(m["actual"])]
