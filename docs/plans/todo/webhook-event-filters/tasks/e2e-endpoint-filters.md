@@ -47,17 +47,20 @@ Prove endpoint filters end to end through the API only (design D5, D7, D10), and
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes contract `webhook-api` (api-endpoint-filters) and the ingest behaviour of ingest-applies-filters; no production code changes. `tests/e2e/conftest.py:Stack.create_endpoint(type, **body)` already forwards extra body keys, so `filters=` passes through.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The API-only e2e suite proves deny, allow miss, pass, PUT replacement, Grafana label deny and the preview on the real stack, and nothing in it relies on `WEBHOOK_ALLOWED_AUTHORS`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the five new tests, change `test_ignore_reasons_are_listed` and drop the env line from the conftest.
+- Red, by mutation: temporarily make `filters.evaluate` return None (do not commit this), run `uv run pytest tests/e2e/test_e2e_api.py -q -k "filter or ignore_reasons or grafana_label"`: the new tests and the changed reasons test fail on the missing `filter_*` reason. Restore the function. Docker must be running.
+- Green: run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Test-only task: production behaviour came with ingest-applies-filters and api-endpoint-filters, so the red step is the mutation above; report it as such, with the failing output.
+- The handled path needs the fake orchestrator to complete the turn, as `test_create_endpoint_receive_event_and_complete` does; reuse its waiting helpers.
+- Payload builders are in `tests/payloads.py` (`gh_issues`, `gh_pull_request`, `grafana_alert(labels=...)`).

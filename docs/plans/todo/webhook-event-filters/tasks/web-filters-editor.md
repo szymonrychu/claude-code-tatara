@@ -50,17 +50,20 @@ New `src/webhooks/FiltersEditor.tsx`, `FiltersEditor({type, fields, value, onCha
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New `src/webhooks/FiltersEditor.tsx`: `export function FiltersEditor(props: {type: string; fields: string[]; value: Filters; onChange: (next: Filters) => void}): JSX.Element` and `export const EMPTY_FILTERS: Filters` (`{allow: [], deny: []}`). Consumed by web-create-endpoint-filters and web-edit-endpoint-filters.
+- Uses `Filters`, `FilterRule` from `src/webhooks/api.ts` (web-vendor-filters-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A controlled MUI component that edits allow and deny rules for one endpoint type and reports a valid-shaped `Filters` value.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/webhooks/FiltersEditor.test.tsx` with the five named tests (Testing Library + user-event, as `Endpoints.test.tsx`). Run `npx vitest run src/webhooks/FiltersEditor.test.tsx`: fails on the missing module.
+- Green: write the component. Run the verify: all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep values as one string per line in local state so typing a newline does not lose the cursor; report the split list through `onChange`.
+- The drop-on-type-change can be an effect keyed on `type` and `fields`, or done by the parent; the test renders the editor, rerenders with a new `type`/`fields`, and expects `onChange` with the dropped rules.
+- Follow the MUI imports style of `CreateEndpointDialog.tsx` (per-component default imports).

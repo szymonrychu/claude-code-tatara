@@ -50,17 +50,19 @@ Edit an existing endpoint's filters from the endpoints list (design D6, D8). Use
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New `src/webhooks/FiltersDialog.tsx`: `export function FiltersDialog(props: {endpoint: EndpointView; fields: string[]; open: boolean; onClose: () => void; onSaved: (updated: EndpointView) => void}): JSX.Element`.
+- Uses `FiltersEditor` (web-filters-editor), `setEndpointFilters`, `previewTemplate`, `getMeta` (web-vendor-filters-api), `sampleFor` (`samples.ts`), `FormError` (`src/triggers`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An operator changes an endpoint's allow and deny rules without recreating it (same URL and credentials) and checks an example against them before saving.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/webhooks/FiltersDialog.test.tsx` with the five named tests, rendering `EndpointsList` with a fetch mock for `/endpoints`, `/meta`, `/templates/preview` and the PUT. Run `npx vitest run src/webhooks/FiltersDialog.test.tsx`: fails on the missing module and button.
+- Green: the dialog, the list button, the MEMORY.md line. Run the verify: all pass, including the existing list, rotate and delete tests in `Endpoints.test.tsx`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep the dialog body mounted only while open (as `CreateEndpointDialog` does with its inner `Body`) so reopening resets local state to the endpoint's saved rules.
+- The existing `Endpoints.test.tsx` list tests may need the `/meta` route in their fetch mock; do not change their assertions.

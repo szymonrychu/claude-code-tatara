@@ -43,17 +43,20 @@ Apply to the live `agents` namespace and prove it (design D9; brief: "The orches
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes every release of this epic; writes only MEMORY.md.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live namespace runs the filter-capable agents-webhook and agents-web, the endpoints table has the `filters` column, and the smoke is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `mise run diff`: only the expected changes; quote it in the notes; end the round with "ready for apply".
+- The orchestrator runs `mise run apply` in the main session.
+- `mise run diff`: no drift; `mise run smoke`: exit 0; add the MEMORY.md line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No TDD cycle applies: this task runs deploy checks and writes one MEMORY.md line (doc edit exception).
+- The migration 0004 (additive column) runs on apply in the migrate initContainer; it was listed at the gate as the epic's irreversible operation.
+- `mise run apply` never appears in AC evidence.

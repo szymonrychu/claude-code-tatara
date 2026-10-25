@@ -45,17 +45,18 @@ Extend the live smoke with an endpoint filter check that cannot start a cluster 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes contract `webhook-api` (api-endpoint-filters): `POST /endpoints` with `filters`, `PUT /endpoints/{id}/filters`, `POST /templates/preview` with `filters`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` proves on the live namespace that filters are stored, evaluated and replaceable, with no new side effect beyond the temporary endpoint and the one ignored event.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend `tests/test_smoke_script.py` (happy path, the new failure cases, the only-one-delivery test). Run `uv run pytest tests/test_smoke_script.py -q`: they fail on the missing calls and log lines.
+- Green: the smoke.sh steps. Run the verify: all pass, shellcheck clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Retro proposal (recurring): for every cleanup path ask what runs if the producing step fails or a variable is empty. Here: `ENDPOINT_ID` is set only after a successful create; the new steps run after it, so the trap's delete has an id; a failed create leaves `ENDPOINT_ID` empty and the trap must skip the delete (existing behaviour, keep it).
+- Credentials stay on curl stdin as today; the new calls go to the api port-forward, which needs no credentials.

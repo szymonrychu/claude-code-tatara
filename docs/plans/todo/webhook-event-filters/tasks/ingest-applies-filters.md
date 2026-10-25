@@ -53,17 +53,20 @@ Apply each endpoint's filters at ingest (design D1, D3, D5, D10). User decision:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_webhook/ingest/app.py:create_ingest_app` behaviour: 202 `{id, status, reason}` with `reason` in `filter_denied: <field>` / `filter_not_allowed: <field>` (contract `webhook-ingest-url`, response shape unchanged).
+- Uses `filters.evaluate` (filter-rules-engine) and `Endpoint.filters` from `endpoints.authenticate` (endpoint-filters-storage).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An endpoint with `{"deny": [{"field": "title", "match": "regex", "values": ["^WIP"]}]}` answers a `WIP: x` PR with 202 ignored `filter_denied: title`; the README explains every field and rule.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the five ingest tests (create the endpoint with filters through `endpoints.create`), the README tests and the store sample change. Run `uv run pytest tests/test_ingest_http.py tests/test_readme_config.py tests/test_event_store.py -q`: the new ingest tests fail (delivery stored new), the README tests fail (no reasons, no section). Docker must be running.
+- Green: the evaluate call in `_deliver`, the README sections. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `classify` still takes `allowed_authors` here; retire-allowed-authors removes it later. Do not touch it in this task.
+- Keep the module docstring's step list accurate (it names the per-request order).
+- The README field table is design D3's table; copy its applicability and the "not offered" list.

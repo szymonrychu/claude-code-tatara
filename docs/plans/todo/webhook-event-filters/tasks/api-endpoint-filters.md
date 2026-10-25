@@ -54,17 +54,20 @@ Expose endpoint filters in the UI API (design D6, D10). User decision: "Configur
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `webhook-api` (README `## API`, `openapi.json`), extended: `EndpointIn.filters`, `EndpointView.filters`, `PUT /webhooks/api/v1/endpoints/{id}/filters` (body `Filters`, 200 `EndpointView`, 404, 422), `PreviewIn {template?, type, example, filters?}`, `PreviewOut {prompt: str | null, filters: {passed, reason} | null}`, `Meta.filter_fields`. Consumed by web-vendor-filters-api, smoke-webhook-filters, e2e-endpoint-filters.
+- Uses `endpoints.create`, `endpoints.set_filters` (endpoint-filters-storage), `filters.validate`, `filters.evaluate`, `filters.FIELDS` (filter-rules-engine).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -X PUT -d '{"deny":[{"field":"labels","values":["env=staging"]}]}' $API/endpoints/3/filters` on a grafana-alert endpoint returns its view with the rule; the preview tells whether an example passes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the seven tests to `tests/test_api.py`. Run `uv run pytest tests/test_api.py -q`: they fail (no field, no route, preview requires template). Docker must be running.
+- Green: schemas, routes, README API sections, regenerate `openapi.json`. Run the verify: all pass, `tests/test_readme_api.py` green (route documented, curl example, no drift), lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Validate filters in the route with the endpoint type; pass the pydantic model as `model_dump()` into the repo, which validates again (single source `filters.validate`).
+- Existing preview tests send `template`; they must keep passing unchanged (the response gains `filters: null`, `prompt` stays a string).
+- `FilterRule.field` stays a plain `str` in the schema; the per-type check is `filters.validate`'s, so the error names the type.

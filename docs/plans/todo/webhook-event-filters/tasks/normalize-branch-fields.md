@@ -48,17 +48,21 @@ Add the PR/MR branch names to the normalized event, so endpoint filters can matc
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_webhook/normalize.py:NormalizedEvent`: adds `source_branch: str | None = None`, `target_branch: str | None = None` after `changed` (contract `webhook-normalized-event`, consumed by filter-rules-engine).
+- `normalize(endpoint_type, headers, payload)` signature unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`normalize("github-pr", ...)` and `normalize("gitlab-mr", ...)` return events whose `source_branch` and `target_branch` are the PR/MR head and base branch names; every other event has None.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four tests to `tests/test_normalize.py`, extending the builders in `tests/payloads.py` with `head`/`base` refs (GitHub) and `source_branch`/`target_branch` (GitLab MR attrs and the Note Hook `merge_request`). Run `uv run pytest tests/test_normalize.py -q`: the new tests fail with `AttributeError` or `TypeError` on the missing fields.
+- Green: add the two fields and set them in `_github` and `_gitlab`. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `_event(...)` passes `**fields` into `NormalizedEvent`; add the branches as keyword fields there.
+- GitHub: in `_github`, `item` is `payload["pull_request"]` for the three PR events; for `issue_comment`, `item` is the issue and has no `head`.
+- GitLab: in `_gitlab`, `item` is `object_attributes` for MR hooks and `payload["merge_request"]` for notes.
+- Use a small helper that returns the value only when it is a non-empty `str`.

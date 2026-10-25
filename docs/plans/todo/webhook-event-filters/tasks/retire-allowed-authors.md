@@ -56,17 +56,20 @@ Retire the global `WEBHOOK_ALLOWED_AUTHORS` setting and its reason `author_not_a
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `webhook-settings-env` loses `WEBHOOK_ALLOWED_AUTHORS` (consumer deploy-pin-webhook-filters drops it from the helmfile values).
+- `normalize.classify(event, *, bot_logins: Collection[str]) -> str | None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The only author allowlist is a per-endpoint filter rule; the service no longer reads `WEBHOOK_ALLOWED_AUTHORS`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three retirement tests and apply the named test changes. Run `uv run pytest tests/test_normalize.py tests/test_schema_settings.py tests/test_readme_config.py -q`: the retirement tests fail (field, parameter and README rows still present).
+- Green: remove the setting, the parameter and branch, the ingest kwarg and the README rows; add the MEMORY.md line. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Removal with a pinning test, not a file deletion, so the TDD cycle applies normally.
+- e2e-endpoint-filters already moved the e2e stack and its reasons test off the setting; `tests/test_event_store.py` was moved by ingest-applies-filters.
+- Ask of every removed line (retro proposal): what reads this value if it is still set in a live environment? `extra="ignore"` in `WebhookSettings.model_config` makes a leftover env var inert; the helmfile values drop it in deploy-pin-webhook-filters.

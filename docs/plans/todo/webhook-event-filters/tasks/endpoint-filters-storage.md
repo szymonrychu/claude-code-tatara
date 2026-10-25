@@ -48,17 +48,22 @@ Store each endpoint's filters and load them with the endpoint (design D1). User 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_webhook/db/endpoints.py` (contract `webhook-endpoints`): `Endpoint.filters: dict`, `EndpointIn.filters: Any = None`, `create(...)` unchanged signature, new `set_filters(conn, id, data) -> Endpoint | None`. Consumed by ingest-applies-filters (`authenticate` returns filters) and api-endpoint-filters (create, set_filters).
+- Uses `filters.validate`, `filters.EMPTY` (filter-rules-engine).
+- Schema: `endpoints.filters jsonb NOT NULL` (migration 0004).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every endpoint row carries its filters; the repo validates them on create and on replace; ingest gets them from the one `authenticate` query it already runs.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the six tests to `tests/test_endpoints_repo.py` (they use the existing `db` fixture with migrations applied). Run `uv run pytest tests/test_endpoints_repo.py -q`: the new tests fail (no column, no `set_filters`). Docker must be running (testcontainers Postgres).
+- Green: the migration, the dataclass fields, `_COLUMNS`, `create`, `set_filters`. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `Endpoint(*row[:-1])` in `authenticate` is positional over `_COLUMNS`; put `filters` in `_COLUMNS` (and in the dataclass at the same position) so the slice still drops only `password_hash`. `expected_username = row[5]` indexes the username: keep `username` at index 5 or update the index.
+- Write JSON with `psycopg.types.json.Jsonb` (as `db/events.py` does).
+- `Endpoint` is frozen; a `dict` field is fine for reading. Callers never mutate it.
+- The row-level writer rule (api only) is unchanged: ingest still only reads.

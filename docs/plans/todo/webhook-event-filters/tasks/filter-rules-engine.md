@@ -62,17 +62,23 @@ New module `src/agents_webhook/filters.py`:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_webhook/filters.py` (contract `webhook-filters`): `FIELDS`, `MATCHES`, `EMPTY`, `DENIED`, `NOT_ALLOWED`, `MAX_RULES`, `MAX_VALUES`, `MAX_VALUE_LENGTH`, `MAX_TEXT`, `validate(endpoint_type: str, data: Any) -> dict`, `evaluate(event: NormalizedEvent, filters: Mapping[str, Any]) -> str | None`. Consumed by endpoint-filters-storage (validate on write), ingest-applies-filters (evaluate), api-endpoint-filters (validate, FIELDS for `/meta`, evaluate for the preview).
+- Reads `NormalizedEvent` including `source_branch`/`target_branch` from normalize-branch-fields.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`validate("grafana-alert", {"deny": [{"field": "labels", "values": ["env=staging"]}]})` returns the canonical dict; `evaluate` of a Grafana event whose `commonLabels` has `env: staging` returns `"filter_denied: labels"`; a GitHub PR by `mallory` against `{"allow": [{"field": "author", "values": ["alice"]}]}` returns `"filter_not_allowed: author"`; a catastrophic pattern runs in linear time.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `uv add google-re2` (writes pyproject.toml and uv.lock); confirm `uv run python -c "import re2; re2.compile('a+')"` works.
+- Red: write `tests/test_filters.py` with the thirteen named tests, building events with `NormalizedEvent(...)` directly (no payload parsing). Run `uv run pytest tests/test_filters.py -q`: collection fails on the missing module.
+- Green: write `filters.py`. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- RE2 Python API: `re2.compile(pattern)` raises `re2.error` on an unsupported pattern; compiled objects have `.search(text)`. Map `re2.error` to `ValueError` with the rule path.
+- The ReDoS test must bound wall time (`time.monotonic()` around `evaluate`, assert < 1.0 s) so it would fail on a backtracking engine; do not mark it slow or skip it.
+- Grafana `labels` is a `dict[str, str]`; forge `labels` is a `list[str]` (see `normalize.py`). The type of `event.labels` follows `event.type`.
+- Keep `filters.py` free of I/O and of FastAPI/pydantic imports; the API layer has its own schema (api-endpoint-filters).
+- No stored filter JSON exists yet; storage is the next task.

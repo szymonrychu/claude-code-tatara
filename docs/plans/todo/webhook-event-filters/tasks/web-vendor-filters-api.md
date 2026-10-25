@@ -45,17 +45,20 @@ Vendor the extended webhook API into agents-web and expose it in the typed clien
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Contract `web-webhook-client` (`src/webhooks/api.ts`): adds `Filters`, `FilterRule`, `FilterResult`, `setEndpointFilters`; `EndpointView.filters`, `WebhookMeta.filter_fields`, `PreviewIn`/`PreviewOut` follow the schema. Consumed by web-filters-editor, web-create-endpoint-filters, web-edit-endpoint-filters.
+- Consumes contract `webhook-api` (api-endpoint-filters) through `openapi/webhooks.json`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI code can read and write endpoint filters and preview them with full types.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Run `npm ci --no-audit --no-fund`, then `npm run sync:api -- webhooks --from ../agents-webhook`; expect the three vendored files to change.
+- Red: add the two tests to `src/webhooks/api.test.ts`; run `npx vitest run src/webhooks/api.test.ts`: they fail on the missing export.
+- Green: the exports in `api.ts`. Run the verify: all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `sync-api.mjs` refuses when the source `openapi.json` has uncommitted changes; the agents-webhook commit of api-endpoint-filters is already in the tree.
+- Existing callers of `previewTemplate` (CreateEndpointDialog) still type-check because `template` stays accepted; their behaviour changes in web-create-endpoint-filters.

@@ -50,17 +50,20 @@ Precondition, checked first: the agents-webhook and agents-web PRs of this epic 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes contracts `agents-webhook-chart`, `agents-webhook-image` (agents-webhook main CI) and the agents-web chart and image; `webhook-settings-env` without `WEBHOOK_ALLOWED_AUTHORS` (retire-allowed-authors).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run diff` would show only the two version bumps, the two image tags and the removed env entry.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Precondition: `git -C ../agents-webhook log origin/main -1` and `git -C ../agents-web log origin/main -1` contain this epic's merges; `helm show chart oci://harbor.szymonrichert.pl/charts/agents-webhook --version 0.1.0-main.<sha7>` and the same for agents-web succeed; quote them in the notes.
+- Red: set the new shas in the two tests and add `test_allowed_authors_not_set`. Run `uv run pytest tests/test_webhook_release.py tests/test_web_release.py -q`: the pin tests and the new test fail.
+- Green: the helmfile versions and the values. Run the verify: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Take the latest agents-webhook and agents-web main merges that contain this epic (another epic may have merged after).
+- The migration 0004 runs in the migrate initContainer on apply (additive column, approved at the gate).
+- Never run `mise run apply`; apply-smoke-webhook-filters and the orchestrator do.

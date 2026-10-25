@@ -47,17 +47,18 @@ Set filters when creating an endpoint and check them in the example-JSON preview
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `FiltersEditor`, `EMPTY_FILTERS` (web-filters-editor), `getMeta`, `createEndpoint`, `previewTemplate` (web-vendor-filters-api). `CreateEndpointDialogProps` unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The New endpoint dialog sets allow and deny rules, and Preview answers whether the example JSON passes them, with or without a template.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four tests to `src/webhooks/Endpoints.test.tsx` (its fetch mock gains `GET /meta` with `filter_fields`). Run `npx vitest run src/webhooks/Endpoints.test.tsx`: they fail (no editor, preview disabled without a template).
+- Green: the dialog and samples changes. Run the verify: all pass, including the existing create, error and credentials tests.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Existing tests that preview a template keep passing: the request still carries `template`, and `filters` is omitted when there are no rules.
+- `WebhooksPage.test.tsx` renders the dialog through the page; its fetch mock may need the `/meta` route too.
