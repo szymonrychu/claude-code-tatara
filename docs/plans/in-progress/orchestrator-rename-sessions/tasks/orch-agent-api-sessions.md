@@ -1,6 +1,6 @@
 ---
 title: orch agent api sessions
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agents talk to their session through X-Orch-Session with any-mcp v0.3.0
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/k8s/on_start.py, src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, openapi.json, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_api_agent.py tests/test_agent_port.py tests
 depends_on: [orch-sessions-sweep, anymcp-release-v0-3-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 4811b4a
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 12
+actual_tokens: 2659846
+actual_roles: "impl 9, review 3"
+actual_role_tokens: "impl 2448036, review 211810"
 ---
 
 # orch agent api sessions
@@ -69,3 +69,5 @@ Agents reach their session's agent API with any-mcp v0.3.0; the old header is re
 ## Notes
 
 - The token derivation input (`purpose:session id`) is unchanged, so live tokens stay valid across the rename.
+
+- 2026-10-25 done
