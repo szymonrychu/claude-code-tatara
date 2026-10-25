@@ -1,6 +1,6 @@
 ---
 title: endpoint filters storage
-status: in-progress
+status: done
 repo: agents-webhook
 value: each endpoint keeps its filters and ingest gets them from the auth query it already runs
 files: [src/agents_webhook/migrations/0004_endpoint_filters.sql, src/agents_webhook/db/endpoints.py, tests/test_endpoints_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_endpoints_repo.py -q && uv run ruff check . &&
 depends_on: [filter-rules-engine]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 54502c4
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 489357
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 241425, review 247932"
 ---
 
 # endpoint filters storage
@@ -67,3 +67,5 @@ Every endpoint row carries its filters; the repo validates them on create and on
 - Write JSON with `psycopg.types.json.Jsonb` (as `db/events.py` does).
 - `Endpoint` is frozen; a `dict` field is fine for reading. Callers never mutate it.
 - The row-level writer rule (api only) is unchanged: ingest still only reads.
+
+- 2026-10-25 done
