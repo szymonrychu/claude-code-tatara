@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Turn the component-add scaffold of `code/agents-matrix-connector` (orchestrator step O1) into the Python project of the connector (design D1, D15). Paths are in code/agents-matrix-connector.
 
-- `pyproject.toml`: project `agents-matrix-connector`, `requires-python >=3.12`, version `0.1.0`; dependencies `agents-common @ git+https://github.com/szymonrychu/agents-common@<tag>` where `<tag>` is `v0.2.0` (the current release; gate item 16, 2026-10-25: the connector starts before orchestrator-rename-sessions, and task mxc-common-session-names bumps the pin to v0.3.0 once that epic releases it), `fastapi`, `uvicorn[standard]`, `httpx`; dev group `agents-common[testing] @ git+...@<same tag>`, `ruff`, `pytest`, `pytest-asyncio` (the agents-webhook `pyproject.toml` layout: `[tool.pytest.ini_options] pythonpath = ["src", "tests"]`, `asyncio_mode = "auto"`, the same ruff settings); console script `agents-matrix-connector = "agents_matrix_connector.cli:main"`.
+- `pyproject.toml`: project `agents-matrix-connector`, `requires-python >=3.12`, version `0.1.0`; dependencies `agents-common @ git+https://github.com/szymonrychu/agents-common@<tag>` where `<tag>` is `v0.3.0` (the release with session names, tagged at 6dd79c8 on 2026-10-25; task mxc-common-session-names then only confirms the pin and the session names), `fastapi`, `uvicorn[standard]`, `httpx`; dev group `agents-common[testing] @ git+...@<same tag>`, `ruff`, `pytest`, `pytest-asyncio` (the agents-webhook `pyproject.toml` layout: `[tool.pytest.ini_options] pythonpath = ["src", "tests"]`, `asyncio_mode = "auto"`, the same ruff settings); console script `agents-matrix-connector = "agents_matrix_connector.cli:main"`.
 - `uv.lock` from `uv lock`.
 - `.mise.toml` (the scaffold's mise config): tasks `install`, `test`, `lint`, `fmt`, `test:chart`, `lint:chart` as agents-webhook's `mise.toml`, chart path `chart/agents-matrix-connector`.
 - `src/agents_matrix_connector/__init__.py`: `__version__` read from the installed package metadata.
@@ -39,7 +39,7 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - AC1: `agents-matrix-connector --version` prints the package version and exits 0 [evidence: test:tests/test_cli.py::test_version]
 - AC2: an unknown subcommand exits 2 and prints the usage to stderr [evidence: test:tests/test_cli.py::test_unknown_subcommand_exits_2]
-- AC3: agents-common is pinned to tag v0.2.0 [evidence: command:grep -q 'agents-common @ git+https://github.com/szymonrychu/agents-common@v0.2.0' pyproject.toml && uv run --frozen python -c "import agents_common"]
+- AC3: agents-common is pinned to tag v0.3.0 [evidence: command:grep -q 'agents-common @ git+https://github.com/szymonrychu/agents-common@v0.3.0' pyproject.toml && uv run --frozen python -c "import agents_common"]
 - AC4: the lock is current, the agents-common pytest plugin is registered and lint passes [evidence: command:uv lock --check && grep -q 'agents_common.testing' tests/conftest.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
@@ -74,3 +74,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - Design D16: model choice per task is recorded in design.md.
 
 - 2026-10-25 amended: gate item 16 (user 'Go' 2026-10-25): start the connector before orchestrator-rename-sessions; pin agents-common v0.2.0 now, bump in mxc-common-session-names
+
+- 2026-10-25 amended: agents-common v0.3.0 is tagged (6dd79c8); pin it directly (main orchestrator, 2026-10-25)
