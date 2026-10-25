@@ -1,6 +1,6 @@
 ---
 title: cache archive
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a workspace packs into a capped tar.zst and unpacks safely, never outside the workdir"
 files: [src/agents_orchestrator/cache/__init__.py, src/agents_orchestrator/cache/archive.py, pyproject.toml, uv.lock, tests/test_cache_archive.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_archive.py && uv run ruff check . && 
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8dfe3f0
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 16
+actual_tokens: 2203889
+actual_roles: impl 16
+actual_role_tokens: impl 2203889
 ---
 
 # cache archive
@@ -71,3 +71,5 @@ A workdir with files, a symlink and an excluded `node_modules/` packs to a `.tar
 - Count compressed bytes in a small writer wrapper and raise `TooLarge` there.
 - Walk with `os.scandir`/`os.walk(followlinks=False)`; use `lstat` to skip sockets, FIFOs and devices.
 - Never `rmtree` or clear the workdir (retro: computed-path writes).
+
+- 2026-10-25 done: Review medium finding (no member-count cap) dropped: archives come only from this session's own save and unpack onto the same session PVC, so a member flood is no more than the agent could create directly.
