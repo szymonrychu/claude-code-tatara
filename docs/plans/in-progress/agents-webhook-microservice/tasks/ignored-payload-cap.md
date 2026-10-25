@@ -41,13 +41,14 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Ignored rows hold a payload of at most about 4 KiB; new rows keep the full payload; the events list still shows the reason.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write `test_ignored_rows_store_truncated_payload` (each ignored path) and a new-row full-payload assertion; run `uv run pytest tests/test_event_store.py -o addopts= -q -k truncated`: fails.
+- Truncate ignored payloads in db/events.py record(); rerun: passes.
+- Run the verify command: tests pass, ruff clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+Origin: ingest security review 2026-10-25 (scratchpad wh-sec-ingest.md). DB tests use the local Postgres at postgresql://test@127.0.0.1:55433/postgres via a temporary, uncommitted pg_url override.
