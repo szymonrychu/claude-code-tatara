@@ -1,0 +1,33 @@
+{
+  "epic": "ticket-overlap-repo-aware",
+  "base": "main",
+  "baseBefore": "17230b5c442b0319c1fa01190dac0bcbec6c4327",
+  "baseAfter": "a3259a874dba702f5e517bd5df6a1b82d9bc1ee7",
+  "epicTip": "a3259a874dba702f5e517bd5df6a1b82d9bc1ee7",
+  "integrationVerify": {
+    "command": "mise run lint && mise run test:plugin",
+    "passed": true
+  },
+  "mainVerify": {
+    "command": "mise run lint && mise run test:plugin",
+    "passed": true,
+    "tail": [
+      "[lint:agents-md] Finished in 16.1ms",
+      "[lint:plugin] [lint] $ ruff check scripts skills hooks",
+      "[lint:plugin] [lint] $ shellcheck scripts/*.sh skills/*/scripts/*.sh skills/_lib/*.sh hooks/*\u2026",
+      "[lint:harness] Finished in 140.1ms",
+      "[lint:root] Finished in 228.3ms",
+      "[lint:em-dash] Finished in 239.5ms",
+      "[lint:config-dir] Finished in 259.6ms",
+      "[lint:personal] Finished in 612.8ms",
+      "[lint:plugin] Finished in 649.9ms",
+      "[lint:secrets] \u001b[90m8:33PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mscanned ~5492520 bytes (5.49 MB) in 168ms\u001b[0m",
+      "[lint:secrets] \u001b[90m8:33PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m",
+      "[lint:secrets] Finished in 5.68s",
+      "Finished in 5.72s",
+      "[test:plugin] $ ~/Documents/claude-code-tatara/mise-tasks/test/plugin",
+      "[test] $ bash scripts/run-tests.sh"
+    ]
+  },
+  "at": "2026-10-25T19:38:16+00:00"
+}
