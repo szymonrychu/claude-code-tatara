@@ -1,6 +1,6 @@
 ---
 title: smoke config check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live smoke proves the new configuration on the deployed orchestrator
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.p
 depends_on: [config-cluster-views]
 model: ""
 review: ""
-verified_head: ""
+verified_head: b789904
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 6
+actual_tokens: 407052
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 291992, review 115060"
 ---
 
 # smoke config check
@@ -54,3 +54,5 @@ Uses `orch-cluster-config-api`.
 ## Notes
 
 Decisions are in design.md; nothing beyond the requirement.
+
+- 2026-10-25 done
