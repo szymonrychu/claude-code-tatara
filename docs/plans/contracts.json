@@ -683,5 +683,15 @@
       "agents-helmfile"
     ],
     "note": "tasks helm-chart, chart-ingress-and-test-hook: oci://harbor.szymonrichert.pl/charts/agents-schedule (X.Y.Z on tag, X.Y.Z-main.<sha7> on main); values image, postgres {url|existingSecret,existingSecretKey|parts}, orchestrator {url, token.existingSecret/key}, env, components {api, worker}, service, ingress (no cert-manager annotation)"
+  },
+  {
+    "name": "agents-schedule-image",
+    "kind": "release",
+    "owner": "agents-schedule-microservice",
+    "file": "code/agents-schedule/.github/workflows/ci.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task dockerfile-and-ci: harbor.szymonrichert.pl/containers/agents-schedule:<sha7> on main; entrypoint sched (migrate|api|worker), USER 1000"
   }
 ]
