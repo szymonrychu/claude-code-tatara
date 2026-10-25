@@ -1,6 +1,6 @@
 ---
 title: web preview stale on filter edit
-status: todo
+status: done
 repo: agents-web
 value: the create dialog never shows a stale filter verdict
 files: [src/webhooks/CreateEndpointDialog.tsx, src/webhooks/Endpoints.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/webhooks/Endpoints.test.tsx && npx tsc -b && npm run
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: da936ab
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 370410
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 274702, review 95708"
 ---
 
 # web preview stale on filter edit
@@ -51,3 +51,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
