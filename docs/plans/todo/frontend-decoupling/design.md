@@ -213,6 +213,7 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 - Q4: Static server: the agents-web image is nginx-unprivileged with a config file (no Python server)? [recommended: yes]
 - Q5: Harbor CI secrets: you run gh secret set HARBOR_USERNAME and HARBOR_PASSWORD -R szymonrychu/agents-web once the repo exists (agents cannot read the values); web-ci-release stays blocked until then? [recommended: yes]
 - Q6: SSO check: after the web cutover apply you log in once at https://lab.szymonrichert.pl and confirm the cluster list loads; the run does not wait for it (the agent compares both sidecars' cookie settings itself)? [recommended: yes]
+- Q7: Repo creation runs as its own one-task superrepo epic agents-web-component that blocks this epic, because ticket.py cannot mix superrepo and component tasks in one epic? [recommended: yes]
 
 ## Irreversible operations in scope
 
