@@ -1,6 +1,6 @@
 ---
 title: spec config fields
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "presets and clusters carry validated wrapper settings, a leader lease and an autoclose time"
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/settings.py, tests/test_spec_config.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_spec_config.py && uv run ruff chec
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: effa0a3
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 8
+actual_tokens: 1394379
+actual_roles: "impl 7, review 5"
+actual_role_tokens: "impl 1161699, review 232680"
 ---
 
 # spec config fields
@@ -63,3 +63,5 @@ Builds part `orch-spec-config-fields` (`spec.py::WrapperSettings`, `ClusterSpec.
 ## Notes
 
 Follow the existing `_env` and `_hook_url` validator style in `spec.py`. The `_cap` validator resolves `max_replicas` first, so the lease validator runs after it. Postgres-backed tests need Docker; these tests are pure model tests.
+
+- 2026-10-25 done
