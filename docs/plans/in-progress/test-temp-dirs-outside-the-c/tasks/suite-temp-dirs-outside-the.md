@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: 6f40f47
+verified_head: bd22020
 points: 3
 expected_minutes: 23
 expected_tokens: 723362
 points_actual: 3
-actual_minutes: 11
-actual_tokens: 1193328
-actual_roles: "impl 9, review 3"
-actual_role_tokens: "impl 899494, review 293834"
+actual_minutes: 14
+actual_tokens: 1421756
+actual_roles: "impl 14, review 3"
+actual_role_tokens: "impl 1127922, review 293834"
 ---
 
 # Suite temp dirs outside the checkout
@@ -65,5 +65,7 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-25 amended: builder check: TMPDIR trusted, bats get TMPDIR only, temp dir kept on red regardless of RUN_TESTS_LOG_DIR, removed on exit 0
+
+- 2026-10-25 done
 
 - 2026-10-25 done
