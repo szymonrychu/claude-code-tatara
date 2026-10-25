@@ -1,6 +1,6 @@
 ---
 title: run outcome tracker
-status: in-progress
+status: done
 repo: agents-schedule
 value: "every in-progress run ends handled or failed with a reason, visible in the API and UI"
 files: [src/agents_schedule/tracker.py, tests/test_tracker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_tracker.py -q && uv run ruff check . 
 depends_on: [runs-repository, schedule-settings-model]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 62423619011ecd53c0245e7b8e6898f5c371a97b
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 805886
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 709519, review 96367"
 ---
 
 # run outcome tracker
@@ -62,3 +62,5 @@ Runs reach a terminal status that matches the orchestrator's view of their first
 - do-not-build: a turn-completion callback in the orchestrator; polling the message gives the outcome (`code/agents-orchestrator/src/agents_orchestrator/api/messages.py` L99).
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
