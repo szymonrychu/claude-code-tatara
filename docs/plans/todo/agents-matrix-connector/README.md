@@ -1,6 +1,6 @@
 ---
 title: agents matrix connector
-blockers: [orchestrator-rename-sessions, webhook-event-filters]
+blockers: []
 stage: build
 owner: ""
 repos: [agents-matrix-connector, agents-helmfile, agents-web]
