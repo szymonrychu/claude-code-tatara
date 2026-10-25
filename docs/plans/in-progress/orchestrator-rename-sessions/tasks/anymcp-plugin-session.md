@@ -1,6 +1,6 @@
 ---
 title: anymcp plugin session
-status: in-progress
+status: done
 repo: any-mcp
 value: "agents' any-mcp tools address the orchestrator's session, matching the renamed agent API"
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, tests/test_nomenclature.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_orchestrator_plugin.py tests/test_nomenclat
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5cd9044
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 356038
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 269346, review 86692"
 ---
 
 # anymcp plugin session
@@ -63,3 +63,5 @@ The plugin addresses the orchestrator's session by key `session` and header `X-O
 
 - design.md D2 is the vocabulary; error codes come from the orchestrator (`static_session`).
 - Do not touch CHANGELOG or the version (anymcp-release-v0-3-0).
+
+- 2026-10-25 done
