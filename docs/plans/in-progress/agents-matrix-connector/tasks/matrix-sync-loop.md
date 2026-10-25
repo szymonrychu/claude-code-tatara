@@ -1,6 +1,6 @@
 ---
 title: matrix sync loop
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "chats, users and rooms are discovered automatically and each message is judged by the rules exactly once"
 files: [src/agents_matrix_connector/sync.py, tests/test_sync.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_sync.py -q && uv run ruff check . && 
 depends_on: [mxc-settings-model, matrix-client-and-fake-hs, rules-and-settings-repo, inbound-queue-repository]
 model: opus
 review: full
-verified_head: ""
+verified_head: 6e83f49d082fc4b3bb3371450fdb509c2c42fa3b
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 18
+actual_tokens: 2841808
+actual_roles: "impl 9, review 9"
+actual_role_tokens: "impl 2404507, review 437301"
 ---
 
 # matrix sync loop
@@ -75,3 +75,5 @@ Running the loop against the fake homeserver, an invite to a Messenger DM portal
 - Review focus: the since token and the inbound inserts commit in one transaction; denied bodies are never written.
 - To simulate a crash before commit, make a repository call raise inside the transaction on the first attempt and run `run_once` again.
 - Joining is done after commit so a slow join never holds the transaction open.
+
+- 2026-10-25 done
