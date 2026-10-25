@@ -533,5 +533,18 @@
       "agents-schedule-microservice"
     ],
     "note": "task web-backend-menu: BACKEND_MENUS[backendId] = MenuEntry {id, label, order, backend, render(onBack)}; menuEntries(config) sorted by order; order slots 10 Clusters (configuration-improvements), 20 Webhooks, 30 Presets, 40 Schedules; feeds SessionsMenu settingsCategories {id, label, onOpen}"
+  },
+  {
+    "name": "agents-web-openapi-vendor",
+    "kind": "interface",
+    "owner": "frontend-decoupling",
+    "file": "code/agents-web/scripts/sync-api.mjs",
+    "consumers": [
+      "agent-orchestrator",
+      "configuration-improvements",
+      "agents-webhook-microservice",
+      "agents-schedule-microservice"
+    ],
+    "note": "task web-openapi-vendor: openapi/<backend>.json + openapi/<backend>.source '<repo> <sha40>'; npm run sync:api -- <backend> [--from <checkout>]; npm run check:api in agents-web CI; an orchestrator route change is followed by sync:api in agents-web"
   }
 ]
