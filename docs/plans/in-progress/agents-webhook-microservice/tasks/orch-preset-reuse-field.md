@@ -1,6 +1,6 @@
 ---
 title: orch preset reuse field
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: a preset can opt in to sending new events to the agent still running for them
 files: [src/agent_orchestrator/spec.py, openapi.json, README.md, tests/test_spec_config.py, tests/test_api_presets.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_spec_config.py tests/test_api_presets.py tests
 depends_on: [orch-service-port-docs]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6cf0614
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 18
+actual_tokens: 1036673
+actual_roles: "impl 18, review 3"
+actual_role_tokens: "impl 819563, review 217110"
 ---
 
 # orch preset reuse field
@@ -65,3 +65,5 @@ A preset can carry `reuse_running_agent: true`; the orchestrator stores and retu
 - Additive-only `/api/v1` (`code/agent-orchestrator/MEMORY.md`).
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
