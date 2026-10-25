@@ -1,6 +1,6 @@
 ---
 title: runs and outbound repo
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: agent runs per room and replies are stored so a restart never double-posts
 files: [src/agents_matrix_connector/db/runs.py, tests/test_runs_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_runs_repo.py -q && uv run ruff check 
 depends_on: [directory-repository]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 073464ce88b87b61f04315a2645687d26f6c751c
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 2
+actual_tokens: 565477
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 375138, review 190339"
 ---
 
 # runs and outbound repo
@@ -67,3 +67,5 @@ The worker can create, adopt and finish runs idempotently, and replies are store
 ## Notes
 
 - Read the pinned `agents_common/runs.py` first; the protocol method names come from there, never guessed.
+
+- 2026-10-25 done
