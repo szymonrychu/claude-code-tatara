@@ -1,6 +1,6 @@
 ---
 title: api endpoint filters
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "filters are set on create, replaced later and previewed against an example through the documented API"
 files: [src/agents_webhook/api/schemas.py, src/agents_webhook/api/routes.py, tests/test_api.py, README.md, openapi.json]

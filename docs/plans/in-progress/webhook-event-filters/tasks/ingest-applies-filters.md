@@ -1,6 +1,6 @@
 ---
 title: ingest applies filters
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "deliveries that fail an endpoint's filters are accepted and stored ignored with a reason instead of starting an agent"
 files: [src/agents_webhook/ingest/app.py, tests/test_ingest_http.py, README.md, tests/test_readme_config.py, tests/test_event_store.py]

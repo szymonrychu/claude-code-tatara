@@ -1,6 +1,6 @@
 ---
 title: filter rules engine
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "allow and deny rules per endpoint type, validated and evaluated on RE2 so no user regex can stall ingest"
 files: [src/agents_webhook/filters.py, tests/test_filters.py, pyproject.toml, uv.lock]

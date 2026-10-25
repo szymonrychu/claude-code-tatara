@@ -1,6 +1,6 @@
 ---
 title: web filters editor
-status: todo
+status: in-progress
 repo: agents-web
 value: one editor for allow and deny rules over the fields the backend says apply to the type
 files: [src/webhooks/FiltersEditor.tsx, src/webhooks/FiltersEditor.test.tsx]

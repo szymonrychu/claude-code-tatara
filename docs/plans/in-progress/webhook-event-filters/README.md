@@ -2,7 +2,7 @@
 title: webhook event filters
 blockers: [agents-webhook-microservice]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-webhook, agents-web, agents-helmfile]
 created: 2026-10-25
 ---

@@ -1,6 +1,6 @@
 ---
 title: retire allowed authors
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "one way to allowlist authors: per-endpoint rules, with the global env var gone"
 files: [src/agents_webhook/settings.py, src/agents_webhook/normalize.py, src/agents_webhook/ingest/app.py, README.md, tests/test_normalize.py, tests/test_schema_settings.py, tests/test_readme_config.py, MEMORY.md]

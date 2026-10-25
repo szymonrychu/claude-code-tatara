@@ -1,6 +1,6 @@
 ---
 title: smoke webhook filters
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live smoke proves filters are stored, evaluated and replaceable without starting a cluster"
 files: [scripts/smoke.sh, tests/test_smoke_script.py]

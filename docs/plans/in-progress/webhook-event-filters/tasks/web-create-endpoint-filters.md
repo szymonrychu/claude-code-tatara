@@ -1,6 +1,6 @@
 ---
 title: web create endpoint filters
-status: todo
+status: in-progress
 repo: agents-web
 value: filters are set when creating an endpoint and the example preview says whether it passes
 files: [src/webhooks/CreateEndpointDialog.tsx, src/webhooks/samples.ts, src/webhooks/Endpoints.test.tsx, src/webhooks/WebhooksPage.test.tsx]

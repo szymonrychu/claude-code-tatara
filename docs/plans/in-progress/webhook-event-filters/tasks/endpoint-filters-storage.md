@@ -1,6 +1,6 @@
 ---
 title: endpoint filters storage
-status: todo
+status: in-progress
 repo: agents-webhook
 value: each endpoint keeps its filters and ingest gets them from the auth query it already runs
 files: [src/agents_webhook/migrations/0004_endpoint_filters.sql, src/agents_webhook/db/endpoints.py, tests/test_endpoints_repo.py]

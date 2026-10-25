@@ -1,6 +1,6 @@
 ---
 title: deploy pin webhook filters
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the helmfile pins the filter-capable builds and stops setting the retired env var
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-web/common.yaml, tests/test_webhook_release.py, tests/test_web_release.py]

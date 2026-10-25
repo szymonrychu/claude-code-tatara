@@ -1,6 +1,6 @@
 ---
 title: normalize branch fields
-status: todo
+status: in-progress
 repo: agents-webhook
 value: PR/MR source and target branch names become filterable event fields
 files: [src/agents_webhook/normalize.py, tests/test_normalize.py, tests/payloads.py]

@@ -1,6 +1,6 @@
 ---
 title: e2e endpoint filters
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "the real stack proves deny, allow, replace and preview end to end without the UI"
 files: [tests/e2e/test_e2e_api.py, tests/e2e/conftest.py]

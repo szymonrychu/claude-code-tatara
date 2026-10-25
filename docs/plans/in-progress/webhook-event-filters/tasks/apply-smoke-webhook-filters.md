@@ -1,6 +1,6 @@
 ---
 title: apply smoke webhook filters
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: endpoint filters are live and proven by the smoke
 files: [MEMORY.md]

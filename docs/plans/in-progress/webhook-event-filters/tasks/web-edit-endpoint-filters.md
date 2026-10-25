@@ -1,6 +1,6 @@
 ---
 title: web edit endpoint filters
-status: todo
+status: in-progress
 repo: agents-web
 value: "an existing endpoint's filters change without recreating it, checked against an example first"
 files: [src/webhooks/FiltersDialog.tsx, src/webhooks/FiltersDialog.test.tsx, src/webhooks/EndpointsList.tsx, src/webhooks/Endpoints.test.tsx, MEMORY.md]

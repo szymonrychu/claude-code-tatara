@@ -1,6 +1,6 @@
 ---
 title: web vendor filters api
-status: todo
+status: in-progress
 repo: agents-web
 value: "the UI has typed access to endpoint filters, their replacement and the filter preview"
 files: [openapi/webhooks.json, openapi/webhooks.source, src/api/webhooks-schema.d.ts, src/webhooks/api.ts, src/webhooks/api.test.ts]
