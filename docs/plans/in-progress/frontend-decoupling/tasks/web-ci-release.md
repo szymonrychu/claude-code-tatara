@@ -1,6 +1,6 @@
 ---
 title: web ci release
-status: in-progress
+status: done
 repo: agents-web
 value: every agents-web change is tested in CI and main publishes the image and chart
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, scripts/ci.test.mjs, .mise.toml, README.md]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test scripts/ci.test.mjs && shell
 depends_on: [web-chart-config-ingress, web-nginx-image, web-openapi-vendor]
 model: ""
 review: ""
-verified_head: ""
+verified_head: d071d6e
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 320496
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 240085, review 80411"
 ---
 
 # web ci release
@@ -71,3 +71,5 @@ Every PR runs lint, tests, build, check:api, the image smoke and the chart tests
 
 - Reuse agent-orchestrator `.github/workflows/ci.yaml` jobs `images`, `chart-publish`, `chart-publish-tag` and `scripts/chart-version.sh` (Harbor robot login via the helm registry config.json, regctl chunked push).
 - No kind e2e here: the UI has no browser e2e (do-not-build).
+
+- 2026-10-25 done
