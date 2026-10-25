@@ -1,6 +1,6 @@
 ---
 title: dockerfile and ci
-status: in-progress
+status: done
 repo: agents-schedule
 value: "every main commit is linted, tested and published as an image and chart"
 files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci_workflow.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_ci_workflow.py -q && uv run ruff chec
 depends_on: [service-entrypoints]
 model: ""
 review: full
-verified_head: ""
+verified_head: 7eb60e5abf264a4bdbae2cd986353cdd0fa4506b
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 429054
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 330919, review 98135"
 ---
 
 # dockerfile and ci
@@ -64,3 +64,5 @@ Main builds publish the image and a `-main.<sha7>` chart; a `v*` tag publishes t
 - The chart and e2e jobs call mise tasks that `helm-chart` and `kind-e2e-api` fill; CI on the epic branch is green only once those land.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done: AC3/AC4 (image build, uid 1000, no pytest) not runnable locally (Docker VM disk full); verified by PR CI images job before close
