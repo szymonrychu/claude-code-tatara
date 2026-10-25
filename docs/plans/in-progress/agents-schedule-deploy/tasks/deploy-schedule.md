@@ -1,6 +1,6 @@
 ---
 title: deploy schedule
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the agents namespace runs the schedule service and the UI with its Schedules entry
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, values/agents-web/common.yaml, tests/test_schedule_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_relea
 depends_on: [helmfile-schedule-release, schedule-service-token, web-config-schedules-backend, smoke-schedule-check, web-schedules-menu-entry]
 model: ""
 review: ""
-verified_head: ""
+verified_head: e16b726474aeac2a4d8521562fdc560006eecbf1
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 7
+actual_tokens: 799550
+actual_roles: "impl 7, review 3"
+actual_role_tokens: "impl 582138, review 217412"
 ---
 
 # deploy schedule
@@ -61,3 +61,5 @@ The schedule service and the UI with its Schedules entry run live and the smoke 
 - `mise run apply` is guarded by lint, test and the kube-context check (`EXPECTED_KUBE_CONTEXT`).
 - The orchestrator already runs the agents-webhook-microservice build with the service port; this task does not touch the orchestrator release.
 - Split 2026-10-25: depends_on `release-v0-1-0` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.
+
+- 2026-10-26 done: Applied by the main session at e16b726: agents-schedule rev 1 (chart 0.1.0), agents-schedule-db rev 1 (cnpg/cluster 0.9.0), agents-web rev 8 (0.1.0-main.586344d), agents-orchestrator rev 2 (services Secret token hash). First smoke 503 (orchestrator 401: api pods not restarted on services Secret change); after kubectl rollout restart deploy/agents-orchestrator-api, smoke: OK (.logs/sched-deploy-smoke2.log). Root fix tracked by the main session in agents-orchestrator.
