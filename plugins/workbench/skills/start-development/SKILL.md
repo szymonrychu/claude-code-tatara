@@ -137,7 +137,7 @@ cannot close while a task is not `done`; never implement a task yourself, never 
 
 Dispatch `record-writer` (sonnet) with the epic slug, base and branch per repo, MR URLs and your notes (per task:
 review rounds, the reviewer's verification tail; escalations judged, findings dropped); it fills `templates/record.md`
-at `ticket.py path <epic> record`. Then `ticket.py retro <epic>` and `retro-writer` (sonnet): `references/retro.md`.
+at `ticket.py path <epic> record`. Then `ticket.py retro <epic>` and `retro-writer` (sonnet): `references/retro.md`; old epics: `epic-migrate`.
 ONE closing message, three lines at most (`concise-orchestrator`): both paths, what needs the user, what is blocked.
 
 ## Non-negotiables

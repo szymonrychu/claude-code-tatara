@@ -158,6 +158,7 @@ pullrequests-update, pullrequests-watch, pullrequests-list, pullrequests-review-
 start-research, start-discovery, start-development, interrogate
 epic-create, epic-task-create   create an epic / a task file through ticket.py
 epic-move, epic-worktrees-remove  move an epic between stages / remove its merged worktrees
+epic-migrate                    migrate old epics and tasks to the new scheme: points, usage, retros
 epic-run                        execute one planned epic: one implementer and one reviewer per task, at most two fix rounds, then audit and close
 start-review                    review a branch, diff, MR or PR against its intent: pinned ref, independent suite run, one reviewer for spec and quality, validated findings
 review                          alias of start-review (invoked as /workbench:review)

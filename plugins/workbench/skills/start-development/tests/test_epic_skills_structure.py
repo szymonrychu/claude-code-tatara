@@ -15,6 +15,14 @@ SKILLS = {
         "ticket.py move <epic> done",
         "ticket.py tasks <epic>",
     ],
+    "epic-migrate": [
+        "ticket.py migrate --all --dry-run",
+        "ticket.py migrate --all",
+        "retro-writer",
+        "record.md",
+        "ticket.py retro <epic>",
+        "ticket.py deltas --all --buckets",
+    ],
     "epic-worktrees-remove": [
         "ticket.py reap --epic <epic> --dry-run",
         "ticket.py reap --epic <epic>",
@@ -72,6 +80,24 @@ def test_epic_task_create_names_only_flags_new_task_has():
     assert flags
     for flag in flags:
         assert flag in helptext, f"{flag} is not a new-task flag"
+
+
+def test_epic_migrate_names_only_real_flags():
+    import re
+    import subprocess
+    import sys
+
+    ticket = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
+    helptext = ""
+    for sub in ("migrate", "retro", "deltas"):
+        helptext += subprocess.run(
+            [sys.executable, str(ticket), sub, "--help"],
+            capture_output=True, text=True, check=True,
+        ).stdout  # fmt: skip
+    flags = set(re.findall(r"--[a-z][a-z-]*", read("epic-migrate")))
+    assert flags
+    for flag in flags:
+        assert flag in helptext, f"{flag} is not a migrate, retro or deltas flag"
 
 
 def test_epic_run_skips_done_tasks_and_caps_are_one_number_per_role():

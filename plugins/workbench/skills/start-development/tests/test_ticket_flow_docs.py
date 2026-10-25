@@ -79,6 +79,7 @@ def test_start_development_names_epic_skills():
         "epic-create",
         "epic-task-create",
         "epic-move",
+        "epic-migrate",
         "epic-worktrees-remove",
         "epic-run",
         "workbench:implementer",
@@ -93,6 +94,7 @@ def test_readme_names_epic_skills():
         "epic-create",
         "epic-task-create",
         "epic-move",
+        "epic-migrate",
         "epic-worktrees-remove",
         "epic-run",
     ):
