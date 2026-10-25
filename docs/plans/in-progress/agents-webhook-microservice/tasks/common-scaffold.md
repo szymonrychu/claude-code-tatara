@@ -1,6 +1,6 @@
 ---
 title: common scaffold
-status: in-progress
+status: done
 repo: agents-common
 value: "the shared library repo exists with a package, tooling and CI, so the trigger services can depend on it"
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yaml, src/agents_common/__init__.py, tests/test_package.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_package.py -q && uv run ruff check . && uv run
 depends_on: []
 model: ""
 review: full
-verified_head: ""
+verified_head: d551af5
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 263723
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 180713, review 83010"
 ---
 
 # common scaffold
@@ -70,3 +70,5 @@ Precondition, checked first: `code/agents-common` is a submodule of the superrep
 
 - Model on `code/agent-orchestrator/pyproject.toml`, `mise.toml` and `.github/workflows/ci.yaml`; no Dockerfile or chart (a library).
 - component:add writes AGENTS, CLAUDE, MEMORY, ROADMAP, README, `.mise.toml`, `.gitignore` and a smoke test; keep them, extend README.
+
+- 2026-10-25 done
