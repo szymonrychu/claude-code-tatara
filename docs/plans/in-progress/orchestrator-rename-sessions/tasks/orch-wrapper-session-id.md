@@ -1,6 +1,6 @@
 ---
 title: orch wrapper session id
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the wrapper's session id no longer takes the word session from the orchestrator's unit"
 files: [src/agents_orchestrator/db/migrations/0004_wrapper_session_id.sql, src/agents_orchestrator/, tests/, openapi.json, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_migrations.py tests/test_events_store.py te
 depends_on: [orch-chart-ci-rename]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 59d20d6
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 12
+actual_tokens: 3761986
+actual_roles: impl 12
+actual_role_tokens: impl 3761986
 ---
 
 # orch wrapper session id
@@ -64,3 +64,5 @@ The orchestrator never uses a bare `session_id` for the wrapper's session; migra
 
 - Reuse the tmp-migrations-dir pattern of `test_presets_migration_on_existing_clusters` in tests/test_migrations.py.
 - The live database gets 0004 only on the imported copy (design D5); the old database is never migrated.
+
+- 2026-10-25 done
