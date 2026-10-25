@@ -620,5 +620,15 @@
       "agents-helmfile"
     ],
     "note": "task orch-chart-services-port: ClusterIP <fullname>-services:8002 (port name services, never in the ingress, not fronted by oauth2-proxy); values serviceApi {port, existingSecret, existingSecretKey, tokenHashes: {<service>: <sha256 hex>}} merged across values files; in agents-helmfile http://agent-orchestrator-services:8002 and values/agent-orchestrator/service-token-<service>.secrets.yaml"
+  },
+  {
+    "name": "trigger-ui-page-pattern",
+    "kind": "interface",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-web/src/triggers/index.ts",
+    "consumers": [
+      "agents-schedule-microservice"
+    ],
+    "note": "task web-trigger-ui-kit: RunStatusChip({status new|in-progress|handled|ignored|failed, reason}), PresetSelect({value, onChange}) over the orchestrator presets, usePoll(fn, intervalMs, deps), FormError({error}) for {error: {code, message}}"
   }
 ]
