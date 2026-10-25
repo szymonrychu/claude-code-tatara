@@ -1,6 +1,6 @@
 ---
 title: web webhook events page
-status: in-progress
+status: done
 repo: agents-web
 value: "the user sees recent webhook events with their status and reason, refreshed live"
 files: [src/webhooks/WebhooksPage.tsx, src/webhooks/EventsTable.tsx, src/webhooks/WebhooksPage.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/WebhooksPage
 depends_on: [web-trigger-ui-kit, web-webhook-api-client]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 969c76b
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 369006
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 288636, review 80370"
 ---
 
 # web webhook events page
@@ -60,3 +60,5 @@ The user sees the live event list with statuses.
 - Reuse `RunStatusChip`, `usePoll`, `FormError` from `src/triggers`.
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+- 2026-10-25 done
