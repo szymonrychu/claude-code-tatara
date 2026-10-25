@@ -37,11 +37,13 @@ Reuse brief fix-as-ac (verbatim): "deltas._legacy dead after migrate - C/deltas.
 
 Constraint (verbatim, part): "deltas._legacy removal with a retirement pin"
 
+Interrogate verdict item 6 (verbatim): "deltas-legacy-retired AC3 (B3): the awk range ends at the next `^- \`` line, not at `^## Naming`."
+
 ## Acceptance conditions
 
 - AC1: a done task without points that carries numeric legacy `estimate` and `actual` reads `not recorded` for points, minutes and tokens in `deltas --all --json`, rows carry no `legacy` key, the text output has no `(legacy)` marker, and the task file is unchanged; this replaces test_all_includes_legacy_minutes, which is no longer accurate because migrate is the one path for pre-points tasks (Q10), and drops the `legacy` assertion of test_epic_deltas [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_deltas.py::test_pre_points_tasks_are_not_read]
 - AC2: retirement pin: the deltas module has no `_legacy` attribute and its source contains neither `get("estimate"` nor `get("actual"` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_deltas.py::test_legacy_rows_retired]
-- AC3: references/tickets.md's `deltas` entry has no legacy-row text and names `ticket.py migrate` as the path for pre-points tasks, and deltas.py no longer says legacy [evidence: command:! grep -qi 'legacy' plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py && awk '/^- `deltas`:/,/^## Naming/' plugins/workbench/skills/start-development/references/tickets.md | grep -q 'ticket.py migrate' && ! (awk '/^- `deltas`:/,/^## Naming/' plugins/workbench/skills/start-development/references/tickets.md | grep -qi 'legacy')]
+- AC3: references/tickets.md's `deltas` entry has no legacy-row text and names `ticket.py migrate` as the path for pre-points tasks, and deltas.py no longer says legacy [evidence: command:! grep -qi 'legacy' plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py && awk '/^- `deltas`:/{f=1;print;next} f&&/^(- `|## )/{f=0} f' plugins/workbench/skills/start-development/references/tickets.md | grep -q 'ticket.py migrate' && ! (awk '/^- `deltas`:/{f=1;print;next} f&&/^(- `|## )/{f=0} f' plugins/workbench/skills/start-development/references/tickets.md | grep -qi 'legacy')]
 - AC4: the start-development suite and lint pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint]
 
 ## Files
@@ -71,3 +73,5 @@ deltas reads only the points scheme; pre-points tasks show `not recorded` until 
 - Fix-as-ac (reuse brief): "deltas._legacy dead after migrate - C/deltas.py:81, test_ticket_deltas.py:119 - remove (no back-compat)"; user decision Q10.
 - test_all_includes_legacy_minutes is replaced, not weakened: the behaviour it pinned is retired by Q10; say so in the commit message.
 - Keep the rest of test_all_includes_legacy_minutes' coverage (the live epic is excluded from `--all`, the overall MdAPE) in the replacement test.
+
+- 2026-10-25 amended: interrogate item 6: AC3 awk range ends at the next '- `' bullet or '## ' heading, not at '## Naming'
