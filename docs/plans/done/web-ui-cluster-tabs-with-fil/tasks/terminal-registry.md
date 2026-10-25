@@ -6,21 +6,17 @@ value: "the wrapper can run, share, reap and close login shells in a session wor
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/config.py, src/claude_code_wrapper/manager.py, README.md, tests/test_terminals.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_readme_config.py tests/test_config.py tests/test_manager.py --deselect tests/test_manager.py::test_shutdown_stops_all && uv run ruff check . && uv run ruff format --check ."
 depends_on: [pty-resize-and-raw-ring, wrapper-file-api]
-owns: [terminal-registry]
-uses: [pty-resize, ring-raw-snapshot, wrapper-path-confinement]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: 46
-actual_roles: "impl 18, verify 11, review 5, fix 10, land 1, triage 1"
 review: full
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-registry/claude-code-wrapper
-branch: web-ui-cluster-tabs-with-fil-terminal-registry
 verified_head: 5f8f1e22b82b0927bb77e14433fc688c402d92d2
-run: web-ui-cluster-tabs-with-fil
-provides: [terminal-registry]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 46
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # terminal registry

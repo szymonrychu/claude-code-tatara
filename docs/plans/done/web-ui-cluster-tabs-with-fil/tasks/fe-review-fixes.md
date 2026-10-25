@@ -6,22 +6,17 @@ value: "refused terminals say so at once, shells never hide after a late agent, 
 files: [frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts, frontend/src/terminal/TerminalPanel.tsx, frontend/src/terminal/TerminalPanel.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal src/layout && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fake-wrapper-workdir-regress, fe-terminal-panel, fe-terminal-socket, fe-top-bar, kind-e2e-workspace]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: 6
-actual_roles: "impl 4, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-review-fixes/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-review-fixes
 verified_head: 6227ccccc4d191c49d2f2f1e4771906651adb473
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 96a6aa1
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe review fixes

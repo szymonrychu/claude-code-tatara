@@ -6,21 +6,17 @@ value: "shells cannot kill unrelated sessions or exceed attach and frame caps, a
 files: [src/claude_code_wrapper/terminals.py, src/claude_code_wrapper/api/terminals.py, src/claude_code_wrapper/service.py, src/claude_code_wrapper/config.py, README.md, tests/test_terminals.py, pyproject.toml, uv.lock]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_terminals.py tests/test_config.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-websocket-api, wrapper-workspace-e2e]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: 10
-actual_roles: "impl 4, verify 2, review 1, fix 2, false-finding 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-security-followups/claude-code-wrapper
-branch: web-ui-cluster-tabs-with-fil-wrapper-security-followups
 verified_head: 354e6695ad0b7ba9e3acdde446a3fff10aa6301b
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper security followups

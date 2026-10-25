@@ -6,22 +6,17 @@ value: shells can be resized and their output replayed byte for byte
 files: [src/claude_code_wrapper/pty_proc.py, src/claude_code_wrapper/ring.py, tests/test_pty_proc.py, tests/test_ring.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_pty_proc.py tests/test_ring.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [pty-resize, ring-raw-snapshot]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 3
-actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring/claude-code-wrapper
-branch: web-ui-cluster-tabs-with-fil-pty-resize-and-raw-ring
 verified_head: 2f6788d78832faeb574ecf5ab729b512f78b612a
-run: web-ui-cluster-tabs-with-fil
-provides: [pty-resize, ring-raw-snapshot]
-acs_for_audit: []
-process_gaps: []
-fork_point: f63dee9c6a431d93f31b3cba025e9b98518ae24f
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # pty resize and raw ring

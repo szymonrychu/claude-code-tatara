@@ -6,21 +6,17 @@ value: the api refuses oversized WebSocket frames before buffering them
 files: [src/agent_orchestrator/cli.py, tests/test_cli.py, src/agent_orchestrator/db/agents.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_cli.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [fake-wrapper-workdir-regress, kind-e2e-workspace]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-be-review-fixes/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-be-review-fixes
 verified_head: 96a6aa1d10d29c69eacfa805f6f2555f5d279cba
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # be review fixes

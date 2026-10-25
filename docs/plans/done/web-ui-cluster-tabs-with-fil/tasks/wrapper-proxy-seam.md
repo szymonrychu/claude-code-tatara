@@ -6,21 +6,17 @@ value: "the api can reach a cluster's wrapper pods through one audited module"
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/wrapper/client.py, tests/test_workspace_proxy.py, tests/test_wrapper_client.py, tests/test_api_clusters.py, README.md, MEMORY.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_workspace_proxy.py tests/test_wrapper_client.py tests/test_api_clusters.py tests/test_settings.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [origin-allowlist]
-owns: [workspace-proxy-module]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 6
-actual_roles: "impl 4, verify 1, review 1, land 1"
 review: full
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-proxy-seam/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-wrapper-proxy-seam
 verified_head: 093a155e09ab1248b87d755d1828432fc82b89e9
-run: web-ui-cluster-tabs-with-fil
-provides: [workspace-proxy-module, wrapper-request-json]
-acs_for_audit: [AC2, AC6]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper proxy seam

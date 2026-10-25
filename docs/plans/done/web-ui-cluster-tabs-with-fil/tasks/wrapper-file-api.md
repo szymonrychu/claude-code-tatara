@@ -6,21 +6,17 @@ value: any client can browse and read a session workdir safely over the wrapper 
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/config.py, README.md, tests/test_api_files.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py tests/test_readme_config.py tests/test_config.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [wrapper-path-confinement, wrapper-files-api]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 4
-actual_roles: "impl 3, verify 1, review 1, land 1"
 review: full
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-file-api/claude-code-wrapper
-branch: web-ui-cluster-tabs-with-fil-wrapper-file-api
 verified_head: f63dee9c6a431d93f31b3cba025e9b98518ae24f
-run: web-ui-cluster-tabs-with-fil
-provides: [wrapper-path-confinement, wrapper-files-api]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper file api

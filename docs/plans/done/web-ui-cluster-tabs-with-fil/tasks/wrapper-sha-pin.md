@@ -6,21 +6,17 @@ value: integration and e2e runs exercise the real wrapper with the new file and 
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-ws-relay, wrapper-workspace-e2e]
-owns: [wrapper-main-pin]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 6
-actual_roles: "impl 2, verify 2, review 1, fix 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-sha-pin/agent-orchestrator
-branch: "current worktree branch (HEAD 8715603)"
 verified_head: 2edeb38eb5b2d6a1f279722387444ec0b6291f04
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: ["Implementer's report says the Dockerfile pin test was red before the edit, but at 504b870 it was green (all pins ca2ddf3). Correct the report; no red output exists or is needed under the dependency-bump exception."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper sha pin

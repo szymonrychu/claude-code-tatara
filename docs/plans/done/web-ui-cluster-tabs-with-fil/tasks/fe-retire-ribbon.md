@@ -6,21 +6,17 @@ value: the UI navigates clusters by top tabs and the left ribbon is gone
 files: [frontend/src/App.tsx, frontend/src/App.test.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/Ribbon.test.tsx, frontend/src/clusters/ClusterForm.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/App.test.tsx src/clusters/ClusterForm.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fe-top-bar]
-owns: []
-uses: [fe-sessions-menu]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 11
-actual_roles: "impl 3, verify 5, review 1, fix 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-retire-ribbon/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-retire-ribbon
 verified_head: c58e22096af1d5588687a3032307037e81b20fee
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe retire ribbon

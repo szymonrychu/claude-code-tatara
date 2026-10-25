@@ -6,21 +6,17 @@ value: "the frontend has the panel, tree, terminal and icon libraries and crash-
 files: [frontend/package.json, frontend/package-lock.json, frontend/vite.config.ts, frontend/src/api/client.ts, frontend/src/layout/storage.ts, frontend/src/layout/storage.test.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/storage.test.ts src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: []
-owns: [fe-deps, fe-storage]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 5
-actual_roles: "impl 1, verify 2, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-deps-and-storage/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-deps-and-storage
 verified_head: fa1456d8c69b6a9b89be5f97bd0d317299d0f758
-run: web-ui-cluster-tabs-with-fil
-provides: [fe-storage, fe-deps]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe deps and storage

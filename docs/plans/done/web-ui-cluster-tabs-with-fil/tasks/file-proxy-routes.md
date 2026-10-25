@@ -6,21 +6,17 @@ value: headless clients and the UI can browse and read a cluster workdir through
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_files.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-proxy-seam, wrapper-file-api]
-owns: [orch-files-api]
-uses: [workspace-proxy-module, wrapper-files-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 18
-actual_roles: "impl 7, verify 5, review 2, fix 2, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-file-proxy-routes/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-file-proxy-routes
 verified_head: f2a3dfd9fa289c8eccad7bd1d0f4e734761d3a4a
-run: web-ui-cluster-tabs-with-fil
-provides: [orch-files-api, fake-wrapper-workdir]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 18
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # file proxy routes

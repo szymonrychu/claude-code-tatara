@@ -6,21 +6,17 @@ value: the browser keeps shell connections alive and reconnects them with replay
 files: [frontend/src/api/terminals.ts, frontend/src/terminal/terminalSocket.ts, frontend/src/terminal/terminalSocket.test.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/terminal/terminalSocket.test.ts src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [terminal-ws-relay, fe-deps-and-storage]
-owns: [fe-terminal-socket]
-uses: [orch-terminals-api, orch-terminal-ws, fe-deps]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 5
-actual_roles: "impl 2, verify 2, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-terminal-socket/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-terminal-socket
 verified_head: 236c3348fbf3ac753a56d3efb83a547ea82e8024
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe terminal socket

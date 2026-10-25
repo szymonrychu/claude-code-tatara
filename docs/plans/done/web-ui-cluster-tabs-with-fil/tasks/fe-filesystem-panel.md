@@ -6,22 +6,17 @@ value: the user sees what agents changed on disk as a live tree with file previe
 files: [frontend/src/api/files.ts, frontend/src/files/useFileTree.ts, frontend/src/files/fileEvents.ts, frontend/src/files/FilesPanel.tsx, frontend/src/files/FilesPanel.test.tsx, frontend/src/App.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/files src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fe-panel-workspace, file-proxy-routes]
-owns: []
-uses: [orch-files-api, fe-workspace-slots, fe-deps]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 10
-actual_roles: "impl 6, verify 2, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-filesystem-panel/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-filesystem-panel
 verified_head: 4ce96dff654c4486a84d50f0b9f344500cf53aac
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: ["The red step was a hidden-import failure, not a per-behaviour failing run."]
-fork_point: e666c3a
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe filesystem panel

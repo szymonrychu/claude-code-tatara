@@ -6,21 +6,17 @@ value: per-agent state and context stay visible in the chat header and double as
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/AgentFilter.tsx, frontend/src/ribbon/AgentRow.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/chat src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fe-retire-ribbon]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 9
-actual_roles: "impl 2, verify 4, review 1, fix 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-agents-strip/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-agents-strip
 verified_head: d5bce5e9fcc11eab8332bb1a546b54d578315aac
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 9
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe agents strip

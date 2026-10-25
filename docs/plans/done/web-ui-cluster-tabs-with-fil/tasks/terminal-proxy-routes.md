@@ -6,22 +6,17 @@ value: "headless clients and the UI can create, list and delete shells on any ag
 files: [src/agent_orchestrator/api/workspace.py, src/agent_orchestrator/api/schemas.py, tests/test_api_terminals.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_terminals.py tests/test_api_files.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [file-proxy-routes, terminal-websocket-api, origin-allowlist]
-owns: [orch-terminals-api, fake-wrapper-terminals]
-uses: [workspace-proxy-module, origin-allowlist, wrapper-terminals-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 13
-actual_roles: "impl 8, verify 3, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-terminal-proxy-routes/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-terminal-proxy-routes
 verified_head: fbd686b83861ccc1c74ee3bfa203f13a5e8fbfd2
-run: web-ui-cluster-tabs-with-fil
-provides: [workspace-resolve-agents, fake-wrapper-terminal-controls]
-acs_for_audit: []
-process_gaps: []
-fork_point: 4ce96df
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 13
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # terminal proxy routes

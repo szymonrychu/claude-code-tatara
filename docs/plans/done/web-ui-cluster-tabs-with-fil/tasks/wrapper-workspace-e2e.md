@@ -6,21 +6,17 @@ value: proof that a headless client can browse files and run shells on a real wr
 files: [tests/test_e2e_workspace.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_e2e_workspace.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [terminal-websocket-api]
-owns: []
-uses: [wrapper-files-api, wrapper-terminals-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 5
-actual_roles: "impl 2, verify 2, review 1, fix 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-wrapper-workspace-e2e/claude-code-wrapper
-branch: web-ui-cluster-tabs-with-fil-wrapper-workspace-e2e
 verified_head: bd2c0235f91dea63f7b390a6bd2d1874ec36d0c8
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: ["tests.red and verification.evidence were not filled. The module covers an already-merged surface, and its only teeth check was the implementer's own scrub-disabled run.", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # wrapper workspace e2e

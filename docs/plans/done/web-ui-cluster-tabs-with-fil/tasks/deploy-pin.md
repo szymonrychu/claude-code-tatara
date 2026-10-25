@@ -6,21 +6,17 @@ value: "the live agents namespace runs the tabs, files and terminal release with
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "mise x -- uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k 'not release_chart_version_and_needs and not db_secret_matches_rendered_cnpg_cluster' && uv run ruff check . && uv run ruff format --check ."
 depends_on: [kind-e2e-workspace, fe-terminal-panel, fe-agents-strip]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 4
-actual_roles: "impl 1, verify 1, review 1, fix 1, false-finding 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-deploy-pin/agents-helmfile
-branch: "current worktree branch (head feec968)"
 verified_head: feec968aa0c2574aebb25c3ca63e8ae0d1fb973a
-run: web-ui-cluster-tabs-with-fil
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deploy pin

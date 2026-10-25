@@ -6,22 +6,17 @@ value: clusters are tabs at the top with a hamburger menu of sessions and settin
 files: [frontend/src/layout/TopBar.tsx, frontend/src/layout/SessionsMenu.tsx, frontend/src/layout/TopBar.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/layout/TopBar.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fe-deps-and-storage]
-owns: [fe-sessions-menu]
-uses: [fe-deps]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 8
-actual_roles: "impl 2, verify 4, review 1, fix 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/web-ui-cluster-tabs-with-fil-fe-top-bar/agent-orchestrator
-branch: web-ui-cluster-tabs-with-fil-fe-top-bar
 verified_head: 997f078e838f0a9a51d8124d0c10ee202e7b87e9
-run: web-ui-cluster-tabs-with-fil
-provides: [sessions-menu]
-acs_for_audit: []
-process_gaps: []
-fork_point: 093a155e09ab1248b87d755d1828432fc82b89e9
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe top bar
