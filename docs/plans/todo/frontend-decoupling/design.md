@@ -211,6 +211,7 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 - Q2: URL layout: one host lab.szymonrichert.pl with ingress path routing, UI at /, orchestrator at /api (/api/v1 unchanged), one prefix per later service (/webhooks/, /schedules/)? [recommended: yes]
 - Q3: Backends: the UI reads a runtime config.json listing its backends, set by the agents-web chart, so a service's menu entries appear only when it is configured? [recommended: yes]
 - Q4: Static server: the agents-web image is nginx-unprivileged with a config file (no Python server)? [recommended: yes]
+- Q5: Harbor CI secrets: you run gh secret set HARBOR_USERNAME and HARBOR_PASSWORD -R szymonrychu/agents-web once the repo exists (agents cannot read the values); web-ci-release stays blocked until then? [recommended: yes]
 
 ## Irreversible operations in scope
 
