@@ -2,7 +2,7 @@
 title: agents-web component
 blockers: [agent-init-scripts, cluster-scaling]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: []
 created: 2026-10-25
 ---

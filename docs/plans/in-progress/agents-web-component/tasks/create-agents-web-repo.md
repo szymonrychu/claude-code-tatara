@@ -1,6 +1,6 @@
 ---
 title: create agents-web repo
-status: todo
+status: in-progress
 repo: superrepo
 value: "the UI has its own repo, with its history, ready for its own image and chart"
 files: [.gitmodules, code/agents-web, AGENTS.md]
