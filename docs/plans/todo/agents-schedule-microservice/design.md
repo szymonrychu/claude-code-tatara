@@ -242,6 +242,7 @@ none
 - Q3: A fire while the previous run of the same schedule is still running is skipped and recorded as ignored (reason previous_running), not queued or started anyway? [recommended: yes]
 - Q4: Each schedule carries a required prompt with placeholders {schedule_name} and {fired_at}, sent as the first message to the new cluster? [recommended: yes]
 - Q5: Limits: at most 3 scheduled runs in progress overall and 1 per schedule, the rest waiting FIFO, and a run stuck over 1 hour marked failed (timeout)? [recommended: yes]
+- Q6: The Schedules page lists schedules with enable/disable, run now, edit and delete, and shows each schedule's recent runs with status and a link to the cluster? [recommended: yes]
 
 ## Irreversible operations in scope
 
