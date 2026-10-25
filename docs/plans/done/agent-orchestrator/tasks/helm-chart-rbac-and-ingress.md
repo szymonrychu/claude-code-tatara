@@ -6,21 +6,17 @@ value: The chart gives the reconciler least-privilege RBAC in one namespace and 
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/role.yaml, chart/agent-orchestrator/templates/rolebinding.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
 verify: "uv run pytest tests/test_chart_rbac_ingress.py -q && mise run lint && mise run lint:chart"
 depends_on: [helm-chart-deployments, helm-chart-scaffold]
-owns: []
-uses: [helm-render, agent-orchestrator-chart]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-rbac-and-ingress/agent-orchestrator
-branch: agent-orchestrator-helm-chart-rbac-and-ingress
 verified_head: 5e75aee1e3d1b7528fe3c0e191edccc20c4123d1
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 303534
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 74647, review 228887"
 ---
 
 # helm chart rbac and ingress

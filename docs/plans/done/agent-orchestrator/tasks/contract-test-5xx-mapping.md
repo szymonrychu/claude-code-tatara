@@ -6,21 +6,17 @@ value: the full suite is green with the approved 5xx mapping
 files: [tests/test_fake_wrapper_contract.py]
 verify: "uv run pytest tests/test_fake_wrapper_contract.py tests/test_wrapper_client.py -q -p no:cacheprovider && mise run lint"
 depends_on: [wrapper-5xx-ambiguous, fake-wrapper-contract]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-contract-test-5xx-mapping/agent-orchestrator
-branch: agent-orchestrator-contract-test-5xx-mapping
 verified_head: 54bd9178ff979d70b3f52fa7fc47e1595f8656a5
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 445312
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 227537, review 217775"
 ---
 
 # contract test 5xx mapping

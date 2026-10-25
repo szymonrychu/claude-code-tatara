@@ -6,22 +6,17 @@ value: "Delivers queued messages round-robin and runs interrupt and compact comm
 files: [src/agent_orchestrator/dispatcher/__init__.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_dispatcher.py]
 verify: "uv run pytest tests/test_dispatcher.py -q && mise run lint"
 depends_on: [cluster-token-derivation, clusters-repository, dispatch-queue-sql, fake-wrapper-contract, migrations-and-schema, settings-model, wrapper-client-and-sse]
-owns: []
-uses: [queue-sql, wrapper-client, fake-wrapper, cluster-tokens, pg-fixture, cluster-spec, settings]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-dispatcher-loop/agent-orchestrator
-branch: agent-orchestrator-dispatcher-loop
 verified_head: d1399d0aef0dc1cc578df6d1352d808534e60488
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: bf7f8d67207f4a79cb0366298e64357e9717a1a6
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 20
+actual_tokens: 1348517
+actual_roles: "impl 12, review 9"
+actual_role_tokens: "impl 957371, review 391146"
 ---
 
 # dispatcher loop

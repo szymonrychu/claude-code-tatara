@@ -6,21 +6,17 @@ value: "Defines new clusters with their full config and discards them safely, fr
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/DiscardClusterDialog.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/clusters/ClusterForm.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/clusters/ClusterForm.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: [fe-api-client-and-stream, fe-shell-and-ribbon, fe-theme-port]
-owns: []
-uses: [fe-api, fe-theme]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-cluster-form/agent-orchestrator
-branch: HEAD
 verified_head: a9f12d05d679804d3bb84702647b27fd5d53063b
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1144894
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 698644, review 446250"
 ---
 
 # fe cluster form

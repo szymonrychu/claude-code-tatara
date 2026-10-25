@@ -6,21 +6,17 @@ value: "Turns a cluster spec into the exact Kubernetes objects of a working, pee
 files: [src/agent_orchestrator/k8s/__init__.py, src/agent_orchestrator/k8s/labels.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/k8s/on_start.py, tests/test_render.py, tests/golden/cluster_two_peers.yaml, tests/golden/cluster_single.yaml]
 verify: "uv run pytest tests/test_render.py -q && mise run lint"
 depends_on: [cluster-token-derivation, clusters-repository, settings-model]
-owns: [k8s-render]
-uses: [cluster-spec, cluster-tokens, settings, any-mcp-cli, any-mcp-config, any-mcp-install, wrapper-on-start-hook]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-k8s-object-renderer/agent-orchestrator
-branch: agent-orchestrator-k8s-object-renderer-land
 verified_head: 1ad933b
-run: agent-orchestrator
-provides: [workdir-path-and-mount, cluster-labels]
-acs_for_audit: [AC4]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 548262
+actual_roles: "impl 1, review 2"
+actual_role_tokens: "impl 335401, review 212861"
 ---
 
 # k8s object renderer

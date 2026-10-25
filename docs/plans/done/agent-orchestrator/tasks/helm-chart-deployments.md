@@ -6,21 +6,17 @@ value: The chart runs the four orchestrator processes with migrations first and 
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/service.yaml, chart/agent-orchestrator/templates/serviceaccount.yaml, chart/agent-orchestrator/templates/NOTES.txt, chart/agent-orchestrator/templates/tests/test-connection.yaml, tests/test_chart_deployments.py]
 verify: "uv run pytest tests/test_chart_deployments.py -q && mise run lint && mise run lint:chart"
 depends_on: [helm-chart-config-postgres, helm-chart-scaffold, scaffold-repo-and-cli]
-owns: []
-uses: [helm-render, agent-orchestrator-chart, orch-cli]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-deployments/agent-orchestrator
-branch: agent-orchestrator-helm-chart-deployments
 verified_head: bb95fe6dbebe5198caf1ae4c2efc6241cf9b3afd
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helm chart deployments

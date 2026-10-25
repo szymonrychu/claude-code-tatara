@@ -6,21 +6,17 @@ value: API changes always ship with matching frontend types
 files: [frontend/src/api/schema.d.ts, tests/test_readme_api.py]
 verify: "cd frontend && npm run check:api && cd .. && uv run pytest tests/test_readme_api.py -q -p no:cacheprovider && mise run lint"
 depends_on: [fe-api-client-and-stream, readme-api-and-openapi]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-frontend-api-types-regen/agent-orchestrator
-branch: agent-orchestrator-frontend-api-types-regen
 verified_head: 48a23059649febccab0fcac1a07d70e942f7c296
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 570299
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 381107, review 189192"
 ---
 
 # frontend api types regen

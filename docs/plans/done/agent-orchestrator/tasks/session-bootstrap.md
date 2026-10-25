@@ -6,21 +6,17 @@ value: "Every ready agent pod gets exactly one wrapper session, adopted after a 
 files: [src/agent_orchestrator/reconciler/sessions.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_session_bootstrap.py]
 verify: "uv run pytest tests/test_session_bootstrap.py -q && mise run lint"
 depends_on: [cluster-token-derivation, fake-wrapper-contract, k8s-object-renderer, reconciler-loop, wrapper-client-and-sse]
-owns: []
-uses: [agents-repo, wrapper-client, fake-wrapper, cluster-tokens, kube-api, k8s-render]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-session-bootstrap/agent-orchestrator
-branch: agent-orchestrator-session-bootstrap
 verified_head: e91ee1a751870066e3dd2ca3ba63b690153b96b4
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: 1330169
+actual_roles: "impl 5, review 4"
+actual_role_tokens: "impl 1054996, review 275173"
 ---
 
 # session bootstrap

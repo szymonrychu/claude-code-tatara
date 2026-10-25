@@ -6,22 +6,17 @@ value: "Runs verification commands against a cluster's shared workspace, which i
 files: [src/agent_orchestrator/reconciler/checks.py, src/agent_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_checks.py]
 verify: "uv run pytest tests/test_checks.py -q && mise run lint"
 depends_on: [dispatch-queue-sql, k8s-object-renderer, reconciler-loop, session-bootstrap]
-owns: []
-uses: [queue-sql, kube-api, agents-repo, k8s-render]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-check-jobs/agent-orchestrator
-branch: agent-orchestrator-check-jobs
 verified_head: 2f18e52c61e9950ae05d671468c774f92ff6582e
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: e91ee1a751870066e3dd2ca3ba63b690153b96b4
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1498324
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1332455, review 165869"
 ---
 
 # check jobs

@@ -6,21 +6,17 @@ value: an agent whose session died while its pod lives recovers by itself
 files: [src/agent_orchestrator/reconciler/sessions.py, tests/test_session_bootstrap.py]
 verify: "uv run pytest tests/test_session_bootstrap.py -q && mise run lint"
 depends_on: [session-bootstrap]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-stored-session-resume/agent-orchestrator
-branch: agent-orchestrator-stored-session-resume
 verified_head: 45da3af02ca2b94212f67d79ecfc11de0689f8cb
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 718102
+actual_roles: "impl 3, review 4"
+actual_role_tokens: "impl 358257, review 359845"
 ---
 
 # stored session resume

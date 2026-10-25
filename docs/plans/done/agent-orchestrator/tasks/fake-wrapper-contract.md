@@ -6,21 +6,17 @@ value: "An in-process wrapper fake that every loop test uses, kept honest by run
 files: [tests/fakes/fake_wrapper.py, tests/fakes/real_wrapper.py, tests/test_fake_wrapper_contract.py, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml]
 verify: "uv run pytest tests/test_fake_wrapper_contract.py -q && mise run lint"
 depends_on: [wrapper-client-and-sse]
-owns: [fake-wrapper]
-uses: [wrapper-client, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view, wrapper-history-backward]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fake-wrapper-contract/agent-orchestrator
-branch: agent-orchestrator-fake-wrapper-contract
 verified_head: 41eb3b9ed02a3f7c965172f3e2aab7b2d6ed1522
-run: agent-orchestrator
-provides: [fake-wrapper, real-wrapper-launcher, agent-test-image]
-acs_for_audit: [AC11]
-process_gaps: ["TDD red step not run (implementer admits wroteTestFirst false); no exception applies"]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 18
+actual_tokens: 3179649
+actual_roles: "impl 15, review 3"
+actual_role_tokens: "impl 3002530, review 177119"
 ---
 
 # fake wrapper contract

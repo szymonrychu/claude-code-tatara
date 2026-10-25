@@ -6,21 +6,17 @@ value: "The main chat view with smart loading: newest messages instantly, older 
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/entries.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/AgentFilter.tsx, frontend/src/chat/ChatView.tsx, frontend/src/App.tsx, frontend/src/chat/ChatLog.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/chat/ChatLog.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: [fe-api-client-and-stream, fe-chat-model, fe-shell-and-ribbon, fe-theme-port]
-owns: []
-uses: [chat-model, fe-api, fe-theme]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-chat-log-paging/agent-orchestrator
-branch: agent-orchestrator-fe-chat-log-paging
 verified_head: c36facd7a58ec9b458e302c7a53369307a36e560
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1407864
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 1163704, review 244160"
 ---
 
 # fe chat log paging

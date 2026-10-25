@@ -6,21 +6,17 @@ value: "One validated configuration surface for every process, whose env names a
 files: [src/agent_orchestrator/settings.py, tests/test_settings.py, README.md]
 verify: "uv run pytest tests/test_settings.py -q && mise run lint"
 depends_on: [scaffold-repo-and-cli]
-owns: [settings, agent-orchestrator-settings-env]
-uses: [any-mcp-release]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-settings-model/agent-orchestrator
-branch: agent-orchestrator-settings-model
 verified_head: b5365cc8ce9b4f2406d5e6af4d80e7377de4525b
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # settings model

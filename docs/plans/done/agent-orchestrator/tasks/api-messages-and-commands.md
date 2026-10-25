@@ -6,21 +6,17 @@ value: "The headless way to talk to a cluster: send a message, watch its status,
 files: [src/agent_orchestrator/api/messages.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/schemas.py, tests/test_api_messages.py]
 verify: "uv run pytest tests/test_api_messages.py -q && mise run lint"
 depends_on: [api-clusters-and-agents, dispatch-queue-sql]
-owns: []
-uses: [api-app, queue-sql]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-messages-and-commands/agent-orchestrator
-branch: agent-orchestrator-api-messages-and-commands
 verified_head: 9e2081381ba6fe6649b8e2cb5044b26538a8d981
-run: agent-orchestrator
-provides: []
-acs_for_audit: [AC2]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # api messages and commands

@@ -6,22 +6,17 @@ value: a wrapper error after it may have accepted a turn never causes a double s
 files: [src/agent_orchestrator/wrapper/client.py, tests/test_wrapper_client.py, tests/test_dispatcher.py]
 verify: "uv run pytest tests/test_wrapper_client.py tests/test_dispatcher.py -q && mise run lint"
 depends_on: [dispatcher-loop, wrapper-client-and-sse]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-wrapper-5xx-ambiguous/agent-orchestrator
-branch: "HEAD (worktree agent-orchestrator-wrapper-5xx-ambiguous)"
 verified_head: dbc07550d994a2d3716c535afe26a3de75ea7d83
-run: agent-orchestrator
-provides: []
-acs_for_audit: [AC1]
-process_gaps: ["tests.red / verification.evidence not recorded in the implementer's output; I reproduced it: with client.py at 6a45f7b^, test_submit_5xx_mapping, test_submit_turn_maps_every_status and test_wrapper_500_goes_through_verifier fail; with HEAD, 34 tests pass"]
-fork_point: 6e26b89
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 15
+actual_tokens: 935588
+actual_roles: "impl 7, review 8"
+actual_role_tokens: "impl 565817, review 369771"
 ---
 
 # wrapper 5xx ambiguous

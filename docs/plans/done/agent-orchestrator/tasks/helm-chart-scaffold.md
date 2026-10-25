@@ -6,21 +6,17 @@ value: The repo ships a standard helm-create-shaped chart skeleton that every la
 files: [chart/agent-orchestrator/Chart.yaml, chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/.helmignore, chart/agent-orchestrator/templates/_helpers.tpl, chart/agent-orchestrator/ci/lint-values.yaml, tests/helm_render.py, tests/test_chart_scaffold.py, mise.toml]
 verify: "uv run pytest tests/test_chart_scaffold.py -q && mise run lint && mise run lint:chart"
 depends_on: [scaffold-repo-and-cli]
-owns: [helm-render, agent-orchestrator-chart]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-scaffold/agent-orchestrator
-branch: agent-orchestrator-helm-chart-scaffold
 verified_head: dcbbab0f2f70a4beb460343a797d4caff0b8e7c0
-run: agent-orchestrator
-provides: [helm-render]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 466783
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 276035, review 190748"
 ---
 
 # helm chart scaffold

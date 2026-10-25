@@ -6,21 +6,17 @@ value: "The round-robin core: a message goes to the agent free the longest, neve
 files: [src/agent_orchestrator/db/queue.py, tests/test_dispatch_queue.py]
 verify: "uv run pytest tests/test_dispatch_queue.py -q && mise run lint"
 depends_on: [migrations-and-schema]
-owns: [queue-sql]
-uses: [schema-v1, pg-fixture]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-dispatch-queue-sql/agent-orchestrator
-branch: agent-orchestrator-dispatch-queue-sql
 verified_head: 0b871e0643d8b4223249ea9c4290760911428d30
-run: agent-orchestrator
-provides: [queue-sql, queue-dataclasses]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 23
+actual_tokens: 2829312
+actual_roles: "impl 17, review 7"
+actual_role_tokens: "impl 2106580, review 722732"
 ---
 
 # dispatch queue sql

@@ -6,21 +6,17 @@ value: "The look the user asked for: the ros2 web UI's dark, flat theme, with it
 files: [frontend/src/theme.ts, frontend/src/theme.test.ts, frontend/src/index.css, frontend/src/main.tsx, frontend/src/layout/designRules.ts, frontend/src/layout/designRules.test.ts, frontend/src/layout/useLayout.ts, frontend/src/layout/ConfirmDialog.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/layout/designRules.test.ts src/theme.test.ts && npm run lint"
 depends_on: [fe-scaffold]
-owns: [fe-theme]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-theme-port/agent-orchestrator
-branch: agent-orchestrator-fe-theme-port
 verified_head: 272fd0d1b4bbcabec5efeea8e42764095d50f62f
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: ["tests.red / verification.evidence not recorded for the TDD finding. I ran a mutation check in a scratch copy instead: removing onClose, double-firing onConfirm, and moving the desktop breakpoint to xl made 4 of 12 tests fail."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 983737
+actual_roles: "impl 2, review 4"
+actual_role_tokens: "impl 425180, review 558557"
 ---
 
 # fe theme port

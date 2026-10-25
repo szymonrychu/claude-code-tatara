@@ -6,21 +6,17 @@ value: "One typed, tested way to talk to every wrapper endpoint the orchestrator
 files: [src/agent_orchestrator/wrapper/__init__.py, src/agent_orchestrator/wrapper/client.py, src/agent_orchestrator/wrapper/sse.py, src/agent_orchestrator/wrapper/models.py, tests/test_wrapper_client.py]
 verify: "uv run pytest tests/test_wrapper_client.py -q && mise run lint"
 depends_on: [scaffold-repo-and-cli]
-owns: [wrapper-client]
-uses: [wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-wrapper-client-and-sse/agent-orchestrator
-branch: agent-orchestrator-wrapper-client-and-sse
 verified_head: 7844dd22f9b1dbdf592cc5c55c9d2b4160acbed7
-run: agent-orchestrator
-provides: [wrapper-client, sse-parser]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 966810
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 622090, review 344720"
 ---
 
 # wrapper client and sse

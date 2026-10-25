@@ -6,21 +6,17 @@ value: "Runs the experiment the user wants: does round-robin with several peered
 files: [src/agent_orchestrator/bench/__init__.py, src/agent_orchestrator/bench/spec.py, src/agent_orchestrator/bench/runner.py, src/agent_orchestrator/bench/report.py, src/agent_orchestrator/cli.py, tests/test_bench.py, examples/bench.yaml, README.md]
 verify: "uv run pytest tests/test_bench.py -q && mise run lint"
 depends_on: [entrypoints-and-singleton, readme-api-and-openapi, scaffold-repo-and-cli]
-owns: []
-uses: [orch-cli, openapi-v1]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-bench-cli/agent-orchestrator
-branch: agent-orchestrator-bench-cli
 verified_head: 503cf0d198ef74aa812ca25cc15ebc6d9714e39f
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 1197028
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 993951, review 203077"
 ---
 
 # bench cli

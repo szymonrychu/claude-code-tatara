@@ -6,22 +6,17 @@ value: "The one Postgres schema every process coordinates through, applied safel
 files: [src/agent_orchestrator/db/__init__.py, src/agent_orchestrator/db/pool.py, src/agent_orchestrator/db/migrate.py, src/agent_orchestrator/db/migrations/0001_init.sql, tests/conftest.py, tests/factories.py, tests/test_migrations.py]
 verify: "uv run pytest tests/test_migrations.py -q && mise run lint"
 depends_on: [scaffold-repo-and-cli]
-owns: [schema-v1, pg-fixture]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-migrations-and-schema/agent-orchestrator
-branch: agent-orchestrator-migrations-and-schema
 verified_head: 25a8811aefde4d144139311c3de985332088fd24
-run: agent-orchestrator
-provides: [insert-turn-factory, empty-dsn-fixture]
-acs_for_audit: []
-process_gaps: []
-fork_point: 7844dd22f9b1dbdf592cc5c55c9d2b4160acbed7
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 791189
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 338109, review 453080"
 ---
 
 # migrations and schema

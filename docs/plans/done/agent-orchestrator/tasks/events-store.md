@@ -6,21 +6,17 @@ value: "Every agent's activity stored once in a merged, pageable timeline that s
 files: [src/agent_orchestrator/db/events.py, tests/test_events_store.py]
 verify: "uv run pytest tests/test_events_store.py -q && mise run lint"
 depends_on: [migrations-and-schema]
-owns: [events-repo]
-uses: [schema-v1, pg-fixture]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-events-store/agent-orchestrator
-branch: agent-orchestrator-events-store
 verified_head: 75f4dffcf28f22f1052cf519df962a7396857bb7
-run: agent-orchestrator
-provides: [events-repo]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 548715
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 375827, review 172888"
 ---
 
 # events store

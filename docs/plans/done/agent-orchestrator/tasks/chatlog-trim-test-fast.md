@@ -6,21 +6,17 @@ value: frontend CI is green on slow runners
 files: [frontend/src/chat/ChatLog.tsx, frontend/src/chat/useClusterChat.ts, frontend/src/chat/ChatLog.test.tsx]
 verify: "cd frontend && npx vitest run src/chat && npm run lint"
 depends_on: [fe-chat-log-paging]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-chatlog-trim-test-fast/agent-orchestrator
-branch: agent-orchestrator-chatlog-trim-test-fast
 verified_head: 5c862fc2504154c0de11a0d808f64d0e3338352e
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 289690
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 202045, review 87645"
 ---
 
 # chatlog trim test fast

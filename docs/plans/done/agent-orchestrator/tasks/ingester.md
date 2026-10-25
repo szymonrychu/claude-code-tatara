@@ -6,21 +6,17 @@ value: "Turns each agent's event stream into stored history and live state: idle
 files: [src/agent_orchestrator/ingester/__init__.py, src/agent_orchestrator/ingester/loop.py, src/agent_orchestrator/db/status.py, tests/test_ingester.py]
 verify: "uv run pytest tests/test_ingester.py -q && mise run lint"
 depends_on: [cluster-token-derivation, events-store, fake-wrapper-contract, migrations-and-schema, wrapper-client-and-sse]
-owns: []
-uses: [events-repo, wrapper-client, fake-wrapper, cluster-tokens, schema-v1, pg-fixture, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ingester/agent-orchestrator
-branch: agent-orchestrator-ingester
 verified_head: c551093a9088a38aec04692284b694e47bb7ab30
-run: agent-orchestrator
-provides: [agent-status-repo, wrapper-state-map]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 17
+actual_tokens: 3013084
+actual_roles: "impl 14, review 3"
+actual_role_tokens: "impl 2610971, review 402113"
 ---
 
 # ingester

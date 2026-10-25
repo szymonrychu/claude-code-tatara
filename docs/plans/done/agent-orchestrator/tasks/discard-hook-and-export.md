@@ -6,21 +6,17 @@ value: Discarding a cluster deletes everything while an optional hook still rece
 files: [src/agent_orchestrator/db/export.py, src/agent_orchestrator/reconciler/discard_hook.py, src/agent_orchestrator/reconciler/loop.py, tests/test_discard_hook.py, README.md]
 verify: "uv run pytest tests/test_discard_hook.py -q && mise run lint"
 depends_on: [check-jobs, clusters-repository, migrations-and-schema, reconciler-loop, settings-model]
-owns: []
-uses: [schema-v1, pg-fixture, settings, cluster-spec, kube-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-discard-hook-and-export/agent-orchestrator
-branch: agent-orchestrator-discard-hook-and-export
 verified_head: e00e081671a1d54f9c73da9b16b1d46e9c1c9916
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 1621840
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 1393929, review 227911"
 ---
 
 # discard hook and export

@@ -6,21 +6,17 @@ value: "The left ribbon of clusters and agents with working or waiting state, po
 files: [frontend/src/App.tsx, frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx, frontend/src/ribbon/ClusterRow.tsx, frontend/src/ribbon/AgentRow.tsx, frontend/src/ribbon/useClusters.ts, frontend/src/components/StatusItem.tsx, frontend/src/ribbon/Ribbon.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/ribbon/Ribbon.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: [fe-theme-port, fe-api-client-and-stream, fe-context-gauge]
-owns: []
-uses: [fe-theme, fe-api, context-gauge]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-shell-and-ribbon/agent-orchestrator
-branch: agent-orchestrator-fe-shell-and-ribbon
 verified_head: 44990c5d4647316af43be40352a29e60c853b310
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 870559
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 626004, review 244555"
 ---
 
 # fe shell and ribbon

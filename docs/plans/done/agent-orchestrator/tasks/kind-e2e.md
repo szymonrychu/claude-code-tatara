@@ -6,22 +6,17 @@ value: "End-to-end proof on a real Kubernetes: the published-to-be chart install
 files: [tests/e2e/test_e2e_kind.py, e2e/kind-config.yaml, e2e/manifests/postgres.yaml, e2e/values-kind.yaml, scripts/e2e.sh, mise.toml, .github/workflows/ci.yaml]
 verify: "mise run test:e2e && mise run lint"
 depends_on: [ambiguous-send-verifier, discard-hook-and-export, entrypoints-and-singleton, fake-wrapper-contract, helm-chart-ci-publish, helm-chart-scaffold]
-owns: []
-uses: [fake-wrapper, agent-orchestrator-chart, wrapper-on-start-hook, any-mcp-cli]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-kind-e2e/agent-orchestrator
-branch: "HEAD of /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-kind-e2e/agent-orchestrator (commit 5465ab6)"
 verified_head: 56e5443e477d35b80c2269695dd1d47440be9461
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 503cf0d
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 99
+actual_tokens: 11894533
+actual_roles: "impl 70, review 29"
+actual_role_tokens: "impl 11220885, review 673648"
 ---
 
 # kind e2e

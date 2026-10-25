@@ -6,21 +6,17 @@ value: secret scanners stay quiet on fake test data
 files: [e2e/values-kind.yaml, scripts/e2e.sh, tests/test_chart_config.py]
 verify: "uv run pytest tests/test_chart_config.py -q -p no:cacheprovider && mise run lint"
 depends_on: [helm-chart-config-postgres, kind-e2e]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fixtures-not-secret-shaped/agent-orchestrator
-branch: agent-orchestrator-fixtures-not-secret-shaped
 verified_head: e147d5a194d0e409be6aefa3cc660cdd85f15aaa
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 17
+actual_tokens: 874871
+actual_roles: "impl 8, review 9"
+actual_role_tokens: "impl 729250, review 145621"
 ---
 
 # fixtures not secret shaped

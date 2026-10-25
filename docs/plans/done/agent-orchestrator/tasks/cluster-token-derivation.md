@@ -6,21 +6,17 @@ value: "Per-cluster wrapper and peer tokens that every process derives identical
 files: [src/agent_orchestrator/tokens.py, tests/test_tokens.py]
 verify: "uv run pytest tests/test_tokens.py -q && mise run lint"
 depends_on: [settings-model]
-owns: [cluster-tokens]
-uses: [settings]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-cluster-token-derivation/agent-orchestrator
-branch: agent-orchestrator-cluster-token-derivation
 verified_head: dc7d657673fcc8497863e24ccb93808876a20459
-run: agent-orchestrator
-provides: [cluster-tokens]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 201821
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 92622, review 109199"
 ---
 
 # cluster token derivation

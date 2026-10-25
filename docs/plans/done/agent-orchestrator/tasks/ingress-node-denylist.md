@@ -6,21 +6,17 @@ value: agent pods cannot reach the API through the ingress
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/ingress.yaml, tests/test_chart_rbac_ingress.py, README.md]
 verify: "uv run pytest tests/test_chart_rbac_ingress.py -q && mise run lint && mise run lint:chart"
 depends_on: [ambiguous-send-verifier, bench-cli, container-images-ci, discard-hook-and-export, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-scaffold, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, settings-model]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ingress-node-denylist/agent-orchestrator
-branch: agent-orchestrator-ingress-node-denylist
 verified_head: 23ffc23769f2b1b62e9fdca52d8590f858580dca
-run: agent-orchestrator
-provides: []
-acs_for_audit: [AC1]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 395137
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 243832, review 151305"
 ---
 
 # ingress node denylist

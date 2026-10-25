@@ -6,21 +6,17 @@ value: the full suite and the integration task run green out of the box
 files: [tests/test_images.py, mise.toml, README.md]
 verify: "uv run pytest tests/test_images.py -q && mise run lint"
 depends_on: [ambiguous-send-verifier, bench-cli, container-images-ci, discard-hook-and-export, discard-quiesce-before-expor, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-rbac-and-ingress, helm-chart-scaffold, ingress-node-denylist, kind-e2e, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, settings-model]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-images-test-precision/agent-orchestrator
-branch: agent-orchestrator-images-test-precision
 verified_head: a27c8c3b791cecc2e1867f61800098e14e51b4eb
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 498518
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 338521, review 159997"
 ---
 
 # images test precision

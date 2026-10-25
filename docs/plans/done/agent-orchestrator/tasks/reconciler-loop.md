@@ -6,21 +6,17 @@ value: "Keeps Kubernetes equal to the clusters table: create, scale, edit and di
 files: [src/agent_orchestrator/k8s/kube.py, tests/fakes/fake_kube.py, src/agent_orchestrator/reconciler/__init__.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py, README.md]
 verify: "uv run pytest tests/test_reconciler.py -q && mise run lint"
 depends_on: [clusters-repository, dispatch-queue-sql, k8s-object-renderer, migrations-and-schema, settings-model]
-owns: [kube-api, agents-repo]
-uses: [k8s-render, queue-sql, schema-v1, pg-fixture, cluster-spec, settings]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-reconciler-loop/agent-orchestrator
-branch: agent-orchestrator-reconciler-loop
 verified_head: ab3e57ca830938006c53c2a3b0e9c589bc6c0f8f
-run: agent-orchestrator
-provides: [kube-api, lightkube-api, kube-ownership-helpers, fake-kube, agents-repo, pod-url]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 21
+actual_tokens: 6315902
+actual_roles: "impl 15, review 6"
+actual_role_tokens: "impl 5860345, review 455557"
 ---
 
 # reconciler loop

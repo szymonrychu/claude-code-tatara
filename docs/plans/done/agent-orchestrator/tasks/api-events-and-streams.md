@@ -6,21 +6,17 @@ value: "Smart chat loading for any client: page history backwards, then follow l
 files: [src/agent_orchestrator/api/streams.py, src/agent_orchestrator/api/listener.py, src/agent_orchestrator/api/app.py, tests/test_api_streams.py]
 verify: "uv run pytest tests/test_api_streams.py -q && mise run lint"
 depends_on: [api-clusters-and-agents, api-messages-and-commands, events-store]
-owns: []
-uses: [api-app, events-repo]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-events-and-streams/agent-orchestrator
-branch: agent-orchestrator-api-events-and-streams
 verified_head: 77697b02faa60fe11b077e3cb45410cecd42ff5a
-run: agent-orchestrator
-provides: [notify-listener, agent-view-builder]
-acs_for_audit: []
-process_gaps: [Red-first not observed for the new tests]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 656478
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 391264, review 265214"
 ---
 
 # api events and streams

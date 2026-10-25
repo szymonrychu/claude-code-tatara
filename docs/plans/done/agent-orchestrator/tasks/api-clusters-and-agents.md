@@ -6,21 +6,17 @@ value: "The headless API's cluster and agent surface: define, edit, list, discar
 files: [src/agent_orchestrator/api/__init__.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/errors.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/db/views.py, tests/test_api_clusters.py, src/agent_orchestrator/api/allowlist.py]
 verify: "uv run pytest tests/test_api_clusters.py -q && mise run lint"
 depends_on: [clusters-repository, migrations-and-schema, settings-model]
-owns: [api-app]
-uses: [cluster-spec, settings, schema-v1, pg-fixture]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-api-clusters-and-agents/agent-orchestrator
-branch: agent-orchestrator-api-clusters-and-agents
 verified_head: 8d361062e98c6826832909a184315d77af948b00
-run: agent-orchestrator
-provides: [api-app, api-error-helpers, cluster-views]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # api clusters and agents

@@ -6,21 +6,17 @@ value: "a discarded cluster's exported history includes every event"
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/discard_hook.py, tests/test_discard_hook.py, README.md]
 verify: "uv run pytest tests/test_discard_hook.py tests/test_reconciler.py -q && mise run lint"
 depends_on: [ambiguous-send-verifier, bench-cli, check-jobs, container-images-ci, discard-hook-and-export, entrypoints-and-singleton, helm-chart-ci-publish, helm-chart-config-postgres, helm-chart-rbac-and-ingress, ingress-node-denylist, readme-api-and-openapi, reconciler-loop, scaffold-repo-and-cli, session-bootstrap, settings-model]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-discard-quiesce-before-expor/agent-orchestrator
-branch: HEAD
 verified_head: 6e26b8993cd1252bed2742456a28eb81091026cf
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: 1406232
+actual_roles: "impl 6, review 5"
+actual_role_tokens: "impl 1003044, review 403188"
 ---
 
 # discard quiesce before export

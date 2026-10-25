@@ -6,21 +6,17 @@ value: "Lets the user message a cluster (any free agent or a chosen one) and see
 files: [frontend/src/chat/Composer.tsx, frontend/src/chat/QueueStrip.tsx, frontend/src/chat/ChatView.tsx, frontend/src/chat/Composer.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/chat/Composer.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: [fe-api-client-and-stream, fe-chat-log-paging]
-owns: []
-uses: [fe-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-composer-and-queue-strip/agent-orchestrator
-branch: agent-orchestrator-fe-composer-and-queue-strip
 verified_head: bf7f8d67207f4a79cb0366298e64357e9717a1a6
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 907784
+actual_roles: "impl 3, review 3"
+actual_role_tokens: "impl 669962, review 237822"
 ---
 
 # fe composer and queue strip

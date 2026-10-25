@@ -6,22 +6,17 @@ value: "Automatic retry never pastes a message twice: an ambiguous send is check
 files: [src/agent_orchestrator/dispatcher/verify.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_ambiguous_verify.py, README.md]
 verify: "uv run pytest tests/test_ambiguous_verify.py -q && mise run lint"
 depends_on: [cluster-token-derivation, clusters-repository, dispatch-queue-sql, dispatcher-loop, fake-wrapper-contract, migrations-and-schema, settings-model, wrapper-client-and-sse]
-owns: []
-uses: [queue-sql, wrapper-client, fake-wrapper, cluster-tokens, pg-fixture, settings, cluster-spec]
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ambiguous-send-verifier/agent-orchestrator
-branch: agent-orchestrator-ambiguous-send-verifier
 verified_head: 3589f407de6061be3e6dbda5d93f57c6c16bdd2a
-run: agent-orchestrator
-provides: [cluster-max-attempts]
-acs_for_audit: []
-process_gaps: []
-fork_point: d1399d0aef0dc1cc578df6d1352d808534e60488
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 16
+actual_tokens: 4085791
+actual_roles: "impl 12, review 4"
+actual_role_tokens: "impl 3620303, review 465488"
 ---
 
 # ambiguous send verifier

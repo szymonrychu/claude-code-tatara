@@ -6,21 +6,17 @@ value: "The chart wires settings, secrets and any Postgres (or an optional CNPG)
 files: [chart/agent-orchestrator/values.yaml, chart/agent-orchestrator/templates/_config.tpl, chart/agent-orchestrator/templates/configmap.yaml, chart/agent-orchestrator/templates/secret.yaml, chart/agent-orchestrator/templates/cnpg-cluster.yaml, tests/test_chart_config.py, README.md]
 verify: "uv run pytest tests/test_chart_config.py -q && mise run lint && mise run lint:chart"
 depends_on: [helm-chart-scaffold, settings-model]
-owns: []
-uses: [helm-render, agent-orchestrator-chart, agent-orchestrator-settings-env]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-config-postgres/agent-orchestrator
-branch: agent-orchestrator-helm-chart-config-postgres
 verified_head: e241811551161e82310fa3cd1e2ec7289d4cb94b
-run: agent-orchestrator
-provides: []
-acs_for_audit: [AC9]
-process_gaps: ["No red phase: implementer states tests and implementation were written in one pass, so no failing-test evidence exists (tdd rule)."]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helm chart config postgres

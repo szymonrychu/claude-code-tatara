@@ -6,21 +6,17 @@ value: "Every main commit yields a pushed, immutable orchestrator image, with th
 files: [.github/workflows/ci.yaml, tests/test_images.py, pyproject.toml, uv.lock, README.md]
 verify: "uv run pytest tests/test_images.py -q && mise run lint"
 depends_on: [spa-serving-and-dockerfile, k8s-object-renderer, settings-model]
-owns: [agent-orchestrator-image]
-uses: [settings, any-mcp-release, wrapper-idle-since, wrapper-context-surface, wrapper-user-message-event, wrapper-peers-view, wrapper-on-start-hook]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-container-images-ci/agent-orchestrator
-branch: agent-orchestrator-container-images-ci
 verified_head: e9df1b422f67b1cf46c89e885bf74d64186fef39
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # container images ci

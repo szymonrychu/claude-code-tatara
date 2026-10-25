@@ -6,21 +6,17 @@ value: "Ships the web UI inside the orchestrator image and makes CI prove the fr
 files: [src/agent_orchestrator/api/spa.py, src/agent_orchestrator/api/app.py, Dockerfile, .dockerignore, .github/workflows/ci.yaml, tests/test_spa.py]
 verify: "uv run pytest tests/test_spa.py -q && mise run lint"
 depends_on: [api-clusters-and-agents, api-events-and-streams, fe-api-client-and-stream]
-owns: []
-uses: [api-app]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-spa-serving-and-dockerfile/agent-orchestrator
-branch: agent-orchestrator-spa-serving-and-dockerfile
 verified_head: 09462682981e8fb455888b5a19c7862616be8f49
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 501726
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 331051, review 170675"
 ---
 
 # spa serving and dockerfile

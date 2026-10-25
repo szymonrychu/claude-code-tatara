@@ -6,22 +6,17 @@ value: "The circular 0-100% context indicator the user asked for, honest about u
 files: [frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/ribbon/ContextGauge.test.tsx src/layout/designRules.test.ts && npm run lint"
 depends_on: [fe-theme-port]
-owns: [context-gauge]
-uses: [fe-theme]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-context-gauge/agent-orchestrator
-branch: agent-orchestrator-fe-context-gauge
 verified_head: 004aeb059e2a1e18a92bc9a0d6deb9e8e7b676c1
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 272fd0d
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 185190
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 146109, review 39081"
 ---
 
 # fe context gauge

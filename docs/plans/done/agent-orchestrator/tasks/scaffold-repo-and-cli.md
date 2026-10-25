@@ -6,21 +6,17 @@ value: "Gives every later task a Python project that builds, lints and tests, CI
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yaml, src/agent_orchestrator/__init__.py, src/agent_orchestrator/cli.py, tests/test_cli.py, README.md]
 verify: "uv run pytest tests/test_cli.py -q && mise run lint"
 depends_on: []
-owns: [orch-cli]
-uses: [any-mcp-config]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-scaffold-repo-and-cli/agent-orchestrator
-branch: agent-orchestrator-scaffold-repo-and-cli
 verified_head: e1743b1b7a8cc9258a5ecd98943ab737f4620ebd
-run: agent-orchestrator
-provides: [orch-cli]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 402022
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 231573, review 170449"
 ---
 
 # scaffold repo and cli

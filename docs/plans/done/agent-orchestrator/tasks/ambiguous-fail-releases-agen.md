@@ -6,21 +6,17 @@ value: an ambiguous send that times out never strands its agent
 files: [src/agent_orchestrator/db/queue.py, tests/test_ambiguous_verify.py]
 verify: "uv run pytest tests/test_ambiguous_verify.py tests/test_dispatch_queue.py -q && mise run lint"
 depends_on: [ambiguous-send-verifier, dispatch-queue-sql]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-ambiguous-fail-releases-agen/agent-orchestrator
-branch: agent-orchestrator-ambiguous-fail-releases-agen
 verified_head: 165785929473436152b446bdb1d41a6c360c8294
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 378966
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 288433, review 90533"
 ---
 
 # ambiguous fail releases agent

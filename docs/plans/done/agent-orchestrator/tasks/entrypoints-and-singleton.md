@@ -6,21 +6,17 @@ value: "Makes the four services and migrate runnable as separate processes, with
 files: [src/agent_orchestrator/runtime/__init__.py, src/agent_orchestrator/runtime/singleton.py, src/agent_orchestrator/runtime/run.py, src/agent_orchestrator/cli.py, tests/test_entrypoints.py, README.md]
 verify: "uv run pytest tests/test_entrypoints.py -q && mise run lint"
 depends_on: [api-clusters-and-agents, api-events-and-streams, check-jobs, dispatcher-loop, ingester, reconciler-loop, scaffold-repo-and-cli, settings-model]
-owns: []
-uses: [orch-cli, settings, kube-api, api-app]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-entrypoints-and-singleton/agent-orchestrator
-branch: agent-orchestrator-entrypoints-and-singleton
 verified_head: fab4fae6cc277775265e4d5531d51d482ee56762
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: 906104
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 687941, review 218163"
 ---
 
 # entrypoints and singleton

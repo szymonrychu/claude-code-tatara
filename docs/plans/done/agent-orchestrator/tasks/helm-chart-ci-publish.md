@@ -6,21 +6,17 @@ value: agents-helmfile can pin an immutable published chart version for every ma
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_chart_ci.py, README.md]
 verify: "uv run pytest tests/test_chart_ci.py -q && mise run lint"
 depends_on: [container-images-ci, helm-chart-rbac-and-ingress, helm-chart-scaffold]
-owns: []
-uses: [helm-render, agent-orchestrator-chart, agent-orchestrator-image]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-helm-chart-ci-publish/agent-orchestrator
-branch: agent-orchestrator-helm-chart-ci-publish
 verified_head: d85839940dea8cfdb8b835b663b9cf0bf620a02e
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 4
+actual_tokens: 641999
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 377334, review 264665"
 ---
 
 # helm chart ci publish

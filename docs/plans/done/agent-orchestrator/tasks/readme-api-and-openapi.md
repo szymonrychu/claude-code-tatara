@@ -6,21 +6,17 @@ value: "A documented, versioned contract for tatara, magic-trainer and the UI, e
 files: [README.md, MEMORY.md, ROADMAP.md, openapi.json, src/agent_orchestrator/api/openapi.py, tests/test_readme_api.py]
 verify: "uv run pytest tests/test_readme_api.py -q && mise run lint"
 depends_on: [api-clusters-and-agents, api-events-and-streams]
-owns: [openapi-v1]
-uses: [api-app]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-readme-api-and-openapi/agent-orchestrator
-branch: agent-orchestrator-readme-api-and-openapi
 verified_head: 87131ab81f8148581b962afcca93d4386b0095c5
-run: agent-orchestrator
-provides: [openapi-v1]
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: 284181
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 147039, review 137142"
 ---
 
 # readme api and openapi

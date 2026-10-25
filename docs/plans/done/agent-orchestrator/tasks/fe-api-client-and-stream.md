@@ -6,21 +6,17 @@ value: "Typed access to every API route the UI uses, generated from the server's
 files: [frontend/package.json, frontend/src/api/schema.d.ts, frontend/src/api/client.ts, frontend/src/api/stream.ts, frontend/src/api/stream.test.ts]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/api/stream.test.ts && npm run lint"
 depends_on: [fe-scaffold, readme-api-and-openapi]
-owns: [fe-api]
-uses: [openapi-v1]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-api-client-and-stream/agent-orchestrator
-branch: "HEAD (worktree agent-orchestrator-fe-api-client-and-stream)"
 verified_head: 6e19b7dc55a4ef20bf7c1d7b6fb975a5a6fcf60c
-run: agent-orchestrator
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 669602
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 464471, review 205131"
 ---
 
 # fe api client and stream

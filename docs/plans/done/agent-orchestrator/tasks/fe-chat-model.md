@@ -6,22 +6,17 @@ value: "Turns stored agent events into readable chat items: inputs, outputs, thi
 files: [frontend/src/chat/chatModel.ts, frontend/src/chat/chatModel.test.ts]
 verify: "cd frontend && npm ci --no-audit --no-fund && npx vitest run src/chat/chatModel.test.ts && npm run lint"
 depends_on: [fe-api-client-and-stream]
-owns: [chat-model]
-uses: [fe-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-fe-chat-model/agent-orchestrator
-branch: agent-orchestrator-fe-chat-model
 verified_head: f414e585a9e613958ff82ec4a4f1cf165cc0171f
-run: agent-orchestrator
-provides: [chat-model]
-acs_for_audit: []
-process_gaps: []
-fork_point: 44990c5
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: 668998
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 355174, review 313824"
 ---
 
 # fe chat model

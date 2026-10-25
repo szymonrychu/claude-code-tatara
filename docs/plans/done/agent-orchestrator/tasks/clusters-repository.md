@@ -6,21 +6,17 @@ value: "Cluster definitions with a validated spec and a generation counter, the 
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/db/clusters.py, tests/test_clusters_repo.py]
 verify: "uv run pytest tests/test_clusters_repo.py -q && mise run lint"
 depends_on: [migrations-and-schema, settings-model]
-owns: [cluster-spec]
-uses: [schema-v1, pg-fixture, settings, any-mcp-config]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-orchestrator-clusters-repository/agent-orchestrator
-branch: agent-orchestrator-clusters-repository
 verified_head: a6ea51602db755508750a98c06c4d03ecdb26add
-run: agent-orchestrator
-provides: [cluster-spec, k8s-quantity-parser, clusters-repo]
-acs_for_audit: [AC2]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: 748247
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 316589, review 431658"
 ---
 
 # clusters repository
