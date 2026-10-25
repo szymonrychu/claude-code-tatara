@@ -1,6 +1,6 @@
 ---
 title: ignored payload cap
-status: todo
+status: done
 repo: agents-webhook
 value: ignored webhook deliveries cannot grow the database without bound
 files: [src/agents_webhook/db/events.py, tests/test_event_store.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_event_store.py -o addopts= -q && uv run ruff c
 depends_on: [webhook-reuse-routing]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 2a7c246
 points: 1
 expected_minutes: 5
 expected_tokens: 702990
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 351351
+actual_roles: impl 2
+actual_role_tokens: impl 351351
 ---
 
 # ignored payload cap
@@ -52,3 +52,5 @@ Ignored rows hold a payload of at most about 4 KiB; new rows keep the full paylo
 ## Notes
 
 Origin: ingest security review 2026-10-25 (scratchpad wh-sec-ingest.md). DB tests use the local Postgres at postgresql://test@127.0.0.1:55433/postgres via a temporary, uncommitted pg_url override.
+
+- 2026-10-25 done
