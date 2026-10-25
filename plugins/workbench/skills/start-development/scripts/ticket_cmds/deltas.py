@@ -5,7 +5,8 @@
 (`expected_tokens` vs `actual_tokens`) with the difference (actual - estimate) and the ratio
 (actual / estimate), then the MdAPE per metric. The rows are retro's (`retro._rows`), reading
 the existing `.logs/agents` records but never backfilling them. `deltas --all` does that for
-every done epic and adds the MdAPE over all of them. `deltas --buckets` prints `calibration.bucket_table` over `ticket.calibration_rows`, the rows `new-task` uses.
+every done epic and adds the MdAPE over all of them. `deltas --buckets` prints
+`calibration.bucket_table` over `ticket.calibration_rows`, the rows `new-task` uses.
 `--json` prints any mode as JSON. Read-only: no file is written and nothing is committed.
 """
 
