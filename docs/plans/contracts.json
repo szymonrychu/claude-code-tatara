@@ -626,7 +626,8 @@
     "file": "code/agent-orchestrator/chart/agent-orchestrator/templates/service-services.yaml",
     "consumers": [
       "agents-schedule-microservice",
-      "agents-helmfile"
+      "agents-helmfile",
+      "agents-matrix-connector"
     ],
     "note": "task orch-chart-services-port: ClusterIP <fullname>-services:8002 (port name services, never in the ingress, not fronted by oauth2-proxy); values serviceApi {port, existingSecret, existingSecretKey, tokenHashes: {<service>: <sha256 hex>}} merged across values files; in agents-helmfile http://agent-orchestrator-services:8002 and values/agent-orchestrator/service-token-<service>.secrets.yaml"
   },
