@@ -1,6 +1,6 @@
 ---
 title: webhook worker sessions
-status: todo
+status: in-progress
 repo: agents-webhook
 value: the webhook worker starts and reuses sessions through agents-common v0.3.0
 files: [pyproject.toml, uv.lock, src/agents_webhook/worker.py, README.md, tests/]

@@ -1,6 +1,6 @@
 ---
 title: webhook docs sessions
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "agents-webhook's docs and chart say session and agents-orchestrator, guarded"
 files: [README.md, AGENTS.md, MEMORY.md, chart/agents-webhook/values.yaml, chart/agents-webhook/ci/lint-values.yaml, tests/test_nomenclature.py]

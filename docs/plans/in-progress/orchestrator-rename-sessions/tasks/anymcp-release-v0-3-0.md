@@ -1,6 +1,6 @@
 ---
 title: anymcp release v0.3.0
-status: todo
+status: in-progress
 repo: any-mcp
 value: the orchestrator can pin an any-mcp release that speaks the session agent API
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]

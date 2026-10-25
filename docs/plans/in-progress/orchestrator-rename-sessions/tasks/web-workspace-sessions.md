@@ -1,6 +1,6 @@
 ---
 title: web workspace sessions
-status: todo
+status: in-progress
 repo: agents-web
 value: "the chat, top bar, menu, files, terminal and preset form say session"
 files: [src/chat/, src/ribbon/, src/layout/, src/files/, src/terminal/, src/presets/, src/nomenclature.test.ts]

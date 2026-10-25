@@ -1,6 +1,6 @@
 ---
 title: hibernate old orch db
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the pre-rename database is kept as a reversible cold copy instead of being deleted
 files: [values/agent-orchestrator-db/common.yaml, tests/test_db_release.py, MEMORY.md]

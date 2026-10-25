@@ -1,6 +1,6 @@
 ---
 title: orch docs e2e sessions
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the orchestrator's docs and e2e say session and agents-orchestrator, and a guard keeps it so"
 files: [README.md, AGENTS.md, MEMORY.md, chart/agents-orchestrator/, e2e/, scripts/e2e.sh, tests/]

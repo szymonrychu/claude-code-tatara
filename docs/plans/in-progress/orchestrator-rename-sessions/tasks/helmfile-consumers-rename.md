@@ -1,6 +1,6 @@
 ---
 title: helmfile consumers rename
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: agents-webhook and agents-web reach the renamed orchestrator and share its renamed Secrets
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-web/common.yaml, tests/test_webhook_release.py, tests/test_web_release.py]

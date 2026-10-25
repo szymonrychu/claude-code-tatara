@@ -1,6 +1,6 @@
 ---
 title: web sessions pages
-status: todo
+status: in-progress
 repo: agents-web
 value: the Sessions settings page and its dialogs say session
 files: [src/clusters/, src/sessions/, src/backends/registry.ts, src/backends/registry.test.ts, src/App.tsx, src/App.test.tsx, src/nomenclature.test.ts]

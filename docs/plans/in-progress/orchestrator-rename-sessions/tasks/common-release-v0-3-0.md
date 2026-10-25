@@ -1,6 +1,6 @@
 ---
 title: common release v0.3.0
-status: todo
+status: in-progress
 repo: agents-common
 value: agents-webhook and agents-schedule can pin the session client
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]

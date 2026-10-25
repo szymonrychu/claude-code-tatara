@@ -1,6 +1,6 @@
 ---
 title: common client sessions
-status: todo
+status: in-progress
 repo: agents-common
 value: "the trigger services' shared client speaks the session API"
 files: [src/agents_common/orchestrator.py, src/agents_common/fake_orchestrator.py, src/agents_common/runs.py, README.md, tests/]

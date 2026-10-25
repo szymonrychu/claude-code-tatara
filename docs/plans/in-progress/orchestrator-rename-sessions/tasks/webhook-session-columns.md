@@ -1,6 +1,6 @@
 ---
 title: webhook session columns
-status: todo
+status: in-progress
 repo: agents-webhook
 value: webhook runs record and show the session they started
 files: [src/agents_webhook/migrations/0005_sessions.sql, src/agents_webhook/db/events.py, src/agents_webhook/api/schemas.py, src/agents_webhook/worker.py, openapi.json, README.md, tests/]

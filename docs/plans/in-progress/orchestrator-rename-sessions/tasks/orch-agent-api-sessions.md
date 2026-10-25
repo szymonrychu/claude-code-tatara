@@ -1,6 +1,6 @@
 ---
 title: orch agent api sessions
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: agents talk to their session through X-Orch-Session with any-mcp v0.3.0
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/k8s/on_start.py, src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, openapi.json, tests/]

@@ -1,6 +1,6 @@
 ---
 title: web docs names
-status: todo
+status: in-progress
 repo: agents-web
 value: "agents-web's docs and chart say session and agents-orchestrator, guarded"
 files: [README.md, chart/agents-web/README.md, chart/agents-web/values.yaml, MEMORY.md, src/nomenclature.test.ts]

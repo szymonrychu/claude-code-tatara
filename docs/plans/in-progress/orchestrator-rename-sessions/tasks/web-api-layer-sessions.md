@@ -1,6 +1,6 @@
 ---
 title: web api layer sessions
-status: todo
+status: in-progress
 repo: agents-web
 value: the UI talks to the renamed orchestrator API with session types and routes
 files: [scripts/sync-api.mjs, scripts/sync-api.test.mjs, openapi/orchestrator.json, openapi/orchestrator.source, src/]

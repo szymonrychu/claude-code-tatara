@@ -1,6 +1,6 @@
 ---
 title: orch chart ci rename
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the chart, image and CI publish as agents-orchestrator"
 files: [chart/, .github/workflows/ci.yaml, mise.toml, scripts/, e2e/, tests/]

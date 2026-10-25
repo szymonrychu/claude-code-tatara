@@ -1,6 +1,6 @@
 ---
 title: deploy cutover
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live namespace runs agents-orchestrator with the presets carried over, proven by the smoke"
 files: [MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: orch sessions sweep
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the orchestrator's database, code, public API and labels call the unit a session"
 files: [src/agents_orchestrator/db/migrations/0005_sessions.sql, src/agents_orchestrator/, tests/, openapi.json, README.md, examples/bench.yaml]

@@ -1,6 +1,6 @@
 ---
 title: orch package rename
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the Python project is agents-orchestrator, consistent with every other agents-* component"
 files: [pyproject.toml, uv.lock, src/, tests/, Dockerfile, .dockerignore, openapi.json]

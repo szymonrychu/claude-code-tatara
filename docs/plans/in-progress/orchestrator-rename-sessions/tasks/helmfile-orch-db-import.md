@@ -1,6 +1,6 @@
 ---
 title: helmfile orch db import
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the renamed database is declared as a copy of the live one, with the old one untouched"
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator-db/common.yaml, values/agents-orchestrator-db/default.secrets.yaml, tests/test_db_release.py]

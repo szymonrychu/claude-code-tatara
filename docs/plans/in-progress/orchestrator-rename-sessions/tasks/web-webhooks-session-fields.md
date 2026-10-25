@@ -1,6 +1,6 @@
 ---
 title: web webhooks session fields
-status: todo
+status: in-progress
 repo: agents-web
 value: "the Webhooks events table shows each run's session"
 files: [openapi/webhooks.json, openapi/webhooks.source, src/api/webhooks-schema.d.ts, src/webhooks/, src/nomenclature.test.ts]

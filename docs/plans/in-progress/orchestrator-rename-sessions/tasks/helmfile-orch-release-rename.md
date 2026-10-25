@@ -1,6 +1,6 @@
 ---
 title: helmfile orch release rename
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the orchestrator is declared as agents-orchestrator and the old app release is retired
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/, values/agents-orchestrator/, scripts/bootstrap-secrets.sh, tests/test_orchestrator_release.py, tests/test_secrets.py]

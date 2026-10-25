@@ -1,6 +1,6 @@
 ---
 title: anymcp plugin session
-status: todo
+status: in-progress
 repo: any-mcp
 value: "agents' any-mcp tools address the orchestrator's session, matching the renamed agent API"
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, tests/test_nomenclature.py, README.md]

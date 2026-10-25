@@ -1,6 +1,6 @@
 ---
 title: orch wrapper session id
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the wrapper's session id no longer takes the word session from the orchestrator's unit"
 files: [src/agents_orchestrator/db/migrations/0004_wrapper_session_id.sql, src/agents_orchestrator/, tests/, openapi.json, README.md]

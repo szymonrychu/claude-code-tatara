@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke sessions
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live smoke proves the renamed releases and session routes, and a guard keeps the names"
 files: [scripts/smoke.sh, mise.toml, tests/test_smoke_script.py, tests/test_nomenclature.py, README.md, AGENTS.md]
