@@ -9,6 +9,11 @@ depends_on: [housekeeping-rules]
 model: sonnet
 review: ""
 verified_head: 1dc8d46
+points_actual: 1
+actual_minutes: 14
+actual_tokens: 353749
+actual_roles: "impl 6, review 8"
+actual_role_tokens: "impl 283121, review 70628"
 ---
 
 # Plugin readme rules
@@ -53,3 +58,5 @@ Context the implementer needs: pitfalls, existing code to reuse, decisions alrea
 - 2026-10-24 todo: Estimate: 1 points
 
 - 2026-10-24 done
+
+- 2026-10-25 done
