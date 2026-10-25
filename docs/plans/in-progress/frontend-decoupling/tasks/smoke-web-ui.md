@@ -1,6 +1,6 @@
 ---
 title: smoke web ui
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live smoke proves the UI, its config and the path routing"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md, mise.toml]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py tests/t
 depends_on: [web-chart-config-ingress]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 024e352
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 6
+actual_tokens: 398580
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 339217, review 59363"
 ---
 
 # smoke web ui
@@ -65,3 +65,5 @@ The smoke checks the UI on the agents-web release and the path routing of the ho
 
 - Keep the script's existing guarantees: `set -euo pipefail`, bounded curls, trap cleanup of both port-forwards (`test_script_is_strict_bounded_and_traps`).
 - This smoke runs live only after deploy-pin-web; before that the host still routes `/` to the api.
+
+- 2026-10-25 done
