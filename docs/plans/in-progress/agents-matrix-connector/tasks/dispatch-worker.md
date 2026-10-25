@@ -1,6 +1,6 @@
 ---
 title: dispatch worker
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: each chat talks to one agent session that keeps its context while it runs
 files: [src/agents_matrix_connector/worker.py, tests/test_worker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_worker.py -q && uv run ruff check . &
 depends_on: [mxc-settings-model, matrix-client-and-fake-hs, rules-and-settings-repo, runs-and-outbound-repo, chat-prompt-render]
 model: opus
 review: full
-verified_head: ""
+verified_head: 89126811d0b52d83801efca18a494c86beade295
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 2561179
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 2289153, review 272026"
 ---
 
 # dispatch worker
@@ -72,3 +72,5 @@ Against `FakeOrchestrator` and `FakeHomeserver`, two messages in an allowed DM p
 
 - Mirror `code/agents-webhook/src/agents_webhook/worker.py` (claim, dispatch, reuse, fallback), adapted to per-room batches; do not copy run tracking that agents-common already provides.
 - Reuse is always on for chats regardless of the preset's `reuse_running_agent` (design D8).
+
+- 2026-10-25 done
