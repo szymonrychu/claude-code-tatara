@@ -1,6 +1,6 @@
 ---
 title: web edit endpoint filters
-status: in-progress
+status: done
 repo: agents-web
 value: "an existing endpoint's filters change without recreating it, checked against an example first"
 files: [src/webhooks/FiltersDialog.tsx, src/webhooks/FiltersDialog.test.tsx, src/webhooks/EndpointsList.tsx, src/webhooks/Endpoints.test.tsx, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/FiltersDialo
 depends_on: [web-filters-editor, web-create-endpoint-filters]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 5f9dc1e
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 1223717
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 1127384, review 96333"
 ---
 
 # web edit endpoint filters
@@ -66,3 +66,5 @@ An operator changes an endpoint's allow and deny rules without recreating it (sa
 
 - Keep the dialog body mounted only while open (as `CreateEndpointDialog` does with its inner `Body`) so reopening resets local state to the endpoint's saved rules.
 - The existing `Endpoints.test.tsx` list tests may need the `/meta` route in their fetch mock; do not change their assertions.
+
+- 2026-10-25 done
