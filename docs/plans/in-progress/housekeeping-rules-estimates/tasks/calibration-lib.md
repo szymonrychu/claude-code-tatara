@@ -9,6 +9,11 @@ depends_on: []
 model: opus
 review: ""
 verified_head: 297bdf4
+points_actual: 5
+actual_minutes: 11
+actual_tokens: 388955
+actual_roles: "impl 8, review 4"
+actual_role_tokens: "impl 282670, review 106285"
 ---
 
 # Calibration lib
@@ -62,3 +67,5 @@ One stdlib module turns done-task actuals into expected minutes and tokens per s
 - Python 3.9 safe (`from __future__ import annotations`): the agent-usage hook path may import scripts/lib modules.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
