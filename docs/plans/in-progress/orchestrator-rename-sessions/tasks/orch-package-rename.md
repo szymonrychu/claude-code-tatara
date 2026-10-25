@@ -1,6 +1,6 @@
 ---
 title: orch package rename
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the Python project is agents-orchestrator, consistent with every other agents-* component"
 files: [pyproject.toml, uv.lock, src/, tests/, Dockerfile, .dockerignore, openapi.json]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q && uv run ruff check . && uv run ruff format --check .
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8ec5071
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 9
+actual_tokens: 1207257
+actual_roles: "impl 5, review 4"
+actual_role_tokens: "impl 876650, review 330607"
 ---
 
 # orch package rename
@@ -68,3 +68,5 @@ The repo builds and tests as agents-orchestrator; `src/agent_orchestrator` no lo
 - Runs after orchestrator step O2 (submodule at code/agents-orchestrator, GitHub repo renamed).
 - Leave `chart/agent-orchestrator` paths in tests/ (helm_render.py, chart tests) to orch-chart-ci-rename; this task renames only the underscore form everywhere and the hyphen form inside src/.
 - Retirement check is `git ls-files`, never the filesystem.
+
+- 2026-10-25 done
