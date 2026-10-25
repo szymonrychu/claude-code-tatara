@@ -38,6 +38,12 @@ What is true and observable when the task is done.
 
 ## Steps
 
+1. Read `plugins/workbench/README.md` (ticket.py subcommand list and every backticked `ticket.py` span), `references/tickets.md` (the one-line descriptions of retro, deltas, actuals) and the existing `test_plugin_readme_rules.py`.
+2. Add the two tests first; run `pytest plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py -q` and see them fail on the stale command lines and the missing subcommand names.
+3. Edit the README in one pass; run the verify once and see it green.
+
+Estimate: 1 points
+
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
