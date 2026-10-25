@@ -1,6 +1,6 @@
 ---
 title: helmfile orch release rename
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the orchestrator is declared as agents-orchestrator and the old app release is retired
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/, values/agents-orchestrator/, scripts/bootstrap-secrets.sh, tests/test_orchestrator_release.py, tests/test_secrets.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_orchestrator_release.py tests/test_secrets.
 depends_on: [helmfile-orch-db-import, orch-docs-e2e-sessions]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 6361a57
 points: 5
 expected_minutes: 14
 expected_tokens: 1883475
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 4
+actual_tokens: 1099592
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 988743, review 110849"
 ---
 
 # helmfile orch release rename
@@ -69,3 +69,5 @@ The helmfile declares the renamed orchestrator release and the old app release a
 
 - `git mv` keeps the encrypted files byte-identical; never re-encrypt them (the master key value must not change).
 - Never apply: deploy-cutover sequences the applies (design D7).
+
+- 2026-10-25 done
