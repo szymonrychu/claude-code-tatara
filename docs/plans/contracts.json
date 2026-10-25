@@ -105,7 +105,8 @@
     "owner": "agent-orchestrator",
     "file": "code/agent-orchestrator/chart/agent-orchestrator/values.yaml",
     "consumers": [
-      "agents-helmfile"
+      "agents-helmfile",
+      "configuration-improvements"
     ],
     "note": "oci://harbor.szymonrichert.pl/charts/agent-orchestrator (immutable versions: X.Y.Z on tag vX.Y.Z, X.Y.Z-main.<sha7> on main); values: image, agentImage, postgres {url | host, port, database, user, password | existingSecret, existingSecretKey} (required unless cnpg.enabled), cnpg {enabled: false, instances, storage, backup}, masterKey {existingSecret | value}, claude {existingSecret | token}, env (extra ORCH_*), components {api, dispatcher, ingester, reconciler}, serviceAccount, rbac.create, service, ingress {enabled: false, className, annotations, hosts, tls}; everything in the release namespace"
   },
