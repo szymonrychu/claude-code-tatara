@@ -279,3 +279,25 @@ def backfill(
             continue
         written.append(record)
     return written
+
+
+_backfill = backfill  # records_for's `backfill` flag shadows the function
+
+
+def records_for(
+    epic: str,
+    task: str | None,
+    logs_dir: str | os.PathLike,
+    transcripts_dir: str | os.PathLike | None,
+    backfill: bool = True,
+) -> list[dict]:
+    """Records of `epic` (and `task`), backfilled from the transcripts when there are none.
+
+    The one read, backfill-when-empty, read-again sequence. `backfill=False` or no
+    transcripts dir only reads (the read-only `deltas`).
+    """
+    records = read_records(logs_dir, epic, task)
+    if records or not backfill or not transcripts_dir:
+        return records
+    _backfill(transcripts_dir, logs_dir, epic=epic)
+    return read_records(logs_dir, epic, task)

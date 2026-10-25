@@ -74,8 +74,8 @@ def _logs(a, t, root: Path) -> str | None:
     """The logs dir to read records from, never created (workbench.logs_dir would mkdir it)."""
     if a.logs:
         return a.logs
-    main = t.workbench.main_checkout(root)
-    return str(main / ".logs") if main else None
+    found = t.workbench.existing_logs_dir(root)
+    return str(found) if found else None
 
 
 def _legacy(meta: dict) -> tuple[int, int] | None:

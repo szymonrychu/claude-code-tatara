@@ -49,13 +49,11 @@ def _actuals(a, t, root: Path, epic: str) -> tuple[dict, list[str]]:
         raise t.TicketError(f"--points-actual: {e}") from None
     meta = {"points_actual": str(points)}
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
-    records = agent_usage.read_records(logs, epic, a.task) if logs else []
-    if logs and not records:
+    records = []
+    if logs:
         main = t.workbench.main_checkout(root)
         transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
-        if transcripts:
-            agent_usage.backfill(transcripts, logs, epic=epic)
-        records = agent_usage.read_records(logs, epic, a.task)
+        records = agent_usage.records_for(epic, a.task, logs, transcripts)
     if not records:
         return meta, ["actuals: no agent records"]
     sums = agent_usage.aggregate(records)

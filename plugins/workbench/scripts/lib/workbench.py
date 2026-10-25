@@ -130,6 +130,12 @@ def scratchpad_dir(start: Path | None = None) -> Path | None:
     return _state_dir(".scratchpad", start)
 
 
+def existing_logs_dir(start: Path | None = None) -> Path | None:
+    """The main checkout's `.logs` path without creating it (read-only callers)."""
+    main = main_checkout(start)
+    return main / ".logs" if main else None
+
+
 def logs_dir(start: Path | None = None) -> Path | None:
     return _state_dir(".logs", start)
 

@@ -338,3 +338,27 @@ def test_default_transcripts_dir(tmp_path):
     root = Path("/srv/proj/work bench/.git")
     want = tmp_path / ".claude" / "projects" / "-srv-proj-work-bench--git"
     assert agent_usage.default_transcripts_dir(root, home=tmp_path) == want
+
+
+def test_records_for_backfills_only_when_empty(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    got = agent_usage.records_for("ep", "t1", logs, transcripts)
+    assert [r["agentId"] for r in got] == ["m1"]
+    assert (logs / "agents" / "m1.json").is_file()
+
+
+def test_records_for_without_backfill_or_transcripts(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    assert agent_usage.records_for("ep", "t1", logs, transcripts, backfill=False) == []
+    assert agent_usage.records_for("ep", "t1", logs, None) == []
+    assert not logs.exists()
+
+
+def test_records_for_keeps_existing_and_filters(tmp_path):
+    transcripts, logs = backfill_fixture(tmp_path)
+    hook = {"agentId": "h1", "epic": "ep", "task": "t1", "role": "impl", "tokens": {"total": 1}}
+    agent_usage.write_record(logs, hook)
+    assert agent_usage.records_for("ep", "t1", logs, transcripts) == [hook]
+    assert not (logs / "agents" / "m1.json").exists()
+    assert agent_usage.records_for("ep", "other", logs, transcripts, backfill=False) == []
+    assert [r["agentId"] for r in agent_usage.records_for("ep", None, logs, None)] == ["h1"]

@@ -78,3 +78,21 @@ def test_done_passes_points_actual():
         in step4
     )
     assert "`<n>` is the reviewer's `pointsActual`" in step4
+
+
+def test_prompt_marker_parses(tmp_path):
+    import json
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts" / "lib"))
+    import agent_usage
+
+    text = re.sub(r"\s+", " ", SKILL.read_text())
+    templates = re.findall(r"first line `(\[wb <epic>/<task>/(impl|review)\])`", text)
+    assert sorted(role for _, role in templates) == ["impl", "review"]
+    for template, role in templates:
+        line = template.replace("<epic>", "sample-epic").replace("<task>", "sample-task")
+        path = tmp_path / f"{role}.jsonl"
+        message = {"role": "user", "content": line + "\nthe task file"}
+        path.write_text(json.dumps({"type": "user", "message": message}) + "\n")
+        assert agent_usage.parse_marker(path) == ("sample-epic", "sample-task", role)

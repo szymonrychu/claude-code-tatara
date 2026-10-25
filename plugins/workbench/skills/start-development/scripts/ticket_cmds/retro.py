@@ -134,13 +134,12 @@ def _fill_from_records(a, t, root: Path, epic: str, tasks: dict, backfill: bool 
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
     if not wanting or logs is None:
         return
-    found = {r["slug"]: agent_usage.read_records(logs, epic, r["slug"]) for r in wanting}
-    if backfill and not all(found.values()):
-        main = t.workbench.main_checkout(root)
-        transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
-        if transcripts:
-            agent_usage.backfill(transcripts, logs, epic=epic)
-            found = {s: agent_usage.read_records(logs, epic, s) for s in found}
+    main = t.workbench.main_checkout(root)
+    transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
+    found = {
+        r["slug"]: agent_usage.records_for(epic, r["slug"], logs, transcripts, backfill)
+        for r in wanting
+    }
     for row in wanting:
         if not found[row["slug"]]:
             continue
