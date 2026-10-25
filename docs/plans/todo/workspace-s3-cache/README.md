@@ -1,6 +1,6 @@
 ---
 title: workspace s3 cache
-blockers: [orchestrator-rename-and-sessions]
+blockers: [orchestrator-rename-sessions]
 stage: build
 owner: ""
 repos: [agent-orchestrator, agents-web, agents-helmfile]
