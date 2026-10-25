@@ -6,21 +6,17 @@ value: the form and the pods agree on one set of defaults
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
 verify: "uv run pytest tests/test_settings.py tests/test_api_clusters.py tests/test_render.py tests/test_readme_api.py -q -p no:cacheprovider && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-meta-form-defaults/agent-orchestrator
-branch: cluster-form-defaults-and-ga-meta-form-defaults
 verified_head: 9b0efb6c24775830a06976d9277c367ac511df31
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: ["tests/test_render.py was edited in the fix round (make_settings gets models) without a finding or tests.added entry naming it"]
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # meta form defaults

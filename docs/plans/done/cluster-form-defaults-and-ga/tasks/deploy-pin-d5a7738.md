@@ -6,21 +6,17 @@ value: the live agents namespace runs the merged form fix
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "uv run pytest -q -p no:cacheprovider && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-deploy-pin-d5a7738/agents-helmfile
-branch: cluster-form-defaults-and-ga-deploy-pin-d5a7738
 verified_head: 7329bc8d44d83b96616485336f273d94f8744ea4
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 15
+actual_tokens: 693447
+actual_roles: "impl 9, review 5"
+actual_role_tokens: "impl 493723, review 199724"
 ---
 
 # deploy pin d5a7738

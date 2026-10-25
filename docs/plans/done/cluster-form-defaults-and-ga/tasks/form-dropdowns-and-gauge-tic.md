@@ -6,21 +6,17 @@ value: "the form shows what a cluster will get, and the gauge tick sits on the r
 files: [frontend/src/clusters/ClusterForm.tsx, frontend/src/clusters/ClusterForm.test.tsx, frontend/src/clusters/clusterSpecForm.ts, frontend/src/ribbon/ContextGauge.tsx, frontend/src/ribbon/ContextGauge.test.tsx]
 verify: "cd frontend && npx vitest run src/clusters src/ribbon && npm run lint"
 depends_on: [meta-form-defaults]
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic/agent-orchestrator
-branch: cluster-form-defaults-and-ga-form-dropdowns-and-gauge-tic
 verified_head: c993d7c1e48faa40a81d4f87d79ee0836a479ea7
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # form dropdowns and gauge tick

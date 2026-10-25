@@ -6,22 +6,17 @@ value: "PR #3 frontend CI goes green, so the form fix can ship"
 files: [frontend/src/clusters/ClusterForm.test.tsx]
 verify: "cd frontend && npx vitest run src/clusters && npm run lint"
 depends_on: [model-default-option]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-fast-full-spec-form-test/agent-orchestrator
-branch: cluster-form-defaults-and-ga-fast-full-spec-form-test
 verified_head: 3f272a6823fb43b2d13b3de545b5d8cb23b42a83
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: ["stash@{0} left in the stash list by the implementer", "TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
-fork_point: 3fcbb0b
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 3
+actual_tokens: 538399
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 339534, review 198865"
 ---
 
 # fast full-spec form test

@@ -6,21 +6,17 @@ value: "deploying the new image does not roll running clusters, and old clusters
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, tests/test_render.py, tests/test_api_clusters.py, tests/golden/cluster_single.yaml, tests/golden/cluster_two_peers.yaml, README.md]
 verify: "uv run pytest tests/test_render.py tests/test_api_clusters.py -q -p no:cacheprovider && mise run lint"
 depends_on: [meta-form-defaults]
-owns: []
-uses: []
 model: sonnet
-estimate: 7
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-defaults-at-write-time-and-l/agent-orchestrator
-branch: cluster-form-defaults-and-ga-defaults-at-write-time-and-l
 verified_head: 2d099eca38ab71be5e17c4332237c42cb442a38a
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 7
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # defaults at write time and legacy edit

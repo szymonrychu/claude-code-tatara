@@ -6,22 +6,17 @@ value: "the full suite is green on every run, not most runs"
 files: [tests/test_dispatcher.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_dispatcher.py && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-form-defaults-and-ga-deterministic-in-flight-cap/agent-orchestrator
-branch: cluster-form-defaults-and-ga-deterministic-in-flight-cap
 verified_head: 3fcbb0ba697209495a2b3a6cc21b3379da6e5068
-run: cluster-form-defaults-and-ga
-provides: []
-acs_for_audit: []
-process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
-fork_point: 2d099eca38ab71be5e17c4332237c42cb442a38a
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # deterministic in-flight cap test
