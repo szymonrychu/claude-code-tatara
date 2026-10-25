@@ -45,7 +45,7 @@ Precondition, checked first: read `<ao-sha>` from agents-web `MEMORY.md` (`curl 
 - AC4: the schema drift test is retired and the README and openapi drift tests pass [evidence: command:uv run pytest -q tests/test_readme_api.py && ! grep -n test_frontend_schema_matches_openapi tests/test_readme_api.py]
 - AC5: the image builds and runs [evidence: command:docker build -t agent-orchestrator:no-ui . && docker run --rm agent-orchestrator:no-ui --help]
 - AC6: the API-only kind e2e passes [evidence: command:mise run test:e2e]
-- AC7: README and MEMORY point at agents-web [evidence: command:grep -q agents-web README.md && grep -q agents-web MEMORY.md && ! grep -n 'npm ' README.md]
+- AC7: README and MEMORY point at agents-web [evidence: command:grep -q agents-web README.md && grep -q agents-web MEMORY.md && ! grep -n 'npm ' README.md | grep -v 'sync:api -- orchestrator']
 - AC8: no frontend change landed after the import [evidence: judgement:the task notes quote the empty git diff --stat <ao-sha> HEAD -- frontend]
 
 ## Files
@@ -78,3 +78,5 @@ agent-orchestrator is a Python-only repo: pytest needs no node, the image is sma
 
 - Local testcontainers Postgres may fail to start on this machine (discovery brief section 1); the targeted tests here need no database. If `mise run test:e2e` fails for a local Docker reason, quote the output and the CI `e2e` job result of the pushed branch.
 - `.github/` in the diff makes the review tier full.
+
+- 2026-10-25 amended: AC7 contradicted the requirement's README note 'npm run sync:api -- orchestrator in agents-web'; the grep now allows that one note
