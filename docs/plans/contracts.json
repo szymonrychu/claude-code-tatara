@@ -630,5 +630,15 @@
       "agents-schedule-microservice"
     ],
     "note": "task web-trigger-ui-kit: RunStatusChip({status new|in-progress|handled|ignored|failed, reason}), PresetSelect({value, onChange}) over the orchestrator presets, usePoll(fn, intervalMs, deps), FormError({error}) for {error: {code, message}}"
+  },
+  {
+    "name": "webhook-api",
+    "kind": "api",
+    "owner": "agents-webhook-microservice",
+    "file": "code/agents-webhook/README.md",
+    "consumers": [
+      "agents-web"
+    ],
+    "note": "task webhook-ui-api: /webhooks/api/v1 events (GET list ?status&source&limit&before_id, GET /{id}), mappings (GET, POST MappingIn{source, kind, repo?, labels?, preset_id, prompt_template?}, DELETE /{id}), meta; openapi.json committed; vendored in agents-web as openapi/webhooks.json"
   }
 ]
