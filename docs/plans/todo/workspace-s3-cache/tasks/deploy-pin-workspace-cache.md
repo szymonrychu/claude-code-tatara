@@ -49,17 +49,18 @@ Precondition, checked first: this epic's agents-orchestrator PR and agents-web P
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Releases `agents-orchestrator` and `agents-web` in `helmfile.yaml.gotmpl`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile pins the orchestrator and web builds that carry the workspace cache.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition (both charts exist in Harbor); quote `helm show chart` output in the notes.
+- Red: run the pin tests after changing only the helmfile versions: they fail on the mismatch.
+- Green: the image tags; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- webhook-event-filters (a blocker of this epic) also pins agents-web; take the latest main merge that contains both epics.

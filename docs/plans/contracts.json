@@ -740,5 +740,68 @@
       "agents-web"
     ],
     "note": "task orch-preset-reuse-field: ClusterSpec.reuse_running_agent bool|None, sparse, default false; served in PresetView.spec; the orchestrator never acts on it; trigger services route a new event to the cluster still running for its item when set; agents-web PresetForm switch (task web-preset-reuse-row)"
+  },
+  {
+    "name": "orch-session-spec-cache",
+    "kind": "schema",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/src/agents_orchestrator/spec.py",
+    "consumers": [
+      "agents-web",
+      "agents-webhook",
+      "agents-schedule"
+    ],
+    "note": "SessionSpec.cache: {key?: ^[a-z0-9][a-z0-9._-]{0,62}$, exclude?: <=50 globs} | null, sparse; presence enables; POST /api/v1/sessions with preset_id fills key = default_cache_key(preset.id) (preset-<16 hex of sha256(workspace-cache:+id)>), raw spec needs key (422); tasks cache-config, cache-key-on-create"
+  },
+  {
+    "name": "orch-session-status-cache",
+    "kind": "schema",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/src/agents_orchestrator/reconciler/cache.py",
+    "consumers": [
+      "agents-web",
+      "agents-helmfile"
+    ],
+    "note": "sessions.status.cache {key, object, restore {state running|restored|miss|failed, started_at, finished_at, bytes, reason, job}, save {state running|saved|skipped|failed, ...}}; reconciler-written; restore holds init and sessions; tasks cache-restore-runner, cache-save-on-discard"
+  },
+  {
+    "name": "orch-cache-settings-env",
+    "kind": "schema",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/src/agents_orchestrator/settings.py",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "ORCH_CACHE_S3_ENDPOINT, _REGION (us-east-1), _BUCKET (empty: unavailable), _PREFIX (workspace-cache/), _PATH_STYLE, _VERIFY_TLS, _ACCESS_KEY_ID, _SECRET_ACCESS_KEY (reconciler only), ORCH_CACHE_IMAGE, ORCH_CACHE_MAX_BYTES (<=5368709120), ORCH_CACHE_TIMEOUT_SECONDS; task cache-config"
+  },
+  {
+    "name": "orch-cache-job-cli",
+    "kind": "interface",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/src/agents_orchestrator/cache/transfer.py",
+    "consumers": [
+      "agents-orchestrator"
+    ],
+    "note": "orch cache restore|save; env CACHE_URL (presigned), CACHE_DIR, CACHE_MAX_BYTES, CACHE_EXCLUDE (JSON), CACHE_SCRATCH; last stdout line JSON {outcome restored|miss|saved|skipped|failed, bytes, reason}; object <prefix><key>.tar.zst; task cache-transfer-cli"
+  },
+  {
+    "name": "orch-meta-cache",
+    "kind": "api",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/README.md",
+    "consumers": [
+      "agents-web"
+    ],
+    "note": "GET /api/v1/meta cache {available, max_bytes}; task cache-key-on-create"
+  },
+  {
+    "name": "agents-orchestrator-chart-cache",
+    "kind": "release",
+    "owner": "workspace-s3-cache",
+    "file": "code/agents-orchestrator/chart/agents-orchestrator/values.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "extends agents-orchestrator-chart: cache.s3 {endpoint, region, bucket, prefix, pathStyle, verifyTls, existingSecret, accessKeyIdKey, secretAccessKeyKey}, cache.image (default the chart image), cache.maxBytes, cache.timeoutSeconds; credentials on the reconciler only; task cache-chart-values"
   }
 ]

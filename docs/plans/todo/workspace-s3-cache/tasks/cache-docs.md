@@ -45,17 +45,17 @@ Document the workspace cache (design D4, D11, D12). Runs after the epic orchestr
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `README.md#Workspace cache`; contracts `orch-session-spec-cache`, `orch-session-status-cache`, `orch-cache-settings-env`, `orch-cache-job-cli`, `orch-meta-cache` documented there.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A reader of the README can enable the cache on a preset, configure any S3 store, and read `status.cache`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_readme_documents_workspace_cache` to `tests/test_readme_api.py` (collect the `ORCH_CACHE_*` names from `Settings.model_fields`); run it: fails.
+- Green: write the README section and the MEMORY.md lines; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Match the README's existing style for settings tables and status fields (see the init scripts section).

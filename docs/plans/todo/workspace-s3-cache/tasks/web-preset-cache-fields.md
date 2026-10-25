@@ -52,17 +52,20 @@ Add the workspace cache to the preset form (design D10; consumes contracts orch-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `sessionSpecForm.ts:FormValues` (`cacheEnabled`, `cacheKey`, `cacheExclude`), `SetKey` `cache`, `stateFromPreset`, `validate`, `toPresetSpec`.
+- `Meta.cache {available, max_bytes}` and `SessionSpec.cache` from the synced `openapi/orchestrator.json`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+In the preset form, switching on "Cache the workspace in S3" and saving sends `spec.cache = {}`; a key `my-repo` sends `{key: "my-repo"}`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Sync the OpenAPI file and run `npm run gen:api`.
+- Red: add the six named tests to `src/presets/PresetForm.test.tsx`; run `npx vitest run src/presets/PresetForm.test.tsx`: they fail.
+- Green: form values, validation, spec mapping and the section; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow how `reuseRunningAgent` and `autocloseAfter` flow through `stateFromPreset`, `validate`, `toPresetSpec` and the form.
+- The existing tests mock `getMeta`; add `cache: {available: true, max_bytes: 5368709120}` to the shared meta fixture.

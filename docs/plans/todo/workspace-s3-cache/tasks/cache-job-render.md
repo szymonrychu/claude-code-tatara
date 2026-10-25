@@ -53,17 +53,20 @@ New module `src/agents_orchestrator/reconciler/cache.py` (render part):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reconciler/cache.py:restore_job_name`, `save_job_name`, `CACHE_LABEL`, `render_cache_job(session, settings, action, url) -> Obj`.
+- Reuses `k8s/render.py:workdir_mount`, `workdir_path`, `WORKSPACE_VOLUME`, `k8s/labels.py:session labels`, `prefix`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`render_cache_job(s, settings, "save", url)` is a `batch/v1` Job `<prefix>-cache-save` running `orch cache save` in `settings.cache_image`, workspace mounted read-only, no credential anywhere in its spec.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cache_jobs_render.py` (the six named tests, sessions from `tests/factories.py`); run it: fails.
+- Green: write the render part of `reconciler/cache.py`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `reconciler/init.py:render_init_job` (pull secret, labels, PVC volume) but with the hardening and env rules of the requirement.
+- `readOnlyRootFilesystem` needs the `/tmp` emptyDir and `HOME=/tmp`.
+- The save Job mounts the same `workdir_mount` with `readOnly: true`.

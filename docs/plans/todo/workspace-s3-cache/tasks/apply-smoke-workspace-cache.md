@@ -45,17 +45,20 @@ Apply the pinned releases and the bucket claim to the live `agents` namespace an
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `mise run diff|smoke` in code/agents-helmfile (the orchestrator runs `mise run apply`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live agents namespace runs the pinned builds with bucket `agents-workspace-cache` bound, and the smoke, including the workspace cache check, is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `mise run diff`: only the expected changes (quote the output); end the round with "ready for apply".
+- Orchestrator: `mise run apply`.
+- `kubectl -n agents get obc agents-workspace-cache`: Bound.
+- `mise run diff`: exit 0.
+- `mise run smoke`: exit 0; quote its last log line into MEMORY.md and the task notes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Irreversible in scope (gate): the claim creates the bucket; its StorageClass reclaimPolicy is Delete, so never delete the claim.

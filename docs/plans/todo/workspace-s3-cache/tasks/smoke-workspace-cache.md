@@ -49,17 +49,18 @@ Prove the workspace cache in the deployed smoke (design D9, D12; goal G8). Paths
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/smoke.sh`; API `POST /api/v1/sessions`, `GET /api/v1/sessions/{id}`, `GET /api/v1/meta`, `DELETE /api/v1/sessions/{id}` (post-rename paths).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` ends with a passing workspace cache check that proves a marker written by session A's init is present for session B.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four named tests to `tests/test_smoke_script.py` (its fake API grows `cache` in meta and `status.cache` on sessions); run it: fails.
+- Green: the smoke check and the README line; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse the existing init-scripts wait loop and the cleanup trap; bound every wait by `SMOKE_TIMEOUT_S`.
+- The marker check relies on restore running before init (design D3).

@@ -53,17 +53,21 @@ Restore the workspace at session start, before init and the Claude sessions (des
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reconciler/cache.py:CacheRunner.restore_step(session) -> CacheGate`, `CacheGate`.
+- `status.cache` (contract `orch-session-status-cache`): `{key, object, restore {state, started_at, finished_at, bytes, reason, job}, save {...}}`.
+- `reconciler/loop.py:Reconciler._converge`, `_rebootstrap`, `__init__`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A new cached session shows `status.cache.restore.state` running, then restored or miss, and only then the init Job and the Claude sessions start; a failed restore shows phase degraded with the reason.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cache_restore.py` (the ten named tests, with `tests/fakes/fake_kube.py` `finish_job(..., log=...)` returning the CLI JSON line); run it: fails.
+- Green: implement `CacheRunner.restore_step` and the loop wiring; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy the state machine of `reconciler/init.py:InitRunner` (state before create, `job` after, `_observe`, `_outcome`, `_delete_job`); share `checks.log_tail`, `job_condition`, `container_exit_code`.
+- `fake_kube.finish_job` hard-codes the container name `check`; generalise it only if a test needs the real name.
+- Parse only the last non-empty log line as JSON; a non-JSON line on a Complete Job is `failed` with reason `bad_output`.

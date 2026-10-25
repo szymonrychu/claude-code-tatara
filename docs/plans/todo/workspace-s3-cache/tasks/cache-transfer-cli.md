@@ -52,17 +52,20 @@ Add the Job-side transfer CLI `orch cache restore|save` (contract orch-cache-job
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `orch cache restore|save` env and JSON outcome line (contract `orch-cache-job-cli`); `cache/transfer.py:restore(env) -> int`, `save(env) -> int`.
+- Consumes `cache/archive.py` from cache-archive.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`CACHE_URL=http://127.0.0.1:<port>/o CACHE_DIR=/tmp/w orch cache save` PUTs one zstd body and prints `{"outcome": "saved", "bytes": N, "reason": null}` last; `restore` of the same URL recreates the tree.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cache_cli.py` (the nine named tests) against a local HTTP fake (stdlib `http.server` in a thread, or `httpx.MockTransport` injected into the transfer functions); run it: fails.
+- Green: write `transfer.py` and register the command in `cli.py`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep the import of `transfer` lazy inside the command, like the other subcommands, so `orch --help` stays light.
+- Strip the query string from any URL in errors (`httpx.URL(url).copy_with(query=None)`).
+- httpx is already a dependency; no new one here.

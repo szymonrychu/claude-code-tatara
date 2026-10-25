@@ -49,17 +49,21 @@ Add the workspace cache configuration surface (design D6, D7, D8). Runs after th
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings` cache fields, `cache_available`, `require_cache()` (contract `orch-cache-settings-env`).
+- `spec.py:WorkspaceCache`, `SessionSpec.cache`, `CACHE_KEY_RE`, `CACHE_EXCLUDE_MAX`, `CACHE_ALWAYS_EXCLUDE` (contract `orch-session-spec-cache`).
+- `spec.py:validate_spec` keeps its signature.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`Settings(cache_s3_bucket="b")` loads with `cache_available` true and `require_cache()` naming the three missing variables; `SessionSpec.model_validate({"cache": {"key": "Bad Key"}})` fails; a preset spec without cache dumps no `cache` key.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cache_config.py` with the seven named tests; run `uv run pytest -q tests/test_cache_config.py`: they fail (no fields).
+- Green: add the settings fields and validators, `WorkspaceCache`, the spec field and the validate_spec rule; run the verify command: all pass, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow the existing settings validators (`_Bad`, `SettingsError` naming the variable) and `require_agent_image()`.
+- Use `_Strict` for `WorkspaceCache` so unknown keys are refused; keep the field sparse the way `reuse_running_agent` and `max_replicas` are (unset not dumped).
+- `cache_s3_secret_access_key`: `Field(repr=False)` or `SecretStr`; never log it.

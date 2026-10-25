@@ -45,17 +45,19 @@ Provision the cache bucket on rook-ceph and wire it into the orchestrator releas
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Chart values `cache.s3.*` of the agents-orchestrator chart (cache-chart-values).
+- `.hook.sh:apply_dir` applies `raw/*.pre.yaml` at presync.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile build` renders the orchestrator release with the cache values; `raw/workspace-cache-bucket.pre.yaml` is a valid ObjectBucketClaim.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_workspace_cache.py` (the four named tests, using the `layered_values` fixture); run it: fails.
+- Green: the raw file and the values block; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Live probe 2026-10-25: OBC `monitoring/loki-bucket` uses `bucketName` and `storageClassName: rook-ceph-bucket`; its Secret has `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`; CephObjectStore `ceph-objectstore` endpoint `http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80`; StorageClass region `us-east-1`.
+- gitleaks runs in `mise run lint`: no key material anywhere.

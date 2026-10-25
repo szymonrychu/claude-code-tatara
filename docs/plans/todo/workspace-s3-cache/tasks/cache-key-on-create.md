@@ -51,17 +51,19 @@ Resolve the cache key at session create and expose cache availability (design D7
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.py:default_cache_key(preset_id: UUID) -> str`.
+- `POST /api/v1/sessions` behaviour (contract `orch-session-spec-cache`); `GET /api/v1/meta` `cache {available, max_bytes}` (contract `orch-meta-cache`); `api/schemas.py:MetaCache`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A session created from a preset whose spec is `{"cache": {}}` returns `spec.cache.key` = `preset-<16 hex>`, the same for every session of that preset; `/meta` shows `cache.available`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_cache.py` (the six named tests, using the existing API test fixtures of `tests/test_api_create_from_preset.py`); run it: fails.
+- Green: implement; regenerate `openapi.json` with `uv run python -m agents_orchestrator.api.openapi > openapi.json`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Resolve the key in `_create_from_preset` after `check_spec`, with `spec.model_copy(update=...)` on the `cache` sub-model, before the insert.
+- The derivation uses the preset id, not the name: a renamed preset keeps its cache (design D7).

@@ -52,17 +52,18 @@ Chart `chart/agents-orchestrator`:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Chart values `cache.*` (extends contract `agents-orchestrator-chart`); env names from contract `orch-cache-settings-env`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` with `cache.s3.bucket=b, cache.s3.existingSecret=s` renders the ORCH_CACHE_* ConfigMap keys and the two credential `secretKeyRef`s on the reconciler container only.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_chart_cache.py` with `tests/helm_render.py` (the five named tests); run it: fails.
+- Green: values, templates, chart README and `ci/lint-values.yaml`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The reconciler-only block already exists in `templates/deployment.yaml` (`if eq $component "reconciler"`).
+- The image default follows the chart's existing image tag helper (appVersion when `image.tag` is empty).

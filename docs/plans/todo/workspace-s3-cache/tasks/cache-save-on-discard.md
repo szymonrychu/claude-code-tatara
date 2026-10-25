@@ -53,17 +53,20 @@ Save the workspace at session end, under the same object name, before the PVC is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reconciler/cache.py:CacheRunner.save_step(session) -> bool`.
+- `reconciler/loop.py:Reconciler._quiesce`, `_discard`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Deleting a cached session shows phase deleting with "saving the workspace cache", then the objects go and the row is purged; the bucket holds `workspace-cache/<key>.tar.zst` with the latest workdir.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_cache_save.py` (the nine named tests); run it: fails.
+- Green: implement `save_step`, the quiesce condition and the discard order; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `_quiesce` today returns True at once when no hook is owed; the new condition is `hook owed or save owed`; the existing ingester drain wait (`discard_drain_seconds`) stays as it is for both (it only adds seconds).
+- The save must run before `_prune(..., DISCARD_ORDER)`, which deletes the PVC.
+- Retro: a save must never act on an empty workdir path; `render_cache_job` takes it from `workdir_path(spec)`.

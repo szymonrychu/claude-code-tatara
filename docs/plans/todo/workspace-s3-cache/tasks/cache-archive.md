@@ -53,17 +53,21 @@ New package `src/agents_orchestrator/cache/`; `cache/archive.py`:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `cache/archive.py:pack(workdir, out, *, exclude, max_bytes) -> int`, `unpack(src, workdir) -> int`, `TooLarge`, `ExtractError`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A workdir with files, a symlink and an excluded `node_modules/` packs to a `.tar.zst` stream and unpacks to the same tree without `node_modules/` and `.agent-init/`; a crafted archive with `../escape` raises `ExtractError` and writes nothing outside.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `uv add zstandard` (writes pyproject.toml and uv.lock).
+- Red: write `tests/test_cache_archive.py` with the eight named tests (craft unsafe archives with `tarfile` directly); run it: fails on the missing module.
+- Green: write `archive.py`; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Python 3.12: `tarfile` `filter="data"` exists; open with `tarfile.open(fileobj=..., mode="r|")` over a `zstandard.ZstdDecompressor().stream_reader(src)`; write with `mode="w|"` over `ZstdCompressor().stream_writer(counting_out)`.
+- Count compressed bytes in a small writer wrapper and raise `TooLarge` there.
+- Walk with `os.scandir`/`os.walk(followlinks=False)`; use `lstat` to skip sockets, FIFOs and devices.
+- Never `rmtree` or clear the workdir (retro: computed-path writes).
