@@ -109,3 +109,12 @@ Estimate: 175 agent-min | Critical path: 69 min | Expected wall at P=1.5: 3.9 h 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Hand-orchestrated run (user asked to continue without the workflow), 2026-10-24 to 2026-10-25.
+Every task: one implementer and one sonnet reviewer, at most two fix rounds, landed via worktree-merge.
+Scope audit (sonnet) on agent-orchestrator 50324ee plus any-mcp v0.2.0 and wrapper 0.2.0: no gaps; the three post-merge tasks were then delivered and reviewed (PASS).
+PRs merged with green CI: any-mcp #2, claude-code-wrapper #3, agent-orchestrator #8 (kind e2e green) and #9, agents-helmfile #11, #12, #13.
+Live: release revision applied with chart 0.1.0-main.a5b5a75, wrapper :0.2.0 (sha7 tags are pruned in Harbor), any-mcp v0.2.0; smoke OK including a 200 from /agent/v1/me in an agent pod and a leader in a 2-replica hive.
+User request during the run: the LAN-only ingress allowlist was removed (agents-helmfile #12); the node-IP denylist stays.
