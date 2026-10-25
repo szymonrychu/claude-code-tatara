@@ -287,6 +287,15 @@ def backfill_fixture(tmp_path):
             assistant("2026-10-24T10:00:01.000Z", usage(1, 1, 1, 1), "msg_9"),
         ],
     )
+    # Unmarked implementer naming a task file: only written when `names` is given.
+    write(
+        sub / "agent-u2.jsonl",
+        [
+            user("2026-10-24T11:00:00.000Z", "Work on /r/docs/plans/done/ep/tasks/t2.md now."),
+            assistant("2026-10-24T11:00:01.000Z", usage(1, 1, 1, 1), "msg_8"),
+        ],
+    )
+    (sub / "agent-u2.meta.json").write_text(json.dumps({"agentType": "workbench:implementer"}))
     return tmp_path / "projects" / "-p", tmp_path / "logs"
 
 
@@ -295,6 +304,8 @@ def test_backfill_writes_marked_only(tmp_path):
     written = agent_usage.backfill(transcripts, logs)
     assert [r["agentId"] for r in written] == ["m1"]
     assert sorted(p.name for p in (logs / "agents").glob("*.json")) == ["m1.json"]
+    # with names, the unmarked implementer naming a task file is written too
+    assert [r["agentId"] for r in agent_usage.backfill(transcripts, logs, names=NAMES)] == ["u2"]
     saved = json.loads((logs / "agents" / "m1.json").read_text())
     assert saved == written[0]
     assert (saved["epic"], saved["task"], saved["role"]) == ("ep", "t1", "impl")
@@ -310,6 +321,115 @@ def test_backfill_writes_marked_only(tmp_path):
         "output": 30,
         "total": 3335,
     }
+
+
+NAMES = {
+    "ep/tasks/t1.md": ("ep", "t1"),
+    "ep/tasks/t2.md": ("ep", "t2"),
+    "ep--t1": ("ep", "t1"),
+    "ep-t2": ("ep", "t2"),
+    "ep": ("ep", None),
+    "other/tasks/o1.md": ("other", "o1"),
+}
+
+
+def test_legacy_task_matches_one_task(tmp_path):
+    def match(text):
+        path = write(tmp_path / "x.jsonl", [user("2026-10-24T10:00:00.000Z", text)])
+        return agent_usage.legacy_task(path, NAMES)
+
+    assert match("Do /r/docs/plans/done/ep/tasks/t1.md") == ("ep", "t1")
+    # a task file path wins over another task's tree name
+    assert match("See ep/tasks/t1.md in .claude/worktrees/ep-t2") == ("ep", "t1")
+    assert match("Tree /r/.claude/worktrees/ep--t1.") == ("ep", "t1")
+    assert match("Branch ep-t2, tree ep-t2") == ("ep", "t2")
+    # two task files, or two tree names, are ambiguous
+    assert match("ep/tasks/t1.md and ep/tasks/t2.md") is None
+    assert match("ep--t1 and ep-t2") is None
+    # epic only, nothing, or a name embedded in a longer token
+    assert match("worktrees/ep only") is None
+    assert match("nothing here") is None
+    assert match("ep--t1x and xep-t2") is None
+    # only the first user prompt counts
+    path = write(
+        tmp_path / "y.jsonl",
+        [user("2026-10-24T10:00:00.000Z", "hello"), user("2026-10-24T10:00:01.000Z", "ep--t1")],
+    )
+    assert agent_usage.legacy_task(path, NAMES) is None
+
+
+def legacy_dir(tmp_path, nested=False):
+    sub = tmp_path / "projects" / "-p" / "sess" / "subagents"
+    if nested:
+        sub = sub / "workflows" / "wf_1"
+    sub.mkdir(parents=True)
+    return sub
+
+
+def legacy_agent(sub, agent_id, prompt, agent_type):
+    write(
+        sub / f"agent-{agent_id}.jsonl",
+        [
+            user("2026-10-24T10:00:00.000Z", prompt),
+            assistant("2026-10-24T10:02:00.000Z", usage(1, 1, 1, 1), f"msg_{agent_id}"),
+        ],
+    )
+    if agent_type is not None:
+        (sub / f"agent-{agent_id}.meta.json").write_text(json.dumps({"agentType": agent_type}))
+
+
+def test_backfill_matches_legacy_transcripts(tmp_path):
+    sub = legacy_dir(tmp_path)
+    legacy_agent(sub, "i1", "ep/tasks/t1.md", "workbench:implementer")
+    legacy_agent(sub, "r1", "ep/tasks/t1.md", "workbench:reviewer")
+    legacy_agent(sub, "v1", "ep--t2", "workbench:verifier")
+    legacy_agent(sub, "o1", "other/tasks/o1.md", "workbench:implementer")
+    transcripts, logs = tmp_path / "projects" / "-p", tmp_path / "logs"
+    written = agent_usage.backfill(transcripts, logs, epic="ep", names=NAMES)
+    got = {r["agentId"]: (r["epic"], r["task"], r["role"]) for r in written}
+    assert got == {
+        "i1": ("ep", "t1", "impl"),
+        "r1": ("ep", "t1", "review"),
+        "v1": ("ep", "t2", "review"),
+    }
+    saved = json.loads((logs / "agents" / "i1.json").read_text())
+    assert saved["agentType"] == "workbench:implementer"
+    assert saved["tokens"]["total"] == 4
+    assert saved["start"] == "2026-10-24T10:00:00.000Z"
+    assert not (logs / "agents" / "o1.json").exists()
+    every = agent_usage.backfill(transcripts, tmp_path / "logs2", names=NAMES)
+    assert sorted(r["agentId"] for r in every) == ["i1", "o1", "r1", "v1"]
+
+
+def test_backfill_skips_unmatched_and_other_types(tmp_path):
+    sub = legacy_dir(tmp_path)
+    legacy_agent(sub, "n1", "no task named", "workbench:implementer")
+    legacy_agent(sub, "n2", "ep/tasks/t1.md and ep/tasks/t2.md", "workbench:implementer")
+    legacy_agent(sub, "n3", "only the epic ep", "workbench:reviewer")
+    for i, kind in enumerate(
+        ["workbench:worktree-merger", "general-purpose", "workbench:planner",
+         "workbench:scope-auditor", "workbench:record-writer"]
+    ):
+        legacy_agent(sub, f"t{i}", "ep/tasks/t1.md", kind)
+    legacy_agent(sub, "nm", "ep/tasks/t1.md", None)
+    written = agent_usage.backfill(tmp_path / "projects" / "-p", tmp_path / "logs", names=NAMES)
+    assert written == []
+    assert not (tmp_path / "logs" / "agents").exists()
+
+
+def test_backfill_reaches_workflow_transcripts(tmp_path):
+    sub = legacy_dir(tmp_path, nested=True)
+    legacy_agent(sub, "w1", "ep/tasks/t2.md", "workbench:reviewer")
+    written = agent_usage.backfill(tmp_path / "projects" / "-p", tmp_path / "logs", names=NAMES)
+    assert [(r["agentId"], r["task"], r["role"]) for r in written] == [("w1", "t2", "review")]
+    assert written[0]["transcript"].endswith("wf_1/agent-w1.jsonl")
+
+
+def test_backfill_marker_wins_over_names(tmp_path):
+    sub = legacy_dir(tmp_path)
+    legacy_agent(sub, "m9", "[wb ep/t1/impl]\nAlso see ep/tasks/t2.md", "workbench:reviewer")
+    written = agent_usage.backfill(tmp_path / "projects" / "-p", tmp_path / "logs", names=NAMES)
+    assert [(r["epic"], r["task"], r["role"]) for r in written] == [("ep", "t1", "impl")]
 
 
 def test_backfill_is_idempotent(tmp_path):

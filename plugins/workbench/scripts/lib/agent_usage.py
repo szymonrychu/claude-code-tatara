@@ -16,6 +16,7 @@ Stdlib only, Python 3.9 safe: the hooks import it.
 from __future__ import annotations
 
 import datetime
+import functools
 import json
 import math
 import os
@@ -38,6 +39,10 @@ TOKEN_KEYS = {
 }
 
 AGENT_ROLES = {"workbench:implementer": "impl", "workbench:reviewer": "review"}
+
+# Agent types whose unmarked transcripts count for a task by name; the old verifier did
+# the review's verification. Planner, merger, auditor and the rest name no task.
+LEGACY_ROLES = {**AGENT_ROLES, "workbench:verifier": "review"}
 
 _AGENT_ID = re.compile(r"^[A-Za-z0-9_.-]+$")
 
@@ -115,6 +120,46 @@ def parse_marker(path: str | os.PathLike) -> tuple[str, str, str] | None:
         lines = text.strip().splitlines()
         match = MARKER.match(lines[0].strip()) if lines else None
         return (match.group(1), match.group(2), match.group(3)) if match else None
+    return None
+
+
+@functools.lru_cache(maxsize=8)
+def _name_pattern(keys: tuple) -> re.Pattern | None:
+    """One alternation of the names, each bounded by characters that cannot extend a name."""
+    if not keys:
+        return None
+    alternation = "|".join(re.escape(k) for k in sorted(keys, key=len, reverse=True))
+    return re.compile(r"(?<![A-Za-z0-9_-])(?:" + alternation + r")(?![A-Za-z0-9_-])")
+
+
+def legacy_task(
+    path: str | os.PathLike, names: dict[str, tuple[str, str | None]]
+) -> tuple[str, str] | None:
+    """(epic, task) for an unmarked transcript whose first prompt names exactly one task.
+
+    `names` maps a name to (epic, task or None). A task file path (`<epic>/tasks/<task>.md`)
+    named once wins; else one task tree or branch name; two tasks at the deciding level,
+    only an epic name, or no name give None.
+    """
+    pattern = _name_pattern(tuple(names))
+    if pattern is None:
+        return None
+    for obj in transcript_lines(path):
+        if obj.get("type") != "user":
+            continue
+        text = _first_text(_message(obj).get("content")) or ""
+        files: set = set()
+        trees: set = set()
+        for found in pattern.finditer(text):
+            name = found.group(0)
+            epic, task = names[name]
+            if task is None:
+                continue
+            (files if "/tasks/" in name and name.endswith(".md") else trees).add((epic, task))
+        for level in (files, trees):
+            if level:
+                return next(iter(level)) if len(level) == 1 else None
+        return None
     return None
 
 
@@ -242,24 +287,29 @@ def backfill(
     logs_dir: str | os.PathLike,
     refresh: bool = False,
     epic: str | None = None,
+    names: dict[str, tuple[str, str | None]] | None = None,
 ) -> list[dict]:
     """Write the records the hook did not: one per marked `agent-*.jsonl` under the dir.
 
     Same summariser and record shape as the hook. An existing record is kept unless
-    `refresh`; unmarked transcripts and (with `epic`) other epics' are skipped. Returns
-    the records written.
+    `refresh`; unmarked transcripts and (with `epic`) other epics' are skipped. With
+    `names`, an unmarked implementer, reviewer or verifier transcript that `legacy_task`
+    matches is recorded too (a marker still wins). Returns the records written.
     """
     folder = Path(logs_dir) / "agents"
     written = []
     for path in sorted(Path(transcripts_dir).rglob("agent-*.jsonl")):
         agent_id = path.name[len("agent-") : -len(".jsonl")]
+        agent_type = _agent_type(path, agent_id)
         marker = parse_marker(path)
+        if marker is None and names is not None and agent_type in LEGACY_ROLES:
+            found = legacy_task(path, names)
+            marker = (found[0], found[1], LEGACY_ROLES[agent_type]) if found else None
         if marker is None or (epic is not None and marker[0] != epic):
             continue
         if not refresh and (folder / f"{agent_id}.json").exists():
             continue
         summary = summarize(path)
-        agent_type = _agent_type(path, agent_id)
         record = {
             "agentId": agent_id,
             "agentType": agent_type,
