@@ -382,7 +382,7 @@ def test_backfill_matches_legacy_transcripts(tmp_path):
     sub = legacy_dir(tmp_path)
     legacy_agent(sub, "i1", "ep/tasks/t1.md", "workbench:implementer")
     legacy_agent(sub, "r1", "ep/tasks/t1.md", "workbench:reviewer")
-    legacy_agent(sub, "v1", "ep--t2", "workbench:verifier")
+    legacy_agent(sub, "v1", "ep-t2", "workbench:verifier")
     legacy_agent(sub, "o1", "other/tasks/o1.md", "workbench:implementer")
     transcripts, logs = tmp_path / "projects" / "-p", tmp_path / "logs"
     written = agent_usage.backfill(transcripts, logs, epic="ep", names=NAMES)
