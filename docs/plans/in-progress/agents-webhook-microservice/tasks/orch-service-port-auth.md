@@ -1,6 +1,6 @@
 ---
 title: orch service port auth
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "other in-cluster services can start clusters and send prompts with a token, without opening the main API to pod CIDRs"
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/service_auth.py, src/agent_orchestrator/api/allowlist.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/cli.py, tests/test_service_port.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_service_port.py tests/test_agent_port.py tests
 depends_on: []
 model: opus
 review: panel
-verified_head: ""
+verified_head: db35508
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 12
+actual_tokens: 2753783
+actual_roles: "impl 12, review 1"
+actual_role_tokens: "impl 2568588, review 185195"
 ---
 
 # orch service port auth
@@ -73,3 +73,5 @@ Service-to-service authentication for agent-orchestrator on a dedicated internal
 - Model on `api/allowlist.py:PortGate` and the agent port's `skip_port` handling in `app.py` L84-86; `api/agent.py:require_agent` L57 for constant-time token checks.
 - No route changes shape: `openapi.json` stays byte-identical (`tests/test_readme_api.py`).
 - cluster-scaling and configuration-improvements also edit `settings.py`; rebase on whichever lands first.
+
+- 2026-10-25 done
