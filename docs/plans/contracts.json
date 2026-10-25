@@ -546,5 +546,15 @@
       "agents-schedule-microservice"
     ],
     "note": "task web-openapi-vendor: openapi/<backend>.json + openapi/<backend>.source '<repo> <sha40>'; npm run sync:api -- <backend> [--from <checkout>]; npm run check:api in agents-web CI; an orchestrator route change is followed by sync:api in agents-web"
+  },
+  {
+    "name": "agents-web-chart",
+    "kind": "release",
+    "owner": "frontend-decoupling",
+    "file": "code/agents-web/chart/agents-web/values.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "tasks web-chart-workload, web-chart-config-ingress, web-ci-release: oci://harbor.szymonrichert.pl/charts/agents-web (0.1.0-main.<sha7> on main, X.Y.Z on tag); values image {repository, tag required}, imagePullSecrets, podAnnotations, backends, ingress {enabled, className, annotations, denySourceRanges, hosts, tls}, service.port 8080; container port name http, probes /healthz by number"
   }
 ]
