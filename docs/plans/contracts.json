@@ -470,5 +470,16 @@
       "agents-helmfile"
     ],
     "note": "task autoclose-sweeper: api-process sweeper (AUTOCLOSE_POLL_SECONDS 10) calls close_expired, a status-guarded desired active->deleting flip at created_at + spec.autoclose_after_seconds; the reconciler discards as for DELETE; api stays the only writer of clusters.desired"
+  },
+  {
+    "name": "web-settings-menu-order",
+    "kind": "interface",
+    "owner": "configuration-improvements",
+    "file": "code/agents-web/src/App.tsx",
+    "consumers": [
+      "agents-webhook-microservice",
+      "agents-schedule-microservice"
+    ],
+    "note": "task web-clusters-page: settingsCategories order Clusters first, Presets last; webhook and schedule entries go between them"
   }
 ]
