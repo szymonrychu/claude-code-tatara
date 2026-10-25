@@ -1,6 +1,6 @@
 ---
 title: mxc e2e api
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the whole Messenger-to-agent loop is proven end to end against real processes before it goes live
 files: [tests/e2e/__init__.py, tests/e2e/conftest.py, tests/e2e/test_e2e_api.py, pyproject.toml]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/e2e -m e2e -q && uv run ruff check . && uv
 depends_on: [mxc-service-entrypoints, mxc-openapi-and-readme]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 79230b4a4bcfb6238c8f75233f3b1aa835c5cbda
 points: 8
 expected_minutes: 18
 expected_tokens: 2172985
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 11
+actual_tokens: 1989244
+actual_roles: "impl 8, review 2"
+actual_role_tokens: "impl 1818256, review 170988"
 ---
 
 # mxc e2e api
@@ -72,3 +72,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Keep `MATRIX_POLL_SECONDS` and `MATRIX_SYNC_TIMEOUT_SECONDS` small in the e2e env (for example 0.2 and 1) so the suite stays fast.
 - A defect found here that sits outside this task's files is returned as a `discovered` entry, never left undone.
+
+- 2026-10-25 done
