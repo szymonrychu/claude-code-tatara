@@ -1,6 +1,6 @@
 ---
 title: overlap check per repo
-status: in-progress
+status: done
 repo: workbench
 value: independent epics in different repos can run in parallel sessions
 files: [plugins/workbench/skills/start-development/scripts/ticket.py]
@@ -8,15 +8,15 @@ verify: mise run lint
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: e34e6b9
 points: 2
 expected_minutes: 6
 expected_tokens: 535073
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 23
+actual_tokens: 1049790
+actual_roles: "impl 15, review 8"
+actual_role_tokens: "impl 776125, review 273665"
 ---
 
 # overlap check per repo
@@ -53,3 +53,5 @@ Epics touching same-named files in different repos can be in progress together; 
 - The ticket.py tests live in plugins/workbench/skills/start-development/tests; `mise run test:plugin` runs one pytest process per skill.
 
 - 2026-10-25 amended: AC1 evidence path corrected to the real test location; template sections filled
+
+- 2026-10-25 done
