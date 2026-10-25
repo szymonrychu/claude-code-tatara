@@ -1,6 +1,6 @@
 ---
 title: web vendor filters api
-status: in-progress
+status: done
 repo: agents-web
 value: "the UI has typed access to endpoint filters, their replacement and the filter preview"
 files: [openapi/webhooks.json, openapi/webhooks.source, src/api/webhooks-schema.d.ts, src/webhooks/api.ts, src/webhooks/api.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/api.test.ts 
 depends_on: [api-endpoint-filters]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 20f1694
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 261088
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 204748, review 56340"
 ---
 
 # web vendor filters api
@@ -62,3 +62,5 @@ The UI code can read and write endpoint filters and preview them with full types
 
 - `sync-api.mjs` refuses when the source `openapi.json` has uncommitted changes; the agents-webhook commit of api-endpoint-filters is already in the tree.
 - Existing callers of `previewTemplate` (CreateEndpointDialog) still type-check because `template` stays accepted; their behaviour changes in web-create-endpoint-filters.
+
+- 2026-10-25 done
