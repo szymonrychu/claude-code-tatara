@@ -1,6 +1,6 @@
 ---
 title: cache job render
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "restore and save Jobs run hardened with no credential, and agent pods never see one"
 files: [src/agents_orchestrator/reconciler/cache.py, tests/test_cache_jobs_render.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_jobs_render.py tests/test_render.py &
 depends_on: [cache-config]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 75baef2
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 1208222
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 1097034, review 111188"
 ---
 
 # cache job render
@@ -70,3 +70,5 @@ New module `src/agents_orchestrator/reconciler/cache.py` (render part):
 - Mirror `reconciler/init.py:render_init_job` (pull secret, labels, PVC volume) but with the hardening and env rules of the requirement.
 - `readOnlyRootFilesystem` needs the `/tmp` emptyDir and `HOME=/tmp`.
 - The save Job mounts the same `workdir_mount` with `readOnly: true`.
+
+- 2026-10-25 done
