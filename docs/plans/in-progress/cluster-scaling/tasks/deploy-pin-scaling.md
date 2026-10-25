@@ -11,15 +11,15 @@ uses: []
 model: ""
 estimate: 5
 estimate_by: formula
-actual: ""
-actual_roles: ""
+actual: 1
+actual_roles: "impl 1, verify 1"
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-deploy-pin-scaling/agents-helmfile
 branch: cluster-scaling-deploy-pin-scaling
-verified_head: 0dd5aa28cc96dbe9ed2a4c8cebc9fa1b800ca49e
+verified_head: "not obtained: the verify script did not run"
 run: cluster-scaling
 provides: []
-acs_for_audit: [AC5]
+acs_for_audit: []
 process_gaps: []
 ---
 
@@ -63,3 +63,5 @@ The agents namespace runs this epic's orchestrator and the live smoke, including
 - Starts from agents-helmfile main after the hive epic's deploy pin, so the any-mcp v0.2.0 smoke check is already in place.
 - `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts and are deselected in the verify, not changed.
 - `mise run apply` is guarded by lint, test and the kube-context check (`EXPECTED_KUBE_CONTEXT`).
+
+Orchestrator notes (2026-10-25): pin 3b9926d landed on cluster-scaling (ed0233a, rebased onto main 8ff9753), agents-helmfile PR #17 merged. Pre-apply `mise run diff`: only `helm.sh/chart 0.1.0-main.a5b5a75 -> 0.1.0-main.3b9926d` and `app.kubernetes.io/version "a5b5a75" -> "3b9926d"` (live had been rolled back to a5b5a75 by the verifier running AC3's apply at rev 12). `mise run apply`: helm revision 13, chart agent-orchestrator-0.1.0-main.3b9926d deployed. Post-apply diff: `No affected releases`. `mise run smoke` last line: `smoke: OK` (scale 1->2->1, pod-0 uid kept, init scripts succeeded).
