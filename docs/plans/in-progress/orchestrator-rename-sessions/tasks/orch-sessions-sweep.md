@@ -1,6 +1,6 @@
 ---
 title: orch sessions sweep
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the orchestrator's database, code, public API and labels call the unit a session"
 files: [src/agents_orchestrator/db/migrations/0005_sessions.sql, src/agents_orchestrator/, tests/, openapi.json, README.md, examples/bench.yaml]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q && uv run ruff check . && uv run ruff format --check .
 depends_on: [orch-wrapper-session-id]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 0079f7c
 points: 8
 expected_minutes: 18
 expected_tokens: 2172985
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 8
+actual_minutes: 48
+actual_tokens: 14630595
+actual_roles: "impl 42, review 26"
+actual_role_tokens: "impl 13876143, review 754452"
 ---
 
 # orch sessions sweep
@@ -73,3 +73,5 @@ The orchestrator's database, code, public API, label and README API reference ca
 - Keep Kubernetes words: `cluster_domain`, `ClusterIP`, `clusterIP: None`, `cluster.local`, `in-cluster` (D12 allowlist).
 - Leave `api/agent.py`, the `X-Orch-Cluster` header, `ORCH_CLUSTER_ID` and the any-mcp plugin key to orch-agent-api-sessions; the guard excludes exactly those files until then.
 - Tests named after the unit are renamed with `git mv`; never delete a test to make the sweep pass.
+
+- 2026-10-25 done
