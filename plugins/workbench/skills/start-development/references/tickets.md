@@ -71,11 +71,12 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
 - `reap`: `reap --epic <epic> [--dry-run]` removes a done epic's merged, clean trees.
 - `retro`: `retro <epic> [--logs DIR] [--transcripts DIR]` (epic in-progress or done) writes RETRO.md
   from templates/retro.md: the Tasks table in delivery order (the `chore(ticket): <epic> task <slug> done`
-  commits, oldest first; tasks never marked done follow in dependency order) with task title, points
+  commits, oldest first; tasks never marked done follow by the committer date of their `verified_head`,
+  oldest first, and a `verified_head` that is empty, unknown or not a sha leaves its task with the rest, in dependency order) with task title, points
   (planned), points (post-delivery), minutes (expected), minutes (actual), tokens (expected), tokens
   (actual) and a totals line, and the Deltas section (per task the points difference and the minutes and
   tokens ratios, actual over expected, then the MdAPE per metric). Empty actual minutes and tokens come from
-  the task's `.logs/agents` records (backfilled from the harness transcripts first when it has none), a
+  the task's `.logs/agents` records (read once per epic and backfilled from the harness transcripts at most once, when a task has none), a
   missing `points` from a Notes line `Estimate: <n> points`; anything else missing reads `not recorded`.
   Both sections sit between `<!-- retro:generated:begin -->` and `<!-- retro:generated:end -->`; a rerun
   regenerates only that block, keeps the Retro and Improvements sections retro-writer fills, refuses a

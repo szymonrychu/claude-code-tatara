@@ -22,7 +22,7 @@ import math
 import os
 import re
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -351,3 +351,33 @@ def records_for(
         return records
     _backfill(transcripts_dir, logs_dir, epic=epic)
     return read_records(logs_dir, epic, task)
+
+
+def records_by_task(
+    epic: str,
+    logs_dir: str | os.PathLike,
+    transcripts_dir: str | os.PathLike | None,
+    backfill: bool = True,
+    names: dict[str, tuple[str, str | None]] | None = None,
+    tasks: Iterable[str] | None = None,
+) -> dict[str, list[dict]]:
+    """`{task: [records]}` of `epic` from one read, one backfill at most, one more read.
+
+    The backfill (with `names` passed through) runs only when a wanted task has no record:
+    `tasks`, else the tasks `names` maps to this epic, else any task at all. `backfill=False`
+    or no transcripts dir only reads.
+    """
+    records = read_records(logs_dir, epic)
+    if backfill and transcripts_dir:
+        if tasks is None and names is not None:
+            tasks = {task for e, task in names.values() if e == epic and task}
+        have = {r.get("task") for r in records}
+        if (not records) if tasks is None else any(t not in have for t in tasks):
+            _backfill(transcripts_dir, logs_dir, epic=epic, names=names)
+            records = read_records(logs_dir, epic)
+    grouped: dict[str, list[dict]] = {}
+    for record in records:
+        task = record.get("task")
+        if isinstance(task, str):
+            grouped.setdefault(task, []).append(record)
+    return grouped

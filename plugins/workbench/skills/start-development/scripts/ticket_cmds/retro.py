@@ -2,12 +2,13 @@
 
 `retro <epic>` (main checkout; the epic in-progress or done) writes the Tasks table in delivery
 order (the `chore(ticket): <epic> task <slug> done` commits, oldest first; tasks never marked
-done follow in dependency order), its totals line and the Deltas section between the generated
-markers of templates/retro.md, keeps everything outside them on a rerun and commits exactly
-RETRO.md. Values come from the task frontmatter; empty actuals fall back to the task's
-`.logs/agents` records (backfilled from the harness transcripts first when it has none) and a
-missing `points` to a Notes line `Estimate: <n> points`. A value none of them gives reads
-`not recorded`, never a guess. Task files are never written.
+done follow by the committer date of their `verified_head`, then in dependency order), its
+totals line and the Deltas section between the generated markers of templates/retro.md, keeps
+everything outside them on a rerun and commits exactly RETRO.md. Values come from the task
+frontmatter; empty actuals fall back to the epic's `.logs/agents` records, read once per epic
+(backfilled once from the harness transcripts when a task has none) and a missing `points` to
+a Notes line `Estimate: <n> points`. A value none of them gives reads `not recorded`, never a
+guess. Task files are never written.
 
 `retro --history [--limit N]` prints the Retro and Improvements sections of the N most recently
 done epics that have a RETRO.md, as JSON.
@@ -85,8 +86,23 @@ def _git_lines(t, root: Path, *args: str) -> list[str]:
     return r.stdout.splitlines() if r.returncode == 0 else []
 
 
-def _delivery_order(t, root: Path, epic: str, slugs: list[str], deps: dict) -> list[str]:
-    """Slugs by their last `task <slug> done` commit, oldest first, then the rest by deps."""
+SHA = re.compile(r"[0-9a-f]{4,40}")
+
+
+def _commit_time(t, root: Path, sha) -> int | None:
+    """Committer time of `sha`; None when it is not a sha or names no commit here."""
+    if not isinstance(sha, str) or not SHA.fullmatch(sha):
+        return None
+    r = t._git(t._existing(root), "show", "-s", "--format=%ct", f"{sha}^{{commit}}")
+    out = r.stdout.strip()
+    return int(out) if r.returncode == 0 and out.isdigit() else None
+
+
+def _delivery_order(
+    t, root: Path, epic: str, slugs: list[str], deps: dict, heads: dict | None = None
+) -> list[str]:
+    """Slugs by their last `task <slug> done` commit, oldest first; then those whose
+    `verified_head` is a commit here, by its committer date; then the rest by deps."""
     done = re.compile(rf"^chore\(ticket\): {re.escape(epic)} task (\S+) done$")
     log = _git_lines(
         t, root, "log", "--reverse", "--format=%s", "--fixed-strings",
@@ -98,8 +114,10 @@ def _delivery_order(t, root: Path, epic: str, slugs: list[str], deps: dict) -> l
         if m and m.group(1) in slugs:
             when[m.group(1)] = i
     delivered = sorted(when, key=when.__getitem__)
-    rest = [s for s in t.dependency_order(deps) if s not in when]
-    return delivered + rest
+    ordered = [s for s in t.dependency_order(deps) if s not in when]
+    dated = {s: _commit_time(t, root, (heads or {}).get(s)) for s in ordered}
+    verified = sorted((s for s in ordered if dated[s] is not None), key=dated.__getitem__)
+    return delivered + verified + [s for s in ordered if dated[s] is None]
 
 
 def _estimate_points(t, meta: dict, body: str, slug: str) -> int | None:
@@ -118,6 +136,7 @@ def _rows(a, t, root: Path, epic_dir: Path, backfill: bool = True) -> list[dict]
         doc = t._read_doc(path)
         meta, slug = doc.meta, path.stem
         row = {"slug": slug, "title": meta.get("title") or slug, "deps": meta.get("depends_on", [])}
+        row["head"] = meta.get("verified_head")
         row["points"] = _estimate_points(t, meta, doc.body, slug)
         row["points_actual"] = t._points(meta.get("points_actual"), slug, "points_actual")
         for key in t.COUNT_KEYS:
@@ -125,7 +144,9 @@ def _rows(a, t, root: Path, epic_dir: Path, backfill: bool = True) -> list[dict]
         tasks[slug] = row
     _fill_from_records(a, t, root, epic_dir.name, tasks, backfill)
     deps = {s: list(r["deps"]) for s, r in tasks.items()}
-    return [tasks[s] for s in _delivery_order(t, root, epic_dir.name, list(tasks), deps)]
+    heads = {s: r["head"] for s, r in tasks.items()}
+    order = _delivery_order(t, root, epic_dir.name, list(tasks), deps, heads)
+    return [tasks[s] for s in order]
 
 
 def _fill_from_records(a, t, root: Path, epic: str, tasks: dict, backfill: bool = True) -> None:
@@ -136,12 +157,11 @@ def _fill_from_records(a, t, root: Path, epic: str, tasks: dict, backfill: bool 
         return
     main = t.workbench.main_checkout(root)
     transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
-    found = {
-        r["slug"]: agent_usage.records_for(epic, r["slug"], logs, transcripts, backfill)
-        for r in wanting
-    }
+    found = agent_usage.records_by_task(
+        epic, logs, transcripts, backfill, tasks=[r["slug"] for r in wanting]
+    )
     for row in wanting:
-        if not found[row["slug"]]:
+        if row["slug"] not in found:
             continue
         sums = agent_usage.aggregate(found[row["slug"]])
         if row["actual_minutes"] is None:

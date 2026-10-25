@@ -1,6 +1,8 @@
 """ticket.py retro: RETRO.md's measured Tasks table and Deltas, and the earlier retros."""
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -330,3 +332,122 @@ def test_falls_back_to_records_and_notes(repo, root, tmp_path):
     assert rows[1] == ["alpha", "8", NR, "34", "31", "2250000", "1400"]
     # beta has no points and no Notes estimate; its own records still give its actuals
     assert rows[2] == ["beta", NR, NR, "34", "120", "2250000", "9000"]
+
+
+def marked_transcript(folder, agent_id, epic, task, start, end, total):
+    """A harness transcript whose first user line carries the `[wb epic/task/impl]` marker."""
+    lines = [
+        {"type": "user", "timestamp": start, "message": {"content": f"[wb {epic}/{task}/impl] go"}},
+        {
+            "type": "assistant",
+            "timestamp": end,
+            "message": {"id": "m1", "model": "claude-sonnet-5-5", "usage": {"input_tokens": total}},
+        },
+    ]
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"agent-{agent_id}.jsonl"
+    path.write_text("".join(json.dumps(x) + "\n" for x in lines))
+    return path
+
+
+def test_records_by_task_one_pass(tmp_path, monkeypatch):
+    logs, transcripts = tmp_path / "logs", tmp_path / "transcripts"
+    s, e = "2026-10-24T10:00:00.000Z", "2026-10-24T10:10:00.000Z"
+    marked_transcript(transcripts / "s1", "a1", "ep", "alpha", s, e, 100)
+    marked_transcript(transcripts / "s1", "b1", "ep", "beta", s, e, 200)
+    calls = []
+    real = agent_usage._backfill
+    monkeypatch.setattr(
+        agent_usage, "_backfill", lambda *a, **k: calls.append(k) or real(*a, **k)
+    )
+
+    got = agent_usage.records_by_task("ep", logs, transcripts, tasks=["alpha", "beta", "gamma"])
+    assert sorted(got) == ["alpha", "beta"]
+    assert got["alpha"][0]["tokens"]["total"] == 100
+    assert len(calls) == 1  # gamma is missing, so one backfill; no second one
+
+    calls.clear()
+    agent_usage.records_by_task("ep", logs, transcripts, tasks=["alpha", "beta"])
+    assert calls == []  # every wanted task has a record: read only
+
+    other = tmp_path / "logs2"
+    assert agent_usage.records_by_task("ep", other, transcripts, backfill=False) == {}
+    assert agent_usage.records_by_task("ep", other, None) == {}
+    assert calls == []
+    assert not (other / "agents").exists()
+
+    names = {"unmarked-tree": ("ep", "delta")}
+    legacy = transcripts / "s2" / "agent-u1.jsonl"
+    legacy.parent.mkdir()
+    legacy.write_text(
+        json.dumps({"type": "user", "message": {"content": "work in unmarked-tree"}}) + "\n"
+        + json.dumps({"type": "assistant", "message": {"id": "x", "usage": {"input_tokens": 5}}})
+        + "\n"
+    )
+    (legacy.parent / "agent-u1.meta.json").write_text('{"agentType": "workbench:implementer"}')
+    got = agent_usage.records_by_task("ep", other, transcripts, names=names)
+    assert calls[-1]["names"] == names
+    assert "delta" in got
+
+
+def test_retro_walks_transcripts_once(repo, root, tmp_path, monkeypatch):
+    logs, transcripts = dirs(tmp_path)
+    ep = setup_epic(repo, root, ("alpha", "beta", "gamma", "delta"))
+    s = "2026-10-24T10:00:00.000Z"
+    marked_transcript(transcripts, "a1", ep, "alpha", s, "2026-10-24T10:10:00.000Z", 100)
+    marked_transcript(transcripts, "b1", ep, "beta", s, "2026-10-24T10:20:00.000Z", 200)
+    marked_transcript(transcripts, "c1", ep, "gamma", s, "2026-10-24T10:30:00.000Z", 300)
+    seen = []
+    real = agent_usage.parse_marker
+    monkeypatch.setattr(agent_usage, "parse_marker", lambda p: seen.append(str(p)) or real(p))
+
+    argv = ["retro", ep, "--logs", logs, "--transcripts", transcripts, "--root", root]
+    assert ticket.main([str(x) for x in argv]) == 0
+    assert len(seen) == len(set(seen)) == 3
+    rows = table(retro_path(root, ep).read_text(), "Tasks")
+    assert rows[1][4:7:2] == ["10", "100"]
+    assert rows[2][4:7:2] == ["20", "200"]
+    assert rows[3][4:7:2] == [NR, NR]  # delta has no transcript and still costs no extra walk
+    assert rows[4][4:7:2] == ["30", "300"]
+
+
+def dated_commit(repo, when, msg):
+    """An empty commit with the given committer date; returns its sha."""
+    env = {**os.environ, "GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when}
+    subprocess.run(
+        ["git", "commit", "--allow-empty", "-m", msg],
+        cwd=repo, env=env, capture_output=True, text=True, check=True,
+    )  # fmt: skip
+    return git(repo, "rev-parse", "HEAD").stdout.strip()
+
+
+def order_of(root, ep, logs, transcripts):
+    r = retro(root, ep, logs, transcripts)
+    assert r.returncode == 0, r.stderr
+    rows = table(retro_path(root, ep).read_text(), "Tasks")
+    return [row[0] for row in rows[1:-1]]
+
+
+def test_delivery_order_falls_back_to_verified_head(repo, root, tmp_path):
+    logs, transcripts = dirs(tmp_path)
+    ep = setup_epic(repo, root)
+    older = dated_commit(repo, "2020-01-01T00:00:00Z", "work one")
+    newer = dated_commit(repo, "2021-01-01T00:00:00Z", "work two")
+    set_meta(task_path(root, ep, "alpha"), verified_head=newer)
+    set_meta(task_path(root, ep, "beta"), verified_head=older)
+    commit_all(repo, "heads")
+    commit_all(repo, f"chore(ticket): {ep} task delta done")
+    # delta has a done commit (first); beta's head is older than alpha's; gamma has none
+    assert order_of(root, ep, logs, transcripts) == ["delta", "beta", "alpha", "gamma"]
+
+
+def test_delivery_order_tolerates_non_sha_verified_head(repo, root, tmp_path):
+    logs, transcripts = dirs(tmp_path)
+    ep = setup_epic(repo, root)
+    good = dated_commit(repo, "2020-01-01T00:00:00Z", "work")
+    set_meta(task_path(root, ep, "alpha"), verified_head="$(see below)")
+    set_meta(task_path(root, ep, "beta"), verified_head="")
+    set_meta(task_path(root, ep, "gamma"), verified_head="deadbeef00")
+    set_meta(task_path(root, ep, "delta"), verified_head=good)
+    commit_all(repo, "heads")
+    assert order_of(root, ep, logs, transcripts) == ["delta", "alpha", "beta", "gamma"]
