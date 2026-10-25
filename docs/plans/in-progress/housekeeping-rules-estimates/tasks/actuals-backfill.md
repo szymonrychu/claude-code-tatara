@@ -1,6 +1,6 @@
 ---
 title: Actuals backfill
-status: in-progress
+status: done
 repo: workbench
 value: "Runs the hook missed, this epic included, still get measured actuals"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/task_cmd.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/actuals.py, plugins/workbench/skills/start-development/tests/test_ticket_task_status.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && bash plug
 depends_on: [agent-usage-lib, stamp-actuals]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ab86c4b
 ---
 
 # Actuals backfill
@@ -67,3 +67,5 @@ Marked runs the hook missed (this epic's own runs, a session without the plugin 
 - Project dir naming checked on disk 2026-10-24: `/Users/x/Documents/workbench` is `-Users-x-Documents-workbench` and `.git` becomes `--git`.
 - Fix-as-ac (brief, retirement pins): KEPT_MODULES is exact; the module name must not contain `estimate`.
 - Tests must not read the real `~/.claude`: pass `--transcripts` or a fake home.
+
+- 2026-10-25 done
