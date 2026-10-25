@@ -6,19 +6,17 @@ value: "the webhook service has its own repo and submodule, ready for the agents
 files: [.gitmodules, code/agents-webhook, AGENTS.md]
 verify: "git config --file .gitmodules --get submodule.agents-webhook.branch && cd code/agents-webhook && mise exec -- pytest tests/test_smoke.py -q && mise run lint"
 depends_on: [create-agents-common-repo]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # create agents-webhook repo

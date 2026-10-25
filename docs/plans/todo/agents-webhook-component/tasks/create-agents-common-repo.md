@@ -6,19 +6,17 @@ value: "the shared trigger library has its own repo and submodule, ready for the
 files: [.gitmodules, code/agents-common, AGENTS.md]
 verify: "git config --file .gitmodules --get submodule.agents-common.branch && cd code/agents-common && mise exec -- pytest tests/test_smoke.py -q && mise run lint"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # create agents-common repo
