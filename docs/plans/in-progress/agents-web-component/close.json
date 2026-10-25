@@ -1,0 +1,33 @@
+{
+  "epic": "agents-web-component",
+  "base": "main",
+  "baseBefore": "bd2918c167daaa942e539cb62a71cf00073b632c",
+  "baseAfter": "600382a37e4a2f449c9995f1ea6b95bc2866d3ab",
+  "epicTip": "600382a37e4a2f449c9995f1ea6b95bc2866d3ab",
+  "integrationVerify": {
+    "command": "mise run test && mise run lint",
+    "passed": true
+  },
+  "mainVerify": {
+    "command": "mise run test && mise run lint",
+    "passed": true,
+    "tail": [
+      "[lint:secrets] $ ~/Documents/claude-code-tatara/mise-tasks/lint/secrets",
+      "[lint:root] $ ~/Documents/claude-code-tatara/mise-tasks/lint/root",
+      "[lint:agents-md] Finished in 18.8ms",
+      "[lint:plugin] [lint] $ ruff check scripts skills hooks",
+      "[lint:plugin] [lint] $ shellcheck scripts/*.sh skills/*/scripts/*.sh skills/_lib/*.sh hooks/*\u2026",
+      "[lint:harness] Finished in 124.3ms",
+      "[lint:em-dash] Finished in 134.4ms",
+      "[lint:config-dir] Finished in 218.3ms",
+      "[lint:root] Finished in 211.2ms",
+      "[lint:personal] Finished in 591.8ms",
+      "[lint:plugin] Finished in 634.8ms",
+      "[lint:secrets] \u001b[90m11:10AM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mscanned ~4805050 bytes (4.81 MB) in 148ms\u001b[0m",
+      "[lint:secrets] \u001b[90m11:10AM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m",
+      "[lint:secrets] Finished in 5.07s",
+      "Finished in 5.11s"
+    ]
+  },
+  "at": "2026-10-25T10:10:14+00:00"
+}
