@@ -23,17 +23,17 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Document the API (design D11; approval A5), the pattern of `code/agent-orchestrator/tests/test_readme_api.py`:
+Document the API (design D11, D15; approval A5), the pattern of `code/agents-orchestrator/tests/test_readme_api.py`:
 
 - `python -m agents_schedule.api.openapi` prints the OpenAPI document; `openapi.json` is committed.
 - `tests/test_readme_api.py`: the committed `openapi.json` equals the generated one (drift test), and every route in it is named in README `## API` with method and path.
-- README `## API`: base path `/schedules/api/v1`, each route with request body, response, status codes and error codes; the run statuses and reasons (`previous_running`, `schedule_disabled`, `preset_missing`, `orchestrator_refused`, `orchestrator_unavailable`, `message_failed`, `message_cancelled`, `turn_failed`, `message_gone`); the placeholders `{schedule_name}`, `{fired_at}`; and a `### Versioning` note that `/schedules/api/v1` is additive-only. README `## Commands` names `sched migrate|api|worker`.
+- README `## API`: base path `/schedules/api/v1`, each route with request body, response, status codes and error codes; the run statuses and reasons (`previous_running`, `schedule_disabled`, `preset_not_found`, `session_not_found`, `orchestrator_refused`, `orchestrator_unavailable`, `message_failed`, `message_cancelled`, `turn_failed`); the reuse rule (a run posts its prompt to the schedule's previous run's session instead of creating one when the preset sets `reuse_running_agent` and that session is still running, with `reuse` `delivered`, or `fallback` when it fell back to a new session); the placeholders `{schedule_name}`, `{fired_at}`; and a `### Versioning` note that `/schedules/api/v1` is additive-only. README `## Commands` names `sched migrate|api|worker`.
 
 ## Acceptance conditions
 
 - AC1: the committed openapi.json matches the app [evidence: test:tests/test_readme_api.py::test_openapi_matches_app]
 - AC2: every route is documented in README ## API [evidence: test:tests/test_readme_api.py::test_every_route_documented]
-- AC3: README documents the API, run reasons and versioning [evidence: doc-section:README.md#API]
+- AC3: README documents the API, run reasons, the reuse rule and versioning [evidence: doc-section:README.md#API]
 
 ## Files
 
@@ -59,3 +59,5 @@ Anything the UI can do is documented as an HTTP call, and a route change without
 ## Notes
 
 - `/schedules/api/v1` is additive-only from its first release; agents-web vendors this file.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
