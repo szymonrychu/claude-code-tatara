@@ -525,7 +525,8 @@
     "consumers": [
       "agents-helmfile",
       "agents-webhook-microservice",
-      "agents-schedule-microservice"
+      "agents-schedule-microservice",
+      "agents-matrix-connector"
     ],
     "note": "task web-runtime-config: GET /config.json {backends: [{id ^[a-z][a-z0-9-]*$ unique, label, basePath relative /..., no trailing /}]}, orchestrator required; chart value backends renders it (task web-chart-config-ingress); a backend's UI appears only when listed"
   },
