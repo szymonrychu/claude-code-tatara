@@ -834,5 +834,15 @@
       "agents-helmfile"
     ],
     "note": "task mxc-dockerfile-and-ci: harbor.szymonrichert.pl/containers/agents-matrix-connector:<sha7>; entrypoint agents-matrix-connector {migrate, api, bot}, USER 1000"
+  },
+  {
+    "name": "matrix-connector-settings-env",
+    "kind": "schema",
+    "owner": "agents-matrix-connector",
+    "file": "code/agents-matrix-connector/src/agents_matrix_connector/settings.py",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task mxc-settings-model: MATRIX_DATABASE_URL, MATRIX_ORCHESTRATOR_URL, MATRIX_ORCHESTRATOR_TOKEN(_FILE), MATRIX_HOMESERVER_URL, MATRIX_USER_ID, MATRIX_ACCESS_TOKEN(_FILE), MATRIX_DEVICE_ID, MATRIX_SELF_IDENTITIES, MATRIX_BRIDGE_BOTS, MATRIX_PUPPET_PATTERN, MATRIX_DEFAULT_POLICY (deny), MATRIX_GROUP_TRIGGER, MATRIX_MAX_*, MATRIX_*_SECONDS, MATRIX_RETENTION_DAYS, MATRIX_API_ALLOWED_CIDRS"
   }
 ]
