@@ -9,6 +9,11 @@ depends_on: [housekeeping-rules]
 model: sonnet
 review: ""
 verified_head: b9ee9ba
+points_actual: 2
+actual_minutes: 14
+actual_tokens: 691774
+actual_roles: "impl 10, review 4"
+actual_role_tokens: "impl 609420, review 82354"
 ---
 
 # Agent discipline
@@ -69,3 +74,5 @@ The implementer, reviewer and planner texts carry the list, read once, edit all,
 - `pointsActual` for the reviewer is added later by run-marker-points; do not add it here.
 
 - 2026-10-24 done
+
+- 2026-10-25 done
