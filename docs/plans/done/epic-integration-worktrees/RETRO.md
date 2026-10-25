@@ -67,12 +67,34 @@ Delivery order; written by `ticket.py retro`.
 
 ## Retro
 
-Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
-
 | Went well | Went bad / could be improved |
 |---|---|
-| ... | ... |
+| 2 of 23 tasks passed in 1 review round (common-worktree-path-sh, land-in-run); 16 more converged in 2 (record). | 3 tasks needed 3 rounds or a re-run: name-lookup-parsers (run1 round-cap), slug-collision-guard (gate-repeat then run3), land-outcomes (3+3); slug-collision-guard 145 min vs 50 (2.90), land-outcomes 133 vs 50 (2.66). |
+| Time and tokens came in far under estimate on most tasks: land-in-run 9 vs 90 min (0.10), fork-point-diffs 6 vs 60 (0.10), forward-merge-via-epic 8 vs 65 (0.12). | Estimates are unreliable in both directions: MdAPE minutes 65.5%, tokens 178.2%; tokens ran 0.10-0.68 of expected on 16 of 17 measured tasks, only sweep-guard went over (1.07). |
+| Interrogate verdicts V-A..V-I amended the design after the gate and all A1-A4, Q1, Q2, V-A..V-I were delivered; scope audit found AC evidence for all. | 6 of 23 tasks have no expected-vs-actual data (not recorded) and no task has post-delivery points, so MdAPE points is unmeasured. |
+| Phase-5 review added two real tasks: sweep-guard (security: sweep trusted frontmatter branch, could delete main) and close-entry-docs (merge.py bypassed `ticket.py close` gates). | sweep-guard round-cap and the fork-point-diffs / forward-merge-via-epic gate-repeats were verifier or flag false positives (`--prev-head unknown` crash; plan-execute.js:2115 state-describing comment), each needing an accepted ruling (rulings.json). |
+| Red evidence was real on many tasks (slug-collision-guard `-k clashing`, epic-close-sweep `-k dry_run`, merge-target-worktree `'ep-t2' == ''`). | No red evidence for epic-base-wiring, docs-worktree-refs, builtin-worktree-guard, sweep-guard in the task file; builtin-worktree-guard tests were never seen red. |
+| Cleanup was safe: 16 pre-rebase trees and 29 branches removed only after a cherry and subject check showed every commit on main. | Full-suite verify hit the 600 s Bash cap (exit 144) in land-outcomes run 2; verifies were narrowed to component suites (5b82386), trading per-task cross-component coverage. |
+| | Rebase landings left duplicates (`ticket_names` in slug-collision-guard-2, `LEGACY_SEP` found by scope audit) and landing runs failed twice (epic-close-command lock deadlock, builtin-worktree-guard 1 failed 423 passed). |
 
 ## Improvements
 
-Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+- Code:
+  - plugins/workbench/skills/start-development/scripts/ticket.py: `branch` frontmatter is not validated; docs-flow-phases.md carries `branch: HEAD` while the other 22 tasks name a ref. A lint rejecting non-ref values would catch it.
+  - plugins/workbench/workflows/plan-execute.js:2115 (and run-handback.md:112): the parking-flag scan matches state-describing text ("Blocked from release"); needs an allowlist case plus test.
+  - verify-task.py: crashes with exit 2 on `--prev-head unknown` and `--tdd-revert` can leave files reverted; needs a test in its suite.
+  - epic-close-command: `close` passes `suites=False` to merge_back, which the spec's call omitted (implementer judgement, never ruled).
+- Delivered differently:
+  - Task `branch` frontmatter points at `-landed` or `-2` marker refs, not the original task branches (commit 0a93b10), because the installed ticket.py checks ancestry only.
+  - Verifies were narrowed from full suite to component suites (5b82386) after the 600 s cap; the plan assumed the full suite per task.
+  - 2 tasks (sweep-guard, close-entry-docs) were added after phase 5 instead of being in the 21 planned.
+  - forwardMerged was empty in all seven returns: no forward-merge fix reached a dependent through the workflow.
+- Tech debt:
+  - Unverified live paths (cannotVerify): land agent relaying `baseBefore` as `base`, merger resolving real re-conflicts, close against a real multi-repo component workbench (one component-mode test only); clear by a live run on the next epic.
+  - Installed ticket.py predates merge-contained-check, so move done relies on ancestry only until a version bump is checked.
+  - Nothing pushed; publishing docs/plans undecided (user call).
+- Workflow:
+  - recurring (housekeeping-rules-estimates): points, expected and actual figures are missing again, here for post-delivery points on all 23 tasks and for 6 tasks' actuals; migrated epics should backfill them (`actuals --backfill`) and phase 7 should record post-delivery points so MdAPE points is not "not recorded".
+  - recurring (housekeeping-rules-estimates: implementer reports and verification claims not trusted, false greens): tasks again shipped with no red evidence or hand-substituted verification (sweep-guard, builtin-worktree-guard); gate task completion in plan-execute on a non-empty `tests.red` or a named exception, and have the reviewer rerun the check.
+  - Estimates ran far high on tokens (MdAPE 178.2%) and minutes (65.5%) for infrastructure tasks that reuse existing helpers; calibrate the estimate table against the Deltas of this and the prior epic. One-off, retro table only otherwise.
+  - Gate-repeat and round-cap escalations from tool false positives cost accepted rulings thrice; make the verifier tolerate `--prev-head unknown` before the next epic.
