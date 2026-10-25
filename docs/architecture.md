@@ -3,7 +3,7 @@
 ## Components
 
 ```
-agents-schedule-component/
+claude-code-tatara/
   code/
     claude-code-wrapper/  (python)
     any-mcp/  (python)
