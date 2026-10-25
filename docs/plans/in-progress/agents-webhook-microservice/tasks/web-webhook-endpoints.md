@@ -1,6 +1,6 @@
 ---
 title: web webhook endpoints
-status: todo
+status: in-progress
 repo: agents-web
 value: "webhook URLs are created, shown with their credentials once, rotated and deleted from the UI"
 files: [src/webhooks/EndpointsList.tsx, src/webhooks/CreateEndpointDialog.tsx, src/webhooks/CredentialsDialog.tsx, src/webhooks/WebhooksPage.tsx, src/webhooks/Endpoints.test.tsx]
@@ -49,17 +49,20 @@ Webhook endpoints in the UI (design D7, D11, D18; re-plan 2026-10-25: the entry 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `web-webhook-client` and `trigger-ui-page-pattern` (`PresetSelect`, `FormError`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Webhooks page lists endpoints and creates, rotates and deletes them, showing the URL and credentials once.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/webhooks/Endpoints.test.tsx`; run `npx vitest run src/webhooks/Endpoints.test.tsx`: fail.
+- Green: the three components and the page section; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `PresetSelect` and `FormError` from `src/triggers`.
+- Never keep the password in component state after the credentials dialog closes, and never in the list.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
