@@ -1,6 +1,6 @@
 ---
 title: Stamp actuals
-status: in-progress
+status: done
 repo: workbench
 value: "Marking a task done records its measured minutes, tokens and post-delivery points with no arithmetic by the orchestrator"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/task_cmd.py, plugins/workbench/skills/start-development/tests/test_ticket_task_status.py, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py, plugins/workbench/skills/epic-run/SKILL.md, plugins/workbench/skills/start-development/SKILL.md, plugins/workbench/skills/epic-run/tests/test_epic_run_structure.py]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [run-marker-points, agent-usage-hook, points-required]
 model: opus
 review: ""
-verified_head: ""
+verified_head: fb1bd5b
 ---
 
 # Stamp actuals
@@ -66,3 +66,5 @@ Marking a task done records its measured time and tokens and its post-delivery p
 - Fix-as-ac (brief): done epics are read-only for task edits (task_cmd.py:23); actuals are stamped at `task --status done`, before `move done`.
 - Values load as strings; write integers through dump.
 - ticket.py already imports workbench from scripts/lib (ticket.py:28-30); import agent_usage the same way.
+
+- 2026-10-25 done
