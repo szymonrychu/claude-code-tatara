@@ -1,7 +1,7 @@
 ---
 title: cluster scaling
 blockers: [hive-mode-leadership-handove]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agent-orchestrator, agents-helmfile]
 created: 2026-10-24
