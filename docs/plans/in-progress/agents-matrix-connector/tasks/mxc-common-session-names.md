@@ -1,6 +1,6 @@
 ---
 title: mxc common session names
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the connector uses the renamed orchestrator session API from agents-common v0.3.0
 files: [pyproject.toml, uv.lock, src/agents_matrix_connector, tests]
@@ -8,15 +8,15 @@ verify: "uv lock --check && uv run ruff check ."
 depends_on: [mxc-scaffold-and-cli]
 model: ""
 review: ""
-verified_head: ""
+verified_head: f136e440a270d369d80c8f0450c2a05aa90357e4
 points: 2
 expected_minutes: 8
 expected_tokens: 535073
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 158341
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 101440, review 56901"
 ---
 
 # mxc common session names
@@ -57,3 +57,5 @@ The connector pins agents-common v0.3.0 and uses only the session names; no clus
 
 - agents-common v0.3.0 is tagged on its merge commit 6dd79c8 (2026-10-25) and installs cleanly from the tag.
 - If the scaffold already pinned v0.3.0 (the tag existed when the epic started), this task only verifies AC1-AC3 and removes nothing.
+
+- 2026-10-25 done
