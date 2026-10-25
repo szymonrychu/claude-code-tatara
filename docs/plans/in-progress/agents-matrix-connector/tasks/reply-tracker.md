@@ -1,6 +1,6 @@
 ---
 title: reply tracker
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the agent's answer arrives in the Messenger chat exactly once, with typing while it works"
 files: [src/agents_matrix_connector/chunks.py, src/agents_matrix_connector/tracker.py, tests/test_tracker.py]

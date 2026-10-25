@@ -1,6 +1,6 @@
 ---
 title: api rules and settings
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: allow and deny lists and the default preset are editable over HTTP
 files: [src/agents_matrix_connector/api/rules.py, src/agents_matrix_connector/api/app.py, src/agents_matrix_connector/api/schemas.py, tests/test_api_rules.py]

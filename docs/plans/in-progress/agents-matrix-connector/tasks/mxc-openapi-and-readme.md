@@ -1,6 +1,6 @@
 ---
 title: mxc openapi and readme
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: every connector capability is documented and usable without the UI
 files: [openapi.json, README.md, src/agents_matrix_connector/api/openapi.py, tests/test_readme_api.py]

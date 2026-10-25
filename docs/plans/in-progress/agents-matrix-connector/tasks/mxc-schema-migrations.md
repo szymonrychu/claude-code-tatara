@@ -1,6 +1,6 @@
 ---
 title: mxc schema migrations
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the connector's own database holds rooms, users, rules, the message queue and replies with one writer per table"
 files: [src/agents_matrix_connector/migrations/__init__.py, src/agents_matrix_connector/migrations/0001_init.sql, tests/test_schema.py]

@@ -1,6 +1,6 @@
 ---
 title: mxc settings model
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: every connector knob is one validated MATRIX_ variable with default deny and the token only from a file
 files: [src/agents_matrix_connector/settings.py, tests/test_settings.py, README.md]

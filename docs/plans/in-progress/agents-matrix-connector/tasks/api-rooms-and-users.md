@@ -1,6 +1,6 @@
 ---
 title: api rooms and users
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the UI can list discovered rooms and users with their access state and set a room's preset"
 files: [src/agents_matrix_connector/api/__init__.py, src/agents_matrix_connector/api/app.py, src/agents_matrix_connector/api/schemas.py, src/agents_matrix_connector/api/rooms.py, tests/test_api_rooms.py]

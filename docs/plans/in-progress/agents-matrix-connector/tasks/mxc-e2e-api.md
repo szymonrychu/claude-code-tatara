@@ -1,6 +1,6 @@
 ---
 title: mxc e2e api
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the whole Messenger-to-agent loop is proven end to end against real processes before it goes live
 files: [tests/e2e/__init__.py, tests/e2e/conftest.py, tests/e2e/test_e2e_api.py, pyproject.toml]

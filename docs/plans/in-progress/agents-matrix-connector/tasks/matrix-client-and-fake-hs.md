@@ -1,6 +1,6 @@
 ---
 title: matrix client and fake hs
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the connector talks to Synapse as a bot user, and every Matrix path is testable against an in-memory homeserver"
 files: [src/agents_matrix_connector/matrix.py, src/agents_matrix_connector/fake_homeserver.py, tests/test_matrix_client.py]

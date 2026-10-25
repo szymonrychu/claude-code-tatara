@@ -1,6 +1,6 @@
 ---
 title: mxc service entrypoints
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the connector runs as a migrate step, an API and one singleton bot that refuses a wrong identity"
 files: [src/agents_matrix_connector/cli.py, src/agents_matrix_connector/bot.py, tests/test_cli.py, tests/test_bot_process.py]

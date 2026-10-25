@@ -1,6 +1,6 @@
 ---
 title: chat prompt render
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the agent gets chat messages as clearly marked untrusted data it cannot be tricked out of
 files: [src/agents_matrix_connector/prompt.py, tests/test_prompt.py]

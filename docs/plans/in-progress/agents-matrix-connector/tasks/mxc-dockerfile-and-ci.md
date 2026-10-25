@@ -1,6 +1,6 @@
 ---
 title: mxc dockerfile and ci
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: main builds publish the connector image and chart to Harbor
 files: [Dockerfile, .dockerignore, .github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci.py]

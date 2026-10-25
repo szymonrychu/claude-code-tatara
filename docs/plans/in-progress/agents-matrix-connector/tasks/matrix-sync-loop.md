@@ -1,6 +1,6 @@
 ---
 title: matrix sync loop
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "chats, users and rooms are discovered automatically and each message is judged by the rules exactly once"
 files: [src/agents_matrix_connector/sync.py, tests/test_sync.py]

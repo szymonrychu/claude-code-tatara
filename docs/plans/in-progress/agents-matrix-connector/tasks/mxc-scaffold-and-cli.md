@@ -1,6 +1,6 @@
 ---
 title: mxc scaffold and cli
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the connector has a Python project with agents-common on session names and a console script to grow
 files: [pyproject.toml, uv.lock, .mise.toml, src/agents_matrix_connector/__init__.py, src/agents_matrix_connector/cli.py, tests/conftest.py, tests/test_cli.py, README.md]

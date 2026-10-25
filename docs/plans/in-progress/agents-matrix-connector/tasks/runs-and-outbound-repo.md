@@ -1,6 +1,6 @@
 ---
 title: runs and outbound repo
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: agent runs per room and replies are stored so a restart never double-posts
 files: [src/agents_matrix_connector/db/runs.py, tests/test_runs_repo.py]

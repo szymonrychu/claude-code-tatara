@@ -1,6 +1,6 @@
 ---
 title: rules and settings repo
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "allow and deny rules, room presets and the default preset persist validated"
 files: [src/agents_matrix_connector/db/rules.py, tests/test_rules_repo.py]

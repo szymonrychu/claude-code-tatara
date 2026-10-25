@@ -1,6 +1,6 @@
 ---
 title: room and event discovery
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "bridged Messenger DMs and groups, plain Matrix rooms and bridge spaces are told apart, and only real text messages count"
 files: [src/agents_matrix_connector/discovery.py, tests/test_discovery.py]

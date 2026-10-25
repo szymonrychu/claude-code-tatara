@@ -1,6 +1,6 @@
 ---
 title: mxc chart network
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the UI API is reachable under /matrix/api on the lab host and the bot is not reachable at all
 files: [chart/agents-matrix-connector/templates/service.yaml, chart/agents-matrix-connector/templates/ingress.yaml, chart/agents-matrix-connector/values.yaml, tests/test_chart_network.py]

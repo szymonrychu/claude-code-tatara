@@ -1,6 +1,6 @@
 ---
 title: mxc chart workloads
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the connector deploys as an API and a singleton bot with its token only as a bot file mount
 files: [chart/agents-matrix-connector/Chart.yaml, chart/agents-matrix-connector/values.yaml, chart/agents-matrix-connector/templates/_helpers.tpl, chart/agents-matrix-connector/templates/_config.tpl, chart/agents-matrix-connector/templates/configmap.yaml, chart/agents-matrix-connector/templates/deployment.yaml, chart/agents-matrix-connector/templates/secret.yaml, tests/test_chart_workloads.py]

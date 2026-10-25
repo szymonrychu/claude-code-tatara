@@ -1,6 +1,6 @@
 ---
 title: dispatch worker
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: each chat talks to one agent session that keeps its context while it runs
 files: [src/agents_matrix_connector/worker.py, tests/test_worker.py]

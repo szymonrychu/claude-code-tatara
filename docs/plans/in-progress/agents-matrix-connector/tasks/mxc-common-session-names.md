@@ -1,6 +1,6 @@
 ---
 title: mxc common session names
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the connector uses the renamed orchestrator session API from agents-common v0.3.0
 files: [pyproject.toml, uv.lock, src/agents_matrix_connector, tests]

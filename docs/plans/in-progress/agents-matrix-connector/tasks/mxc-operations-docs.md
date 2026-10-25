@@ -1,6 +1,6 @@
 ---
 title: mxc operations docs
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the operator can create the bot account, connect Facebook and allow a first chat from the README"
 files: [README.md, MEMORY.md, AGENTS.md]

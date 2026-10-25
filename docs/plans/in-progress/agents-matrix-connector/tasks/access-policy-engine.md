@@ -1,6 +1,6 @@
 ---
 title: access policy engine
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "nobody reaches an agent without an explicit allow rule, and a deny rule always wins"
 files: [src/agents_matrix_connector/policy.py, tests/test_policy.py]

@@ -1,6 +1,6 @@
 ---
 title: inbound queue repository
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "incoming chat messages queue per room in order, are batched, and can be put back without loss"
 files: [src/agents_matrix_connector/db/inbound.py, tests/test_inbound_repo.py]

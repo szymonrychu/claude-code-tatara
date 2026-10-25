@@ -1,6 +1,6 @@
 ---
 title: directory repository
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "discovered rooms, users and members are stored and listable with their queue and session state"
 files: [src/agents_matrix_connector/db/__init__.py, src/agents_matrix_connector/db/directory.py, tests/test_directory_repo.py]
