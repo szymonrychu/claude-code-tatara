@@ -258,6 +258,7 @@ Cross-epic (in `docs/plans/contracts.json`): the agents-common parts, `orch-serv
 - Q5: Add a fifth status failed (create, message or turn failed, or a 1 h timeout) with a reason? [recommended: yes (D5 of the brief, D8)]
 - Q6: Is an event handled when its first turn completes, with the service never deleting clusters (cleanup via configuration-improvements autoclose)? [recommended: yes (D8)]
 - Q7: Is a mapping (source, kind, repo or any, Grafana label subset) to a preset plus optional prompt template, most specific wins, created from an event row and removable, not re-queuing past events? [recommended: yes (D7)]
+- Q8: Add an optional global author allowlist that ignores issue and comment events from other authors when set (off by default)? [recommended: yes (D4)]
 
 ## Irreversible operations in scope
 
