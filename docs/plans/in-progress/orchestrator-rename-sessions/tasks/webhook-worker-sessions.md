@@ -1,6 +1,6 @@
 ---
 title: webhook worker sessions
-status: in-progress
+status: done
 repo: agents-webhook
 value: the webhook worker starts and reuses sessions through agents-common v0.3.0
 files: [pyproject.toml, uv.lock, src/agents_webhook/worker.py, README.md, tests/]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_worker.py tests/test_worker_reuse.py && uv 
 depends_on: [webhook-session-columns, common-release-v0-3-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 58b0a18
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 6
+actual_tokens: 1561937
+actual_roles: impl 6
+actual_role_tokens: impl 1561937
 ---
 
 # webhook worker sessions
@@ -69,3 +69,5 @@ The worker creates, reuses and falls back on sessions through agents-common v0.3
 - Read worker.py for the `OrchestratorUnavailable` path and record in the notes which test pins the retry (design Assumptions).
 
 - 2026-10-25 amended: review of webhook-session-columns: remove the temporary _RunStore adapter
+
+- 2026-10-25 done: AC3 pinned by tests/test_worker.py::test_failed_create_unavailable_leaves_the_row_in_progress and ::test_failed_orchestrator_down_leaves_rows_then_recovers
