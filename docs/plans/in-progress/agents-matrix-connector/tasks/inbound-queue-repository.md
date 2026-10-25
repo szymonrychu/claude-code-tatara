@@ -1,6 +1,6 @@
 ---
 title: inbound queue repository
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "incoming chat messages queue per room in order, are batched, and can be put back without loss"
 files: [src/agents_matrix_connector/db/inbound.py, tests/test_inbound_repo.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_inbound_repo.py -q && uv run ruff che
 depends_on: [directory-repository]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: a9ff63e8372f157617f74df1653f637c7d9fc2ea
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 2
+actual_tokens: 456181
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 251157, review 205024"
 ---
 
 # inbound queue repository
@@ -69,3 +69,5 @@ A burst of messages in one room is claimed as one batch; a failed delivery puts 
 ## Notes
 
 - Read `code/agents-common/src/agents_common/db/queue.py` first and use `transition` / `claim` where their shape fits; a batch claim by room may need its own guarded `UPDATE ... WHERE room_id = %s AND status = 'new' RETURNING *`.
+
+- 2026-10-25 done
