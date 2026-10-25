@@ -122,3 +122,17 @@ def test_bucket_table_sources():
     # Optional fields are carried without affecting the table.
     extra = [row(1, 10, 100000, expected_minutes=11, expected_tokens=750000, points_actual=2)]
     assert calibration.bucket_table(extra * 3)[1]["source"] == "history"
+
+
+@pytest.mark.parametrize(
+    "minutes,expected",
+    [(0, 1), (5, 1), (6, 1), (11, 1), (17, 1), (23, 2), (45, 3), (46, 5), (57, 5), (90, 8), (120, 13), (500, 13)],
+)
+def test_points_for_minutes_nearest_seed(minutes, expected):
+    assert calibration.points_for_minutes(minutes) == expected
+
+
+@pytest.mark.parametrize("bad", [-1, True, False, 1.5, "30", None])
+def test_points_for_minutes_rejects(bad):
+    with pytest.raises(ValueError):
+        calibration.points_for_minutes(bad)

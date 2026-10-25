@@ -47,6 +47,13 @@ def _int(v) -> bool:
     return isinstance(v, int) and not isinstance(v, bool)
 
 
+def points_for_minutes(minutes: int) -> int:
+    """The SEED bucket whose minutes are nearest `minutes`; ties go to the smaller bucket."""
+    if not _int(minutes) or minutes < 0:
+        raise ValueError(f"minutes must be a non-negative int, got {minutes!r}")
+    return min(POINTS, key=lambda p: (abs(SEED[p][0] - minutes), p))
+
+
 def usable(rows: list) -> list:
     """Rows with points on the scale and both actuals as non-negative ints."""
     return [
