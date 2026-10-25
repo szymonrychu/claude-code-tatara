@@ -394,7 +394,8 @@
     "file": "code/agent-orchestrator/tests/test_render.py",
     "consumers": [
       "cluster-scaling",
-      "agent-init-scripts"
+      "agent-init-scripts",
+      "configuration-improvements"
     ],
     "note": "task render-hive-gating: test_runtime_fields_change_only_statefulset_replicas, parametrised over runtime fields; init adds init_scripts; nothing rendered may depend on the live replica count"
   },
