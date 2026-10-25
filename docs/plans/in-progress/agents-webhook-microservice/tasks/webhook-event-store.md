@@ -1,6 +1,6 @@
 ---
 title: webhook event store
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "events queue FIFO per endpoint with dedup, limits and per-key order, ready for agent reuse"
 files: [src/agents_webhook/db/events.py, tests/test_event_store.py]
@@ -58,17 +58,20 @@ The event queue: recording deliveries with dedup, claiming under limits with per
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-event-queue`: `agents_webhook.db.events.{record, Recorded, claim_next, Claimed, Event, mark_update, clear_update, release, latest_run, EventStore (RunStore), list_events, get_event, in_progress}`.
+- Implements `agents_common.runs.RunStore`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Deliveries are stored per endpoint with dedup, and the worker claims them FIFO under the caps in per-key order with the prior run attached.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_event_store.py`; run `uv run pytest tests/test_event_store.py -q`: fail.
+- Green: record, then claim_next and the transitions; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Multi-writer queue table: ingest inserts and replaces `new` payloads, the worker transitions; every UPDATE carries `AND status=<expected>` (hard rule). Pattern: `code/agent-orchestrator/src/agent_orchestrator/db/queue.py` header L1-9, `_PICK` L196-209.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
