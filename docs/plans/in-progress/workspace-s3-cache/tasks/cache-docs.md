@@ -1,6 +1,6 @@
 ---
 title: cache docs
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: users and operators can read how the workspace cache behaves and is configured
 files: [README.md, MEMORY.md, tests/test_readme_api.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_readme_api.py && uv run ruff check . && uv 
 depends_on: [cache-save-on-discard, cache-chart-values]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3015bc9
 points: 1
 expected_minutes: 5
 expected_tokens: 689196
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 831047
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 686401, review 144646"
 ---
 
 # cache docs
@@ -59,3 +59,5 @@ A reader of the README can enable the cache on a preset, configure any S3 store,
 ## Notes
 
 - Match the README's existing style for settings tables and status fields (see the init scripts section).
+
+- 2026-10-26 done
