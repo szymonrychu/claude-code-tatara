@@ -1,6 +1,6 @@
 ---
 title: deploy pin orch service port
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployed orchestrator serves the service port and the preset reuse field
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -47,17 +47,19 @@ Precondition, checked first: this epic's agent-orchestrator PR (service port, do
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `orch-services-service`, `orch-service-tokens`, `preset-reuse-running-agent`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile pins the orchestrator build that serves the service port and the reuse field.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the release tests for the new sha; run them: fail.
+- Green: the pin and values; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- frontend-decoupling, cluster-scaling and configuration-improvements also pin this release; take the latest orchestrator main merge that contains this epic.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
