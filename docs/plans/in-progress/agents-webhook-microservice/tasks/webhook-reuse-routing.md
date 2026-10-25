@@ -1,6 +1,6 @@
 ---
 title: webhook reuse routing
-status: in-progress
+status: done
 repo: agents-webhook
 value: follow-up events for an item go to the agent still working on it when its preset opts in
 files: [pyproject.toml, uv.lock, src/agents_webhook/worker.py, tests/test_worker_reuse.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_worker_reuse.py tests/test_worker.py -q && uv 
 depends_on: [webhook-dispatch-worker, common-release-v0-2-0]
 model: opus
 review: full
-verified_head: ""
+verified_head: 480e053
 points: 5
 expected_minutes: 15
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 19
+actual_tokens: 3857010
+actual_roles: "impl 19, review 6"
+actual_role_tokens: "impl 3308313, review 548697"
 ---
 
 # webhook reuse routing
@@ -70,3 +70,5 @@ With a preset that opts in, every later event for the same PR, MR, issue or aler
 - The orchestrator queues messages per cluster, so a delivery during a busy turn waits there in order.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
