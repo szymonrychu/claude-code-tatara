@@ -1,6 +1,6 @@
 ---
 title: common release v0-2-0
-status: todo
+status: in-progress
 repo: agents-common
 value: the webhook and schedule services can pin the agent-reuse support by tag
 files: [pyproject.toml, uv.lock, src/agents_common/__init__.py, README.md, CHANGELOG.md, tests/test_release.py]
@@ -49,17 +49,20 @@ Release agents-common v0.2.0 with the agent-reuse support (design D19; contract 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns the v0.2.0 tag of `agents-common-lib`: `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.2.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Tag v0.2.0 exists on the agents-common main merge commit and installs; agents-webhook and later agents-schedule can pin it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: bump the expected version in `tests/test_release.py`; run `uv run pytest tests/test_release.py -q`: fails.
+- Green: version, lock, README, CHANGELOG; run the verify command.
+- Release: the orchestrator pushes the tag after the merge; quote `git ls-remote --tags origin v0.2.0` and the install output in the notes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same release path as common-release-v0-1-0; tags are never re-pointed.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
