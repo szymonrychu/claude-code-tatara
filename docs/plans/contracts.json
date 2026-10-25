@@ -824,5 +824,15 @@
       "agents-helmfile"
     ],
     "note": "tasks mxc-chart-workloads, mxc-chart-network: oci://harbor.szymonrichert.pl/charts/agents-matrix-connector (0.1.0-main.<sha7> on main); values image, postgres {url|existingSecret,existingSecretKey}, orchestrator {url, token|tokenSecret}, matrix {homeserverUrl, userId, deviceId, selfIdentities, bridgeBots, puppetPattern, accessToken|accessTokenSecret}, policy {default, groupTrigger}, limits, api.allowedCidrs, env, components {api, bot}, service, ingress {enabled, className, host, annotations, tls.secretName} at /matrix/api"
+  },
+  {
+    "name": "agents-matrix-connector-image",
+    "kind": "release",
+    "owner": "agents-matrix-connector",
+    "file": "code/agents-matrix-connector/.github/workflows/ci.yaml",
+    "consumers": [
+      "agents-helmfile"
+    ],
+    "note": "task mxc-dockerfile-and-ci: harbor.szymonrichert.pl/containers/agents-matrix-connector:<sha7>; entrypoint agents-matrix-connector {migrate, api, bot}, USER 1000"
   }
 ]
