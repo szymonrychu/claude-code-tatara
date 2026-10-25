@@ -1,6 +1,6 @@
 ---
 title: create agents-schedule repo
-status: in-progress
+status: done
 repo: superrepo
 value: "the schedule service has its own public repo with CI secrets, ready for its code, image and chart"
 files: [.gitmodules, code/agents-schedule, AGENTS.md]
@@ -8,15 +8,15 @@ verify: "git config --file .gitmodules --get submodule.agents-schedule.branch &&
 depends_on: []
 model: ""
 review: full
-verified_head: ""
+verified_head: c88a867
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 7
+actual_tokens: 329372
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 249458, review 79914"
 ---
 
 # create agents-schedule repo
@@ -71,3 +71,5 @@ Do not touch any other component.
 - `mise run component:add` refuses with staged changes in the workbench; start from a clean tree.
 - `scripts/init_engine/scaffold.py:write` writes no pyproject, Dockerfile, CI or chart; agents-schedule-microservice adds them.
 - Never echo secret values.
+
+- 2026-10-25 done
