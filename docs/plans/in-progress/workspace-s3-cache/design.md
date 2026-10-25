@@ -207,7 +207,7 @@ when the restore never finished (`restore_running`), failed before extracting (`
 timed out (`timeout`), or the cache is unavailable (`not_configured`), or the workdir does not exist
 (`no_workdir`); after `extract_failed` the save proceeds, so a corrupt archive is replaced. A failed
 save (`too_large`, `upload_failed`, `timeout`, `job_missing`, `foreign_object`, `job_create_failed`, `bad_output`: a Complete Job whose last log line is not the JSON outcome) is logged and the discard continues. The
-CLI prints its outcome as the last stdout line, one JSON object `{"outcome", "bytes", "reason"}`,
+CLI prints its outcome as the last stdout line, one JSON object `{"outcome", "bytes", "reason"}` (a save also carries `skipped_links`, the count of out-of-workdir symlinks pack skipped; orchestrator ruling 2026-10-25),
 which the reconciler reads from the log tail. (my call)
 
 ### D12: Contracts
