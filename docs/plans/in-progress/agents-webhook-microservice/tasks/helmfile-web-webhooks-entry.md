@@ -1,6 +1,6 @@
 ---
 title: helmfile web webhooks entry
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live UI shows the Webhooks page, pinned to the agents-web build that has it"
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_web_release.py -k \"not
 depends_on: [helmfile-webhook-releases, web-webhook-menu-entry]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 58f6006
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 202886
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 128351, review 74535"
 ---
 
 # helmfile web webhooks entry
@@ -59,3 +59,5 @@ After apply, the menu shows Webhooks.
 ## Notes
 
 - frontend-decoupling task deploy-pin-web created `values/agents-web/common.yaml` and `tests/test_web_release.py`; keep its tests green (the pin test name may differ: follow the file).
+
+- 2026-10-25 done
