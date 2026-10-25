@@ -65,3 +65,12 @@ The live UI is served by agents-web on `/`, the API by the orchestrator on `/api
 
 - No TDD cycle applies: this task runs an apply and writes one MEMORY.md line (doc edit exception).
 - If the pod label differs from `app.kubernetes.io/name`, use the charts' selector labels in AC3's command and say so in the notes.
+
+Orchestrator notes (2026-10-25; the orchestrator runs live applies, the classifier refuses them in subagents):
+- First apply at pin cb291df failed: `release agents-web failed, and has been uninstalled due to rollback-on-failure ... .spec.template.spec.imagePullSecrets: duplicate entries for key [name="regcred"]`; agent-orchestrator was not changed (stayed rev 13). Fixed at the root in agents-web PR #2 (chart dedupes pull secrets, db1f482) and re-pinned (75ecb0e).
+- Pre-apply `mise run diff`: agents-web Deployment, Ingress, Service, ConfigMap agents-web-config added; agent-orchestrator Ingress changed (path / -> /api); "Affected releases are: agent-orchestrator UPDATED, agents-web UPDATED". Nothing else.
+- `mise run apply`: agents-web 0.1.0-main.db1f482 deployed, agent-orchestrator 0.1.0-main.3b9926d (Ingress only). Post-apply `mise run diff`: "No affected releases".
+- `curl` https://lab.szymonrichert.pl/ -> `302 https://auth.szymonrichert.pl/realms/master/protocol/openid-connect/auth?...`; /api/v1/meta -> `302 https://auth.szymonrichert.pl/...`.
+- AC3 cookie comparison: 1 distinct line for both sidecars.
+- `mise run smoke` (after smoke fixes 14a1d94 and the id-key fix): last line `smoke: OK`.
+- User browser check (Q6): user confirmed the UI loads after login.
