@@ -1,6 +1,6 @@
 ---
 title: webhook api source allowlist
-status: todo
+status: done
 repo: agents-webhook
 value: only the SSO sidecar can reach the webhook management API
 files: [src/agents_webhook/settings.py, src/agents_webhook/api/app.py, chart/agents-webhook/values.yaml, chart/agents-webhook/templates/_config.tpl, tests/test_api_source_allowlist.py, tests/test_chart_workloads.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_api_source_allowlist.py tests/test_chart_workl
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 60c3fdc
 points: 2
 expected_minutes: 9
 expected_tokens: 538938
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 574974
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 457782, review 117192"
 ---
 
 # webhook api source allowlist
@@ -64,3 +64,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
