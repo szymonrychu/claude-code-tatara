@@ -9,6 +9,11 @@ depends_on: [estimate-fields]
 model: opus
 review: ""
 verified_head: e73b57b
+points_actual: 3
+actual_minutes: 14
+actual_tokens: 1108799
+actual_roles: "impl 10, review 4"
+actual_role_tokens: "impl 934522, review 174277"
 ---
 
 # Points required
@@ -57,5 +62,7 @@ No task can be created or pass lint without storypoints.
 - Estimate: 3 points.
 - The callers are the `"new-task"` invocations in test_ticket_overlap_ignore.py, test_ticket_check.py, test_ticket_naming.py (helper), ticket_repo_helpers.py, test_ticket_worktrees_refresh.py and test_ticket_files.py (helper). If a caller outside Files turns up, report it in `discovered`.
 - Splitting this from estimate-fields keeps each task at most 8 files; the two land in order.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
