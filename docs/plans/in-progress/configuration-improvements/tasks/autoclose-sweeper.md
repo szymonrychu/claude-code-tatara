@@ -1,6 +1,6 @@
 ---
 title: autoclose sweeper
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: a cluster closes itself after a set time through the normal discard
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/autoclose.py, src/agent_orchestrator/api/app.py, tests/test_autoclose.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_autoclose.py && uv run ruff check 
 depends_on: [spec-config-fields]
 model: ""
 review: full
-verified_head: ""
+verified_head: a95909b
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 25
+actual_tokens: 934151
+actual_roles: "impl 24, review 1"
+actual_role_tokens: "impl 850966, review 83185"
 ---
 
 # autoclose sweeper
@@ -68,3 +68,5 @@ A cluster with `autoclose_after_seconds` turns `deleting` within about 10 s of i
 ## Notes
 
 Decisions are in design.md; nothing beyond the requirement.
+
+- 2026-10-25 done
