@@ -97,7 +97,7 @@ def test_skill_describes_lean_loop():
         "README",
         "design.md",
         "project brief",
-        "id, title, value, files, depends_on, model",
+        "id, title, value, files, depends_on, model, points, expected_minutes, expected_tokens",
         "ran",
         "skipped",
         "numbered",
@@ -137,6 +137,13 @@ def test_skill_describes_lean_loop():
     low = text.lower()
     for word in SKILL_FORBIDDEN:
         assert word.lower() not in low, f"SKILL.md names {word!r}"
+
+
+def test_gate_table_shows_estimates():
+    gate = section(SKILL.read_text(), "The gate")
+    assert "points, expected_minutes, expected_tokens" in gate
+    text = " ".join(SKILL.read_text().split())
+    assert text.count("new-task --points") >= 2
 
 
 def test_phase_five_runs_review_audit_suite_in_order():

@@ -38,7 +38,7 @@ Stop and report the refusal if any fails:
 ## What comes back
 
 - `undelivered` is a finding: send it back in a fix round.
-- `discovered` becomes a new task in the same epic: `ticket.py new-task`, then lint again.
+- `discovered` becomes a new task in the same epic: `ticket.py new-task --points <n>`, then lint again.
 - `escalated` is yours to judge: sharpen the requirement (`ticket.py amend`) and run it again, or
   `workbench:interrogate` once. The epic cannot close while a task is not `done`.
 - Never implement a task yourself and never merge a tree yourself.

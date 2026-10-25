@@ -51,8 +51,10 @@ its acceptance conditions, and nothing else.
 1. Write design.md from `templates/design.md`: every decision with its
    alternatives and why, every user decision honoured.
 2. Create each task with `ticket.py new-task --epic <epic> --title ... --repo ...
-   --value ... --files ... --verify ... --depends-on ... --model ...
-   --requirement-file ... --ac-file ...`. The requirement is the user's and the
+   --value ... --files ... --verify ... --points <n> --depends-on ... --model ...
+   --requirement-file ... --ac-file ...`. `--points` is Fibonacci storypoints
+   (1, 2, 3, 5, 8, 13), your only estimate: the tool fills expected minutes and tokens
+   from calibration, so never estimate time or tokens yourself. The requirement is the user's and the
    design's words verbatim where they exist, never a paraphrase that narrows them.
 3. Acceptance conditions: each names its evidence as a `test:<file>::<name>` ref
    or a `command:<cmd>` ref. A `test:` ref only when

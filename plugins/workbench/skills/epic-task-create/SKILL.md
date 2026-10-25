@@ -6,7 +6,8 @@ description: "Create a task file inside an existing epic and lint the epic. Use 
 Thin wrapper over `ticket.py`. `<epic>` is the epic slug.
 
 1. Create the task, every required field given:
-   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py new-task --epic <epic> --title "<title>" --repo <repo> --value "<value>" --files "<files>" --verify "<command>"`
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py new-task --epic <epic> --title "<title>" --repo <repo> --value "<value>" --files "<files>" --verify "<command>" --points <n>`
+   `--points` is Fibonacci (1, 2, 3, 5, 8, 13); the tool fills expected minutes and tokens.
    Optional: `--depends-on`, `--model`, `--review`, `--requirement-file`, `--ac-file`.
 2. Lint the epic and report its output verbatim:
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py lint <epic>`

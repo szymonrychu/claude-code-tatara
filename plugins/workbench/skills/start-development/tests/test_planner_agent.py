@@ -109,3 +109,11 @@ def test_planner_discipline():
         "Never guess",
     ):
         assert s in t, s
+
+
+def test_planner_gives_points():
+    t = _text()
+    assert "--points" in t
+    for s in ("Fibonacci", "1, 2, 3, 5, 8, 13", "expected minutes and tokens"):
+        assert s in t, s
+    assert "ticket.py estimate" not in t

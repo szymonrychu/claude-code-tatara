@@ -71,7 +71,7 @@ gate. A contested or high-risk design (authz, secrets, concurrency, a rules engi
 
 One message, in this order:
 1. The epic README and design.md paths, and the project brief (what, how, why).
-2. The task table: id, title, value, files, depends_on, model.
+2. The task table: id, title, value, files, depends_on, model, points, expected_minutes, expected_tokens.
 3. The research lenses that ran and the ones skipped, with the reason.
 4. The builder check's remaining questions as one batch, numbered, each with a recommended answer, worded so that
    "yes" accepts it (`ticket.py questions` gathers the open ones of every todo epic).
@@ -99,7 +99,7 @@ continued in a fix round) runs in the background, so the session stays free to p
 4. Clean: `ticket.py task <epic> <task> --status done --verified-head <head>`. Still open after the cap: `--status
    escalated --note "<open findings>"`; go on with tasks not depending on it. After the last: phases 5-7.
 
-Rules: `undelivered` is a finding; `discovered` becomes a new task in the same epic (`ticket.py new-task`); an
+Rules: `undelivered` is a finding; `discovered` becomes a new task in the same epic (`ticket.py new-task --points <n>`); an
 escalated task is yours to judge: a sharper requirement (`ticket.py amend`) or `workbench:interrogate` once. The epic
 cannot close while a task is not `done`; never implement a task yourself, never merge a tree yourself.
 
@@ -114,7 +114,7 @@ cannot close while a task is not `done`; never implement a task yourself, never 
 5. Security: a diff touching secrets, SOPS, RBAC, ingress, privilege, CI vars, image pins or hooks gets
    `security-researcher`; Terraform or charts: `tf-planner` / `helmfile-differ` when the `workbench-infra` pack is
    enabled.
-6. Each real gap or finding becomes a new task (`ticket.py new-task`), then `ticket.py stage <epic> build` and phase
+6. Each real gap or finding becomes a new task (`ticket.py new-task --points <n>`), then `ticket.py stage <epic> build` and phase
    4; a wrong one is dropped with the reason in your notes. Clean: `ticket.py review <epic> --verdict pass
    --notes-file <notes>` (`--verdict fail` goes back to build).
 
