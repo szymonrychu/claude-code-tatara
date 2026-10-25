@@ -1,6 +1,6 @@
 ---
 title: normalize branch fields
-status: in-progress
+status: done
 repo: agents-webhook
 value: PR/MR source and target branch names become filterable event fields
 files: [src/agents_webhook/normalize.py, tests/test_normalize.py, tests/payloads.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_normalize.py -q && uv run ruff check . && uv r
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: efacbaa
 points: 2
 expected_minutes: 9
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 502921
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 426443, review 76478"
 ---
 
 # normalize branch fields
@@ -66,3 +66,5 @@ Add the PR/MR branch names to the normalized event, so endpoint filters can matc
 - GitHub: in `_github`, `item` is `payload["pull_request"]` for the three PR events; for `issue_comment`, `item` is the issue and has no `head`.
 - GitLab: in `_gitlab`, `item` is `object_attributes` for MR hooks and `payload["merge_request"]` for notes.
 - Use a small helper that returns the value only when it is a non-empty `str`.
+
+- 2026-10-25 done
