@@ -1,6 +1,6 @@
 ---
 title: api rooms and users
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the UI can list discovered rooms and users with their access state and set a room's preset"
 files: [src/agents_matrix_connector/api/__init__.py, src/agents_matrix_connector/api/app.py, src/agents_matrix_connector/api/schemas.py, src/agents_matrix_connector/api/rooms.py, tests/test_api_rooms.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_rooms.py -q && uv run ruff check 
 depends_on: [mxc-settings-model, rules-and-settings-repo, inbound-queue-repository, runs-and-outbound-repo]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 93f1c0c211a9c8b950e9776c2657d65f5a44729a
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 1146154
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 959387, review 186767"
 ---
 
 # api rooms and users
@@ -68,3 +68,5 @@ The UI can list discovered rooms with their access state, open one with members 
 
 - Follow `code/agents-webhook/src/agents_webhook/api/app.py` for the CIDR middleware and error handlers.
 - Room ids in paths contain `!` and `:`; FastAPI path params accept them URL-encoded.
+
+- 2026-10-25 done
