@@ -182,16 +182,15 @@ directly, in the main checkout.
 
 - `migrate`: `ticket.py migrate <epic> | --all [--dry-run] [--transcripts DIR] [--logs DIR]` maps
   old-scheme task files to the eighteen template keys. `--all` covers every epic under todo,
-  in-progress and done. Mapping: the template keys in template order, every other key dropped (the
-  legacy `estimate`, `estimate_by`, `actual`, `worktree`, `branch`, `run`, `provides`, `owns`, `uses`,
-  `process_gaps`, `acs_for_audit`, `fork_point` and any stray key), the body unchanged; `points` kept
-  when set, else from a whole-number legacy `estimate` in minutes (`calibration.points_for_minutes`,
-  the estimate kept as `expected_minutes`), else from a Notes line `Estimate: N points`, empty
-  expected values filled from `calibration.SEED`; a task carrying a legacy key takes its actuals from
-  a whole-number legacy `actual` and from agent records covering both impl and review (a one-role
-  match prints `partial:` and gives nothing), its legacy `actual_roles` dropped. Records are read from
-  `--logs` (default: the main checkout's `.logs`), backfilled from `--transcripts` (default: the
-  project's dir under the harness home).
+  in-progress and done. Mapping: the template keys in template order, every key outside the template
+  dropped (the old scheme's minutes and run-bookkeeping keys and any stray key), the body unchanged;
+  `points` kept when set, else from the old whole-number minutes guess
+  (`calibration.points_for_minutes`, those minutes kept as `expected_minutes`), else from a Notes line
+  `Estimate: N points`, empty expected values filled from `calibration.SEED`; a task carrying an old
+  key takes its actuals from its old whole-number `actual` minutes and from agent records covering
+  both impl and review (a one-role match prints `partial:` and gives nothing), its old `actual_roles`
+  dropped. Records are read from `--logs` (default: the main checkout's `.logs`), backfilled from
+  `--transcripts` (default: the project's dir under the harness home).
 - Validation: every mapped task runs through the lint number checks first; any problem exits 1, lists
   every problem and writes nothing in any epic.
 - `--dry-run` prints each task it would change (old and new values of the changed keys, the dropped
