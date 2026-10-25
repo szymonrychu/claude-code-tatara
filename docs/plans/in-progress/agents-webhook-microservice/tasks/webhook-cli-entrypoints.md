@@ -1,6 +1,6 @@
 ---
 title: webhook cli entrypoints
-status: in-progress
+status: done
 repo: agents-webhook
 value: each of the three processes and the migration runs from one image as its own command
 files: [src/agents_webhook/cli.py, tests/test_cli.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_cli.py -q && uv run ruff check . && uv run ruf
 depends_on: [webhook-ingest-http, webhook-dispatch-worker, webhook-ui-api]
 model: ""
 review: ""
-verified_head: ""
+verified_head: f72f27e
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 478720
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 398110, review 80610"
 ---
 
 # webhook cli entrypoints
@@ -63,3 +63,5 @@ The image runs every process by subcommand.
 Discovered by webhook-ingest-http (2026-10-25): the `ingest` command must run uvicorn with `access_log=False` (or a filter that drops the path), because the access log would print the endpoint suffix of failed requests. Deliver it in this task with a test.
 
 Security review of ingest (2026-10-25): also set uvicorn `timeout_keep_alive` (e.g. 5 s) and h11 limits (max incomplete event size) for the ingest server, and a request body read timeout, so slow bodies cannot hold connections; test the server config.
+
+- 2026-10-25 done
