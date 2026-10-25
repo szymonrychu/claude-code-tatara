@@ -26,3 +26,7 @@
 	path = code/agents-webhook
 	url = https://github.com/szymonrychu/agents-webhook
 	branch = main
+[submodule "agents-schedule"]
+	path = code/agents-schedule
+	url = https://github.com/szymonrychu/agents-schedule
+	branch = main

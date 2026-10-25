@@ -3,7 +3,7 @@
 ## Components
 
 ```
-claude-code-tatara/
+agents-schedule-component/
   code/
     claude-code-wrapper/  (python)
     any-mcp/  (python)
@@ -12,6 +12,7 @@ claude-code-tatara/
     agents-web/  (typescript)
     agents-common/  (python)
     agents-webhook/  (python)
+    agents-schedule/  (python)
 ```
 
 - `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks
@@ -21,3 +22,4 @@ claude-code-tatara/
 - `code/agents-web` (typescript): Web UI of the agents system (React/MUI SPA served as static files by nginx-unprivileged), reaching each backend (agent-orchestrator first) through its documented HTTP API on one host
 - `code/agents-common` (python): Python library shared by the trigger services (agents-webhook, agents-schedule): settings, Postgres pool, migrator, guarded queue transitions, orchestrator client, run tracker
 - `code/agents-webhook` (python): Python microservice with its own Postgres database that receives GitHub/GitLab PR, issue and comment webhooks and Grafana alerts, queues them FIFO with dedup and limits, and starts agent clusters from presets through the orchestrator API
+- `code/agents-schedule` (python): Python microservice mapping cron schedules to presets; fires agent clusters through the orchestrator API; own database

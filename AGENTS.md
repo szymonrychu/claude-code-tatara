@@ -36,6 +36,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 | agents-web | typescript | Web UI of the agents system (React/MUI SPA served as static files by nginx-unprivileged), reaching each backend (agent-orchestrator first) through its documented HTTP API on one host | `mise run --cd code/agents-web test` |
 | agents-common | python | Python library shared by the trigger services (agents-webhook, agents-schedule): settings, Postgres pool, migrator, guarded queue transitions, orchestrator client, run tracker | `mise run --cd code/agents-common test` |
 | agents-webhook | python | Python microservice with its own Postgres database that receives GitHub/GitLab PR, issue and comment webhooks and Grafana alerts, queues them FIFO with dedup and limits, and starts agent clusters from presets through the orchestrator API | `mise run --cd code/agents-webhook test` |
+| agents-schedule | python | Python microservice mapping cron schedules to presets; fires agent clusters through the orchestrator API; own database | `mise run --cd code/agents-schedule test` |
 
 ## Component hard rules
 
