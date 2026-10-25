@@ -1,6 +1,6 @@
 ---
 title: cache chart values
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "operators configure any S3 store through chart values, with credentials on the reconciler only"
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, chart/agents-orchestrator/README.md, chart/agents-orchestrator/ci/lint-values.yaml, tests/test_chart_cache.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_chart_cache.py tests/test_chart_config.py t
 depends_on: [cache-config]
 model: opus
 review: ""
-verified_head: ""
+verified_head: d4d5d57
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 940114
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 848063, review 92051"
 ---
 
 # cache chart values
@@ -67,3 +67,5 @@ Chart `chart/agents-orchestrator`:
 
 - The reconciler-only block already exists in `templates/deployment.yaml` (`if eq $component "reconciler"`).
 - The image default follows the chart's existing image tag helper (appVersion when `image.tag` is empty).
+
+- 2026-10-25 done
