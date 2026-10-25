@@ -1,6 +1,6 @@
 ---
 title: helmfile schedule release
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the schedule service is declared in the agents namespace, wired to its database, the orchestrator and the shared host"
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, tests/test_schedule_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_schedule_relea
 depends_on: [helmfile-schedule-db-release, schedule-service-token]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 0c4b1f67a5709610556cd185e2efe06ac658865b
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 19
+actual_tokens: 875939
+actual_roles: "impl 14, review 6"
+actual_role_tokens: "impl 550031, review 325908"
 ---
 
 # helmfile schedule release
@@ -64,3 +64,5 @@ The schedule service is declared behind the shared SSO under `/schedules` on the
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
 - Split 2026-10-25: depends_on `chart-ingress-and-test-hook` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.
+
+- 2026-10-26 done
