@@ -1,6 +1,6 @@
 ---
 title: Epic migrate skill
-status: in-progress
+status: done
 repo: workbench
 value: "One skill walks the whole migration: dry run, migrate, retros, and the bucket table"
 files: [plugins/workbench/skills/epic-migrate/SKILL.md, plugins/workbench/skills/start-development/tests/test_epic_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/README.md, plugins/workbench/skills/start-development/SKILL.md]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [migrate-command, retro-writer-record-input]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3c5c5a5
 points: 3
 expected_minutes: 34
 expected_tokens: 2250000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 9
+actual_tokens: 273135
+actual_roles: "impl 7, review 3"
+actual_role_tokens: "impl 185992, review 87143"
 ---
 
 # Epic migrate skill
@@ -93,3 +93,5 @@ One skill walks a workbench from the old scheme to the new one with the right co
 - Plugin README: add `epic-migrate` to the skills block (README.md around line 160, the `epic-move, epic-worktrees-remove` row or a row of its own).
 - Retro lesson (housekeeping-rules-estimates): reviewers run the documented command for any README or skill snippet; AC4 makes the flags mechanical, and the reviewer also runs `ticket.py migrate --all --dry-run --root <a fixture plans dir>`.
 - Until the epic merges and /reload-plugins runs, `workbench:retro-writer` is not loaded; the skill text still names it (it is the steady-state flow).
+
+- 2026-10-25 done
