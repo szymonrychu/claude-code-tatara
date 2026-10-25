@@ -1,7 +1,7 @@
 ---
 title: frontend decoupling
 blockers: [agent-init-scripts, cluster-scaling, agents-web-component]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-web, agent-orchestrator, agents-helmfile]
 created: 2026-10-25
