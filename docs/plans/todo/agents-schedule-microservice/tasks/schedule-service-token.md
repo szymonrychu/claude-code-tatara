@@ -25,9 +25,9 @@ actual_role_tokens: ""
 
 Secrets for agents-schedule (design D14; approval A6), the same shape as agents-webhook task helmfile-service-token (contracts `orch-service-tokens`, `orch-services-service`). Paths are in code/agents-helmfile.
 
-- `scripts/bootstrap-secrets.sh` gains `bootstrap_schedule`: when neither `values/agents-schedule/default.secrets.yaml` nor `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml` exists, generate one service token (`openssl rand -hex 32`) and write, SOPS-encrypted through the existing `encrypt_to`:
+- `scripts/bootstrap-secrets.sh` gains `bootstrap_schedule`: when neither `values/agents-schedule/default.secrets.yaml` nor `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml` exists, generate one service token (`openssl rand -hex 32`) and write, SOPS-encrypted through the existing `encrypt_to`:
   - `values/agents-schedule/default.secrets.yaml`: `orchestrator.token` (chart values shape of task helm-chart).
-  - `values/agent-orchestrator/service-token-agents-schedule.secrets.yaml`: `serviceApi.tokenHashes.agents-schedule: <sha256 hex of the token>` (orchestrator chart values of `orch-services-service`).
+  - `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml`: `serviceApi.tokenHashes.agents-schedule: <sha256 hex of the token>` (orchestrator chart values of `orch-services-service`).
   When both exist it does nothing; when exactly one exists it exits 1 naming both (never rotates, never half-writes). Values only travel through pipes, as the script's header requires.
 - `.sops.yaml` covers the new paths if its rules do not already.
 - `tests/test_secrets.py`: the new files are encrypted with the expected keys; the script is idempotent; one-of-two existing exits 1; the hash in the orchestrator file is the sha256 of the token in the schedule file (checked in-process the way the existing tests read encrypted files, never printed); no value printed.
@@ -64,3 +64,5 @@ One bootstrap run gives the schedule service a working orchestrator credential.
 ## Notes
 
 - The webhook epic adds its own pair of files the same way; the two stay independent. The orchestrator release picks up `service-token-*.secrets.yaml` per `orch-services-service`.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
