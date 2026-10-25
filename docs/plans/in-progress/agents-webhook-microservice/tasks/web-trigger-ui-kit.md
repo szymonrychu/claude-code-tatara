@@ -1,6 +1,6 @@
 ---
 title: web trigger ui kit
-status: in-progress
+status: done
 repo: agents-web
 value: "trigger pages (webhooks now, schedules next) share one status chip, preset picker, polling hook and form error display"
 files: [src/triggers/index.ts, src/triggers/RunStatusChip.tsx, src/triggers/PresetSelect.tsx, src/triggers/usePoll.ts, src/triggers/FormError.tsx, src/triggers/triggers.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/triggers/triggers.tes
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: ac2d642
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 413290
+actual_roles: impl 2
+actual_role_tokens: impl 413290
 ---
 
 # web trigger ui kit
@@ -64,3 +64,5 @@ Trigger pages reuse four tested building blocks.
 ## Notes
 
 - Uses the orchestrator client and backend base path set up by frontend-decoupling (contracts `agents-web-backends-config`, `agents-web-backend-registry`).
+
+- 2026-10-25 done
