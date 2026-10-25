@@ -1,6 +1,6 @@
 ---
 title: webhook docs sessions
-status: in-progress
+status: done
 repo: agents-webhook
 value: "agents-webhook's docs and chart say session and agents-orchestrator, guarded"
 files: [README.md, AGENTS.md, MEMORY.md, chart/agents-webhook/values.yaml, chart/agents-webhook/ci/lint-values.yaml, tests/test_nomenclature.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_nomenclature.py tests/test_readme_config.py
 depends_on: [webhook-worker-sessions]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8e579ba
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 1099459
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 819730, review 279729"
 ---
 
 # webhook docs sessions
@@ -62,3 +62,5 @@ Every tracked agents-webhook file passes the guard; MEMORY.md records the rename
 ## Notes
 
 - Allowlist only Kubernetes/CNPG phrases (`db-cluster`, `cluster-issuer`, `in-cluster`, `cluster node IPs`) and dated history, each with a comment.
+
+- 2026-10-25 done
