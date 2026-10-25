@@ -1,6 +1,6 @@
 ---
 title: deploy schedule
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace runs the schedule service and the UI with its Schedules entry
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, values/agents-web/common.yaml, tests/test_schedule_release.py, tests/test_web_release.py]

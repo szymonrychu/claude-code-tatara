@@ -1,6 +1,6 @@
 ---
 title: web config schedules backend
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployed UI lists the schedule backend so its menu entry appears
 files: [values/agents-web/common.yaml, tests/test_web_release.py]

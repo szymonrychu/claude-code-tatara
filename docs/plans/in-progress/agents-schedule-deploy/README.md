@@ -2,7 +2,7 @@
 title: agents-schedule deploy
 blockers: [orchestrator-rename-sessions, agents-schedule-microservice]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-helmfile, agents-web]
 created: 2026-10-25
 ---

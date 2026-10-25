@@ -1,6 +1,6 @@
 ---
 title: helmfile schedule db release
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the schedule service gets its own CNPG database in the agents namespace
 files: [helmfile.yaml.gotmpl, values/agents-schedule-db/common.yaml, tests/test_schedule_db_release.py]

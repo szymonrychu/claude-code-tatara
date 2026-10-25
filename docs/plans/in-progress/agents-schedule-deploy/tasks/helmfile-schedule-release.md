@@ -1,6 +1,6 @@
 ---
 title: helmfile schedule release
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the schedule service is declared in the agents namespace, wired to its database, the orchestrator and the shared host"
 files: [helmfile.yaml.gotmpl, values/agents-schedule/common.yaml, tests/test_schedule_release.py]

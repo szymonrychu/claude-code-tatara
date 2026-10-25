@@ -1,6 +1,6 @@
 ---
 title: web schedules menu entry
-status: todo
+status: in-progress
 repo: agents-web
 value: Schedules appears in the hamburger menu below Webhooks when the schedule backend is configured
 files: [src/schedules/menu.ts, src/backends/registry.ts, src/backends/registry.test.ts]

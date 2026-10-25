@@ -1,6 +1,6 @@
 ---
 title: schedule service token
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the schedule service authenticates to the orchestrator with its own token, bootstrapped like the other secrets"
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-schedule/default.secrets.yaml, values/agents-orchestrator/service-token-agents-schedule.secrets.yaml, .sops.yaml]

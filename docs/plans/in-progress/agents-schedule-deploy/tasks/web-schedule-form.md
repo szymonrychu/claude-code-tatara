@@ -1,6 +1,6 @@
 ---
 title: web schedule form
-status: todo
+status: in-progress
 repo: agents-web
 value: a user creates or edits a schedule and sees its next fire times before saving
 files: [src/schedules/ScheduleForm.tsx, src/schedules/ScheduleForm.test.tsx]

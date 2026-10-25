@@ -1,6 +1,6 @@
 ---
 title: web schedules page
-status: todo
+status: in-progress
 repo: agents-web
 value: "a user manages every schedule from one page: enable, disable, run now, edit, delete"
 files: [src/schedules/SchedulesPage.tsx, src/schedules/SchedulesPage.test.tsx]

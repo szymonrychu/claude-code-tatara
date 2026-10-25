@@ -1,6 +1,6 @@
 ---
 title: smoke schedule check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live smoke proves a schedule can be created, previewed and run against the real orchestrator"
 files: [scripts/smoke.sh, tests/test_smoke_script.py]

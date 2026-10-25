@@ -1,6 +1,6 @@
 ---
 title: web schedule runs list
-status: todo
+status: in-progress
 repo: agents-web
 value: "a user sees each schedule's recent runs, their status and a link to the session"
 files: [src/schedules/ScheduleRuns.tsx, src/schedules/ScheduleRuns.test.tsx]

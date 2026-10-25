@@ -1,6 +1,6 @@
 ---
 title: web schedules api client
-status: todo
+status: in-progress
 repo: agents-web
 value: the UI talks to the schedule API with generated types through one client module
 files: [openapi/schedules.json, openapi/schedules.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/schedules-schema.d.ts, src/schedules/api.ts, src/schedules/api.test.ts]
