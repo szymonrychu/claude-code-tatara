@@ -127,6 +127,10 @@ def test_retro_writer_agent():
         "review rounds",
         "verification tail",
         "ticket.py retro --history",
+        "record.md",
+        "no orchestrator notes",
+        "ticket.py migrate",
+        "task files' Notes stand in for them",
         "ticket.py path <epic> retro",
         "the only file you write",
         "<!-- retro:generated:begin -->",
@@ -157,6 +161,9 @@ def test_retro_reference():
         "planner",
         "Research inputs",
         "Bootstrap",
+        "epic-migrate",
+        "ticket.py migrate",
+        "retro-writer fills it from record.md",
     ):
         assert needle in flat, needle
 

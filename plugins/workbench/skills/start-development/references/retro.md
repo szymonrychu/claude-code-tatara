@@ -36,3 +36,6 @@ human-owned.
 Epics closed before RETRO.md existed have none, so the history starts empty and stays short for the
 first epics. With no history, retro-writer proposes from this epic's evidence alone, marks nothing
 `recurring`, and says "no history yet" under the workflow proposals.
+
+Epics closed before RETRO.md existed get one through the epic-migrate skill: `ticket.py migrate` writes
+the generated block, retro-writer fills it from record.md, and `ticket.py retro <epic>` commits it.

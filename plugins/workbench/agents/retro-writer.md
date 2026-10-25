@@ -17,6 +17,9 @@ Terse and factual. Plain hyphens and straight quotes, ASCII only. No narration.
 - The epic slug. Its README, design.md and task files are in the epic dir.
 - The orchestrator's notes: per task the review rounds and the reviewer's verification tail,
   and every ruling (escalation judged, finding dropped, gap placed) with what was decided.
+- The epic's record.md (read it with Read). For an epic with no orchestrator notes (one migrated by
+  `ticket.py migrate`), record.md and the task files' Notes stand in for them: the review rounds,
+  verification tails and rulings are read from there.
 - The history: `ticket.py retro --history` prints, as JSON (`epic`, `retro`, `improvements`), the
   Retro and Improvements sections of the most recently done epics. Run it yourself when the
   prompt does not carry it, and drop this epic's own entry from it.
