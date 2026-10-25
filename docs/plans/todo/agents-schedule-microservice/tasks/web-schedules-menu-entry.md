@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Register the Schedules entry (design D12; approval A4, gate Q7) in the frontend-decoupling backend registry (contract `agents-web-backend-registry`, `src/backends/registry.ts`; order rule `web-settings-menu-order` of configuration-improvements): `src/schedules/menu.ts` exports `schedulesMenu: MenuEntry = {id: 'schedules', label: 'Schedules', order: 30, backend: 'schedules', render: (onBack) => createElement(SchedulesPage, {onBack})}` (a `.ts` file, so no JSX), and `src/backends/registry.ts` sets `BACKEND_MENUS.schedules = [schedulesMenu]` (the agents-webhook web-webhook-menu-entry shape). `src/App.test.tsx` stays green. Order 30 is the slot the registry reserves for Schedules, between Webhooks (20) and Presets (40), giving Clusters, Webhooks, Schedules, Presets (gate Q7). The entry appears only when `config.json` lists the `schedules` backend.
+Register the Schedules entry (design D12; approval A4, gate Q7) in the frontend-decoupling backend registry (contract `agents-web-backend-registry`, `src/backends/registry.ts`; order rule `web-settings-menu-order` of configuration-improvements): `src/schedules/menu.ts` exports `schedulesMenu: MenuEntry = {id: 'schedules', label: 'Schedules', order: 30, backend: 'schedules', render: (onBack) => createElement(SchedulesPage, {onBack})}` (a `.ts` file, so no JSX), and `src/backends/registry.ts` sets `BACKEND_MENUS.schedules = [schedulesMenu]` (the agents-webhook web-webhook-menu-entry shape). `src/App.test.tsx` stays green. Order 30 is the slot the registry reserves for Schedules, between Webhooks (20) and Presets (40), giving Sessions, Webhooks, Schedules, Presets (gate Q7). The entry appears only when `config.json` lists the `schedules` backend.
 
 ## Acceptance conditions
 
@@ -54,3 +54,5 @@ The schedules UI lives in the hamburger menu.
 ## Notes
 
 - `SchedulesPage` accepts `onBack` per the registry's `render(onBack)`.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
