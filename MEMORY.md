@@ -21,3 +21,4 @@ Dated entries, newest last. Supersede an entry rather than deleting it. One line
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common; via component add (new scaffold).
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common, agents-webhook; via component add (new scaffold).
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common, agents-webhook, agents-schedule; via component add (new scaffold).
+2026-10-25: user re-scoped agents-webhook-microservice to per-webhook endpoints (https://<base>/webhook/<suffix>, one type + one preset per endpoint, basic auth with generated or user-set credentials, unique per assignment, the only ingest path); replaces the per-source /webhooks/<source> HMAC/token ingest and the mapping table of the original plan; re-planned in place.
