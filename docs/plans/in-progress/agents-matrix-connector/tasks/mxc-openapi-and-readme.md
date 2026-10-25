@@ -1,6 +1,6 @@
 ---
 title: mxc openapi and readme
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: every connector capability is documented and usable without the UI
 files: [openapi.json, README.md, src/agents_matrix_connector/api/openapi.py, tests/test_readme_api.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py -q && uv run ruff check
 depends_on: [api-rules-and-settings, matrix-sync-loop, dispatch-worker, reply-tracker]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3af4f6e6dcb5b990caf06e8a3fc9a1b2a7f62547
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 1311502
+actual_roles: "impl 4, review 3"
+actual_role_tokens: "impl 1048585, review 262917"
 ---
 
 # mxc openapi and readme
@@ -62,3 +62,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 - Follow `code/agents-webhook/src/agents_webhook/api/openapi.py` and `tests/test_readme_api.py`.
 - Reason constants: import them from their modules in the test rather than listing strings twice.
+
+- 2026-10-25 done
