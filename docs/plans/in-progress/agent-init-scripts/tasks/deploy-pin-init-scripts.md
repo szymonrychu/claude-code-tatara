@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-deploy-pin-init-scripts/agents-helmfile
+branch: agent-init-scripts-deploy-pin-init-scripts
 verified_head: ""
 run: ""
 provides: []

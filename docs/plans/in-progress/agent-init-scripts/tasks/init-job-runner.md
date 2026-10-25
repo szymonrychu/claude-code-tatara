@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: full
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-job-runner/agent-orchestrator
+branch: agent-init-scripts-init-job-runner
 verified_head: ""
 run: ""
 provides: []
