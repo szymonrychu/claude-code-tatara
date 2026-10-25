@@ -1,6 +1,6 @@
 ---
 title: sync limited timeline backfill
-status: todo
+status: done
 repo: agents-matrix-connector
 value: no message is lost when a sync timeline arrives limited after downtime
 files: [src/agents_matrix_connector/matrix.py, src/agents_matrix_connector/fake_homeserver.py, src/agents_matrix_connector/sync.py, src/agents_matrix_connector/settings.py, tests/test_sync.py, tests/test_matrix_client.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_sync.py tests/test_matrix_client.py -
 depends_on: [matrix-sync-loop]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 3a439783a14591b9ec93cae49b255f616ebbc371
 points: 3
 expected_minutes: 6
 expected_tokens: 849076
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 1427934
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 1260451, review 167483"
 ---
 
 # sync limited timeline backfill
@@ -65,3 +65,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
