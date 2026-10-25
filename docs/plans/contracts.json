@@ -521,5 +521,17 @@
       "agents-schedule-microservice"
     ],
     "note": "task web-runtime-config: GET /config.json {backends: [{id ^[a-z][a-z0-9-]*$ unique, label, basePath relative /..., no trailing /}]}, orchestrator required; chart value backends renders it (task web-chart-config-ingress); a backend's UI appears only when listed"
+  },
+  {
+    "name": "agents-web-backend-registry",
+    "kind": "interface",
+    "owner": "frontend-decoupling",
+    "file": "code/agents-web/src/backends/registry.ts",
+    "consumers": [
+      "configuration-improvements",
+      "agents-webhook-microservice",
+      "agents-schedule-microservice"
+    ],
+    "note": "task web-backend-menu: BACKEND_MENUS[backendId] = MenuEntry {id, label, order, backend, render(onBack)}; menuEntries(config) sorted by order; order slots 10 Clusters (configuration-improvements), 20 Webhooks, 30 Presets, 40 Schedules; feeds SessionsMenu settingsCategories {id, label, onOpen}"
   }
 ]
