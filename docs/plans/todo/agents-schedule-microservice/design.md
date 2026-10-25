@@ -238,6 +238,7 @@ Cross-epic, registered in `docs/plans/contracts.json` by this epic: `agents-sche
 
 none
 - Q1: Cron syntax: exactly 5 fields, each schedule with an IANA timezone defaulting to Europe/Warsaw, and the next 3 fire times shown? [recommended: yes]
+- Q2: Missed runs while the service was down collapse into one catch-up run for the latest missed fire time; older ones are skipped and logged? [recommended: yes]
 
 ## Irreversible operations in scope
 
