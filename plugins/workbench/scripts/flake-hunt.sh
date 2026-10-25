@@ -6,7 +6,9 @@
 # <parallel> at once (default 1), each with its own RUN_TESTS_LOG_DIR under one
 # hunt dir: <main checkout>/.logs/flake-hunt/<UTC timestamp>-<pid>/, else a
 # mktemp dir under TMPDIR when no main checkout is found. Prints run <i>: PASS|FAIL as each run finishes, then fails: k/<runs>
-# and the kept log paths. Exit 1 when any run failed (the hunt dir is kept),
+# and the kept log paths. Logs go to .logs/flake-hunt; each run's suite temp
+# dir is a mktemp dir outside any git checkout (see run-tests.sh), kept by a
+# failing run-tests.sh and not listed here. Exit 1 when any run failed (the hunt dir is kept),
 # else 0 (the hunt dir is removed).
 set -uo pipefail
 

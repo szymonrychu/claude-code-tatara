@@ -14,9 +14,14 @@
 # A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default:
 # <main checkout>/.logs/run-tests/<UTC timestamp>-<pid>/, else a fresh mktemp dir
 # under TMPDIR when no main checkout is found) as <component>.log, or
-# <component>-bats.log, and its path is printed after the 15-line tail. Every pytest process gets a
-# private --basetemp under that dir, so parallel runs never share pytest's
-# per-user numbered basetemp. The dir is removed when everything passes.
+# <component>-bats.log, and its path is printed after the 15-line tail.
+# The suites' scratch space is a separate mktemp dir under TMPDIR, outside any
+# git checkout, so a fake workbench built in a suite's temp dir cannot be mistaken
+# for a repo nested in the real one. Every pytest process gets a private
+# --basetemp under it (parallel runs never share pytest's per-user numbered
+# basetemp) and every suite, pytest and bats alike, gets it as TMPDIR. Both the
+# log dir and the temp dir are removed when everything passes; on a failure both
+# are kept and the temp dir is printed as "temp dirs:" after the failure logs.
 #
 # Exit 0 only if every suite passes; 2 for a usage or environment error.
 set -uo pipefail
@@ -59,11 +64,15 @@ default_log_dir() {
   fi
 }
 LOG_DIR="${RUN_TESTS_LOG_DIR:-$(default_log_dir)}"
-mkdir -p "$LOG_DIR/tmp"
-# The pytest basetemps live under the log dir, which may sit inside the main
-# checkout's repo; suites must not discover that repo from their temp dirs.
-LOG_REAL="$(cd "$LOG_DIR" && pwd -P)"
-export GIT_CEILING_DIRECTORIES="$LOG_REAL${GIT_CEILING_DIRECTORIES:+:$GIT_CEILING_DIRECTORIES}"
+mkdir -p "$LOG_DIR"
+# Resolve the path: a trailing slash on TMPDIR would leave a "//" that bats'
+# own paths and a suite's PWD then disagree on.
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/run-tests-tmp.XXXXXX")"
+TMP_DIR="$(cd "$TMP_DIR" && pwd -P)"
+export TMPDIR="$TMP_DIR"
+# The caller's root override only picks the log dir above. Suites build their own
+# fake workbenches and must find those, not the caller's tree.
+unset WORKBENCH_ROOT CLAUDE_PROJECT_DIR
 
 # Resolve a pytest that actually runs. `command -v pytest` finds mise's shim,
 # which fails with "No version is set for shim" unless a .mise.toml scopes it,
@@ -115,7 +124,7 @@ for d in skills/*/ hooks/ scripts/; do
 
   # --- pytest, if this skill has any python tests
   if compgen -G "$d/tests/test_*.py" >/dev/null; then
-    out="$("$PYTEST" "$d" -q --basetemp "$LOG_DIR/tmp/$name" 2>&1)"
+    out="$("$PYTEST" "$d" -q --basetemp "$TMP_DIR/$name" 2>&1)"
     rc=$?
     line="$(printf '%s' "$out" | tail -n 1)"
     if [ $rc -eq 0 ]; then
@@ -157,7 +166,8 @@ echo "components with tests: $ran   assertions passed: $total_pass"
 if [ ${#failed[@]} -gt 0 ]; then
   echo "FAILED: ${failed[*]}"
   echo "failure logs: $LOG_DIR"
+  echo "temp dirs: $TMP_DIR"
   exit 1
 fi
-rm -rf "$LOG_DIR"
+rm -rf "$LOG_DIR" "$TMP_DIR"
 echo "all green"

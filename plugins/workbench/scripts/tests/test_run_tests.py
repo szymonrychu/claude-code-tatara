@@ -209,3 +209,63 @@ def test_suites_get_a_git_identity_unless_one_is_set(tree):
     tree.env["GIT_AUTHOR_NAME"] = "Caller"
     tree.run("scripts/run-tests.sh", "--only", "ident")
     assert "GIT_AUTHOR_NAME=Caller" in (ident / "ident.txt").read_text()
+
+
+PROBE_TEST = """
+import os
+from pathlib import Path
+
+
+def test_probe(request):
+    out = Path(__file__).parent / "probe.txt"
+    out.write_text(f"basetemp={request.config.getoption('basetemp')}\\nTMPDIR={os.environ.get('TMPDIR', '')}")
+"""
+
+
+def _under_gitmodules_dir(path):
+    return any((p / ".gitmodules").exists() for p in [path, *path.parents])
+
+
+def test_suite_temp_dirs_are_outside_any_checkout(tree):
+    # A fabricated initialised workbench: root finders walking up from a suite's
+    # temp dir must never find it, so the temp dirs cannot live inside it.
+    subprocess.run(["git", "init", "-q", str(tree.main)], check=True)
+    (tree.main / "code").mkdir()
+    (tree.main / ".gitmodules").write_text("")
+    probe = tree.root / "skills" / "probe" / "tests"
+    probe.mkdir(parents=True)
+    (probe / "test_probe.py").write_text(PROBE_TEST)
+    r = tree.run("scripts/run-tests.sh", "--only", "probe")
+    assert r.returncode == 0, r.stdout + r.stderr
+    got = dict(ln.split("=", 1) for ln in (probe / "probe.txt").read_text().splitlines())
+    main = tree.main.resolve()
+    for key in ("basetemp", "TMPDIR"):
+        p = Path(got[key]).resolve()
+        assert main not in p.parents and p != main, got
+        assert not _under_gitmodules_dir(p), got
+    # the log still goes to the tree's .logs/run-tests/<stamp>/<component>.log on red
+    (tree.root / "skills" / "fake" / "tests" / "control").write_text("fail")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    m = re.search(r"^        full output: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    log = Path(m.group(1))
+    assert log.name == "fake.log" and log.parent.parent == tree.main / ".logs" / "run-tests"
+
+
+def test_temp_dir_kept_on_failure_removed_on_green(tree):
+    tree.control("pass")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "temp dirs:" not in r.stdout
+    assert list(tree.tmpdir.glob("run-tests*")) == []
+    assert list((tree.main / ".logs" / "run-tests").glob("*")) == []
+    tree.control("fail")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    m = re.search(r"^temp dirs: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    assert r.stdout.index("full output:") < r.stdout.index("temp dirs:")
+    kept = Path(m.group(1))
+    assert kept.is_dir() and kept.parent == tree.tmpdir.resolve()
+    assert (tree.main / ".logs" / "run-tests").is_dir()
+    assert len(list((tree.main / ".logs" / "run-tests").glob("*/fake.log"))) == 1

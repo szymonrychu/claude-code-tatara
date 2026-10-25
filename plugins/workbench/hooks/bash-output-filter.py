@@ -5,7 +5,8 @@ Rewrites matched commands to run under a capture-and-cap wrapper: full output
 goes to a spill file under `<main checkout>/.logs/bash-output/` (the gitignored
 .logs of the workbench root; `$TMPDIR` only when no main checkout is found), and
 only a head+tail slice (~8k chars) is printed, with the spill file's path so nothing
-is actually lost. The wrapped
+is actually lost. Test runs through run-tests.sh log to `.logs/run-tests` and keep
+their suites' temp dirs in a mktemp dir outside any git checkout. The wrapped
 command's own exit code is preserved exactly (`$?` is captured right after it
 runs, not derived from a `| tail` pipeline) - a failing test run must still
 fail the Bash tool call.
