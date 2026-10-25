@@ -92,3 +92,24 @@ Estimate: 281 agent-min remaining (32 open tasks) | Critical path: 118 min | Act
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review of agents-webhook-microservice, 2026-10-25.
+
+- Whole-diff review, agents-webhook (989056e..883958c): 3 medium findings. Context lossy for draft/changed; non-UUID preset_id gave 503; 408 body shape. All fixed by task webhook-epic-review-fixes (a6557a5), reviewed PASS.
+- Whole-diff review, agent-orchestrator, agents-common, agents-web, agents-helmfile: PASS, no findings.
+- Scope audit: CLEAN, all 10 user requirements delivered, no duplicates.
+- Security review: 2 medium findings.
+  - The api was reachable in-cluster on the sidecar's http-insecure port without SSO. Fixed by webhook-api-source-allowlist (60c3fdc).
+  - Template filters could allocate unbounded memory. Fixed by webhook-template-memory-cap (379f315); the Linux CI test passes.
+  - Both reviewed PASS.
+- Full suites:
+  - agents-helmfile `mise run test` 116 passed, lint clean.
+  - agents-webhook main CI cc0f706 green (500 passed on Linux).
+  - agent-orchestrator a3c1b9d and agents-web 18f5132 main CI green.
+- Live: agents-webhook 0.1.0-main.cc0f706, agents-webhook-db, agent-orchestrator a3c1b9d and agents-web 18f5132 applied. Post-apply diff "No affected releases"; smoke OK including the webhook checks.
+- Deploy fixes found live:
+  - The probe port name was broken by the oauth2-proxy sidecar rename. Fixed by webhook-chart-probe-port (883958c).
+  - The first apply rolled back cleanly.
+- GitGuardian: two test-fixture strings in pre-squash commits. agents-webhook PR #1 was squash-merged so main history is clean. The incidents remain on the GitGuardian dashboard for the user to mark as false positives.
