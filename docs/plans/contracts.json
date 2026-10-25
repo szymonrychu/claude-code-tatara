@@ -201,7 +201,8 @@
     "file": "code/agent-orchestrator/README.md",
     "consumers": [
       "agents-helmfile",
-      "configuration-improvements"
+      "configuration-improvements",
+      "agents-webhook-microservice"
     ],
     "note": "POST /api/v1/clusters {slug?, spec? | preset_id?}: exactly one of spec or preset_id, slug required with spec, generated from the preset name otherwise; ClusterView preset_id, preset_name; PATCH /api/v1/clusters/{id} retired (405); smoke.sh keeps the raw spec body; task create-cluster-from-preset"
   },
