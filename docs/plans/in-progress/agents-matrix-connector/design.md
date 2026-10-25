@@ -4,6 +4,16 @@
 
 A new Python microservice, agents-matrix-connector (repo `code/agents-matrix-connector`, own CNPG database), lets people talk to agents over Facebook Messenger. It logs in to the live Synapse as a plain bot user `@agents:szymonrichert.pl` with an access token (the Hermes pattern, no appservice); that user is logged in to the existing mautrix-meta bridge with a dedicated Facebook account, so each Messenger chat with that account becomes a Matrix portal room the bot is invited to. The bot auto-joins invites and records rooms, users and members; a default-deny allow/deny policy over Matrix user id, Facebook id, room id and alias (display name: deny only) decides each message; allowed messages go, batched per room, to one agents-orchestrator session per room through agents-common, reused while it runs, and each turn's final text is posted back as plain text. A UI API under `/matrix/api/v1` and an agents-web Chats page show discovered rooms, users, decisions and recent messages and edit the rules. Deployed through agents-helmfile into namespace `agents`; the Matrix account, its token and the bridge login are user-run steps in namespace `messaging`.
 
+## Revision R1 (2026-10-25, user decision, supersedes parts of D2, D3, U1-U4 and Q2)
+
+User, verbatim: "When you'll be implementing, update also hermess config (in ~/Documents/infrastructure/code/helmfile)- scale it to 0. Whitelist only 1 channel for now- the one where Hermess sends "Hermess is shutting down..." messages (Szymon Richert to Szymon Richert)." Asked and answered: the connector takes over Hermes' identity (option "Reuse Hermes"), and Hermes is scaled to 0 now (option "Now").
+
+- Identity: the connector logs in as `@hermes:szymonrichert.pl`, device `hermes-agent`, with the access token from Secret `hermes-agent-matrix` (key `MATRIX_ACCESS_TOKEN`, namespace `ai`, read-only, piped into the agents-helmfile SOPS file, never printed). That user is already logged in to mautrix-meta with Hermes' Facebook account `61594633049360`; self identities are `@hermes:szymonrichert.pl` and `@facebook_61594633049360:szymonrichert.pl`. Wherever this document says `@agents:szymonrichert.pl`, read `@hermes:szymonrichert.pl`.
+- U1-U4 are dropped: no new Matrix account, no new token, no new bridge login.
+- Hermes (release `hermes-agent`, namespace `ai`, repo `~/Documents/infrastructure/code/helmfile`) is scaled to 0 through an MR there, outside both epics, so only one client answers on that account (replaces the separate-account anti-goal of D3).
+- Allow list: exactly one allow rule, kind `room`, value `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` (Hermes' home channel `platforms.matrix.home_channel`, read from the live config 2026-10-25; the owner DM between Facebook ids 100000241356957 and 61594633049360), created after the first apply (task apply-smoke-matrix of agents-matrix-connector-depl). Default policy stays deny.
+- Amended tasks: mxc-operations-docs; in agents-matrix-connector-depl: helmfile-matrix-secrets, helmfile-matrix-releases, smoke-matrix-check, apply-smoke-matrix.
+
 ## Intent and why
 
 User request 2026-10-25, verbatim: "agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge."
