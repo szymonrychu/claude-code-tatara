@@ -1,6 +1,6 @@
 ---
 title: Deltas command
-status: in-progress
+status: done
 repo: workbench
 value: One read-only command shows how far estimates were off and the table the next estimate uses
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,7 +8,7 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [retro-command]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 2ddf0d0
 ---
 
 # Deltas command
@@ -58,3 +58,5 @@ One read-only command shows how far estimates were off per task, per epic and ov
 - Fix-as-ac (brief, retirement pins): no subcommand named `estimate`; KEPT_MODULES exact.
 - History data on disk (brief): 71 done tasks carry legacy `estimate`, 21 carry `actual` (minutes) - the legacy rows of AC2.
 - Depends on retro-command only because both edit the retirement pin and tickets.md.
+
+- 2026-10-25 done
