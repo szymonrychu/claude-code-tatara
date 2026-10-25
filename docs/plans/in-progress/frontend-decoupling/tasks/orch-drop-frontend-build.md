@@ -1,6 +1,6 @@
 ---
 title: orch drop frontend build
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the orchestrator repo, image and CI carry no UI or node"
 files: [frontend, Dockerfile, .github/workflows/ci.yaml, tests/test_readme_api.py, tests/test_frontend_retired.py, .gitignore, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_frontend_retired.py tests/test_readme_api.p
 depends_on: [orch-drop-spa-mount]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 2dec27b
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 14
+actual_tokens: 523879
+actual_roles: "impl 12, review 1"
+actual_role_tokens: "impl 387549, review 136330"
 ---
 
 # orch drop frontend build
@@ -80,3 +80,5 @@ agent-orchestrator is a Python-only repo: pytest needs no node, the image is sma
 - `.github/` in the diff makes the review tier full.
 
 - 2026-10-25 amended: AC7 contradicted the requirement's README note 'npm run sync:api -- orchestrator in agents-web'; the grep now allows that one note
+
+- 2026-10-25 done
