@@ -1,7 +1,7 @@
 ---
 title: hive mode leadership handover and shared activity feed
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [any-mcp, claude-code-wrapper, agent-orchestrator, agents-helmfile]
 created: 2026-10-23
