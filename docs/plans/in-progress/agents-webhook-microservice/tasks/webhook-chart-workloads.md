@@ -1,6 +1,6 @@
 ---
 title: webhook chart workloads
-status: in-progress
+status: done
 repo: agents-webhook
 value: "the service deploys as three Deployments, with the public ingest kept out of SSO"
 files: [chart/agents-webhook/Chart.yaml, chart/agents-webhook/values.yaml, chart/agents-webhook/templates/_helpers.tpl, chart/agents-webhook/templates/_config.tpl, chart/agents-webhook/templates/deployment.yaml, chart/agents-webhook/templates/configmap.yaml, chart/agents-webhook/templates/secret.yaml, tests/test_chart_workloads.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_chart_workloads.py -q && helm lint chart/agent
 depends_on: [webhook-cli-entrypoints]
 model: ""
 review: full
-verified_head: ""
+verified_head: 5e4a480
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 6
+actual_tokens: 928985
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 797807, review 131178"
 ---
 
 # webhook chart workloads
@@ -68,3 +68,5 @@ Helm chart workloads (design D2, D13; re-plan 2026-10-25: no per-source secrets;
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
 
 Gate Q23 answer (user, 2026-10-25): the limits (max in progress overall, max in progress per endpoint, queue cap, body cap) are settings with defaults 3, 1, 500 and 5 MiB, each set from an agents-webhook Helm chart value (for example `limits.maxInProgress`, `limits.maxInProgressPerEndpoint`, `limits.queueCap`, `limits.maxBodyBytes`) rendered into the ingest and worker env, and documented. This task delivers its part of that.
+
+- 2026-10-25 done
