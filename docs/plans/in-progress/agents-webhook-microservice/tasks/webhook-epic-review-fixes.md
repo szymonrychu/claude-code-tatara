@@ -1,6 +1,6 @@
 ---
 title: webhook epic review fixes
-status: todo
+status: done
 repo: agents-webhook
 value: worker prompts match the preview and API errors are honest and uniform
 files: [src/agents_webhook/db/events.py, src/agents_webhook/migrations, src/agents_webhook/worker.py, src/agents_webhook/api/routes.py, src/agents_webhook/cli.py, tests/test_worker.py, tests/test_api.py, tests/test_ingest_http.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_api.py tests/test_ingest_http.py -o addopts= -
 depends_on: [webhook-template-memory-cap]
 model: ""
 review: ""
-verified_head: ""
+verified_head: a6557a5
 points: 3
 expected_minutes: 14
 expected_tokens: 723362
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 1067583
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 667697, review 399886"
 ---
 
 # webhook epic review fixes
@@ -66,3 +66,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-25 done
