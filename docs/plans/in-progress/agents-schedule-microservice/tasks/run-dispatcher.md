@@ -1,6 +1,6 @@
 ---
 title: run dispatcher
-status: in-progress
+status: done
 repo: agents-schedule
 value: "a new run starts one session from its preset and sends its prompt, never twice, within the concurrency caps"
 files: [src/agents_schedule/dispatcher.py, src/agents_schedule/prompt.py, tests/test_dispatcher.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_dispatcher.py -q && uv run ruff check
 depends_on: [runs-repository, schedules-repository, schedule-settings-model]
 model: opus
 review: full
-verified_head: ""
+verified_head: cb7d3ab8277bae6596e4803de999467e3243425b
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 2348483
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 2140545, review 207938"
 ---
 
 # run dispatcher
@@ -78,3 +78,5 @@ Each new run yields exactly one prompt, in a new session or (preset opt-in) in t
 - If an agents-common signature differs from the names above, use the library's as released; never re-implement dispatch here.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
