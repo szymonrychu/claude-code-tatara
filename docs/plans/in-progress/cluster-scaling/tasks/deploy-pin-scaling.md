@@ -1,6 +1,6 @@
 ---
 title: deploy pin scaling
-status: blocked
+status: done
 repo: agents-helmfile
 value: the agents namespace runs cluster scaling
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -56,6 +56,10 @@ The agents namespace runs this epic's orchestrator and the live smoke, including
 - Update `test_orchestrator_pin_matches_image` to the new sha; run it: fails.
 - Change the two pins; run the verify command: passes.
 - `mise run diff`: only the orchestrator chart version and image tag change. `mise run apply`, then `mise run smoke`: both exit 0.
+
+## Ruling
+
+- 2026-10-25 accepted: pin landed (ed0233a), PR #17 merged; orchestrator applied helm rev 13 under the user's apply approval; post-apply diff clean; smoke OK incl scale 1->2->1
 
 ## Notes
 

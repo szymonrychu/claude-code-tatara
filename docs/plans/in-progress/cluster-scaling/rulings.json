@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "test-only deliverable (the e2e test is the change); verified for real by CI e2e on the PR",
     "at": "2026-10-25T07:56:39Z"
+  },
+  {
+    "task": "deploy-pin-scaling",
+    "accept": true,
+    "reason": "pin landed (ed0233a), PR #17 merged; orchestrator applied helm rev 13 under the user's apply approval; post-apply diff clean; smoke OK incl scale 1->2->1",
+    "at": "2026-10-25T08:55:13Z"
   }
 ]
