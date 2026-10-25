@@ -1,6 +1,6 @@
 ---
 title: runs api routes
-status: in-progress
+status: done
 repo: agents-schedule
 value: run history and run now are available over HTTP for every schedule
 files: [src/agents_schedule/api/runs.py, src/agents_schedule/api/app.py, src/agents_schedule/api/schemas.py, tests/test_api_runs.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_runs.py -q && uv run ruff check .
 depends_on: [schedules-api-routes]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 08a4b344760cb681f653ba9ea1af9446be3915c1
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 451307
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 363527, review 87780"
 ---
 
 # runs api routes
@@ -60,3 +60,5 @@ Every run and the run-now control are reachable headlessly.
 ## Notes
 
 - The api inserts only `new` or `ignored` manual runs; the worker moves them on.
+
+- 2026-10-25 done
