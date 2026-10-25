@@ -70,50 +70,64 @@ Design D3: Points and expected values (Q2, Q3, Q4 amended) (verbatim):
   points_actual 3).
 - Neither: `points`, `expected_minutes` and `expected_tokens` stay empty and the task stays out of
   calibration.
-- A task that already has `points` keeps it and its expected values.
+- A task that already has `points` keeps it and any expected value it has; an empty `expected_minutes`
+  or `expected_tokens` is filled from `calibration.SEED[points]` (my call, builder check Q5).
 The same mapping applies in every phase (my call: Q3's reason, the planner's real estimate, holds for a
 todo task too).
 
-Design D4: Actuals (Q5) (verbatim):
+Design D4: Actuals (Q5; interrogate items 3 and 4) (verbatim):
 
 `actual_minutes` comes from a whole-number legacy `actual`, else from the task's matched records
-(`agent_usage.aggregate`); `actual_tokens` and `actual_role_tokens` come only from matched records;
-`actual_roles` from matched records. Without a number or a record the field stays empty, never invented.
-An existing new-scheme actual is kept. A legacy `actual_roles` value (19 flow-speed-and-token-optimiz
-tasks carry the old four-role form, for example `impl 4, verify 3, review 2, fix 2`) is kept when it
-names only impl and review, and otherwise folded: `fix` minutes added to impl (fix rounds continue the
-implementer) and `verify` minutes to review (the reviewer verifies first); records-derived roles win (my
-call; open question Q1 below). An empty legacy value becomes `""`.
+(`agent_usage.aggregate`). `actual_tokens`, `actual_roles` and `actual_role_tokens` come only from
+matched records, and only when those records cover both roles, impl and review; a partial match (one
+role only) leaves all three empty, gives no `actual_minutes` from records either (my call: a one-role
+span understates the task), and the dry run prints `partial: <epic>/<task> (<roles found>)`. A legacy
+`actual_minutes` from `actual` is still written for a partial match. Without a number or a full record set
+the field stays empty, never invented. Every legacy `actual_roles` value is dropped: the old taxonomy
+(impl, verify, review, fix, and one `false-finding` in medium-only-hold) has no mapping that is not a
+guess, and its sums disagree with `actual` in 2 tasks (interrogate item 3; open question Q1). A task
+with no legacy key (the bootstrap epic) keeps its new-scheme actuals as recorded.
 
-Design D5: Legacy transcript matcher (Q11) (verbatim):
+Design D5: Legacy transcript matcher (Q11; interrogate item 2) (verbatim):
 
 `agent_usage.legacy_task(path, names)` returns `(epic, task)` for an unmarked transcript whose first user
-prompt names exactly one task: a token of `names` (a dict from name to `(epic, task or None)`) found
-bounded by non-name characters. The caller (migrate) builds `names` from `<epic>/tasks/<task>.md` for every
-task, every `ticket.ticket_names` entry, and each old task's legacy `worktree` basename and `branch`
-(read before D2 drops them). An entry mapping to an epic only (the integration tree) or two different
-tasks match nothing. `agent_usage.backfill(..., names=None)` writes a record for such a transcript only
-when `names` is given and its `agent-<id>.meta.json` agentType is `workbench:implementer` or
-`workbench:reviewer` (roles impl and review); planner, merger, auditor, record-writer and general-purpose
-transcripts are skipped. A marker still wins over the names. Alternatives: importing ticket.py in
-agent_usage (rejected: stdlib-only lib), a fixed regex for the layout (rejected: names already exist in
-ticket.py).
+prompt names one task, matching tokens of `names` (a dict from name to `(epic, task or None)`) bounded by
+non-name characters. Precedence: exactly one task file path (`<epic>/tasks/<task>.md`) named wins; else
+exactly one tree or branch name of a task; else, or when ambiguous (two tasks at the same level, or only
+an epic name), no match and no record. The caller (migrate) builds `names` only from
+`<epic>/tasks/<task>.md` for every task, every `ticket.ticket_names` entry, and each old task's legacy
+`worktree` basename and `branch` (read before D2 drops them) when that value contains both the epic slug
+and the task slug; never `HEAD` (4 old tasks carry `branch: HEAD`), an empty string or free text.
+`agent_usage.backfill(..., names=None)` writes a record for such a transcript only when `names` is given
+and its `agent-<id>.meta.json` agentType is `workbench:implementer` (role impl), `workbench:reviewer`
+(review) or `workbench:verifier` (review: the old verifier did the review's verification); every other
+agent type (planner, merger, auditor, record-writer, general-purpose) is skipped. A marker still wins over
+the names. backfill's rglob already reaches the workflow transcripts under
+`<session>/subagents/workflows/wf_*/` (887 of the 1042 on disk, each with a meta.json). Alternatives:
+importing ticket.py in agent_usage (rejected: stdlib-only lib), a fixed regex for the layout (rejected:
+names already exist in ticket.py).
 
-Design D9: Commit shape, dry run and idempotence (Q9) (verbatim):
+Design D9: Commit shape, write order, dry run and idempotence (Q9; interrogate item 5) (verbatim):
 
-Migrate commits once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
-RETRO.md it wrote; an epic with nothing to change gets no commit. `--dry-run` prints one line per task it
-would change (old and new values of the changed keys, dropped keys) and per RETRO.md it would write,
-changes no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored
-`.logs/agents` cache (my call: the records are regenerable and the dry run must show transcript actuals).
-With nothing to change it prints `migrate: nothing to change`. A second run over migrated files changes
-nothing.
+`migrate --all` covers every epic in every phase, this epic included (builder check Q4); a file already in
+the new scheme is left alone. Per changed epic, the new task frontmatter is computed first, the RETRO.md
+rows are computed from those new values (not from the old files), and then both are written and
+committed together, once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
+RETRO.md it wrote; an epic with nothing to change gets no commit. So `ticket.py retro <epic>` right after
+migrate regenerates the same block, and migrate after that prints `migrate: nothing to change`.
+`--dry-run` prints every problem first (D10), then one line per task it would change (old and new values
+of the changed keys, dropped keys), each `partial:` line (D4) and each RETRO.md it would write; it changes
+no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored `.logs/agents`
+cache (my call: the records are regenerable and the dry run must show transcript actuals). With nothing to
+change it prints `migrate: nothing to change`. A second run over migrated files changes nothing.
 
 Design D10: Validate before writing (verbatim):
 
 Every mapped task runs through `t._number_problems` before anything is written; any problem refuses the
-run (exit 1, the problems listed, nothing written in any epic; my call: all or nothing keeps the commit
-history simple), because `calibration_rows` silently drops a malformed row.
+run (exit 1, every problem listed, nothing written in any epic; my call, kept after builder check Q3: all
+or nothing keeps the commit history simple, the dry run lists every problem first, and dropping legacy
+`actual_roles` (D4) removes the only known offender), because `calibration_rows` silently drops a
+malformed row.
 
 Constraint (verbatim): "No backward compatibility: migrate is the one path for old files; drop legacy keys; no shims."
 
@@ -124,15 +138,16 @@ Constraint (verbatim, part): "migrate.py added to KEPT and KEPT_MODULES in test_
 - AC1: an old-scheme task maps to exactly the 18 keys of templates/task.md in template order; title, status, repo, value, files, verify, depends_on, model, review and verified_head keep their values; estimate, estimate_by, actual, worktree, branch, run, provides, owns, uses, process_gaps, acs_for_audit, fork_point and any other extra key are dropped; the body is unchanged [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_keys_order_and_drops]
 - AC2: a whole-number legacy `estimate` gives points `calibration.points_for_minutes(estimate)`, expected_minutes the estimate and expected_tokens the SEED tokens of that bucket; an empty or non-numeric estimate leaves all three empty [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_points_from_legacy_estimate]
 - AC3: a task without a legacy estimate whose Notes say `Estimate: N points` gets points N and expected minutes and tokens `calibration.SEED[N]`, keeping points_actual and its actuals as recorded (points 5 with points_actual 3 stays so) [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_points_from_notes_line]
-- AC4: a task that already has points keeps points, expected_minutes and expected_tokens [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_existing_points_kept]
-- AC5: actual_minutes comes from a whole-number legacy `actual`, else from the task's matched records (`agent_usage.aggregate`); actual_tokens, actual_roles and actual_role_tokens only from records; with neither they stay empty; existing new-scheme actuals are kept [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_actuals_from_legacy_and_records]
-- AC6: a legacy actual_roles of `""` stays `""`, `impl N, review N` is kept, and one naming verify or fix folds fix into impl and verify into review (`impl 4, verify 3, review 2, fix 2` becomes `impl 6, review 5`); roles from records win [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_legacy_roles_folded]
-- AC7: the names map holds `<epic>/tasks/<task>.md` for every task, every `ticket_names` entry, and each old task's legacy worktree basename and branch; a transcript naming any of them gives that task its records through `records_by_task(..., names=...)` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_names_map_matches_legacy_transcripts]
-- AC8: a mapped task with any `_number_problems` refuses the run: exit 1, the problems on stderr, nothing written in any epic [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_malformed_mapping_refused]
-- AC9: `migrate --all --dry-run` prints, per task it would change, the epic, the task, each changed key with old and new value and each dropped key, and per done epic the RETRO.md it would write; no tracked file changes and HEAD does not move [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_dry_run_changes_nothing]
-- AC10: when every task is already in the new scheme the dry run prints `migrate: nothing to change` and exits 0 [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_dry_run_nothing_to_change]
-- AC11: the retirement pin lists `migrate` in KEPT and `migrate.py` in KEPT_MODULES and still holds [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py::test_run_loop_commands_retired]
-- AC12: the start-development suite and lint pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint]
+- AC4: a task that already has points keeps points and any expected value it has; an empty expected_minutes or expected_tokens is filled from `calibration.SEED[points]` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_existing_points_kept]
+- AC5: actual_minutes comes from a whole-number legacy `actual`, else from the task's records when they cover both impl and review; actual_tokens, actual_roles and actual_role_tokens come only from records covering both roles; a partial match (one role) leaves those three and records-derived minutes empty (a legacy `actual` is still written) and the dry run prints `partial: <epic>/<task> (<roles found>)`; with neither source the fields stay empty; a task with no legacy key keeps its new-scheme actuals [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_actuals_from_legacy_and_records]
+- AC6: every legacy actual_roles value of a task carrying legacy keys is dropped (`impl 4, verify 3, review 2, fix 2`, `impl 8, review 8`, one with `false-finding`, and `""`): actual_roles is `""` unless records covering both roles give it [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_legacy_roles_dropped]
+- AC7: the names map holds `<epic>/tasks/<task>.md` for every task, every `ticket_names` entry, and each old task's legacy worktree basename and branch only when the value contains both the epic slug and the task slug; a transcript naming any of them gives that task its records through `records_by_task(..., names=...)` [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_names_map_matches_legacy_transcripts]
+- AC8: `branch: HEAD`, an empty worktree or branch, and free text never enter the names map, so a transcript naming `HEAD` gets no task [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_names_map_rejects_head_and_free_text]
+- AC9: a mapped task with any `_number_problems` refuses the run: exit 1, every problem on stderr before anything else, nothing written in any epic [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_malformed_mapping_refused]
+- AC10: `migrate --all --dry-run` covers todo, in-progress and done epics and prints, per task it would change, the epic, the task, each changed key with old and new value and each dropped key, each `partial:` line, and per done epic the RETRO.md it would write; no tracked file changes and HEAD does not move [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_dry_run_changes_nothing]
+- AC11: when every task is already in the new scheme the dry run prints `migrate: nothing to change` and exits 0 [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py::test_dry_run_nothing_to_change]
+- AC12: the retirement pin lists `migrate` in KEPT and `migrate.py` in KEPT_MODULES and still holds [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py::test_run_loop_commands_retired]
+- AC13: the start-development suite and lint pass [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only start-development && mise run lint]
 
 ## Files
 
@@ -169,3 +184,5 @@ Constraint (verbatim, part): "migrate.py added to KEPT and KEPT_MODULES in test_
 - `_parse_roles` rejects verify and fix, so fold the legacy value with its own small parser before formatting it with `_format_roles`.
 - Open question Q1 in design.md (fold versus drop of four-role values) is answered at the gate; the AC encodes the recommended fold.
 - Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.
+
+- 2026-10-25 amended: interrogate items 2-4 and builder answers Q3-Q5: legacy actual_roles dropped in every form (supersedes the fold notes and the Q1 note above; no fold parser needed), tokens and roles only from records covering impl and review with partial lines, names map filtered (no HEAD, empty or free text), SEED fill for empty expected values, every problem listed first, --all covers every phase; points stay 8
