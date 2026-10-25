@@ -1,6 +1,6 @@
 ---
 title: web preset reuse row
-status: in-progress
+status: done
 repo: agents-web
 value: agent reuse is switched on or off when creating or editing a preset in the UI
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/clusters/clusterSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/presets src/clusters 
 depends_on: [orch-preset-reuse-field]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 71d849e
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 621147
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 544711, review 76436"
 ---
 
 # web preset reuse row
@@ -66,3 +66,5 @@ The preset dialog has a Reuse running agent switch that round-trips `spec.reuse_
 - sync-api refuses a dirty `openapi.json` in the sibling checkout; the orchestrator task commits it first.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
