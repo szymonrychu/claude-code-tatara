@@ -22,13 +22,25 @@ import pytest
 HOOK = Path(__file__).resolve().parents[1] / "bash-output-filter.py"
 
 
-def rewrite(command: str):
-    """Run the hook exactly as Claude Code does. Returns the updated command, or None."""
+def _clean_env(**extra):
+    env = {k: v for k, v in os.environ.items() if k not in ("WORKBENCH_ROOT", "CLAUDE_PROJECT_DIR")}
+    env.update(extra)
+    return env
+
+
+def rewrite(command: str, cwd=None, env=None):
+    """Run the hook exactly as Claude Code does. Returns the updated command, or None.
+
+    By default runs outside git with no main-checkout env, so the spill falls
+    back to TMPDIR.
+    """
     proc = subprocess.run(
         [sys.executable, str(HOOK)],
         input=json.dumps({"tool_input": {"command": command}}),
         capture_output=True,
         text=True,
+        cwd=str(cwd or tempfile.gettempdir()),
+        env=env or _clean_env(),
     )
     assert proc.returncode == 0, proc.stderr
     if not proc.stdout.strip():
@@ -146,7 +158,7 @@ def _fake_bin(tmp_path: Path, name: str, script: str) -> Path:
     return d
 
 
-def _run_rewritten(new_cmd: str, extra_path: Path):
+def _run_rewritten(new_cmd: str, extra_path: Path, tmpdir=None):
     env = dict(os.environ)
     # BASH_ENV (Claude Code's shell-init.sh) re-prepends the mise shims dir
     # ahead of anything we put on PATH, which would resolve to the real
@@ -360,3 +372,50 @@ def test_simple_noisy_command_still_capped():
     assert rewrite("pytest -k 'a;b'") is not None
     out = rewrite("pytest tests/")
     assert out is not None and "-rfE" in out
+
+
+# --- spill location: <main checkout>/.logs/bash-output, else TMPDIR -------
+
+
+def _long_failing_pytest(tmp_path):
+    script = 'for i in $(seq 1 50); do echo "' + "F" * 200 + ' $i"; done\nexit 1\n'
+    return _fake_bin(tmp_path, "pytest", script)
+
+
+def test_spill_lands_in_logs_dir(tmp_path):
+    main = tmp_path / "main with space"
+    main.mkdir()
+    subprocess.run(["git", "init", "-q", str(main)], check=True)
+    bindir = _long_failing_pytest(tmp_path)
+    new_cmd = rewrite("pytest tests/", cwd=main, env=_clean_env(WORKBENCH_ROOT=str(main)))
+    assert new_cmd is not None
+    proc, tmp_spill = _run_rewritten(new_cmd, bindir)
+    spill_dir = main.resolve() / ".logs" / "bash-output"
+    spilled = list(spill_dir.glob("*"))
+    assert len(spilled) == 1
+    assert len(spilled[0].read_text()) > 8000
+    assert str(spilled[0]) in proc.stdout
+    assert tmp_spill is None, "spill also went to TMPDIR"
+
+
+def test_spill_falls_back_to_tmpdir(tmp_path):
+    bindir = _long_failing_pytest(tmp_path)
+    new_cmd = rewrite("pytest tests/", cwd=tmp_path)
+    assert new_cmd is not None
+    assert "${TMPDIR:-/tmp}" in new_cmd
+    proc, spill = _run_rewritten(new_cmd, bindir)
+    assert spill is not None and len(spill) > 8000
+
+
+def test_spill_falls_back_to_tmpdir_when_main_checkout_unwritable(tmp_path):
+    if os.geteuid() == 0:
+        pytest.skip("root ignores directory permissions")
+    main = tmp_path / "ro-main"
+    main.mkdir()
+    main.chmod(0o555)
+    try:
+        new_cmd = rewrite("pytest tests/", cwd=tmp_path, env=_clean_env(WORKBENCH_ROOT=str(main)))
+    finally:
+        main.chmod(0o755)
+    assert new_cmd is not None
+    assert "${TMPDIR:-/tmp}" in new_cmd

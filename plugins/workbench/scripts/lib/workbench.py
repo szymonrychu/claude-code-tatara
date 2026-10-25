@@ -22,6 +22,8 @@ Usage:
   workbench.py components [--from DIR]
   workbench.py resolve <component> [--from DIR]
   workbench.py doctor [--from DIR]
+  workbench.py scratchpad [--from DIR]   main checkout's .scratchpad, created
+  workbench.py logs [--from DIR]         main checkout's .logs, created
   workbench.py config [--repo DIR] [--plans-root DIR --repo-name NAME]
 
 Exit 0 on success, 1 when nothing resolves. `root` and `doctor` exit 0 with
@@ -88,6 +90,54 @@ def find_root(start: Path | None = None) -> tuple[Path, str] | None:
         if _is_metarepo(sup):
             return sup, METAREPO
     return None
+
+
+def _git_out(cwd: Path, *args: str) -> str:
+    r = subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def main_checkout(start: Path | None = None) -> Path | None:
+    """The main checkout holding .scratchpad and .logs; never a linked worktree.
+
+    $WORKBENCH_ROOT, then $CLAUDE_PROJECT_DIR, else the parent of the git common
+    dir of `start` (a submodule resolves through its superproject). None outside git.
+    """
+    for env in ("WORKBENCH_ROOT", "CLAUDE_PROJECT_DIR"):
+        val = os.environ.get(env)
+        if val:
+            return Path(val).expanduser().resolve()
+    cur = (start or Path.cwd()).expanduser().resolve()
+    if not cur.is_dir():
+        return None
+    sup = _git_out(cur, "rev-parse", "--show-superproject-working-tree")
+    if sup:
+        cur = Path(sup).resolve()
+    common = _git_out(cur, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    return Path(common).resolve().parent if common else None
+
+
+def _state_dir(name: str, start: Path | None) -> Path | None:
+    main = main_checkout(start)
+    if main is None:
+        return None
+    d = main / name
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def scratchpad_dir(start: Path | None = None) -> Path | None:
+    return _state_dir(".scratchpad", start)
+
+
+def existing_logs_dir(start: Path | None = None) -> Path | None:
+    """The main checkout's `.logs` path without creating it (read-only callers)."""
+    main = main_checkout(start)
+    return main / ".logs" if main else None
+
+
+def logs_dir(start: Path | None = None) -> Path | None:
+    return _state_dir(".logs", start)
 
 
 def components(root: Path, kind: str, require_git: bool = True) -> dict[str, Path]:
@@ -422,7 +472,7 @@ def main() -> int:
         "action",
         choices=[
             *("root", "kind", "components", "resolve", "doctor"),
-            *("config", "runner", "config-dir"),
+            *("config", "runner", "config-dir", "scratchpad", "logs"),
         ],
     )
     ap.add_argument("name", nargs="?")
@@ -457,6 +507,14 @@ def main() -> int:
             print(f"workbench.py: {e}", file=sys.stderr)
             return 1
         print(json.dumps(cfg))
+        return 0
+
+    if args.action in ("scratchpad", "logs"):
+        d = (scratchpad_dir if args.action == "scratchpad" else logs_dir)(args.start)
+        if d is None:
+            print("workbench.py: no main checkout found (not inside git)", file=sys.stderr)
+            return 1
+        print(d)
         return 0
 
     found = find_root(args.start)

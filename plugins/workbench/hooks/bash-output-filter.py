@@ -2,15 +2,18 @@
 """PreToolUse hook: cap noisy Bash output (test runs, logs) before it enters context.
 
 Rewrites matched commands to run under a capture-and-cap wrapper: full output
-goes to a spill file under $TMPDIR, and only a head+tail slice (~8k chars) is
-printed, with the spill file's path so nothing is actually lost. The wrapped
+goes to a spill file under `<main checkout>/.logs/bash-output/` (the gitignored
+.logs of the workbench root; `$TMPDIR` only when no main checkout is found), and
+only a head+tail slice (~8k chars) is printed, with the spill file's path so nothing
+is actually lost. Test runs through run-tests.sh log to `.logs/run-tests` and keep
+their suites' temp dirs in a mktemp dir outside any git checkout. The wrapped
 command's own exit code is preserved exactly (`$?` is captured right after it
 runs, not derived from a `| tail` pipeline) - a failing test run must still
 fail the Bash tool call.
 
 The test-runner match happens on the command with any leading `cd <dir> &&`/
 `cd <dir>;` prefix(es) stripped first, so `cd <worktree> && mise run test ...`
-- the shape every plan-execute agent actually runs - matches, not only a
+- the shape every implementer agent actually runs - matches, not only a
 command that starts with the runner itself.
 
 For a bare pytest invocation (no further shell chaining after it) `-q -rfE
@@ -183,7 +186,7 @@ def build_kubectl_tail_cmd(cmd: str) -> str | None:
     return prefix + new_invocation
 
 
-def build_new_cmd(cmd: str) -> str:
+def build_new_cmd(cmd: str, cwd: str | None = None) -> str:
     prefix, rest = split_cd_prefix(cmd)
 
     if BARE_PYTEST.match(rest) and not SHELL_CHAIN.search(rest):
@@ -196,7 +199,7 @@ def build_new_cmd(cmd: str) -> str:
     # corrupting the exit code pipefail would report). Read the exit code
     # right after the wrapped command finishes, then decide head+tail vs cat
     # from the file on disk.
-    return wl.wrap_output_filter(full_cmd, CAP_CHARS)
+    return wl.wrap_output_filter(full_cmd, CAP_CHARS, wl.spill_dir(cwd))
 
 
 def main() -> None:
@@ -227,7 +230,7 @@ def main() -> None:
     elif ALREADY_MANAGED.search(cmd):
         sys.exit(0)
     else:
-        new_cmd = build_new_cmd(cmd)
+        new_cmd = build_new_cmd(cmd, data.get("cwd") or None)
 
     print(
         json.dumps(

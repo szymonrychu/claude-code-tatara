@@ -26,9 +26,9 @@ Report the rate before and after each change. Do not start phase 2 until the rat
 ## Proofs
 
 Pristine-diff proof (the red was forced by a mutation):
-1. Before mutating, copy the file: `cp f /tmp/pristine-f`.
+1. Before mutating, copy the file: `cp f <workbench root>/.scratchpad/pristine-f`.
 2. Mutate, run the test, see it red.
-3. `diff /tmp/pristine-f f` shows only the intended mutation.
+3. `diff <workbench root>/.scratchpad/pristine-f f` shows only the intended mutation.
 4. Restore from the pristine copy and confirm `diff` is empty.
 
 Revert proof (the fix is what turns the test green):

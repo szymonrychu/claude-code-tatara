@@ -9,7 +9,7 @@ from harness import agents_md, emit, setup
 from harness.sources import _rules
 
 REPO = Path(__file__).resolve().parents[3]
-RULE_NAMES = ("tdd.md", "boy-scout.md", "concise-orchestrator.md")
+RULE_NAMES = ("tdd.md", "boy-scout.md", "concise-orchestrator.md", "housekeeping.md")
 
 
 class Fake(emit.Emitter):
@@ -121,6 +121,11 @@ def test_repo_agents_md_has_current_rules_block():
     assert block(text, "rules") == "\n" + agents_md.render_rules_block(REPO)
     for needle in ("Test-driven development", "Boy scout", "Concise orchestrator"):
         assert needle in block(text, "rules")
+
+
+def test_rules_block_includes_housekeeping():
+    assert agents_md.RULE_FILES == RULE_NAMES
+    assert "\n## Housekeeping rules\n" in agents_md.render_rules_block(REPO)
 
 
 def lint(tmp_path, agents, claude):

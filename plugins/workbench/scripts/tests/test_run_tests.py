@@ -64,6 +64,8 @@ def tree(tmp_path):
     (root / "scripts").mkdir(parents=True)
     for name in ("run-tests.sh", "flake-hunt.sh"):
         shutil.copy(SCRIPTS / name, root / "scripts" / name)
+    ignore = shutil.ignore_patterns("__pycache__")
+    shutil.copytree(SCRIPTS / "lib", root / "scripts" / "lib", ignore=ignore)
     fake = root / "skills" / "fake" / "tests"
     fake.mkdir(parents=True)
     (fake / "test_fake.py").write_text(FAKE_TEST)
@@ -72,7 +74,11 @@ def tree(tmp_path):
     (other / "test_other.py").write_text(OTHER_TEST)
     tmpdir = tmp_path / "tmpdir"
     tmpdir.mkdir()
-    env = {k: v for k, v in os.environ.items() if k != "RUN_TESTS_LOG_DIR"}
+    main = tmp_path / "main"
+    main.mkdir()
+    skip = ("RUN_TESTS_LOG_DIR", "WORKBENCH_ROOT", "CLAUDE_PROJECT_DIR")
+    env = {k: v for k, v in os.environ.items() if k not in skip}
+    env["WORKBENCH_ROOT"] = str(main)
     env["PYTEST"] = pt
     env["TMPDIR"] = str(tmpdir)
 
@@ -84,7 +90,7 @@ def tree(tmp_path):
             ["bash", *cmd], cwd=root, env=env, capture_output=True, text=True, timeout=120
         )
 
-    return SimpleNamespace(root=root, tmpdir=tmpdir, control=control, run=run, env=env)
+    return SimpleNamespace(root=root, main=main, tmpdir=tmpdir, control=control, run=run, env=env)
 
 
 def test_failing_component_keeps_full_output(tree):
@@ -96,10 +102,29 @@ def test_failing_component_keeps_full_output(tree):
     assert m, r.stdout
     log = Path(m.group(1))
     assert log.exists()
+    assert log.parent.parent == tree.main / ".logs" / "run-tests"
     assert "line 1\n" in log.read_text()
     assert "line 1\n" not in r.stdout  # the 15-line tail cannot show it
     assert "failure logs:" in r.stdout
     assert r.stdout.index("FAILED:") < r.stdout.index("failure logs:")
+
+
+def test_log_dir_override_and_fallback(tree, tmp_path):
+    tree.control("fail")
+    custom = tmp_path / "custom"
+    tree.env["RUN_TESTS_LOG_DIR"] = str(custom)
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert (custom / "fake.log").exists()
+    assert not (tree.main / ".logs").exists()
+    del tree.env["RUN_TESTS_LOG_DIR"]
+    del tree.env["WORKBENCH_ROOT"]  # tmp tree is not in git: no main checkout
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    m = re.search(r"^        full output: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    assert Path(m.group(1)).parent.parent == tree.tmpdir
+    assert not (tree.main / ".logs").exists()
 
 
 def test_green_run_leaves_nothing(tree):
@@ -110,6 +135,7 @@ def test_green_run_leaves_nothing(tree):
     assert "full output:" not in r.stdout
     assert "failure logs:" not in r.stdout
     assert list(tree.tmpdir.glob("run-tests.*")) == []
+    assert list((tree.main / ".logs" / "run-tests").glob("*")) == []
 
 
 def test_only_runs_one_component(tree):
@@ -137,6 +163,8 @@ def test_flake_hunt_reports_failures_and_keeps_logs(tree):
     logs = [ln.strip() for ln in r.stdout.splitlines() if ln.strip().endswith(".log")]
     assert len(logs) == 2
     assert all(Path(p).exists() for p in logs)
+    hunts = tree.main / ".logs" / "flake-hunt"
+    assert all(hunts in Path(p).parents for p in logs)
 
 
 def test_flake_hunt_all_pass(tree):
@@ -181,3 +209,77 @@ def test_suites_get_a_git_identity_unless_one_is_set(tree):
     tree.env["GIT_AUTHOR_NAME"] = "Caller"
     tree.run("scripts/run-tests.sh", "--only", "ident")
     assert "GIT_AUTHOR_NAME=Caller" in (ident / "ident.txt").read_text()
+
+
+PROBE_TEST = """
+import os
+from pathlib import Path
+
+
+def test_probe(request):
+    out = Path(__file__).parent / "probe.txt"
+    base = request.config.getoption("basetemp")
+    out.write_text(f"basetemp={base}\\nTMPDIR={os.environ.get('TMPDIR', '')}")
+"""
+
+
+def _under_gitmodules_dir(path):
+    return any((p / ".gitmodules").exists() for p in [path, *path.parents])
+
+
+def test_suite_temp_dirs_are_outside_any_checkout(tree):
+    # A fabricated initialised workbench: root finders walking up from a suite's
+    # temp dir must never find it, so the temp dirs cannot live inside it.
+    subprocess.run(["git", "init", "-q", str(tree.main)], check=True)
+    (tree.main / "code").mkdir()
+    (tree.main / ".gitmodules").write_text("")
+    probe = tree.root / "skills" / "probe" / "tests"
+    probe.mkdir(parents=True)
+    (probe / "test_probe.py").write_text(PROBE_TEST)
+    r = tree.run("scripts/run-tests.sh", "--only", "probe")
+    assert r.returncode == 0, r.stdout + r.stderr
+    got = dict(ln.split("=", 1) for ln in (probe / "probe.txt").read_text().splitlines())
+    main = tree.main.resolve()
+    for key in ("basetemp", "TMPDIR"):
+        p = Path(got[key]).resolve()
+        assert main not in p.parents and p != main, got
+        assert not _under_gitmodules_dir(p), got
+    # the log still goes to the tree's .logs/run-tests/<stamp>/<component>.log on red
+    (tree.root / "skills" / "fake" / "tests" / "control").write_text("fail")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    m = re.search(r"^        full output: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    log = Path(m.group(1))
+    assert log.name == "fake.log" and log.parent.parent == tree.main / ".logs" / "run-tests"
+
+
+def test_temp_dir_kept_on_failure_removed_on_green(tree):
+    tree.control("pass")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "temp dirs:" not in r.stdout
+    assert list(tree.tmpdir.glob("run-tests*")) == []
+    assert list((tree.main / ".logs" / "run-tests").glob("*")) == []
+    tree.control("fail")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 1, r.stdout + r.stderr
+    m = re.search(r"^temp dirs: (\S+)$", r.stdout, re.M)
+    assert m, r.stdout
+    assert r.stdout.index("full output:") < r.stdout.index("temp dirs:")
+    kept = Path(m.group(1))
+    assert kept.is_dir() and kept.parent == tree.tmpdir.resolve()
+    assert (tree.main / ".logs" / "run-tests").is_dir()
+    assert len(list((tree.main / ".logs" / "run-tests").glob("*/fake.log"))) == 1
+
+
+def test_mktemp_failure_exits_2_and_removes_nothing(tree):
+    tree.control("pass")
+    tree.env["TMPDIR"] = str(tree.tmpdir / "missing")
+    r = tree.run("scripts/run-tests.sh", "--only", "fake")
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert "run-tests: cannot create a temp dir" in r.stderr
+    assert (tree.root / "scripts" / "run-tests.sh").is_file()
+    assert (tree.root / "skills" / "fake" / "tests" / "test_fake.py").is_file()
+    assert list(tree.root.glob("run-tests*")) == []
+    assert list(tree.tmpdir.glob("run-tests*")) == []
+    assert not (tree.main / ".logs").exists()

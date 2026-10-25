@@ -24,10 +24,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-# worktree_lib sits next to lib/ and is shared with the Claude-only wrappers.
+# worktree_lib sits next to lib/ and is shared with the Claude-only wrappers;
+# agent_usage (scripts/lib) owns the transcript walker.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "lib"))
 
+import agent_usage  # noqa: E402
 import worktree_lib as wl  # noqa: E402
+
+from .apply_patch import PATCH_KEYS, patch_added_lines  # noqa: E402
 
 EVENTS = ("pre-tool", "post-tool", "stop")
 TOOL_KINDS = ("shell", "edit", "write", "read", "other")
@@ -197,7 +202,7 @@ RULES = [
 
 COMPILED = [(re.compile(p), r) for p, r in RULES]
 
-# --- idle no-op / polling heartbeats ------------------------------------
+# --- idle no-op / polling loops ------------------------------------------
 #
 # A peer-session token review found 2,108 Bash calls in one session that were
 # bare `true` / `echo waiting` / `sleep 1` used to poll or wait out a
@@ -208,7 +213,7 @@ IDLE_NOOP_REASON = (
     "This looks like an idle wait, not work: end the turn instead. Use "
     "run_in_background for a long command, Monitor to stream a background "
     "process, or a bounded until-loop that checks a real condition (never a "
-    "bare sleep/true/: /echo heartbeat)."
+    "bare sleep/true/: /echo waiting)."
 )
 
 # A command containing a bounded loop construct is exempt: `sleep` inside
@@ -221,7 +226,7 @@ _IDLE_NOOP_SEGMENT = re.compile(
     r"|:"
     r"|sleep\s+[0-9]+(?:\.[0-9]+)?"
     r"|echo\s+(?:-[a-zA-Z]+\s+)*"
-    r"""['"]?(?:waiting|idle|polling|still\s+waiting|heartbeat|\.\.\.)[.\s'"]*"""
+    r"""['"]?(?:waiting|idle|polling|still\s+waiting|\.\.\.)[.\s'"]*"""
     r")$",
     re.IGNORECASE,
 )
@@ -318,8 +323,38 @@ def guard_segments(cmd: str, depth: int = 0):
         yield seg, _normalize(seg)
 
 
+EM_DASH = "\u2014"
+
+_COMMIT_RE = re.compile(r"^git\s+commit\b")
+_COMMIT_FILE_RE = re.compile(r"(?:^|\s)(?:-F|--file)(?:=|\s*)(?![-\s])(\S+)")
+COMMIT_EM_DASH_REASON = (
+    "the commit message contains an em dash (U+2014). Use a plain hyphen (-) instead and retry."
+)
+
+
+def _commit_has_em_dash(cmd: str, commit: str, cwd: str) -> bool:
+    """True when the commit message carries U+2014.
+
+    Inline (`-m`, heredoc, `$(cat <<EOF)`) messages are part of the command text.
+    A `-F <file>` or `--file=<file>` message is read relative to the event cwd.
+    `-F -` (stdin) and a file that is missing or unreadable are out of scope and pass.
+    """
+    if EM_DASH in cmd:
+        return True
+    match = _COMMIT_FILE_RE.search(commit)
+    if not match:
+        return False
+    path = Path(match.group(1).strip("'\""))
+    if not path.is_absolute():
+        path = Path(cwd or ".") / path
+    try:
+        return EM_DASH in path.read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return False
+
+
 def guard_bash(event: NormalizedEvent) -> Decision:
-    """Deny destructive shell commands and idle no-op heartbeats.
+    """Deny destructive shell commands and idle no-op polls.
 
     Advisory guardrail against agent mistakes, not a security sandbox.
     """
@@ -330,6 +365,9 @@ def guard_bash(event: NormalizedEvent) -> Decision:
         for pattern, reason in COMPILED:
             if pattern.search(norm):
                 return Decision("deny", f"guard-bash: `{seg}` - {reason}")
+    commit = next((seg for seg, norm in guard_segments(cmd) if _COMMIT_RE.match(norm)), None)
+    if commit is not None and _commit_has_em_dash(cmd, commit, event.cwd):
+        return Decision("deny", f"guard-bash: `{commit}` - {COMMIT_EM_DASH_REASON}")
     if is_idle_noop(cmd):
         return Decision("deny", f"guard-bash: `{cmd.strip()}` - {IDLE_NOOP_REASON}")
     return ALLOW
@@ -372,8 +410,45 @@ def blocked_reason(path: str) -> str | None:
     return None
 
 
+# Keys holding the new text of an edit or write, across every harness's tool
+# schema: Claude Write/Edit/NotebookEdit, Copilot CLI create/edit, Antigravity
+# write_to_file/replace_file_content. Lists of dicts (MultiEdit `edits`) are
+# searched one level down for the same keys. `old_string` and its aliases are
+# never read, so removing an em dash stays allowed.
+_NEW_CONTENT_KEYS = (
+    "content",
+    "new_string",
+    "new_source",
+    "file_text",
+    "new_str",
+    "CodeContent",
+    "ReplacementContent",
+)
+
+
+def new_content(tool_input: Any) -> list[str]:
+    """Every string an edit or write would put into a file, from its tool input."""
+    if not isinstance(tool_input, dict):
+        return []
+    found: list[str] = []
+    items = [tool_input]
+    for value in tool_input.values():
+        if isinstance(value, list):
+            items.extend(item for item in value if isinstance(item, dict))
+    for item in items:
+        for key in _NEW_CONTENT_KEYS:
+            value = item.get(key)
+            if isinstance(value, str):
+                found.append(value)
+    for key in PATCH_KEYS:
+        text = tool_input.get(key)
+        if isinstance(text, str) and "*** Begin Patch" in text:
+            found.extend(patch_added_lines(text))
+    return found
+
+
 def protect_files(event: NormalizedEvent) -> Decision:
-    """Deny an edit or write that touches any protected path."""
+    """Deny an edit or write that touches a protected path or adds an em dash."""
     if event.event != "pre-tool" or event.tool_kind not in ("edit", "write"):
         return ALLOW
     for path in event.paths:
@@ -388,6 +463,13 @@ def protect_files(event: NormalizedEvent) -> Decision:
                 "pack's sops-secret-helper skill when enabled), git for .git, "
                 "terraform state commands for tfstate.",
             )
+    if any(EM_DASH in text for text in new_content(event.raw.get("tool_input"))):
+        target = f" ({', '.join(event.paths)})" if event.paths else ""
+        return Decision(
+            "deny",
+            f"BLOCKED by protect-files hook: the new content{target} contains an em dash "
+            "(U+2014). Use a plain hyphen (-) instead and retry the edit.",
+        )
     return ALLOW
 
 
@@ -460,16 +542,10 @@ def collect_worktrees(event: NormalizedEvent) -> list[str]:
         add(event.cwd)
 
     transcript = event.raw.get("agent_transcript_path")
-    if isinstance(transcript, str) and Path(transcript).is_file():
-        try:
-            lines = Path(transcript).read_text(errors="replace").splitlines()
-        except OSError:
-            lines = []
-        for line in lines:
-            try:
-                content = json.loads(line)["message"]["content"]
-            except (ValueError, KeyError, TypeError):
-                continue
+    if isinstance(transcript, str) and transcript:
+        for line in agent_usage.transcript_lines(transcript):
+            message = line.get("message")
+            content = message.get("content") if isinstance(message, dict) else None
             if not isinstance(content, list):
                 continue
             for item in content:

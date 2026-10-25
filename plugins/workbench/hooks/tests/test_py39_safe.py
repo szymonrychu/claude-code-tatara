@@ -34,6 +34,7 @@ ALL = [
     "subagent-commit-guard.py",
     "verify-recorder.py",
     "bash-output-filter.py",
+    "agent-usage-recorder.py",
 ]
 
 
@@ -47,6 +48,7 @@ def test_deny_hooks_still_deny_without_tomllib(script, payload, tmp_path):
 
 @pytest.mark.parametrize("script", ALL)
 def test_every_hook_imports_without_tomllib(script, tmp_path):
+    assert (HOOKS / script).is_file(), script
     proc = run(script, "{}", tmp_path, NO_TOMLLIB)
     assert "ModuleNotFoundError" not in proc.stderr, proc.stderr
     assert "Traceback" not in proc.stderr, proc.stderr
@@ -63,6 +65,7 @@ HOOK_PATH_FILES = [
     *sorted(HOOKS.glob("*.py")),
     *sorted((HOOKS / "lib").glob("*.py")),
     HOOKS.parent / "scripts" / "lib" / "workbench.py",
+    HOOKS.parent / "scripts" / "lib" / "agent_usage.py",
 ]
 
 

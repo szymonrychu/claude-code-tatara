@@ -161,6 +161,78 @@ def test_protected_edit_allow_every_harness(h: hp.Harness, kind: str, tmp_path: 
     assert_allow(h.harness, rc, out, stderr)
 
 
+# --- em dash content guard ----------------------------------------------------
+
+EM_DASH = "\u2014"
+
+
+def test_apply_patch_em_dash_added_line_denied(tmp_path: Path) -> None:
+    added = hp.codex_patch("*** Update File: a.md", "@@", "-x", f"+x {EM_DASH} y")
+    rc, out, stderr = run(
+        "codex", "pre-tool", "protect-files", hp.codex_apply_patch(added, "/w"), tmp_path
+    )
+    assert rc == 2, stderr
+    assert "U+2014" in stderr
+    assert_deny_shape("codex", out, "plain hyphen")
+
+    new_file = hp.codex_patch("*** Add File: b.md", f"+{EM_DASH}")
+    rc, out, stderr = run(
+        "codex", "pre-tool", "protect-files", hp.codex_apply_patch(new_file, "/w"), tmp_path
+    )
+    assert rc == 2, stderr
+    assert_deny_shape("codex", out, "U+2014")
+
+    removed = hp.codex_patch("*** Update File: a.md", "@@", f"-x {EM_DASH} y", "+x - y")
+    rc, out, stderr = run(
+        "codex", "pre-tool", "protect-files", hp.codex_apply_patch(removed, "/w"), tmp_path
+    )
+    assert_allow("codex", rc, out, stderr)
+
+
+@pytest.mark.parametrize(
+    ("tool", "args"),
+    [
+        ("create", {"path": "src/a.md", "file_text": f"a {EM_DASH} b"}),
+        ("edit", {"path": "src/a.md", "old_str": "a", "new_str": f"a {EM_DASH} b"}),
+        ("Write", {"file_path": "src/a.md", "content": f"a {EM_DASH} b"}),
+    ],
+    ids=["create", "edit", "write"],
+)
+def test_copilot_write_em_dash_denied(tool: str, args: dict, tmp_path: Path) -> None:
+    payload = {"cwd": "/w", "toolName": tool, "toolArgs": json.dumps(args)}
+    rc, out, stderr = run("copilot", "pre-tool", "protect-files", payload, tmp_path)
+    assert rc == 2, stderr
+    assert "U+2014" in stderr
+    assert_deny_shape("copilot", out, "plain hyphen")
+
+
+@pytest.mark.parametrize(
+    ("harness", "tool", "tool_input"),
+    [
+        ("cursor", "Write", {"file_path": "src/a.md", "content": f"a {EM_DASH} b"}),
+        ("cursor", "Write", {"file_path": "src/a.md", "old_string": "a", "new_string": EM_DASH}),
+        ("gemini", "write_file", {"file_path": "src/a.md", "content": EM_DASH}),
+        ("gemini", "replace", {"file_path": "src/a.md", "old_string": "a", "new_string": EM_DASH}),
+        ("antigravity", "write_to_file", {"TargetFile": "src/a.md", "CodeContent": EM_DASH}),
+        (
+            "antigravity",
+            "replace_file_content",
+            {"TargetFile": "src/a.md", "ReplacementContent": EM_DASH},
+        ),
+    ],
+    ids=["cursor-write", "cursor-edit", "gemini-write", "gemini-replace", "agy-write", "agy-edit"],
+)
+def test_em_dash_content_denied_other_harnesses(
+    harness: str, tool: str, tool_input: dict, tmp_path: Path
+) -> None:
+    key = "toolName" if harness == "antigravity" else "tool_name"
+    args = "toolInput" if harness == "antigravity" else "tool_input"
+    payload = {"cwd": "/w", key: tool, args: tool_input}
+    rc, out, stderr = run(harness, "pre-tool", "protect-files", payload, tmp_path)
+    assert rc == 2, stderr
+    assert_deny_shape(harness, out, "U+2014")
+
+
 # --- Codex patch paths ----------------------------------------------------------
 
 

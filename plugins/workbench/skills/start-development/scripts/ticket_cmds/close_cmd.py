@@ -1,34 +1,20 @@
-"""ticket.py close: land the epic's integration branch on main, tested, in a fixed order (D5).
+"""ticket.py close: land the epic's integration branch on main, tested, in a fixed order.
 
-Meta mode: every done task is contained in <epic> (else MERGE lines and exit 2), then merge.py
+Meta mode: tasks commit directly on <epic>, so there is no per-task landing gate. merge.py
 rebases <epic> onto <base> in the integration tree, runs --verify on the rebased tip there and
 fast-forwards <base> in the main checkout only when it passed; --verify then runs on <base>
-itself. close.json records the result and main's pre-fast-forward SHA. Component mode checks
-landing only; the epic closes through the phase 6 MR.
+itself. close.json records the result and main's pre-fast-forward SHA. Component mode moves
+nothing; the epic closes through the phase 6 MR.
 """
 
 import datetime
-import importlib.util
 import json
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-LANDED_EXIT = 2
 VERIFY_EXIT = 4
 CLOSE_JSON = "close.json"
-
-
-def _load(name: str, path: Path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules.setdefault(name, mod)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def _sibling(stem: str):
-    return _load(f"ticket_cmds_close_{stem}", HERE / f"{stem}.py")
 
 
 def _recorded(epic_dir: Path) -> dict | None:
@@ -59,13 +45,6 @@ def run(a, t) -> int:
     component = any(repo for repo, _ in t._integration_plan(root, epic_dir))
     if not component and not t._branch_exists(wb, name):
         raise t.TicketError(f"epic {name!r} has no integration branch {name!r} to close")
-    lines = _sibling("continue_cmd")._merge_gate(epic_dir, [], name, t, root)
-    if lines:
-        print("\n".join(lines))
-        print(
-            "land the tasks above on the epic (worktree-merger), then rerun close", file=sys.stderr
-        )
-        return LANDED_EXIT
     if component:
         print(f"component mode: close through the phase 6 MR from {name}")
         return 0

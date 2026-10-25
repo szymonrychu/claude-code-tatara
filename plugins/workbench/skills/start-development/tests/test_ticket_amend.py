@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import pytest
-from test_ticket_run import cli, commit_all, git, mk_epic, mk_task
+from ticket_repo_helpers import cli, commit_all, git, mk_epic, mk_task
 
 
 @pytest.fixture
@@ -50,7 +50,6 @@ def make_valid(epic_dir, task):
     for name in ("Description", "Goals", "Non-goals"):
         text = text.replace(f"## {name}\n", f"## {name}\n\nfilled\n", 1)
     readme.write_text(text)
-    (epic_dir / "approvals.json").write_text("[]\n")
     body = task.read_text()
     task.write_text(body.replace("## Expected outcome\n", "## Expected outcome\n\nit works\n", 1))
 
@@ -90,7 +89,7 @@ def test_amend_keeps_ac_when_not_given(root, repo, tmp_path):
     ep, p = setup(root, repo)
     r = amend(root, ep, "alpha-work", tmp_path)
     assert r.returncode == 0, r.stderr + r.stdout
-    assert "it lists tasks" in p.read_text() and "Changed scope." in p.read_text()
+    assert "it works" in p.read_text() and "Changed scope." in p.read_text()
 
 
 def test_amend_refuses_done(root, repo, tmp_path):

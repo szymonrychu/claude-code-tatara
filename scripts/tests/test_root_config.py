@@ -38,7 +38,7 @@ def test_gitignore_base_entries():
     entries = _ignore()
     for e in [
         "__pycache__/", "*.pyc", ".pytest_cache/", ".ruff_cache/", ".venv/",
-        "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/",
+        "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/", ".scratchpad/",
         ".worktrees/", "**/.claude/settings.local.json", "docs/plans/index.json",
         "docs/plans/facts.md", "docs/research/", "docs/handoffs/",
     ]:  # fmt: skip
@@ -88,9 +88,8 @@ def test_workbench_config_keys():
     cfg = json.loads((ROOT / ".claude/workbench.json").read_text())
     assert set(cfg) <= ACCEPTED_KEYS
     assert "harness" not in cfg
-    glob = "plugins/workbench/workflows/tests/*.test.mjs"
-    cmd = "node --test --test-name-pattern {name} {file}"
-    assert cfg["refRunners"] == {glob: cmd}
+    # refRunners stays a live key (init writes it); the node workflow tests it mapped are gone
+    assert cfg.get("refRunners") == {}
     assert not _tracked("plugins/workbench/.claude/workbench.json")
 
 

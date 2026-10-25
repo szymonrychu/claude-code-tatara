@@ -129,7 +129,7 @@ def test_guard_ignores_non_stop_events(worktree: Path):
     assert decide("subagent-commit-guard", event).action == "allow"
 
 
-def test_commit_guard_decisions(worktree: Path):
+def test_commit_guard_decisions(worktree: Path, monkeypatch):
     import json
 
     assert decide("subagent-commit-guard", stop(worktree)).action == "allow"
@@ -148,3 +148,30 @@ def test_commit_guard_decisions(worktree: Path):
     stale = decide("subagent-commit-guard", stop(worktree))
     assert stale.action == "block"
     assert "last verification ran on" in stale.reason
+
+    # From outside the worktree, the guard finds it through the transcript's `cd`,
+    # read by the shared agent_usage iterator.
+    import agent_usage
+
+    transcript = worktree.parent / "agent-x.jsonl"
+    bash = {"type": "tool_use", "name": "Bash", "input": {"command": f"cd {worktree} && ls"}}
+    transcript.write_text(
+        "{garbled\n"
+        + json.dumps({"type": "user", "message": {"content": "[wb ep/t/impl]"}})
+        + "\n"
+        + json.dumps({"type": "assistant", "message": {"content": [bash]}})
+        + "\n"
+    )
+    seen = []
+    real = agent_usage.transcript_lines
+
+    def spy(path):
+        seen.append(str(path))
+        return real(path)
+
+    monkeypatch.setattr(agent_usage, "transcript_lines", spy)
+    outside = stop(worktree.parent, agent_transcript_path=str(transcript))
+    found = decide("subagent-commit-guard", outside)
+    assert found.action == "block"
+    assert str(worktree) in found.reason
+    assert seen == [str(transcript)]

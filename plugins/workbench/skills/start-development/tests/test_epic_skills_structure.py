@@ -15,6 +15,14 @@ SKILLS = {
         "ticket.py move <epic> done",
         "ticket.py tasks <epic>",
     ],
+    "epic-migrate": [
+        "ticket.py migrate --all --dry-run",
+        "ticket.py migrate --all",
+        "retro-writer",
+        "record.md",
+        "ticket.py retro <epic>",
+        "ticket.py deltas --all --buckets",
+    ],
     "epic-worktrees-remove": [
         "ticket.py reap --epic <epic> --dry-run",
         "ticket.py reap --epic <epic>",
@@ -55,3 +63,48 @@ def test_body_names_ticket_subcommands(name, needles):
 def test_skills_are_short():
     for name in SKILLS:
         assert len(read(name).splitlines()) <= 45
+
+
+def test_epic_task_create_names_only_flags_new_task_has():
+    import re
+    import subprocess
+    import sys
+
+    ticket = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
+    helptext = subprocess.run(
+        [sys.executable, str(ticket), "new-task", "--help"],
+        capture_output=True, text=True, check=True,
+    ).stdout  # fmt: skip
+    body = read("epic-task-create")
+    flags = set(re.findall(r"--[a-z][a-z-]*", body))
+    assert flags
+    for flag in flags:
+        assert flag in helptext, f"{flag} is not a new-task flag"
+
+
+def test_epic_migrate_names_only_real_flags():
+    import re
+    import subprocess
+    import sys
+
+    ticket = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
+    helptext = ""
+    for sub in ("migrate", "retro", "deltas"):
+        helptext += subprocess.run(
+            [sys.executable, str(ticket), sub, "--help"],
+            capture_output=True, text=True, check=True,
+        ).stdout  # fmt: skip
+    flags = set(re.findall(r"--[a-z][a-z-]*", read("epic-migrate")))
+    assert flags
+    for flag in flags:
+        assert flag in helptext, f"{flag} is not a migrate, retro or deltas flag"
+
+
+def test_epic_run_skips_done_tasks_and_caps_are_one_number_per_role():
+    run = " ".join(read("epic-run").split())
+    assert "skip tasks already `done`" in run
+    agents = ROOT / "agents"
+    assert "at most 200 words" in (agents / "implementer.md").read_text()
+    assert "At most 250 words" in (agents / "reviewer.md").read_text()
+    assert "acEvidence" in (agents / "implementer.md").read_text().split("## Report")[1]
+    assert "Replaces the verifier" not in (agents / "reviewer.md").read_text()

@@ -18,7 +18,7 @@ def test_planner_frontmatter_and_input():
     assert m
     fm = m.group(1)
     assert re.search(r"^name: planner$", fm, re.M)
-    assert re.search(r"^model: sonnet$", fm, re.M)
+    assert re.search(r"^model: opus$", fm, re.M)
     src = (Path(__file__).parent / "test_repo_hygiene.py").read_text()
     block = re.search(r"AGENT_KEYS = \((.*?)\)", src, re.S).group(1)
     AGENT_KEYS = re.findall(r"""['"](\w+)['"]""", block)
@@ -28,7 +28,6 @@ def test_planner_frontmatter_and_input():
         "epic",
         "briefs",
         "userDecisions",
-        "relatedEpics",
         "[{id, text}]",
         "absolute file paths",
     )
@@ -39,32 +38,33 @@ def test_planner_frontmatter_and_input():
 def test_planner_boilerplate():
     t = _text()
     for s in (
-        "task-fields",
-        "approvals",
-        "tickets",
-        "plan-inputs",
-        "builder-check",
+        "references/tickets.md",
         "templates/design.md",
+        "templates/task.md",
         "phases 2 and 3",
-        "docs/plans/facts.md",
-        "ticket.py facts",
-        "ticket.py contract list",
-        "ticket.py contract add",
-        "ticket.py graph --todo",
+        "ticket.py new-task",
         "workbench.py runner <ref> --repo <dir>",
         "`command:` ref",
-        "verify hints",
-        "approvals.json",
         "design.md",
         "chore(ticket): <epic> plan",
-        "validate-tasks.mjs --epic",
-        "ticket.py lint",
+        "ticket.py lint <epic>",
         "ticket.py questions --add",
         "200 words",
-        "critical path",
+        "dependency order",
         "preference questions",
     ):
         assert s in t, s
+    for gone in (
+        "relatedEpics",
+        "approvals",
+        "contract",
+        "ticket.py graph",
+        "ticket.py facts",
+        "ticket.py estimate",
+        "validate-tasks",
+        "facts.md",
+    ):
+        assert gone not in t, gone
 
 
 def test_planner_rules():
@@ -72,28 +72,17 @@ def test_planner_rules():
     assert "never write `.py` scratch files" in t.lower() or "Never write `.py` scratch files" in t
     assert "git ls-files <path>" in t
     assert "scratchpad" in t
+    assert "`<workbench root>/.scratchpad`" in t
     assert "LSP and grep" in t
 
 
-def test_planner_cross_epic_steps():
-    t = _text()
-    for s in (
-        "ticket.py contract list",
-        "ticket.py contract add",
-        "ticket.py graph --todo",
-        "ticket.py facts",
-    ):
-        assert s in t, s
-
-
-def test_agents_row():
-    rows = [
-        ln
-        for ln in (SD / "references" / "agents.md").read_text().splitlines()
-        if ln.startswith("| `planner`")
-    ]
-    assert len(rows) == 1
-    assert rows[0].rstrip().endswith("| 3 |")
+def test_planner_dispatched_in_phase_three():
+    readme = (ROOT / "README.md").read_text()
+    rows = [ln for ln in readme.splitlines() if ln.startswith("| `start-development` phase 3 |")]
+    assert any("`planner`" in r for r in rows), rows
+    skill = (SD / "SKILL.md").read_text()
+    phase3 = skill[skill.index("## Phase 3") : skill.index("## The gate")]
+    assert "workbench:planner" in phase3
 
 
 def test_task_template_retirement_rule():
@@ -105,5 +94,34 @@ def test_planner_sizing_and_heading_index():
     t = " ".join(_text().split())
     assert "one test file's worth of behaviour, at most 8 files" in t
     assert "never the full suite" in t
-    assert "ticket.py estimate <epic>" in t
+    assert "more than five files" in t
     assert "grep its `^#` headings first, then read only the sections the plan needs" in t
+
+
+def test_planner_discipline():
+    t = " ".join(_text().split())
+    for s in (
+        "list every file",
+        "one pass",
+        "edits, deletes, skips or xfails",
+        "no longer accurate",
+        "open question",
+        "Never guess",
+    ):
+        assert s in t, s
+
+
+def test_planner_reads_retro_history():
+    t = " ".join(_text().split())
+    assert "ticket.py retro --history" in t
+    assert "Research inputs" in t
+    assert "proposals" in t
+    assert "never edit ROADMAP.md" in t
+
+
+def test_planner_gives_points():
+    t = _text()
+    assert "--points" in t
+    for s in ("Fibonacci", "1, 2, 3, 5, 8, 13", "expected minutes and tokens"):
+        assert s in t, s
+    assert "ticket.py estimate" not in t

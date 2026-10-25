@@ -74,7 +74,7 @@ only diagnoses.
    ```
 
 6. **Narrow-first, then grep.** Filter to the signal; save anything large
-   to the scratchpad instead of flooding context:
+   to `<workbench root>/.scratchpad` instead of flooding context:
    ```
    kubectl -n <ns> logs <pod> --since=30m | grep -iE 'error|fail|exit code|panic'
    ```

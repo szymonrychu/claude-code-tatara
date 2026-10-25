@@ -69,8 +69,7 @@ def test_ground_rules_content():
         "start-development",
         "start-review",
         "start-debugging",
-        "plan-execute",
-        "full path",
+        "epic-run",
         "research",
         "opus",
         "sonnet",
@@ -105,7 +104,7 @@ def test_template_maintenance():
 def test_no_personal_or_stale_content():
     low = AGENTS.lower()
     banned = ("adhd", "superpowers", "engineering:debug", "szy" + "mon", "/us" + "ers/")
-    for bad in (*banned, "—", "’", "→"):
+    for bad in (*banned, "\u2014", "’", "→"):
         assert bad not in low
     assert AGENTS.isascii() and CLAUDE.isascii()
 
@@ -113,12 +112,14 @@ def test_no_personal_or_stale_content():
 def test_claude_md():
     assert CLAUDE.splitlines()[0] == "@AGENTS.md"
     assert "## Claude Code only" in CLAUDE
+    low = CLAUDE.lower()
+    for stale in ("plan-execute", "workflow", "heartbeat"):
+        assert stale not in low
     for needle in (
         "workbench:<skill>",
         "/reload-plugins",
-        "Workflow",
         "trust dialog",
-        "heartbeat",
+        "in the background",
         "docs/claude-cloud.md",
     ):
         assert needle in CLAUDE
@@ -174,12 +175,52 @@ def test_model_table_has_haiku():
     assert "mechanical relays and classifiers: haiku" in flat
 
 
-def test_claude_md_heartbeat_wording():
-    assert "keeps long unattended runs alive" not in CLAUDE
-    assert "reports progress on long runs; keepalive only per its table" in CLAUDE
+def test_ground_rule_one_names_epic_run():
+    start, end = AGENTS.index("1. **Development flow.**"), AGENTS.index("2. **Always")
+    rule = " ".join(AGENTS[start:end].split())
+    for needle in (
+        "epic-run",
+        "one implementer and one reviewer per task",
+        "two fix rounds",
+        "one scope audit per epic",
+    ):
+        assert needle in rule, needle
+    assert "plan-execute" not in rule and "Workflow tool" not in rule
+
+
+def test_ground_rule_four_has_no_heartbeat():
+    start, end = AGENTS.index("4. **Never report"), AGENTS.index("5. **Stay")
+    flat = " ".join(AGENTS[start:end].split())
+    assert "heartbeat" not in flat.lower() and "plan-execute" not in flat
+    assert "10 minutes" in flat and "Agent notification" in flat
 
 
 def test_banner_routes_other_requests():
     flat = " ".join(_block("uninitialised").replace(">", " ").split()).lower()
     assert "any other development request" in flat
     assert "ask the user whether to run init first" in flat
+
+
+HOUSEKEEPING = (
+    "supervisor",
+    "accountable",
+    "xfail",
+    "no longer accurate",
+    "list every file",
+    "one pass",
+    "backward compatibility",
+    "em dash",
+    "fable",
+    "full scope",
+    ".scratchpad",
+    ".logs",
+)
+
+
+def test_housekeeping_rules():
+    rule = (ROOT / "plugins/workbench/rules/housekeeping.md").read_text()
+    for text in (rule, AGENTS):
+        flat = " ".join(text.split()).lower()
+        for needle in HOUSEKEEPING:
+            assert needle in flat, needle
+    assert len(re.findall(r"^## Housekeeping rules$", AGENTS, re.M)) == 1

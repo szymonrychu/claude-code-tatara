@@ -18,9 +18,7 @@ submodule for a whole branch. This one makes a single tree for a single agent.
 
 ## Procedure
 
-1. **Propose a name.** You (the orchestrator) choose it: short, lowercase. On the
-   ticket flow the name is `<epic>-<task>` (epic slug, one hyphen, task slug, at most 57 characters),
-   and `ticket.py worktrees` creates it for you. Otherwise name it for the task,
+1. **Propose a name.** You (the orchestrator) choose it: short, lowercase. Name it for the task,
    so a stranded tree is traceable back to its work.
 
    Check what is taken first:
@@ -45,8 +43,8 @@ submodule for a whole branch. This one makes a single tree for a single agent.
    branch was cut. A conflict during that merge leaves the worktree in place and
    fails loudly.
 
-   **Epic integration tree.** `--integration` makes the epic's own tree, the base
-   every task tree forks from and lands on:
+   **Epic integration tree.** `--integration` makes the epic's own tree; the development flow
+   uses one integration tree per epic and the implementer works there:
 
    ```sh
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-create/scripts/create.py" \
@@ -58,7 +56,8 @@ submodule for a whole branch. This one makes a single tree for a single agent.
    reused unchanged; any other occupant of the path is refused, and an existing
    `<epic>` branch is checked out rather than recreated. With `--repo` it forks
    from `origin/<base>` when that ref exists. `ticket.py move <epic> in-progress`
-   calls it for you; task trees are named `<epic>-<task>`.
+   calls it for you. Outside the task loop, this skill is a generic tool for an
+   isolated tree for one ad-hoc subagent.
 
 3. **Dispatch the subagent against that path.** Give it the path and tell it to
    work only there, by absolute path: every Bash command starts with `cd` into

@@ -26,7 +26,7 @@ Hard limits the builder must respect: compatibility, tooling, budget, deadlines,
 
 ## Decisions
 
-One `### D<n>: <title>` H3 per decision, each with the decision, the alternatives, why, and `(my call)` where the agent chose a default the user did not state, and the approval ids it serves (from the ledger).
+One `### D<n>: <title>` H3 per decision, each with the decision, the alternatives, why, and `(my call)` where the agent chose a default the user did not state.
 
 ## Research
 
@@ -34,9 +34,7 @@ One row per lens (table: lens, ran or skipped with reason, adopted ideas, reject
 
 ## Research inputs
 
-| Source | Entry | Lands in |
-|---|---|---|
-| design doc section, URL or file | the finding | the task(s) that act on it |
+The findings the plan acts on, one line each: the finding, its source, and the task slug that acts on it.
 
 ## Decision coverage
 
@@ -46,23 +44,15 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 |---|---|
 | D1 <title> | task-slug-a, task-slug-b |
 
-## Contracts
-
-A contract is a shared part: one owner task lists it in `owns`, every consumer lists it in `uses`, and it is defined in exactly one file. Owner and consumers are task slugs.
-
-| Part | Owner | Consumers | Where defined |
-|---|---|---|---|
-| `<part>` | task-slug-a | task-slug-b | `path/to/file` |
-
 ## Review focus
 
-- Where reviewers should look hardest: high-risk code, shared parts, invariants that tests match.
+- Where reviewers should look hardest: high-risk code, invariants that tests match.
 
 ## Left to the builder
 
 Choices intentionally not made here, with the boundary the builder may decide within.
 
-## Assumptions and unknowns
+## Assumptions and unknown facts
 
 Facts assumed without proof and questions still open; each says how it will be confirmed (a probe, never a guess) or who can answer.
 

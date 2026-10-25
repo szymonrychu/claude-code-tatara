@@ -87,13 +87,6 @@ def test_duplicate_across_plugins(tree):
         render_skills(load_sources(tree))
 
 
-def test_claude_only_skills_not_emitted(tree):
-    skill(tree, "core", "heartbeat", "b")
-    skill(tree, "core", "hook-probe", "b")
-    out = render_skills(load_sources(tree))
-    assert not any("heartbeat" in p or "hook-probe" in p for p in out)
-
-
 def test_disabled_plugin_skipped(tree):
     skill(tree, "off", "offskill", "b")
     assert ".agents/skills/offskill/SKILL.md" not in render_skills(load_sources(tree))
@@ -131,10 +124,7 @@ def test_paths_rewritten_and_exist_real_tree():
 
 
 def test_names_and_exclusions(tree):
-    skill(tree, "core", "heartbeat", "b")
-    skill(tree, "core", "hook-probe", "b")
     out = render_skills(load_sources(tree))
-    assert not any("heartbeat" in p or "hook-probe" in p for p in out)
     assert not any(p.startswith(".claude/skills") for p in out)
     skill(tree, "core", "Bad_Name", "b")
     with pytest.raises(SkillError):
@@ -145,25 +135,10 @@ def test_names_and_exclusions(tree):
         render_skills(load_sources(tree))
 
 
-CLAUDE_TOKENS = ("Workflow(", "Monitor", "AskUserQuestion", "status.md", "heartbeat.py")
-CLAUDE_CONSTRUCTS = """Then run the epic through `workbench:plan-execute`, one run per epic,
-named by the epic slug through a named copy (`meta.name` must be a literal):
-
-```
-Workflow({
-  scriptPath: '<the printed path>',   // resume with the same scriptPath
-  args: { epic: '<epic>', brief: { what: '...' } },
-})
-```
-
-On return, `ticket.py apply-run <epic> <return.json>` writes results back into the task files.
-
-To wait on the run, arm `heartbeat.py --run <id>` (one Monitor; keepalive off by default; costs in
-skills/heartbeat/SKILL.md); on END read the return per references/run-handback.md.
-**Relaunch:** `ticket.py continue <epic> --out-dir <dir> --accept <ids>` applies the return.
-
-`AskUserQuestion` for genuine option choices, prose otherwise. Ask with `AskUserQuestion`.
-Arm a Monitor on the log."""
+CLAUDE_TOKENS = ("AskUserQuestion",)
+CLAUDE_CONSTRUCTS = (
+    "`AskUserQuestion` for genuine option choices, prose otherwise. Ask with `AskUserQuestion`."
+)
 
 
 def test_claude_construct_rewrite_golden(tree):
@@ -176,9 +151,6 @@ def test_claude_construct_rewrite_golden(tree):
     assert text == golden.read_text()
     for token in CLAUDE_TOKENS:
         assert token not in text, token
-    assert "`plan-execute` skill" in text
-    assert "<scratchpad dir>/<epic>-return.json" in text
-    assert "10 minutes" in text
     assert "numbered" in text.lower()
 
 
@@ -193,56 +165,6 @@ def test_no_claude_only_constructs_emitted():
         out = {**skills, **emitter.render(sources)}
         emitted = {p: t for p, t in out.items() if "skills/" in p}
         assert ".agents/skills/start-development/SKILL.md" in emitted, target
-        assert ".agents/skills/plan-execute/SKILL.md" in emitted, target
         for path, text in emitted.items():
             for token in CLAUDE_TOKENS:
                 assert token not in text, f"{target}: {path} carries {token!r}"
-    sd = skills[".agents/skills/start-development/SKILL.md"]
-    assert "`plan-execute` skill" in sd
-    assert "ticket.py apply-run <epic> <scratchpad dir>/<epic>-return.json" in sd
-    assert "--return <scratchpad dir>/<epic>-return.json" in sd
-
-
-def _ticket():
-    import importlib.util
-
-    path = REAL / "plugins/workbench/skills/start-development/scripts/ticket.py"
-    spec = importlib.util.spec_from_file_location("ticket_fallback_test", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def test_fallback_uses_ticket_py():
-    text = render_skills(load_sources(REAL))[".agents/skills/plan-execute/SKILL.md"]
-    ticket = "plugins/workbench/skills/start-development/scripts/ticket.py"
-    for needle in (
-        f"{ticket} tasks <epic>",
-        f"{ticket} worktrees <epic>",
-        f"{ticket} path <epic> approvals",
-        f"{ticket} apply-run <epic> <scratchpad dir>/<epic>-return.json",
-        f"{ticket} continue <epic>",
-        "--return <scratchpad dir>/<epic>-return.json",
-        "approvals.json",
-        "verify-task.py",
-    ):
-        assert needle in text, needle
-    for token in CLAUDE_TOKENS:
-        assert token not in text, token
-    blocks = re.findall(r"```json\n(.*?)```", text, re.S)
-    assert blocks, "the fallback shows the return schema as a json block"
-    ret = json.loads(blocks[0])
-    t = _ticket()
-    task = ret["tasks"][0]
-    assert task["verification"]["head"] and task["branch"]
-    blocked = t._ids(ret.get("blocked"), "id", "taskId")
-    escalated = t._ids(ret.get("escalated"), "id", "taskId")
-    assert t._run_status(task, blocked, escalated, ret.get("escalated")) == "done"
-    for d in ret["discovered"]:
-        assert d["taskId"] and d["what"]
-    assert {a["status"] for a in ret["approvals"]} <= {
-        "delivered",
-        "blocked",
-        "escalated",
-        "unverified",
-    }

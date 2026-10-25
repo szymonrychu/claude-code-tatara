@@ -1,6 +1,7 @@
 """Tests for ticket.py core: layout, slugs, frontmatter, new-epic, new-task, path, guard, commit."""
 
 import importlib.util
+import json
 import re
 import subprocess
 import sys
@@ -50,7 +51,8 @@ def new_epic(root, title="Cost and ticketing", *extra):
     return cli("new-epic", "--root", root, "--title", title, "--force", *extra)
 
 
-def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra):
+def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra, points="3"):
+    """new-task with `points` storypoints; points=None leaves the flag out."""
     return cli(
         "new-task",
         "--root",
@@ -67,6 +69,7 @@ def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra):
         "a.py,b.py",
         "--verify",
         'pytest -q -k "x y"',
+        *(["--points", points] if points else []),
         *extra,
     )
 
@@ -123,7 +126,6 @@ def test_new_epic_readme(t, root):
         "Description",
         "Goals",
         "Non-goals",
-        "Time",
         "Review",
     ]
     for line in ("What: W", "How: H", "Why: Y"):
@@ -159,6 +161,31 @@ def test_new_epic_refuses_existing_in_any_phase(root, phase):
 
 
 # (4) new-task
+BASE_KEYS = [
+    "title",
+    "status",
+    "repo",
+    "value",
+    "files",
+    "verify",
+    "depends_on",
+    "model",
+    "review",
+    "verified_head",
+]
+NUMBER_KEYS = [
+    "points",
+    "expected_minutes",
+    "expected_tokens",
+    "points_actual",
+    "actual_minutes",
+    "actual_tokens",
+    "actual_roles",
+    "actual_role_tokens",
+]
+LEAN_KEYS = BASE_KEYS + NUMBER_KEYS
+
+
 def test_new_task(t, root):
     new_epic(root)
     r = new_task(
@@ -167,10 +194,6 @@ def test_new_task(t, root):
         "Ticket core",
         "--depends-on",
         "a,b",
-        "--owns",
-        "p",
-        "--uses",
-        "q",
         "--model",
         "sonnet",
         "--review",
@@ -181,34 +204,12 @@ def test_new_task(t, root):
     text = p.read_text()
     doc = t.load(text, p)
     m = doc.meta
-    assert list(m) == [
-        "title",
-        "status",
-        "repo",
-        "value",
-        "files",
-        "verify",
-        "depends_on",
-        "owns",
-        "uses",
-        "model",
-        "estimate",
-        "estimate_by",
-        "actual",
-        "actual_roles",
-        "review",
-        "worktree",
-        "branch",
-        "verified_head",
-        "run",
-        "provides",
-    ]
+    assert list(m) == LEAN_KEYS
     assert m["status"] == "todo" and m["files"] == ["a.py", "b.py"]
     assert m["verify"] == 'pytest -q -k "x y"'
-    assert m["depends_on"] == ["a", "b"] and m["owns"] == ["p"] and m["uses"] == ["q"]
+    assert m["depends_on"] == ["a", "b"]
     assert m["model"] == "sonnet" and m["review"] == "full"
-    assert m["worktree"] == m["branch"] == m["verified_head"] == m["run"] == ""
-    assert m["provides"] == []
+    assert m["verified_head"] == ""
     assert re.findall(r"^## (.+)$", text, re.M) == [
         "Requirement",
         "Acceptance conditions",
@@ -219,6 +220,146 @@ def test_new_task(t, root):
         "Notes",
     ]
     assert t.dump(doc) == text
+
+
+LEGACY_TASK = """---
+title: Old task
+status: done
+repo: plugin
+value: "Kept for history"
+files: [a.py]
+verify: "pytest -q"
+depends_on: [other]
+owns: [helper]
+uses: [shared]
+model: opus
+estimate: 6
+estimate_by: formula
+actual: ""
+review: full
+worktree: /tmp/wt
+branch: e-old-task
+verified_head: abc123
+run: run-1
+provides: [thing]
+---
+
+# Old task
+
+## Requirement
+
+Old.
+"""
+
+
+def test_task_frontmatter_is_lean(t, root):
+    new_epic(root)
+    assert new_task(root).returncode == 0
+    p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
+    lean = t.load(p.read_text(), p).meta
+    assert list(lean) == LEAN_KEYS
+    filled = ("points", "expected_minutes", "expected_tokens")  # new-task requires points
+    assert all(lean[k] for k in filled)
+    assert all(lean[k] == "" for k in NUMBER_KEYS if k not in filled)
+    assert not [k for k in LEAN_KEYS if "estimate" in k]
+    for gone in ("--owns", "--uses"):
+        r = new_task(root, "cost-and-ticketing", "Other task", gone, "x")
+        assert r.returncode == 2 and gone in r.stderr
+    tmpl = (SD / "templates" / "task.md").read_text()
+    assert list(t.load(tmpl, "task.md").meta) == LEAN_KEYS
+    # a task file carrying legacy keys still loads and round-trips every lean field
+    legacy = p.parent / "old-task.md"
+    legacy.write_text(LEGACY_TASK)
+    doc = t.load(legacy.read_text(), legacy)
+    assert {k: doc.meta[k] for k in BASE_KEYS} == {
+        "title": "Old task",
+        "status": "done",
+        "repo": "plugin",
+        "value": "Kept for history",
+        "files": ["a.py"],
+        "verify": "pytest -q",
+        "depends_on": ["other"],
+        "model": "opus",
+        "review": "full",
+        "verified_head": "abc123",
+    }
+    assert t.load(t.dump(doc), legacy) == doc
+    # a writer keeps the legacy keys it does not know about
+    t._write_task(legacy, doc, status="escalated")
+    again = t.load(legacy.read_text(), legacy).meta
+    assert again["status"] == "escalated" and again["owns"] == ["helper"]
+    assert again["estimate"] == "6" and again["run"] == "run-1"
+
+
+def _calibration():
+    spec = importlib.util.spec_from_file_location(
+        "calibration", ROOT / "scripts" / "lib" / "calibration.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _task_meta(t, root, slug_="ticket-core", epic="cost-and-ticketing"):
+    p = root / "todo" / epic / "tasks" / f"{slug_}.md"
+    return t.load(p.read_text(), p).meta
+
+
+def _history_task(root, epic, name, status="done", **fields):
+    """A task file written by hand in `epic` (done phase), carrying the given number fields."""
+    d = root / "done" / epic / "tasks"
+    d.mkdir(parents=True, exist_ok=True)
+    lines = ["---", f"title: {name}", f"status: {status}"]
+    lines += [f"{k}: {v}" for k, v in fields.items()]
+    (d / f"{name}.md").write_text("\n".join(lines) + "\n---\n\n# " + name + "\n")
+
+
+def test_new_task_points_fill_expected(t, root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="5")
+    assert r.returncode == 0, r.stderr
+    m = _task_meta(t, root)
+    minutes, tokens = _calibration().SEED[5]
+    assert m["points"] == "5"
+    assert m["expected_minutes"] == str(minutes) and m["expected_tokens"] == str(tokens)
+    for k in ("points_actual", "actual_minutes", "actual_tokens", "actual_roles"):
+        assert m[k] == "", k
+    assert m["actual_role_tokens"] == ""
+
+
+def test_new_task_expected_from_history(t, root):
+    new_epic(root)
+    for name, minutes, tokens in (("h1", 10, 100), ("h2", 20, 200), ("h3", 40, 900)):
+        _history_task(root, "old", name, points=3, actual_minutes=minutes, actual_tokens=tokens)
+    # rows that do not count: not done, missing an actual, a non-numeric actual
+    _history_task(
+        root, "old", "open", "in-progress", points=3, actual_minutes=999, actual_tokens=999
+    )
+    _history_task(root, "old", "half", points=3, actual_minutes=999)
+    _history_task(root, "old", "junk", points=3, actual_minutes="lots", actual_tokens=999)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="3")
+    assert r.returncode == 0, r.stderr
+    m = _task_meta(t, root)
+    assert (m["points"], m["expected_minutes"], m["expected_tokens"]) == ("3", "20", "200")
+    rows = t.calibration_rows(root)
+    assert sorted(r["actual_minutes"] for r in rows) == [10, 20, 40]
+    assert all(r["points"] == 3 for r in rows)
+
+
+def test_new_task_rejects_non_fibonacci_points(root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points="4")
+    assert r.returncode == 1
+    assert "1, 2, 3, 5, 8, 13" in r.stderr and "points" in r.stderr
+    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
+
+
+def test_new_task_requires_points(root):
+    new_epic(root)
+    r = new_task(root, "cost-and-ticketing", "Ticket core", points=None)
+    assert r.returncode == 2
+    assert "--points" in r.stderr
+    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
 
 
 def test_new_task_requirement_and_ac_files(root, tmp_path):
@@ -297,7 +438,6 @@ def test_frontmatter_roundtrip_awkward_values(t):
     [
         ("readme", "README.md"),
         ("design", "design.md"),
-        ("approvals", "approvals.json"),
         ("record", "record.md"),
         ("tasks", "tasks"),
     ],
@@ -307,6 +447,12 @@ def test_path(root, kind, rel):
     r = cli("path", "--root", root, "cost-and-ticketing", kind)
     assert r.returncode == 0
     assert r.stdout.strip() == str(root.resolve() / "todo" / "cost-and-ticketing" / rel)
+
+
+def test_path_has_no_approvals_kind(root):
+    new_epic(root)
+    r = cli("path", "--root", root, "cost-and-ticketing", "approvals")
+    assert r.returncode == 2 and "approvals" in r.stderr
 
 
 def test_path_follows_phase_and_unknown_epic(root):
@@ -350,15 +496,12 @@ def test_tickets_reference():
         "todo",
         "in-progress",
         "done",
-        "<epic>-<task>",
         "57",
-        "Run name",
         "Integration branch",
         "slug freeze",
         "main checkout",
         "discovered",
         "{what, where, why}",
-        "approvals.json",
         "design.md",
         "record.md",
         "record-writer",
@@ -366,53 +509,50 @@ def test_tickets_reference():
         "blocked",
     ):
         assert needle.lower() in text.lower(), needle
-    assert "<epic>--<task>" not in text
+    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json"):
+        assert gone not in text, gone
     assert text.isascii()
 
 
 def _doc(name):
-    return (SD / "references" / name).read_text()
+    return " ".join((SD / "references" / name).read_text().split())
 
 
-def test_tickets_doc_names_single_hyphen_and_integration():
+def test_tickets_doc_integration_naming_and_collision_rule():
     text = _doc("tickets.md")
-    for needle in ("<epic>-<task>", "57", "Integration branch", "<configdir>/worktrees/<epic>"):
+    for needle in (
+        "Integration branch",
+        "<configdir>/worktrees/<epic>",
+        "Collision rule",
+        "still on disk",
+    ):
         assert needle in text, needle
-    assert "<epic>--<task>" not in text
-
-
-def test_tickets_doc_collision_rule_and_merge_line():
-    text = _doc("tickets.md")
-    assert "Collision rule" in text
     for cmd in ("new-epic", "new-task", "rename"):
         assert cmd in text, cmd
-    assert "still on disk" in text
-    assert "MERGE <task> --name <epic>-<task> --base <epic> --repo <repo>" in text
+    assert "MERGE <task>" not in text
 
 
 def test_worktrees_doc_integration_lifecycle():
     text = _doc("worktrees.md")
     for needle in (
-        "<epic>-<task>",
-        "57",
         "The integration tree",
         "<configdir>/worktrees/<epic>",
         "move <epic> in-progress",
         "worktree-merger",
-        "merge.py --base <epic> --keep --verify",
         "Every role on a task",
         "never calls the built-in `EnterWorktree`",
         "move <epic> done",
     ):
         assert needle in text, needle
+    for gone in ("<epic>-<task>", "merge.py --base <epic> --keep", "fork_point", "forward merge"):
+        assert gone not in text, gone
 
 
-def test_tickets_doc_close_upgrade_and_fork_point():
+def test_tickets_doc_close():
     text = _doc("tickets.md")
-    needles = ("close <epic> --verify <cmd>", "close.json", "worktrees <epic> --integration")
-    for needle in (*needles, "fork_point"):
+    for needle in ("close <epic> --verify <cmd>", "close.json", "exit 4"):
         assert needle in text, needle
-    assert "recorded when the task lands" in text
+    assert "fork_point" not in text
 
 
 # (10) guard and (11) commit helper
@@ -483,3 +623,66 @@ def test_cli_commits_in_git_repo(repo):
     files = git(repo, "show", "--name-only", "--format=").stdout.split()
     assert files == ["docs/plans/todo/alpha/tasks/first.md"]
     assert "?? dirty.txt" in git(repo, "status", "--porcelain").stdout
+
+
+# (13) tasks: dependency order
+def _full_task(root, epic, title, deps="", *more, points="3"):
+    req, ac = root / "req.txt", root / "ac.txt"
+    req.write_text("Do it.")
+    ac.write_text("- AC1: works [evidence: test:t.py::test_works]")
+    extra = ["--requirement-file", req, "--ac-file", ac, *more]
+    if deps:
+        extra += ["--depends-on", deps]
+    r = new_task(root, epic, title, *extra, points=points)
+    assert r.returncode == 0, r.stderr
+    p = Path(r.stdout.strip().splitlines()[-1])
+    text = p.read_text()
+    start, end = text.index("## Steps"), text.index("## Notes")
+    p.write_text(text[:start] + "## Steps\n\n1. test first\n\n" + text[end:])
+    return p
+
+
+def test_tasks_are_in_dependency_order(root):
+    new_epic(root)
+    ep = "cost-and-ticketing"
+    _full_task(root, ep, "Alpha", "mid")
+    _full_task(root, ep, "Beta", "zeta")
+    _full_task(root, ep, "Mid", "zeta")
+    _full_task(root, ep, "Zeta")
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    out = json.loads(r.stdout)
+    order = [x["id"] for x in out]
+    assert order == ["zeta", "beta", "mid", "alpha"]
+    for i, x in enumerate(out):
+        assert set(x["dependsOn"]) <= set(order[:i]), x["id"]
+        assert not {"owns", "uses", "worktree", "branch", "acsForAudit", "forkPoint"} & set(x)
+        assert x["status"] == "todo" and x["verifiedHead"] == ""
+    only = cli("tasks", ep, "--root", root, "--only", "alpha,zeta")
+    assert [x["id"] for x in json.loads(only.stdout)] == ["zeta", "alpha"]
+    readme = root / "todo" / ep / "README.md"
+    assert "## Time" not in readme.read_text()
+    _full_task(root, ep, "Loop one", "loop-two")
+    _full_task(root, ep, "Loop two", "loop-one")
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 1 and "cycle" in r.stderr and "loop-one" in r.stderr
+
+
+def test_tasks_json_carries_estimates(root):
+    new_epic(root)
+    ep = "cost-and-ticketing"
+    _full_task(root, ep, "Alpha", "", points="2")
+    beta = _full_task(root, ep, "Beta")
+    # a task written before points were required carries no estimate fields
+    text = beta.read_text()
+    for key in ("points", "expected_minutes", "expected_tokens"):
+        text = re.sub(rf"^{key}: .*$", f'{key}: ""', text, count=1, flags=re.M)
+    beta.write_text(text)
+    r = cli("tasks", ep, "--root", root)
+    assert r.returncode == 0, r.stderr
+    by_id = {x["id"]: x for x in json.loads(r.stdout)}
+    minutes, tokens = _calibration().SEED[2]
+    alpha = {k: by_id["alpha"][k] for k in ("points", "expected_minutes", "expected_tokens")}
+    assert alpha == {"points": 2, "expected_minutes": minutes, "expected_tokens": tokens}
+    beta = {k: by_id["beta"][k] for k in ("points", "expected_minutes", "expected_tokens")}
+    assert beta == {"points": None, "expected_minutes": None, "expected_tokens": None}

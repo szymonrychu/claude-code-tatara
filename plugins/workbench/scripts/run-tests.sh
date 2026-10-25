@@ -9,13 +9,19 @@
 # independent, so a process per skill is both correct and honest.
 #
 # Usage: run-tests.sh [--only <component>]
-# A component is a directory basename: a skill name, hooks, scripts or workflows.
+# A component is a directory basename: a skill name, hooks or scripts.
 #
-# A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default: a
-# fresh mktemp dir) as <component>.log, <component>-bats.log or workflows.log,
-# and its path is printed after the 15-line tail. Every pytest process gets a
-# private --basetemp under that dir, so parallel runs never share pytest's
-# per-user numbered basetemp. The dir is removed when everything passes.
+# A failing component's full output is kept in $RUN_TESTS_LOG_DIR (default:
+# <main checkout>/.logs/run-tests/<UTC timestamp>-<pid>/, else a fresh mktemp dir
+# under TMPDIR when no main checkout is found) as <component>.log, or
+# <component>-bats.log, and its path is printed after the 15-line tail.
+# The suites' scratch space is a separate mktemp dir under TMPDIR, outside any
+# git checkout, so a fake workbench built in a suite's temp dir cannot be mistaken
+# for a repo nested in the real one. Every pytest process gets a private
+# --basetemp under it (parallel runs never share pytest's per-user numbered
+# basetemp) and every suite, pytest and bats alike, gets it as TMPDIR. Both the
+# log dir and the temp dir are removed when everything passes; on a failure both
+# are kept and the temp dir is printed as "temp dirs:" after the failure logs.
 #
 # Exit 0 only if every suite passes; 2 for a usage or environment error.
 set -uo pipefail
@@ -33,7 +39,7 @@ if [ "${1:-}" = "--only" ]; then
 fi
 if [ -n "$only" ]; then
   found=0
-  for d in skills/*/ hooks/ scripts/ workflows/; do
+  for d in skills/*/ hooks/ scripts/; do
     [ -d "$d" ] && [ "$(basename "$d")" = "$only" ] && found=1
   done
   if [ "$found" -eq 0 ]; then
@@ -49,8 +55,29 @@ export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-workbench-tests@example.invalid}"
 export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
 export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
 
-LOG_DIR="${RUN_TESTS_LOG_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX")}"
-mkdir -p "$LOG_DIR/tmp"
+default_log_dir() {
+  local base
+  if base="$(python3 "$HERE/scripts/lib/workbench.py" logs 2>/dev/null)" && [ -n "$base" ]; then
+    printf '%s/run-tests/%s-%s' "$base" "$(date -u +%Y%m%dT%H%M%SZ)" "$$"
+  else
+    mktemp -d "${TMPDIR:-/tmp}/run-tests.XXXXXX"
+  fi
+}
+# Made before the log dir so a failure here leaves nothing behind. The path is
+# resolved: a trailing slash on TMPDIR would leave a "//" that bats' own paths
+# and a suite's PWD then disagree on.
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/run-tests-tmp.XXXXXX")" \
+  && TMP_DIR="$(cd "$TMP_DIR" && pwd -P)" \
+  && [ -n "$TMP_DIR" ] || {
+  echo "run-tests: cannot create a temp dir under ${TMPDIR:-/tmp}" >&2
+  exit 2
+}
+LOG_DIR="${RUN_TESTS_LOG_DIR:-$(default_log_dir)}"
+mkdir -p "$LOG_DIR"
+export TMPDIR="$TMP_DIR"
+# The caller's root override only picks the log dir above. Suites build their own
+# fake workbenches and must find those, not the caller's tree.
+unset WORKBENCH_ROOT CLAUDE_PROJECT_DIR
 
 # Resolve a pytest that actually runs. `command -v pytest` finds mise's shim,
 # which fails with "No version is set for shim" unless a .mise.toml scopes it,
@@ -102,7 +129,7 @@ for d in skills/*/ hooks/ scripts/; do
 
   # --- pytest, if this skill has any python tests
   if compgen -G "$d/tests/test_*.py" >/dev/null; then
-    out="$("$PYTEST" "$d" -q --basetemp "$LOG_DIR/tmp/$name" 2>&1)"
+    out="$("$PYTEST" "$d" -q --basetemp "$TMP_DIR/$name" 2>&1)"
     rc=$?
     line="$(printf '%s' "$out" | tail -n 1)"
     if [ $rc -eq 0 ]; then
@@ -139,35 +166,13 @@ for d in skills/*/ hooks/ scripts/; do
   fi
 done
 
-# --- workflow scripts: node's own runner, with fakes for the Workflow runtime
-if { [ -z "$only" ] || [ "$only" = "workflows" ]; } && compgen -G "workflows/tests/*.test.mjs" >/dev/null; then
-  ran=$((ran + 1))
-  if ! command -v node >/dev/null 2>&1; then
-    printf '  FAIL  %-34s %s\n' "workflows" "node not installed"
-    failed+=("workflows")
-  else
-    out="$(node --test --test-timeout=10000 workflows/tests/*.test.mjs 2>&1)"
-    rc=$?
-    n="$(printf '%s' "$out" | grep -E '^ℹ pass' | grep -oE '[0-9]+' || echo 0)"
-    if [ $rc -eq 0 ]; then
-      printf '  PASS  %-34s %s passed\n' "workflows" "$n"
-      total_pass=$((total_pass + n))
-    else
-      printf '  FAIL  %-34s\n' "workflows"
-      printf '%s\n' "$out" | grep -E '^(✖|ℹ fail)' | head -n 15 | sed 's/^/        /'
-      printf '%s\n' "$out" > "$LOG_DIR/workflows.log"
-      printf '        full output: %s\n' "$LOG_DIR/workflows.log"
-      failed+=("workflows")
-    fi
-  fi
-fi
-
 echo
 echo "components with tests: $ran   assertions passed: $total_pass"
 if [ ${#failed[@]} -gt 0 ]; then
   echo "FAILED: ${failed[*]}"
   echo "failure logs: $LOG_DIR"
+  echo "temp dirs: $TMP_DIR"
   exit 1
 fi
-rm -rf "$LOG_DIR"
+rm -rf "$LOG_DIR" "$TMP_DIR"
 echo "all green"

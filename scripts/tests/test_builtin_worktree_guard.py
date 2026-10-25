@@ -12,7 +12,6 @@ ROOT = Path(__file__).resolve().parents[2]
 SCAN_DIRS = [
     "plugins/workbench/skills",
     "plugins/workbench/agents",
-    "plugins/workbench/workflows",
     "plugins/workbench/hooks",
     "plugins/workbench/rules",
     "scripts/harness",

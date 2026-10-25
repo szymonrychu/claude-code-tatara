@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_ticket_check import check, cli, epic, task  # noqa: E402
+from ticket_repo_helpers import set_meta  # noqa: E402
 
 
 @pytest.fixture
@@ -29,6 +30,8 @@ def test_doc_overlap_not_refused(root):
     a, b = two_epics(root, "CHANGELOG.md,docs/README.md", "")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -52,6 +55,8 @@ def test_non_doc_file_shared_with_open_task_still_fails(root):
     a, b = two_epics(root, "src/x.py", "")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -77,6 +82,8 @@ def test_repo_overlap_ignore_honoured(root):
     (root / ".claude" / "workbench.json").write_text('{"overlapIgnore": ["*.lock"]}')
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -101,6 +108,8 @@ def test_done_task_overlap_ignored(root):
     p.write_text(re.sub(r"^status: .*$", "status: done", p.read_text(), flags=re.M))
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -135,10 +144,14 @@ def test_merged_fallback_branch_single_hyphen(tmp_path):
     g("commit", "-m", "init")
     a, b = two_epics(root, "src/x.py", "")
     tp = next((root / "in-progress" / a / "tasks").glob("*.md"))
-    branch = f"{a}-{tp.stem}"
-    g("branch", branch)  # at main's head: merged
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    set_meta(tp, verified_head=head)  # contained in main: merged
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -184,6 +197,8 @@ def test_malformed_workbench_config_is_reported(root):
     (root / ".claude" / "workbench.json").write_text("{not json")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",

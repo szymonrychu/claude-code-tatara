@@ -111,7 +111,7 @@ same location `start-research` uses). Structure:
    signal the discovery was shallow, not that the codebase was simple.
 9. **Lanes skipped** and why, including any research lenses skipped.
 10. **Plan inputs** - one `## Plan inputs` section as defined in
-    `${CLAUDE_PLUGIN_ROOT}/skills/start-development/references/plan-inputs.md`, merged and
+    phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md`, merged and
     de-duplicated from every lane (Lane 3's `## Plan inputs` and Lane 4's shared-parts map).
 
 ## Rules

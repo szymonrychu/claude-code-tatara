@@ -41,6 +41,7 @@ def test_agents_md_project_block(workbench, run_cli, allow_file):
     assert "| web | typescript | Customer UI |" in text
     assert "Filled by init" not in text
     assert "<!-- workbench:rules:begin -->" in text and "## Ground rules" in text
+    assert "epic-run" in text and "plan-execute" not in text
     assert "## Forge" in text
     assert "not on a known forge" in text
 

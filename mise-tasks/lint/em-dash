@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Fail on any em dash (U+2014) in the tracked tree, no path exempt"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/check_em_dash.py

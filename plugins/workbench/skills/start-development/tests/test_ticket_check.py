@@ -40,6 +40,8 @@ def epic(root, title, phase="todo", *extra):
 def task(root, ep, title, files="a.py", *extra):
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -130,26 +132,16 @@ def test_files_shared_with_todo_epic_not_failed(root):
     assert check(root, "--epic", b, "--title", "T two", "--files", "shared.py").returncode == 0
 
 
-def test_owns_in_todo_epic_fails(root):
+def test_check_has_no_owns_option_and_ignores_legacy_owns(root):
+    r = check(root, "--epic", epic(root, "Beta"), "--title", "T two", "--owns", "slugify")
+    assert r.returncode == 2 and "--owns" in r.stderr
     a = epic(root, "Alpha")
-    task(root, a, "T one", "a.py", "--owns", "slugify")
-    b = epic(root, "Beta")
-    r = check(root, "--epic", b, "--title", "T two", "--owns", "slugify")
-    assert r.returncode == 1 and "slugify" in r.stderr and a in r.stderr
-
-
-def test_owns_in_done_epic_is_existing(root):
-    a = epic(root, "Alpha", "done")
-    task_path = root / "done" / a / "tasks"
-    # new-task refuses done epics, so create in todo and move
-    a2 = epic(root, "Gamma")
-    task(root, a2, "T one", "a.py", "--owns", "slugify")
-    shutil.move(str(root / "todo" / a2), str(root / "done" / a2))
-    assert not task_path.exists()
-    b = epic(root, "Beta")
-    r = check(root, "--epic", b, "--title", "T two", "--owns", "slugify")
+    task(root, a, "T one", "a.py")
+    tp = root / "todo" / a / "tasks" / "t-one.md"
+    tp.write_text(tp.read_text().replace("model:", "owns: [slugify]\nmodel:"))
+    r = check(root, "--epic", "beta", "--title", "T two", "--files", "b.py")
     assert r.returncode == 0, r.stderr
-    assert "existing" in r.stdout and "slugify" in r.stdout
+    assert "slugify" not in r.stdout + r.stderr
 
 
 def test_check_epic_without_title_checks_every_task(root):
@@ -159,7 +151,7 @@ def test_check_epic_without_title_checks_every_task(root):
     task(root, b, "T two", "tmp.py")
     tp = root / "todo" / b / "tasks" / "t-two.md"
     tp.write_text(tp.read_text().replace("files: [tmp.py]", "files: [shared.py]"))
-    task(root, b, "T three", "ok.py", "--owns", "thing")
+    task(root, b, "T three", "ok.py")
     r = check(root, "--epic", b)
     assert r.returncode == 1
     assert r.stderr.count("shared.py") == 1 and "t-two" in r.stderr
@@ -234,6 +226,8 @@ def test_new_task_refuses_on_shared_file(root):
     b = epic(root, "Beta")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -255,7 +249,7 @@ def test_new_task_refuses_on_shared_file(root):
 
 def test_index_writes_json(root):
     a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "x.py,y.py", "--owns", "thing")
+    task(root, a, "T one", "x.py,y.py")
     r = cli("index", "--root", root)
     assert r.returncode == 0, r.stderr
     data = json.loads((root / "index.json").read_text())
@@ -263,31 +257,29 @@ def test_index_writes_json(root):
     ep = by[("epic", a)]
     assert ep["phase"] == "in-progress" and ep["stage"] == "build" and ep["title"] == "Alpha"
     tk = by[("task", "t-one")]
-    assert tk["epic"] == a and tk["files"] == ["x.py", "y.py"] and tk["owns"] == ["thing"]
-    assert tk["status"] == "todo" and tk["phase"] == "in-progress" and tk["provides"] == []
+    assert tk["epic"] == a and tk["files"] == ["x.py", "y.py"]
+    assert tk["status"] == "todo" and tk["phase"] == "in-progress"
+    assert "owns" not in tk and "provides" not in tk
 
 
 def test_gitignore_has_index():
     assert "docs/plans/index.json" in GITIGNORE.read_text().split("\n")
 
 
-def test_existing_lists_done_owns_and_provides(root):
+def test_existing_lists_files_of_done_tasks(root):
     a = epic(root, "Alpha")
-    task(root, a, "T one", "a.py", "--owns", "slugify")
+    task(root, a, "T one", "a.py,lib/b.py")
     tp = root / "todo" / a / "tasks" / "t-one.md"
-    tp.write_text(tp.read_text().replace("provides: []", "provides: [helper-x]"))
+    tp.write_text(tp.read_text().replace("model:", "owns: [slugify]\nprovides: [helper-x]\nmodel:"))
     live = epic(root, "Live")
-    task(root, live, "T live", "l.py", "--owns", "notdone")
-    shutil.move(str(root / "todo" / a), str(root / "done" / a)) if (root / "done").exists() else (
-        (root / "done").mkdir(),
-        shutil.move(str(root / "todo" / a), str(root / "done" / a)),
-    )
+    task(root, live, "T live", "l.py")
+    (root / "done").mkdir()
+    shutil.move(str(root / "todo" / a), str(root / "done" / a))
     r = cli("existing", "--root", root)
     assert r.returncode == 0, r.stderr
-    out = json.loads(r.stdout)
-    names = {e["name"]: e["where"] for e in out}
-    assert set(names) == {"slugify", "helper-x"}
-    assert a in names["slugify"] and "t-one" in names["slugify"]
+    names = {e["name"]: e["where"] for e in json.loads(r.stdout)}
+    assert set(names) == {"a.py", "lib/b.py"}
+    assert a in names["a.py"] and "t-one" in names["a.py"]
 
 
 def _repo(tmp_path):
@@ -311,6 +303,12 @@ def test_live_tree_warning_uses_ticket_lookup(tmp_path):
     b = epic(root, "Beta", "in-progress")
     task(root, a, "Tee one")
     task(root, b, "Tee one")
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    from ticket_repo_helpers import set_meta
+
+    set_meta(next(root.glob(f"**/{b}/tasks/tee-one.md")), verified_head=head)
     for n in (f"{a}-tee-one", f"{b}-tee-one", a, b):
         subprocess.run(
             ["git", "worktree", "add", "-q", str(tmp_path / n), "-b", n],
@@ -331,6 +329,8 @@ def test_new_task_near_duplicate_still_created(root):
     task(root, a, "Write the parser module")
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -356,6 +356,8 @@ def test_new_task_refuses_epic_path_outside_plans_root(root, tmp_path):
     (outside / "tasks").mkdir(parents=True)
     r = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",
@@ -384,6 +386,8 @@ def test_resolve_epic_refuses_path_outside_plans_root(root, tmp_path):
     for arg in (outside, traversal):
         r = cli(
             "new-task",
+            "--points",
+            "3",
             "--root",
             root,
             "--epic",
@@ -404,6 +408,8 @@ def test_resolve_epic_refuses_path_outside_plans_root(root, tmp_path):
     assert not (outside / "tasks" / "rogue-task.md").exists()
     ok = cli(
         "new-task",
+        "--points",
+        "3",
         "--root",
         root,
         "--epic",

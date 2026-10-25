@@ -23,15 +23,16 @@ error naming the file and the key. Only `${CLAUDE_PLUGIN_ROOT}/scripts/lib/workb
   already runs with that package root as cwd, so a `cd {pkg}` template is wrong. A glob
   without `/` matches the basename of the ref's file, so `*.go` matches `pkg/x_test.go`.
   Overrides the built-in runners (pyproject.toml,
-  package.json, package.xml). Read by verify-task and the plan lint (validate-tasks).
+  package.json, package.xml). Read by `workbench.py runner <ref> --repo <dir>`, which the planner
+  uses to choose between a `test:` and a `command:` acceptance-condition ref.
 - `suites`: shell commands the merger runs as the repo's test suites after the fast-forward
   (skip with `--no-suites`; a failing suite exits 4 and leaves the merge in place).
   Read by worktree-merge (merge.py).
 - `deploy`: `{command, verify}`, both shell strings; deploy after merge, then verify.
   Read by the deploy hook.
-- `overlapIgnore`: globs of doc files whose overlap never forces `dependsOn` and whose
-  merge conflicts the merger union-merges. Read by validate-tasks, plan-execute and
-  worktree-merge. Your list is appended to the defaults.
+- `overlapIgnore`: globs of doc files whose overlap between epics never counts in
+  `ticket.py check` and `ticket.py roadmap`, and whose merge conflicts the merger
+  union-merges. Read by ticket.py and worktree-merge. Your list is appended to the defaults.
 
 ## Default overlapIgnore
 

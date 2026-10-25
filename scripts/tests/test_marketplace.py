@@ -96,13 +96,13 @@ def test_probe_script_present_and_executable():
     assert "hasTrustDialogAccepted" in text
 
 
-def test_core_version_is_spec_1_0_0_in_entry_manifest_and_changelog():
+def test_core_version_is_shared_by_entry_manifest_and_changelog():
     m = _json(".claude-plugin/marketplace.json")
     core = next(e for e in m["plugins"] if e["name"] == "workbench")
-    assert core["version"] == "1.0.0"
-    assert _manifest("plugins/workbench")["version"] == "1.0.0"
+    version = _manifest("plugins/workbench")["version"]
+    assert core["version"] == version
     changelog = (ROOT / "plugins/workbench/CHANGELOG.md").read_text()
-    assert changelog.splitlines()[2].startswith("## v1.0.0")
+    assert changelog.splitlines()[2].startswith(f"## v{version} ")
 
 
 def test_edit_hooks_cover_all_edit_tools():

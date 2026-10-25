@@ -96,3 +96,13 @@ def test_recorder_wrapped_failure_records_not_passed(worktree):
     subprocess.run([sys.executable, str(RECORDER)], input=json.dumps(payload), text=True)
     rec = json.loads((worktree / ".git" / "workbench-verify.json").read_text())
     assert rec["passed"] is False
+
+
+def test_unwrap_any_spill_dir():
+    original = "cd /x && mise run test"
+    spill_dirs = (None, "/main/.logs/bash-output", "/main with space/.logs/b", "/it's/.logs")
+    for spill_dir in spill_dirs:
+        wrapped = wl.wrap_output_filter(original, 4000, spill_dir)
+        assert wrapped != original
+        assert wl.unwrap_output_filter(wrapped) == original
+    assert wl.unwrap_output_filter("pytest -q") == "pytest -q"

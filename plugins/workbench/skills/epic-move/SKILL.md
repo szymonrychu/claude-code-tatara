@@ -12,10 +12,10 @@ Thin wrapper over `ticket.py`. `<epic>` is the epic slug.
   it on a repeat claim; if creation fails the epic stays in todo. An epic mixing meta and
   component tasks is refused.
 - Close: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py move <epic> done`
-  Needs: stage review, last verdict pass, every task done and verified, every task branch
-  contained in `<epic>`, and `<epic>` contained in the trunk (meta: `--base`, default `main`;
+  Needs: stage review, last verdict pass, every task done and verified, and `<epic>`
+  (the integration branch) contained in the trunk (meta: `--base`, default `main`;
   component: `origin/<tracked>` after a fetch); ancestry, else patch equivalence. Then it removes
-  every task tree and branch and the integration tree and branch (`git branch -D` after the check),
+  the integration tree and branch (`git branch -D` after the check),
   and lists anything dirty or not contained under `left` with the reason.
 
 If the move refuses, show the precondition it names and stop; do not work around it.

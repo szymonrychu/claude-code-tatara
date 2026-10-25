@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from .apply_patch import patch_paths
+from .apply_patch import PATCH_KEYS, patch_paths
 from .core import Decision, NormalizedEvent
 
 HARNESSES = ("copilot", "cursor", "codex", "gemini", "antigravity")
@@ -75,8 +75,6 @@ _PATH_KEYS = (
     "notebook_path",
 )
 _PATH_LIST_KEYS = ("paths", "filePaths", "file_paths", "files")
-# Strings that may carry an apply_patch envelope (Codex puts it in `command`).
-_PATCH_KEYS = ("command", "input", "patch")
 _TOOL_CWD_KEYS = ("working_directory", "Cwd", "cwd", "dir_path", "directory")
 _WORKSPACE_KEYS = ("workspace_roots", "workspacePaths", "workspace_paths")
 _EVENT_NAME_KEYS = ("hook_event_name", "hookEventName")
@@ -139,7 +137,7 @@ def _paths(tool_input: dict[str, Any]) -> list[str]:
         if isinstance(value, list):
             for path in value:
                 add(path)
-    for key in _PATCH_KEYS:
+    for key in PATCH_KEYS:
         text = tool_input.get(key)
         if isinstance(text, str) and "*** Begin Patch" in text:
             for path in patch_paths(text):
@@ -204,6 +202,9 @@ def normalize(harness: str, event: str, payload: Any) -> NormalizedEvent:
         "PostToolUseFailure" if event == "post-tool" and not succeeded else claude_event
     )
     raw["stop_hook_active"] = _stop_hook_active(data)
+    # protect-files reads the new content from `tool_input`; Copilot's JSON-string
+    # `toolArgs` and Antigravity's `toolInput` land there already parsed.
+    raw["tool_input"] = tool_input
     transcript = _first(data, _TRANSCRIPT_KEYS)
     if isinstance(transcript, str):
         raw["agent_transcript_path"] = transcript

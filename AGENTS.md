@@ -54,8 +54,8 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
    the workbench itself) starts with `start-development` (Claude Code:
    `workbench:start-development`): discovery, design and plan behind one approval gate, then
    unattended execution. Reviews go through `start-review`, failures through
-   `start-debugging`. Implementation always goes through `plan-execute` on the full path
-   (Claude Code: the Workflow tool); never hand-dispatch implement/review/fix loops. In
+   `start-debugging`. Implementation goes through `epic-run`: one implementer and one reviewer per
+   task, two fix rounds, one scope audit per epic; never hand-roll a loop beyond that. In
    harnesses other than Claude Code, invoke the skills by their bare names.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
@@ -66,8 +66,9 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 3. **Finish the whole scope and nothing outside it.** Implement everything asked, to the
    letter: never skip, "all" and "each" mean all and each. If it needs a missing subsystem,
    build the subsystem. Difficulty changes sequencing, never whether it gets done. The only
-   acceptable non-delivery is a genuine blocker: name it and ask. Do not widen scope; a
-   tangent gets exactly one line, "noted, not doing now: <thing>", and work continues.
+   acceptable non-delivery is a genuine blocker: name it and ask. Never cut corners or reduce
+   scope (see "Housekeeping rules": full scope). Do not widen scope; a tangent gets exactly
+   one line, "noted, not doing now: <thing>", and work continues.
 4. **Never report waiting.** "Waiting", "holding", "blocked", "nothing to do yet" are a
    signal you have not found the work. Enumerate every open item (PR/MR, pipeline, branch,
    worktree, background task) and act on its state:
@@ -85,9 +86,8 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
    item, its state and what it waits on. Act on the first item that transitions, never the
    batch: independent items get independent action. Bound every wait at 10 minutes, then
    re-enumerate and report concretely. Use a tested watcher script, never a hand-rolled
-   polling loop. The heartbeat of a plan-execute run is the bounded watcher for that wait: it
-   prints END and STALL at once and progress at most every 30 minutes, so silence between its
-   lines is not a broken watcher.
+   polling loop. For agents running in the background, the Agent notification on exit is the
+   wake signal: do not poll.
 5. **Stay on the assignment and answer short.** Do the task given: no unrelated issues, no
    refactors beyond the task, no extra hardening. Keep answers to a few lines: what
    changed, what is next, anything needing a decision. Detail only when asked. If scope
@@ -106,7 +106,8 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 
 ## Writing and working conventions
 
-- No em dashes, smart quotes, arrows or decorative Unicode. Plain hyphens and straight
+- No em dashes, smart quotes, arrows or decorative Unicode, in code, comments, commits,
+  messages or any other content (see "Housekeeping rules"). Plain hyphens and straight
   quotes. No preamble.
 - Before working in a component, read its `AGENTS.md`, `MEMORY.md` and `ROADMAP.md`.
 - Update `MEMORY.md` on every non-obvious decision, with the date and the why.
@@ -179,10 +180,10 @@ Do not commit work that is broken, half-finished, or that you cannot verify.
 
 The orchestrator's context is the most expensive thing in a session: every turn
 re-reads all of it. After the initial discussion of a task, every update,
-notification reply, heartbeat reply and status is VERY short.
+notification reply, poll reply and status is VERY short.
 
 - Progress update: one line. `<what moved> - <next> - <decision needed, if any>`.
-- Heartbeat or poll result with nothing actionable: no tool call, and no text
+- Poll result with nothing actionable: no tool call, and no text
   beyond the line itself.
 - Never restate what a notification already says. Never paste logs, tables,
   JSON or diffs unless asked; cite a path instead.
@@ -191,4 +192,37 @@ notification reply, heartbeat reply and status is VERY short.
 - Subagent prompts and reports follow the same rule: ask for capped reports
   (a word limit), and read their files rather than their full transcripts.
 - Detail only when the user asks for it, or a decision needs it.
+
+## Housekeeping rules
+
+The user's standing rules for every agent, every harness and every task.
+
+1. **Supervisor only.** The agent the user talks to never writes code or builds
+   anything. It is the supervisor, responsible and accountable for any and all
+   work its subagents do. Its own duties are not building: ticket and plan files
+   through `ticket.py` (design.md and record.md directly), running the repo's test
+   and lint commands to read results, and the git operations of close through
+   `ticket.py close`. It never edits source, tests, skills, agents, hooks or docs
+   outside `docs/plans/`.
+2. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
+   pass, unless the test itself is no longer accurate; then say which test and
+   why. Tests make the code repeatable and guard against regressions.
+3. **Read, then edit, then run.** Before changing anything, an implementing or
+   reviewing subagent must list every file the step touches, read them all in one
+   pass, and only then make all edits for the step. It then runs the targeted
+   verify once per step; under TDD that is once per red step and once per green
+   step, never an edit-run-edit-run dribble.
+4. **No backward compatibility** (shims, aliases, legacy fallbacks) unless the
+   user explicitly asks for it.
+5. **No em dash characters** in any code, comment, commit, message or content of
+   any kind. Use a plain hyphen.
+6. **Do not guess, at any level.** When unsure of a fact, ask the user or the
+   fable architect; a subagent returns it as a question instead of guessing.
+7. **Full scope.** Always aim for the full scope of the improvement; never cut
+   corners or reduce scope.
+8. **One scratchpad.** Every scratchpad edit lands under `.scratchpad` in the
+   workbench root (the main checkout, never a worktree); it is the only
+   scratchpad dir (`workbench.py scratchpad` prints it).
+9. **One log dir.** Every log lands in the gitignored `.logs` in the workbench
+   root (`workbench.py logs` prints it).
 <!-- workbench:rules:end -->

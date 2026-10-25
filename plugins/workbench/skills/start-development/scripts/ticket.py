@@ -2,7 +2,7 @@
 """ticket.py: file-based epic and task tickets under docs/plans/{todo,in-progress,done}.
 
 Core: layout, slugs, restricted frontmatter, new-epic, new-task, path. Dedup: check, index,
-existing. Run: tasks, worktrees, apply-run. Epic state: move, stage, review, rename, lint, reap.
+existing. Run: tasks, worktrees. Epic state: move, stage, review, rename, lint, reap.
 Every mutating subcommand calls require_main_checkout() first and commit_ticket_change() last.
 Worktree cleanup removes only merged, clean trees, through worktree-merge's cleanup().
 """
@@ -27,7 +27,8 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
-import estimator  # noqa: E402
+import agent_usage  # noqa: E402
+import calibration  # noqa: E402
 import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
@@ -43,11 +44,16 @@ TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")
 AC_LINE = re.compile(r"^- (\S+?): (.+?) \[evidence: ([a-z-]+)(?::\s*(.*?))?\]$")
 REQUIRED_SECTIONS = ("Requirement", "Acceptance conditions", "Files", "Steps")
+POINT_KEYS = ("points", "points_actual")
+COUNT_KEYS = ("expected_minutes", "expected_tokens", "actual_minutes", "actual_tokens")
+ROLE_KEYS = ("actual_roles", "actual_role_tokens")
+ROLES = ("impl", "review")
+ROLE_PAIR = re.compile(r"(impl|review) ([0-9]+)")
 PATH_KINDS = {
     "readme": "README.md",
     "design": "design.md",
-    "approvals": "approvals.json",
     "record": "record.md",
+    "retro": "RETRO.md",
     "tasks": "tasks",
 }
 
@@ -336,6 +342,94 @@ def _template(name: str) -> Doc:
     return load(p.read_text(), p)
 
 
+def _count(value, task: str, field: str) -> int | None:
+    """A whole non-negative number field (frontmatter values load as strings); unset is None."""
+    if value in (None, ""):
+        return None
+    if not re.fullmatch(r"[0-9]+", str(value)):
+        raise TicketError(f"task {task!r}: {field} must be a whole number >= 0: {value!r}")
+    return int(value)
+
+
+def _points(value, task: str, field: str) -> int | None:
+    """A storypoints field, one of calibration.POINTS; unset is None."""
+    if value in (None, ""):
+        return None
+    if re.fullmatch(r"[0-9]+", str(value)) and int(value) in calibration.POINTS:
+        return int(value)
+    allowed = ", ".join(map(str, calibration.POINTS))
+    raise TicketError(f"task {task!r}: {field} must be one of {allowed}: {value!r}")
+
+
+def _parse_roles(value, task: str, field: str) -> dict[str, int] | None:
+    """`impl N, review N` (each role at most once) to {role: N}; unset is None."""
+    if value in (None, ""):
+        return None
+    out: dict[str, int] = {}
+    for part in str(value).split(","):
+        m = ROLE_PAIR.fullmatch(part.strip())
+        if not m or m.group(1) in out:
+            raise TicketError(
+                f"task {task!r}: {field} must look like 'impl N, review N': {value!r}"
+            )
+        out[m.group(1)] = int(m.group(2))
+    return out
+
+
+def _format_roles(roles: dict[str, int]) -> str:
+    return ", ".join(f"{r} {roles[r]}" for r in ROLES if r in roles)
+
+
+def record_actuals(records: list[dict]) -> dict:
+    """A task's measured frontmatter from its agents' records (agent_usage.aggregate):
+    actual_tokens, actual_minutes when an agent is timed, and actual_roles and
+    actual_role_tokens when any record names a role."""
+    sums = agent_usage.aggregate(records)
+    out = {"actual_tokens": str(sums["tokens"])}
+    if sums["minutes"] is not None:
+        out["actual_minutes"] = str(sums["minutes"])
+    if sums["roles"]:
+        out["actual_roles"] = _format_roles({r: m for r, (m, _) in sums["roles"].items()})
+        out["actual_role_tokens"] = _format_roles({r: n for r, (_, n) in sums["roles"].items()})
+    return out
+
+
+def _number_problems(meta: dict, task: str) -> list[str]:
+    """Every points, count and roles field of a task that is set but malformed."""
+    checks = [(k, _points) for k in POINT_KEYS] + [(k, _count) for k in COUNT_KEYS]
+    out = []
+    for key, check in checks + [(k, _parse_roles) for k in ROLE_KEYS]:
+        try:
+            check(meta.get(key), task, key)
+        except TicketError as e:
+            out.append(str(e))
+    return out
+
+
+def calibration_rows(root: Path) -> list[dict]:
+    """calibration rows: every done task with integer points and both actuals, plus its
+    expected minutes and tokens and points_actual when they are well formed."""
+    rows = []
+    for t in scan(root):
+        if t.kind != "task" or t.meta.get("status") != "done":
+            continue
+        if _number_problems(t.meta, t.slug):
+            continue
+        row = {k: _points(t.meta.get(k), t.slug, k) for k in POINT_KEYS}
+        row.update({k: _count(t.meta.get(k), t.slug, k) for k in COUNT_KEYS})
+        if None in (row["points"], row["actual_minutes"], row["actual_tokens"]):
+            continue
+        rows.append({k: v for k, v in row.items() if v is not None})
+    return rows
+
+
+def _point_fields(root: Path, points: int, task: str) -> dict:
+    """`points` plus expected minutes and tokens from calibration."""
+    n = _points(points, task, "points")
+    minutes, tokens = calibration.expected(n, calibration_rows(root))
+    return {"points": str(n), "expected_minutes": str(minutes), "expected_tokens": str(tokens)}
+
+
 def cmd_new_epic(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
@@ -382,25 +476,6 @@ def cmd_new_epic(a: argparse.Namespace) -> int:
     return 0
 
 
-def formula_minutes(root: Path, repo: str, files: list, verify: str) -> int:
-    """The estimator's agent-minutes for a task, with the repo's workbench.json suites."""
-    suites = workbench.config_for_repo(Path(root), repo).get("suites", [])
-    return estimator.task_minutes(len(files), verify, suites)
-
-
-def _estimate_fields(a: argparse.Namespace, root: Path, files: list) -> dict:
-    """`--estimate` is a planner override; without it the formula supplies the minutes."""
-    if a.estimate:
-        return {
-            "estimate": str(_minutes(a.estimate, "new task", "estimate")),
-            "estimate_by": "override",
-        }
-    return {
-        "estimate": str(formula_minutes(root, a.repo, files, a.verify)),
-        "estimate_by": "formula",
-    }
-
-
 def cmd_new_task(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
@@ -414,8 +489,9 @@ def cmd_new_task(a: argparse.Namespace) -> int:
     if path.exists():
         raise TicketError(f"task {task!r} already exists in epic {epic_dir.name!r}")
     worktree_name(epic_dir.name, task)
+    numbers = _point_fields(root, a.points, task)
     files = _csv(a.files)
-    if report(run_check(root, a.title, epic_dir.name, files, _csv(a.owns))):
+    if report(run_check(root, a.title, epic_dir.name, files)):
         return 1
     doc = _template("task.md")
     doc.meta.update(
@@ -426,11 +502,9 @@ def cmd_new_task(a: argparse.Namespace) -> int:
         files=files,
         verify=a.verify,
         depends_on=_csv(a.depends_on),
-        owns=_csv(a.owns),
-        uses=_csv(a.uses),
         model=a.model or "",
-        **_estimate_fields(a, root, files),
         review=a.review or "",
+        **numbers,
     )
     body = _render(
         doc.body,
@@ -483,7 +557,7 @@ def scan(root: Path) -> list[Ticket]:
 
 
 def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
-    """Every tree or branch name a ticket owns: `<epic>` -> (epic, None) and
+    """Every tree or branch name a ticket holds: `<epic>` -> (epic, None) and
     `<epic>-<task>` -> (epic, task). `<epic>-<task>` cannot be split, so this lookup is the
     only way code maps a name back to a ticket."""
     out: dict[str, tuple[str, str | None]] = {}
@@ -529,12 +603,6 @@ def _live_worktrees(root: Path) -> list[str]:
     return [Path(line[9:]).name for line in r.stdout.splitlines() if line.startswith("worktree ")]
 
 
-def _tree_live(wt: str) -> bool:
-    """True when `wt` is a live git worktree, whichever repo (docs root or code/<repo>) owns it."""
-    path = Path(wt)
-    return path.is_dir() and path.name in _live_worktrees(path)
-
-
 class CheckResult(NamedTuple):
     failures: list[str]
     warnings: list[str]
@@ -559,11 +627,8 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     left = [f for f in shared if not workbench.overlap_ignored(f, globs)]
     if not left:
         return []
-    branch = other.meta.get("branch") or worktree_name(other.epic, other.slug)
     try:
-        if _task_merged(
-            _task_src(root, other.meta), branch, other.meta.get("verified_head", ""), "main"
-        ):
+        if _task_merged(_task_src(root, other.meta), other.meta.get("verified_head", ""), "main"):
             return []
     except (OSError, _mod().WorktreeError):
         pass  # no git checkout to ask (e.g. a bare plans dir): not merged
@@ -575,7 +640,6 @@ def run_check(
     title: str | None = None,
     epic: str | None = None,
     files: list[str] | None = None,
-    owns: list[str] | None = None,
     blockers: list[str] | None = None,
     goals: str = "",
 ) -> CheckResult:
@@ -595,12 +659,12 @@ def run_check(
         named |= set(epics[epic].meta.get("blockers", []))
     own_blockers = {_blocker_slug(b, epics) for b in named}
 
-    def candidates() -> list[tuple[list[str], list[str], str]]:
-        """(files, owns, label) to run the files and owns checks on."""
+    def candidates() -> list[tuple[list[str], str]]:
+        """(files, label) to run the cross-epic file overlap check on."""
         if title is not None:
-            return [(files or [], owns or [], f"task {slug(title)!r}")]
+            return [(files or [], f"task {slug(title)!r}")]
         return [
-            (list(t.meta.get("files", [])), list(t.meta.get("owns", [])), f"task {t.slug!r}")
+            (list(t.meta.get("files", [])), f"task {t.slug!r}")
             for t in tickets
             if t.kind == "task" and t.epic == epic
         ]
@@ -635,7 +699,7 @@ def run_check(
                 )
 
     if epic is not None:
-        for tfiles, towns, label in candidates():
+        for tfiles, label in candidates():
             for t in tickets:
                 if t.kind != "task" or t.epic == epic or t.epic in own_blockers:
                     continue
@@ -645,19 +709,6 @@ def run_check(
                         fails.append(
                             f"{label}: file {f!r} is also in task {t.slug!r} of "
                             f"in-progress epic {t.epic!r}"
-                        )
-                for part in towns:
-                    if part not in t.meta.get("owns", []):
-                        continue
-                    if t.phase == "done":
-                        notes.append(
-                            f"existing: {part!r} is owned by done epic {t.epic!r} "
-                            f"(task {t.slug!r}); reuse it"
-                        )
-                    else:
-                        fails.append(
-                            f"{label}: part {part!r} is owned by task {t.slug!r} of "
-                            f"{t.phase} epic {t.epic!r}"
                         )
 
     names = ticket_names(root)
@@ -690,7 +741,6 @@ def cmd_check(a: argparse.Namespace) -> int:
             a.title,
             a.epic,
             _csv(a.files),
-            _csv(a.owns),
             _csv(a.blockers),
             _read(a.goals_file),
         )
@@ -712,8 +762,6 @@ def cmd_index(a: argparse.Namespace) -> int:
                 "stage": m.get("stage", "") if t.kind == "epic" else "",
                 "status": m.get("status", "") if t.kind == "task" else "",
                 "files": m.get("files", []),
-                "owns": m.get("owns", []),
-                "provides": m.get("provides", []),
             }
         )
     out = root / "index.json"
@@ -723,19 +771,20 @@ def cmd_index(a: argparse.Namespace) -> int:
 
 
 def cmd_existing(a: argparse.Namespace) -> int:
+    """Every file a done task built, with the first task that names it: what to reuse."""
     root = Path(a.root)
     seen: dict[str, str] = {}
     for t in scan(root):
         if t.kind != "task" or t.phase != "done":
             continue
         where = str(t.path.relative_to(root))
-        for name in [*t.meta.get("owns", []), *t.meta.get("provides", [])]:
+        for name in t.meta.get("files", []):
             seen.setdefault(name, where)
     print(json.dumps([{"name": n, "where": w} for n, w in seen.items()], indent=2))
     return 0
 
 
-# ---------------------------------------------------------------- run: tasks, worktrees, apply-run
+# ---------------------------------------------------------------- run: tasks, worktrees
 
 
 def _sections(body: str) -> dict[str, str]:
@@ -772,61 +821,28 @@ def _task_files(epic_dir: Path) -> list[Path]:
     return sorted((epic_dir / "tasks").glob("*.md"))
 
 
-def _minutes(value, task: str, field: str) -> int:
-    """A task's `estimate` or `actual` frontmatter value in minutes; unset is 0."""
-    if value in (None, ""):
-        return 0
-    try:
-        n = int(value)
-    except (TypeError, ValueError):
-        n = -1
-    if n < 0:
-        raise TicketError(f"task {task!r}: {field} must be a whole number of minutes: {value!r}")
-    return n
-
-
-def epic_rows(epic_dir: Path) -> list[dict]:
-    """The estimator's task rows for an epic: id, minutes, depends_on, status."""
-    return [
-        {
-            "id": p.stem,
-            "minutes": _minutes(m.get("estimate"), p.stem, "estimate"),
-            "depends_on": m.get("depends_on") or [],
-            "status": m.get("status", ""),
-        }
-        for p, m in _tasks_of(epic_dir)
-    ]
-
-
-def time_summary(epic_dir: Path) -> str:
-    """Estimate, critical path, expected wall, actuals and remaining estimate, in minutes."""
-    est = estimator.epic_estimate(epic_rows(epic_dir))
-    act = sum(_minutes(m.get("actual"), p.stem, "actual") for p, m in _tasks_of(epic_dir))
-    k = estimator.load()["epic"]["k"]
-    return (
-        f"Estimate: {est['sum']} agent-min | Critical path: {est['cp']} min | "
-        f"Expected wall at P={est['p']}: {est['epicWall'] / 60:.1f} h (k={k}) | "
-        f"Actual: {act} min | Remaining estimate: {est['remaining']} min"
-    )
-
-
-def update_time_section(epic_dir: Path) -> tuple[Path, bool]:
-    """Regenerate the derived `## Time` section of the epic README; (path, changed)."""
-    p = epic_dir / "README.md"
-    doc = _read_doc(p)
-    text = time_summary(epic_dir)
-    if re.search(r"^## Time\s*$", doc.body, flags=re.M):
-        body = _section_replace(doc.body, "Time", text)
-    else:
-        body = doc.body.rstrip("\n") + f"\n\n## Time\n\n{text}\n"
-    changed = body != doc.body
-    if changed:
-        p.write_text(dump(Doc(doc.meta, body)))
-    return p, changed
+def dependency_order(deps: dict[str, list[str]]) -> list[str]:
+    """Task slugs with every dependency before its dependents, ties in slug order. A dependency
+    outside `deps` does not constrain the order; a cycle is an error naming its tasks."""
+    left = {k: {d for d in v if d in deps and d != k} for k, v in deps.items()}
+    selfloops = sorted(k for k, v in deps.items() if k in v)
+    out: list[str] = []
+    while left and not selfloops:
+        ready = sorted(k for k, v in left.items() if not v)
+        if not ready:
+            break
+        for k in ready:
+            out.append(k)
+            del left[k]
+        for v in left.values():
+            v.difference_update(ready)
+    if selfloops or left:
+        raise TicketError(f"dependency cycle among tasks: {', '.join(selfloops or sorted(left))}")
+    return out
 
 
 def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
-    """The plan-execute task list for an epic, one entry per task file (or per `only` slug)."""
+    """The epic's task list in dependency order, one entry per task file (or per `only` slug)."""
     placeholder = _template_sections()
     out = []
     files = _task_files(epic_dir)
@@ -855,28 +871,23 @@ def derive_tasks(epic_dir: Path, only: list[str] | None = None) -> list[dict]:
                 "files": m.get("files", []),
                 "verify": m.get("verify", ""),
                 "notes": sec.get("Notes", ""),
-                "owns": m.get("owns", []),
-                "uses": m.get("uses", []),
                 "dependsOn": m.get("depends_on", []),
                 "model": m.get("model", ""),
                 "review": m.get("review", ""),
-                "worktree": m.get("worktree", ""),
-                "acsForAudit": m.get("acs_for_audit", []),
-                "estimate": _minutes(m.get("estimate"), path.stem, "estimate"),
-                "actual": _minutes(m.get("actual"), path.stem, "actual"),
-                "branch": m.get("branch", ""),
+                "status": m.get("status", ""),
                 "verifiedHead": m.get("verified_head", ""),
-                "forkPoint": m.get("fork_point", ""),
+                "points": _points(m.get("points"), path.stem, "points"),
+                **{k: _count(m.get(k), path.stem, k) for k in COUNT_KEYS[:2]},
             }
         )
-    return out
+    by_id = {x["id"]: x for x in out}
+    graph = {p.stem: list(_read_doc(p).meta.get("depends_on", [])) for p in files}
+    return [by_id[k] for k in dependency_order(graph) if k in by_id]
 
 
 def cmd_tasks(a: argparse.Namespace) -> int:
     epic_dir = resolve_epic(a.epic, Path(a.root))
     text = json.dumps(derive_tasks(epic_dir, _csv(a.only)), indent=2)
-    if (epic_dir / "README.md").is_file():
-        update_time_section(epic_dir)
     if a.out:
         Path(a.out).write_text(text + "\n")
     else:
@@ -901,10 +912,6 @@ def _mod():
     if _WT is None:
         _WT = _wt_module()
     return _WT
-
-
-def _create():
-    return _mod().create
 
 
 def _workbench(root: Path) -> Path:
@@ -971,132 +978,29 @@ def ensure_integration_trees(root: Path, epic_dir: Path) -> list[dict]:
     return out
 
 
-def _write_task(path: Path, doc: Doc, changed: list[Path], **updates) -> None:
-    """Rewrite the task with updated frontmatter; record it in `changed` only if it differs."""
+def _write_task(path: Path, doc: Doc, **updates) -> None:
+    """Rewrite the task with updated frontmatter when it differs."""
     meta = dict(doc.meta)
     meta.update(updates)
     text = dump(Doc(meta, doc.body))
     if text != path.read_text():
         path.write_text(text)
-        changed.append(path)
-
-
-def _require_integration_branch(root: Path, meta: dict, base: str, epic: str) -> None:
-    """Exit 1 naming the upgrade command when the epic branch is missing in the task's checkout."""
-    if base != integration_branch(epic):
-        return
-    src = _task_src(root, meta)
-    if not _branch_exists(src, base):
-        raise TicketError(
-            f"integration branch {base} missing in {src}; "
-            f"run ticket.py worktrees {epic} --integration"
-        )
-
-
-def _worktrees_integration(root: Path, epic_dir: Path) -> int:
-    """Create or reuse the integration trees of an in-progress epic; no task tree."""
-    phase = _phase_of(epic_dir)
-    if phase != "in-progress":
-        raise TicketError(
-            f"epic {epic_dir.name!r} is in {phase}; worktrees --integration needs it in-progress"
-        )
-    for tree in ensure_integration_trees(root, epic_dir):
-        print(f"integration {tree['path']} ({tree['verb']})")
-    return 0
 
 
 def cmd_worktrees(a: argparse.Namespace) -> int:
+    """Create or reuse the integration trees of an in-progress epic; tasks run inside them."""
     root = Path(a.root)
     require_main_checkout(root)
     epic_dir = resolve_epic(a.epic, root)
-    if getattr(a, "integration", False):
-        return _worktrees_integration(root, epic_dir)
-    derive_tasks(epic_dir)
-    create, create_mod = _create(), _mod()
-    changed: list[Path] = []
-    refresh = getattr(a, "refresh", False)
-    base = getattr(a, "base", None) or integration_branch(epic_dir.name)
-    results: list[str] = []
-    for path in _task_files(epic_dir):
-        doc = _read_doc(path)
-        if doc.meta.get("status") == "done":
-            continue
-        name = worktree_name(epic_dir.name, path.stem)
-        live = doc.meta.get("worktree", "")
-        if live and Path(live).is_dir():
-            wt, verb = live, "reused"
-            branch = doc.meta.get("branch") or name
-        else:
-            branch = name
-            repo = _task_repo(root, doc.meta.get("repo", ""))
-            existing = workbench.worktrees_dir(_workbench(root)) / name
-            if existing.is_dir():
-                wt, verb = str(existing / repo if repo else existing), "reused"
-            else:
-                _require_integration_branch(root, doc.meta, base, epic_dir.name)
-                wt, verb = create(name=name, base=base, repo=repo, start=root)["path"], "created"
-        status = "in-progress" if doc.meta.get("status", "todo") == "todo" else doc.meta["status"]
-        _write_task(path, doc, changed, worktree=wt, branch=branch, status=status)
-        if refresh:
-            if verb == "created" or _tree_live(wt):
-                results.append(f"{path.stem} {create_mod.fast_forward(Path(wt), base)}")
-        else:
-            print(f"{verb} {name}: {wt}")
-    if changed:
-        commit_ticket_change(epic_dir.name, "worktrees", changed, root)
-    for line in results:
-        print(line)
+    phase = _phase_of(epic_dir)
+    if phase != "in-progress":
+        raise TicketError(f"epic {epic_dir.name!r} is in {phase}; worktrees needs it in-progress")
+    for tree in ensure_integration_trees(root, epic_dir):
+        print(f"integration {tree['path']} ({tree['verb']})")
+        if a.refresh:
+            base = a.base or tree["base"]
+            print(f"refresh {tree['path']} {_mod().fast_forward(Path(tree['path']), base)}")
     return 0
-
-
-def _ids(entries, *keys) -> set[str]:
-    return {str(e.get(k)) for e in entries or [] if isinstance(e, dict) for k in keys if e.get(k)}
-
-
-def _reasons(entries, tid: str) -> list[str]:
-    """Every escalation reason the run recorded for one task."""
-    out = []
-    for e in entries or []:
-        if isinstance(e, dict) and tid in (str(e.get("id")), str(e.get("taskId"))):
-            rs = e.get("reasons") or [e.get("reason")]
-            out += [str(r) for r in rs if r]
-    return out
-
-
-def _dependency_only(entries, tid: str) -> bool:
-    reasons = _reasons(entries, tid)
-    return bool(reasons) and set(reasons) == {"dependency-failed"}
-
-
-def _run_status(
-    t: dict, blocked: set[str], escalated: set[str], escalations: list | None = None
-) -> str:
-    tid = t["id"]
-    if tid in blocked or t.get("stopped") == "blocked":
-        return "blocked"
-    if t.get("verified") and t.get("processOnly") and t.get("stopped") != "review-shallow":
-        return "done"
-    if tid in escalated:
-        return "todo" if _dependency_only(escalations, tid) else "escalated"
-    if t.get("verified") and t.get("clean") and not t.get("stopped"):
-        return "done"
-    return "in-progress"
-
-
-def _dependency_note(entries, t: dict, meta: dict, run: str) -> str:
-    deps = []
-    for e in entries or []:
-        if isinstance(e, dict) and t["id"] in (str(e.get("id")), str(e.get("taskId"))):
-            deps += [str(d) for d in e.get("waitingOn") or e.get("dependsOn") or []]
-    deps = deps or [str(d) for d in t.get("waitingOn") or meta.get("depends_on") or []]
-    day = datetime.date.today().isoformat()
-    return f"- {day} run {run}: dependency-failed on {', '.join(dict.fromkeys(deps))}"
-
-
-def _gap_summary(g) -> str:
-    if isinstance(g, dict):
-        return str(g.get("what") or g.get("summary") or "")
-    return str(g)
 
 
 def _section_replace(body: str, name: str, text: str) -> str:
@@ -1107,247 +1011,6 @@ def _section_replace(body: str, name: str, text: str) -> str:
         count=1,
         flags=re.M | re.S,
     )
-
-
-def _new_discovered(epic_dir: Path, d: dict, src: Doc | None, run: str, root: Path) -> Path | None:
-    title = str(d.get("what", "")).strip()
-    task = slug(title)
-    if not task:
-        raise TicketError(f"discovered entry has no usable 'what': {d!r}")
-    worktree_name(epic_dir.name, task)
-    path = epic_dir / "tasks" / f"{task}.md"
-    if path.exists():
-        return None
-    clashes = name_clashes(root, [(f"{epic_dir.name}-{task}", epic_dir.name, task)])
-    if clashes:
-        for line in clashes:
-            print(f"ticket.py: discovered task {task!r} not created: {line}", file=sys.stderr)
-        return None
-    where, why = str(d.get("where", "")), str(d.get("why", ""))
-    doc = _template("task.md")
-    files = [where] if where and " " not in where else []
-    clash = run_check(root, title, epic_dir.name, files).failures
-    doc.meta.update(
-        title=title,
-        status="blocked" if clash else "todo",
-        repo=(src.meta.get("repo", "") if src else ""),
-        value=why,
-        files=files,
-    )
-    finding = f"{title} at {where or 'the place the run named'}"
-    body = _render(
-        doc.body,
-        {
-            "title": title,
-            "ac": f"- AC1: {title} at {where or 'the place the run named'} is resolved "
-            "[evidence: judgement]",
-            "requirement": f"{title}\n\nWhere: {where}\n\nWhy: {why}",
-            "files": "\n".join(f"- `{f}`" for f in files),
-        },
-    )
-    for name, text in (
-        (
-            "Interfaces",
-            f"Keep the interfaces around {where or 'the finding'} unchanged "
-            f"unless resolving it requires otherwise: {title}.",
-        ),
-        (
-            "Expected outcome",
-            f"{finding} is resolved, and {why or 'the reason it was raised'} no longer applies.",
-        ),
-        (
-            "Steps",
-            f"1. Write a failing test that shows: {title}.\n"
-            f"2. Fix it at {where or 'the place named above'}.\n"
-            "3. Run the task verify command and confirm it passes.",
-        ),
-    ):
-        body = _section_replace(body, name, text)
-    note = f"Discovered in task `{d.get('taskId', '')}` during run `{run}`."
-    if clash:
-        note += "\n\nBlocked by the dedup check:\n" + "\n".join(f"- {m}" for m in clash)
-    body = _section_replace(body, "Notes", note)
-    path.parent.mkdir(exist_ok=True)
-    path.write_text(dump(Doc(doc.meta, body)))
-    return path
-
-
-ROLE_ORDER = ("impl", "verify", "review", "fix")
-
-
-def _parse_roles(text) -> dict[str, int]:
-    """`actual_roles` ("impl 2, review 1") to {role: minutes}."""
-    out: dict[str, int] = {}
-    for part in str(text or "").split(","):
-        name, _, n = part.strip().partition(" ")
-        if name and n.isdigit():
-            out[name] = int(n)
-    return out
-
-
-def _format_roles(roles: dict[str, int]) -> str:
-    known = [r for r in ROLE_ORDER if r in roles]
-    rest = sorted(set(roles) - set(ROLE_ORDER))
-    return ", ".join(f"{r} {roles[r]}" for r in known + rest)
-
-
-def _ms_minutes(ms) -> int:
-    return max(1, round(ms / 60000))
-
-
-def _actual_update(meta: dict, t: dict, run: str) -> dict:
-    """`actual` and `actual_roles` minutes: added to earlier runs, replaced on a re-apply.
-
-    `actual` is the summed per-role agent time (the estimator's unit); `durationMs` is the
-    fallback when the run has no per-role split.
-    """
-    same = meta.get("run") == run
-    role_ms = {r: ms for r, ms in (t.get("roleMs") or {}).items() if ms and ms > 0}
-    before = _minutes(meta.get("actual"), t["id"], "actual")
-    if role_ms:
-        roles = {r: _ms_minutes(ms) for r, ms in role_ms.items()}
-        total = _ms_minutes(sum(role_ms.values()))
-        if not same:
-            prev = _parse_roles(meta.get("actual_roles"))
-            roles = {r: roles.get(r, 0) + prev.get(r, 0) for r in set(roles) | set(prev)}
-        return {
-            "actual": str(total if same else before + total),
-            "actual_roles": _format_roles(roles),
-        }
-    ms = t.get("durationMs")
-    if not isinstance(ms, (int, float)) or ms <= 0:
-        return {}
-    minutes = _ms_minutes(ms)
-    return {"actual": str(minutes if same else before + minutes)}
-
-
-def _run_dir_durations(run_dir: Path) -> dict[str, dict]:
-    """Task id -> {durationMs, roleMs} from the run's agent transcript timestamps.
-
-    Labels are `<prefix>:<role>:<task>` with an optional `#<n>` or `+<n>` retry suffix on the
-    task. durationMs spans the first to the last timestamp of all the task's agents; roleMs
-    sums each agent's own span under its role.
-    """
-    labels: dict[str, str] = {}
-    try:
-        lines = (run_dir / "journal.jsonl").read_text().splitlines()
-    except OSError:
-        return {}
-    for line in lines:
-        try:
-            e = json.loads(line)
-        except ValueError:
-            continue
-        if (
-            isinstance(e, dict)
-            and e.get("type") == "started"
-            and e.get("agentId")
-            and e.get("label")
-        ):
-            labels[str(e["agentId"])] = str(e["label"])
-    stamps: dict[str, list[float]] = {}
-    roles: dict[str, dict[str, int]] = {}
-    for agent, label in labels.items():
-        parts = label.split(":")
-        tid = re.sub(r"[#+]\d+$", "", parts[-1])
-        role = re.sub(r"[#+]\d+$", "", parts[1]) if len(parts) > 2 else ""
-        mine: list[float] = []
-        try:
-            rows = (run_dir / f"agent-{agent}.jsonl").read_text().splitlines()
-        except OSError:
-            continue
-        for row in rows:
-            try:
-                raw = str(json.loads(row)["timestamp"]).replace("Z", "+00:00")
-                ts = datetime.datetime.fromisoformat(raw)
-            except (ValueError, KeyError, TypeError):
-                continue
-            mine.append(ts.timestamp() * 1000)
-        stamps.setdefault(tid, []).extend(mine)
-        if role and len(mine) > 1:
-            by_role = roles.setdefault(tid, {})
-            by_role[role] = by_role.get(role, 0) + round(max(mine) - min(mine))
-    return {
-        t: {"durationMs": round(max(v) - min(v)), "roleMs": roles.get(t, {})}
-        for t, v in stamps.items()
-        if len(v) > 1
-    }
-
-
-def cmd_apply_run(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    if _phase_of(epic_dir) != "in-progress":
-        raise TicketError(
-            f"epic {epic_dir.name!r} is in {_phase_of(epic_dir)}; apply-run needs it in-progress"
-        )
-    ret = json.loads(Path(a.run_return).read_text())
-    if a.run_dir:
-        for t, spans in _run_dir_durations(Path(a.run_dir)).items():
-            for entry in ret.get("tasks", []):
-                if str(entry.get("id")) == t:
-                    entry.update(spans)
-    run = str(ret.get("run") or ret.get("name") or ret.get("runName") or epic_dir.name)
-    files = {p.stem: p for p in _task_files(epic_dir)}
-    unknown = sorted({str(t.get("id")) for t in ret.get("tasks", [])} - set(files))
-    if unknown:
-        raise TicketError(
-            f"return names tasks with no file in {epic_dir.name!r}: {', '.join(unknown)}"
-        )
-    blocked = _ids(ret.get("blocked"), "id", "taskId")
-    escalated = _ids(ret.get("escalated"), "id", "taskId")
-    provides: dict[str, list[str]] = {}
-    for p in ret.get("provides", []):
-        provides.setdefault(str(p.get("taskId")), []).append(str(p.get("name")))
-    landed_fork = {
-        str(e.get("id") or e.get("taskId")): str(e["forkPoint"])
-        for e in ret.get("landed") or []
-        if isinstance(e, dict) and e.get("forkPoint")
-    }
-    changed: list[Path] = []
-    for t in ret.get("tasks", []):
-        path = files[t["id"]]
-        doc = _read_doc(path)
-        status = _run_status(t, blocked, escalated, ret.get("escalated"))
-        body = doc.body
-        if status == "todo" and t["id"] in escalated:
-            line = _dependency_note(ret.get("escalated"), t, doc.meta, run)
-            if line not in body:
-                body = _append_to_section(body, "Notes", line)
-            doc = Doc(doc.meta, body)
-        have = list(doc.meta.get("provides", []))
-        have += [n for n in provides.get(t["id"], []) if n not in have]
-        fork = t.get("forkPoint") or landed_fork.get(str(t["id"]))
-        fork_update = {"fork_point": str(fork)} if fork else {}
-        _write_task(
-            path,
-            doc,
-            changed,
-            status=status,
-            branch=t.get("branch") or doc.meta.get("branch", ""),
-            verified_head=(t.get("verification") or {}).get("head") or "",
-            run=run,
-            acs_for_audit=[str(x) for x in t.get("acsForAudit") or []],
-            process_gaps=[_gap_summary(g) for g in t.get("processGaps") or []],
-            provides=have,
-            **fork_update,
-            **_actual_update(doc.meta, t, run),
-        )
-        print(f"{t['id']}: {status}")
-    for d in ret.get("discovered", []):
-        src = _read_doc(files[d["taskId"]]) if d.get("taskId") in files else None
-        path = _new_discovered(epic_dir, d, src, run, root)
-        if path:
-            changed.append(path)
-            status = _read_doc(path).meta["status"]
-            print(f"discovered {path.stem}: new {status} task from {d.get('taskId', '')}")
-    if changed:
-        readme, moved = update_time_section(epic_dir)
-        if moved:
-            changed.append(readme)
-        commit_ticket_change(epic_dir.name, f"apply-run {run}", changed, root)
-    return 0
 
 
 # ---------------------------------------------------------------- epic state
@@ -1461,7 +1124,7 @@ def _move_in_progress(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     for path in _task_files(dest):
         doc = _read_doc(path)
         if doc.meta.get("status") == "todo":
-            _write_task(path, doc, [], status="in-progress")
+            _write_task(path, doc, status="in-progress")
     commit_ticket_change(name, "move in-progress", [epic_dir, dest], root)
     print(dest)
     return 0
@@ -1481,26 +1144,9 @@ def _branch_exists(src: Path, branch: str) -> bool:
     )
 
 
-def _task_contained(src: Path, branch: str, verified_head: str, base: str) -> tuple[bool, str]:
-    """Whether the task is contained in base (ancestry, else patch equivalence), and why not.
-    A branch worktree-merge already deleted is judged by its verified_head."""
-    mm = _merge()
-    if _branch_exists(src, branch):
-        return mm.contained(src, branch, base)
-    if not verified_head:
-        return False, f"branch {branch!r} is gone and the task has no verified_head"
-    return mm.contained(src, verified_head, base)
-
-
-def _task_merged(src: Path, branch: str, verified_head: str, base: str) -> bool:
-    return _task_contained(src, branch, verified_head, base)[0]
-
-
-def _epic_target(src: Path, epic: str, base: str) -> str:
-    """What a task branch must be merged into: the epic's integration branch when src has it
-    (an epic claimed before integration trees existed has none), else base."""
-    branch = integration_branch(epic)
-    return branch if _branch_exists(src, branch) else base
+def _task_merged(src: Path, verified_head: str, base: str) -> bool:
+    """Whether the task's verified_head is contained in base (ancestry, else patch equivalence)."""
+    return bool(verified_head) and _merge().contained(src, verified_head, base)[0]
 
 
 def _trunk(wb: Path, repo: str, base: str) -> tuple[str, bool]:
@@ -1557,17 +1203,7 @@ def review_gate(epic_dir: Path, action: str) -> None:
 def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     name = epic_dir.name
     review_gate(epic_dir, "move done")
-    tasks = _tasks_of(epic_dir)
-    problems = _undelivered(tasks)
-    for p, m in tasks:
-        branch = m.get("branch") or worktree_name(name, p.stem)
-        src = _task_src(root, m)
-        target = _epic_target(src, name, a.base)
-        ok, why = _task_contained(src, branch, m.get("verified_head", ""), target)
-        if not ok:
-            problems.append(
-                f"task {p.stem!r}: branch {branch!r} is not merged into {target!r}: {why}"
-            )
+    problems = _undelivered(_tasks_of(epic_dir))
     problems += _integration_problems(root, epic_dir, a.base)
     _refuse(problems)
     dest = _git_mv(epic_dir, "done", root)
@@ -1650,12 +1286,6 @@ def cmd_rename(a: argparse.Namespace) -> int:
     if not new:
         raise TicketError("title has no usable characters")
     tasks = _tasks_of(epic_dir)
-    live = [p.stem for p, m in tasks if m.get("worktree") or m.get("branch")]
-    if live and new != name:
-        raise TicketError(
-            f"epic {name!r} has task worktrees ({', '.join(live)}) named after "
-            "its slug; rename refused"
-        )
     for p, _ in tasks:
         worktree_name(new, p.stem)
     epics = _epics(root)
@@ -1722,7 +1352,7 @@ def _rmdir_if_empty(d: Path) -> None:
 
 class Sweep:
     """Removes merged, clean worktrees and their branches through merge.py cleanup(); everything
-    else is listed with its reason. Task trees and branches go before the integration ones."""
+    else is listed with its reason."""
 
     def __init__(self, base: str, dry_run: bool) -> None:
         self.base, self.dry_run = base, dry_run
@@ -1822,67 +1452,11 @@ class Sweep:
         if not self.dry_run:
             _rmdir_if_empty(d)
 
-    def _own_branch(self, branch: str, epic: str, tree: str, legacy: str, target: str) -> bool:
-        """Only the task's own branch is swept: its tree name, its legacy name, or an
-        <epic>-... name; never the integration branch, the base, a trunk or HEAD."""
-        refused = {self.base, target, integration_branch(epic), "HEAD", "main", "master"}
-        if branch in refused or branch.startswith("-"):
-            return False
-        return branch in (tree, legacy) or branch.startswith(f"{epic}-")
-
-    @staticmethod
-    def _own_tree(wt: Path, wb: Path, tree: str, legacy: str) -> bool:
-        """A tree is the task's own when it sits under a worktrees dir and carries the task's
-        tree name (or legacy name, or a <tree>-2 rebased copy), alone or as its parent dir."""
-        roots = [workbench.worktrees_dir(wb).resolve(), (wb / ".worktrees").resolve()]
-        res = wt.resolve()
-        if not any(r in res.parents for r in roots):
-            return False
-        names = (tree, legacy)
-        return any(
-            n == x or re.fullmatch(re.escape(x) + r"-\d+", n)
-            for n in (res.name, res.parent.name)
-            for x in names
-        )
-
-    def task(self, root: Path, epic: str, p: Path, m: dict) -> None:
-        """One task's worktree (frontmatter `worktree`, else <config dir>/worktrees/<epic>-<task>)
-        and its branch, removed when contained in the epic branch (else base) and clean."""
-        wb = _workbench(root)
-        tree = worktree_name(epic, p.stem)
-        legacy = f"{epic}{LEGACY_SEP}{p.stem}"
-        branch = m.get("branch") or tree
-        if branch == "HEAD":
-            branch = tree
-        src = _task_src(root, m)
-        target = _epic_target(src, epic, self.base)
-        if not self._own_branch(branch, epic, tree, legacy, target):
-            self.leave(f"{src} (branch {branch})", "not this task's branch")
-            return
-        wt = Path(m["worktree"]) if m.get("worktree") else workbench.worktrees_dir(wb) / tree
-        if not self._own_tree(wt, wb, tree, legacy):
-            self.leave(wt, "outside the worktrees dir")
-            return
-        if wt.name == tree:
-            if wt.is_dir():
-                self.container(wt, branch, wb, src, target)
-            else:
-                self.branch_only(src, branch, target)
-            return
-        self.tree(wt, src, branch, target)
-        if not wt.is_dir():
-            self.branch_only(src, branch, target)
-        if wt.parent.name == tree and not self.dry_run:
-            _rmdir_if_empty(wt.parent)
-
     def epic(self, root: Path, epic_dir: Path) -> None:
-        """Every task tree and branch of the epic (target: the epic branch), then its integration
-        trees at <config dir>/worktrees/<epic>[/<repo>] and legacy .worktrees/<epic>/<repo>, and
-        the integration branches (target: the trunk)."""
+        """The epic's integration trees at <config dir>/worktrees/<epic>[/<repo>] and legacy
+        .worktrees/<epic>/<repo>, then its integration branches (target: the trunk)."""
         wb = _workbench(root)
         name = epic_dir.name
-        for p, m in _tasks_of(epic_dir):
-            self.task(root, name, p, m)
         for d in (workbench.worktrees_dir(wb) / integration_branch(name), wb / ".worktrees" / name):
             if d.is_dir():
                 self.integration(d, name, wb)
@@ -1902,18 +1476,6 @@ def cmd_reap(a: argparse.Namespace) -> int:
     if not a.dry_run:
         require_main_checkout(root)
     sweep = Sweep(a.base, a.dry_run)
-    if a.task and not a.epic:
-        raise TicketError("reap: --task needs --epic")
-    if a.epic and a.task:
-        epic_dir = resolve_epic(a.epic, root)
-        found = [(p, m) for p, m in _tasks_of(epic_dir) if p.stem == a.task]
-        if not found:
-            raise TicketError(f"reap: epic {epic_dir.name} has no task {a.task!r}")
-        sweep.task(root, epic_dir.name, *found[0])
-        print(json.dumps({"dryRun": a.dry_run, **sweep.summary()}, indent=2))
-        for item in sweep.left:
-            print(f"reap: {a.task} left in place: {item['reason']}", file=sys.stderr)
-        return 1 if sweep.left else 0
     if a.epic:
         epic_dir = resolve_epic(a.epic, root)
         if _phase_of(epic_dir) != "done":
@@ -1947,8 +1509,51 @@ def cmd_reap(a: argparse.Namespace) -> int:
 # ---------------------------------------------------------------- lint
 
 
+def _task_problems(t: Ticket, placeholder: dict[str, str]) -> list[str]:
+    """What a task file lacks (a Requirement, an acceptance condition, verify, files, points)
+    and its malformed points, counts and roles."""
+    sec = _sections(t.body)
+    out = []
+    req = sec.get("Requirement", "")
+    if not req or req == placeholder.get("Requirement"):
+        out.append(f"task {t.slug!r} has an empty Requirement")
+    try:
+        if not _parse_ac(sec.get("Acceptance conditions", ""), t.slug):
+            out.append(f"task {t.slug!r} has no acceptance condition")
+    except TicketError as e:
+        out.append(str(e))
+    for key in ("verify", "files", "points"):
+        if not t.meta.get(key):
+            out.append(f"task {t.slug!r} has no {key}")
+    return out + _number_problems(t.meta, t.slug)
+
+
+def _coverage_problems(design: Path, slugs: set[str]) -> list[str]:
+    """Every `### D<n>` of design.md maps to existing task slugs in its Decision coverage."""
+    text = design.read_text()
+    rows: dict[str, list[str]] = {}
+    for line in _sections(text).get("Decision coverage", "").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        m = re.match(r"(D\d+)\b", cells[0])
+        if m and len(cells) > 1:
+            rows[m.group(1)] = [x.strip(" `") for x in cells[1].split(",") if x.strip(" `")]
+    out = []
+    for d in re.findall(r"^### (D\d+)\b", text, re.M):
+        if d not in rows:
+            out.append(f"design.md Decision coverage has no row for {d}")
+        elif not rows[d]:
+            out.append(f"design.md Decision coverage maps {d} to no task")
+        out += [
+            f"design.md Decision coverage maps {d} to unknown task {x!r}"
+            for x in rows.get(d, [])
+            if x not in slugs
+        ]
+    return out
+
+
 def lint_problems(root: Path, only: str | None = None) -> list[str]:
     """Invariant breaks across every epic, or only `only`."""
+    placeholder = _template_sections()
     tickets = scan(root)
     epics = {t.slug: t for t in tickets if t.kind == "epic"}
     out = []
@@ -1982,6 +1587,16 @@ def lint_problems(root: Path, only: str | None = None) -> list[str]:
             for d in t.meta.get("depends_on", []):
                 if d not in slugs:
                     out.append(f"{where}: task {t.slug!r} depends_on unknown task {d!r}")
+            # a done epic is history: only `ticket.py migrate` rewrites its task files
+            if e.phase != "done":
+                out += [f"{where}: {p}" for p in _task_problems(t, placeholder)]
+        try:
+            dependency_order({t.slug: list(t.meta.get("depends_on", [])) for t in tasks})
+        except TicketError as cycle:
+            out.append(f"{where}: {cycle}")
+        design = e.path.parent / "design.md"
+        if e.phase != "done" and design.is_file():
+            out += [f"{where}: {p}" for p in _coverage_problems(design, slugs)]
     return out
 
 
@@ -2078,19 +1693,17 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp = add("new-task", cmd_new_task)
     for opt in ("epic", "title", "repo", "value", "files", "verify"):
         sp.add_argument(f"--{opt}", required=True)
-    for opt in (
-        "depends-on",
-        "owns",
-        "uses",
-        "model",
-        "review",
-        "estimate",
-        "requirement-file",
-        "ac-file",
-    ):
+    for opt in ("depends-on", "model", "review", "requirement-file", "ac-file"):
         sp.add_argument(f"--{opt}")
+    sp.add_argument(
+        "--points",
+        required=True,
+        type=int,
+        help="Fibonacci storypoints (1, 2, 3, 5, 8, 13); fills expected_minutes and "
+        "expected_tokens from calibration",
+    )
     sp = add("check", cmd_check)
-    for opt in ("title", "epic", "files", "owns", "blockers", "goals-file"):
+    for opt in ("title", "epic", "files", "blockers", "goals-file"):
         sp.add_argument(f"--{opt}")
     add("index", cmd_index)
     add("existing", cmd_existing)
@@ -2100,26 +1713,17 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--out", help="write the JSON to this file instead of stdout")
     sp = add("worktrees", cmd_worktrees)
     sp.add_argument("epic")
-    sp.add_argument("--base", default=None, help="default: the epic's integration branch")
-    sp.add_argument(
-        "--integration",
-        action="store_true",
-        help="create or reuse the integration tree(s) of an in-progress epic; no task tree",
-    )
+    sp.add_argument("--base", default=None, help="--refresh target (default: each tree's trunk)")
     sp.add_argument(
         "--refresh",
         action="store_true",
-        help="fast-forward each live, clean tree with nothing ahead of --base",
+        help="fast-forward each clean integration tree with nothing ahead of --base",
     )
-    sp = add("apply-run", cmd_apply_run)
-    sp.add_argument("epic")
-    sp.add_argument("run_return", metavar="return.json")
-    sp.add_argument("--run-dir", help="Workflow transcript dir: task actuals from timestamps")
     sp = add("move", cmd_move)
     sp.add_argument("epic")
     sp.add_argument("phase", choices=("in-progress", "done"))
     sp.add_argument("--owner", help="who claims the epic (default: git user.name)")
-    sp.add_argument("--base", default="main", help="branch task branches must be merged into")
+    sp.add_argument("--base", default="main", help="branch the epic branch must be merged into")
     sp = add("stage", cmd_stage)
     sp.add_argument("epic")
     sp.add_argument("stage", choices=EPIC_STAGES)
@@ -2135,8 +1739,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp = add("reap", cmd_reap)
     sp.add_argument("--dry-run", action="store_true", help="list what would go, remove nothing")
     sp.add_argument("--base", default="main")
-    sp.add_argument("--epic", help="reap only this done epic (slug or directory)")
-    sp.add_argument("--task", help="with --epic: reap only this task's merged, clean worktree")
+    sp.add_argument("--epic", help="reap only this done epic's integration trees")
     sp = add("path", cmd_path)
     sp.add_argument("epic")
     sp.add_argument("kind", choices=sorted(PATH_KINDS))
