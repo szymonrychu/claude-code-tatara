@@ -1,7 +1,7 @@
 ---
 title: configuration improvements
 blockers: [agent-init-scripts, cluster-scaling, frontend-decoupling]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agent-orchestrator, agents-web, agents-helmfile]
 created: 2026-10-25
