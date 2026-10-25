@@ -803,5 +803,16 @@
       "agents-helmfile"
     ],
     "note": "extends agents-orchestrator-chart: cache.s3 {endpoint, region, bucket, prefix, pathStyle, verifyTls, existingSecret, accessKeyIdKey, secretAccessKeyKey}, cache.image (default the chart image), cache.maxBytes, cache.timeoutSeconds; credentials on the reconciler only; task cache-chart-values"
+  },
+  {
+    "name": "matrix-connector-api",
+    "kind": "api",
+    "owner": "agents-matrix-connector",
+    "file": "code/agents-matrix-connector/README.md",
+    "consumers": [
+      "agents-web",
+      "agents-helmfile"
+    ],
+    "note": "task mxc-openapi-and-readme: /matrix/api/v1 (additive-only): GET /meta, GET /rooms ?kind&access, GET /rooms/{room_id}, PUT /rooms/{room_id}/settings {preset_id, trigger}, GET /rooms/{room_id}/messages, GET /users ?q, GET|POST /rules, DELETE /rules/{id}, GET|PUT /settings {default_preset_id}, GET /messages; errors {error:{code,message}}; openapi.json committed, vendored by agents-web as openapi/matrix.json"
   }
 ]
