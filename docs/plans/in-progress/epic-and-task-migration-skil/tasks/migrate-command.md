@@ -1,6 +1,6 @@
 ---
 title: Migrate command
-status: todo
+status: in-progress
 repo: workbench
 value: "One command moves every epic to the points scheme with one commit per epic, and running it again changes nothing"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/migrate.py, plugins/workbench/skills/start-development/tests/test_ticket_migrate.py, plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/references/tickets.md, plugins/workbench/README.md, plugins/workbench/skills/start-development/tests/test_plugin_readme_rules.py]

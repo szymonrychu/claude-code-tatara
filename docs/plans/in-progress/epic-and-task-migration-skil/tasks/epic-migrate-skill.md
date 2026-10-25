@@ -1,6 +1,6 @@
 ---
 title: Epic migrate skill
-status: todo
+status: in-progress
 repo: workbench
 value: "One skill walks the whole migration: dry run, migrate, retros, and the bucket table"
 files: [plugins/workbench/skills/epic-migrate/SKILL.md, plugins/workbench/skills/start-development/tests/test_epic_skills_structure.py, plugins/workbench/skills/start-development/tests/test_ticket_flow_docs.py, plugins/workbench/README.md, plugins/workbench/skills/start-development/SKILL.md]

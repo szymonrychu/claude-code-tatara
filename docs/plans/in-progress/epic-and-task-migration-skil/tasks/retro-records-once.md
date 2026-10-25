@@ -1,6 +1,6 @@
 ---
 title: Retro records once
-status: todo
+status: in-progress
 repo: workbench
 value: "Retro reads each epic's agent records in one pass and orders undated old epics by when their work was verified"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/retro.py, plugins/workbench/skills/start-development/tests/test_ticket_retro.py, plugins/workbench/skills/start-development/references/tickets.md]

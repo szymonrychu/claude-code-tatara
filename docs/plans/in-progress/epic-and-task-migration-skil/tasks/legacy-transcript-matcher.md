@@ -1,6 +1,6 @@
 ---
 title: Legacy transcript matcher
-status: todo
+status: in-progress
 repo: workbench
 value: "Old epics' implementer and reviewer transcripts count toward their tasks' actuals even without the run marker"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/scripts/tests/test_agent_usage.py]

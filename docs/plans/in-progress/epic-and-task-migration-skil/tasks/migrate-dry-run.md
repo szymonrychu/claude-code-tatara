@@ -1,6 +1,6 @@
 ---
 title: Migrate dry run
-status: todo
+status: in-progress
 repo: workbench
 value: The exact old-to-new mapping of every task is computed and shown before anything is written
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/migrate.py, plugins/workbench/skills/start-development/tests/test_ticket_migrate_map.py, plugins/workbench/skills/start-development/tests/test_ticket_retired_run_loop.py]

@@ -1,6 +1,6 @@
 ---
 title: Migrate this repo
-status: todo
+status: in-progress
 repo: workbench
 value: "This repository's done epics carry the points scheme and a retro, so new estimates calibrate from real history"
 files: [docs/plans/done/epic-integration-worktrees, docs/plans/done/flow-speed-and-token-optimiz, docs/plans/done/init-leaves-a-green-tree, docs/plans/done/lean-development-flow, docs/plans/done/template-update-skill-and-in, docs/plans/done/housekeeping-rules-estimates]

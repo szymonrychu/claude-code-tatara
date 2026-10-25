@@ -1,6 +1,6 @@
 ---
 title: Minutes to points
-status: todo
+status: in-progress
 repo: workbench
 value: "Old tasks' minute estimates map to storypoints by one tested rule"
 files: [plugins/workbench/scripts/lib/calibration.py, plugins/workbench/scripts/tests/test_calibration.py]

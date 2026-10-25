@@ -1,6 +1,6 @@
 ---
 title: Retro writer record input
-status: todo
+status: in-progress
 repo: workbench
 value: retro-writer can write a real retro for epics that have a record but no orchestrator notes
 files: [plugins/workbench/agents/retro-writer.md, plugins/workbench/skills/start-development/references/retro.md, plugins/workbench/skills/start-development/tests/test_templates.py]

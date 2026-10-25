@@ -1,6 +1,6 @@
 ---
 title: Deltas legacy retired
-status: todo
+status: in-progress
 repo: workbench
 value: "deltas reads one scheme; pre-points tasks go through migrate instead of a legacy reader"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_deltas.py, plugins/workbench/skills/start-development/references/tickets.md]
