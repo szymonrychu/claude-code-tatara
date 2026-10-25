@@ -51,5 +51,7 @@ def test_readme_ticket_commands_match_tool():
 
 def test_readme_names_new_subcommands():
     readme = README.read_text()
-    missing = [c for c in ("retro", "deltas", "actuals") if f"`ticket.py {c}" not in readme]
+    missing = [
+        c for c in ("retro", "deltas", "actuals", "migrate") if f"`ticket.py {c}" not in readme
+    ]
     assert not missing, f"README lacks ticket.py subcommands: {missing}"

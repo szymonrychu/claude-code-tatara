@@ -21,6 +21,14 @@ first: any problem refuses the run (exit 1, every problem on stderr, nothing els
 `--dry-run` then prints, per task it would change, each changed key with its old and new
 value and the dropped keys, each `partial:` line and, per changed done epic, the RETRO.md
 generated block computed from the new values. It changes no tracked file.
+
+Without `--dry-run` (main checkout only) it then writes, per changed epic, the task files and,
+for a done epic, RETRO.md (created from templates/retro.md when absent, else only its generated
+block replaced), its rows read from the new values, and commits exactly those files as
+`chore(ticket): <epic> migrate`; an epic with nothing to change gets no commit, so a second run
+prints `migrate: nothing to change`. It prints `<epic>: <n> tasks migrated[, RETRO.md]` per
+changed epic, then `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still
+the template's. A done epic is history: this is the one writer of its task files.
 """
 
 from __future__ import annotations
@@ -39,7 +47,6 @@ WHOLE = re.compile(r"[0-9]+")
 BARE_NAME = re.compile(r"[A-Za-z0-9._/-]+")
 ACTUALS = ("actual_minutes", "actual_tokens", "actual_roles", "actual_role_tokens")
 NAME_KEYS = ("worktree", "branch")
-WRITE_LATER = "migrate: writing lands with the write path; pass --dry-run"
 
 
 def register(sub, t) -> None:
@@ -181,7 +188,7 @@ def _plan(a, t, root: Path, epic_dir: Path, names: dict, logs, transcripts) -> d
         records = agent_usage.records_by_task(
             epic, logs, transcripts, names=names, tasks=sorted(set(legacy + wanting))
         )
-    plan: dict = {"problems": [], "lines": [], "docs": {}}
+    plan: dict = {"dir": epic_dir, "problems": [], "lines": [], "docs": {}, "all": docs}
     partials = []
     for path, doc in docs.items():
         label = f"{epic}/{path.stem}"
@@ -195,29 +202,80 @@ def _plan(a, t, root: Path, epic_dir: Path, names: dict, logs, transcripts) -> d
             plan["docs"][path] = new_doc
             plan["lines"].append(_change_line(label, doc.meta, new))
     plan["lines"] += partials
-    if plan["docs"] and t._phase_of(epic_dir) == "done" and not plan["problems"]:
+    if a.dry_run and plan["docs"] and t._phase_of(epic_dir) == "done" and not plan["problems"]:
         plan["lines"] += _retro_lines(a, t, root, epic_dir, {**docs, **plan["docs"]})
     return plan
 
 
-def _retro_lines(a, t, root: Path, epic_dir: Path, docs: dict) -> list[str]:
-    """The RETRO.md a done epic would get, its rows read from the new values."""
+def _retro_text(a, t, root: Path, epic_dir: Path, docs: dict) -> tuple[Path, str | None, str]:
+    """A done epic's RETRO.md: its path, its current text (None when absent) and the text with
+    the generated block computed from `docs` (the new values), as `ticket.py retro` writes it."""
     path = epic_dir / retro.FILE
     generated = retro._generated(retro._rows(a, t, root, epic_dir, backfill=False, docs=docs))
     if path.is_file():
-        text = path.read_text()
-        if retro._splice(t, text, generated, path) == text:
-            return []
-        return [f"retro: {path} (update)", generated]
-    return [f"retro: {path} (create)", generated]
+        old = path.read_text()
+        return path, old, retro._splice(t, old, generated, path)
+    title = t._read_doc(epic_dir / "README.md").meta.get("title") or epic_dir.name
+    template = _retro_template(t).replace("<Topic>", title, 1)
+    return path, None, retro._splice(t, template, generated, path)
+
+
+def _retro_template(t) -> str:
+    return (t.TEMPLATES / "retro.md").read_text()
+
+
+def _retro_lines(a, t, root: Path, epic_dir: Path, docs: dict) -> list[str]:
+    """The RETRO.md a done epic would get, its rows read from the new values."""
+    path, old, text = _retro_text(a, t, root, epic_dir, docs)
+    if text == old:
+        return []
+    generated = text[text.index(retro.BEGIN) : text.index(retro.END) + len(retro.END)]
+    return [f"retro: {path} ({'create' if old is None else 'update'})", generated]
+
+
+def _needs_retro_writer(t, epic_dir: Path) -> bool:
+    """A done epic whose RETRO.md Retro section is still the template's."""
+    path = epic_dir / retro.FILE
+    if t._phase_of(epic_dir) != "done" or not path.is_file():
+        return False
+    placeholder = t._sections(_retro_template(t)).get("Retro")
+    return t._sections(path.read_text()).get("Retro") == placeholder
+
+
+def _write(a, t, root: Path, plans: list[dict]) -> list[str]:
+    """Compute every epic's RETRO.md first (a broken one refuses before any write), then per
+    changed epic write its task files and RETRO.md and commit exactly them."""
+    writes = []
+    for plan in plans:
+        epic_dir = plan["dir"]
+        if not plan["docs"]:
+            continue
+        retro_md = None
+        if t._phase_of(epic_dir) == "done":
+            path, old, text = _retro_text(a, t, root, epic_dir, {**plan["all"], **plan["docs"]})
+            retro_md = (path, text) if text != old else None
+        writes.append((epic_dir, plan["docs"], retro_md))
+    lines = []
+    for epic_dir, docs, retro_md in writes:
+        paths = list(docs)
+        for path, doc in docs.items():
+            path.write_text(t.dump(doc))
+        if retro_md:
+            retro_md[0].write_text(retro_md[1])
+            paths.append(retro_md[0])
+        t.commit_ticket_change(epic_dir.name, "migrate", paths, root)
+        lines.append(
+            f"{epic_dir.name}: {len(docs)} tasks migrated" + (", RETRO.md" if retro_md else "")
+        )
+    return lines
 
 
 def run(a, t) -> int:
     if bool(a.epic) == bool(a.all):
         raise t.TicketError("migrate: name an epic or pass --all, not both")
-    if not a.dry_run:
-        raise t.TicketError(WRITE_LATER)
     root = Path(a.root)
+    if not a.dry_run:
+        t.require_main_checkout(root)
     epic_dirs = _epic_dirs(a, t, root)
     names = names_map(t, root)
     logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
@@ -229,6 +287,13 @@ def run(a, t) -> int:
         for problem in problems:
             print(f"ticket.py: migrate: {problem}", file=sys.stderr)
         return 1
-    lines = [line for plan in plans for line in plan["lines"]]
+    if a.dry_run:
+        lines = [line for plan in plans for line in plan["lines"]]
+    else:
+        lines = _write(a, t, root, plans)
     print("\n".join(lines) if lines else "migrate: nothing to change")
+    if not a.dry_run:
+        for epic_dir in epic_dirs:
+            if _needs_retro_writer(t, epic_dir):
+                print(f"retro-writer: {epic_dir.name}")
     return 0

@@ -1587,7 +1587,8 @@ def lint_problems(root: Path, only: str | None = None) -> list[str]:
             for d in t.meta.get("depends_on", []):
                 if d not in slugs:
                     out.append(f"{where}: task {t.slug!r} depends_on unknown task {d!r}")
-            if e.phase != "done":  # a done epic is history: its files are never rewritten
+            # a done epic is history: only `ticket.py migrate` rewrites its task files
+            if e.phase != "done":
                 out += [f"{where}: {p}" for p in _task_problems(t, placeholder)]
         try:
             dependency_order({t.slug: list(t.meta.get("depends_on", [])) for t in tasks})

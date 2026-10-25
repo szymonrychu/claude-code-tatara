@@ -128,8 +128,9 @@ two fix rounds for the orchestrator's judgement. The epic cannot close while a t
 
 Restricted, parsed by `ticket.py` with no YAML dependency: scalars, single- and double-quoted strings, and
 inline lists `[a, b]`. A nested mapping or block list fails with `<path>:<line>: unsupported frontmatter`.
-`dump(load(x)) == x` for every file `ticket.py` wrote. Older done epics keep their extra keys; the loader
-reads them and nothing writes them.
+`dump(load(x)) == x` for every file `ticket.py` wrote. Older epics may still carry old-scheme keys until
+`ticket.py migrate` maps them; the loader reads them, and migrate is the only writer of a done epic's task
+files (`ticket.py task` refuses done epics).
 
 Epic README: `title`, `blockers` (epic titles), `stage`, `owner`, `repos`, `created`. Sections: Project
 brief (What/How/Why), Description, Goals, Non-goals, Review.
@@ -176,6 +177,34 @@ run in the main checkout, not a linked worktree` inside a linked worktree. After
 `chore(ticket): <epic> <event>`; unrelated dirty files stay uncommitted. Outside git both are no-ops.
 `design.md`, `record.md` (record-writer) and RETRO.md's Retro and Improvements (retro-writer) are written
 directly, in the main checkout.
+
+## Migrating old-scheme tasks
+
+- `migrate`: `ticket.py migrate <epic> | --all [--dry-run] [--transcripts DIR] [--logs DIR]` maps
+  old-scheme task files to the eighteen template keys. `--all` covers every epic under todo,
+  in-progress and done. Mapping: the template keys in template order, every other key dropped (the
+  legacy `estimate`, `estimate_by`, `actual`, `worktree`, `branch`, `run`, `provides`, `owns`, `uses`,
+  `process_gaps`, `acs_for_audit`, `fork_point` and any stray key), the body unchanged; `points` kept
+  when set, else from a whole-number legacy `estimate` in minutes (`calibration.points_for_minutes`,
+  the estimate kept as `expected_minutes`), else from a Notes line `Estimate: N points`, empty
+  expected values filled from `calibration.SEED`; a task carrying a legacy key takes its actuals from
+  a whole-number legacy `actual` and from agent records covering both impl and review (a one-role
+  match prints `partial:` and gives nothing), its legacy `actual_roles` dropped. Records are read from
+  `--logs` (default: the main checkout's `.logs`), backfilled from `--transcripts` (default: the
+  project's dir under the harness home).
+- Validation: every mapped task runs through the lint number checks first; any problem exits 1, lists
+  every problem and writes nothing in any epic.
+- `--dry-run` prints each task it would change (old and new values of the changed keys, the dropped
+  keys), each `partial:` line and each RETRO.md it would write; it changes no tracked file and runs in
+  any checkout.
+- Commit: without `--dry-run` (main checkout only) it writes, per changed epic, the task files and,
+  for a done epic, RETRO.md (from templates/retro.md when absent, else only the generated block
+  replaced, Retro and Improvements kept byte for byte), its rows computed from the new values, and
+  commits exactly those files as `chore(ticket): <epic> migrate`. It prints `<epic>: <n> tasks
+  migrated[, RETRO.md]` per changed epic, then `retro-writer: <epic>` for each done epic whose Retro
+  section is still the template's.
+- Idempotence: an epic with nothing to change gets no commit; a second run, or one after `ticket.py
+  retro <epic>`, prints `migrate: nothing to change`.
 
 ## The `discovered` entry
 

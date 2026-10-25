@@ -433,10 +433,6 @@ def test_dry_run_changes_nothing(repo, root, tmp_path):
     assert git(repo, "status", "--porcelain").stdout == ""
     assert git(repo, "rev-parse", "HEAD").stdout == head
 
-    # the write path is the next task's; the dry run is the only mode here
-    r = cli("migrate", "--all", "--logs", logs, "--transcripts", transcripts, "--root", root)
-    assert r.returncode == 1
-    assert "migrate: writing lands with the write path; pass --dry-run" in r.stderr
     assert dry_run(root, logs, transcripts, "ep-old", "--all").returncode == 1
     assert dry_run(root, logs, transcripts).returncode == 1
     one = dry_run(root, logs, transcripts, "ep-old")
