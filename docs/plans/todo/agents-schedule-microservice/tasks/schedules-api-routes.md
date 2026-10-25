@@ -25,9 +25,9 @@ actual_role_tokens: ""
 
 Add the FastAPI app (design D11; approvals A2, A5). Every route is under `/schedules/api/v1` (gate Q9; the path layout contract of frontend-decoupling); `/healthz` and `/readyz` sit at the root for probes.
 
-- `create_app(settings, pool, client) -> FastAPI` with a source allowlist middleware on `SCHED_ALLOWED_CIDRS` that checks the socket peer only, never forwarded headers (the agents-common one if it ships it, else the pattern of `code/agent-orchestrator/src/agent_orchestrator/api/allowlist.py:SourceAllowlist`). Errors use `{"error": {"code", "message"}}` (as `code/agent-orchestrator/src/agent_orchestrator/api/errors.py`).
+- `create_app(settings, pool, client) -> FastAPI` with a source allowlist middleware on `SCHED_ALLOWED_CIDRS` that checks the socket peer only, never forwarded headers (the agents-common one if it ships it, else the pattern of `code/agents-orchestrator/src/agents_orchestrator/api/allowlist.py:SourceAllowlist`). Errors use `{"error": {"code", "message"}}` (as `code/agents-orchestrator/src/agents_orchestrator/api/errors.py`).
 - `GET /schedules` -> `list[ScheduleView]` by name; `POST /schedules` -> 201; `GET /schedules/{id}`; `PUT /schedules/{id}` (full replace of `name, cron, timezone, preset_id, prompt, enabled`); `DELETE /schedules/{id}` -> 204; `POST /schedules/preview {cron, timezone}` -> `{next_fires: [3 ISO times]}`.
-- `ScheduleIn {name, cron, timezone (default SCHED_DEFAULT_TIMEZONE), preset_id, prompt, enabled = true}`; `ScheduleView {id, name, cron, timezone, preset_id, prompt, enabled, next_fires (3, empty when disabled), last_run: RunView | null, created_at, updated_at}`; `RunView {id, schedule_id, trigger, fire_time, status, reason, cluster_id, cluster_slug, message_id, created_at, updated_at, started_at, finished_at}`.
+- `ScheduleIn {name, cron, timezone (default SCHED_DEFAULT_TIMEZONE), preset_id, prompt, enabled = true}`; `ScheduleView {id, name, cron, timezone, preset_id, prompt, enabled, next_fires (3, empty when disabled), last_run: RunView | null, created_at, updated_at}`; `RunView {id, schedule_id, trigger, fire_time, status, reason, session_id, session_slug, message_id, reuse, created_at, updated_at, started_at, finished_at}`.
 - Validation on every write: cron via `sched-cron` (422 `invalid_cron` with the reason), timezone (422 `invalid_timezone`), prompt 1..16384 chars and name 1..100 (422 `invalid_request`), preset exists via the orchestrator client `GET /api/v1/presets/{id}` (contract `orch-presets-api`; 422 `unknown_preset`; orchestrator unreachable 503 `orchestrator_unavailable`). Duplicate name 409 `conflict`; missing id 404 `not_found`.
 - Each write notifies `schedules_changed` so the scheduler wakes.
 - `/readyz` checks the DB; `/healthz` is liveness only.
@@ -69,3 +69,5 @@ Schedules are managed headlessly over HTTP with the same validation the UI shows
 - The api is the only writer of `schedules`.
 - `/schedules/api/v1` is the reserved prefix of the frontend-decoupling URL layout (contract `agents-web-url-layout`: each later service owns `/<prefix>/`, its UI-facing API at `/<prefix>/api/v1`, reserved `schedules`).
 - Tests use `agents_common.fake_orchestrator` for the preset check.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
