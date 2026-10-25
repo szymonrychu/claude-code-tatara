@@ -29,6 +29,7 @@ Apply to the live `agents` namespace and prove it (design D13; live-deploy rule:
 - Orchestrator (main session, never a subagent): `mise run apply` in code/agents-helmfile (lint, test and the kube-context guard run first; never bypass the guard); a failing apply is not retried blindly: read the helm error and report its tail.
 - After the apply, implementer: `mise run diff` again (no drift) and `mise run smoke` (exit 0, including the connector checks); read-only `kubectl -n agents logs deploy/agents-matrix-connector-bot --tail=50` shows the first sync and no token in the output; `MEMORY.md`: a dated line: applied agents-matrix-connector `0.1.0-main.<sha7>` with its CNPG database as `@hermes:szymonrichert.pl` (Hermes at 0 replicas), agents-web `0.1.0-main.<sha7>` with Chats; default deny; smoke green (quote its last log line).
 - After the smoke, implementer: create the one allow rule the user asked for (2026-10-25, verbatim: 'Whitelist only 1 channel for now- the one where Hermess sends "Hermess is shutting down..." messages (Szymon Richert to Szymon Richert)'; that is Hermes' home channel, the owner DM portal `!iLWrAwaTMYnINJsyNv:szymonrichert.pl`): `POST /matrix/api/v1/rules` with `{"list": "allow", "kind": "room", "value": "!iLWrAwaTMYnINJsyNv:szymonrichert.pl", "note": "owner DM, Hermes home channel"}` through the port-forward the smoke uses (bypassing the SSO sidecar); then `GET /matrix/api/v1/rules` lists exactly that allow rule and no deny rule, and `GET /matrix/api/v1/rooms/{room_id}` for it shows the decision allowed (a 404 because the room is not yet discovered stops the task `blocked` with the `/rooms` listing, whoCanClear "orchestrator"). The default policy stays deny.
+- Last, once the allow rule is in place and the smoke is green: send the user one Messenger message, a short joke chosen then, into `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` as the bot (user request 2026-10-25, verbatim: 'Once it's deployed, ping me with a message (a joke, don't tell me now).'). Send it through the bot's own Matrix client in the bot pod (for example a one-off `kubectl exec` running the connector's MatrixClient with the mounted token file), never printing the token; quote the returned event id in the task notes. This is the only Matrix message the deploy sends.
 - No other file changes.
 
 User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge.'
@@ -40,6 +41,7 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - AC3: MEMORY.md records the applied versions and the smoke result [evidence: command:grep -q "agents-matrix-connector" MEMORY.md && grep -q "smoke" MEMORY.md]
 - AC4: the pre-apply diff showed only the expected changes and the bot log shows a sync without the token [evidence: judgement:the diff output and the log tail quoted in the task notes]
 - AC5: the only access rule is the allow rule for `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` and that room's decision is allowed [evidence: judgement:the GET /rules and GET /rooms/{room_id} output quoted in the task notes]
+- AC6: the joke message was sent once to the allowed room and its event id is recorded [evidence: judgement:the event id quoted in the task notes]
 
 ## Files
 
@@ -62,3 +64,5 @@ The connector runs in namespace `agents`, logged in and syncing; the Chats page 
 - Same shape as agents-webhook-microservice task apply-smoke-webhook. Deploy tasks never use apply as AC evidence.
 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
+
+- 2026-10-25 amended: user 2026-10-25: once deployed, ping the user with a joke message
