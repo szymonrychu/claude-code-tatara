@@ -1,6 +1,6 @@
 ---
 title: spec cap static
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "a cluster declares its replica cap and whether it may scale, and hive mode follows from it"
 files: [src/agent_orchestrator/spec.py, tests/test_spec_hive.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-spec-cap-static/agent-orchestrator
 branch: hive-mode-leadership-handove-spec-cap-static
-verified_head: ""
-run: ""
+verified_head: c9fddcce4124a8c0895b177d6f4a6e3a8859c610
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # spec cap static

@@ -1,6 +1,6 @@
 ---
 title: agents pod ip observe
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the orchestrator knows which pod is calling it
 files: [src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/db/agents.py, tests/test_reconciler.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agents-pod-ip-observe/agent-orchestrator
 branch: hive-mode-leadership-handove-agents-pod-ip-observe
-verified_head: ""
-run: ""
+verified_head: 155cfb2ed7feb3dfa110f2e980ffb3b9f6a3a84f
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # agents pod ip observe

@@ -1,6 +1,6 @@
 ---
 title: bench run record
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the measured hive result is on record
 files: [MEMORY.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-bench-run-record/agent-orchestrator
 branch: hive-mode-leadership-handove-bench-run-record
-verified_head: ""
-run: ""
+verified_head: 341fa68f3a58cab7b7897e277b3500368da18e97
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # bench run record

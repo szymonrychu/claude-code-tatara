@@ -1,6 +1,6 @@
 ---
 title: bench hive arm
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the speed-up claim is measured with a hive arm
 files: [src/agent_orchestrator/bench/spec.py, src/agent_orchestrator/bench/runner.py, src/agent_orchestrator/bench/report.py, examples/bench.yaml, tests/test_bench.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-bench-hive-arm/agent-orchestrator
 branch: hive-mode-leadership-handove-bench-hive-arm
-verified_head: ""
-run: ""
+verified_head: e65b302a74619b8798325277326053e0c2d14298
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # bench hive arm

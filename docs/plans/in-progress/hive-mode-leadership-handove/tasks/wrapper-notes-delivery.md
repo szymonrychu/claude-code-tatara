@@ -1,6 +1,6 @@
 ---
 title: wrapper notes delivery
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: agents see peer activity and hive state at the next prompt or tool result
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/notes.py, README.md, tests/test_notes_delivery.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-notes-delivery/claude-code-wrapper
 branch: hive-mode-leadership-handove-wrapper-notes-delivery
-verified_head: ""
-run: ""
+verified_head: d4e7fb83413f1d9439ae3512d7bd2e80b68a8237
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper notes delivery

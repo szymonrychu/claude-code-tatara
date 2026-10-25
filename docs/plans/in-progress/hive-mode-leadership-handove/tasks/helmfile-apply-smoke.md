@@ -1,6 +1,6 @@
 ---
 title: helmfile apply smoke
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the hive release runs live and passes smoke
 files: [MEMORY.md, scripts/smoke.sh, tests/test_smoke_script.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-helmfile-apply-smoke/agents-helmfile
 branch: hive-mode-leadership-handove-helmfile-apply-smoke
-verified_head: ""
-run: ""
+verified_head: 9cd6408225cae867a4841151a71939ccec957998
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helmfile apply smoke

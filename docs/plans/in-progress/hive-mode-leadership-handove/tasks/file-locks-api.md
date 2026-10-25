@@ -1,6 +1,6 @@
 ---
 title: file locks api
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: agents claim files and get warned before editing a file another agent holds
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/db/file_locks.py, src/agent_orchestrator/api/agent.py, tests/test_api_locks.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-file-locks-api/agent-orchestrator
 branch: hive-mode-leadership-handove-file-locks-api
-verified_head: ""
-run: ""
+verified_head: bc0d7243b64dc97fd5550fb6d46b42208a21de3c
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # file locks api

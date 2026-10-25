@@ -1,6 +1,6 @@
 ---
 title: orch pin bumps
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the orchestrator renders against the released plugin and wrapper
 files: [pyproject.toml, uv.lock, src/agent_orchestrator/settings.py, README.md, e2e/agent-test.Dockerfile, tests/test_images.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-orch-pin-bumps/agent-orchestrator
 branch: hive-mode-leadership-handove-orch-pin-bumps
-verified_head: ""
-run: ""
+verified_head: b05d82f95f1a003e128039eedc2c03149214392b
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # orch pin bumps

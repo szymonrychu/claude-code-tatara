@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.2.0
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: the orchestrator can pin an image with the notes inbox and the main-agent gate
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-release-0-2-0/claude-code-wrapper
 branch: hive-mode-leadership-handove-wrapper-release-0-2-0
-verified_head: ""
-run: ""
+verified_head: 11d4824d15d2457372587fb30d8a3e786aa1f192
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper release 0.2.0

@@ -1,6 +1,6 @@
 ---
 title: plugin config merge
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "hive agents load the orchestrator tools next to the user's own any-mcp plugins"
 files: [src/agent_orchestrator/k8s/on_start.py, tests/test_on_start.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-plugin-config-merge/agent-orchestrator
 branch: hive-mode-leadership-handove-plugin-config-merge
-verified_head: ""
-run: ""
+verified_head: 167342704becd65f2a3afe28643ba17f258eae7a
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # plugin config merge

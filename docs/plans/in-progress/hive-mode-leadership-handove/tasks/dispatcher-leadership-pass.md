@@ -1,6 +1,6 @@
 ---
 title: dispatcher leadership pass
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "exactly one agent leads each hive, changes are epoch-fenced and a lost leader is replaced"
 files: [src/agent_orchestrator/db/leadership.py, src/agent_orchestrator/dispatcher/loop.py, tests/test_leadership_pass.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-dispatcher-leadership-pass/agent-orchestrator
 branch: hive-mode-leadership-handove-dispatcher-leadership-pass
-verified_head: ""
-run: ""
+verified_head: f378ca03a4e57563b7cec82807386ef23dfa3677
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # dispatcher leadership pass

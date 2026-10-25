@@ -1,6 +1,6 @@
 ---
 title: orchestrator plugin
-status: in-progress
+status: done
 repo: any-mcp
 value: agents get every orchestrator tool from one plugin whose descriptions tell them they are in a hive
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, README.md, MEMORY.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-orchestrator-plugin/any-mcp
 branch: hive-mode-leadership-handove-orchestrator-plugin
-verified_head: ""
-run: ""
+verified_head: 95f846c6ad38a1cd9f09ab20dac06852620ef6f9
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # orchestrator plugin

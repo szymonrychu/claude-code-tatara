@@ -1,6 +1,6 @@
 ---
 title: wrapper notes inbox
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: the orchestrator can push hive state and activity notes to a hived agent
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/notes.py, src/claude_code_wrapper/api/notes.py, src/claude_code_wrapper/api/app.py, src/claude_code_wrapper/events.py, src/claude_code_wrapper/manager.py, README.md, tests/test_notes_api.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-wrapper-notes-inbox/claude-code-wrapper
 branch: hive-mode-leadership-handove-wrapper-notes-inbox
-verified_head: ""
-run: ""
+verified_head: 2f62f2d130cda07a29fd8af3dc50f5d597ff07e7
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # wrapper notes inbox

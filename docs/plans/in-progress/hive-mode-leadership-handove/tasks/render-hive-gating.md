@@ -1,6 +1,6 @@
 ---
 title: render hive gating
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "hive clusters get peers, notes and lock warnings, alone clusters get none, and scaling never rolls pods"
 files: [src/agent_orchestrator/k8s/render.py, tests/test_render.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-render-hive-gating/agent-orchestrator
 branch: hive-mode-leadership-handove-render-hive-gating
-verified_head: ""
-run: ""
+verified_head: a9662b9d88993ecdf401d54cd85e28b803ed594d
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # render hive gating

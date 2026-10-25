@@ -1,6 +1,6 @@
 ---
 title: ui leader badge
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the user sees the leader in the agents strip and can make any agent leader
 files: [frontend/src/chat/AgentsStrip.tsx, frontend/src/chat/AgentsStrip.test.tsx, frontend/src/api/client.ts, frontend/src/chat/useClusterChat.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-ui-leader-badge/agent-orchestrator
 branch: hive-mode-leadership-handove-ui-leader-badge
-verified_head: ""
-run: ""
+verified_head: 1b1b6bbf40ba3f13faf4469eb9c5c5224974dae5
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # ui leader badge

@@ -1,6 +1,6 @@
 ---
 title: views leader stream
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "API clients see who leads, the epoch and every agent's context, live"
 files: [src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/views.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/streams.py, tests/test_leader_views.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-views-leader-stream/agent-orchestrator
 branch: hive-mode-leadership-handove-views-leader-stream
-verified_head: ""
-run: ""
+verified_head: b115d6c45da34f9d915a7059481d5f91a21c6e90
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # views leader stream

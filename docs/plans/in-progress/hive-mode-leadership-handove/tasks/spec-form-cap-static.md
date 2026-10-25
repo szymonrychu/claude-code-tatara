@@ -1,6 +1,6 @@
 ---
 title: spec form cap static
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: users set the replica cap and the static switch in the preset and cluster forms
 files: [frontend/src/clusters/clusterSpecForm.ts, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-spec-form-cap-static/agent-orchestrator
 branch: hive-mode-leadership-handove-spec-form-cap-static
-verified_head: ""
-run: ""
+verified_head: 566a831c6fb3e698ff36f44e7034f6042b6ce1d9
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # spec form cap static

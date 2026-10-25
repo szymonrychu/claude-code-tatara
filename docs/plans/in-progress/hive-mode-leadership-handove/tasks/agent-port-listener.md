@@ -1,6 +1,6 @@
 ---
 title: agent port listener
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: agent pods get their own orchestrator port while the public API stays closed to them
 files: [src/agent_orchestrator/cli.py, src/agent_orchestrator/api/allowlist.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/settings.py, tests/test_agent_port.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-port-listener/agent-orchestrator
 branch: hive-mode-leadership-handove-agent-port-listener
-verified_head: ""
-run: ""
+verified_head: ca28bab67581651f737b3141fe64c9d4ccaa2846
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # agent port listener

@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live namespace is pinned to the hive release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, scripts/smoke.sh, tests/test_orchestrator_release.py, tests/test_smoke_script.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-helmfile-deploy-pin/agents-helmfile
 branch: hive-mode-leadership-handove-helmfile-deploy-pin
-verified_head: ""
-run: ""
+verified_head: 5474b14dd22f6b46d28b4165aa6fec919ca17973
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # helmfile deploy pin

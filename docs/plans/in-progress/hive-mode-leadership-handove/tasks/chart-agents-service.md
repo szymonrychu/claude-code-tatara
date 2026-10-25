@@ -1,6 +1,6 @@
 ---
 title: chart agents service
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: agent pods reach the agent port through a cluster-internal Service that never sits on the ingress
 files: [chart/agent-orchestrator/templates/service-agents.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/_config.tpl, chart/agent-orchestrator/values.yaml, tests/test_chart_deployments.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-chart-agents-service/agent-orchestrator
 branch: hive-mode-leadership-handove-chart-agents-service
-verified_head: ""
-run: ""
+verified_head: 3b7478c9b948d061a7c717b4fc27289858104f0d
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # chart agents service

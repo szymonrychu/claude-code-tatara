@@ -1,6 +1,6 @@
 ---
 title: hive docs memory
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the hive rules and the reasons behind them are written down where the next builder looks
 files: [README.md, MEMORY.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-docs-memory/agent-orchestrator
 branch: hive-mode-leadership-handove-hive-docs-memory
-verified_head: ""
-run: ""
+verified_head: 100946b689179096a5190c5d0f2c9ca6c9ac2997
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # hive docs memory

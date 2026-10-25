@@ -1,6 +1,6 @@
 ---
 title: leader routing
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the user talks to the leader by default while explicit targets still work
 files: [src/agent_orchestrator/db/queue.py, tests/test_queue_leader_routing.py, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-leader-routing/agent-orchestrator
 branch: hive-mode-leadership-handove-leader-routing
-verified_head: ""
-run: ""
+verified_head: c4f3303d5b5aebb0ae7294ee5d54aaac8d086f67
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # leader routing

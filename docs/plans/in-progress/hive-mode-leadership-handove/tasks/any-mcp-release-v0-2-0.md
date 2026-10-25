@@ -1,6 +1,6 @@
 ---
 title: any-mcp release v0.2.0
-status: in-progress
+status: done
 repo: any-mcp
 value: the orchestrator can install the plugin from a pinned tag
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-any-mcp-release-v0-2-0/any-mcp
 branch: hive-mode-leadership-handove-any-mcp-release-v0-2-0
-verified_head: ""
-run: ""
+verified_head: e273952957235916421683907bb50df9c3f8cdf2
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # any-mcp release v0.2.0

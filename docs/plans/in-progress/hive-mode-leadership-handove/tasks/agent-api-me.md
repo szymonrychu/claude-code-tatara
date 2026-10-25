@@ -1,6 +1,6 @@
 ---
 title: agent api me
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "an agent can ask the orchestrator who it is, who leads and who is in its hive"
 files: [src/agent_orchestrator/api/agent.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/db/agents.py, tests/test_api_agent.py, tests/test_api_clusters.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-api-me/agent-orchestrator
 branch: hive-mode-leadership-handove-agent-api-me
-verified_head: ""
-run: ""
+verified_head: b916d84bd0098d3d2f6ad17c57622609d17e72db
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # agent api me

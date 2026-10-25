@@ -1,6 +1,6 @@
 ---
 title: main agent only tools
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: a subagent cannot hand leadership away or scale the cluster
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/router.py, README.md, tests/test_main_agent_only_tools.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-main-agent-only-tools/claude-code-wrapper
 branch: hive-mode-leadership-handove-main-agent-only-tools
-verified_head: ""
-run: ""
+verified_head: d5477317adedfb94540a3eab38f9f637b24e1d63
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # main agent only tools

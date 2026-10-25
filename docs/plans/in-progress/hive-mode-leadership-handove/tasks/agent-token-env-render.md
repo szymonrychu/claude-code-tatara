@@ -1,6 +1,6 @@
 ---
 title: agent token env render
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: every agent pod holds a cluster-scoped credential and the orchestrator URL
 files: [src/agent_orchestrator/tokens.py, src/agent_orchestrator/k8s/render.py, src/agent_orchestrator/spec.py, tests/test_tokens.py, tests/test_render.py, tests/test_spec_hive.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-agent-token-env-render/agent-orchestrator
 branch: hive-mode-leadership-handove-agent-token-env-render
-verified_head: ""
-run: ""
+verified_head: 278b1486cbd6cefba9680ec938ae812892b096b9
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # agent token env render

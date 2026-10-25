@@ -104,7 +104,7 @@ Task files under `tasks/`; foundation first (F1 orchestrator-plugin, any-mcp-rel
 
 ## Time
 
-Estimate: 175 agent-min | Critical path: 69 min | Expected wall at P=3.0: 2.3 h (k=2.0) | Actual: 0 min | Remaining estimate: 175 min
+Estimate: 175 agent-min | Critical path: 69 min | Expected wall at P=1.5: 3.9 h (k=2.0) | Actual: 0 min | Remaining estimate: 0 min
 
 ## Review
 

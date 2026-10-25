@@ -1,6 +1,6 @@
 ---
 title: kind e2e hive
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "CI proves on a real cluster that leadership, locks, notes and the alone mode work through the APIs alone"
 files: [tests/e2e/test_e2e_kind.py, tests/e2e/conftest.py, e2e/agent-test.scenario.json]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-kind-e2e-hive/agent-orchestrator
 branch: hive-mode-leadership-handove-kind-e2e-hive
-verified_head: ""
-run: ""
+verified_head: 50324eeba1c08db6a8aeba991179731096bc039f
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # kind e2e hive

@@ -1,6 +1,6 @@
 ---
 title: migration 0003 hive
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "leadership, locks and pod identity have tables with one writer each"
 files: [src/agent_orchestrator/db/migrations/0003_hive.sql, README.md, tests/test_migrations.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-migration-0003-hive/agent-orchestrator
 branch: hive-mode-leadership-handove-migration-0003-hive
-verified_head: ""
-run: ""
+verified_head: 05280b3639caae0730efa9f576e7db19eaa2db98
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # migration 0003 hive

@@ -1,6 +1,6 @@
 ---
 title: hive state push loop
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "every hived agent knows the leader, its peers and their recent activity without asking"
 files: [src/agent_orchestrator/dispatcher/hive.py, src/agent_orchestrator/dispatcher/loop.py, src/agent_orchestrator/db/leadership.py, src/agent_orchestrator/wrapper/client.py, tests/fakes/fake_wrapper.py, tests/test_hive_push.py, tests/test_fake_wrapper_contract.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-state-push-loop/agent-orchestrator
 branch: hive-mode-leadership-handove-hive-state-push-loop
-verified_head: ""
-run: ""
+verified_head: 547da35f321ba8e6f2780d40c9b453003b9c21da
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # hive state push loop

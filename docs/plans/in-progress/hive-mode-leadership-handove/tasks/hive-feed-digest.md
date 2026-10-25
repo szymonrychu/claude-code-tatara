@@ -1,6 +1,6 @@
 ---
 title: hive feed digest
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "the activity feed carries only what other agents need: paths, commands, turn summaries and leader changes"
 files: [src/agent_orchestrator/dispatcher/feed.py, tests/test_hive_feed.py]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/hive-mode-leadership-handove-hive-feed-digest/agent-orchestrator
 branch: hive-mode-leadership-handove-hive-feed-digest
-verified_head: ""
-run: ""
+verified_head: 66b6a62c18389cd5c77d6efef3d6df8e7464f514
+run: hand-orchestrated-2026-10-25
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # hive feed digest
