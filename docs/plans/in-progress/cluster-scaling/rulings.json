@@ -1,0 +1,8 @@
+[
+  {
+    "task": "kind-e2e-scaling",
+    "accept": true,
+    "reason": "test-only deliverable (the e2e test is the change); verified for real by CI e2e on the PR",
+    "at": "2026-10-25T07:56:39Z"
+  }
+]

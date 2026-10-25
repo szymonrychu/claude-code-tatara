@@ -63,6 +63,10 @@ The PR CI e2e job shows on kind that a cluster scales up and down through the AP
 - Add the tests; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are listed.
 - Run the verify command: passes. The full run happens in the PR CI e2e job.
 
+## Ruling
+
+- 2026-10-25 accepted: test-only deliverable (the e2e test is the change); verified for real by CI e2e on the PR
+
 ## Notes
 
 - The agent image is the wrapper image (Python present): exec `python3 -c` with urllib for the agent-route calls, reading the token from the pod env inside the exec so it never appears in test output.
