@@ -1,6 +1,6 @@
 ---
 title: config cluster views
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "API callers can set and see every new field, documented"
 files: [src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/views.py, src/agent_orchestrator/api/clusters.py, README.md, openapi.json, tests/test_api_config.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_api_config.py tests/test_readme_ap
 depends_on: [spec-config-fields]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 368c8b7
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 1214780
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 1060666, review 154114"
 ---
 
 # config cluster views
@@ -67,3 +67,5 @@ Builds part `orch-cluster-config-api` (README `### Cluster configuration` and th
 ## Notes
 
 After frontend-decoupling the orchestrator repo has no `frontend/`, so no `schema.d.ts` is regenerated here; agents-web syncs its vendored copy in web-form-config-fields. `leader_reason` is set by test SQL here; the lease task produces `lease_expired` in production.
+
+- 2026-10-25 done
