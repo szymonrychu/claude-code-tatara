@@ -218,7 +218,8 @@ from pathlib import Path
 
 def test_probe(request):
     out = Path(__file__).parent / "probe.txt"
-    out.write_text(f"basetemp={request.config.getoption('basetemp')}\\nTMPDIR={os.environ.get('TMPDIR', '')}")
+    base = request.config.getoption("basetemp")
+    out.write_text(f"basetemp={base}\\nTMPDIR={os.environ.get('TMPDIR', '')}")
 """
 
 
