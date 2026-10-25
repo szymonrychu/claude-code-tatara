@@ -1,6 +1,6 @@
 ---
 title: mxc chart network
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the UI API is reachable under /matrix/api on the lab host and the bot is not reachable at all
 files: [chart/agents-matrix-connector/templates/service.yaml, chart/agents-matrix-connector/templates/ingress.yaml, chart/agents-matrix-connector/values.yaml, tests/test_chart_network.py]
@@ -8,15 +8,15 @@ verify: "helm lint chart/agents-matrix-connector && uv run --frozen pytest tests
 depends_on: [mxc-chart-workloads]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5b43a59acd10943b43fff6b1f62bfc46e92010b9
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 641082
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 494889, review 146193"
 ---
 
 # mxc chart network
@@ -61,3 +61,5 @@ With `ingress.enabled` and host `lab.szymonrichert.pl`, `https://lab.szymonriche
 ## Notes
 
 - Follow `code/agents-webhook/chart/agents-webhook/templates/{service,ingress}.yaml` and its `tests/test_chart_network.py`; the connector has no public ingest.
+
+- 2026-10-25 done
