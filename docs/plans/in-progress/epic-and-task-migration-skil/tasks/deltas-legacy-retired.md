@@ -1,6 +1,6 @@
 ---
 title: Deltas legacy retired
-status: in-progress
+status: done
 repo: workbench
 value: "deltas reads one scheme; pre-points tasks go through migrate instead of a legacy reader"
 files: [plugins/workbench/skills/start-development/scripts/ticket_cmds/deltas.py, plugins/workbench/skills/start-development/tests/test_ticket_deltas.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [migrate-command]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ec62d68
 points: 2
 expected_minutes: 23
 expected_tokens: 1500000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 12
+actual_tokens: 546295
+actual_roles: "impl 9, review 3"
+actual_role_tokens: "impl 460398, review 85897"
 ---
 
 # Deltas legacy retired
@@ -75,3 +75,5 @@ deltas reads only the points scheme; pre-points tasks show `not recorded` until 
 - Keep the rest of test_all_includes_legacy_minutes' coverage (the live epic is excluded from `--all`, the overall MdAPE) in the replacement test.
 
 - 2026-10-25 amended: interrogate item 6: AC3 awk range ends at the next '- `' bullet or '## ' heading, not at '## Naming'
+
+- 2026-10-25 done
