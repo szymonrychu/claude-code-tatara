@@ -1,6 +1,6 @@
 ---
 title: scheduler loop
-status: in-progress
+status: done
 repo: agents-schedule
 value: "enabled schedules fire on time, once per fire time, with missed runs collapsed and overlaps recorded"
 files: [src/agents_schedule/scheduler.py, tests/test_scheduler.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_scheduler.py -q && uv run ruff check 
 depends_on: [cron-expressions, schedules-repository, runs-repository]
 model: opus
 review: full
-verified_head: ""
+verified_head: 12de0cd34863c31b16cd2e896661d50f536ba5b8
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 683531
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 588546, review 94985"
 ---
 
 # scheduler loop
@@ -63,3 +63,5 @@ Schedules fire on time exactly once per fire time; overlaps and missed runs beha
 
 - Prior art: `TN/internal/controller/projectscan.go:activityDue` (L480) and `inflightRefineTask` (L1807).
 - Per-repo phase-shift jitter (`scanOffset`) is not built: not requested (design Research).
+
+- 2026-10-25 done
