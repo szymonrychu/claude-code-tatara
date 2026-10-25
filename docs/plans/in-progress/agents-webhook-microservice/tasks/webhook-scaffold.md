@@ -1,6 +1,6 @@
 ---
 title: webhook scaffold
-status: in-progress
+status: done
 repo: agents-webhook
 value: the webhook service repo builds an image and runs a CLI pinned to the shared library
 files: [pyproject.toml, uv.lock, mise.toml, Dockerfile, .dockerignore, src/agents_webhook/__init__.py, src/agents_webhook/cli.py, tests/test_cli.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_cli.py -q && uv run ruff check . && uv run ruf
 depends_on: [common-release-v0-1-0]
 model: ""
 review: full
-verified_head: ""
+verified_head: 533b527
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 279631
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 203017, review 76614"
 ---
 
 # webhook scaffold
@@ -70,3 +70,5 @@ Precondition, checked first: `code/agents-webhook` is a submodule with origin `h
 - Model on `code/agent-orchestrator/Dockerfile` (Python stage only) and `mise.toml`.
 
 Orchestrator notes (2026-10-25): AC3 (docker build) could not run locally (Docker disk full, build has no network); evidenced later by the agents-webhook CI images job (task webhook-ci-images).
+
+- 2026-10-25 done
