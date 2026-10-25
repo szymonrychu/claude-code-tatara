@@ -19,3 +19,21 @@ def test_readme_lists_every_rules_block_file():
     assert names
     missing = [n for n in names if f"`rules/{n}`" not in readme]
     assert not missing, f"README rules list lacks: {missing}"
+
+
+def spans(prefix):
+    return [s for s in re.findall(r"`([^`\n]+)`", README.read_text()) if prefix in s]
+
+
+def test_readme_ticket_commands_match_tool():
+    done = [s for s in spans("ticket.py task ") if "--status done" in s]
+    new_task = spans("ticket.py new-task")
+    assert done and new_task
+    assert [s for s in done if "--points-actual" not in s] == []
+    assert [s for s in new_task if "--points" not in s] == []
+
+
+def test_readme_names_new_subcommands():
+    readme = README.read_text()
+    missing = [c for c in ("retro", "deltas", "actuals") if f"`ticket.py {c}" not in readme]
+    assert not missing, f"README lacks ticket.py subcommands: {missing}"
