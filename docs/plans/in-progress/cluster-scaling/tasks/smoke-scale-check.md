@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-smoke-scale-check/agents-helmfile
+branch: cluster-scaling-smoke-scale-check
 verified_head: ""
 run: ""
 provides: []

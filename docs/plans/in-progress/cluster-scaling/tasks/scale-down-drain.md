@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-scale-down-drain/agent-orchestrator
+branch: cluster-scaling-scale-down-drain
 verified_head: ""
 run: ""
 provides: []

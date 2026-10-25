@@ -14,8 +14,8 @@ estimate_by: formula
 actual: ""
 actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
+worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/cluster-scaling-agents-strip-leaving-mark/agent-orchestrator
+branch: cluster-scaling-agents-strip-leaving-mark
 verified_head: ""
 run: ""
 provides: []
