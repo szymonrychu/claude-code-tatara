@@ -74,3 +74,5 @@ The live agents namespace runs the pinned build and the smoke, including the ini
 - Never bypass the kube-context guard.
 
 - 2026-10-25 run agent-init-scripts: dependency-failed on deploy-pin-init-scripts
+
+Pre-apply diff (orchestrator, 2026-10-25, `mise run diff`): `helm.sh/chart: agent-orchestrator-0.1.0-main.22cf283`, `app.kubernetes.io/version "a5b5a75" -> "22cf283"`, `agents, agent-orchestrator-settings, ConfigMap (v1) has changed` (derived checksum), `Affected releases are: agent-orchestrator UPDATED`. Post-apply `mise run diff`: `No affected releases`. Smoke last line: `smoke: OK`.
