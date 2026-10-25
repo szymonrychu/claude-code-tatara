@@ -1,6 +1,6 @@
 ---
 title: web webhook api client
-status: in-progress
+status: done
 repo: agents-web
 value: the UI calls the webhook API with types generated from its committed schema
 files: [openapi/webhooks.json, openapi/webhooks.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/webhooks-schema.d.ts, src/webhooks/api.ts, src/webhooks/api.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs &&
 depends_on: [webhook-openapi-readme]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 7619087
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 519809
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 419064, review 100745"
 ---
 
 # web webhook api client
@@ -67,3 +67,5 @@ The UI has a typed webhook client pinned to a recorded agents-webhook commit.
 - Vendors from this epic's agents-webhook checkout next to agents-web (`../agents-webhook` in the integration tree).
 
 - 2026-10-25 amended: re-plan 2026-10-25: per-webhook endpoints (/webhook/<suffix>, one type, one preset, basic auth) replace per-source secrets and mappings; agent reuse is opt-in per preset (design D3, D7, D16-D19)
+
+- 2026-10-25 done
