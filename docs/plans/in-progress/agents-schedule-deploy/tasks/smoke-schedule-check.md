@@ -1,6 +1,6 @@
 ---
 title: smoke schedule check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live smoke proves a schedule can be created, previewed and run against the real orchestrator"
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.p
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 392e1a3fc3081afe922ff450e0c4660c1160f952
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 13
+actual_tokens: 910137
+actual_roles: "impl 7, review 6"
+actual_role_tokens: "impl 654896, review 255241"
 ---
 
 # smoke schedule check
@@ -58,3 +58,5 @@ Add a schedule step to `scripts/smoke.sh` (design D14; approvals A5, A6): port-f
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
 - Split 2026-10-25: depends_on `api-docs-and-openapi` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.
+
+- 2026-10-25 done
