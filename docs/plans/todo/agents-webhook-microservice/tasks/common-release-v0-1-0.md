@@ -1,0 +1,67 @@
+---
+title: common release v0.1.0
+status: todo
+repo: agents-common
+value: "agents-webhook and later agents-schedule pin one tagged, documented library version"
+files: [pyproject.toml, uv.lock, README.md, CHANGELOG.md, MEMORY.md, tests/test_release.py]
+verify: "uv run pytest tests/test_release.py -q && uv run ruff check . && uv run ruff format --check ."
+depends_on: [common-db-helpers, common-settings-runtime, common-orchestrator-client, common-run-tracker]
+owns: [agents-common-lib]
+uses: []
+model: ""
+estimate: 6
+estimate_by: formula
+actual: ""
+actual_roles: ""
+review: ""
+worktree: ""
+branch: ""
+verified_head: ""
+run: ""
+provides: []
+---
+
+# common release v0.1.0
+
+## Requirement
+
+Document and release agents-common v0.1.0 (design D1; contract `agents-common-lib`). Paths are in code/agents-common.
+
+- `README.md`: install line `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0`; one `##` section per module (`settings`, `db`, `runtime`, `orchestrator`, `fake_orchestrator`, `runs`, `testing`) with its public names and a short usage example; a `## Versioning` section: tags are never re-pointed, consumers pin a tag.
+- `CHANGELOG.md`: `## v0.1.0` entry naming each module.
+- `MEMORY.md`: dated 2026-10-25 lines: why a shared library (D1), the marker idempotency (D8).
+- `tests/test_release.py`: pyproject version, `__version__`, CHANGELOG top entry and README install line agree on 0.1.0; every module named in the README exists.
+- Release step, run by the orchestrator once this epic's agents-common PR is merged to `main`: push tag `v0.1.0` on the merge commit (irreversible, listed in design.md), confirm CI on the tag is green and `uv pip install "agents-common @ git+https://github.com/szymonrychu/agents-common@v0.1.0"` installs in a fresh venv. Until then task webhook-scaffold stays blocked.
+
+## Acceptance conditions
+
+- AC1: version, CHANGELOG, README install line and package metadata agree on 0.1.0 [evidence: command:uv run pytest tests/test_release.py -q -k versions]
+- AC2: the README documents every public module [evidence: command:uv run pytest tests/test_release.py -q -k modules]
+- AC3: tag v0.1.0 exists on origin on the main merge commit and installs [evidence: judgement:the task notes quote git ls-remote --tags origin v0.1.0 and the install output]
+- AC4: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
+
+## Files
+
+- `pyproject.toml`
+- `uv.lock`
+- `README.md`
+- `CHANGELOG.md`
+- `MEMORY.md`
+- `tests/test_release.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
