@@ -1,6 +1,6 @@
 ---
 title: web clusters page
-status: in-progress
+status: done
 repo: agents-web
 value: "clusters get their own page in the hamburger menu, above Presets"
 files: [src/clusters/ClustersPage.tsx, src/clusters/ClustersPage.test.tsx, src/App.tsx, src/App.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/clusters/ClustersPage.test.tsx src/App.test.tsx && n
 depends_on: [web-form-config-fields]
 model: ""
 review: ""
-verified_head: ""
+verified_head: a6491e4
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 449603
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 340874, review 108729"
 ---
 
 # web clusters page
@@ -59,3 +59,5 @@ The hamburger menu's Settings list shows Clusters above Presets; Clusters opens 
 ## Notes
 
 Reuse `PresetsPage` layout patterns, `NewClusterDialog` and `DiscardClusterDialog` unchanged. Paths assume frontend-decoupling's layout (design D12).
+
+- 2026-10-25 done
