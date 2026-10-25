@@ -1,6 +1,6 @@
 ---
 title: common release v0-2-0
-status: in-progress
+status: done
 repo: agents-common
 value: the webhook and schedule services can pin the agent-reuse support by tag
 files: [pyproject.toml, uv.lock, src/agents_common/__init__.py, README.md, CHANGELOG.md, tests/test_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_release.py -q && uv run ruff check . && uv run
 depends_on: [common-reuse-running]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 205c467
 points: 2
 expected_minutes: 13
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 6
+actual_tokens: 407902
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 335474, review 72428"
 ---
 
 # common release v0-2-0
@@ -66,3 +66,5 @@ Tag v0.2.0 exists on the agents-common main merge commit and installs; agents-we
 - Same release path as common-release-v0-1-0; tags are never re-pointed.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
