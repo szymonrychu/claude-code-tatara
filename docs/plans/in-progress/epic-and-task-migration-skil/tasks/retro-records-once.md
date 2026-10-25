@@ -1,6 +1,6 @@
 ---
 title: Retro records once
-status: in-progress
+status: done
 repo: workbench
 value: "Retro reads each epic's agent records in one pass and orders undated old epics by when their work was verified"
 files: [plugins/workbench/scripts/lib/agent_usage.py, plugins/workbench/skills/start-development/scripts/ticket_cmds/retro.py, plugins/workbench/skills/start-development/tests/test_ticket_retro.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,15 +8,15 @@ verify: "bash plugins/workbench/scripts/run-tests.sh --only start-development &&
 depends_on: [legacy-transcript-matcher]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 816af0c
 points: 5
 expected_minutes: 57
 expected_tokens: 3750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 14
+actual_tokens: 794503
+actual_roles: "impl 12, review 3"
+actual_role_tokens: "impl 722558, review 71945"
 ---
 
 # Retro records once
@@ -96,3 +96,5 @@ housekeeping-rules-estimates RETRO.md, Tech debt (verbatim): "retro backfills pe
 - Retro lesson (housekeeping-rules-estimates): quote the lint and suite lines of a run made after `git add` and commit, never a tail read.
 
 - 2026-10-25 amended: interrogate item 1: 1042 transcripts on disk, not 149; the Notes cost figure reads 23 x 1042, not 23 x 149; ACs unchanged
+
+- 2026-10-25 done
