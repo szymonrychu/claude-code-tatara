@@ -6,21 +6,17 @@ value: the live agents namespace runs the presets release
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
 verify: "mise x -- uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py -k \"not test_release_chart_version_and_needs and not test_db_secret_matches_rendered_cnpg_cluster\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [fe-presets-page, retire-spec-update-repo, kind-e2e-presets]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 1
-actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-deploy-pin-presets/agents-helmfile
-branch: cluster-presets-deploy-pin-presets
 verified_head: de32698be99231c41560c1da2f6eebb9d216b343
-run: cluster-presets
-provides: []
-acs_for_audit: [AC2]
-process_gaps: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 1
+actual_tokens: 735482
+actual_roles: "impl 2, review 4"
+actual_role_tokens: "impl 517371, review 218111"
 ---
 
 # deploy pin presets

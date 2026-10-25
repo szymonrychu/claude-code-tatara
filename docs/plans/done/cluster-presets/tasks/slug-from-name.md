@@ -6,22 +6,17 @@ value: clusters scheduled from a preset get a valid slug without the user typing
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/bench/runner.py, tests/test_slugs.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_slugs.py tests/test_bench.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [slugify-helper]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 2
-actual_roles: "impl 1, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-slug-from-name/agent-orchestrator
-branch: cluster-presets-slug-from-name
 verified_head: eac3b59b3cd94534dff90ae9d44a175617504ddd
-run: cluster-presets
-provides: [slugify-helper]
-acs_for_audit: []
-process_gaps: []
-fork_point: f1baa5b
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 2
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # slug from name

@@ -6,21 +6,17 @@ value: "the migration is proven on a live database, early form edits survive, an
 files: [tests/test_migrations.py, frontend/src/presets/PresetForm.tsx, frontend/src/presets/PresetForm.test.tsx, README.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_migrations.py tests/test_readme_api.py && uv run ruff check . && uv run ruff format --check . && mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/presets && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [create-cluster-from-preset, fe-preset-form, preset-routes, presets-table-and-repo, retire-cluster-patch-route]
-owns: []
-uses: []
 model: sonnet
-estimate: 6
-estimate_by: formula
-actual: 11
-actual_roles: "impl 2, verify 5, review 1, fix 3, false-finding 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-presets-review-fixes/agent-orchestrator
-branch: cluster-presets-presets-review-fixes
 verified_head: 27eeef96b9d6d9dd20c548a257f080e77eb3d124
-run: cluster-presets
-provides: []
-acs_for_audit: [AC1]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 11
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # presets review fixes

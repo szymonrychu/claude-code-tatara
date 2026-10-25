@@ -6,22 +6,17 @@ value: "Presets is the first settings category in the hamburger menu, with creat
 files: [frontend/src/presets/PresetsPage.tsx, frontend/src/presets/PresetsPage.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/presets/PresetsPage.test.tsx src/App.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build"
 depends_on: [fe-preset-form]
-owns: []
-uses: [fe-preset-form, fe-preset-client, orch-presets-api, orch-settings-menu]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 6
-actual_roles: "impl 3, verify 2, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-presets-page/agent-orchestrator
-branch: cluster-presets-fe-presets-page
 verified_head: 477e2f527b67d15d63d335c98e433b6103a09883
-run: cluster-presets
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 9fb81a85a04f4768958d33369b46120fdeaa0b70
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe presets page

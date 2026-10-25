@@ -6,21 +6,17 @@ value: "scheduling a cluster takes only a preset, and later preset changes never
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/clusters.py, tests/test_api_create_from_preset.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_create_from_preset.py tests/test_api_clusters.py tests/test_clusters_repo.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [slug-from-name, preset-routes]
-owns: [orch-cluster-create-api]
-uses: [slugify-helper, presets-repo, check-spec-public]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 10
-actual_roles: "impl 4, verify 4, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-create-cluster-from-preset/agent-orchestrator
-branch: cluster-presets-create-cluster-from-preset
 verified_head: de2e84784c44399af9c4527956e14425db6917fd
-run: cluster-presets
-provides: []
-acs_for_audit: []
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 10
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # create cluster from preset

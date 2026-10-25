@@ -6,22 +6,17 @@ value: "New cluster in the UI is one preset choice and an optional slug, and eac
 files: [frontend/src/api/client.ts, frontend/src/clusters/NewClusterDialog.tsx, frontend/src/clusters/NewClusterDialog.test.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && mise x node@24.20.0 -- npm --prefix frontend test -- src/clusters/NewClusterDialog.test.tsx src/App.test.tsx src/layout/TopBar.test.tsx src/layout/designRules.test.ts && mise x node@24.20.0 -- npm --prefix frontend run lint && mise x node@24.20.0 -- npm --prefix frontend run build && mise x node@24.20.0 -- npm --prefix frontend run check:api"
 depends_on: [create-cluster-from-preset]
-owns: [fe-preset-client]
-uses: [orch-presets-api, orch-cluster-create-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 6
-actual_roles: "impl 3, verify 3, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-fe-new-cluster-dialog/agent-orchestrator
-branch: cluster-presets-fe-new-cluster-dialog
 verified_head: 9a4609272559b15fff2c9f4b82883eb5a08375ef
-run: cluster-presets
-provides: [fe-preset-client]
-acs_for_audit: []
-process_gaps: []
-fork_point: de2e847
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 6
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # fe new cluster dialog

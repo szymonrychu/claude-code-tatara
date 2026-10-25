@@ -6,22 +6,17 @@ value: "the retired PATCH answers 405 in the real image, as the API contract say
 files: [src/agent_orchestrator/api/spa.py, tests/test_spa.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_spa.py tests/test_api_clusters.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [presets-review-fixes]
-owns: []
-uses: []
 model: sonnet
-estimate: 5
-estimate_by: formula
-actual: 5
-actual_roles: "impl 2, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-spa-method-not-allowed/agent-orchestrator
-branch: cluster-presets-spa-method-not-allowed
 verified_head: c97945194b58d4115086891a6888cc8fcce1ba33
-run: cluster-presets
-provides: []
-acs_for_audit: []
-process_gaps: []
-fork_point: 27eeef96b9d6d9dd20c548a257f080e77eb3d124
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # spa method not allowed

@@ -6,21 +6,17 @@ value: CI proves on a real cluster that presets and preset scheduling work throu
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [retire-cluster-patch-route]
-owns: []
-uses: [orch-presets-api, orch-cluster-create-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 8
-actual_roles: "impl 1, verify 1, review 1, fix 5, false-finding 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-kind-e2e-presets/agent-orchestrator
-branch: cluster-presets-kind-e2e-presets
 verified_head: a7b8b4a57173b226cd35ba808218ca707fc4608d
-run: cluster-presets
-provides: []
-acs_for_audit: [AC2, AC5]
-process_gaps: ["No red/green TDD evidence for the e2e additions. The only changed file is a test, so no non-test revert is possible."]
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # kind e2e presets

@@ -6,22 +6,17 @@ value: "presets can be created, copied, edited and deleted through the documente
 files: [src/agent_orchestrator/api/presets.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/api/clusters.py, tests/test_api_presets.py, README.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_presets.py tests/test_api_clusters.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && uv run ruff check . && uv run ruff format --check ."
 depends_on: [presets-table-and-repo]
-owns: [check-spec-public, orch-presets-api]
-uses: [presets-repo]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 9
-actual_roles: "impl 4, verify 3, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-preset-routes/agent-orchestrator
-branch: cluster-presets-preset-routes/agent-orchestrator
 verified_head: dde2170bcce0ebb5903fb981507d343100e24880
-run: cluster-presets
-provides: [check-spec-public, orch-presets-api]
-acs_for_audit: []
-process_gaps: []
-fork_point: 233ff92
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 9
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # preset routes

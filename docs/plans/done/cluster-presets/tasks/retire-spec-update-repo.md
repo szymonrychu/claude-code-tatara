@@ -6,22 +6,17 @@ value: no dead live-edit code is left to mislead the next change
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/spec.py, tests/test_clusters_repo.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_clusters_repo.py tests/test_api_clusters.py tests/test_api_messages.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [retire-cluster-patch-route]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: 7
-actual_roles: "impl 4, verify 1, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-retire-spec-update-repo/agent-orchestrator
-branch: cluster-presets-retire-spec-update-repo
 verified_head: 79cc4d6836fbbe378c988ce7cd24ffdcd5b4950d
-run: cluster-presets
-provides: []
-acs_for_audit: [AC1]
-process_gaps: []
-fork_point: 97af531
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 7
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # retire spec update repo

@@ -6,22 +6,17 @@ value: presets are stored durably with a Default 1-pod preset that always exists
 files: [src/agent_orchestrator/db/migrations/0002_presets.sql, src/agent_orchestrator/db/presets.py, tests/test_migrations.py, tests/test_presets_repo.py, README.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_migrations.py tests/test_presets_repo.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [presets-repo]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 5
-actual_roles: "impl 3, verify 2, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-presets-table-and-repo/agent-orchestrator
-branch: "current worktree branch (commit e4aabae)"
 verified_head: 233ff924f80b0f6e4ae4174d5b786adc77ad259f
-run: cluster-presets
-provides: [presets-repo]
-acs_for_audit: [AC8]
-process_gaps: []
-fork_point: eac3b59b3cd94534dff90ae9d44a175617504ddd
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 5
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # presets table and repo

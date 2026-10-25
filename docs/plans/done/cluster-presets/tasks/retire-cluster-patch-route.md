@@ -6,21 +6,17 @@ value: "running clusters can no longer be edited through the API, so they never 
 files: [src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_clusters.py, README.md, MEMORY.md, openapi.json, frontend/src/api/schema.d.ts]
 verify: "mise x node@24.20.0 -- npm --prefix frontend ci && uv run pytest -q -p no:cacheprovider tests/test_api_clusters.py tests/test_api_presets.py tests/test_api_create_from_preset.py tests/test_readme_api.py && mise x node@24.20.0 -- npm --prefix frontend run check:api && mise x node@24.20.0 -- npm --prefix frontend run build && uv run ruff check . && uv run ruff format --check ."
 depends_on: [create-cluster-from-preset, fe-preset-form]
-owns: []
-uses: [check-spec-public]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: 8
-actual_roles: "impl 3, verify 4, review 1, land 1"
 review: ""
-worktree: /home/user/claude-code-tatara/.claude/worktrees/cluster-presets-retire-cluster-patch-route/agent-orchestrator
-branch: cluster-presets-retire-cluster-patch-route
 verified_head: 97af5310b0335f47c62c74b8a20674460e70dce4
-run: cluster-presets
-provides: []
-acs_for_audit: [AC5]
-process_gaps: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: 8
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # retire cluster patch route
