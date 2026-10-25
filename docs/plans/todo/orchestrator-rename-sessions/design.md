@@ -368,7 +368,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 - Q3: After a green smoke, keep the old database hibernated (pods stopped, PVCs and S3 backups kept, reversible) rather than deleting it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q4: Rename the SSO Secret and Keycloak client to agents-orchestrator(-proxy) through a user-run terraform change in the infrastructure repo (add the new client before the cutover, remove the old one after)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q5: Keep the ORCH_ env prefix, the orch CLI and the X-Orch- header family (they abbreviate orchestrator)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q6: Let webhook-event-filters land first and start this epic's agents-webhook and agents-web tasks after it? [recommended: yes]
+- Q6: Let webhook-event-filters land first and start this epic's agents-webhook and agents-web tasks after it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
 - Q7: The wrapper's own session id becomes wrapper_session_id in the orchestrator DB and API, so session means only the orchestrator's unit? [recommended: yes]
 
 ## Irreversible operations in scope
