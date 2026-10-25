@@ -43,17 +43,21 @@ Release and deploy this epic (design D14; approval A6). Pin release `agents-sche
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes chart `oci://harbor.szymonrichert.pl/charts/agents-schedule` 0.1.0 and image `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` (contracts `agents-schedule-chart`, `agents-schedule-image`), and the agents-web main build.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The schedule service and the UI with its Schedules entry run live and the smoke is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Update the pin tests to the new shas; they fail.
+- Change the pins; the verify passes.
+- `bash scripts/bootstrap-secrets.sh`, `mise run diff`, `mise run apply`, `mise run smoke`: each exits 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Runs after the agents-schedule and agents-web merges reach main; the shas are filled with `ticket.py amend` then (precedent `docs/plans/done/cluster-presets/tasks/deploy-pin-presets.md`, frontend-decoupling `deploy-pin-web`).
+- `mise run apply` is guarded by lint, test and the kube-context check (`EXPECTED_KUBE_CONTEXT`).
+- The orchestrator already runs the agents-webhook-microservice build with the service port; this task does not touch the orchestrator release.
+- Split 2026-10-25: depends_on `release-v0-1-0` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.

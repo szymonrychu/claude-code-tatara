@@ -36,17 +36,18 @@ Add the `schedules` backend to the agents-web release values (design D12; approv
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- agents-web `config.json` backend entry `schedules` (part `agents-web-schedules-config`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live UI shows the Schedules entry once deployed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the test to tests/test_web_release.py; it fails.
+- Add the values entry; it passes.
+- Lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `values/agents-web/common.yaml` and `tests/test_web_release.py` are created by frontend-decoupling; this task only adds the entry.

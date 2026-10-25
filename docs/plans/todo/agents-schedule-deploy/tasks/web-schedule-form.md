@@ -43,17 +43,18 @@ Add `ScheduleForm` (design D4, D7, D12; approvals A2, A4) on the trigger UI kit 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ScheduleForm({schedule?: ScheduleView, onSaved, onCancel})` (part `web-schedule-form`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are created and edited in the UI with a preview of when they fire.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ScheduleForm.test.tsx; `npx vitest run src/schedules/ScheduleForm.test.tsx` fails.
+- Write ScheduleForm.tsx; the test passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `PresetSelect` from the kit; do not write another preset picker.

@@ -49,17 +49,20 @@ Secrets for agents-schedule (design D14; approval A6), the same shape as agents-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-schedule/default.secrets.yaml` `orchestrator.token` and `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml` `serviceApi.tokenHashes.agents-schedule` (part `agents-schedule-token-bootstrap`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One bootstrap run gives the schedule service a working orchestrator credential.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests to tests/test_secrets.py the way the existing secret tests run the script; they fail.
+- Extend the script; they pass.
+- shellcheck clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The webhook epic adds its own pair of files the same way; the two stay independent. The orchestrator release picks up `service-token-*.secrets.yaml` per `orch-services-service`.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

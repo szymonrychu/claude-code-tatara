@@ -39,17 +39,18 @@ Add `SchedulesPage` (design D12; approvals A2, A4, gate Q6): a list of schedules
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `SchedulesPage({onBack})` (part `web-schedules-page`); `onBack` comes from the registry `render(onBack)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Schedules are fully managed from one page.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write SchedulesPage.test.tsx; it fails.
+- Write SchedulesPage.tsx; it passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror the webhook pages' layout (contract `trigger-ui-page-pattern`) so both trigger pages look alike.

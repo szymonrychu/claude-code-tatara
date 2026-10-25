@@ -46,17 +46,21 @@ Add release `agents-schedule` (design D13, D14; approval A6): chart `oci://harbo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Release `agents-schedule` values (part `agents-schedule-release-values`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The schedule service is declared behind the shared SSO under `/schedules` on the lab host.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_schedule_release.py; run: fails.
+- Add the release and values; the test passes.
+- `mise run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never the orchestrator's port 8000 (403 from its CIDR allowlist); port 8002 takes bearer service tokens (`orch-service-tokens`).
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+- Split 2026-10-25: depends_on `chart-ingress-and-test-hook` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.

@@ -38,17 +38,20 @@ Add `ScheduleRuns` (design D12; approval A4): the last 20 runs of one schedule (
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ScheduleRuns({scheduleId, timezone, refreshKey})` (part `web-schedule-runs`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Run history and session links are visible per schedule.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write ScheduleRuns.test.tsx; it fails.
+- Write ScheduleRuns.tsx; it passes.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The session link uses the session view route agents-web already has for the orchestrator.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

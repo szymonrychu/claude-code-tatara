@@ -39,17 +39,20 @@ Register the Schedules entry (design D12; approval A4, gate Q7) in the frontend-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/schedules/menu.ts:schedulesMenu`, `BACKEND_MENUS.schedules` in `src/backends/registry.ts` (part `web-schedules-menu`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The schedules UI lives in the hamburger menu.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests to src/backends/registry.test.ts; they fail.
+- Register the entry; they pass.
+- `npm run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `SchedulesPage` accepts `onBack` per the registry's `render(onBack)`.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

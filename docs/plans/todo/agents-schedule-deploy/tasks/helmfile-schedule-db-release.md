@@ -39,17 +39,20 @@ Add release `agents-schedule-db` (design D14; approval A6), the pattern of `agen
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Part `agents-schedule-db-release`: Secret `agents-schedule-db-cluster-app` key `uri` in namespace `agents`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Applying the helmfile creates the schedule database next to the orchestrator's.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write tests/test_schedule_db_release.py; run: fails.
+- Add the release and values; the test passes.
+- `mise run lint` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Creating a database is additive; nothing existing changes. Listed at the gate with the apply.
+
+- 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule

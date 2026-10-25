@@ -100,10 +100,6 @@ agents-common `runs.track` polls the message: first turn completed is `handled`;
 
 All routes under `/schedules/api/v1` (the reserved prefix of `agents-web-url-layout`; gate Q9): schedules CRUD, `POST /schedules/preview`, `POST /schedules/{id}/run` (allowed on a disabled schedule, my call), `GET /schedules/{id}/runs`, `GET /runs`, `GET /runs/{id}`; `/healthz` and `/readyz` at the root. Errors `{error: {code, message}}`. A source allowlist on the socket peer (`SCHED_ALLOWED_CIDRS`, default `127.0.0.1/32`) admits only the oauth2-proxy sidecar. README `## API`, committed `openapi.json` with a drift test, and an API-only kind e2e that hits every route against the agents-common fake orchestrator. Approval A5.
 
-### D12: UI in agents-web
-
-`src/schedules/`: API client typed from the vendored `openapi/schedules.json`, `ScheduleForm` (cron, timezone, `PresetSelect`, prompt, live preview), `ScheduleRuns` (`RunStatusChip`, session link, `usePoll`), `SchedulesPage` (enable/disable, run now, edit, delete with confirm, expandable runs). The menu entry is registered in `src/backends/registry.ts` (`agents-web-backend-registry`) at its reserved order 30, giving Sessions 10, Webhooks 20, Schedules 30, Presets 40 (gate Q7, `web-settings-menu-order`), shown only when `config.json` lists the `schedules` backend. Gates Q6, Q7. Approvals A2, A4.
-
 ### D13: Chart and image
 
 Image `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` (python slim, uv, USER 1000); chart `oci://harbor.szymonrichert.pl/charts/agents-schedule` with an api Deployment (SSO annotations from values, Service port name `http`) and a worker Deployment, both with a `sched migrate` initContainer; DB URL from a Secret and the orchestrator token as a value rendered into the chart's own Secret or from `orchestrator.tokenSecret` (the agents-webhook chart shape); Ingress on `/schedules` without its own cert-manager annotation. CI jobs lint, test, images, chart, e2e, chart-publish, chart-publish-tag, as agents-orchestrator. Approvals A1, A6.
@@ -111,6 +107,8 @@ Image `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` (python slim, 
 ### D14: Release and deploy
 
 Tag v0.1.0 on the merged main commit (chart 0.1.0). agents-helmfile: release `agents-schedule-db` (cnpg/cluster 0.9.0) and `agents-schedule` (needs the db; DB URL from `agents-schedule-db-cluster-app` key `uri`; orchestrator `http://agents-orchestrator-services:8002` (`orch-services-service`) with `orchestrator.token` from SOPS `values/agents-schedule/default.secrets.yaml`; host `lab.szymonrichert.pl` path `/schedules`); `bootstrap-secrets.sh` writes the token (raw into `values/agents-schedule/default.secrets.yaml`, its sha256 as `serviceApi.tokenHashes.agents-schedule` into `values/agents-orchestrator/service-token-agents-schedule.secrets.yaml`, as agents-webhook task helmfile-service-token); the agents-web values gain the `schedules` backend and the agents-web pin moves to the build with the Schedules page; the smoke gains a schedule step; then `mise run apply` and `mise run smoke`. Gate Q10. Approval A6.
+
+Moved 2026-10-25: the agents-helmfile half of D14 (releases, service token, web config, smoke, apply) and D12 (UI in agents-web) are decisions of epic agents-schedule-deploy (its design.md, D12 and D14); this epic keeps the tag, the chart and the image (release-v0-1-0).
 
 ### D15: Reuse running session
 
@@ -169,19 +167,18 @@ A scheduled or manual run honours the preset's `reuse_running_agent` (contract `
 | Decision | Tasks |
 |---|---|
 | D1 New component agents-schedule | scaffold-project-and-cli, service-entrypoints |
-| D2 Consume the shared parts | scaffold-project-and-cli, run-dispatcher, run-outcome-tracker, kind-e2e-api, web-schedule-form |
+| D2 Consume the shared parts | scaffold-project-and-cli, run-dispatcher, run-outcome-tracker, kind-e2e-api |
 | D3 Two tables, one writer each | schema-migrations, schedules-repository, runs-repository |
-| D4 Cron syntax, timezone and library | cron-expressions, schedules-api-routes, web-schedule-form |
+| D4 Cron syntax, timezone and library | cron-expressions, schedules-api-routes |
 | D5 Due check and missed runs | cron-expressions, scheduler-loop |
 | D6 Overlap | scheduler-loop, runs-api-routes |
-| D7 Prompt | run-dispatcher, web-schedule-form |
+| D7 Prompt | run-dispatcher |
 | D8 Limits | runs-repository, run-dispatcher, schedule-settings-model |
 | D9 Exactly-once fire and idempotent dispatch | runs-repository, scheduler-loop, run-dispatcher, service-entrypoints |
 | D10 Run outcome and cleanup | run-outcome-tracker |
-| D11 API surface and headless parity | schedules-api-routes, runs-api-routes, api-docs-and-openapi, kind-e2e-api, smoke-schedule-check |
-| D12 UI in agents-web | web-schedules-api-client, web-schedule-form, web-schedule-runs-list, web-schedules-page, web-schedules-menu-entry, web-config-schedules-backend |
+| D11 API surface and headless parity | schedules-api-routes, runs-api-routes, api-docs-and-openapi, kind-e2e-api |
 | D13 Chart and image | dockerfile-and-ci, helm-chart, chart-ingress-and-test-hook |
-| D14 Release and deploy | release-v0-1-0, helmfile-schedule-db-release, helmfile-schedule-release, schedule-service-token, web-config-schedules-backend, smoke-schedule-check, deploy-schedule |
+| D14 Release and deploy | release-v0-1-0 |
 | D15 Reuse running session | runs-repository, schema-migrations, run-dispatcher, run-outcome-tracker, schedules-api-routes, kind-e2e-api, api-docs-and-openapi |
 
 ## Contracts
@@ -206,13 +203,8 @@ A scheduled or manual run honours the preset's `reuse_running_agent` (contract `
 | `agents-schedule-chart-core` | helm-chart | chart-ingress-and-test-hook | `code/agents-schedule/chart/agents-schedule/values.yaml` |
 | `agents-schedule-chart` | chart-ingress-and-test-hook | kind-e2e-api, release-v0-1-0, helmfile-schedule-release | `code/agents-schedule/chart/agents-schedule/values.yaml` |
 | `agents-schedule-release` | release-v0-1-0 | deploy-schedule | `code/agents-schedule/README.md` |
-| `web-schedules-client` | web-schedules-api-client | web-schedule-form, web-schedule-runs-list, web-schedules-page | `code/agents-web/src/schedules/api.ts` |
-| `web-schedule-form` | web-schedule-form | web-schedules-page | `code/agents-web/src/schedules/ScheduleForm.tsx` |
-| `web-schedule-runs` | web-schedule-runs-list | web-schedules-page | `code/agents-web/src/schedules/ScheduleRuns.tsx` |
-| `web-schedules-page` | web-schedules-page | web-schedules-menu-entry | `code/agents-web/src/schedules/SchedulesPage.tsx` |
-| `agents-schedule-db-release` | helmfile-schedule-db-release | helmfile-schedule-release | `code/agents-helmfile/helmfile.yaml.gotmpl` |
-| `agents-schedule-release-values` | helmfile-schedule-release | deploy-schedule | `code/agents-helmfile/values/agents-schedule/common.yaml` |
-| `agents-web-schedules-config` | web-config-schedules-backend | deploy-schedule | `code/agents-helmfile/values/agents-web/common.yaml` |
+
+Moved to epic agents-schedule-deploy (its design.md owns these contracts): tasks deploy-schedule, helmfile-schedule-db-release, helmfile-schedule-release, schedule-service-token, smoke-schedule-check, web-config-schedules-backend, web-schedule-form, web-schedule-runs-list, web-schedules-api-client, web-schedules-menu-entry, web-schedules-page. Consumer entries above that name one of these tasks (smoke-schedule-check, web-schedules-api-client, helmfile-schedule-release, deploy-schedule) now refer to that epic.
 
 Cross-epic, registered in `docs/plans/contracts.json` by this epic: `agents-schedule-api`, `agents-schedule-chart`, `agents-schedule-image`, `agents-schedule-settings-env` (consumers agents-web, agents-helmfile). Consumed, registered by others and listing this epic as consumer: `agents-common-lib`, `preset-mapping-model`, `orch-service-tokens`, `orch-services-service`, `trigger-ui-page-pattern` (agents-webhook-microservice); `agents-web-backends-config`, `agents-web-backend-registry`, `agents-web-url-layout`, `agents-web-openapi-vendor`, `orch-ui-retired` (frontend-decoupling; `agents-web-chart` and `agents-web-image` are consumed by deploy-schedule through agents-helmfile); `agents-common-reuse`, `preset-reuse-running-agent` (agents-webhook-microservice); `web-settings-menu-order`, `orch-cluster-autoclose` (configuration-improvements; registered name, it describes session autoclose); `orch-presets-api`, `orch-cluster-create-api` (cluster-presets, done; registered name, it describes session creation).
 

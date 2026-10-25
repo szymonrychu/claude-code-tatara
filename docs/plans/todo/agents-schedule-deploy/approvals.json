@@ -1,0 +1,7 @@
+[
+  {"id": "A2", "text": "Map a cron schedule to a preset (with a prompt), managed as schedules.", "decisions": ["D3", "D4", "D7", "D12"], "tasks": ["web-schedule-form", "web-schedules-page"], "status": "approved"},
+  {"id": "A4", "text": "The schedules UI lives in the web UI (agents-web) hamburger menu.", "decisions": ["D12"], "tasks": ["web-schedules-api-client", "web-schedule-form", "web-schedule-runs-list", "web-schedules-page", "web-schedules-menu-entry", "web-config-schedules-backend"], "status": "approved"},
+  {"id": "A5", "text": "Headless parity: a documented API and an API-only e2e for every capability.", "decisions": ["D11"], "tasks": ["smoke-schedule-check"], "status": "approved"},
+  {"id": "A6", "text": "Releases, pin bumps, the CNPG database and helmfile apply plus smoke are tasks of this epic.", "decisions": ["D13", "D14"], "tasks": ["helmfile-schedule-db-release", "helmfile-schedule-release", "schedule-service-token", "smoke-schedule-check", "deploy-schedule"], "status": "approved"},
+  {"id": "A8", "text": "Runs after agents-webhook-microservice and frontend-decoupling and consumes the shared parts they own (DB and queue helpers, orchestrator client, service-to-service auth, preset binding, UI kit and page pattern); builds none of them.", "decisions": ["D2"], "tasks": ["web-schedule-form"], "status": "approved"}
+]

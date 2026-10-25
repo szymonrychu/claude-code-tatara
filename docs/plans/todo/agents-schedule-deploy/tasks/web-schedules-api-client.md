@@ -50,17 +50,20 @@ Add the schedule API client in agents-web (design D12; approval A4), following t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/schedules/api.ts` exports above, typed from `src/api/schedules-schema.d.ts` (part `web-schedules-client`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI has a typed client for every schedule route, configured at runtime.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write src/schedules/api.test.ts and the sync-api case; both fail.
+- Extend sync-api.mjs, run `npm run sync:api -- schedules --from ../agents-schedule`, write api.ts; the tests pass.
+- `npm run lint` and `npm run check:api` clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Layout per agents-webhook's `src/webhooks/api.ts` (contract `web-webhook-client`): one folder per backend.
+- No CORS: the API is same-origin under its path prefix.
+- Split 2026-10-25: depends_on `api-docs-and-openapi` stays satisfied by the epic blocker agents-schedule-microservice, which owns that task.
