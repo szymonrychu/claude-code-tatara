@@ -1,6 +1,6 @@
 ---
 title: deploy pin web
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the agents namespace gets the agents-web release and the / and /api path split
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, values/agent-orchestrator/common.yaml, tests/test_web_release.py, tests/test_orchestrator_release.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_web_release.py tests/te
 depends_on: [web-docs-memory, web-ci-release, web-backend-menu, web-chart-config-ingress]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 46ef967
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 321160
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 201193, review 119967"
 ---
 
 # deploy pin web
@@ -72,3 +72,5 @@ Precondition, checked first: the agents-web PR of this epic is merged to main an
 
 - `values/agents-web/default.secrets.yaml` is not needed (no secret values); the `default` template's `missingFileHandler: Warn` covers it, confirmed by `mise run diff` in apply-smoke-web-cutover.
 - Only one Ingress per host carries cert-manager annotations (design D7), so there is one Certificate for `agent-orchestrator-tls`.
+
+- 2026-10-25 done
