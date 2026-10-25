@@ -28,8 +28,8 @@ block replaced), its rows read from the new values, and commits exactly those fi
 `chore(ticket): <epic> migrate`; an epic with nothing to change gets no commit, so a second run
 prints `migrate: nothing to change`. It prints `<epic>: <n> tasks migrated[, RETRO.md]` per
 changed epic, then `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still
-the template's. A done epic with no RETRO.md counts as changed even when no task file changes. A done epic
-is history: this is the one writer of its task files.
+the template's. A done epic with no RETRO.md counts as changed even when no task file
+changes. A done epic is history: this is the one writer of its task files.
 """
 
 from __future__ import annotations
