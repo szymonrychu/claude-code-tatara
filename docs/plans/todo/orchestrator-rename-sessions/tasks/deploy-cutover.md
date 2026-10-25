@@ -46,17 +46,20 @@ Move the live namespace to the renamed releases and prove it (design D5, D7, D8,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes every release of this epic; writes only MEMORY.md.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live namespace runs agents-orchestrator on agents-orchestrator-db (presets carried over), agents-webhook and agents-web on the new names; no drift; smoke green; the old database is untouched.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Precondition probes (read-only), then "ready for step 2".
+- Orchestrator steps 2 to 5 in order (design D7); after each, the implementer runs the probe that step names and reports it before the next.
+- `mise run diff` (no drift), `mise run smoke` (exit 0), the MEMORY.md line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No TDD cycle applies: a deploy check plus one MEMORY.md line (doc edit exception).
+- If a step fails, stop: the old database is the rollback point; never retry an apply blindly, read the helm error and report its tail.
+- User step U1 (Keycloak client agents-orchestrator) must be done before; U2 (remove the old client) comes after a green smoke and is the user's.

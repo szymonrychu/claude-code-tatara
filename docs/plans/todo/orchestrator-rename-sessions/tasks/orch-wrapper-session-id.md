@@ -49,17 +49,18 @@ The claude-code-wrapper's session id becomes `wrapper_session_id` in the orchest
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Columns `agents.wrapper_session_id`, `agents.wrapper_session_created_at`, `events.wrapper_session_id`; `EventView.wrapper_session_id`; module `reconciler/wrapper_sessions.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator never uses a bare `session_id` for the wrapper's session; migration 0004 keeps every row.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_0004_renames_wrapper_session_columns` and `test_event_view_wrapper_session_id`; run them: they fail (no 0004, field missing).
+- Green: write 0004, rename SQL, row keys, attributes, the module and EventView, regenerate openapi.json, update README; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse the tmp-migrations-dir pattern of `test_presets_migration_on_existing_clusters` in tests/test_migrations.py.
+- The live database gets 0004 only on the imported copy (design D5); the old database is never migrated.

@@ -227,7 +227,7 @@ whole repo. Retired paths are pinned with `git ls-files <path>` returning nothin
 
 ### D13: Superrepo and other epics (orchestrator steps)
 
-O2 regenerates the superrepo's `.mise.toml`, AGENTS.md project block and docs/architecture.md with
+Mapped to orch-package-rename, the first task that needs O2 done; O3 runs after the epic. O2 regenerates the superrepo's `.mise.toml`, AGENTS.md project block and docs/architecture.md with
 `mise run init:refresh` after the submodule move. O3 amends agents-schedule-microservice tasks (orchestrator URL,
 routes, client names, Secret names, contract names) and records workspace-s3-cache's new names with
 `ticket.py amend` once this epic's names are merged.
@@ -237,6 +237,16 @@ routes, client names, Secret names, contract names) and records workspace-s3-cac
 Both epics touch agents-webhook (events store, schemas, openapi.json, tests) and agents-web (`src/webhooks/`,
 `openapi/webhooks.json`). webhook-event-filters runs first; this epic's agents-webhook and agents-web tasks start
 from main after it merged. Gate question Q6.
+
+### D15: Sizing exception for the two atomic sweeps (my call)
+
+The orchestrator reads rows with `dict_row` and hands them to API views, so a DB column, its Python field and its
+API field change together; renaming a class or type means touching every importer. Splitting
+orch-sessions-sweep (DB 0005, Python identifiers, public API, label key) or web-api-layer-sessions (vendored
+schema, client and every importer's identifiers) into smaller tasks would need temporary aliases between them,
+which the no-compatibility rule forbids. Each stays one task with directory entries in `files`, a guard test plus
+a migration or client test as its behaviour, and the component suite plus lint as verify. Every other area that
+can move alone (package, chart and CI, wrapper session id, agent API, docs, UI pages, UI workspace) is its own task.
 
 ## Orchestrator steps
 
@@ -270,10 +280,10 @@ Run by the main session, in this order, outside the task loop:
 ## Research inputs
 
 - Wrapper session id collides with the new `session_id` (agents.session_id, events.session_id, EventView) - 0001_init.sql, api/streams.py - orch-wrapper-session-id.
-- The migration runner applies each pending file in one transaction under an advisory lock - db/migrate.py:run_migrations - orch-wrapper-session-id, orch-schema-sessions.
-- SQL naming clusters or cluster_id lives in 21 src files beyond db/ - `git grep` - orch-schema-sessions.
+- The migration runner applies each pending file in one transaction under an advisory lock - db/migrate.py:run_migrations - orch-wrapper-session-id, orch-sessions-sweep.
+- SQL naming clusters or cluster_id lives in 21 src files beyond db/, and dict rows carry column names straight into API views (db/views.py dict_row), so DB, Python and API names move together - `git grep` - orch-sessions-sweep (D15).
 - orchestrator tests import any_mcp.orchestrator and any_mcp.config - tests/test_agent_scale.py, tests/test_on_start.py - orch-agent-api-sessions (pin v0.3.0).
-- Label key and managed-by value gate ownership in kube.py:owns - k8s/labels.py, k8s/kube.py - orch-k8s-session-labels.
+- Label key and managed-by value gate ownership in kube.py:owns - k8s/labels.py, k8s/kube.py - orch-package-rename (managed-by), orch-sessions-sweep (label key).
 - agents-web vendors openapi from a sibling checkout by repo name - scripts/sync-api.mjs:11 - web-api-layer-sessions.
 - UI menu already says "Sessions" while the rest says cluster - src/layout/SessionsMenu.tsx:34-36 - web-workspace-sessions.
 - agents-webhook stores cluster_id and cluster_slug and exposes them - migrations/0001_init.sql:54, api/schemas.py:74 - webhook-session-columns.
@@ -287,11 +297,11 @@ Run by the main session, in this order, outside the task loop:
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
-| `orch-sessions-api` (D2: routes, schemas, fields, codes, SSE) | orch-public-api-sessions | common-client-sessions, web-api-layer-sessions, helmfile-smoke-sessions | `code/agents-orchestrator/README.md`, `openapi.json` |
+| `orch-sessions-api` (D2: routes, schemas, fields, codes, SSE) | orch-sessions-sweep | common-client-sessions, web-api-layer-sessions, helmfile-smoke-sessions | `code/agents-orchestrator/README.md`, `openapi.json` |
 | `orch-agent-api-session-header` (X-Orch-Session, ORCH_SESSION_ID, plugin key `session`) | orch-agent-api-sessions | anymcp-plugin-session | `code/agents-orchestrator/README.md` |
 | `any-mcp-release-v0-3-0` | anymcp-release-v0-3-0 | orch-agent-api-sessions, helmfile-orch-release-rename | `code/any-mcp/pyproject.toml` |
 | `agents-common-release-v0-3-0` | common-release-v0-3-0 | webhook-worker-sessions | `code/agents-common/pyproject.toml` |
-| `orch-schema-sessions` (0004, 0005) | orch-schema-sessions | deploy-cutover | `code/agents-orchestrator/src/agents_orchestrator/db/migrations/` |
+| `orch-schema-sessions` (0004, 0005) | orch-wrapper-session-id, orch-sessions-sweep | deploy-cutover | `code/agents-orchestrator/src/agents_orchestrator/db/migrations/` |
 | `webhook-events-session-fields` | webhook-session-columns | web-webhooks-session-fields | `code/agents-webhook/openapi.json` |
 | `agents-orchestrator-chart` / `-image` | orch-package-rename | helmfile-orch-release-rename | `code/agents-orchestrator/.github/workflows/ci.yaml` |
 | `agents-orchestrator-db-release` | helmfile-orch-db-import | helmfile-orch-release-rename, deploy-cutover | `code/agents-helmfile/helmfile.yaml.gotmpl` |
@@ -306,26 +316,27 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 
 | Decision | Tasks |
 |---|---|
-| D1 Names | orch-package-rename, helmfile-orch-db-import, helmfile-orch-release-rename, helmfile-consumers-rename, webhook-docs-sessions, web-docs-names |
-| D2 Session vocabulary | orch-schema-sessions, orch-domain-sessions, orch-k8s-session-labels, orch-public-api-sessions, orch-agent-api-sessions, orch-docs-e2e-sessions, anymcp-plugin-session, common-client-sessions, webhook-session-columns, webhook-worker-sessions, web-api-layer-sessions, web-sessions-pages, web-workspace-sessions, web-webhooks-session-fields |
+| D1 Names | orch-package-rename, orch-chart-ci-rename, helmfile-orch-db-import, helmfile-orch-release-rename, helmfile-consumers-rename, webhook-docs-sessions, web-docs-names |
+| D2 Session vocabulary | orch-sessions-sweep, orch-agent-api-sessions, orch-docs-e2e-sessions, anymcp-plugin-session, common-client-sessions, webhook-session-columns, webhook-worker-sessions, web-api-layer-sessions, web-sessions-pages, web-workspace-sessions, web-webhooks-session-fields |
 | D3 wrapper_session_id | orch-wrapper-session-id |
-| D4 Forward migrations | orch-wrapper-session-id, orch-schema-sessions, webhook-session-columns |
+| D4 Forward migrations | orch-wrapper-session-id, orch-sessions-sweep, webhook-session-columns |
 | D5 Import into a new CNPG cluster | helmfile-orch-db-import, deploy-cutover |
 | D6 Hibernate the old DB | hibernate-old-orch-db |
 | D7 Cutover sequence | helmfile-orch-release-rename, deploy-cutover |
-| D8 No relabel migration | orch-k8s-session-labels, deploy-cutover |
+| D8 No relabel migration | orch-sessions-sweep, deploy-cutover |
 | D9 SSO Secret | helmfile-orch-release-rename, helmfile-consumers-rename, deploy-cutover |
 | D10 Kept names | orch-package-rename, orch-docs-e2e-sessions |
 | D11 Releases and pins | anymcp-release-v0-3-0, common-release-v0-3-0, orch-agent-api-sessions, webhook-worker-sessions, helmfile-orch-release-rename, helmfile-consumers-rename |
-| D12 Guard tests | orch-domain-sessions, orch-docs-e2e-sessions, webhook-docs-sessions, web-sessions-pages, web-docs-names, helmfile-smoke-sessions |
-| D13 Superrepo and other epics | orchestrator steps O2, O3 (no task) |
+| D12 Guard tests | orch-package-rename, orch-chart-ci-rename, orch-sessions-sweep, anymcp-plugin-session, common-client-sessions, orch-docs-e2e-sessions, webhook-docs-sessions, web-sessions-pages, web-docs-names, helmfile-smoke-sessions |
+| D13 Superrepo and other epics | orch-package-rename |
 | D14 Ordering | webhook-session-columns, web-webhooks-session-fields |
+| D15 Sizing exception | orch-sessions-sweep, web-api-layer-sessions |
 
 ## Review focus
 
-- orch-wrapper-session-id and orch-schema-sessions: the migrations keep every row (tests seed rows at 0003 and read
+- orch-wrapper-session-id and orch-sessions-sweep: the migrations keep every row (tests seed rows at 0003 and read
   them back), rename indexes and constraints, and no SQL string in src still names an old table or column.
-- orch-k8s-session-labels: `owns()` and selectors use the new label key and managed-by value together.
+- orch-sessions-sweep: `owns()` and selectors use the new label key and managed-by value together.
 - orch-agent-api-sessions: header, env and plugin key agree with any-mcp v0.3.0; the token binding is unchanged.
 - The nomenclature allowlists: each phrase is a Kubernetes, CNPG or kind cluster, never the orchestrator's unit.
 - helmfile-orch-db-import: the import source, TLS and password Secret names, and that the old release is untouched.

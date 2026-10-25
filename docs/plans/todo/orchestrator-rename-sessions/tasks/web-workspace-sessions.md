@@ -53,17 +53,18 @@ Rename the session workspace UI: chat, ribbon, top bar, menu, files, terminal an
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `useSessions()` (ribbon state) and `useSessionChat()` hooks; `data-session` on the workspace root.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every chat, top bar, menu, files, terminal and preset text says session; src outside the webhooks UI passes the guard.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the expected texts in the touched tests and widen `src/nomenclature.test.ts`; `npx vitest run` fails.
+- Green: rename hooks, props, texts, storage keys and comments; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Test titles used as AC refs: "placeholder names the session" (Composer.test.tsx), "new session button" (TopBar.test.tsx), "help texts name the session" (PresetForm.test.tsx).
+- Saved layouts under old storage keys are dropped once (no migration, no fallback).

@@ -47,17 +47,18 @@ Release any-mcp v0.3.0 carrying the session plugin (design D11; contract `any-mc
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tag `v0.3.0` (contract `any-mcp-release-v0-3-0`): `any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.3.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+any-mcp 0.3.0 is documented, versioned and, after the orchestrator's release step, tagged on origin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: set the expected version and `PINNED_LINE` in `tests/test_release.py` to 0.3.0; `uv run pytest -q tests/test_release.py -k "versions_agree or pinned_install_line"` fails.
+- Green: bump pyproject, `uv lock`, CHANGELOG and README; the verify passes.
+- End the round "ready for tag": the orchestrator tags after the PR merges and pastes the `git ls-remote` line into the notes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Tags are never re-pointed; a wrong tag means v0.3.1.

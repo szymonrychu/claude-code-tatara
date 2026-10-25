@@ -47,17 +47,18 @@ Declare the new orchestrator database release, imported from the old one (design
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Release `agents-orchestrator-db`; CNPG Cluster `agents-orchestrator-db-cluster`; its app Secret `agents-orchestrator-db-cluster-app` (key `uri`) is what helmfile-orch-release-rename wires (contract `agents-orchestrator-db-release`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The new database release is declared as an import of the old one; nothing about the old release changes; nothing is applied here.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the four new tests in `tests/test_db_release.py`; `uv run pytest -q tests/test_db_release.py` fails.
+- Green: add the release, the values and the encrypted secrets file; run `helmfile -f helmfile.yaml.gotmpl -l name=agents-orchestrator-db template` and quote the bootstrap and externalClusters part; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never apply: deploy-cutover runs the import after the old app is uninstalled (design D7).
+- Encrypted files go through the workbench-secrets secret helper skill, never a raw decrypt to the transcript.

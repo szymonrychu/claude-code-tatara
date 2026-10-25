@@ -52,17 +52,19 @@ Rename the Python project from agent-orchestrator to agents-orchestrator (design
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Distribution `agents-orchestrator`, import package `agents_orchestrator`, console script `orch`; `k8s.labels.MANAGED_BY == "agents-orchestrator"`; `Settings.claude_secret_name` default `agents-orchestrator-claude`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The repo builds and tests as agents-orchestrator; `src/agent_orchestrator` no longer exists in git.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_project_name.py` (`test_old_package_retired`, `test_package_named_agents_orchestrator`); `uv run pytest -q tests/test_project_name.py` fails.
+- Green: `git mv src/agent_orchestrator src/agents_orchestrator`, rewrite imports and names in src/ and tests/, pyproject, `uv lock`, Dockerfile, `.dockerignore`, regenerate openapi.json; `uv run pytest -q` passes, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Runs after orchestrator step O2 (submodule at code/agents-orchestrator, GitHub repo renamed).
+- Leave `chart/agent-orchestrator` paths in tests/ (helm_render.py, chart tests) to orch-chart-ci-rename; this task renames only the underscore form everywhere and the hyphen form inside src/.
+- Retirement check is `git ls-files`, never the filesystem.

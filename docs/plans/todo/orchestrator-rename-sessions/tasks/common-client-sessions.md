@@ -49,17 +49,17 @@ Rename the orchestrator client, its fake and the run tracker from cluster to ses
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `OrchestratorClient.create_session/get_session/list_messages/post_message`, `Session`; fake `discard_session/remove_session`; `RunRef.session_id`, `RunStore.set_session`, `running_session`, reason `session_not_found` (consumes `orch-sessions-api`; supersedes `preset-mapping-model`'s RunRef.cluster_id for agents-schedule-microservice).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-common speaks only the session API; its guard passes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_session_routes`, `test_missing_session_fails_run` and `tests/test_nomenclature.py`; run them: they fail.
+- Green: rename client, fake, tracker, README and the touched tests; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Routes and codes follow design.md D2 exactly; the fake must not answer `/clusters`.

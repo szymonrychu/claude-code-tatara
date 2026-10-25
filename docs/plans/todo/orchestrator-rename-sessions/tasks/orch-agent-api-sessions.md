@@ -54,17 +54,18 @@ Rename the agent API's unit to session and pin any-mcp v0.3.0 (design D2, D11; c
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `require_agent()`: `Authorization: Bearer <agent token>` plus `X-Orch-Session: <session id>`, caller IP = `agents.pod_ip`; `Me.session_id`; pod env `ORCH_SESSION_ID`; rendered plugin entry `{..., session: ${ORCH_SESSION_ID}, ...}` (contract `orch-agent-api-session-header`, matches any-mcp v0.3.0).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agents reach their session's agent API with any-mcp v0.3.0; the old header is refused; the whole repo's src, tests and openapi.json pass the nomenclature guard.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Precondition: tag any-mcp v0.3.0 exists (`git ls-remote --tags https://github.com/szymonrychu/any-mcp v0.3.0`); else end `blocked`, whoCanClear "orchestrator: tag any-mcp v0.3.0".
+- Red: bump the pin, `uv lock`, write the three named tests; run them: they fail.
+- Green: rename header, env, field and plugin key; regenerate openapi.json; widen the guard; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The token derivation input (`purpose:session id`) is unchanged, so live tokens stay valid across the rename.

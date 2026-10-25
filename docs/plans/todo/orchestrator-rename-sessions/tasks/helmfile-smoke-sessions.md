@@ -48,17 +48,18 @@ Move the live smoke and the helmfile docs to the new names and guard the repo (d
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/smoke.sh` env: `RELEASE` default `agents-orchestrator`, `WEB_RELEASE`, `HOST`, `NAMESPACE`, `SMOKE_TIMEOUT_S` (unchanged names).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The offline smoke tests and the guard pass on the new names; the live smoke runs in deploy-cutover.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: switch the fake API in `tests/test_smoke_script.py` to `/api/v1/sessions` and the default routes to `agents-orchestrator`, write `tests/test_nomenclature.py`; they fail.
+- Green: rewrite smoke.sh, the mise description, README and AGENTS.md; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The smoke's wrapper "session config dir" check is the wrapper's session: keep it, it is not the unit.
+- Each allowlist entry gets a comment saying why (Kubernetes, CNPG, or the hibernated old db, design D6).

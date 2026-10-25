@@ -49,17 +49,18 @@ Rename the chart, the image and the CI from agent-orchestrator to agents-orchest
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Chart `chart/agents-orchestrator`, name `agents-orchestrator`, defines `agents-orchestrator.*` (fullname drives every Service, Secret and Deployment name); OCI `oci://harbor.szymonrichert.pl/charts/agents-orchestrator`; image `harbor.szymonrichert.pl/containers/agents-orchestrator:<sha7>` (contracts `agents-orchestrator-chart`, `-image`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Main CI publishes the chart and image under the new names; the chart renders and lints.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_old_chart_retired` and `test_chart_and_ci_named` to `tests/test_project_name.py`; they fail.
+- Green: `git mv` the chart, rename defines and includes, CI, mise, scripts, e2e, tests' chart paths; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The CI's published-version check and image digest check must name the new repositories, or the first main build fails.
+- `CLUSTER=` in scripts/e2e.sh is the kind cluster's name: keep the variable, change only its value.

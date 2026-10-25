@@ -46,17 +46,17 @@ Release agents-common v0.3.0 with the session client (design D11; contract `agen
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tag `v0.3.0` (contract `agents-common-release-v0-3-0`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-common 0.3.0 is documented, versioned and, after the release step, tagged on origin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: set `INSTALL` and the expected version in `tests/test_release.py` to 0.3.0; it fails.
+- Green: bump, `uv lock`, CHANGELOG, README; the verify passes. End "ready for tag".
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Tags are never re-pointed.

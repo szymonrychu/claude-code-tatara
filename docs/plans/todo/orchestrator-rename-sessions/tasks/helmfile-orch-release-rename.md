@@ -53,17 +53,19 @@ Precondition, checked first: this epic's agents-orchestrator PR is merged to mai
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Release `agents-orchestrator` values (Services `agents-orchestrator`, `-agents`, `-services:8002`; Secrets `agents-orchestrator-{claude,master-key,services}`); old release `agent-orchestrator` `installed: false`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The helmfile declares the renamed orchestrator release and the old app release as uninstalled; nothing is applied here.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition (merged sha and Harbor artefacts) first.
+- Red: update `tests/test_orchestrator_release.py` and `tests/test_secrets.py` to the new names and add the two new tests; they fail.
+- Green: helmfile release blocks, `git mv` the values dir, values and bootstrap script; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `git mv` keeps the encrypted files byte-identical; never re-encrypt them (the master key value must not change).
+- Never apply: deploy-cutover sequences the applies (design D7).

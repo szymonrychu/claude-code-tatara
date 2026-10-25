@@ -50,17 +50,18 @@ Precondition, checked first: this epic's agents-webhook and agents-web PRs are m
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- agents-webhook `orchestrator.url: http://agents-orchestrator-services:8002`; shared Secrets `agents-orchestrator-proxy`, `agents-orchestrator-tls`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-webhook and agents-web are declared against the renamed orchestrator, Secrets and their renamed builds; nothing is applied here.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition (both merged sha7s and Harbor charts) first.
+- Red: update the named tests in `tests/test_webhook_release.py` and `tests/test_web_release.py`; they fail.
+- Green: helmfile needs and pins, both values files; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- agents-web and agents-webhook ingresses carry no cert-manager annotation; the orchestrator ingress owns `agents-orchestrator-tls`.

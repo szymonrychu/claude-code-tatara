@@ -48,17 +48,18 @@ Move agents-webhook onto agents-common v0.3.0 and the session vocabulary in the 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes agents-common v0.3.0 (`create_session`, `running_session`, `RunRef.session_id`, `set_session`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The worker creates, reuses and falls back on sessions through agents-common v0.3.0.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Precondition: tag agents-common v0.3.0 exists; else end `blocked`, whoCanClear "orchestrator: tag agents-common v0.3.0".
+- Red: bump both pins, `uv lock`, write the two named tests; run them: they fail.
+- Green: rename the worker calls, logs and README reasons; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Read worker.py for the `OrchestratorUnavailable` path and record in the notes which test pins the retry (design Assumptions).

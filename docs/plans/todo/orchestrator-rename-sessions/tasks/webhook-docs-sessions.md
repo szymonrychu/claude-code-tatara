@@ -48,17 +48,17 @@ Finish the rename in agents-webhook's docs and chart and guard the whole repo (d
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every tracked agents-webhook file passes the guard; MEMORY.md records the rename.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_nomenclature.py` over all tracked files; it fails on docs and chart.
+- Green: rewrite README, AGENTS.md, chart comments and lint values, add the MEMORY.md line; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Allowlist only Kubernetes/CNPG phrases (`db-cluster`, `cluster-issuer`, `in-cluster`, `cluster node IPs`) and dated history, each with a comment.

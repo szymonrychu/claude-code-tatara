@@ -48,17 +48,18 @@ Rename the orchestrator plugin's unit from cluster to session (design D2, D11, D
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `any_mcp.orchestrator.OrchestratorPlugin` Config: `base_url, token, session, agent, slug, max_replicas, static, hive, ...` (extra keys refused); header `X-Orch-Session`. Must agree with orch-agent-api-sessions (contract `orch-agent-api-session-header`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The plugin addresses the orchestrator's session by key `session` and header `X-Orch-Session`; `cluster` is refused.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_nomenclature.py` and the two new plugin tests; `uv run pytest -q tests/test_orchestrator_plugin.py tests/test_nomenclature.py` fails on the old key, header and texts.
+- Green: rename in `orchestrator.py` and README; the verify passes, lint clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- design.md D2 is the vocabulary; error codes come from the orchestrator (`static_session`).
+- Do not touch CHANGELOG or the version (anymcp-release-v0-3-0).

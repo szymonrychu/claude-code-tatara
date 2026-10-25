@@ -51,17 +51,18 @@ Rename the webhook run's cluster columns and API fields to session (design D2, D
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `events.session_id`, `events.session_slug`; `EventView`/`EventDetail` fields `session_id`, `session_slug` (contract `webhook-events-session-fields`, consumed by web-webhooks-session-fields).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Webhook runs store and serve their session; migration 0005 keeps every row.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_0005_renames_cluster_columns` and `test_event_view_session_fields`; run them: they fail.
+- Green: 0005, events store, schemas, worker field reads, openapi.json, README fields; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- 0004 belongs to webhook-event-filters (merged first, the epic's blocker); never renumber it.
+- The worker still calls agents-common v0.2.0 here; keep its call shapes.

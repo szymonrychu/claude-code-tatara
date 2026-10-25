@@ -48,17 +48,18 @@ Re-vendor the orchestrator API from agents-orchestrator and rename the UI's API 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `openapi/orchestrator.json` byte-identical to agents-orchestrator's `openapi.json`, `openapi/orchestrator.source` `agents-orchestrator <sha>` (contract `agents-web-openapi-vendor`); `src/api/client.ts` exports `listSessions`, `getSession`, `createSession`, `deleteSession` and the Session types (contract `orch-sessions-api`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The UI compiles and passes its tests against the session API; no client call names `/clusters`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `scripts/sync-api.test.mjs` and write the "session routes" and "session events" tests; run `node --test scripts/sync-api.test.mjs` and `npx vitest run src/api`: they fail.
+- Green: sync-api repo map, `npm run sync:api -- orchestrator` (sibling `../agents-orchestrator` is the orchestrator's integration tree), `npm run gen:api`, rename the API layer, fix every importer until `npx tsc -b` passes; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- design.md D15: types and every importer move together; never keep an alias type.
+- Visible texts and component names are the next two tasks; rename identifiers only here.

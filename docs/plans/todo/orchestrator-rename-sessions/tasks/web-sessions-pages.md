@@ -51,17 +51,17 @@ Rename the sessions settings page and its dialogs (design D2, D12; user decision
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Menu entry `{id: 'sessions', label: 'Sessions', order: 10, backend: 'orchestrator'}` (supersedes `web-settings-menu-order`'s Clusters entry for agents-schedule-microservice, which inserts between Sessions and Presets).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Settings > Sessions lists sessions with New session and discard; every text says session; `src/clusters` is gone from git.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rename the test files with their components (`git mv`), change their expected texts, write `src/nomenclature.test.ts` over the guarded paths; `npx vitest run src/sessions src/backends src/App.test.tsx src/nomenclature.test.ts` fails.
+- Green: `git mv src/clusters src/sessions`, rename components and texts, registry, App; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Test titles used as AC refs: "lists sessions" in SessionsPage.test.tsx, "sessions entry" in registry.test.ts.

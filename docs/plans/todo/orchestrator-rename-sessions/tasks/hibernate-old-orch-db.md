@@ -45,17 +45,18 @@ Hibernate the old orchestrator database instead of deleting it (design D6; gate 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Old release `agent-orchestrator-db` values: `cluster.annotations`, `backups.scheduledBackups`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The old CNPG cluster runs no pods, keeps its PVCs and S3 backups, and can be woken by removing one annotation.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_old_db_hibernated`; it fails.
+- Green: the values change; the verify's pytest and lint pass; the orchestrator applies the selector; the implementer quotes pods and PVCs, then `mise run diff` and `mise run smoke`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Deleting the old cluster is out of scope (design D6, Non-goals).
+- Check with `helm show values cnpg/cluster --version 0.9.0` that `cluster.annotations` reaches the Cluster metadata; if not, end `blocked` with the chart's key list.

@@ -47,17 +47,17 @@ Show the webhook run's session in the Webhooks UI (design D2, D14; contract `web
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `webhook-events-session-fields` (`session_id`, `session_slug`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Webhooks events table shows each run's session; all of src passes the guard.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write "events show the session" in WebhooksPage.test.tsx and widen the guard; they fail.
+- Green: `npm run sync:api -- webhooks` (sibling `../agents-webhook` is its integration tree), `npm run gen:api`, update the table; the verify passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- webhook-event-filters (the epic's blocker) already changed `src/webhooks/`; start from main.
