@@ -44,3 +44,24 @@ Estimate: 0 min | Actual: 0 min | Remaining estimate: 0 min
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Acted on, as new tasks:
+- epic-review-fixes: per-run fault isolation in the dispatcher and tracker, a public fire_lock, uvicorn proxy_headers=False (security, medium: the allowlist would otherwise have seen the X-Forwarded-For address behind the oauth2-proxy sidecar), and a pinned uv image.
+- ci-image-checks-and-worker-t: the CI images job asserts uid 1000 and no pytest; test_single_worker_fires no longer depends on minute boundaries.
+- e2e-two-worker-failure: a test race that completed a message before the run recorded message_id (not a product regression).
+- ignored-runs-finished-at: discovered during scheduler-loop.
+
+Dropped (low, noted):
+- SHA-pinning the GitHub actions and a digest for the python base image: the sibling repos use tags.
+- busybox pinned by tag only.
+- A pyright false positive in api/openapi.py:60 (pydantic-settings defaults).
+- The e2e fake control route answers 500 instead of 404 on a non-numeric id.
+- Small duplicated _sleep/_wake helpers in the scheduler and dispatcher.
+
+Scope audit: no gaps. Evidence:
+- Full suite: 137 passed.
+- PR #1 CI: green, kind e2e 16 passed.
+- Main CI on 6cfa955: green.
+- v0.1.0 tag, chart 0.1.0 and image 6cfa955 published.
