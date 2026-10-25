@@ -1,6 +1,6 @@
 ---
 title: web clusters page
-status: todo
+status: in-progress
 repo: agents-web
 value: "clusters get their own page in the hamburger menu, above Presets"
 files: [src/clusters/ClustersPage.tsx, src/clusters/ClustersPage.test.tsx, src/App.tsx, src/App.test.tsx]

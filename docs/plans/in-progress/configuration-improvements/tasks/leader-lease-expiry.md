@@ -1,6 +1,6 @@
 ---
 title: leader lease expiry
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a hive rotates its leader after a set time without interrupting a turn
 files: [src/agent_orchestrator/db/leadership.py, tests/test_leadership_pass.py, README.md, MEMORY.md]

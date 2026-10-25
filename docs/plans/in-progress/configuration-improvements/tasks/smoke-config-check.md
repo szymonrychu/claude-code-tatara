@@ -1,6 +1,6 @@
 ---
 title: smoke config check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live smoke proves the new configuration on the deployed orchestrator
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

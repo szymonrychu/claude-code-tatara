@@ -1,6 +1,6 @@
 ---
 title: render wrapper settings
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "agents run with the user's hooks, idle auto-compact and other wrapper settings, with credentials safe from interpolation"
 files: [src/agent_orchestrator/k8s/render.py, tests/test_render.py, README.md, MEMORY.md]

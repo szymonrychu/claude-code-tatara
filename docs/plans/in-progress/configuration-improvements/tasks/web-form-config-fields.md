@@ -1,6 +1,6 @@
 ---
 title: web form config fields
-status: todo
+status: in-progress
 repo: agents-web
 value: "users set hooks, idle compact, lease and autoclose in the preset editor"
 files: [openapi/agent-orchestrator.json, src/api/schema.d.ts, src/clusters/clusterSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]

@@ -1,6 +1,6 @@
 ---
 title: deploy pin config
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the agents namespace runs the configuration improvements
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_agents_web_release.py]

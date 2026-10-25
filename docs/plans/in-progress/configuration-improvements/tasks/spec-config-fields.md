@@ -1,6 +1,6 @@
 ---
 title: spec config fields
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "presets and clusters carry validated wrapper settings, a leader lease and an autoclose time"
 files: [src/agent_orchestrator/spec.py, src/agent_orchestrator/settings.py, tests/test_spec_config.py]

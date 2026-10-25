@@ -1,6 +1,6 @@
 ---
 title: config cluster views
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "API callers can set and see every new field, documented"
 files: [src/agent_orchestrator/api/schemas.py, src/agent_orchestrator/db/views.py, src/agent_orchestrator/api/clusters.py, README.md, openapi.json, tests/test_api_config.py]

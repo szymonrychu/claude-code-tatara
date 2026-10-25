@@ -1,6 +1,6 @@
 ---
 title: autoclose sweeper
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: a cluster closes itself after a set time through the normal discard
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/autoclose.py, src/agent_orchestrator/api/app.py, tests/test_autoclose.py, README.md, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: kind e2e config
-status: todo
+status: in-progress
 repo: agent-orchestrator
 value: "CI proves hooks, idle compact, lease and autoclose on a real cluster through the API"
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
