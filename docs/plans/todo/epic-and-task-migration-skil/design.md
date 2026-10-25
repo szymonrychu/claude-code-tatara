@@ -98,41 +98,49 @@ Values are written with `ticket.dump`, so `dump(load(x)) == x` holds.
   points_actual 3).
 - Neither: `points`, `expected_minutes` and `expected_tokens` stay empty and the task stays out of
   calibration.
-- A task that already has `points` keeps it and its expected values.
+- A task that already has `points` keeps it and any expected value it has; an empty `expected_minutes`
+  or `expected_tokens` is filled from `calibration.SEED[points]` (my call, builder check Q5).
 The same mapping applies in every phase (my call: Q3's reason, the planner's real estimate, holds for a
 todo task too).
 
-### D4: Actuals (Q5)
+### D4: Actuals (Q5; interrogate items 3 and 4)
 
 `actual_minutes` comes from a whole-number legacy `actual`, else from the task's matched records
-(`agent_usage.aggregate`); `actual_tokens` and `actual_role_tokens` come only from matched records;
-`actual_roles` from matched records. Without a number or a record the field stays empty, never invented.
-An existing new-scheme actual is kept. A legacy `actual_roles` value (19 flow-speed-and-token-optimiz
-tasks carry the old four-role form, for example `impl 4, verify 3, review 2, fix 2`) is kept when it
-names only impl and review, and otherwise folded: `fix` minutes added to impl (fix rounds continue the
-implementer) and `verify` minutes to review (the reviewer verifies first); records-derived roles win (my
-call; open question Q1 below). An empty legacy value becomes `""`.
+(`agent_usage.aggregate`). `actual_tokens`, `actual_roles` and `actual_role_tokens` come only from
+matched records, and only when those records cover both roles, impl and review; a partial match (one
+role only) leaves all three empty, gives no `actual_minutes` from records either (my call: a one-role
+span understates the task), and the dry run prints `partial: <epic>/<task> (<roles found>)`. A legacy
+`actual_minutes` from `actual` is still written for a partial match. Without a number or a full record set
+the field stays empty, never invented. Every legacy `actual_roles` value is dropped: the old taxonomy
+(impl, verify, review, fix, and one `false-finding` in medium-only-hold) has no mapping that is not a
+guess, and its sums disagree with `actual` in 2 tasks (interrogate item 3; open question Q1). A task
+with no legacy key (the bootstrap epic) keeps its new-scheme actuals as recorded.
 
-### D5: Legacy transcript matcher (Q11)
+### D5: Legacy transcript matcher (Q11; interrogate item 2)
 
 `agent_usage.legacy_task(path, names)` returns `(epic, task)` for an unmarked transcript whose first user
-prompt names exactly one task: a token of `names` (a dict from name to `(epic, task or None)`) found
-bounded by non-name characters. The caller (migrate) builds `names` from `<epic>/tasks/<task>.md` for every
-task, every `ticket.ticket_names` entry, and each old task's legacy `worktree` basename and `branch`
-(read before D2 drops them). An entry mapping to an epic only (the integration tree) or two different
-tasks match nothing. `agent_usage.backfill(..., names=None)` writes a record for such a transcript only
-when `names` is given and its `agent-<id>.meta.json` agentType is `workbench:implementer` or
-`workbench:reviewer` (roles impl and review); planner, merger, auditor, record-writer and general-purpose
-transcripts are skipped. A marker still wins over the names. Alternatives: importing ticket.py in
-agent_usage (rejected: stdlib-only lib), a fixed regex for the layout (rejected: names already exist in
-ticket.py).
+prompt names one task, matching tokens of `names` (a dict from name to `(epic, task or None)`) bounded by
+non-name characters. Precedence: exactly one task file path (`<epic>/tasks/<task>.md`) named wins; else
+exactly one tree or branch name of a task; else, or when ambiguous (two tasks at the same level, or only
+an epic name), no match and no record. The caller (migrate) builds `names` only from
+`<epic>/tasks/<task>.md` for every task, every `ticket.ticket_names` entry, and each old task's legacy
+`worktree` basename and `branch` (read before D2 drops them) when that value contains both the epic slug
+and the task slug; never `HEAD` (4 old tasks carry `branch: HEAD`), an empty string or free text.
+`agent_usage.backfill(..., names=None)` writes a record for such a transcript only when `names` is given
+and its `agent-<id>.meta.json` agentType is `workbench:implementer` (role impl), `workbench:reviewer`
+(review) or `workbench:verifier` (review: the old verifier did the review's verification); every other
+agent type (planner, merger, auditor, record-writer, general-purpose) is skipped. A marker still wins over
+the names. backfill's rglob already reaches the workflow transcripts under
+`<session>/subagents/workflows/wf_*/` (887 of the 1042 on disk, each with a meta.json). Alternatives:
+importing ticket.py in agent_usage (rejected: stdlib-only lib), a fixed regex for the layout (rejected:
+names already exist in ticket.py).
 
 ### D6: One transcript pass per epic
 
 `agent_usage.records_by_task(epic, logs_dir, transcripts_dir, backfill=True, names=None)` reads the
 epic's records once, backfills at most once when a task wanted is missing, reads again once, and returns
 `{task: [records]}`. `retro._fill_from_records` uses it instead of `records_for` per task (each empty task
-walked every transcript: 23 x 149 for epic-integration-worktrees), and migrate uses it with `names`.
+walked every transcript: 23 x 1042 for epic-integration-worktrees, 1042 transcripts being on disk), and migrate uses it with `names`.
 `records_for` stays for the single task of `ticket.py task --status done`.
 
 ### D7: Delivery order fallback (Q7)
@@ -151,21 +159,27 @@ section is still the template's. The skill then dispatches retro-writer (sonnet)
 `ticket.py retro <epic>`, which commits the filled file as `chore(ticket): <epic> retro`. Old epics have no
 orchestrator notes, so retro-writer gains record.md (and the task Notes) as an input.
 
-### D9: Commit shape, dry run and idempotence (Q9)
+### D9: Commit shape, write order, dry run and idempotence (Q9; interrogate item 5)
 
-Migrate commits once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
-RETRO.md it wrote; an epic with nothing to change gets no commit. `--dry-run` prints one line per task it
-would change (old and new values of the changed keys, dropped keys) and per RETRO.md it would write,
-changes no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored
-`.logs/agents` cache (my call: the records are regenerable and the dry run must show transcript actuals).
-With nothing to change it prints `migrate: nothing to change`. A second run over migrated files changes
-nothing.
+`migrate --all` covers every epic in every phase, this epic included (builder check Q4); a file already in
+the new scheme is left alone. Per changed epic, the new task frontmatter is computed first, the RETRO.md
+rows are computed from those new values (not from the old files), and then both are written and
+committed together, once per changed epic, `chore(ticket): <epic> migrate`, with exactly the task files and
+RETRO.md it wrote; an epic with nothing to change gets no commit. So `ticket.py retro <epic>` right after
+migrate regenerates the same block, and migrate after that prints `migrate: nothing to change`.
+`--dry-run` prints every problem first (D10), then one line per task it would change (old and new values
+of the changed keys, dropped keys), each `partial:` line (D4) and each RETRO.md it would write; it changes
+no tracked file and makes no commit; like `ticket.py retro`, it may backfill the gitignored `.logs/agents`
+cache (my call: the records are regenerable and the dry run must show transcript actuals). With nothing to
+change it prints `migrate: nothing to change`. A second run over migrated files changes nothing.
 
 ### D10: Validate before writing
 
 Every mapped task runs through `t._number_problems` before anything is written; any problem refuses the
-run (exit 1, the problems listed, nothing written in any epic; my call: all or nothing keeps the commit
-history simple), because `calibration_rows` silently drops a malformed row.
+run (exit 1, every problem listed, nothing written in any epic; my call, kept after builder check Q3: all
+or nothing keeps the commit history simple, the dry run lists every problem first, and dropping legacy
+`actual_roles` (D4) removes the only known offender), because `calibration_rows` silently drops a
+malformed row.
 
 ### D11: deltas legacy rows retired (Q10)
 
@@ -186,9 +200,11 @@ in the main checkout, the orchestrator runs it there with the integration tree's
 (`python3 <integration tree>/plugins/workbench/skills/start-development/scripts/ticket.py migrate --all
 --root <main>/docs/plans`, after the dry run), the same way ticket commits land on main during any epic.
 The retro-writer agent type loads only after `/reload-plugins` on main, so each retro-writer step is a
-general-purpose sonnet agent told to follow the integration tree's agents/retro-writer.md. The task's
-acceptance conditions run against main's docs/plans; its verify is the full `mise run test && mise run
-lint`.
+general-purpose sonnet agent told to follow the integration tree's agents/retro-writer.md. Step one is
+the dry run over all 1042 transcripts on disk (887 under `<session>/subagents/workflows/wf_*/`). The
+task's acceptance conditions are the real check: they run the integration tree's ticket.py against main's
+docs/plans (interrogate item 7). Its verify, the full `mise run test && mise run lint` in the integration
+tree, guards the code only: that tree cannot see main's migrated docs/plans.
 
 ## Research
 
@@ -202,9 +218,11 @@ lint`.
 ## Research inputs
 
 - Old scheme keys and counts (discovery brief: 74 old tasks over five epics; `estimate` "" in 3; numeric `actual` in flow-speed only) - migrate-dry-run.
-- 19 flow-speed tasks carry a four-role `actual_roles` (on-disk grep, this plan) - migrate-dry-run (D4, Q1).
+- Legacy `actual_roles` uses impl, verify, review, fix and one `false-finding` (medium-only-hold), and disagrees with `actual` in 2 tasks; dropped (interrogate item 3) - migrate-dry-run (D4, Q1).
+- 4 old tasks carry `branch: HEAD` (lead-verified grep; interrogate item 2) - migrate-dry-run (names map filter), legacy-transcript-matcher (precedence).
+- Partial record sets (one role) and write order of task files before retro rows (interrogate items 4 and 5) - migrate-dry-run, migrate-command.
 - Bootstrap epic: 24 tasks with actuals, no `points`; Notes `Estimate: N points` on all 24, one differs from points_actual (reuse brief) - migrate-dry-run.
-- Transcripts: 149 on disk, 49 marked; unmarked lean-development-flow implementer and reviewer prompts name `in-progress/lean-development-flow/tasks/<task>.md`; epic-integration-worktrees ones are worktree-merger only (discovery brief and an on-disk sample) - legacy-transcript-matcher.
+- Transcripts: 1042 agent-*.jsonl on disk, 887 of them under `<session>/subagents/workflows/wf_*/`, each with a meta.json (lead-verified find; interrogate item 1); unmarked lean-development-flow implementer and reviewer prompts name `in-progress/lean-development-flow/tasks/<task>.md`; epic-integration-worktrees ones are worktree-merger only (discovery brief and an on-disk sample) - legacy-transcript-matcher, retro-records-once, migrate-this-repo.
 - Unmarked transcripts are skipped, pinned by test_agent_usage.py::test_backfill_writes_marked_only (reuse brief fix-as-ac) - legacy-transcript-matcher.
 - retro._fill_from_records walks every transcript per empty task (reuse brief hot spot; housekeeping-rules-estimates retro, tech debt) - retro-records-once.
 - Only lean-development-flow has `task <slug> done` commits; every old task has a verified_head, one not a sha (discovery and reuse briefs) - retro-records-once.
@@ -244,7 +262,9 @@ lint`.
 - Idempotence and dry run: no tracked change and no commit on a dry run, nothing at all on a second run.
 - Byte-for-byte keeps: title through verified_head, the task body, RETRO.md Retro and Improvements, and
   every side file.
-- The matcher's skip rules (no task, two tasks, epic-only tree, non implementer/reviewer types).
+- The matcher's skip rules (no task, two tasks, epic-only tree, agent types other than implementer,
+  reviewer and verifier) and the names map filter (`HEAD`, empty, free text never enter).
+- Partial record sets leave tokens and roles empty.
 - Delivery order with a non-sha verified_head.
 
 ## Left to the builder
@@ -256,16 +276,17 @@ lint`.
 
 ## Assumptions and unknown facts
 
-- Transcripts for flow-speed, init, template-update and most epic-integration-worktrees agents are gone
-  (the harness deletes them after about 30 days); those tasks get tokens `""`. Confirmed by the dry run in
-  migrate-this-repo.
+- 1042 transcripts are on disk now (887 workflow ones under `<session>/subagents/workflows/wf_*/`); how
+  many match old tasks is unknown until the dry run in migrate-this-repo prints its lines. Retention of
+  about 30 days is unverified; the real run happens now, so it does not bind. Unmatched tasks get tokens
+  `""`.
 - Old verified_head shas are still in the object store (merged); a missing one falls back per D7.
 - After migration the bootstrap epic gives at least 5 calibration rows, so buckets leave the seed;
   confirmed by migrate-this-repo's AC.
 
 ## Open questions
 
-- Q1: Old four-role actual_roles (19 flow-speed tasks, e.g. 'impl 4, verify 3, review 2, fix 2'): fold fix into impl and verify into review instead of dropping them, since no transcripts survive for that epic? [recommended: yes, fold; records-derived roles still win (D4)]
+- Q1: Legacy actual_roles are dropped (no safe mapping, sums disagree); roles come only from records, with workbench:verifier transcripts counted as review. Agree? [recommended: yes]
 - Q2: The real run (task migrate-this-repo) writes docs/plans on main, which only the orchestrator may do: does the orchestrator run it in the main checkout with the integration tree's ticket.py before the epic review, with the reviewer checking the acceptance commands against main's docs/plans? [recommended: yes (D13)]
 
 ## Irreversible operations in scope
