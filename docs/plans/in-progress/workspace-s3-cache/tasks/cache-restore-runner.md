@@ -1,6 +1,6 @@
 ---
 title: cache restore runner
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a cached session starts from the previous session's workspace before init and Claude run"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, tests/test_cache_restore.py, tests/fakes/fake_kube.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_cache_restore.py tests/test_init_runner.py 
 depends_on: [cache-key-on-create, cache-presign, cache-job-render]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bf58295
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 5
+actual_tokens: 1456551
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 1187767, review 268784"
 ---
 
 # cache restore runner
@@ -71,3 +71,5 @@ A new cached session shows `status.cache.restore.state` running, then restored o
 - Copy the state machine of `reconciler/init.py:InitRunner` (state before create, `job` after, `_observe`, `_outcome`, `_delete_job`); share `checks.log_tail`, `job_condition`, `container_exit_code`.
 - `fake_kube.finish_job` hard-codes the container name `check`; generalise it only if a test needs the real name.
 - Parse only the last non-empty log line as JSON; a non-JSON line on a Complete Job is `failed` with reason `bad_output`.
+
+- 2026-10-26 done
