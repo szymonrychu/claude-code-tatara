@@ -1,6 +1,6 @@
 ---
 title: deploy pin orch no spa
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the agents namespace is pinned to the API-only orchestrator build
 files: [helmfile.yaml.gotmpl, values/agent-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py
 depends_on: [apply-smoke-web-cutover, orch-drop-frontend-build, orch-drop-spa-mount]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 13c35f9
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 184448
+actual_roles: impl 1
+actual_role_tokens: impl 184448
 ---
 
 # deploy pin orch no spa
@@ -61,3 +61,5 @@ Precondition, checked first: the agent-orchestrator PR of this epic (tasks orch-
 ## Notes
 
 - Same shape as agent-init-scripts deploy-pin-init-scripts; take the sha of the orchestrator main merge that contains this epic.
+
+- 2026-10-25 done
