@@ -1,6 +1,6 @@
 ---
 title: web webhook menu entry
-status: todo
+status: in-progress
 repo: agents-web
 value: the Webhooks page is reachable from the menu between Clusters and Presets
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/webhooks/menu.tsx]
@@ -44,17 +44,19 @@ Register the Webhooks menu entry (design D11; request: "webUI entry between clus
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `agents-web-backend-registry` (slot 20) and `agents-web-backends-config` (backend id `webhooks`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Webhooks appears in the menu between Clusters and Presets when the webhooks backend is configured.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the registry cases; run `npx vitest run src/backends/registry.test.ts`: fail.
+- Green: `menu.tsx` and the registry entry; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- configuration-improvements (done) registered Clusters at slot 10.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
