@@ -18,3 +18,4 @@ Dated entries, newest last. Supersede an entry rather than deleting it. One line
 2026-10-25: gate approved (user: "Go") for agents-web-component, frontend-decoupling, configuration-improvements, agents-webhook-component, agents-webhook-microservice, agents-schedule-component, agents-schedule-microservice; every open gate question taken at its recommended answer, including the four public GitHub repos (agents-web, agents-common, agents-webhook, agents-schedule) and the unauthenticated, signature-checked webhook ingest.
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile; via init:refresh.
 2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web; via component add (new scaffold).
+2026-10-25: components now: claude-code-wrapper, any-mcp, agent-orchestrator, agents-helmfile, agents-web, agents-common; via component add (new scaffold).

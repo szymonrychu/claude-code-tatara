@@ -18,3 +18,7 @@
 	path = code/agents-web
 	url = https://github.com/szymonrychu/agents-web
 	branch = main
+[submodule "agents-common"]
+	path = code/agents-common
+	url = https://github.com/szymonrychu/agents-common
+	branch = main

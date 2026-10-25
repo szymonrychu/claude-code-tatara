@@ -34,6 +34,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 | agent-orchestrator | python | Web UI and headless API orchestrating Kubernetes pods of claude-code-wrapper agents: clusters, round-robin dispatch, chat history (Python backend, React frontend, helm chart) | `mise run --cd code/agent-orchestrator test` |
 | agents-helmfile | generic | helmfile managing namespace agents: CNPG database and the agent-orchestrator release, applied with local mise tasks | `mise run --cd code/agents-helmfile test` |
 | agents-web | typescript | Web UI of the agents system (React/MUI SPA served as static files by nginx-unprivileged), reaching each backend (agent-orchestrator first) through its documented HTTP API on one host | `mise run --cd code/agents-web test` |
+| agents-common | python | Python library shared by the trigger services (agents-webhook, agents-schedule): settings, Postgres pool, migrator, guarded queue transitions, orchestrator client, run tracker | `mise run --cd code/agents-common test` |
 
 ## Component hard rules
 
