@@ -184,7 +184,9 @@
     "kind": "api",
     "owner": "cluster-presets",
     "file": "code/agent-orchestrator/README.md",
-    "consumers": [],
+    "consumers": [
+      "configuration-improvements"
+    ],
     "note": "GET|POST /api/v1/presets, GET|PUT|DELETE /api/v1/presets/{preset_id}, POST /api/v1/presets/{preset_id}/copy; PresetView {id, name, is_default, spec (sparse, only set keys), created_at, updated_at}; errors preset_default, last_preset, conflict; task preset-routes"
   },
   {
