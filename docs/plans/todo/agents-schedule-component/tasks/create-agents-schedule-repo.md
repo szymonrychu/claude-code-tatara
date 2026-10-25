@@ -6,19 +6,17 @@ value: "the schedule service has its own public repo with CI secrets, ready for 
 files: [.gitmodules, code/agents-schedule, AGENTS.md]
 verify: "git config --file .gitmodules --get submodule.agents-schedule.branch && cd code/agents-schedule && pytest tests/test_smoke.py -q && ruff check ."
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # create agents-schedule repo
