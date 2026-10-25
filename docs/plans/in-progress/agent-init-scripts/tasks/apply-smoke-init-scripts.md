@@ -62,6 +62,10 @@ The live agents namespace runs the pinned build and the smoke, including the ini
 - `mise run diff`: exits 0.
 - `mise run smoke`: exits 0; quote its last log line into MEMORY.md and the task notes.
 
+## Ruling
+
+- 2026-10-25 accepted: applied by the orchestrator after user allowed mise run apply: helm rev 11 chart 0.1.0-main.22cf283; post-apply diff 'No affected releases'; mise run smoke 'smoke: OK' incl init scripts succeeded; MEMORY via agents-helmfile PR #15 merged
+
 ## Notes
 
 - No TDD cycle applies: this task runs an apply and writes one MEMORY.md line (doc edit exception).

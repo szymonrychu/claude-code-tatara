@@ -4,5 +4,11 @@
     "accept": true,
     "reason": "test-only deliverable (the e2e test is the change); TDD red not applicable to a pure test file; the test is run for real against kind in phase 5",
     "at": "2026-10-25T06:35:04Z"
+  },
+  {
+    "task": "apply-smoke-init-scripts",
+    "accept": true,
+    "reason": "applied by the orchestrator after user allowed mise run apply: helm rev 11 chart 0.1.0-main.22cf283; post-apply diff 'No affected releases'; mise run smoke 'smoke: OK' incl init scripts succeeded; MEMORY via agents-helmfile PR #15 merged",
+    "at": "2026-10-25T07:40:31Z"
   }
 ]
