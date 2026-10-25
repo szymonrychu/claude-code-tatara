@@ -35,10 +35,6 @@ The reconciler is unchanged: it discards `deleting` clusters as today (quiesce, 
 
 README.md: `### Autoclose` under `## Discard`: the field, counted from `created_at`, the floor `ORCH_AUTOCLOSE_MIN_SECONDS` (default 300), the poll lag (about 10 s), that it is the same discard as `DELETE /api/v1/clusters/{id}` (discard hook export included, no handoff turn), and the single-writer table note that the api sweeper writes `desired`. MEMORY.md: a dated entry for choosing the api sweeper over a derived predicate or a reconciler write, with the why.
 
-Interfaces: builds part `orch-cluster-autoclose` (`db/clusters.py::close_expired`, `api/autoclose.py::AUTOCLOSE_POLL_SECONDS`); uses `orch-spec-config-fields`.
-
-Steps: red, write `tests/test_autoclose.py` (backdate `created_at` with SQL; LISTEN on `cluster_changed`; two concurrent calls for the idempotence test; the app lifespan with a short poll patched in); green, implement; run the verify command.
-
 ## Acceptance conditions
 
 - AC1: close_expired flips only active clusters past created_at plus autoclose_after_seconds to deleting with generation plus one, notifies cluster_changed, and leaves clusters without the field, not yet due or already deleting untouched, with no other column written [evidence: test:tests/test_autoclose.py::test_close_expired_flips_only_due_clusters]
@@ -59,17 +55,18 @@ Steps: red, write `tests/test_autoclose.py` (backdate `created_at` with SQL; LIS
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Builds part `orch-cluster-autoclose` (`db/clusters.py::close_expired`, `api/autoclose.py::AUTOCLOSE_POLL_SECONDS`); uses `orch-spec-config-fields`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A cluster with `autoclose_after_seconds` turns `deleting` within about 10 s of its deadline and is discarded exactly as by `DELETE /api/v1/clusters/{id}`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red, write `tests/test_autoclose.py` (backdate `created_at` with SQL; LISTEN on `cluster_changed`; two concurrent calls for the idempotence test; the app lifespan with a short poll patched in)
+- Green, implement
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Decisions are in design.md; nothing beyond the requirement.

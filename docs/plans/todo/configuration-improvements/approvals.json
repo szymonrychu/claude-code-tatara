@@ -1,0 +1,58 @@
+[
+  {
+    "id": "A1",
+    "text": "Expose more claude-code-wrapper settings, including hooks and idle_auto_compact, as typed wrapper settings, not a raw config overlay.",
+    "decisions": ["D1", "D2", "D8"],
+    "tasks": ["spec-config-fields", "render-wrapper-settings", "config-cluster-views", "web-form-config-fields", "kind-e2e-config"],
+    "status": "approved"
+  },
+  {
+    "id": "A2",
+    "text": "Command hooks are allowed as well as http (webhook) hooks, with the env-exposure risk documented; user text rendered into the wrapper config is escaped ($$) against ${VAR} interpolation.",
+    "decisions": ["D2", "D3"],
+    "tasks": ["spec-config-fields", "render-wrapper-settings"],
+    "status": "approved"
+  },
+  {
+    "id": "A3",
+    "text": "Optional leader lease timeout: at expiry leadership is handed to the longest-free agent at a turn boundary, never interrupting a running turn; handover only, no takeovers.",
+    "decisions": ["D4", "D11"],
+    "tasks": ["spec-config-fields", "leader-lease-expiry", "config-cluster-views", "web-form-config-fields", "kind-e2e-config"],
+    "status": "approved"
+  },
+  {
+    "id": "A4",
+    "text": "Optional autoclose after a time: counted from cluster creation, closes the cluster through the existing discard path, minimum 300 s.",
+    "decisions": ["D5", "D6", "D11"],
+    "tasks": ["spec-config-fields", "autoclose-sweeper", "config-cluster-views", "web-form-config-fields", "kind-e2e-config"],
+    "status": "approved"
+  },
+  {
+    "id": "A5",
+    "text": "Clusters gets its own page in the hamburger Settings list, above Presets.",
+    "decisions": ["D7", "D11"],
+    "tasks": ["web-clusters-page"],
+    "status": "approved"
+  },
+  {
+    "id": "A6",
+    "text": "Every capability gets a documented API and an API-only e2e test.",
+    "decisions": ["D9"],
+    "tasks": ["config-cluster-views", "kind-e2e-config", "smoke-config-check"],
+    "status": "approved"
+  },
+  {
+    "id": "A7",
+    "text": "Releases, pin bumps and helmfile apply plus smoke are tasks of this epic.",
+    "decisions": ["D10"],
+    "tasks": ["smoke-config-check", "deploy-pin-config"],
+    "status": "approved"
+  },
+  {
+    "id": "A8",
+    "text": "The epic runs after agent-init-scripts, cluster-scaling and frontend-decoupling; its UI tasks land in the agents-web component, not in agent-orchestrator/frontend.",
+    "decisions": ["D12"],
+    "tasks": ["web-form-config-fields", "web-clusters-page"],
+    "status": "approved"
+  }
+]

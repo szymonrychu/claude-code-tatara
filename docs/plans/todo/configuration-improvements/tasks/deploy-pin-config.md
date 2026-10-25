@@ -27,8 +27,6 @@ provides: []
 
 Release and deploy this epic to the agents namespace (design D10; approval A7). The releases are the main builds of this epic's merged commits: the orchestrator chart `oci://harbor.szymonrichert.pl/charts/agent-orchestrator` `0.1.0-main.<sha7>` with image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>` (contracts `agent-orchestrator-chart`, `agent-orchestrator-image`), and the agents-web chart and image published by agents-web CI on main (as frontend-decoupling defines them). No wrapper or any-mcp release (wrapper 0.2.0 already implements every setting). In agents-helmfile: `helmfile.yaml.gotmpl` pins both chart versions; `values/agent-orchestrator/common.yaml` and `values/agents-web/common.yaml` pin the image tags; `tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image` and `tests/test_agents_web_release.py::test_agents_web_pin_matches_image` assert each chart version and image tag carry the same sha (offline, text read). The shas are filled with `ticket.py amend` once the merges land on main. Then run `mise run diff` (only the two chart versions and image tags change), `mise run apply` and `mise run smoke` (which now includes the config step) against the expected kube context.
 
-Notes: the agents-web values and release test file names follow frontend-decoupling's deploy task; amend if they differ (design D12). `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts and are deselected in the verify. `mise run apply` is guarded by lint, test and the kube-context check.
-
 ## Acceptance conditions
 
 - AC1: the orchestrator chart version and image tag agree on the merged sha, read offline [evidence: test:tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image]
@@ -48,17 +46,18 @@ Notes: the agents-web values and release test file names follow frontend-decoupl
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses the shared parts listed in the frontmatter `uses`; builds no new interface.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The agents namespace runs this epic's orchestrator and agents-web builds, and the live smoke, including the config step, passes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Update the two pin tests to the merged shas; run them: fail.
+- Change the pins; run the verify command: passes.
+- `mise run diff`: only the two chart versions and image tags change. `mise run apply`, then `mise run smoke`: both exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The agents-web values and release test file names follow frontend-decoupling's deploy task; amend if they differ (design D12). `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster` pull charts and are deselected in the verify. `mise run apply` is guarded by lint, test and the kube-context check.

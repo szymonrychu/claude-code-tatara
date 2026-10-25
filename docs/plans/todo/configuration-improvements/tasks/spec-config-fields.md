@@ -33,12 +33,6 @@ Add the create-time configuration fields every other task builds on (design D1, 
 
 In `src/agent_orchestrator/settings.py` add `autoclose_min_seconds: int = 300` (env `ORCH_AUTOCLOSE_MIN_SECONDS`, >= 1). Validation errors name the field path (for example `wrapper.hooks.onTick.0.interval_seconds`). Unset fields dump to nothing (`model_dump(exclude_none=True)`), so presets stay sparse. The fields are create-time only: no new in-place spec writer; MEMORY's list of runtime-mutable fields stays `replicas` and `init_scripts`.
 
-Interfaces: builds part `orch-spec-config-fields` (`spec.py::WrapperSettings`, `ClusterSpec.wrapper`, `ClusterSpec.leader_lease_seconds`, `ClusterSpec.autoclose_after_seconds`, `Settings.autoclose_min_seconds`), used by render-wrapper-settings, leader-lease-expiry, autoclose-sweeper and config-cluster-views. Adds env name `ORCH_AUTOCLOSE_MIN_SECONDS` to contract `agent-orchestrator-settings-env`.
-
-Steps: red, write `tests/test_spec_config.py` with the five tests named in the acceptance conditions and run `uv run --frozen pytest -q tests/test_spec_config.py` (fails on unknown fields); green, add the models, fields and setting; run the verify command.
-
-Notes: follow the existing `_env` and `_hook_url` validator style in `spec.py`. The `_cap` validator resolves `max_replicas` first, so the lease validator runs after it. Postgres-backed tests need Docker; these tests are pure model tests.
-
 ## Acceptance conditions
 
 - AC1: a wrapper block with every key of design D1 validates and round-trips through model_dump(exclude_none=True) unchanged [evidence: test:tests/test_spec_config.py::test_wrapper_block_round_trips]
@@ -56,17 +50,18 @@ Notes: follow the existing `_env` and `_hook_url` validator style in `spec.py`. 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Builds part `orch-spec-config-fields` (`spec.py::WrapperSettings`, `ClusterSpec.wrapper`, `ClusterSpec.leader_lease_seconds`, `ClusterSpec.autoclose_after_seconds`, `Settings.autoclose_min_seconds`), used by render-wrapper-settings, leader-lease-expiry, autoclose-sweeper and config-cluster-views. Adds env name `ORCH_AUTOCLOSE_MIN_SECONDS` to contract `agent-orchestrator-settings-env`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ClusterSpec` accepts `wrapper`, `leader_lease_seconds` and `autoclose_after_seconds` with named validation errors, and `ORCH_AUTOCLOSE_MIN_SECONDS` sets the autoclose floor (default 300).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red, write `tests/test_spec_config.py` with the five tests named in the acceptance conditions and run `uv run --frozen pytest -q tests/test_spec_config.py` (fails on unknown fields)
+- Green, add the models, fields and setting
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Follow the existing `_env` and `_hook_url` validator style in `spec.py`. The `_cap` validator resolves `max_replicas` first, so the lease validator runs after it. Postgres-backed tests need Docker; these tests are pure model tests.

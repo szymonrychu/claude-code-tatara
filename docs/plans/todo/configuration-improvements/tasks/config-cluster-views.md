@@ -33,12 +33,6 @@ Document and expose the new fields through the public API (design D9, D11; appro
 - README.md: `### Cluster configuration` under `## API` documenting `spec.wrapper` (every key of design D1, its wrapper config path, the reserved entries and the `$` escaping), `leader_lease_seconds`, `autoclose_after_seconds`, `ORCH_AUTOCLOSE_MIN_SECONDS`, the three view fields and the refusal messages; the `POST /api/v1/clusters` field list and the ClusterView field list name the new fields.
 - Regenerate `openapi.json` with `uv run python -m agent_orchestrator.api.openapi > openapi.json`.
 
-Interfaces: builds part `orch-cluster-config-api` (README `### Cluster configuration` and the ClusterView fields; consumed by kind-e2e-config, web-form-config-fields, web-clusters-page and smoke-config-check); uses `orch-spec-config-fields` and the contracts `orch-presets-api` and `orch-cluster-create-api`.
-
-Steps: red, write `tests/test_api_config.py` with the three tests; green, add the view fields and docs; regenerate openapi.json; run the verify command.
-
-Notes: after frontend-decoupling the orchestrator repo has no `frontend/`, so no `schema.d.ts` is regenerated here; agents-web syncs its vendored copy in web-form-config-fields. `leader_reason` is set by test SQL here; the lease task produces `lease_expired` in production.
-
 ## Acceptance conditions
 
 - AC1: a spec with a full wrapper block, a lease and an autoclose round-trips through POST /api/v1/clusters, the preset routes, and a cluster created from that preset [evidence: test:tests/test_api_config.py::test_config_fields_round_trip_through_presets_and_clusters]
@@ -59,17 +53,19 @@ Notes: after frontend-decoupling the orchestrator repo has no `frontend/`, so no
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Builds part `orch-cluster-config-api` (README `### Cluster configuration` and the ClusterView fields; consumed by kind-e2e-config, web-form-config-fields, web-clusters-page and smoke-config-check); uses `orch-spec-config-fields` and the contracts `orch-presets-api` and `orch-cluster-create-api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`GET /api/v1/clusters/{id}` shows the new spec fields plus `closes_at`, `leader_since` and `leader_reason`; README `### Cluster configuration` documents them; openapi.json is current.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red, write `tests/test_api_config.py` with the three tests
+- Green, add the view fields and docs
+- Regenerate openapi.json
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+After frontend-decoupling the orchestrator repo has no `frontend/`, so no `schema.d.ts` is regenerated here; agents-web syncs its vendored copy in web-form-config-fields. `leader_reason` is set by test SQL here; the lease task produces `lease_expired` in production.

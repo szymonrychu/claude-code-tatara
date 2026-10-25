@@ -33,10 +33,6 @@ Prove each capability on a real cluster through the API only (design D6, D9; app
 
 `e2e/values-kind.yaml` sets `ORCH_AUTOCLOSE_MIN_SECONDS: "30"`. Every wait is bounded and fails with a named message.
 
-Interfaces: uses parts `orch-cluster-config-api`, `orch-leader-lease`, `orch-cluster-autoclose`.
-
-Notes: the agent test image runs the wrapper's fake claude, which handles `/compact` (`code/claude-code-wrapper/tests/fake_claude/fake_claude.py`). The e2e run is the PR CI `e2e` job; locally only collection is checked.
-
 ## Acceptance conditions
 
 - AC1: the three new e2e tests are collected under the e2e marker [evidence: command:uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py]
@@ -53,17 +49,17 @@ Notes: the agent test image runs the wrapper's fake claude, which handles `/comp
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses parts `orch-cluster-config-api`, `orch-leader-lease`, `orch-cluster-autoclose`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The PR CI e2e job runs three new API-only tests that prove hooks and idle compact, the leader lease and autoclose on kind.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the three tests and the kind value; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the three new tests are listed.
+- Run the lint; the PR CI `e2e` job runs them on kind.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The agent test image runs the wrapper's fake claude, which handles `/compact` (`code/claude-code-wrapper/tests/fake_claude/fake_claude.py`). The e2e run is the PR CI `e2e` job; locally only collection is checked.

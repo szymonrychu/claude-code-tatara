@@ -147,7 +147,9 @@ The epic starts after agent-init-scripts, cluster-scaling and frontend-decouplin
 | `orch-cluster-autoclose` | autoclose-sweeper | kind-e2e-config | `code/agent-orchestrator/src/agent_orchestrator/db/clusters.py` |
 | `orch-cluster-config-api` | config-cluster-views | kind-e2e-config, web-form-config-fields, web-clusters-page, smoke-config-check | `code/agent-orchestrator/README.md` |
 | `web-orch-schema-config` | web-form-config-fields | web-clusters-page | `code/agents-web/src/api/schema.d.ts` |
-| `web-settings-menu-order` | web-clusters-page | none yet: the webhook and schedule epics register `contract use` when they are planned behind this epic | `code/agents-web/src/App.tsx` |
+| `web-settings-menu-order` | web-clusters-page | none | `code/agents-web/src/App.tsx` |
+
+`web-settings-menu-order` has no consumer yet: the webhook and schedule epics register `contract use` when they are planned behind this epic.
 
 Cross-epic contracts used, owned elsewhere: `orch-leadership-pass` and `orch-render-hash-invariant` (hive), `orch-presets-api`, `orch-cluster-create-api` (cluster-presets), `orch-settings-menu` (web-ui epic, moved by frontend-decoupling), `agent-orchestrator-settings-env`, `agent-orchestrator-chart`, `agent-orchestrator-image`.
 
@@ -173,7 +175,6 @@ Cross-epic contracts used, owned elsewhere: `orch-leadership-pass` and `orch-ren
 
 ## Open questions
 
-none
 - Q1: A leader lease expiry is a handover the dispatcher applies at the leader's turn boundary, which amends hive D26 (no forced handover) for clusters that set leader_lease_seconds; accept this? [recommended: yes]
 
 ## Irreversible operations in scope

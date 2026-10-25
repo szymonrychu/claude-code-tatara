@@ -34,12 +34,6 @@ Render `spec.wrapper` into the claude-code-wrapper config (design D2, D3; approv
 
 README.md: under `## Security` add `### Hooks and credentials`: command hooks run `sh -c` in the agent pod with the wrapper's full environment (`CLAUDE_CODE_OAUTH_TOKEN`, `CCW_AUTH_TOKEN`, `CCW_PEER_TOKEN`, `ORCH_AGENT_TOKEN`); whoever edits a preset can already run code through terminals and init scripts; a webhook `secret` and headers are stored in the spec in plain text and returned by the API; `${VAR}` interpolation is disabled for every user value. MEMORY.md: a dated entry for the escaping rule and the reserved-first order, with the why.
 
-Interfaces: uses part `orch-spec-config-fields`; keeps contract `orch-render-hash-invariant` (the new fields are create-time, so the config hash changes only with the spec).
-
-Steps: red, add the five tests to `tests/test_render.py` (the escaping test calls the wrapper's `interpolate` with an env holding `CLAUDE_CODE_OAUTH_TOKEN=secret` and asserts the literal `${CLAUDE_CODE_OAUTH_TOKEN}` text comes back); green, implement in `_ccw_config` with one recursive escape helper over the user subtree; run the verify command.
-
-Notes: the existing `test_rendered_ccw_config_validates` shows how to load the rendered YAML with the wrapper's `load_config`; extend that pattern for a full wrapper block. Highest-risk surface: credentials. Keep the helper pure.
-
 ## Acceptance conditions
 
 - AC1: reserved entries survive and stay first: the on-start hook, the lock-check hook, the three built-in denies, the any-mcp server and the ASK_IN_WRITING prompt, with user entries after them [evidence: test:tests/test_render.py::test_wrapper_settings_keep_reserved_entries]
@@ -60,17 +54,18 @@ Notes: the existing `test_rendered_ccw_config_validates` shows how to load the r
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses part `orch-spec-config-fields`; keeps contract `orch-render-hash-invariant` (the new fields are create-time, so the config hash changes only with the spec).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A cluster whose spec sets `wrapper` gets a wrapper config.yaml with its hooks and settings after every reserved entry, every user `$` doubled, and the wrapper accepts it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red, add the five tests to `tests/test_render.py` (the escaping test calls the wrapper's `interpolate` with an env holding `CLAUDE_CODE_OAUTH_TOKEN=secret` and asserts the literal `${CLAUDE_CODE_OAUTH_TOKEN}` text comes back)
+- Green, implement in `_ccw_config` with one recursive escape helper over the user subtree
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The existing `test_rendered_ccw_config_validates` shows how to load the rendered YAML with the wrapper's `load_config`; extend that pattern for a full wrapper block. Highest-risk surface: credentials. Keep the helper pure.

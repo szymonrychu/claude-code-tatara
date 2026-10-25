@@ -31,10 +31,6 @@ Give Clusters its own page in the hamburger menu, above Presets (design D7; appr
 - `src/clusters/ClustersPage.tsx`: lists every cluster from `GET /api/v1/clusters` with slug, preset name, state, pods ready of replicas, created time and autoclose time left (from `closes_at`, "never" when null), refreshed like the Presets page; actions: open (selects the cluster and returns to the cluster view), new (opens `NewClusterDialog`) and discard (opens `DiscardClusterDialog`, which calls `DELETE /api/v1/clusters/{id}`).
 - Tests in `src/clusters/ClustersPage.test.tsx` and `src/App.test.tsx`.
 
-Interfaces: builds cross-epic contract `web-settings-menu-order` (Clusters first, Presets last; the webhook and schedule epics insert their entries between them); uses `web-orch-schema-config`, `orch-cluster-config-api` and the menu contract `orch-settings-menu`.
-
-Notes: reuse `PresetsPage` layout patterns, `NewClusterDialog` and `DiscardClusterDialog` unchanged. Paths assume frontend-decoupling's layout (design D12).
-
 ## Acceptance conditions
 
 - AC1: the Settings section lists Clusters first and Presets after it, and Clusters opens the Clusters page [evidence: command:npx vitest run src/App.test.tsx -t "clusters entry"]
@@ -51,17 +47,17 @@ Notes: reuse `PresetsPage` layout patterns, `NewClusterDialog` and `DiscardClust
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Builds cross-epic contract `web-settings-menu-order` (Clusters first, Presets last; the webhook and schedule epics insert their entries between them); uses `web-orch-schema-config`, `orch-cluster-config-api` and the menu contract `orch-settings-menu`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The hamburger menu's Settings list shows Clusters above Presets; Clusters opens a page listing every cluster with open, new and discard actions and the autoclose time left.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/clusters/ClustersPage.test.tsx` (`lists clusters`, `actions`) and the `clusters entry` test in `src/App.test.tsx`; `npx vitest run src/clusters/ClustersPage.test.tsx src/App.test.tsx`: fails.
+- Green: add the page and the menu entry; run the verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Reuse `PresetsPage` layout patterns, `NewClusterDialog` and `DiscardClusterDialog` unchanged. Paths assume frontend-decoupling's layout (design D12).

@@ -27,8 +27,6 @@ provides: []
 
 Extend the live smoke to prove the new configuration on the deployed orchestrator (design D9; approvals A6, A7). In `scripts/smoke.sh` the smoke cluster spec adds `wrapper {auto_compact {idle_seconds: 1800}, hooks {onTurnComplete: [{type: command, run: "true"}]}}`, `leader_lease_seconds: 3600` (the smoke cluster is a hive through `max_replicas: 2`) and `autoclose_after_seconds: 3600`; after create it reads the cluster view and fails with a named message unless the spec echoes the three fields and `closes_at` equals `created_at` plus 3600 s; once a leader exists, `leader_since` is set. Cleanup stays in the existing trap, so the autoclose never fires during a smoke. `tests/test_smoke_script.py`: the fake API serves the new fields; a happy-path test and a test where the view lacks `closes_at` (named failure, cleanup runs). README smoke section names the config step.
 
-Interfaces: uses `orch-cluster-config-api`.
-
 ## Acceptance conditions
 
 - AC1: the happy path creates the cluster with the new fields, checks the spec echo, closes_at and leader_since, exits 0 and cleans up [evidence: test:tests/test_smoke_script.py::test_config_fields_checked]
@@ -44,17 +42,17 @@ Interfaces: uses `orch-cluster-config-api`.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Uses `orch-cluster-config-api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` creates its cluster with the new fields and fails with a named message when the view does not reflect them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_config_fields_checked` and `test_config_view_mismatch_fails` to `tests/test_smoke_script.py` with the fake API serving the new fields; `uv run --frozen pytest -q tests/test_smoke_script.py`: fails.
+- Green: extend `scripts/smoke.sh`; run the verify command and `mise run lint`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+Decisions are in design.md; nothing beyond the requirement.

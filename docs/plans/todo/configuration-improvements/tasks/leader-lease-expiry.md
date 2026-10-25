@@ -33,12 +33,6 @@ Hand leadership over when a leader's lease runs out (design D4; approval A3; use
 
 README.md: `### Leader lease` under the hive `### Leadership` section: the field, the turn-boundary rule, reason `lease_expired`, the no-peer rule, and that clusters without the field keep today's indefinite leadership. MEMORY.md: a dated entry recording that the lease amends hive D26 ("no forced handover") for clusters that set `leader_lease_seconds`, keeps D21 (no takeovers), and why.
 
-Interfaces: builds part `orch-leader-lease` (reason `lease_expired` in `cluster_leaders.reason`); uses `orch-spec-config-fields` and the hive contract `orch-leadership-pass`.
-
-Steps: red, add the five tests to `tests/test_leadership_pass.py` (backdate `cluster_leaders.since` with SQL; set `agent_status.state` and a `dispatching` message for the busy case); green, implement step 4 and the candidate clause; run the verify command.
-
-Notes: the dispatcher runs `_drain_leadership` on every wake, at least every `dispatch_poll_seconds`, so no new timer is needed. Draining agents from cluster-scaling are never ready, so `_free_longest` never picks them. Concurrency-sensitive: keep every read inside the pass's transaction and lock.
-
 ## Acceptance conditions
 
 - AC1: an idle leader past its lease is replaced by the ready agent free the longest, with reason lease_expired, epoch plus one, a new since and a leader_changed notification [evidence: test:tests/test_leadership_pass.py::test_lease_expiry_hands_over_idle_leader]
@@ -60,17 +54,18 @@ Notes: the dispatcher runs `_drain_leadership` on every wake, at least every `di
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+Builds part `orch-leader-lease` (reason `lease_expired` in `cluster_leaders.reason`); uses `orch-spec-config-fields` and the hive contract `orch-leadership-pass`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+In a hive with `leader_lease_seconds`, the cluster view shows a new leader with `leader_reason` `lease_expired` shortly after the lease runs out and the old leader's turn ends.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red, add the five tests to `tests/test_leadership_pass.py` (backdate `cluster_leaders.since` with SQL; set `agent_status.state` and a `dispatching` message for the busy case)
+- Green, implement step 4 and the candidate clause
+- Run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+The dispatcher runs `_drain_leadership` on every wake, at least every `dispatch_poll_seconds`, so no new timer is needed. Draining agents from cluster-scaling are never ready, so `_free_longest` never picks them. Concurrency-sensitive: keep every read inside the pass's transaction and lock.
