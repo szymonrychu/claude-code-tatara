@@ -1,6 +1,6 @@
 ---
 title: webhook ingest http
-status: todo
+status: in-progress
 repo: agents-webhook
 value: "GitHub, GitLab and Grafana deliver events to a per-webhook public URL that only accepts its own basic-auth credentials"
 files: [src/agents_webhook/ingest/__init__.py, src/agents_webhook/ingest/app.py, src/agents_webhook/ingest/ratelimit.py, tests/test_ingest_http.py]
@@ -55,17 +55,21 @@ The public ingest app: one URL per endpoint behind HTTP basic auth (design D3, D
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `webhook-ingest-url` (cross-epic): `POST /webhook/{suffix}` with HTTP basic auth -> 202 `{id, status, reason}` | 400 | 401 | 404 | 413 | 429 | 503; documented in README by webhook-docs-memory.
+- `agents_webhook.ingest.app.create_ingest_app(settings, pool)`, `agents_webhook.ingest.ratelimit.{FailureLimiter, client_key}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+GitHub, GitLab and Grafana can be pointed at `https://lab.szymonrichert.pl/webhook/<suffix>` with the endpoint's credentials; nothing else is accepted.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_ingest_http.py`; run `uv run pytest tests/test_ingest_http.py -q`: fail.
+- Green: ratelimit, then the app; run the verify command.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Parity for body reading and event detection: `TN/internal/webhook/server.go:handle` L138-207, `readBody` L1640-1658; the per-source signature checks of tatara-new are replaced by basic auth (re-plan 2026-10-25).
+- Authenticate before reading the body, so an unauthenticated caller cannot make the pod buffer 5 MiB.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
