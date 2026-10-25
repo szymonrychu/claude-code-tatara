@@ -1,6 +1,6 @@
 ---
 title: webhook ci images
-status: in-progress
+status: done
 repo: agents-webhook
 value: every main merge publishes an immutable image and chart that agents-helmfile can pin
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_ci.py -q && uv run ruff check . && uv run ruff
 depends_on: [webhook-chart-network, webhook-api-e2e]
 model: ""
 review: full
-verified_head: ""
+verified_head: 82525c9
 points: 1
 expected_minutes: 5
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 486135
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 356092, review 130043"
 ---
 
 # webhook ci images
@@ -60,3 +60,5 @@ Main merges publish pin-able artifacts.
 ## Notes
 
 - Copy `code/agent-orchestrator/.github/workflows/ci.yaml` jobs `images` (regctl chunked push), `chart-publish`, `chart-publish-tag` and `scripts/chart-version.sh`.
+
+- 2026-10-25 done
