@@ -1,6 +1,6 @@
 ---
 title: web sessions pages
-status: in-progress
+status: done
 repo: agents-web
 value: the Sessions settings page and its dialogs say session
 files: [src/clusters/, src/sessions/, src/backends/registry.ts, src/backends/registry.test.ts, src/App.tsx, src/App.test.tsx, src/nomenclature.test.ts]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run src/sessions src/backends src/App.test.tsx
 depends_on: [web-api-layer-sessions]
 model: opus
 review: ""
-verified_head: ""
+verified_head: c891770
 points: 3
 expected_minutes: 14
 expected_tokens: 895472
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 2049872
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 1905786, review 144086"
 ---
 
 # web sessions pages
@@ -70,3 +70,5 @@ Settings > Sessions lists sessions with New session and discard; every text says
 - Test titles used as AC refs: "lists sessions" in SessionsPage.test.tsx, "sessions entry" in registry.test.ts.
 
 - 2026-10-25 amended: App.tsx/App.test.tsx renames move to web-workspace-sessions (compile dependency)
+
+- 2026-10-25 done
