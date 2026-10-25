@@ -6,19 +6,17 @@ value: "the UI has its own repo, with its history, ready for its own image and c
 files: [.gitmodules, code/agents-web, AGENTS.md]
 verify: "git config --file .gitmodules --get submodule.agents-web.branch && cd code/agents-web && npm ci --no-audit --no-fund && npx vitest run src/App.test.tsx && npm run lint"
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agents-web-component-create-agents-web-repo
-branch: agents-web-component-create-agents-web-repo
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # create agents-web repo
@@ -73,3 +71,5 @@ The scripts `gen:api` and `check:api` still point at `../openapi.json` after the
 - No TDD cycle applies: repository creation and a history import with no behaviour change (the moved code's own tests are the check).
 - After this epic closes, the orchestrator runs `git submodule update --init code/agents-web` in the main checkout before frontend-decoupling starts: ticket.py treats a task repo without a `code/<repo>` checkout as a meta task.
 - `git subtree split` keeps the commit history of `frontend/` with paths rewritten to the root; `git merge --allow-unrelated-histories` joins it to the scaffold commit.
+
+Orchestrator notes (2026-10-25): step 1 is DONE by the orchestrator (the permission classifier refuses public repo creation inside subagents; the user approved a rule): `mise run component:add` created https://github.com/szymonrychu/agents-web (public), added submodule code/agents-web and committed "chore(workbench): add component agents-web" on this task's branch. Start at step 2. If `git push` to the new repo is denied in step 5, stop as blocked with whoCanClear "orchestrator" and leave everything else committed.
