@@ -1,6 +1,6 @@
 ---
 title: init job runner
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: init scripts run exactly once per cluster and the outcome is recorded
 files: [src/agent_orchestrator/reconciler/init.py, src/agent_orchestrator/reconciler/loop.py, src/agent_orchestrator/reconciler/checks.py, tests/test_init_runner.py, README.md, MEMORY.md]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-job-runner/agent-orchestrator
 branch: agent-init-scripts-init-job-runner
-verified_head: ""
-run: ""
-provides: []
+verified_head: 36d4fed9a4856bed44ceec5026b58c52fabe83bc
+run: agent-init-scripts
+provides: [init-gate, init-sh-render]
+acs_for_audit: []
+process_gaps: ["The independent verification report said 'Worktree not clean at verification', but `git status --short` in the worktree printed nothing at review time. The two verification findings only say the top-level pass/exit were not captured. I re-ran the targeted pytest, ruff check and ruff format --check myself: 50 tests passed, 'All checks passed!', '130 files already formatted'."]
+fork_point: 1bf5c9636de7f32da8e68faf1291b0622da5386b
 ---
 
 # init job runner

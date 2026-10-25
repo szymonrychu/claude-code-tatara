@@ -41,7 +41,7 @@ Scope confirmation (user, 2026-10-24): init scripts do not exist in agent-orches
 
 ## Time
 
-Estimate: 54 agent-min | Critical path: 32 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 54 min
+Estimate: 54 agent-min | Critical path: 32 min | Expected wall at P=1.5: 1.2 h (k=2.0) | Actual: 0 min | Remaining estimate: 10 min
 
 ## Review
 

@@ -1,6 +1,6 @@
 ---
 title: apply smoke init scripts
-status: in-progress
+status: todo
 repo: agents-helmfile
 value: init scripts are live in the agents namespace and proven by the smoke
 files: [MEMORY.md]
@@ -17,8 +17,10 @@ review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-apply-smoke-init-scripts/agents-helmfile
 branch: agent-init-scripts-apply-smoke-init-scripts
 verified_head: ""
-run: ""
+run: agent-init-scripts
 provides: []
+acs_for_audit: []
+process_gaps: []
 ---
 
 # apply smoke init scripts
@@ -64,3 +66,5 @@ The live agents namespace runs the pinned build and the smoke, including the ini
 
 - No TDD cycle applies: this task runs an apply and writes one MEMORY.md line (doc edit exception).
 - Never bypass the kube-context guard.
+
+- 2026-10-25 run agent-init-scripts: dependency-failed on deploy-pin-init-scripts

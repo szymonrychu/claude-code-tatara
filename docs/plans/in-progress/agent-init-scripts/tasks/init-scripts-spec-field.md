@@ -1,6 +1,6 @@
 ---
 title: init scripts spec field
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: clusters and presets can carry init scripts that never roll pods
 files: [src/agent_orchestrator/spec.py, tests/test_spec_init_scripts.py, tests/test_render.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-spec-field/agent-orchestrator
 branch: agent-init-scripts-init-scripts-spec-field
-verified_head: ""
-run: ""
-provides: []
+verified_head: 41da5fab4a7a94ff18382e55a34abc388750a041
+run: agent-init-scripts
+provides: [orch-cluster-spec-init-scripts]
+acs_for_audit: []
+process_gaps: []
+fork_point: 918dc0afbfcd97f7909cafcb971dfe2bb365cecc
 ---
 
 # init scripts spec field

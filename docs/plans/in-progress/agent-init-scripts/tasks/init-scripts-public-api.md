@@ -1,6 +1,6 @@
 ---
 title: init scripts public api
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: "people and scripts can read a cluster's init run and edit its scripts for the next cluster through the documented API"
 files: [src/agent_orchestrator/db/clusters.py, src/agent_orchestrator/api/clusters.py, src/agent_orchestrator/api/schemas.py, tests/test_api_init_scripts.py, openapi.json, frontend/src/api/schema.d.ts, README.md]
@@ -16,9 +16,11 @@ actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-public-api/agent-orchestrator
 branch: agent-init-scripts-init-scripts-public-api
-verified_head: ""
-run: ""
-provides: []
+verified_head: a38fbb6535ea1bfebfab92bfa3a8febcfb04bcbc
+run: agent-init-scripts
+provides: [orch-cluster-init-scripts-api]
+acs_for_audit: []
+process_gaps: []
 ---
 
 # init scripts public api

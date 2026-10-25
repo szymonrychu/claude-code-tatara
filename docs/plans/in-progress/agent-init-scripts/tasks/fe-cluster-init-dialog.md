@@ -1,6 +1,6 @@
 ---
 title: fe cluster init dialog
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: a person sees how a running cluster was initialised and can edit its scripts for the next cluster
 files: [frontend/src/clusters/InitScriptsDialog.tsx, frontend/src/clusters/InitScriptsDialog.test.tsx, frontend/src/layout/TopBar.tsx, frontend/src/layout/TopBar.test.tsx, frontend/src/App.tsx, frontend/src/api/client.ts]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-fe-cluster-init-dialog/agent-orchestrator
 branch: agent-init-scripts-fe-cluster-init-dialog
-verified_head: ""
-run: ""
+verified_head: ec7dd9a246cbbb48a196977ad22b94200661ff87
+run: agent-init-scripts
 provides: []
+acs_for_audit: []
+process_gaps: []
+fork_point: a38fbb6
 ---
 
 # fe cluster init dialog

@@ -1,6 +1,6 @@
 ---
 title: init scripts kind e2e
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: the whole init scripts flow is proven on a real cluster through the API only
 files: [tests/e2e/test_e2e_kind.py]
@@ -16,9 +16,12 @@ actual_roles: ""
 review: ""
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-kind-e2e/agent-orchestrator
 branch: agent-init-scripts-init-scripts-kind-e2e
-verified_head: ""
-run: ""
+verified_head: 39a5210d6cc3074d957eabc547aca6215c48560f
+run: agent-init-scripts
 provides: []
+acs_for_audit: []
+process_gaps: ["TDD skipped without a listed exception; prove the tests catch the change - commit first, then for each changed non-test file: git show <merge-base>:<path> > <path>; run the test (must fail); git show HEAD:<path> > <path>; run again (must pass); paste both tails into tests.red and verification.evidence"]
+fork_point: 36d4fed9a4856bed44ceec5026b58c52fabe83bc
 ---
 
 # init scripts kind e2e

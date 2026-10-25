@@ -1,6 +1,6 @@
 ---
 title: init scripts agent api
-status: in-progress
+status: done
 repo: agent-orchestrator
 value: an agent can see how its cluster was initialised and improve the scripts for the next cluster
 files: [src/agent_orchestrator/api/agent.py, tests/test_agent_init_scripts.py, README.md]
@@ -15,10 +15,12 @@ actual: ""
 actual_roles: ""
 review: full
 worktree: /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/agent-init-scripts-init-scripts-agent-api/agent-orchestrator
-branch: agent-init-scripts-init-scripts-agent-api
-verified_head: ""
-run: ""
+branch: "HEAD of worktree agent-init-scripts-init-scripts-agent-api (c779559)"
+verified_head: 1bf5c9636de7f32da8e68faf1291b0622da5386b
+run: agent-init-scripts
 provides: []
+acs_for_audit: []
+process_gaps: ["Record the discovered entry for hive F1: the any-mcp v0.2.0 init_scripts_get description lacks .agent-init/init.sh and next-cluster semantics"]
 ---
 
 # init scripts agent api
