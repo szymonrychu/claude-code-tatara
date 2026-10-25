@@ -8,3 +8,6 @@
 - `epic-run` dispatches its implementer and reviewer agents in the background.
 - The first run in a clone shows the trust dialog; accept it so project settings and the
   workbench plugins load.
+- In a Claude Code cloud session the trust dialog and `/reload-plugins` do not exist: the
+  project SessionStart hook installs the plugins instead. Setup and limits:
+  `docs/claude-cloud.md`.

@@ -115,7 +115,13 @@ def test_claude_md():
     low = CLAUDE.lower()
     for stale in ("plan-execute", "workflow", "heartbeat"):
         assert stale not in low
-    for needle in ("workbench:<skill>", "/reload-plugins", "trust dialog", "in the background"):
+    for needle in (
+        "workbench:<skill>",
+        "/reload-plugins",
+        "trust dialog",
+        "in the background",
+        "docs/claude-cloud.md",
+    ):
         assert needle in CLAUDE
 
 
