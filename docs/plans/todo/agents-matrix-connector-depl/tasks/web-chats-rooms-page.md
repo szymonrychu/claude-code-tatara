@@ -52,17 +52,19 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/matrix/ChatsPage.tsx`: `ChatsPage({onBack, onOpenSession})`, extended by web-chats-access-panels and rendered by web-chats-menu-entry.
+- Uses `src/triggers/index.ts` (`usePoll`, `PresetSelect`, `RunStatusChip`, `FormError`; contract `trigger-ui-page-pattern`) and `src/layout/ConfirmDialog.tsx`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An operator sees every discovered chat, opens one, sets its preset and allows it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/matrix/ChatsPage.test.tsx` with the five cases (mock `src/matrix/api.ts`). Fails: no components.
+- Green: write the four components. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `src/webhooks/WebhooksPage.tsx` and `EventsTable.tsx` for layout and polling; MUI components as elsewhere.
+- `RunStatusChip` statuses are new, in-progress, handled, ignored, failed, which match the inbound statuses.

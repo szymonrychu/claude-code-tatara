@@ -45,17 +45,16 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- The live releases; nothing new.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The connector runs in namespace `agents`, logged in and syncing; the Chats page is live; the smoke is green. A first Messenger chat then shows up in Chats as default-deny until the user allows it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `mise run diff` (expected changes only), "ready for apply"; orchestrator applies; `mise run diff` (no drift); `mise run smoke` (exit 0); MEMORY line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same shape as agents-webhook-microservice task apply-smoke-webhook. Deploy tasks never use apply as AC evidence.

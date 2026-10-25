@@ -53,17 +53,20 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-matrix-connector/default.secrets.yaml` (`orchestrator.token`, `matrix.accessToken`), read by the release of helmfile-matrix-releases through the `values/{{ .Release.Name }}/default.secrets.yaml` convention.
+- `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`, wired into the agents-orchestrator release by helmfile-matrix-releases.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Both files are committed encrypted; the orchestrator will accept the connector's bearer token on port 8002 after the apply.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend `tests/test_secrets.py` with the four tests (a temp token file for the script tests). Fails: no bootstrap function, no files.
+- Green: write `bootstrap_matrix_connector`, run it with the real U2 file, commit the encrypted files. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same shape as agents-webhook-microservice task helmfile-service-token (`bootstrap_webhook`).
+- After this task is done the orchestrator deletes the U2 token file (design U2).
+- The values dir is `values/agents-orchestrator/` after orchestrator-rename-sessions (design D15).

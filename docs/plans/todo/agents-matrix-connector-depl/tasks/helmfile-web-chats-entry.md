@@ -47,17 +47,17 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-web/common.yaml` `backends` (contract `agents-web-backends-config`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live UI shows the Chats entry once applied.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_matrix_backend_configured` (and adjust the pin test only if it names the old sha). Fails: no backend.
+- Green: edit values and helmfile. Run the verify.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same shape as agents-webhook-microservice task helmfile-web-webhooks-entry.
