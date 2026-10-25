@@ -6,19 +6,17 @@ value: "the webhook service and the orchestrator share a service token and the t
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-webhook/default.secrets.yaml, values/agent-orchestrator/service-token-agents-webhook.secrets.yaml, .sops.yaml]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_secrets.py && mise run lint"
 depends_on: [orch-service-port-auth]
-owns: []
-uses: [orch-service-tokens]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile service token

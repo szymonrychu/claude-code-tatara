@@ -6,19 +6,17 @@ value: "events queue FIFO with latest-wins and update message dedup and the conc
 files: [src/agents_webhook/db/events.py, tests/test_event_store.py]
 verify: "uv run pytest tests/test_event_store.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-mappings-repo]
-owns: [webhook-event-queue]
-uses: [webhook-events-schema, agents-common-db, webhook-normalized-event, agents-common-run-tracker]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook event store

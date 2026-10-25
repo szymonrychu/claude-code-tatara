@@ -6,19 +6,17 @@ value: "the service deploys as three Deployments, with the public ingest kept ou
 files: [chart/agents-webhook/Chart.yaml, chart/agents-webhook/values.yaml, chart/agents-webhook/templates/_helpers.tpl, chart/agents-webhook/templates/_config.tpl, chart/agents-webhook/templates/deployment.yaml, chart/agents-webhook/templates/configmap.yaml, chart/agents-webhook/templates/secret.yaml, tests/test_chart_workloads.py]
 verify: "uv run pytest tests/test_chart_workloads.py -q && helm lint chart/agents-webhook && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-cli-entrypoints]
-owns: [agents-webhook-chart]
-uses: [webhook-cli, webhook-settings-env]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook chart workloads

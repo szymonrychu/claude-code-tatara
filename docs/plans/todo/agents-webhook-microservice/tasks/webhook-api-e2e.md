@@ -6,19 +6,17 @@ value: "every capability is proven end to end through HTTP only, without the UI"
 files: [tests/e2e/__init__.py, tests/e2e/conftest.py, tests/e2e/test_e2e_api.py]
 verify: "uv run pytest tests/e2e -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-cli-entrypoints, webhook-openapi-readme]
-owns: []
-uses: [webhook-cli, webhook-api, webhook-ingest-api, agents-common-fake-orchestrator]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook api e2e

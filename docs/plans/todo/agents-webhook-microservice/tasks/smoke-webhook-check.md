@@ -6,19 +6,17 @@ value: "the live smoke proves the public ingest, the webhook API and the orchest
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py && mise run lint"
 depends_on: [helmfile-webhook-releases, helmfile-web-webhooks-entry]
-owns: []
-uses: [orch-service-tokens, webhook-ingest-api]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # smoke webhook check

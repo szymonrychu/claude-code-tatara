@@ -6,19 +6,17 @@ value: trigger services call the orchestrator through one tested client and test
 files: [src/agents_common/orchestrator.py, src/agents_common/fake_orchestrator.py, tests/test_orchestrator_client.py]
 verify: "uv run pytest tests/test_orchestrator_client.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [common-scaffold]
-owns: [agents-common-orchestrator-client, agents-common-fake-orchestrator]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # common orchestrator client

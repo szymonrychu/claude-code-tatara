@@ -6,19 +6,17 @@ value: "both trigger services get one tested pool, migrator, guarded-transition 
 files: [src/agents_common/db/__init__.py, src/agents_common/db/pool.py, src/agents_common/db/migrate.py, src/agents_common/db/queue.py, src/agents_common/testing.py, tests/conftest.py, tests/test_db.py, pyproject.toml]
 verify: "uv run pytest tests/test_db.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [common-scaffold]
-owns: [agents-common-db]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # common db helpers

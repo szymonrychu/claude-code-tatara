@@ -6,19 +6,17 @@ value: "the service port is proven in a real cluster: an in-cluster pod with a t
 files: [tests/e2e/test_e2e_kind.py, e2e/values-kind.yaml]
 verify: "uv run pytest tests/e2e/test_e2e_kind.py --collect-only -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [orch-service-port-auth, orch-chart-services-port]
-owns: []
-uses: [orch-service-tokens, orch-services-service]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # orch service port e2e

@@ -6,19 +6,17 @@ value: "agents get the event as clearly framed, escaped data, never as instructi
 files: [src/agents_webhook/prompt.py, tests/test_prompt.py]
 verify: "uv run pytest tests/test_prompt.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-normalize]
-owns: [webhook-prompt]
-uses: [webhook-normalized-event]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook prompt render

@@ -6,19 +6,17 @@ value: "the shared library repo exists with a package, tooling and CI, so the tr
 files: [pyproject.toml, uv.lock, mise.toml, .github/workflows/ci.yaml, src/agents_common/__init__.py, tests/test_package.py, README.md]
 verify: "uv run pytest tests/test_package.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: []
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # common scaffold

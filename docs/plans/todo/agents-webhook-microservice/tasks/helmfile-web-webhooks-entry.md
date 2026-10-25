@@ -6,19 +6,17 @@ value: "the live UI shows the Webhooks page, pinned to the agents-web build that
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, tests/test_web_release.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_web_release.py -k \"not test_web_release_chart\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [helmfile-webhook-releases, web-webhook-menu-entry]
-owns: []
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile web webhooks entry

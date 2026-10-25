@@ -6,19 +6,17 @@ value: the UI and any headless client can list recent events and create and remo
 files: [src/agents_webhook/api/__init__.py, src/agents_webhook/api/app.py, src/agents_webhook/api/schemas.py, src/agents_webhook/api/routes.py, tests/test_api.py]
 verify: "uv run pytest tests/test_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-event-store, webhook-prompt-render]
-owns: [webhook-api]
-uses: [webhook-events-schema, webhook-event-queue, webhook-mapping-match, webhook-prompt, agents-common-orchestrator-client, agents-common-fake-orchestrator]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook ui api

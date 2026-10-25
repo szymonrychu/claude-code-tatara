@@ -6,19 +6,17 @@ value: "a triggered run starts exactly one cluster and one prompt even across re
 files: [src/agents_common/runs.py, tests/test_runs.py]
 verify: "uv run pytest tests/test_runs.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [common-orchestrator-client, common-settings-runtime]
-owns: [agents-common-run-tracker, preset-mapping-model]
-uses: [agents-common-orchestrator-client, agents-common-fake-orchestrator]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # common run tracker

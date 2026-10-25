@@ -6,19 +6,17 @@ value: "services share one settings base and one singleton worker runtime, so ea
 files: [src/agents_common/settings.py, src/agents_common/runtime.py, tests/test_settings_runtime.py]
 verify: "uv run pytest tests/test_settings_runtime.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [common-db-helpers]
-owns: [agents-common-settings-runtime]
-uses: [agents-common-db]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # common settings runtime

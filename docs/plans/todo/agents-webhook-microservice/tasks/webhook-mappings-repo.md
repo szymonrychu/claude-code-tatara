@@ -6,19 +6,17 @@ value: "events are matched to the most specific preset mapping, and mappings can
 files: [src/agents_webhook/db/__init__.py, src/agents_webhook/db/mappings.py, tests/test_mappings_repo.py]
 verify: "uv run pytest tests/test_mappings_repo.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-schema-settings, webhook-normalize]
-owns: [webhook-mapping-match]
-uses: [webhook-events-schema, agents-common-db, webhook-normalized-event]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook mappings repo

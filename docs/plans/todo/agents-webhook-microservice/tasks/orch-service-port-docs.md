@@ -6,19 +6,17 @@ value: operators and the next service know how to get and use a service token
 files: [README.md, MEMORY.md, tests/test_readme_api.py]
 verify: "uv run pytest tests/test_readme_api.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [orch-service-port-auth, orch-chart-services-port]
-owns: []
-uses: [orch-service-tokens]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # orch service port docs

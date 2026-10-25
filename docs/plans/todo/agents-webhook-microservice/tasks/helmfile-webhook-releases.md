@@ -6,19 +6,17 @@ value: agents-webhook and its own CNPG database are declared in the agents names
 files: [helmfile.yaml.gotmpl, values/agents-webhook/common.yaml, values/agents-webhook-db/common.yaml, values/agents-webhook-db/default.secrets.yaml, tests/test_webhook_release.py]
 verify: "uv run pytest -q -p no:cacheprovider tests/test_webhook_release.py -k \"not helmfile_build\" && uv run ruff check . && uv run ruff format --check ."
 depends_on: [deploy-pin-orch-service-port, webhook-ci-images, webhook-docs-memory]
-owns: []
-uses: [agents-webhook-chart, agents-webhook-image, orch-services-service]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # helmfile webhook releases

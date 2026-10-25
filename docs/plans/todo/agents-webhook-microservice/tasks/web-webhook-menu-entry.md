@@ -6,19 +6,17 @@ value: the Webhooks page appears in the menu between Clusters and Presets whenev
 files: [src/backends/registry.ts, src/backends/registry.test.ts, src/webhooks/menu.ts]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.test.ts src/App.test.tsx && npm run lint"
 depends_on: [web-webhook-mappings]
-owns: []
-uses: [web-webhook-client]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web webhook menu entry

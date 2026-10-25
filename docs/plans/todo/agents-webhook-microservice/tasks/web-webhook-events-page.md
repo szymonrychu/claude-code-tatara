@@ -6,19 +6,17 @@ value: "the user sees recent webhook events with their status and reason, refres
 files: [src/webhooks/WebhooksPage.tsx, src/webhooks/EventsTable.tsx, src/webhooks/WebhooksPage.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/WebhooksPage.test.tsx && npm run lint"
 depends_on: [web-trigger-ui-kit, web-webhook-api-client]
-owns: []
-uses: [trigger-ui-page-pattern, web-webhook-client]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web webhook events page

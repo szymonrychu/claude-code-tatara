@@ -6,19 +6,17 @@ value: "GitHub, GitLab and Grafana can deliver events to a public endpoint that 
 files: [src/agents_webhook/ingest/__init__.py, src/agents_webhook/ingest/app.py, src/agents_webhook/ingest/verify.py, tests/test_ingest_http.py]
 verify: "uv run pytest tests/test_ingest_http.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-event-store]
-owns: [webhook-ingest-api]
-uses: [webhook-settings-env, webhook-normalized-event, webhook-mapping-match, webhook-event-queue]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook ingest http

@@ -6,19 +6,17 @@ value: every main merge publishes an immutable image and chart that agents-helmf
 files: [.github/workflows/ci.yaml, scripts/chart-version.sh, tests/test_ci.py]
 verify: "uv run pytest tests/test_ci.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-chart-network, webhook-api-e2e]
-owns: [agents-webhook-image]
-uses: [agents-webhook-chart]
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook ci images

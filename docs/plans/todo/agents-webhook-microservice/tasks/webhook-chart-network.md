@@ -6,19 +6,17 @@ value: the public ingest paths and the SSO-protected API share the lab host with
 files: [chart/agents-webhook/templates/service.yaml, chart/agents-webhook/templates/ingress.yaml, chart/agents-webhook/values.yaml, chart/agents-webhook/ci/lint-values.yaml, tests/test_chart_network.py]
 verify: "uv run pytest tests/test_chart_network.py -q && helm lint chart/agents-webhook -f chart/agents-webhook/ci/lint-values.yaml && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-chart-workloads, webhook-ingest-http]
-owns: []
-uses: [agents-webhook-chart, webhook-ingest-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: full
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook chart network

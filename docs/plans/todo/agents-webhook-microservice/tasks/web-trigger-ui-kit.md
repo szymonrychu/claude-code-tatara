@@ -6,19 +6,17 @@ value: "trigger pages (webhooks now, schedules next) share one status chip, pres
 files: [src/triggers/index.ts, src/triggers/RunStatusChip.tsx, src/triggers/PresetSelect.tsx, src/triggers/usePoll.ts, src/triggers/FormError.tsx, src/triggers/triggers.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/triggers/triggers.test.tsx && npm run lint"
 depends_on: []
-owns: [trigger-ui-page-pattern]
-uses: []
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web trigger ui kit

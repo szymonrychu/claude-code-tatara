@@ -6,19 +6,17 @@ value: "GitHub, GitLab and Grafana payloads become one event shape with the requ
 files: [src/agents_webhook/normalize.py, tests/payloads.py, tests/test_normalize.py]
 verify: "uv run pytest tests/test_normalize.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-scaffold]
-owns: [webhook-normalized-event]
-uses: []
 model: ""
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook normalize

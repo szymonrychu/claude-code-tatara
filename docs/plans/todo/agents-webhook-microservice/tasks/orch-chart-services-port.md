@@ -6,19 +6,17 @@ value: the service port is reachable in-cluster through its own Service and neve
 files: [chart/agent-orchestrator/templates/service-services.yaml, chart/agent-orchestrator/templates/deployment.yaml, chart/agent-orchestrator/templates/configmap.yaml, chart/agent-orchestrator/templates/secret.yaml, chart/agent-orchestrator/values.yaml, tests/test_chart_services_port.py]
 verify: "uv run pytest tests/test_chart_services_port.py tests/test_chart_deployments.py tests/test_chart_config.py -q && helm lint chart/agent-orchestrator -f chart/agent-orchestrator/ci/lint-values.yaml && uv run ruff check . && uv run ruff format --check ."
 depends_on: [orch-service-port-auth]
-owns: [orch-services-service]
-uses: [orch-service-tokens]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # orch chart services port

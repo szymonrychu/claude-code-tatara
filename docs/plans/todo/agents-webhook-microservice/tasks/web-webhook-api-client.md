@@ -6,19 +6,17 @@ value: the UI calls the webhook API with types generated from its committed sche
 files: [openapi/webhooks.json, openapi/webhooks.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/webhooks-schema.d.ts, src/webhooks/api.ts, src/webhooks/api.test.ts]
 verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs && npx vitest run src/webhooks/api.test.ts && npm run check:api && npm run lint"
 depends_on: [webhook-openapi-readme]
-owns: [web-webhook-client]
-uses: [webhook-api]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web webhook api client

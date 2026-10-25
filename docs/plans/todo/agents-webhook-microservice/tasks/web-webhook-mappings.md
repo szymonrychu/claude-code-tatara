@@ -6,19 +6,17 @@ value: "the user maps an event to a preset so matching events start a cluster, a
 files: [src/webhooks/MappingsList.tsx, src/webhooks/MapEventDialog.tsx, src/webhooks/WebhooksPage.tsx, src/webhooks/Mappings.test.tsx]
 verify: "npm ci --no-audit --no-fund && npx vitest run src/webhooks/Mappings.test.tsx src/webhooks/WebhooksPage.test.tsx && npm run lint"
 depends_on: [web-webhook-events-page]
-owns: []
-uses: [trigger-ui-page-pattern, web-webhook-client]
 model: ""
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # web webhook mappings

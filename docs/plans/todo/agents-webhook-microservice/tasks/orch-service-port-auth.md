@@ -6,19 +6,17 @@ value: "other in-cluster services can start clusters and send prompts with a tok
 files: [src/agent_orchestrator/settings.py, src/agent_orchestrator/api/service_auth.py, src/agent_orchestrator/api/allowlist.py, src/agent_orchestrator/api/app.py, src/agent_orchestrator/cli.py, tests/test_service_port.py]
 verify: "uv run pytest tests/test_service_port.py tests/test_agent_port.py tests/test_settings.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: []
-owns: [orch-service-tokens]
-uses: []
 model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: panel
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 6
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # orch service port auth

@@ -6,19 +6,17 @@ value: queued events start clusters from their presets one by one within the lim
 files: [src/agents_webhook/worker.py, tests/test_worker.py]
 verify: "uv run pytest tests/test_worker.py -q && uv run ruff check . && uv run ruff format --check ."
 depends_on: [webhook-event-store, webhook-prompt-render]
-owns: []
-uses: [webhook-event-queue, webhook-prompt, webhook-settings-env, webhook-mapping-match, agents-common-run-tracker, agents-common-orchestrator-client, agents-common-fake-orchestrator, agents-common-settings-runtime]
 model: opus
-estimate: 5
-estimate_by: formula
-actual: ""
-actual_roles: ""
 review: ""
-worktree: ""
-branch: ""
 verified_head: ""
-run: ""
-provides: []
+points: 1
+expected_minutes: 5
+expected_tokens: 750000
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
 ---
 
 # webhook dispatch worker
