@@ -9,6 +9,11 @@ depends_on: [em-dash-lint]
 model: opus
 review: ""
 verified_head: f45010f
+points_actual: 5
+actual_minutes: 34
+actual_tokens: 1414237
+actual_roles: "impl 24, review 11"
+actual_role_tokens: "impl 1329221, review 85016"
 ---
 
 # Em dash edit guard
@@ -67,3 +72,5 @@ No agent in any harness can write an em dash into a file through an edit tool.
 - Test data writes the character as the escape `"\u2014"` (the em dash lint scans tests too).
 
 - 2026-10-24 done
+
+- 2026-10-25 done
