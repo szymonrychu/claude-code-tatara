@@ -9,6 +9,11 @@ depends_on: [workbench-dirs, output-spill-to-logs]
 model: opus
 review: ""
 verified_head: f34227b
+points_actual: 5
+actual_minutes: 15
+actual_tokens: 1204508
+actual_roles: "impl 15, review 9"
+actual_role_tokens: "impl 1033353, review 171155"
 ---
 
 # Agent usage lib
@@ -64,5 +69,7 @@ One shared module reads Claude transcripts correctly (no double counting) and ow
 - Hooks brief finding 4: assistant lines carry `timestamp`, `message.model`, `message.usage` with input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens; keep the four components.
 - Do-not-build (hooks brief): per-agent duration from the Agent tool result (no usage for background agents); use transcript timestamps.
 - `aggregate` across records for a task is added by stamp-actuals.
+
+- 2026-10-25 done
 
 - 2026-10-25 done
