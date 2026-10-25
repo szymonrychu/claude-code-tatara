@@ -62,3 +62,5 @@ The live orchestrator is API-only and the UI keeps working from agents-web.
 ## Notes
 
 - No TDD cycle applies: an apply and one MEMORY.md line (doc edit exception).
+
+Orchestrator notes (2026-10-25; the orchestrator runs live applies): pre-apply `mise run diff`, every non-label +/- line: 8x `image: ...agent-orchestrator:3b9926d` -> `:a4be86b`, plus "Changes suppressed on sensitive content of type Secret" (label bump); affected release agent-orchestrator only. `mise run apply`: agent-orchestrator 0.1.0-main.a4be86b deployed. Post-apply diff: "No affected releases". `mise run smoke` last line: `smoke: OK`. Port-forward deploy/agent-orchestrator-api 18001:8000: `GET /` -> `{"error":{"code":"not_found","message":"Not Found"}} 404`; `GET /api/v1/openapi.json` -> 200. https://lab.szymonrichert.pl/ -> 302 to auth.szymonrichert.pl (Keycloak).
