@@ -1,6 +1,6 @@
 ---
 title: common reuse running
-status: in-progress
+status: done
 repo: agents-common
 value: trigger services can tell whether the agent for an event still runs and deliver to it without loss
 files: [src/agents_common/orchestrator.py, src/agents_common/runs.py, src/agents_common/fake_orchestrator.py, README.md, tests/test_reuse.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_reuse.py tests/test_runs.py tests/test_orchest
 depends_on: [common-release-v0-1-0]
 model: sonnet
 review: full
-verified_head: ""
+verified_head: cfaee0c
 points: 3
 expected_minutes: 16
 expected_tokens: 723362
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 365322
+actual_roles: impl 5
+actual_role_tokens: impl 365322
 ---
 
 # common reuse running
@@ -71,3 +71,5 @@ A trigger service can ask whether the cluster of an earlier run still runs, post
 - Cluster `desired` is `active` or `deleting` (`code/agent-orchestrator/src/agent_orchestrator/db/migrations/0001_init.sql` L7); a discarded cluster's row is gone, so GET answers 404.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
