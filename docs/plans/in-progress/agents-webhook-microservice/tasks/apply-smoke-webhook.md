@@ -1,6 +1,6 @@
 ---
 title: apply smoke webhook
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the webhook service, its database, the orchestrator service port and the UI are live and proven by the smoke"
 files: [MEMORY.md]
@@ -43,17 +43,21 @@ Apply to the live `agents` namespace and prove it (design D13; user decision: re
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes every release of this epic; writes only MEMORY.md.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live namespace runs agents-webhook with its database, the orchestrator service port and the Webhooks UI, and the smoke is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- `mise run diff`: only the expected changes; quote it in the notes.
+- The orchestrator runs `mise run apply` in the main session.
+- `mise run diff`: no drift; `mise run smoke`: exit 0; add the MEMORY.md line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No TDD cycle applies: this task runs a deploy check and writes one MEMORY.md line (doc edit exception).
+- The CNPG cluster creation and the public ingest path were approved at the gate (A7, A8); `mise run apply` never appears in AC evidence.
+
+- 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
