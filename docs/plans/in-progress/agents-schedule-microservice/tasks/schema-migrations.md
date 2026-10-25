@@ -1,6 +1,6 @@
 ---
 title: schema migrations
-status: in-progress
+status: done
 repo: agents-schedule
 value: "the service owns its database schema, migrated forward-only before any process starts"
 files: [src/agents_schedule/db/__init__.py, src/agents_schedule/migrations/__init__.py, src/agents_schedule/migrations/0001_schedules.sql, src/agents_schedule/db/migrate.py, tests/conftest.py, tests/test_migrations.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_migrations.py -q && uv run ruff check
 depends_on: [schedule-settings-model]
 model: ""
 review: ""
-verified_head: ""
+verified_head: c56df70148b2125cc7081690ca7a40bfa25053a6
 points: 1
 expected_minutes: 6
 expected_tokens: 750000
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 388304
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 267674, review 120630"
 ---
 
 # schema migrations
@@ -72,3 +72,5 @@ Create the schema (design D3, D9; approvals A1, A3) as forward-only SQL in the p
 - do-not-build: a DB layer; agents-common provides pool, migrate, transition and claim.
 
 - 2026-10-25 amended: align to released agents-common v0.3.0 session names and the reuse rule
+
+- 2026-10-25 done
