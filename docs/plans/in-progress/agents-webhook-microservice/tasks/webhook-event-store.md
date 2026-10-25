@@ -1,6 +1,6 @@
 ---
 title: webhook event store
-status: in-progress
+status: done
 repo: agents-webhook
 value: "events queue FIFO per endpoint with dedup, limits and per-key order, ready for agent reuse"
 files: [src/agents_webhook/db/events.py, tests/test_event_store.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_event_store.py -q && uv run ruff check . && uv
 depends_on: [webhook-endpoints-repo, webhook-normalize]
 model: opus
 review: full
-verified_head: ""
+verified_head: 6c068c7
 points: 5
 expected_minutes: 15
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 11
+actual_tokens: 2885184
+actual_roles: "impl 10, review 5"
+actual_role_tokens: "impl 2108921, review 776263"
 ---
 
 # webhook event store
@@ -75,3 +75,5 @@ Deliveries are stored per endpoint with dedup, and the worker claims them FIFO u
 - Multi-writer queue table: ingest inserts and replaces `new` payloads, the worker transitions; every UPDATE carries `AND status=<expected>` (hard rule). Pattern: `code/agent-orchestrator/src/agent_orchestrator/db/queue.py` header L1-9, `_PICK` L196-209.
 
 - 2026-10-25 in-progress: re-plan 2026-10-25: added; not started
+
+- 2026-10-25 done
