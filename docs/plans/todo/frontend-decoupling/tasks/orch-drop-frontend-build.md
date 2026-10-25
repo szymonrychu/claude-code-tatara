@@ -63,17 +63,20 @@ Precondition, checked first: read `<ao-sha>` from agents-web `MEMORY.md` (`curl 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `orch-no-ui` (contract `orch-ui-retired`): agent-orchestrator has no `frontend/`; UI work targets agents-web; an orchestrator route change is followed by `npm run sync:api -- orchestrator` in agents-web. Contract `agent-orchestrator-image` keeps its name and tag scheme.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agent-orchestrator is a Python-only repo: pytest needs no node, the image is smaller, CI has no npm, and the kind e2e is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition; quote the diff in the notes.
+- Red: `tests/test_frontend_retired.py`; `uv run pytest -q tests/test_frontend_retired.py` fails (frontend tracked, node stage present).
+- Green: `git rm -r frontend`, edit Dockerfile, ci.yaml, test_readme_api.py, .gitignore, README.md, MEMORY.md.
+- `uv run pytest -q tests/test_frontend_retired.py tests/test_readme_api.py tests/test_images.py && mise run lint`: pass. Then the docker build and `mise run test:e2e`. Name "deletion pinned by a retirement test" in tests.note.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Local testcontainers Postgres may fail to start on this machine (discovery brief section 1); the targeted tests here need no database. If `mise run test:e2e` fails for a local Docker reason, quote the output and the CI `e2e` job result of the pushed branch.
+- `.github/` in the diff makes the review tier full.

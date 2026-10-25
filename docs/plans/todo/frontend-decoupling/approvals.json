@@ -1,0 +1,58 @@
+[
+  {
+    "id": "A",
+    "text": "Decouple the frontend from the orchestrator microservice: the UI ships and runs on its own and talks to the orchestrator only through its documented HTTP API.",
+    "decisions": ["D1", "D3", "D9"],
+    "tasks": ["web-openapi-vendor", "web-runtime-config", "web-backend-menu", "web-nginx-image", "web-chart-workload", "web-chart-config-ingress", "web-ci-release", "web-docs-memory", "orch-drop-spa-mount", "orch-drop-frontend-build", "smoke-web-ui", "deploy-pin-web", "apply-smoke-web-cutover", "deploy-pin-orch-no-spa", "apply-smoke-orch-no-spa"],
+    "status": "approved"
+  },
+  {
+    "id": "T1",
+    "text": "New component repo agents-web (TypeScript), history of agent-orchestrator/frontend kept.",
+    "decisions": ["D1", "D5", "D12"],
+    "tasks": ["web-openapi-vendor", "web-runtime-config", "web-backend-menu", "web-nginx-image", "web-chart-workload", "web-chart-config-ingress", "web-ci-release", "web-docs-memory"],
+    "status": "approved"
+  },
+  {
+    "id": "U2",
+    "text": "One host lab.szymonrichert.pl with ingress path routing: UI at /, orchestrator /api, one prefix per later service.",
+    "decisions": ["D2", "D6", "D7", "D13"],
+    "tasks": ["web-chart-config-ingress", "smoke-web-ui", "deploy-pin-web", "apply-smoke-web-cutover"],
+    "status": "approved"
+  },
+  {
+    "id": "C3",
+    "text": "Runtime config.json listing the backends, set by the chart; a backend's UI entries appear only when it is configured.",
+    "decisions": ["D3", "D14"],
+    "tasks": ["web-runtime-config", "web-backend-menu", "web-chart-config-ingress", "deploy-pin-web"],
+    "status": "approved"
+  },
+  {
+    "id": "N4",
+    "text": "nginx-unprivileged static image for the UI.",
+    "decisions": ["D4", "D15"],
+    "tasks": ["web-nginx-image", "web-chart-workload", "web-ci-release"],
+    "status": "approved"
+  },
+  {
+    "id": "R5",
+    "text": "Releases, pin bumps and the helmfile apply plus smoke are tasks of this epic, as in agent-init-scripts.",
+    "decisions": ["D8", "D10", "D16"],
+    "tasks": ["web-ci-release", "deploy-pin-web", "apply-smoke-web-cutover", "deploy-pin-orch-no-spa", "apply-smoke-orch-no-spa"],
+    "status": "approved"
+  },
+  {
+    "id": "H6",
+    "text": "Headless parity: the orchestrator API stays documented and tested API-only; the kind e2e keeps passing after the split.",
+    "decisions": ["D5", "D9", "D17"],
+    "tasks": ["orch-drop-spa-mount", "orch-drop-frontend-build"],
+    "status": "approved"
+  },
+  {
+    "id": "O7",
+    "text": "Runs after agent-init-scripts and cluster-scaling have merged and moves the frontend as it stands then, including their UI.",
+    "decisions": ["D11", "D18"],
+    "tasks": ["orch-drop-frontend-build", "web-openapi-vendor"],
+    "status": "approved"
+  }
+]

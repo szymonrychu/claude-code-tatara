@@ -199,7 +199,7 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 
 ## Assumptions and unknowns
 
-- A1 (shared SSO session across pods with the same Secret): checked live by apply-smoke-web-cutover AC3 (sidecar cookie env identical) and the redirect checks; a browser login is gate question Q4.
+- A1 (shared SSO session across pods with the same Secret): checked live by apply-smoke-web-cutover AC3 (sidecar cookie env identical) and the redirect checks; a browser login is gate question Q6.
 - A2 (the callback lands on the web sidecar): follows from `/` routing; the redirect checks show both paths behind a sidecar.
 - A3 (longest prefix wins in ingress-nginx): checked by the live smoke routing step.
 - A4 (two annotated Ingresses would compete): avoided by D7; checked by `kubectl get certificate` in apply-smoke-web-cutover.

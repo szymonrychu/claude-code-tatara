@@ -57,17 +57,19 @@ Precondition, checked first: `gh secret list -R szymonrychu/agents-web` lists `H
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns contract `agents-web-image` (`harbor.szymonrichert.pl/containers/agents-web:<sha7>` on main) and publishes `agents-web-chart` (`oci://harbor.szymonrichert.pl/charts/agents-web`, `0.1.0-main.<sha7>` on main, `X.Y.Z` on tag `vX.Y.Z`). Uses `web-image`, `web-chart`, `openapi-vendor`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every PR runs lint, tests, build, check:api, the image smoke and the chart tests; a merge to main publishes the image and chart the helmfile pins.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `scripts/ci.test.mjs`; `node --test scripts/ci.test.mjs` fails (no workflow).
+- Green: workflow, `scripts/chart-version.sh`, `.mise.toml` tasks.
+- Run the AC commands; check the precondition last and end blocked if the secrets are missing.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse agent-orchestrator `.github/workflows/ci.yaml` jobs `images`, `chart-publish`, `chart-publish-tag` and `scripts/chart-version.sh` (Harbor robot login via the helm registry config.json, regctl chunked push).
+- No kind e2e here: the UI has no browser e2e (do-not-build).

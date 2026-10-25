@@ -55,17 +55,19 @@ The orchestrator api stops serving the UI (design D9; amends prior D1 and D12). 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Removes `api/spa.py:SpaStaticFiles` and `Settings.static_dir` (contract `agent-orchestrator-settings-env`: `ORCH_STATIC_DIR` leaves the documented env). The `/api/v1` surface is unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The api is API-only: `/` is a JSON 404 and the image no longer sets `ORCH_STATIC_DIR`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite `tests/test_spa.py` and the settings test; `uv run pytest -q tests/test_spa.py tests/test_settings.py` fails (spa.py tracked, `/` still mounted when a static dir is set).
+- Green: delete the module and the mount, remove the field, the Dockerfile env and the README row.
+- `uv run pytest -q tests/test_spa.py tests/test_settings.py && mise run lint`: pass. Name "deletion pinned by a retirement test" in tests.note.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Retirement tests assert on `git ls-files`, never on the filesystem.
+- The live orchestrator keeps serving the UI until deploy-pin-orch-no-spa; the web cutover happens first (design D8).

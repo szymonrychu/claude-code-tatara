@@ -54,17 +54,19 @@ Vendor the orchestrator's OpenAPI document into agents-web and generate the UI t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns contract `agents-web-openapi-vendor` (docs/plans/contracts.json): `openapi/<backend-id>.json` plus `openapi/<backend-id>.source` (`<repo> <sha40>`), `npm run sync:api -- <backend-id> [--from <checkout>]`, `npm run check:api`. Later backends (webhooks, schedules) add their id to the script's map.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`npm run check:api` passes against the vendored copy; `npm run sync:api -- orchestrator` refreshes it from the sibling checkout and records the commit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `scripts/sync-api.test.mjs` (node:test) builds a temp git repo holding an `openapi.json`, runs the script with `--from` and asserts the copy, the source line, exit 1 on a dirty file and exit 2 on an unknown id; `node --test scripts/sync-api.test.mjs` fails (no script).
+- Green: write `scripts/sync-api.mjs` and the package scripts; run it once against agent-orchestrator main (`--from` the workbench `code/agent-orchestrator`, or a fresh clone of https://github.com/szymonrychu/agent-orchestrator at main).
+- `npm run check:api`, `npm run lint`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The script must not run `gen:api` through a shell string built from the backend id (fixed map only).
+- agent-orchestrator `/api/v1` is additive-only (README Versioning), so a UI built against an older copy keeps working.

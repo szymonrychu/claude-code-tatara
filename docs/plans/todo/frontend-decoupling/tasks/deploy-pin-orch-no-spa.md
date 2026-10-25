@@ -48,17 +48,18 @@ Precondition, checked first: the agent-orchestrator PR of this epic (tasks orch-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes `agent-orchestrator-chart` and `agent-orchestrator-image` at the merge of this epic; uses `orch-no-ui`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows only the agent-orchestrator chart version and image tag changing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition; otherwise end blocked.
+- Red: update the pin test to the new sha; it fails on the old pins.
+- Green: bump chart version and image tag; run the AC4 command: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Same shape as agent-init-scripts deploy-pin-init-scripts; take the sha of the orchestrator main merge that contains this epic.

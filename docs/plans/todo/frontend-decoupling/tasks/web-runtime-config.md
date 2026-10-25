@@ -60,17 +60,20 @@ The UI reads its backends from a runtime `config.json` and every orchestrator UR
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `backends-config` (contract `agents-web-backends-config`): `/config.json` = `{"backends": [{"id", "label", "basePath"}]}`, rules as in the requirement; `src/config/backends.ts:parseConfig`, `loadConfig`, `backendBase`, `isConfigured`, `ConfigError`.
+- Keeps `src/api/stream.ts:openStream` unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The same bundle runs in dev, kind and live: only `/config.json` decides where each backend is, and the default keeps today's `/api/v1`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/config/backends.test.ts` with one case per rejection, the happy path and a `loadConfig` 500; plus the `/orch/api/v1` case in `client.test.ts`; `npx vitest run src/config/backends.test.ts src/api/client.test.ts` fails.
+- Green: implement `backends.ts`, wire `client.ts`, `terminals.ts`, `main.tsx`, `public/config.json`, `vite.config.ts`.
+- Run the AC commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- The page and every backend share one origin (design D2): no CORS and no absolute URL anywhere.
+- Dev: list `http://localhost:5173` in the orchestrator's `ORCH_ALLOWED_ORIGINS` for terminal sockets (README of agent-orchestrator `## Security`).

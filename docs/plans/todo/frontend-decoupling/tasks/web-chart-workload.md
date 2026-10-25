@@ -54,17 +54,19 @@ Add the agents-web Helm chart's workload: Deployment and Service (design D4, D10
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `web-chart` (contract `agents-web-chart`, completed by web-chart-config-ingress): values keys above. Uses `web-image` (port, `/healthz`, non-root).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template chart/agents-web --set image.tag=x` renders a hardened Deployment and Service that work with or without the oauth2-proxy sidecar.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `chart/tests/workload.test.mjs` with the cases above; `node --test chart/tests/workload.test.mjs` fails (no chart).
+- Green: write the chart files; `npm install -D yaml`.
+- `helm lint chart/agents-web --set image.tag=ci`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse the shape of agent-orchestrator `chart/agent-orchestrator/templates/service.yaml` and `deployment.yaml` (port name `http`, probes by number).
+- The ConfigMap, the config mount and the Ingress are web-chart-config-ingress.

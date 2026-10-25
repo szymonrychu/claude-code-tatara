@@ -57,17 +57,20 @@ Precondition, checked first: the agents-web PR of this epic is merged to main an
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Consumes contracts `agents-web-chart` and `agents-web-image`; implements `agents-web-url-layout` and `agents-web-backends-config` for the live host.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helmfile diff` shows a new `agents-web` release and the orchestrator Ingress path changing from `/` to `/api`, nothing else.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the precondition; otherwise end blocked as the requirement says.
+- Red: `tests/test_web_release.py` and the new orchestrator test; they fail (no release, path `/`).
+- Green: release block, values files, orchestrator path, README.
+- Run the AC7 command: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- `values/agents-web/default.secrets.yaml` is not needed (no secret values); the `default` template's `missingFileHandler: Warn` covers it, confirmed by `mise run diff` in apply-smoke-web-cutover.
+- Only one Ingress per host carries cert-manager annotations (design D7), so there is one Certificate for `agent-orchestrator-tls`.

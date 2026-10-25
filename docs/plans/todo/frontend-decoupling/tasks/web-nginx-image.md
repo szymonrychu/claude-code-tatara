@@ -58,17 +58,20 @@ Ship the UI as a static image served by nginx-unprivileged, with the cache and f
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `web-image`: port 8080, `/healthz`, config file path `/usr/share/nginx/html/config.json`, non-root. Uses `backends-config` (the default `public/config.json`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`docker build` gives a small static image whose behaviour matches what the orchestrator's SPA mount did, plus `/healthz` and `/config.json`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `scripts/image-smoke.sh` first; with no Dockerfile `docker build` fails, then with a bare nginx stage the smoke fails on the cache and fallback cases.
+- Green: write `nginx/default.conf` and the Dockerfile until the smoke passes.
+- `shellcheck --severity=error scripts/image-smoke.sh`: clean.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse: agent-orchestrator `src/agent_orchestrator/api/spa.py:SpaStaticFiles` and `tests/test_spa.py` are the rule set.
+- The oauth2-proxy injector renames the container port `http` to its sidecar; probes therefore use the port number 8080 (agents-helmfile `values/agent-orchestrator/common.yaml` comment).
+- `readOnlyRootFilesystem` in the chart needs writable `/tmp` (pid and temp paths of nginx-unprivileged); keep every nginx temp path under `/tmp`.

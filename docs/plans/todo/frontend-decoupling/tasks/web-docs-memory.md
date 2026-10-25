@@ -27,7 +27,7 @@ provides: []
 
 Document agents-web and carry its UI lessons over (design D1, D2, D3). Paths are in code/agents-web. Doc-only.
 
-- `README.md`: what the component is (the web UI of the agents system, the only TypeScript component); `## Development` (`npm ci`, `npm run dev`, the `AGENTS_WEB_PROXY_<ID>` proxy targets, list `http://localhost:5173` in the orchestrator's `ORCH_ALLOWED_ORIGINS` for terminal sockets); `## Runtime config` (the `config.json` schema and rules, default, set by the chart's `backends`); `## Backends and menu` (how a backend registers menu entries in `src/backends/registry.ts`, the order slots 10 Clusters, 20 Webhooks, 30 Presets, 40 Schedules); `## URL layout` (the contract rule, pointing at the chart README); links to `## API types`, `## Image`, `## Release` written by the other tasks.
+- `README.md`: what the component is (the web UI of the agents system, the only TypeScript component); `## Development` (`npm ci`, `npm run dev`, the `AGENTS_WEB_PROXY_<ID>` proxy targets, list `http://localhost:5173` in the orchestrator's `ORCH_ALLOWED_ORIGINS` for terminal sockets); `## Runtime config` (the `config.json` schema and rules, default, set by the chart's `backends`); `## Backends and menu` (how a backend registers menu entries in `src/backends/registry.ts`, the order slots 10 Clusters, 20 Webhooks, 30 Schedules, 40 Presets); `## URL layout` (the contract rule, pointing at the chart README); links to `## API types`, `## Image`, `## Release` written by the other tasks.
 - `AGENTS.md`: the commands (`mise run test`, `lint`, `fmt`, `test:chart`, `lint:chart`, `smoke:image`, `npm run sync:api -- orchestrator`) and the rule that the UI calls backends only through relative paths from `config.json`.
 - `MEMORY.md`: the UI lessons from agent-orchestrator `MEMORY.md` (the react-resizable-panels `Separator` flex-basis pitfall, the FilesPanel polling decision, and every other UI-only entry present at the import), each with its original date and "moved from agent-orchestrator MEMORY.md".
 - `ROADMAP.md` is not touched (human-owned).
@@ -49,17 +49,16 @@ Document agents-web and carry its UI lessons over (design D1, D2, D3). Paths are
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Documents contracts `agents-web-backends-config`, `agents-web-backend-registry`, `agents-web-url-layout`. Uses `backend-registry`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A developer of a later service learns from agents-web's README alone how to add a backend, its menu entries and its path prefix.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the sections; run the AC commands; all pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- No TDD cycle applies: doc edit exception.

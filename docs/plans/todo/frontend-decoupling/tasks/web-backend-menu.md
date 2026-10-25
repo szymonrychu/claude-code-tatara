@@ -28,7 +28,7 @@ provides: []
 Settings-menu entries come from a backend registry and appear only for configured backends (design D3). Paths are in code/agents-web.
 
 - `src/backends/registry.ts`: `MenuEntry {id, label, order, backend, render(onBack): ReactNode}`; `BACKEND_MENUS: Record<string, MenuEntry[]>` keyed by backend id; `menuEntries(config: RuntimeConfig): MenuEntry[]` returns the entries of the configured backends sorted by `order`, then `label`; a configured id with no registered entries is skipped with one `console.warn` naming it.
-- The orchestrator registers every settings entry the UI has at move time (Presets, `order` 30, and any entry agent-init-scripts or cluster-scaling added). Reserved order slots, documented in the file header: 10 Clusters (configuration-improvements), 20 Webhooks (agents-webhook-microservice), 30 Presets, 40 Schedules (agents-schedule-microservice).
+- The orchestrator registers every settings entry the UI has at move time (Presets, `order` 40, and any entry agent-init-scripts or cluster-scaling added). Reserved order slots, documented in the file header: 10 Clusters (configuration-improvements), 20 Webhooks (agents-webhook-microservice), 30 Schedules (agents-schedule-microservice), 40 Presets.
 - `src/App.tsx`: `settingsCategories` for `TopBar` are built from `menuEntries(current config)`; the main area shows the selected cluster or the selected entry's `render(() => back to cluster)`. With the default config the UI behaves as before: the Presets entry opens `PresetsPage`.
 - `src/App.test.tsx`: with the default config Presets is listed and opens the presets page; a test-registered entry of a second backend is shown only when that backend is in the config.
 
@@ -47,17 +47,19 @@ Settings-menu entries come from a backend registry and appear only for configure
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `backend-registry` (contract `agents-web-backend-registry`): `src/backends/registry.ts:BACKEND_MENUS`, `menuEntries`, `MenuEntry`, the order slots. Uses `backends-config` from web-runtime-config.
+- Replaces the role of contract `orch-settings-menu` (`SessionsMenu` `settingsCategories` `{id, label, onOpen}` is unchanged).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A later service adds its UI by registering entries under its backend id; the chart's `config.json` decides whether they appear.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/backends/registry.test.ts` and the new `App.test.tsx` cases; `npx vitest run src/backends/registry.test.ts src/App.test.tsx` fails.
+- Green: implement the registry, move the Presets entry into it, build `settingsCategories` from it in `App.tsx`.
+- `npx tsc -b && npm run lint`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- No router is introduced; the existing `view` state now holds `'cluster'` or an entry id.

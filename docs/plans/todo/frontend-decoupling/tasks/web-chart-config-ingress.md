@@ -53,17 +53,19 @@ Complete the agents-web chart: the runtime `config.json` from values, and the In
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Owns `url-layout` (contract `agents-web-url-layout`) and completes `web-chart`. Uses `backends-config` (same validation rules) and `web-image` (config path).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`helm template` with `backends` and `ingress` values gives the pod its `config.json` and an Ingress on `/` for the host.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `chart/tests/config-ingress.test.mjs`; `node --test chart/tests/config-ingress.test.mjs` fails.
+- Green: values, ConfigMap, mount and checksum, Ingress, helm test pod, README.
+- `node --test chart/tests/ && helm lint chart/agents-web --set image.tag=ci`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Reuse agent-orchestrator `chart/agent-orchestrator/templates/ingress.yaml` (copy its shape, not a shared library chart).
+- `subPath` mounts do not update in place; the checksum annotation is what rolls the pod.

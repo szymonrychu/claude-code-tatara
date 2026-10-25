@@ -51,17 +51,19 @@ The smoke checks the UI on the agents-web release and the path routing of the ho
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `web-chart` (Service `agents-web`, port 8080), `backends-config` (`config.json`) and `url-layout` (`/` to agents-web, `/api` to agent-orchestrator).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` proves the split: UI from agents-web, API from the orchestrator, and the host's path routing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the new tests in `tests/test_smoke_script.py`; `uv run pytest -q tests/test_smoke_script.py` fails.
+- Green: edit `scripts/smoke.sh`, README, `mise.toml` description.
+- Run the AC5 command: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, shared parts to reuse, decisions already made.
+- Keep the script's existing guarantees: `set -euo pipefail`, bounded curls, trap cleanup of both port-forwards (`test_script_is_strict_bounded_and_traps`).
+- This smoke runs live only after deploy-pin-web; before that the host still routes `/` to the api.
