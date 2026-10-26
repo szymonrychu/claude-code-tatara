@@ -1,6 +1,6 @@
 ---
 title: apply receipts live
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "Messenger shows the user's messages as seen once the agent has them"
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [connector-repin-receipts]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 296318b4bbf54d31e3d4feb2abee24e00799b737
 points: 1
 expected_minutes: 4
 expected_tokens: 665870
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 90
+actual_tokens: 1044057
+actual_roles: "impl 89, review 1"
+actual_role_tokens: "impl 961489, review 82568"
 ---
 
 # apply receipts live
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-26 done
