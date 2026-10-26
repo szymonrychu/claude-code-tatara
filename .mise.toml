@@ -37,6 +37,7 @@ run = [
   "mise run --cd code/agents-webhook test",
   "mise run --cd code/agents-schedule test",
   "mise run --cd code/agents-matrix-connector test",
+  "mise run --cd code/any-mcp-tatara-plugins test",
 ]
 
 [tasks."code:lint"]
@@ -51,6 +52,7 @@ run = [
   "mise run --cd code/agents-webhook lint",
   "mise run --cd code/agents-schedule lint",
   "mise run --cd code/agents-matrix-connector lint",
+  "mise run --cd code/any-mcp-tatara-plugins lint",
 ]
 
 [tasks."code:fmt"]
@@ -65,5 +67,6 @@ run = [
   "mise run --cd code/agents-webhook fmt",
   "mise run --cd code/agents-schedule fmt",
   "mise run --cd code/agents-matrix-connector fmt",
+  "mise run --cd code/any-mcp-tatara-plugins fmt",
 ]
 # workbench:code-tasks:end

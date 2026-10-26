@@ -34,3 +34,7 @@
 	path = code/agents-matrix-connector
 	url = https://github.com/szymonrychu/agents-matrix-connector
 	branch = main
+[submodule "any-mcp-tatara-plugins"]
+	path = code/any-mcp-tatara-plugins
+	url = https://github.com/szymonrychu/any-mcp-tatara-plugins
+	branch = main
