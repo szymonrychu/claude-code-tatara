@@ -1,6 +1,6 @@
 ---
 title: plugins orchestration plugin
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: "the orchestrator tools live in the plugins bucket, installable as a source"
 files: [orchestration/orchestrator/pyproject.toml, orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md, pyproject.toml, uv.lock, tests/test_nomenclature.py, tests/test_source_install.py]
@@ -8,15 +8,15 @@ verify: "mise run install && mise run test && mise run lint"
 depends_on: [plugins-repo-bootstrap, anymcp-release-0-5-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: b42184c696040a1d6b868c61445569227ad6e73f
 points: 5
 expected_minutes: 11
 expected_tokens: 1694306
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 1618762
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 1521827, review 96935"
 ---
 
 # plugins orchestration plugin
@@ -79,3 +79,5 @@ The orchestrator plugin installs from this repo through any-mcp v0.5.0's plugin 
 - Rulings and their pin tests: the plugin declares `any-mcp` unversioned (test_orchestrator_distribution_metadata), so it installs beside any-mcp v0.4.0 in the orchestrator dev env before its pin moves; the nomenclature guard keeps `PINNED_NAME = "test_cluster_key_refused"` (test_no_old_nomenclature).
 - The end-to-end test builds a fresh venv (`uv venv --seed`), installs any-mcp v0.5.0 from `git+https://github.com/szymonrychu/any-mcp@v0.5.0`, runs `any-mcp plugins install` for both source forms with `ANY_MCP_CACHE_DIR` in `tmp_path`, then `--list-tools` with an orchestrator entry whose config uses literal values (no network I/O at load: `test_no_io_at_load`). The git form needs the work committed (`git+file`-style HEAD sha, as in any-mcp's release tests).
 - Never the word "cluster" outside the pinned test name.
+
+- 2026-10-27 done
