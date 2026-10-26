@@ -1,6 +1,6 @@
 ---
 title: Paste .env control in the preset form
-status: todo
+status: in-progress
 repo: agents-web
 value: Users paste .env contents to fill env rows instead of adding each row by hand
 files: [src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]

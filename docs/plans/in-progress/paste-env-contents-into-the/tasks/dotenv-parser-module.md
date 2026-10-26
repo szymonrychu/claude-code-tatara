@@ -1,6 +1,6 @@
 ---
 title: dotenv parser module
-status: todo
+status: in-progress
 repo: agents-web
 value: Turns pasted .env text into key/value pairs or per-line errors
 files: [src/sessions/dotenv.ts, src/sessions/dotenv.test.ts]
