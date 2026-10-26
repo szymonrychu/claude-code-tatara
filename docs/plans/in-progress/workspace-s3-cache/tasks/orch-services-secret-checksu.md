@@ -1,6 +1,6 @@
 ---
 title: orch services secret checksum
-status: todo
+status: done
 repo: agents-orchestrator
 value: a new service token works without a manual restart
 files: [chart/agents-orchestrator/templates/deployment.yaml, tests/test_chart_deployments.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -o addopts='-m \"not integration and not e2e\"' tests/
 depends_on: [cache-save-allowlist]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 2290dbb
 points: 1
 expected_minutes: 4
 expected_tokens: 669602
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 297321
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 123452, review 173869"
 ---
 
 # orch services secret checksum
@@ -52,3 +52,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 done
