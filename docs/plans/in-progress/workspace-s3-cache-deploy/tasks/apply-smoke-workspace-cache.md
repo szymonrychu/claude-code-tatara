@@ -1,6 +1,6 @@
 ---
 title: apply smoke workspace cache
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the workspace cache is live on rook-ceph and proven by the smoke
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [deploy-pin-workspace-cache, helmfile-cache-bucket, smoke-workspace-cache]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 23054c0
 points: 1
 expected_minutes: 4
 expected_tokens: 670370
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 54
+actual_tokens: 813399
+actual_roles: impl 54
+actual_role_tokens: impl 813399
 ---
 
 # apply smoke workspace cache
@@ -66,3 +66,5 @@ Every acceptance condition holds on the committed HEAD.
 - See the Requirement and the epic design.md.
 
 - 2026-10-26 amended: live presign proofs as a one-off probe instead of permanent smoke steps
+
+- 2026-10-26 done: Probe from the reconciler pod: PUT-presigned URL used for GET 403, GET on a missing key 404. First smoke failed: RGW 20.2.4 rejects a presigned PUT carrying an unsigned Content-Type (AccessDenied, anonymous); fixed by cache-put-signs-content-type (ea1fac7). A 7-byte object left by the diagnosis probe was verified and deleted. Final smoke OK (.logs/cache-smoke3.log): session B restored session A's marker. Post-apply diff: No affected releases.
