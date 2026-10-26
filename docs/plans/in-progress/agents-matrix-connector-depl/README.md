@@ -41,3 +41,12 @@ Split from epic agents-matrix-connector on 2026-10-25 (user decision): this epic
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review agents-matrix-connector-depl, 2026-10-26.
+- Whole-diff review of agents-web d81b219..162770e: no defects; vitest 396 passed, lint and check:api clean. Merged as PR #12 (122a404).
+- Security review of agents-helmfile 2d65d0a..72b381e: no critical, high or medium findings. Two LOW findings were dropped: the sha7 image pin is the repo-wide convention, and the HTTP to synapse is in-cluster only.
+- Scope audit: one gap, the live proof of G1. It was closed by task live-reply-proof (inbound in-2 handled in session mx-1, reply out-1 sent).
+- Full suites: helmfile 184 passed; web 396 passed.
+- Live: APPLY OK (by the main session), no post-apply drift, smoke OK, allow rule 3 for the owner DM, joke event $01CfkFLBQBwuEVAhq9pIa2utcAVE81xQ7uir1bCT0tE. Merged as agents-helmfile PR #26 (d23e917).
