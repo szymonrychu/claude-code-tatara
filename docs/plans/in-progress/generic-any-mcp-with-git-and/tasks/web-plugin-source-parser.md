@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/pluginSource.test.ts && npm run build && mis
 depends_on: []
 model: opus
 review: ""
-verified_head: ba3acab3274c81d8cfc3f7416ede2240c6206e09
+verified_head: 2095c1af53fe2a7d30e39dc033c3422e34235546
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
 points_actual: 2
-actual_minutes: 3
-actual_tokens: 507780
-actual_roles: "impl 3, review 1"
-actual_role_tokens: "impl 442308, review 65472"
+actual_minutes: 36
+actual_tokens: 1136702
+actual_roles: "impl 36, review 34"
+actual_role_tokens: "impl 971978, review 164724"
 ---
 
 # web plugin source parser
@@ -66,3 +66,5 @@ The web app refuses, with a readable reason, every source the orchestrator would
 - No text uses the word "cluster" (`src/nomenclature.test.ts`); `npm run build` runs `tsc -b`.
 
 - 2026-10-26 done
+
+- 2026-10-27 done
