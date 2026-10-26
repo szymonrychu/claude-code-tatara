@@ -1,6 +1,6 @@
 ---
 title: compaction status projection
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the orchestrator knows when each agent last compacted
 files: [src/agents_orchestrator/db/migrations/0006_compaction.sql, src/agents_orchestrator/db/status.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_migrations.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_ingester.py tests/test_migrations.
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: cc336cb6b426e15c3689659727502205d4e2c3b8
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 323
+actual_tokens: 2641899
+actual_roles: "impl 28, review 1"
+actual_role_tokens: "impl 2570954, review 70945"
 ---
 
 # compaction status projection
@@ -77,3 +77,5 @@ See the Requirement and the acceptance conditions above.
 See the Requirement and the acceptance conditions above.
 
 - 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): findings 2 and 3 (wake, event time)
+
+- 2026-10-26 done
