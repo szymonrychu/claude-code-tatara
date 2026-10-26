@@ -3,7 +3,7 @@ title: leader auto handover
 blockers: []
 stage: build
 owner: ""
-repos: [claude-code-wrapper, agents-orchestrator, agents-helmfile]
+repos: [claude-code-wrapper, agents-orchestrator, agents-web, agents-helmfile]
 created: 2026-10-26
 ---
 
