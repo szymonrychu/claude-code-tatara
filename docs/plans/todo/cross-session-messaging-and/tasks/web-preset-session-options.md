@@ -28,7 +28,7 @@ Goal G4 (epic README), verbatim: "Both options are editable in the agents-web pr
 Scope (agents-web):
 - Sync the orchestrator API: `npm run sync:api -- orchestrator` (pass `--from <the epic's agents-orchestrator tree>` when the default `../agents-orchestrator` is not it) after task orch-agent-session-messaging is committed there; this rewrites `openapi/orchestrator.json`, `openapi/orchestrator.source` and `src/api/schema.d.ts` (generated, never hand-edited).
 - `src/sessions/sessionSpecForm.ts`: `FormValues` gains `sessionMessaging: boolean` and `kubeAccess: boolean` (blank `false`); `stateFromPreset` loads `session_messaging` and `kube_access`; `toPresetSpec` writes each only when true (sparse, never `false` or null).
-- `src/presets/PresetForm.tsx`: two switch rows like "Reuse running agent": "Cross-session messaging" with a helper that the leader can message the leaders of other sessions with this option on and receive their messages; "Kubernetes access" with a helper that agents get full read-write access to every namespace and resource. When `meta.kube_access.available` is false the Kubernetes access switch is disabled with the helper "Not configured on this orchestrator" (precedent: the cache fieldset, PresetForm.tsx:95, 260). Add both keys to the `text()` key exclusion type.
+- `src/presets/PresetForm.tsx`: two switch rows like "Reuse running agent": "Superleader" with the helper "superleader: can message the leaders of all sessions" (spec `session_messaging`, design D7, D14); "Kubernetes access" with a helper that agents get full read-write access to every namespace and resource. When `meta.kube_access.available` is false the Kubernetes access switch is disabled with the helper "Not configured on this orchestrator" (precedent: the cache fieldset, PresetForm.tsx:95, 260). Add both keys to the `text()` key exclusion type.
 - `src/presets/PresetForm.test.tsx`: tests in the acceptance conditions (template: the reuse switch tests, l.570-606).
 - No text uses the word "cluster" (`src/nomenclature.test.ts`).
 
@@ -72,3 +72,5 @@ A user can turn either option on for a preset, the preset saves sparsely, and th
 - `npm run sync:api` refuses an uncommitted orchestrator `openapi.json`; it must be the committed one from task orch-agent-session-messaging or later.
 - `npm run build` runs `tsc -b`, the only type check (retro agents-schedule-deploy: web briefs that skipped it cost fix rounds).
 - MUI only; module docstring line at the top of each file; plain functions.
+
+- 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
