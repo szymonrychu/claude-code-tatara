@@ -23,16 +23,16 @@ actual_role_tokens: ""
 
 ## Requirement
 
-User decisions 2026-10-26, verbatim: "Both options are per-session spec fields, settable on presets." "Kubernetes access means: all namespaces, all resources, full read-write." "Cross-session messaging means: the session's leader can send messages to other sessions' leaders and receive messages from other sessions' leaders."
+User decisions 2026-10-26, verbatim: "Both options are per-session spec fields, settable on presets." "Kubernetes access means: all namespaces, all resources, full read-write." "Cross-session messaging means: the session's leader can send messages to other sessions' leaders and receive messages from other sessions' leaders." Refined at the gate, verbatim: "session_messaging is required only on one end. ... So session that has this option turned on, sees all leaders in all sessions. Leaders in sessions that have this turned off, will see its members plus the superleader." User gate answers 2026-10-26, verbatim: "Q1. No- it will be something either hook will do, or agent will handle if needed, Q2: yes".
 
-Goals G1 and G2 (epic README), verbatim: "A sparse create-time spec option for cross-session messaging; ..." and "A sparse create-time spec option for Kubernetes access; ...". Design D1, D3, D4 (setting), D5 (setting), D10 (settings).
+Goals G1 and G2 (epic README), verbatim: "A sparse create-time spec option for cross-session messaging; ..." and "A sparse create-time spec option for Kubernetes access; ...". Design D1, D3, D4 (setting), D7, D10 (settings).
 
 Scope (agents-orchestrator):
 - `src/agents_orchestrator/spec.py` `SessionSpec`: `session_messaging: bool | None = Field(default=None, strict=True)` and `kube_access: bool | None = Field(default=None, strict=True)`, each with a comment like `reuse_running_agent`'s. Unset is not stored on a session row and not dumped in a preset.
 - `validate_spec`: `kube_access` true while `settings.kube_access_service_account` is empty is an error "Kubernetes access is not configured (ORCH_KUBE_ACCESS_SERVICE_ACCOUNT is unset)", with the `stored` exemption the cache check has (accepted on a preset PUT when unchanged from the stored spec).
-- `src/agents_orchestrator/settings.py`: `kube_access_service_account: str = ""` with a property `kube_access_available`; `agent_service_account: str = "default"`; `kubectl_version: str = "1.33"`; `session_message_rate_per_minute: int = Field(default=10, ge=1)`; `session_message_queued_max: int = Field(default=20, ge=1)`; `session_message_max_hops: int = Field(default=8, ge=1)`; `session_message_pair_max_per_hour: int = Field(default=30, ge=1)`.
+- `src/agents_orchestrator/settings.py`: `kube_access_service_account: str = ""` with a property `kube_access_available`; `agent_service_account: str = "default"`; `session_message_rate_per_minute: int = Field(default=10, ge=1)`; `session_message_queued_max: int = Field(default=20, ge=1)`; `session_message_max_hops: int = Field(default=8, ge=1)`; `session_message_pair_max_per_hour: int = Field(default=30, ge=1)`.
 - `src/agents_orchestrator/api/schemas.py`: `MetaKubeAccess(available: bool)`; `Meta.kube_access: MetaKubeAccess`. `src/agents_orchestrator/api/sessions.py` `meta()` fills it from the setting.
-- `README.md`: the `POST /api/v1/sessions` bullet and `### Session configuration` list both sparse fields and what they do; `## Configuration` gains one row per new setting (`ORCH_KUBE_ACCESS_SERVICE_ACCOUNT`, `ORCH_AGENT_SERVICE_ACCOUNT`, `ORCH_KUBECTL_VERSION`, `ORCH_SESSION_MESSAGE_RATE_PER_MINUTE`, `ORCH_SESSION_MESSAGE_QUEUED_MAX`, `ORCH_SESSION_MESSAGE_MAX_HOPS`, `ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR`); `### GET /api/v1/meta` names `kube_access.available`.
+- `README.md`: the `POST /api/v1/sessions` bullet and `### Session configuration` list both sparse fields and what they do (`session_messaging` makes the session a superleader: its leader can message the leaders of all sessions, and every other session's leader can message only superleaders; design D7); `## Configuration` gains one row per new setting (`ORCH_KUBE_ACCESS_SERVICE_ACCOUNT`, `ORCH_AGENT_SERVICE_ACCOUNT`, `ORCH_SESSION_MESSAGE_RATE_PER_MINUTE`, `ORCH_SESSION_MESSAGE_QUEUED_MAX`, `ORCH_SESSION_MESSAGE_MAX_HOPS`, `ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR`); `### GET /api/v1/meta` names `kube_access.available`.
 - `openapi.json` regenerated (`uv run python -m agents_orchestrator.api.openapi > openapi.json`).
 - `tests/test_nomenclature.py`: `ALLOWED_PHRASES` gains `"cluster-admin"`. This test is no longer accurate for this epic: its docstring allows lines naming a Kubernetes cluster, and `cluster-admin` is the Kubernetes built-in ClusterRole this epic's README and chart must name (design D2); nothing else in that test changes.
 
@@ -63,7 +63,7 @@ The settings are only declared and documented here; the tasks that use them are 
 
 - `spec.py:SessionSpec.session_messaging: bool | None` and `SessionSpec.kube_access: bool | None` (strict, sparse).
 - `spec.py:validate_spec(spec, settings, stored=None)` gains the kube_access check.
-- `settings.py:Settings.kube_access_service_account: str`, `.kube_access_available -> bool`, `.agent_service_account: str`, `.kubectl_version: str`, `.session_message_rate_per_minute: int`, `.session_message_queued_max: int`, `.session_message_max_hops: int`, `.session_message_pair_max_per_hour: int`.
+- `settings.py:Settings.kube_access_service_account: str`, `.kube_access_available -> bool`, `.agent_service_account: str`, `.session_message_rate_per_minute: int`, `.session_message_queued_max: int`, `.session_message_max_hops: int`, `.session_message_pair_max_per_hour: int`.
 - `api/schemas.py:MetaKubeAccess{available: bool}`, `Meta.kube_access`.
 - Contract for agents-web (task web-preset-session-options): `SessionSpec.session_messaging`, `SessionSpec.kube_access`, `Meta.kube_access.available` in `openapi.json`.
 
@@ -84,3 +84,5 @@ A preset or session spec can carry `session_messaging` and `kube_access`; nothin
 - `tests/test_settings.py::test_env_names_documented_in_readme` requires each new `ORCH_*` name in README `## Configuration`.
 - Do not use the word "cluster" in new text except Kubernetes phrases on the guard's allowlist (`ClusterRole`, `in-cluster`, `cluster-admin` after this task).
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset. If pytest fails on imports, the `.venv` may carry a stale shebang (retro paste-env-contents-into-the): `uv sync` recreates it.
+
+- 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
