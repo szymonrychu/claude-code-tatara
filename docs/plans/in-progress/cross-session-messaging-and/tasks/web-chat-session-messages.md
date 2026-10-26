@@ -1,6 +1,6 @@
 ---
 title: web chat session messages
-status: in-progress
+status: done
 repo: agents-web
 value: cross-session messages show their sender session in the chat instead of you
 files: [src/chat/chatModel.ts, src/chat/entries.tsx, src/chat/chatModel.test.ts, src/chat/ChatLog.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/chat/chatModel.test.ts src/chat/ChatLog.test.tsx && 
 depends_on: [orch-session-message-sender]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: feab561652d0387983368d27d10cedd96e05979e
 points: 2
 expected_minutes: 6
 expected_tokens: 553016
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 367055
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 280924, review 86131"
 ---
 
 # web chat session messages
@@ -79,3 +79,5 @@ In a session's chat, a message another session's leader sent shows as "session <
 - Rulings and their pin tests: frame only at position 0 (ac2); unescape `&amp;` last so `&amp;lt;` becomes `&lt;` (ac3 or ac1); any origin, since the turn is `client` today and a different origin must not break it (ac1); a user typing a well-formed frame would display as a session message, accepted by design D13.
 - Today's coercion: unknown origins become `user` (chatModel.ts:66) and render as `you` (entries.tsx:70).
 - `npm run build` runs `tsc -b`, the only type check.
+
+- 2026-10-26 done
