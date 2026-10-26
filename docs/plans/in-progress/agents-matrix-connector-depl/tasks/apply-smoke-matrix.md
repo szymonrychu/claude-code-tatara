@@ -1,6 +1,6 @@
 ---
 title: apply smoke matrix
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the connector and the Chats page are live and proven by the smoke
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run diff && mise run smoke"
 depends_on: [helmfile-matrix-secrets, helmfile-matrix-releases, helmfile-web-chats-entry, smoke-matrix-check]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8bce546bf6fe3f4e1e9f196cb56676d967c31b9c
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 26
+actual_tokens: 985030
+actual_roles: "impl 19, review 6"
+actual_role_tokens: "impl 919075, review 65955"
 ---
 
 # apply smoke matrix
@@ -66,3 +66,5 @@ The connector runs in namespace `agents`, logged in and syncing; the Chats page 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
 
 - 2026-10-25 amended: user 2026-10-25: once deployed, ping the user with a joke message
+
+- 2026-10-26 done
