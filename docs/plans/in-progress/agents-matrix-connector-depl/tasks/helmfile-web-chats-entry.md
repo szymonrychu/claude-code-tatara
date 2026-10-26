@@ -1,6 +1,6 @@
 ---
 title: helmfile web chats entry
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the live UI shows the Chats page, pinned to the agents-web build that has it"
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_web_release.py
 depends_on: [helmfile-matrix-releases, web-chats-menu-entry]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 72b381eacc60f7e69aad8fe14cdac586e90bb639
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 7
+actual_tokens: 343679
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 258759, review 84920"
 ---
 
 # helmfile web chats entry
@@ -61,3 +61,5 @@ The live UI shows the Chats entry once applied.
 ## Notes
 
 - Same shape as agents-webhook-microservice task helmfile-web-webhooks-entry.
+
+- 2026-10-26 done
