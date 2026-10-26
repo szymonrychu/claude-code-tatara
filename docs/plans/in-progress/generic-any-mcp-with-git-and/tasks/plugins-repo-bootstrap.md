@@ -1,6 +1,6 @@
 ---
 title: plugins repo bootstrap
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: "the plugins bucket has Python 3.12 tooling, CI and a documented topic layout and notation"
 files: [.mise.toml, pyproject.toml, uv.lock, .github/workflows/ci.yml, tests/test_smoke.py, tests/test_repo.py, README.md]
@@ -8,15 +8,15 @@ verify: "mise run install && mise run test && mise run lint"
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 014598816a8155013ec7928af23cd7caeb208d97
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 675620
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 607311, review 68309"
 ---
 
 # plugins repo bootstrap
@@ -75,3 +75,5 @@ Scope (any-mcp-tatara-plugins):
 - Same-named test modules in several plugins need pytest `--import-mode=importlib` or unique names: choose one and pin it in test_repo.py.
 - CI action shas: copy any-mcp's `.github/workflows/ci.yml` pins.
 - The repo is public and its CI needs no secrets (user, 2026-10-26).
+
+- 2026-10-26 done
