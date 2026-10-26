@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live namespace is pinned to the auto-handover release
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [wrapper-release-0-3-0, orch-wrapper-pin-0-3-0, kind-e2e-auto-handover, web-leader-reason, web-scale-hint, smoke-scale-below-leader]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e487037cfeae15573f98693d5daed71904a92a99
 points: 2
 expected_minutes: 6
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 386185
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 323204, review 62981"
 ---
 
 # helmfile deploy pin
@@ -68,3 +68,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
