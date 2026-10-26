@@ -1,6 +1,6 @@
 ---
 title: anymcp source installer
-status: in-progress
+status: done
 repo: any-mcp
 value: any-mcp fetches git and local plugin sources safely and installs them as packages
 files: [src/any_mcp/install.py, tests/test_install.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_install.py && mise run lint"
 depends_on: [anymcp-source-parser]
 model: opus
 review: ""
-verified_head: ""
+verified_head: a9bc488c9aeb43bec06660e368227cda0afd7898
 points: 5
 expected_minutes: 11
 expected_tokens: 1694306
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 14
+actual_tokens: 1858483
+actual_roles: "impl 13, review 3"
+actual_role_tokens: "impl 1655610, review 202873"
 ---
 
 # anymcp source installer
@@ -75,3 +75,5 @@ Given a `Source`, any-mcp ends with the plugin's distribution installed in its o
 - After install call `importlib.invalidate_caches()` before reading entry points (anymap Unknowns).
 - Use `git -c protocol.file.allow=always` only in tests if newer git refuses `file://` in submodule-like contexts; never in src.
 - Security is the review focus: no `shell=True`, a timeout on every call, refs validated by the parser, symlink-resolved subdir inside the checkout.
+
+- 2026-10-27 done
