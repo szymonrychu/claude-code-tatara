@@ -33,11 +33,11 @@ User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair-
 
 ## Acceptance conditions
 
-- A restore of a corrupt archive (bad zstd bytes) over a workdir with pre-existing files leaves the workdir existing and empty, prints state `reset` with reason starting `extract_failed: `, and exits 0 (test in tests/test_cache_cli.py).
-- A restore whose stream drops after some bytes (non-ExtractError) still prints `failed` `extract_failed` and leaves the workdir untouched.
-- A wipe that fails yields `failed` with `reset failed` in the reason and a non-zero exit.
-- A save after a restore in state `reset` creates the save Job (tests/test_cache_save.py); `failed` restores still skip.
-- `mise run test` and `mise run lint` in agents-orchestrator are green.
+- AC1: A restore of a corrupt archive (bad zstd bytes) over a workdir with pre-existing files leaves the workdir existing and empty, prints state `reset` with reason starting `extract_failed: `, and exits 0 [evidence: test:tests/test_cache_cli.py]
+- AC2: A restore whose stream drops after some bytes (non-ExtractError) still prints `failed` `extract_failed` and leaves the workdir untouched [evidence: test:tests/test_cache_cli.py]
+- AC3: A wipe that fails yields `failed` with `reset failed` in the reason and a non-zero exit [evidence: test:tests/test_cache_cli.py]
+- AC4: A save after a restore in state `reset` creates the save Job; `failed` restores still skip [evidence: test:tests/test_cache_save.py]
+- AC5: README and MEMORY.md describe `reset` and amend D11 [evidence: doc-section:README.md]
 
 ## Files
 
