@@ -47,3 +47,16 @@ design.md.
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review of workspace-s3-cache (core), 2026-10-26.
+- Whole-diff review: 1 medium finding. The save skip deny-list let a partial restore overwrite a good archive. Fixed by cache-save-allowlist (45c221c), which saves only after restored or miss. Reviewed PASS.
+- Security review:
+  - 2 medium findings. Cache-key spoofing was fixed by cache-key-reserved-prefix (4c83e12, 8d8b2c3), which reserves the preset- prefix and makes a preset copy drop the source's derived key. The bucket total had no bound; that moves to workspace-s3-cache-deploy helmfile-cache-bucket as a quota.
+  - 2 low findings, accepted. The URL expiry is timeout+600 s by design. There is no member-count cap: same-session blast radius only, as in the cache-archive note.
+- Discovered: the orchestrator api did not reload the services Secret. Fixed by orch-services-secret-checksu (2290dbb).
+- Scope: G1-G6 delivered. The rook-ceph bucket, the web form and the smoke are in workspace-s3-cache-deploy.
+- Suites:
+  - PR #18 CI green on 2290dbb: lint, test, images, chart, e2e.
+  - Local full suite: 935 passed.
