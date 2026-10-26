@@ -1,6 +1,6 @@
 ---
 title: anymcp release 0.5.0
-status: in-progress
+status: done
 repo: any-mcp
 value: a tagged generic any-mcp release the plugins repo and the orchestrator can pin
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, MEMORY.md, tests/test_release.py, tests/test_package.py, tests/test_docs_links.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_release.py tests/test_package.py t
 depends_on: [anymcp-source-plugin-loading, anymcp-remove-orchestrator]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8a5aee11a0fcc3265ec4a32105e1e4425da76a63
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 452097
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 364430, review 87667"
 ---
 
 # anymcp release 0.5.0
@@ -73,3 +73,5 @@ The any-mcp tree is ready for the orchestrator to tag `v0.5.0` (Rollout R1): ver
 - CHANGELOG style: one or two summary lines with the "Breaking:" prefix, then `- ` bullets wrapped near 100 columns (see v0.3.0).
 - MEMORY entries are `## YYYY-MM-DD - title`, newest first.
 - The tag push is Rollout R1, not this task.
+
+- 2026-10-27 done
