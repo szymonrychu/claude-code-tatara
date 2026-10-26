@@ -1,7 +1,7 @@
 ---
 title: agents matrix connector deploy
 blockers: [orchestrator-rename-sessions, agents-matrix-connector]
-stage: review
+stage: build
 owner: Szymon Richert
 repos: [agents-helmfile, agents-web]
 created: 2026-10-25
