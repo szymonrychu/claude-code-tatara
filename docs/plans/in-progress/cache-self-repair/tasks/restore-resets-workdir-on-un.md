@@ -50,17 +50,20 @@ User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair-
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement; no new cross-repo contract.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every acceptance condition holds on the committed HEAD.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the AC tests; run the task verify: they fail.
+- Green: implement the Requirement; rerun the verify: they pass.
+- Run the repo's full suite and lint: green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- See the Requirement and the epic design.md.
+- DB tests: Docker disk is full, so testcontainers fail; use the shared local Postgres at postgresql://test@127.0.0.1:55433/postgres (trust auth) through a temporary, uncommitted fixture override with a fresh template DB name (for example `csr_tpl_1`). Run the full suite through plugins/workbench/skills/worktree-merge/scripts/suite-lock.sh in the workbench root.
+- D11 in MEMORY.md is the save allow-list decision this amends; keep the allow-list shape (fail safe), only add `reset`.
