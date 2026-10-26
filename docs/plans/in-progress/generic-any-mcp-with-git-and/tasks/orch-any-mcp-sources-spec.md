@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp sources spec
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: presets and sessions carry a validated list of extra plugin sources
 files: [src/agents_orchestrator/spec.py, openapi.json, README.md, MEMORY.md, tests/test_spec_any_mcp_sources.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_spec_any_mcp_
 depends_on: [orch-any-mcp-0-5-0-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ff5421890ea722b67924fd2735b107ff37e23426
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 1098120
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 792333, review 305787"
 ---
 
 # orch any-mcp sources spec
@@ -76,3 +76,5 @@ Presets and sessions accept a sparse list of remote plugin sources, refuse anyth
 - Persistence needs no migration: spec is jsonb; presets dump `exclude_unset`, sessions `exclude_none`, so `None` stays sparse (test_sparse_when_unset).
 - Precedent for list caps and messages: `init_scripts` (`spec.py:483`).
 - Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`. Never the word "cluster" in new text (`tests/test_nomenclature.py`).
+
+- 2026-10-27 done
