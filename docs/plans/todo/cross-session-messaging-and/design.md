@@ -3,10 +3,12 @@
 ## Summary
 
 Two opt-in, sparse, create-time session spec options for agents-orchestrator, settable on presets:
-`session_messaging` (the leader of a session can list other opted-in sessions and send a message to
-their leaders; messages arrive as framed turns on the target's leader through the existing message
-queue) and `kube_access` (the session's agent pods run as one chart-rendered ServiceAccount bound to
-the built-in `cluster-admin` ClusterRole, with the token mounted and kubectl installed). Every other
+`session_messaging` (makes the session a superleader: its leader can list the leaders of all open
+sessions and message any of them, while every other session's leader, alone sessions included, can
+list and message only superleaders; messages arrive as framed turns on the target's leader through
+the existing message queue) and `kube_access` (the session's agent pods run as one chart-rendered ServiceAccount bound to
+the built-in `cluster-admin` ClusterRole, with the token mounted and `KUBERNETES_SERVICE_HOST/PORT` passed to claude's Bash; kubectl comes from a
+user hook or the agent). Every other
 agent pod and every Job gets an explicit unprivileged ServiceAccount and no token. any-mcp ships two
 new orchestrator tools (release v0.4.0), agents-web gets two preset switches and a sender label in the
 chat, agents-helmfile pins and enables it all.
@@ -22,12 +24,15 @@ unless a session asks for them.
 
 The epic README Goals, verbatim:
 
-- G1: A sparse create-time spec option for cross-session messaging; a session with it on can list
-  messaging-enabled sessions and send a message to another one's leader, and receives messages sent
-  to it as turns on its leader that name the sender session.
+- G1: A sparse create-time spec option for cross-session messaging that makes a session a
+  superleader: its leader lists the leaders of all open sessions and can send a message to any of
+  them; the leader of every other session, alone sessions included, lists only the superleader
+  sessions and can send only to them; every session receives messages sent to it as turns on its
+  leader that name the sender session.
 - G2: A sparse create-time spec option for Kubernetes access; agent pods of a session with it on run
-  as a ServiceAccount bound to cluster-admin with its token mounted, and kubectl in-cluster access
-  works from the agent's shell.
+  as a ServiceAccount bound to cluster-admin with its token mounted and the in-cluster API address
+  passed to the agent's shell, so in-cluster access works from it (kubectl comes from a user hook or
+  the agent, not the orchestrator).
 - G3: Every other agent pod and every Job runs with an explicit ServiceAccount and no mounted token.
 - G4: Both options are editable in the agents-web preset form, and received cross-session messages
   are shown with their sender session in the chat.
@@ -39,7 +44,8 @@ The epic README Goals, verbatim:
 
 - No scoped or per-namespace Kubernetes roles; access is all-or-nothing cluster-admin.
 - No synchronous request/reply or context transfer between sessions; messaging is an async mailbox.
-- No messaging for non-leader agents and no cross-session messaging for sessions without the option.
+- No messaging for non-leader agents, and no messaging between two sessions of which neither is a
+  superleader.
 - No change to the claude-code-tatara preset's env or onStart hook (the user removes its kubeconfig
   machinery).
 
@@ -49,7 +55,7 @@ The epic README Goals, verbatim:
   token reaching the api, dispatcher or ingester processes (foundation anti-goal, design D9).
 - The reconciler gaining RBAC on `rbac.authorization.k8s.io` or on ServiceAccounts (research A1-A5:
   that grant is cluster-admin-equivalent and cannot be name-restricted).
-- A cross-session message queued silently for a target that did not opt in, or a ping-pong between
+- A message queued between two sessions of which neither is a superleader, or a ping-pong between
   two leaders that nothing stops.
 - A second writer on the `messages` table, or a new transport beside the queue.
 - Backward-compatibility shims, aliases or fallbacks.
@@ -129,18 +135,19 @@ Opted-in pods set `serviceAccountName` to the privileged SA and `automountServic
 (the pod value overrides the SA's false, research B1); the token stays at the default path with no
 subPath and no `KUBECONFIG` (B4, B8, B9: kubectl falls back to in-cluster config only then).
 `claude.passthrough_env` adds `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT` so claude's Bash
-sees them (wrapper env is an allow-list, session.py:218). kubectl is not in the wrapper image: the
-rendered onStart installs it through mise at `ORCH_KUBECTL_VERSION` (default `1.33`, the live API
-server is v1.33.0 by probe 2026-10-26) only when `kube_access` is on, and a failed install fails the
-hook. This is open question Q1; the recommended path is planned. Alternative: add kubectl to the
-claude-code-wrapper image (a wrapper release and agent image bump for every session). (my call,
-pending Q1)
+sees them (wrapper env is an allow-list, session.py:218). Kubernetes access is exactly the
+ServiceAccount, the mounted token and that passthrough. kubectl is not in the wrapper image and the
+orchestrator does not install it: a user onStart hook or the agent installs it when needed. User gate answers 2026-10-26, verbatim: "Q1. No- it will be something either hook will do, or agent will handle if needed, Q2: yes".
+Rejected: an orchestrator-rendered mise install pinned by a setting; kubectl in the wrapper image.
+(user decision Q1; mechanics my call)
 
 ### D6: Addressing by slug; two agent routes; two any-mcp tools
 
 Agent routes: `GET /agent/v1/sessions` answers `{"sessions": [{"slug", "preset_name",
-"leader_present"}]}`: the other active sessions with `session_messaging` on (`leader_present`: a
-live leader in a hive, or a live agent in an alone session). `POST /agent/v1/sessions/{slug}/messages`
+"superleader", "leader_present"}]}`: for a superleader caller every other active session, for any
+other caller only the other active superleader sessions (`leader_present`: a live leader in a hive,
+or a live agent in an alone session). A non-superleader leader still sees its own members through the
+hive tools. `POST /agent/v1/sessions/{slug}/messages`
 with body `{"text"}` (1 to 16000 characters) answers 202 `{"message_id"}`. any-mcp
 `OrchestratorPlugin` tools `sessions_list` (GET) and `session_send(slug, text)` (POST, `slug` is the
 path parameter, body `{"text"}`), exposed as `mcp__any-mcp__orchestrator_sessions_list` and
@@ -150,16 +157,24 @@ rejected; wrapper peer mesh across sessions (one shared token is one trust domai
 anymcp-wrapper 3), rejected; notes (hive-only, do not wake an idle agent), rejected; blocking
 request/reply (prior-art trap), rejected. (my call)
 
-### D7: Two-sided opt-in, leader-only sender, explicit refusal codes
+### D7: One-sided opt-in (superleader), leader-only sender, explicit refusal codes
 
-Only sessions with the option can send or be listed or receive; only the current leader sends (the
-only agent of an alone session counts as leader). Checks in this order, nothing queued on refusal:
-caller session without the option 403 `messaging_disabled`; caller not the leader 403 `not_leader`;
-unknown slug 404 `not_found`; own slug 422 `self_send`; target without the option 409
-`target_messaging_disabled`; target being discarded 409 `session_deleting`; hop limit 409
-`hop_limit`; sender rate 429 `rate_limited`; target queue cap 409 `target_queue_full`; text outside 1
-to 16000 characters 422 `invalid_request`. Prior art: two-sided opt-in and loud refusal
-(prior-art "Opt-in / allowlist"). (my call)
+User decision at the gate 2026-10-26, verbatim: "session_messaging is required only on one end. Idea
+here is that I will talk to agents through Facebook chat, these agents will dispatch messages to
+existing sessions and talk to them for me (orchestrate and relay messages). So session that has this
+option turned on, sees all leaders in all sessions. Leaders in sessions that have this turned off,
+will see its members plus the superleader. This implies, that messaging functionality is there for
+non hived sessions as well (they alone will see only superleaders if such exist)."
+
+A send is allowed when the caller's session or the target session is a superleader (`session_messaging`
+true); every session can receive. Only the current leader sends (the only agent of an alone session
+counts as leader). Checks in this order, nothing queued on refusal: caller not the leader 403
+`not_leader`; unknown slug 404 `not_found`; own slug 422 `self_send`; neither caller nor target a
+superleader 403 `target_not_superleader`; target being discarded 409 `session_deleting`; hop limit
+409 `hop_limit`; sender rate 429 `rate_limited`; pair budget 429 `pair_budget`; target queue cap 409
+`target_queue_full`; text outside 1 to 16000 characters 422 `invalid_request`. The prior-art
+two-sided opt-in is superseded by the user decision; loud refusal is kept (prior-art "Opt-in /
+allowlist"). (user decision; codes my call)
 
 ### D8: Delivery through the messages queue with a sender columns migration
 
@@ -206,13 +221,16 @@ with a null turn_id, an intervening user turn) restarts at 1 and two leaders cou
 the rate limit. `ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR` (default 30) caps the messages exchanged between
 one pair of sessions, both directions, in the last hour: 429 `pair_budget`. (my call)
 
-### D11: Rendered tools; alone sessions with messaging get the plugin
+### D11: Rendered tools for every session
 
-`k8s/on_start.py` `SESSION_TOOLS = ["sessions_list", "session_send"]`: a hive with
-`session_messaging` gets them after the hive tools (and `scale` when scalable); an alone session with
-it gets an orchestrator entry whose allow list is exactly the two; without the option nothing
-changes. This amends hive D24 ("an alone session gets no hive, peers or messaging tools") for opted-in
-sessions; recorded in MEMORY. `OrchestratorConfig` is unchanged. (my call)
+`k8s/on_start.py` `SESSION_TOOLS = ["sessions_list", "session_send"]`: every hive gets them after the
+hive tools (and `scale` when scalable); every alone session gets an orchestrator entry whose allow
+list is exactly the two (D7: alone sessions message superleaders). The server decides what each
+caller may list and send, so the render does not depend on `session_messaging`. This replaces hive
+D24 ("an alone session gets no hive, peers or messaging tools") for the session tools; recorded in
+MEMORY. The unit tests, goldens and kind e2e assertions that pin "no orchestrator entry for an alone
+session" are no longer accurate and change with it. `OrchestratorConfig` is unchanged. (user
+decision; mechanics my call)
 
 ### D12: any-mcp v0.4.0 and the pin bump in every place
 
@@ -233,8 +251,8 @@ message; acceptable in a single-user UI. (my call)
 
 ### D14: Preset form switches
 
-agents-web `sessionSpecForm.ts` and `PresetForm.tsx` gain two switches, "Cross-session messaging" and
-"Kubernetes access", default off and saved sparsely (only when on). Kubernetes access is disabled
+agents-web `sessionSpecForm.ts` and `PresetForm.tsx` gain two switches, "Superleader" (helper "superleader: can message the leaders of all sessions")
+and "Kubernetes access", default off and saved sparsely (only when on). Kubernetes access is disabled
 with a "not configured" helper when `meta.kube_access.available` is false (precedent cache,
 PresetForm.tsx:95, 260). The vendored `openapi/orchestrator.json` is synced from the orchestrator and
 the types regenerated. Words avoid "cluster". (my call)
@@ -243,10 +261,13 @@ the types regenerated. Words avoid "cluster". (my call)
 
 agents-helmfile pins the orchestrator chart and image, the agents-web chart and image,
 `ORCH_ANY_MCP_REF: v0.4.0`, and sets `kubeAccess.enabled: true`. `scripts/smoke.sh` gains a
-Kubernetes access step (meta availability, the pod's ServiceAccount, `kubectl auth can-i '*' '*'
---all-namespaces` answering yes inside the opted-in pod, no token in an unprivileged pod) and a
-messaging step (two temporary opted-in sessions: list, send through the agent API from inside one pod,
-the message reaches `sent`, the target's events carry the frame), both cleaned up by the trap. The
+Kubernetes access step (meta availability, the pod's ServiceAccount, an in-pod curl with the mounted
+token to the API server: a SelfSubjectAccessReview for `*` on `*` answers allowed and
+`GET /api/v1/namespaces` answers 200, no kubectl needed; no token in an unprivileged pod) and a
+messaging step (a temporary superleader session and a temporary plain session: the superleader lists
+the plain one, sends to it through the agent API from inside its pod, the message reaches `sent` and
+the target's events carry the frame; the plain session lists only superleaders and its send to another
+plain session is refused `target_not_superleader`), both cleaned up by the trap. The
 apply, the smoke run and the preset updates are orchestrator steps (Rollout). (my call)
 
 ### D16: Docs state the new privilege honestly
@@ -258,9 +279,13 @@ certificates and bindings that outlive its session, so discarding the session is
 revocation (research rbac A9, A10, D1, D8). `## Kubernetes permissions` also says that with
 `kubeAccess.enabled` anything that can create pods, StatefulSets, Jobs or Secrets in the release
 namespace, the reconciler included, is cluster-admin-equivalent; a render test pins that only a
-`kube_access: true` spec ever yields the privileged ServiceAccount. `## Security` names the pairing
-`session_messaging` plus `kube_access`: any messaging session can feed text to a cluster-admin leader,
-with the frame trailer as the only defence (interrogate panel). (my call)
+`kube_access: true` spec ever yields the privileged ServiceAccount. `## Security` names the messaging path into
+`kube_access` sessions: any superleader can feed text to any `kube_access` leader, and any session's
+leader can feed text to a superleader that itself has `kube_access`, with the frame trailer as the
+only defence (interrogate panel, superleader model). `## Security` also warns that sessions
+started by trigger services from a `kube_access` preset get the same access, so untrusted webhook
+content reaching one is a cluster-admin prompt-injection path (user decision Q2: yes, allowed). (my call;
+Q2 user decision)
 
 ## Research
 
@@ -270,7 +295,7 @@ with the frame trailer as the only defence (interrogate panel). (my call)
 | web and helmfile map | ran (docs/research/2026-10-26-cluster-options-web-helmfile-map.md) | switch and meta gating templates (PresetForm.tsx:95, 256), `sync:api`, chat origin handling (chatModel.ts:66), pins and tests | reusing `origin: 'peer'` for session messages (label shows a raw agent id) |
 | any-mcp and wrapper map | ran (docs/research/2026-10-26-cluster-options-anymcp-wrapper-map.md) | path-param tools (http.py:17), passthrough allow-list (session.py:218), kubectl absent from the image (Dockerfile) | new wrapper origin; notes for delivery (do not wake idle, hive-only) |
 | Kubernetes RBAC docs | ran (docs/research/2026-10-26-cluster-options-k8s-rbac.md) | helm-owned binding to a fixed SA (A9, A11), pod-level automount override (B1), in-cluster fallback conditions (B9), docs of non-revocation (D1) | controller-created bindings (A1-A5, C1-C3), custom aggregated role (D6) |
-| prior art | ran (docs/research/2026-10-26-cluster-options-prior-art.md) | async mailbox, two-sided opt-in, peer data framing, server-issued id, rate limit, queue cap, hop counter (Patterns worth borrowing) | blocking request/reply, context transfer, dedup window, per-peer allowlist (Traps to avoid; ideas not asked) |
+| prior art | ran (docs/research/2026-10-26-cluster-options-prior-art.md) | async mailbox, peer data framing, server-issued id, rate limit, queue cap, hop counter (Patterns worth borrowing) | blocking request/reply, context transfer, dedup window, per-peer allowlist (Traps to avoid; ideas not asked); two-sided opt-in (superseded by the user's one-sided superleader decision) |
 | reuse hunt | ran (.scratchpad/cluster-options/reuse.md) | enqueue_message, require_agent, get_by_slug, _require_open_session, `_clean`-style escape, cache meta pattern | a new route-to-leader path, a cross-session client in agents-common, new agent tokens (do-not-build) |
 
 ## Research inputs
@@ -304,7 +329,8 @@ Findings:
   orch-agent-service-accounts.
 - `KUBERNETES_SERVICE_HOST/PORT` do not reach claude's Bash (render.py:120). Acts:
   orch-kube-access-render.
-- kubectl absent from the wrapper image (wrapper Dockerfile). Acts: orch-kube-access-render (Q1).
+- kubectl absent from the wrapper image (wrapper Dockerfile). Acts: none by user decision Q1 (a user
+  hook or the agent installs it); orch-kube-access-render pins that onStart does not change.
 - Alone sessions render no orchestrator plugin (on_start.py:30). Acts: orch-render-session-tools.
 - Untargeted messages already route to the leader (db/queue.py:288-303). Acts:
   orch-session-message-sender.
@@ -328,11 +354,11 @@ Findings:
 | D4 explicit unprivileged identity | orch-session-options-spec, orch-agent-service-accounts, chart-kube-access-rbac |
 | D5 in-pod Kubernetes access | orch-kube-access-render, smoke-session-options |
 | D6 routes and tools | orch-agent-session-messaging, anymcp-session-tools |
-| D7 opt-in and refusals | orch-agent-session-messaging |
+| D7 superleader opt-in and refusals | orch-agent-session-messaging, smoke-session-options |
 | D8 sender columns migration | orch-session-message-sender |
 | D9 framing at dispatch | orch-session-message-sender, web-chat-session-messages |
 | D10 storm control | orch-session-options-spec, orch-agent-session-messaging |
-| D11 rendered tools | orch-render-session-tools |
+| D11 rendered tools | orch-render-session-tools, orch-any-mcp-pin-0-4-0 |
 | D12 any-mcp v0.4.0 and pins | anymcp-session-tools, orch-any-mcp-pin-0-4-0, helmfile-deploy-pin |
 | D13 chat sender label | web-chat-session-messages |
 | D14 preset switches | web-preset-session-options |
@@ -341,7 +367,8 @@ Findings:
 
 ## Review focus
 
-- orch-agent-session-messaging: authorization order and that no refusal queues a row; the hop is
+- orch-agent-session-messaging: the superleader rule (a send needs a superleader on one end; a
+  non-superleader's list never shows a non-superleader); authorization order and that no refusal queues a row; the hop is
   derived server-side from the caller's current turn, never from the request; rate and cap counts.
 - orch-session-message-sender: the frame escapes the body so `</session-message>` in a message cannot
   close it; unframed messages are byte-identical to today.
@@ -357,8 +384,6 @@ Findings:
   D7 and D10.
 - Whether to fold the duplicated leader check and member lookup in api/agent.py (:185, :193, :324,
   :329) into the new helper (boy-scout, same file only).
-- The exact mise command that installs kubectl in onStart, within: pinned to
-  `ORCH_KUBECTL_VERSION`, on PATH through `/opt/mise/shims`, failing the hook on error.
 - Wording of tool descriptions and UI helper text, within the nomenclature guards and D6/D14 meaning.
 - How the smoke steps poll and time out, within `SMOKE_TIMEOUT_S` and the existing smoke style.
 
@@ -385,7 +410,8 @@ Release and deploy steps run by the orchestrator between and after tasks:
   89f08b34-9d2c-4015-a814-72e7994d575a ("claude-code-tatara") gains `kube_access: true`, its `env` and
   `init_scripts` untouched.
 - R7: live proof: in a claude-code-tatara session created after R6 and after the user's preset edit,
-  the leader runs `kubectl get namespaces` in its Bash tool and it lists every namespace.
+  the leader, with kubectl from the user's hook or installed by itself (user decision Q1), runs
+  `kubectl get namespaces` in its Bash tool and it lists every namespace.
 
 User steps, asked up front at the gate:
 
@@ -396,23 +422,20 @@ User steps, asked up front at the gate:
 
 ## Assumptions and unknown facts
 
-- Settled by probe at the builder check (2026-10-26): mise is in the agent image (/usr/local/bin/mise
-  in agent-mx-4-0), agent pods reach github.com (HTTP 200), and the cluster is v1.33.0, so kubectl
-  1.33 is within skew. (my call)
-
-- The mise registry resolves `kubectl@1.33` from inside agent pods (network egress as for the any-mcp
-  pip install). Confirmed by smoke-session-options at R5 (`kubectl auth can-i` in the pod).
+- Settled by probe at the builder check (2026-10-26): agent pods reach github.com (HTTP 200) and the
+  API server is v1.33.0; curl is in the agent image, so the smoke's in-pod API probe needs no kubectl.
 - epic-run's integration trees put agents-web and agents-orchestrator side by side, so
   `npm run sync:api -- orchestrator` reads the epic's orchestrator tree; the builder passes
   `--from <orchestrator tree>` when it does not.
 - Whether triggers (agents-webhook, agents-schedule, agents-matrix-connector) use the
-  claude-code-tatara preset is unknown; Q2 asks the policy, not the fact.
+  claude-code-tatara preset is unknown; the policy is settled by user decision Q2 (yes: such sessions get
+  the same access, README Security warns).
 - No other running session depends on the default ServiceAccount token today (live probe: no
   ClusterRoleBinding names agents; the default SA has no bindings found).
 
 ## Open questions
-- Q1: kubectl availability: should the rendered onStart install kubectl through mise (pinned ORCH_KUBECTL_VERSION, default 1.33) only for kube_access sessions, rather than adding kubectl to the claude-code-wrapper image? [recommended: yes, install through mise in onStart only when kube_access is on; no wrapper image change]
-- Q2: May sessions started by trigger services (webhook, schedule, Matrix) from a preset with kube_access get cluster-admin like any other session, with the preset chosen per trigger as the only control? [recommended: yes, no extra refusal on the service port; README Security warns that untrusted webhook content reaching a kube_access session is a cluster-admin prompt-injection path]
+
+none
 
 ## Irreversible operations in scope
 
