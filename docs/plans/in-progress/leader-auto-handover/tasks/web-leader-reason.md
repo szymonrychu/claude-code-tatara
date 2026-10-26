@@ -1,6 +1,6 @@
 ---
 title: web leader reason
-status: in-progress
+status: done
 repo: agents-web
 value: the user sees that leadership moved because of a compaction or a scale-down
 files: [src/api/stream.ts, src/api/stream.test.ts, src/ribbon/useSessions.ts, src/chat/AgentsStrip.tsx, src/chat/AgentsStrip.test.tsx, src/chat/ChatView.tsx]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run src/api/stream.test.ts src/chat/AgentsStri
 depends_on: [leader-changed-reason]
 model: opus
 review: ""
-verified_head: ""
+verified_head: b292688129e359cc918d54ecca42b18ea3cfb47c
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 679096
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 587300, review 91796"
 ---
 
 # web leader reason
@@ -69,3 +69,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
