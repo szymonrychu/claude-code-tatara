@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp 0.5.0 pin
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the orchestrator pins generic any-mcp v0.5.0 and the plugins repo tag in one place each
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, tests/test_settings.py, tests/test_images.py, README.md, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml]

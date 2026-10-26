@@ -1,6 +1,6 @@
 ---
 title: anymcp release 0.5.0
-status: todo
+status: in-progress
 repo: any-mcp
 value: a tagged generic any-mcp release the plugins repo and the orchestrator can pin
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, MEMORY.md, tests/test_release.py, tests/test_package.py, tests/test_docs_links.py]

@@ -1,6 +1,6 @@
 ---
 title: anymcp source parser
-status: todo
+status: in-progress
 repo: any-mcp
 value: "one exact grammar for Terraform-like plugin sources, shared by any-mcp and the orchestrator"
 files: [src/any_mcp/sources.py, tests/test_sources.py]

@@ -1,6 +1,6 @@
 ---
 title: anymcp source installer
-status: todo
+status: in-progress
 repo: any-mcp
 value: any-mcp fetches git and local plugin sources safely and installs them as packages
 files: [src/any_mcp/install.py, tests/test_install.py]

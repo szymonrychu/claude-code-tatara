@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp sources spec
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: presets and sessions carry a validated list of extra plugin sources
 files: [src/agents_orchestrator/spec.py, openapi.json, README.md, MEMORY.md, tests/test_spec_any_mcp_sources.py]

@@ -1,6 +1,6 @@
 ---
 title: anymcp source plugin loading
-status: todo
+status: in-progress
 repo: any-mcp
 value: a config entry or a CLI call installs and loads a plugin from a git repo or a local dir
 files: [src/any_mcp/config.py, src/any_mcp/discovery.py, src/any_mcp/cli.py, docs/configuration.md, tests/test_source_plugins.py, tests/fixtures/source_plugin/pyproject.toml, tests/fixtures/source_plugin/src/source_plugin/__init__.py]

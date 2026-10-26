@@ -1,6 +1,6 @@
 ---
 title: anymcp remove orchestrator
-status: todo
+status: in-progress
 repo: any-mcp
 value: any-mcp ships no platform-specific plugin
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, tests/test_nomenclature.py, tests/test_generic.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke plugin tools
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: smoke proves sessions get the orchestrator tools from the plugins repo and extra sources install
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

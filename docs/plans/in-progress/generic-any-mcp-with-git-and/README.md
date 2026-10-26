@@ -2,7 +2,7 @@
 title: Generic any-mcp with git and local plugin sources
 blockers: [cross-session-messaging-and]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [any-mcp, any-mcp-tatara-plugins, agents-orchestrator, agents-web, agents-helmfile]
 created: 2026-10-26
 ---

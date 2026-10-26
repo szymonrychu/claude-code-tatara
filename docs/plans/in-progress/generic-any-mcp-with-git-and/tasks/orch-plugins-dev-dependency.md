@@ -1,6 +1,6 @@
 ---
 title: orch plugins dev dependency
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: orchestrator tests exercise the released plugins-repo orchestrator plugin
 files: [pyproject.toml, uv.lock, tests/test_on_start.py, tests/test_agent_scale.py, tests/test_agent_init_scripts.py, tests/test_agent_session_messaging.py]

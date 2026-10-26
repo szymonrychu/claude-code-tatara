@@ -1,6 +1,6 @@
 ---
 title: plugins repo bootstrap
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: "the plugins bucket has Python 3.12 tooling, CI and a documented topic layout and notation"
 files: [.mise.toml, pyproject.toml, uv.lock, .github/workflows/ci.yml, tests/test_smoke.py, tests/test_repo.py, README.md]

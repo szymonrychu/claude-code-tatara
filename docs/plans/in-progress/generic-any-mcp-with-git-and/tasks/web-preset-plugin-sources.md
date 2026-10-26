@@ -1,6 +1,6 @@
 ---
 title: web preset plugin sources
-status: todo
+status: in-progress
 repo: agents-web
 value: "users paste plugin source links into the preset form, one row per source"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]

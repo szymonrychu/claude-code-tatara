@@ -1,6 +1,6 @@
 ---
 title: plugins orchestration plugin
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: "the orchestrator tools live in the plugins bucket, installable as a source"
 files: [orchestration/orchestrator/pyproject.toml, orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md, pyproject.toml, uv.lock, tests/test_nomenclature.py, tests/test_source_install.py]

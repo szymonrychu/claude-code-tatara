@@ -1,6 +1,6 @@
 ---
 title: web plugin source parser
-status: todo
+status: in-progress
 repo: agents-web
 value: the preset form can flag a malformed plugin source before saving
 files: [src/presets/pluginSource.ts, src/presets/pluginSource.test.ts]
