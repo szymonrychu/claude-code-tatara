@@ -3,9 +3,9 @@ title: orch any-mcp pin 0.4.0
 status: todo
 repo: agents-orchestrator
 value: new sessions install the any-mcp release that has the session tools
-files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml]
-verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_agent_init_scripts.py && mise run lint"
-depends_on: [anymcp-session-tools, orch-agent-service-accounts]
+files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/test_agent_session_messaging.py]
+verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_agent_init_scripts.py tests/test_agent_session_messaging.py && mise run lint"
+depends_on: [anymcp-session-tools, orch-agent-service-accounts, orch-agent-session-messaging]
 model: opus
 review: ""
 verified_head: ""
@@ -33,6 +33,7 @@ Scope (agents-orchestrator):
 - `README.md`: the `ORCH_ANY_MCP_REF` row default and the `## Images` any-mcp sentence name `v0.4.0`; the dated breaking-change note ("Agents need any-mcp `v0.3.0` or later") stays as history.
 - `tests/test_settings.py::test_defaults` asserts `any_mcp_ref == "v0.3.0"`: no longer accurate because the pinned release moves to v0.4.0 by design D12; it asserts `"v0.4.0"`.
 - `tests/golden/session_single.yaml`, `tests/golden/session_two_peers.yaml`: regenerated with the golden helper of `tests/test_render.py` (the onStart script names the ref).
+- `tests/test_agent_session_messaging.py` (from task orch-agent-session-messaging): add `test_session_tools_parity`, driving the installed any-mcp v0.4.0 `OrchestratorPlugin` through `any_mcp.testing.PluginHarness` against the app on the agent port, like `tests/test_agent_init_scripts.py::test_plugin_parity`: the first test of the new tools against the real routes.
 
 ## Acceptance conditions
 
@@ -41,6 +42,7 @@ Scope (agents-orchestrator):
 - ac3: the two-replica golden renders the v0.4.0 install [evidence: test:tests/test_render.py::test_golden_two_replicas_with_peers]
 - ac4: the single golden renders the v0.4.0 install [evidence: test:tests/test_render.py::test_golden_single_without_peers]
 - ac5: the plugin parity test passes against any-mcp v0.4.0 [evidence: test:tests/test_agent_init_scripts.py::test_plugin_parity]
+- ac5b: through the real any-mcp v0.4.0 plugin, orchestrator sessions_list returns the server's session list and session_send from a plain session's leader to a superleader session queues a message and returns its message_id [evidence: test:tests/test_agent_session_messaging.py::test_session_tools_parity]
 - ac6: README names v0.4.0 as the ORCH_ANY_MCP_REF default [evidence: command:grep -q '`ORCH_ANY_MCP_REF` | `v0.4.0`' README.md]
 - ac7: the settings, images, render, onStart and README tests pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_on_start.py tests/test_readme_api.py]
 - ac8: lint passes [evidence: command:mise run lint]
@@ -54,6 +56,7 @@ Scope (agents-orchestrator):
 - `tests/test_settings.py`
 - `tests/golden/session_single.yaml`
 - `tests/golden/session_two_peers.yaml`
+- `tests/test_agent_session_messaging.py`
 
 ## Interfaces
 
@@ -76,3 +79,5 @@ New sessions install any-mcp v0.4.0, and the orchestrator's dev environment test
 - `uv lock` needs network to GitHub; the lock must record `any-mcp?rev=v0.4.0#` (ac1).
 - `tests/test_on_start.py::test_plugin_entry_session_key`'s docstring mentions v0.3.0; it validates against whatever any-mcp is installed and stays accurate; do not edit it.
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` after `uv lock`.
+
+- 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
