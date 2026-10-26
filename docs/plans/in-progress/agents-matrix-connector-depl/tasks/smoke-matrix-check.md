@@ -1,6 +1,6 @@
 ---
 title: smoke matrix check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "every apply proves the connector is logged in, syncing and serving its API, without touching any chat"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.p
 depends_on: [helmfile-matrix-releases]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b0b7a61a10f4626167e5cdc7a3bc785582ecff84
 points: 2
 expected_minutes: 7
 expected_tokens: 538938
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 11
+actual_tokens: 871583
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 748754, review 122829"
 ---
 
 # smoke matrix check
@@ -62,3 +62,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - Follow the webhook steps' port-forward and trap pattern in the same script.
 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
+
+- 2026-10-26 done
