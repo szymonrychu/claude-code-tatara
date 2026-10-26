@@ -1,6 +1,6 @@
 ---
 title: cache save allowlist
-status: todo
+status: done
 repo: agents-orchestrator
 value: a failed restore can never overwrite a good cache archive
 files: [src/agents_orchestrator/reconciler/cache.py, tests/test_cache_save.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -o addopts='-m \"not integration and not e2e\"' tests/
 depends_on: [cache-key-reserved-prefix]
 model: ""
 review: ""
-verified_head: ""
+verified_head: 45c221c
 points: 2
 expected_minutes: 5
 expected_tokens: 531208
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 7
+actual_tokens: 673334
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 504852, review 168482"
 ---
 
 # cache save allowlist
@@ -57,3 +57,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 done
