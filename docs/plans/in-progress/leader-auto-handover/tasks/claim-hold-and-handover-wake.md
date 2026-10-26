@@ -1,6 +1,6 @@
 ---
 title: claim hold and handover wake
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a compacted or leaving leader never takes another untargeted message that a staying agent could take, and moves without waiting for the poll"
 files: [src/agents_orchestrator/db/queue.py, tests/test_queue_leader_routing.py, tests/test_dispatcher_auto_handover.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_queue_leader_routing.py tests/test
 depends_on: [compaction-status-projection, leadership-auto-handover, scale-down-staying-peer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 712cc8c629b80940ed080dc8b25cb9682d4adec8
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 1449605
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 1374546, review 75059"
 ---
 
 # claim hold and handover wake
@@ -71,3 +71,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
