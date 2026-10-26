@@ -30,7 +30,7 @@ Discovered during orch-render-session-tools (2026-10-27): the init Job's README 
 - ac1: an alone session's orchestrator entry allows exactly sessions_list, session_send, init_scripts_get, init_scripts_edit in that order [evidence: test:tests/test_on_start.py::test_alone_session_tools_entry]
 - ac2: a hive session's allow list ends with sessions_list, session_send, init_scripts_get, init_scripts_edit after the hive (and scale, when scalable) tools [evidence: test:tests/test_on_start.py::test_hive_session_tools]
 - ac3: every tool name the orchestrator renders or names to agents (including the init Job text) is offered by the pinned any-mcp orchestrator plugin [evidence: test:tests/test_on_start.py::test_allowed_tools_exist_in_plugin]
-- ac4: on_start, render, init and nomenclature tests and lint pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts="" tests/test_on_start.py tests/test_render.py tests/test_init_scripts.py tests/test_nomenclature.py && mise run lint]
+- ac4: on_start, render, init and nomenclature tests and lint pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts="" tests/test_on_start.py tests/test_render.py tests/test_agent_init_scripts.py tests/test_nomenclature.py && mise run lint]
 
 ## Files
 
@@ -57,3 +57,5 @@ Every session's orchestrator entry allows the init-scripts tools, and a test tie
 - Discovered by the orch-render-session-tools implementer; verified by the orchestrator: reconciler/init.py:97 names orchestrator_init_scripts_edit, on_start.py HIVE_TOOLS/SESSION_TOOLS omit it.
 - test_allowed_tools_exist_in_plugin can load the plugin from the installed any-mcp (dev dependency) as test_plugin_parity does.
 - tests/test_nomenclature.py checks tracked files: run it after committing; avoid the word cluster.
+
+- 2026-10-26 amended: ac4 named a nonexistent test file; the init-scripts tests are tests/test_agent_init_scripts.py
