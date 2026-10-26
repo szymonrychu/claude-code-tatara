@@ -25,12 +25,12 @@ actual_role_tokens: ""
 
 Goal G5 (epic README), verbatim: "Deployed: new orchestrator, any-mcp and agents-web versions applied through agents-helmfile with the Kubernetes access chart value on; the "facebook chat" preset has messaging on (its running session discarded) and "claude-code-tatara" has Kubernetes access on." Design D12, D15. This task is the pin and values change; the apply, smoke and preset updates are orchestrator steps (design Rollout R3 to R7).
 
-Needs merged upstreams: the agents-orchestrator PR of this epic merged with its image `<orchestrator sha7>` and chart `0.1.0-main.<orchestrator sha7>` published by main CI; the agents-web PR merged with its image and chart `0.1.0-main.<agents-web sha7>` published; any-mcp tag `v0.4.0` released. The shas are filled in by `ticket.py amend` before dispatch (precedent: done epic leader-auto-handover task helmfile-deploy-pin).
+Needs merged upstreams: the agents-orchestrator PR of this epic merged with its image `de16c14` and chart `0.1.0-main.de16c14` published by main CI; the agents-web PR merged with its image and chart `0.1.0-main.de64208` published; any-mcp tag `v0.4.0` released. Shas filled in 2026-10-27: agents-orchestrator PR #22 merged as de16c14, agents-web PR #15 merged as de64208.
 
 Scope (agents-helmfile):
-- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.<orchestrator sha7>`; agents-web chart `0.1.0-main.<agents-web sha7>`.
-- `values/agents-orchestrator/common.yaml`: `image.tag: <orchestrator sha7>` (quoted if all digits); `env.ORCH_ANY_MCP_REF: v0.4.0`; `kubeAccess: {enabled: true}` with a comment: sessions with `kube_access` get full Kubernetes access through the chart's kube-access ServiceAccount.
-- `values/agents-web/common.yaml`: `image.tag: "<agents-web sha7>"`.
+- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.de16c14`; agents-web chart `0.1.0-main.de64208`.
+- `values/agents-orchestrator/common.yaml`: `image.tag: de16c14` (quoted if all digits); `env.ORCH_ANY_MCP_REF: v0.4.0`; `kubeAccess: {enabled: true}` with a comment: sessions with `kube_access` get full Kubernetes access through the chart's kube-access ServiceAccount.
+- `values/agents-web/common.yaml`: `image.tag: "de64208"`.
 - `tests/test_orchestrator_release.py`: `PIN` becomes the orchestrator sha7; `test_any_mcp_configured_for_new_sessions` asserts `v0.3.0` and is no longer accurate because the pinned any-mcp release moves to v0.4.0 (design D12), so it asserts `v0.4.0`; new `test_kube_access_enabled`.
 - `tests/test_web_release.py`: the hardcoded agents-web sha becomes the new one.
 - Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py`.
