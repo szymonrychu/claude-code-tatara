@@ -1,6 +1,6 @@
 ---
 title: leader changed reason
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: API and stream clients see why leadership moved
 files: [src/agents_orchestrator/db/leadership.py, src/agents_orchestrator/api/streams.py, tests/test_leader_views.py, tests/test_leadership_pass.py, README.md]

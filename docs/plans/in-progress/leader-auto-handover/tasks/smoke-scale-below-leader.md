@@ -1,6 +1,6 @@
 ---
 title: smoke scale below leader
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: every deploy proves a scale-down below the leader hands over and shrinks
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: compaction status projection
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the orchestrator knows when each agent last compacted
 files: [src/agents_orchestrator/db/migrations/0006_compaction.sql, src/agents_orchestrator/db/status.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_migrations.py, README.md]

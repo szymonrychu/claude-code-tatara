@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin 0.3.0
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the orchestrator validates and tests against the wrapper that emits compacting
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]

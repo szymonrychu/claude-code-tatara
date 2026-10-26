@@ -1,6 +1,6 @@
 ---
 title: kind e2e auto handover
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: compaction and scale-down handovers are proven end to end through the API
 files: [tests/e2e/test_e2e_kind.py, e2e/agent-test.scenario.json]

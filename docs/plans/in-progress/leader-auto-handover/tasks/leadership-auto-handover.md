@@ -1,6 +1,6 @@
 ---
 title: leadership auto handover
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a compacted or leaving leader passes leadership to an agent that stays, without the user acting"
 files: [src/agents_orchestrator/db/leadership.py, tests/test_leadership_pass.py, README.md, MEMORY.md]

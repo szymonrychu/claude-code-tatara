@@ -2,7 +2,7 @@
 title: leader auto handover
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [claude-code-wrapper, agents-orchestrator, agents-web, agents-helmfile]
 created: 2026-10-26
 ---

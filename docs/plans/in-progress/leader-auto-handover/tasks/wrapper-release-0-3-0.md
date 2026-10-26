@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.3.0
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: the orchestrator and the live agents can run a wrapper that emits compacting
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]

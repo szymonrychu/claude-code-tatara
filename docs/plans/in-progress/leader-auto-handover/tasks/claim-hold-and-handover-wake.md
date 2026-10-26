@@ -1,6 +1,6 @@
 ---
 title: claim hold and handover wake
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a compacted or leaving leader never takes another untargeted message that a staying agent could take, and moves without waiting for the poll"
 files: [src/agents_orchestrator/db/queue.py, tests/test_queue_leader_routing.py, tests/test_dispatcher_auto_handover.py, README.md]

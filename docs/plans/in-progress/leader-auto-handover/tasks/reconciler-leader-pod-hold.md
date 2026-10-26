@@ -1,6 +1,6 @@
 ---
 title: reconciler leader pod hold
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the leader's pod is removed only after leadership has moved"
 files: [src/agents_orchestrator/reconciler/loop.py, tests/test_reconciler.py, README.md]

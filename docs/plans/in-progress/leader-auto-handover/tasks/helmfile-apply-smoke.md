@@ -1,6 +1,6 @@
 ---
 title: helmfile apply smoke
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the auto-handover release runs live and passes smoke
 files: [MEMORY.md]

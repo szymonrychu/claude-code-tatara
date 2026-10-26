@@ -1,6 +1,6 @@
 ---
 title: wrapper compacting event
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: the orchestrator learns a leader is about to compact before the compaction runs
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_command_signals.py, tests/test_event_log.py]

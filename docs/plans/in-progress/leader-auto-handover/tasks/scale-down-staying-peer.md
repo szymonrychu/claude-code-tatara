@@ -1,6 +1,6 @@
 ---
 title: scale down staying peer
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a scale-down below the leader is accepted whenever another ready agent can lead
 files: [src/agents_orchestrator/db/sessions.py, tests/test_sessions_repo.py, tests/test_api_scale.py, tests/test_agent_scale.py, README.md, MEMORY.md]

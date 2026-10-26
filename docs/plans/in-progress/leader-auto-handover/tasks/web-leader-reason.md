@@ -1,6 +1,6 @@
 ---
 title: web leader reason
-status: todo
+status: in-progress
 repo: agents-web
 value: the user sees that leadership moved because of a compaction or a scale-down
 files: [src/api/stream.ts, src/api/stream.test.ts, src/ribbon/useSessions.ts, src/chat/AgentsStrip.tsx, src/chat/AgentsStrip.test.tsx, src/chat/ChatView.tsx]

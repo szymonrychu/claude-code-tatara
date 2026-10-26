@@ -1,6 +1,6 @@
 ---
 title: web scale hint
-status: todo
+status: in-progress
 repo: agents-web
 value: a refused scale-down tells the user the real reason
 files: [src/chat/ScaleControl.tsx, src/chat/ScaleControl.test.tsx]
