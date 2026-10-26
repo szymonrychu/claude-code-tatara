@@ -40,17 +40,20 @@ Discovered during orch-render-session-tools (2026-10-27): the init Job's README 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/k8s/on_start.py:orchestrator_allow(spec) -> list[str]` gains the two init-scripts tools (a module constant next to SESSION_TOOLS).
+- any-mcp v0.4.0 plugin tool names: init_scripts_get, init_scripts_edit (code/any-mcp/src/any_mcp/orchestrator.py).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every session's orchestrator entry allows the init-scripts tools, and a test ties every allowed or advertised tool name to the pinned plugin, so the init Job's advice works.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend test_alone_session_tools_entry and test_hive_session_tools and add test_allowed_tools_exist_in_plugin; run the task's verify; expect failures on the missing names.
+- Green: add the constant and append it in orchestrator_allow; update README; run the task's verify and the ac4 command on the committed HEAD.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Discovered by the orch-render-session-tools implementer; verified by the orchestrator: reconciler/init.py:97 names orchestrator_init_scripts_edit, on_start.py HIVE_TOOLS/SESSION_TOOLS omit it.
+- test_allowed_tools_exist_in_plugin can load the plugin from the installed any-mcp (dev dependency) as test_plugin_parity does.
+- tests/test_nomenclature.py checks tracked files: run it after committing; avoid the word cluster.
