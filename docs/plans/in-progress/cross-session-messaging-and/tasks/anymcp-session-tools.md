@@ -1,6 +1,6 @@
 ---
 title: anymcp session tools
-status: in-progress
+status: done
 repo: any-mcp
 value: agents get the sessions_list and session_send tools in any-mcp 0.4.0
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, README.md, CHANGELOG.md, pyproject.toml, uv.lock, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_orchestrator_plugin.py tests/test_
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 99a57d0626d2e6c18473d850622ebed579ce1fa8
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 616636
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 518622, review 98014"
 ---
 
 # anymcp session tools
@@ -80,3 +80,5 @@ any-mcp 0.4.0 offers the two session tools; which agents see them stays the orch
 - The release workflow (`.github/workflows/release.yml`) requires the tag to equal `v` plus the pyproject version, so the version must be exactly 0.4.0.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
