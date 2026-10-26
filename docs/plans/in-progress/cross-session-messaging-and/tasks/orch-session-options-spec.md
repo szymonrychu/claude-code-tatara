@@ -1,6 +1,6 @@
 ---
 title: orch session options spec
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "presets and sessions can carry the two new options, and the server refuses Kubernetes access until it is configured"
 files: [src/agents_orchestrator/spec.py, src/agents_orchestrator/settings.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/sessions.py, openapi.json, README.md, tests/test_spec_session_options.py, tests/test_nomenclature.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_spec_session_
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8a8a560361aa1ce1eb682ec697c681f42d9b3937
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 1867270
+actual_roles: "impl 10, review 1"
+actual_role_tokens: "impl 1782487, review 84783"
 ---
 
 # orch session options spec
@@ -86,3 +86,5 @@ A preset or session spec can carry `session_messaging` and `kube_access`; nothin
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset. If pytest fails on imports, the `.venv` may carry a stale shebang (retro paste-env-contents-into-the): `uv sync` recreates it.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
