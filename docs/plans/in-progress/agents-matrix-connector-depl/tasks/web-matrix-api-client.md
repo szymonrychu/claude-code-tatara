@@ -1,6 +1,6 @@
 ---
 title: web matrix api client
-status: todo
+status: in-progress
 repo: agents-web
 value: the UI calls the connector API with types generated from its committed schema
 files: [openapi/matrix.json, openapi/matrix.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/matrix-schema.d.ts, src/matrix/api.ts, src/matrix/api.test.ts]

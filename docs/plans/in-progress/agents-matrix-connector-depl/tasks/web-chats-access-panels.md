@@ -1,6 +1,6 @@
 ---
 title: web chats access panels
-status: todo
+status: in-progress
 repo: agents-web
 value: "an operator manages allow and deny lists, people and the default preset in the UI"
 files: [src/matrix/UsersTable.tsx, src/matrix/RulesPanel.tsx, src/matrix/DefaultPreset.tsx, src/matrix/ChatsPage.tsx, src/matrix/Access.test.tsx]

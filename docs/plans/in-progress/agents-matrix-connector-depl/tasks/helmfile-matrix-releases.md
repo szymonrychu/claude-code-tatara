@@ -1,6 +1,6 @@
 ---
 title: helmfile matrix releases
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the connector and its own database are declared in namespace agents, logged in as the bot, behind SSO"
 files: [helmfile.yaml.gotmpl, values/agents-matrix-connector/common.yaml, values/agents-matrix-connector-db/common.yaml, tests/test_matrix_connector_release.py]

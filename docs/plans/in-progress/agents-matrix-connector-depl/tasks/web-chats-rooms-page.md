@@ -1,6 +1,6 @@
 ---
 title: web chats rooms page
-status: todo
+status: in-progress
 repo: agents-web
 value: "an operator sees every discovered chat, its access and recent messages, and allows or denies it"
 files: [src/matrix/ChatsPage.tsx, src/matrix/RoomsTable.tsx, src/matrix/RoomDrawer.tsx, src/matrix/RoomMessages.tsx, src/matrix/ChatsPage.test.tsx]

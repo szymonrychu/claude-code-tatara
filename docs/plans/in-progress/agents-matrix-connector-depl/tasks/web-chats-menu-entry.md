@@ -1,6 +1,6 @@
 ---
 title: web chats menu entry
-status: todo
+status: in-progress
 repo: agents-web
 value: the Chats page is reachable from the menu between Schedules and Presets
 files: [src/matrix/menu.tsx, src/backends/registry.ts, src/backends/registry.test.ts]

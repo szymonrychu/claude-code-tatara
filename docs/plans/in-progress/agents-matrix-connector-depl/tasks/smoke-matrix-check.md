@@ -1,6 +1,6 @@
 ---
 title: smoke matrix check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "every apply proves the connector is logged in, syncing and serving its API, without touching any chat"
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

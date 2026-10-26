@@ -1,6 +1,6 @@
 ---
 title: helmfile web chats entry
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the live UI shows the Chats page, pinned to the agents-web build that has it"
 files: [helmfile.yaml.gotmpl, values/agents-web/common.yaml, tests/test_web_release.py]

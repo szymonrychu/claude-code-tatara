@@ -1,6 +1,6 @@
 ---
 title: helmfile matrix secrets
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the connector's Matrix token and orchestrator service token are stored encrypted without rotating anything"
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-matrix-connector/default.secrets.yaml, values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml, .sops.yaml]

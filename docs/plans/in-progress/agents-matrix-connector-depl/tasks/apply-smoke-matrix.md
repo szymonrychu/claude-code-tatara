@@ -1,6 +1,6 @@
 ---
 title: apply smoke matrix
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the connector and the Chats page are live and proven by the smoke
 files: [MEMORY.md]
