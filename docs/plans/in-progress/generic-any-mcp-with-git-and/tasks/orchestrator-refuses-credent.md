@@ -1,6 +1,6 @@
 ---
 title: Orchestrator refuses credentials in plugin source URLs
-status: todo
+status: done
 repo: agents-orchestrator
 value: Tokens pasted into a plugin source never reach pod logs or caches
 files: [src/agents_orchestrator/spec.py, tests/test_spec_any_mcp_sources.py, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts=\"\" tests/te
 depends_on: [orch-render-plugin-sources]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: faedbd7564f86a7079049f14a095532ac23c7c75
 points: 1
 expected_minutes: 4
 expected_tokens: 656478
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 469386
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 290865, review 178521"
 ---
 
 # Orchestrator refuses credentials in plugin source URLs
@@ -53,3 +53,5 @@ A source with credentials in its URL is refused with a redacted message.
 
 - From the phase-5 security review (sonnet), LOW finding accepted as a fix. any-mcp v0.5.0 itself still accepts userinfo for local use; a later any-mcp release may align (noted, not in scope).
 - Keep the word cluster out of new text.
+
+- 2026-10-27 done
