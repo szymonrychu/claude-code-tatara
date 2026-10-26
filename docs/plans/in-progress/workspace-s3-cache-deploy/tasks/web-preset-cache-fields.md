@@ -1,6 +1,6 @@
 ---
 title: web preset cache fields
-status: todo
+status: in-progress
 repo: agents-web
 value: users turn the workspace cache on per preset and optionally name its key in the UI
 files: [src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx, openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]

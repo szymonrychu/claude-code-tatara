@@ -1,6 +1,6 @@
 ---
 title: deploy pin workspace cache
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployment pins the orchestrator and web builds that carry the workspace cache
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]

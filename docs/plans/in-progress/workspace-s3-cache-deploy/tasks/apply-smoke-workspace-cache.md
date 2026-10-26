@@ -1,6 +1,6 @@
 ---
 title: apply smoke workspace cache
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the workspace cache is live on rook-ceph and proven by the smoke
 files: [MEMORY.md]

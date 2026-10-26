@@ -1,6 +1,6 @@
 ---
 title: smoke workspace cache
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployed smoke proves a workspace written in one session is restored in the next
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

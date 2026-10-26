@@ -1,6 +1,6 @@
 ---
 title: helmfile cache bucket
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the deployment gets its own rook-ceph bucket wired into the orchestrator
 files: [raw/workspace-cache-bucket.pre.yaml, values/agents-orchestrator/common.yaml, tests/test_workspace_cache.py]

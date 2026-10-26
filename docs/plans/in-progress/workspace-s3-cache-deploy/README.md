@@ -2,7 +2,7 @@
 title: workspace s3 cache deploy
 blockers: [workspace-s3-cache]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-helmfile, agents-web]
 created: 2026-10-25
 ---
