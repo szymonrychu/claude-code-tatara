@@ -75,3 +75,4 @@ The orchestrator runs on any-mcp v0.5.0 (its spec validation understands `source
 - `tests/test_settings.py:test_env_names_documented_in_readme` requires every setting documented as `ORCH_<NAME>` in README `## Configuration`.
 - The golden diff is the any-mcp ref only; on_start.py does not change here.
 - Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`.
+- (orchestrator note 2026-10-27) orch-plugins-dev-dependency added `[tool.uv] override-dependencies = ["any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.4.0"]` to pyproject.toml because the plugins package's workspace pins any-mcp v0.5.0 and uv refused two URLs. This task's pin move to v0.5.0 must bump that override to v0.5.0 or remove it if uv no longer needs it, and uv.lock must resolve one any-mcp.
