@@ -1,6 +1,6 @@
 ---
 title: web matrix api client
-status: in-progress
+status: done
 repo: agents-web
 value: the UI calls the connector API with types generated from its committed schema
 files: [openapi/matrix.json, openapi/matrix.source, scripts/sync-api.mjs, scripts/sync-api.test.mjs, package.json, src/api/matrix-schema.d.ts, src/matrix/api.ts, src/matrix/api.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && node --test scripts/sync-api.test.mjs &&
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e679002beb6fb5e1d769896760d972ffa00f11a2
 points: 3
 expected_minutes: 7
 expected_tokens: 907602
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 460985
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 366214, review 94771"
 ---
 
 # web matrix api client
@@ -68,3 +68,5 @@ The UI can call every connector route with generated types.
 
 - Same shape as agents-webhook-microservice task web-webhook-api-client and `src/webhooks/api.ts`.
 - 2026-10-25 split: depends_on mxc-openapi-and-readme live in epic agents-matrix-connector; that epic is a blocker of this one, so they are done before this task runs.
+
+- 2026-10-26 done
