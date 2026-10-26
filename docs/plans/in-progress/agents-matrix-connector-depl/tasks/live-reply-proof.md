@@ -1,6 +1,6 @@
 ---
 title: live reply proof
-status: todo
+status: done
 repo: agents-helmfile
 value: "proves G1 live: an allowed Messenger message gets the agent's reply"
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: mise run diff
 depends_on: [apply-smoke-matrix]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8bce546bf6fe3f4e1e9f196cb56676d967c31b9c
 points: 1
 expected_minutes: 4
 expected_tokens: 668998
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 236276
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 132515, review 103761"
 ---
 
 # live reply proof
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-26 done
