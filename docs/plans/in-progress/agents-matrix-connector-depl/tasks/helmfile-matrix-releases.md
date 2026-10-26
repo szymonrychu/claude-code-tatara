@@ -1,6 +1,6 @@
 ---
 title: helmfile matrix releases
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the connector and its own database are declared in namespace agents, logged in as the bot, behind SSO"
 files: [helmfile.yaml.gotmpl, values/agents-matrix-connector/common.yaml, values/agents-matrix-connector-db/common.yaml, tests/test_matrix_connector_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_matrix_connect
 depends_on: [helmfile-matrix-secrets]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 20589c35949fe4779fe943118de4eb569919acf5
 points: 3
 expected_minutes: 7
 expected_tokens: 907602
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 11
+actual_tokens: 610173
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 511401, review 98772"
 ---
 
 # helmfile matrix releases
@@ -69,3 +69,5 @@ User request 2026-10-25, verbatim: 'agents-matrix-connector New microservice- is
 - 2026-10-25 split: depends_on mxc-dockerfile-and-ci, mxc-chart-network, mxc-e2e-api, mxc-operations-docs live in epic agents-matrix-connector; that epic is a blocker of this one, so they are done before this task runs.
 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
+
+- 2026-10-26 done
