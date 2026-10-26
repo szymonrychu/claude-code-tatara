@@ -1,6 +1,6 @@
 ---
 title: orch render plugin sources
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "agent pods install the orchestrator plugin from the plugins repo and each session's extra sources"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/e2e/test_e2e_kind.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_on_start.py t
 depends_on: [orch-any-mcp-sources-spec]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 0ad4102b1c01097e4aaea023639ec9e8b3ab78f7
 points: 5
 expected_minutes: 11
 expected_tokens: 1694306
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 5
+actual_tokens: 2176262
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 2001559, review 174703"
 ---
 
 # orch render plugin sources
@@ -76,3 +76,5 @@ Every agent pod installs the orchestrator plugin from the plugins repo at the pi
 - An install failure fails the onStart hook, which blocks the session (`on_error: deny`): that is the intended visible failure (design D4).
 - The kind e2e runs in CI (`mise run test:e2e`); locally ac6 only proves it collects.
 - Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`. Never the word "cluster" in new text.
+
+- 2026-10-27 done
