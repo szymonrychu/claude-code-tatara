@@ -38,17 +38,18 @@ Security review finding (LOW, accepted as a fix 2026-10-27): a remote source wit
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Same message form as the existing source checks; parity between orchestrator (spec.py remote_source_problem) and web (pluginSource.ts).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A source with credentials in its URL is refused with a redacted message.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the test; run the task's verify; expect failure.
+- Green: add the check; run the task's verify on the committed HEAD.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- From the phase-5 security review (sonnet), LOW finding accepted as a fix. any-mcp v0.5.0 itself still accepts userinfo for local use; a later any-mcp release may align (noted, not in scope).
+- Keep the word cluster out of new text.
