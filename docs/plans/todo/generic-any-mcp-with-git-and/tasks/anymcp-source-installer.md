@@ -52,17 +52,26 @@ Scope (any-mcp): new module `src/any_mcp/install.py`, tests in `tests/test_insta
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/any_mcp/install.py:Installed`, a frozen dataclass: `source: Source`, `directory: Path` (the plugin package directory), `distribution: str`, `sha: str | None` (None for local), `entry_points: dict[str, str]` (entry-point name to `module:attr`).
+- `install(source: Source, *, base_dir: Path, refresh: bool) -> Installed`: fetch when needed (D3 cache rules), pip-install, read entry points; `refresh=True` is an explicit install.
+- `installed(source: Source, *, base_dir: Path) -> Installed | None`: the manifest lookup without any git or pip call.
+- `cache_dir() -> Path`: `$ANY_MCP_CACHE_DIR`, else `Path(sys.prefix) / "any-mcp-sources"`; `manifest.json` inside it.
+- Injectable for tests: the subprocess runner for pip and the entry-point lookup (`importlib.metadata.distribution`); git always runs for real.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Given a `Source`, any-mcp ends with the plugin's distribution installed in its own environment, a manifest entry describing it, and its `any_mcp.plugins` entry points known, with no unnecessary fetch.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_install.py`, building bare git repos in `tmp_path` with a plugin package under a subdir (a tag, a branch, two commits), and the acceptance tests; run `uv run --frozen pytest -q tests/test_install.py`: fails on the missing module.
+- Green: write `src/any_mcp/install.py`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: a SHA source is never re-fetched even with refresh (test_cache_rules); a tag or branch with refresh is reinstalled only when the resolved SHA moved (test_cache_rules); local sources are editable and resolved against `base_dir` (test_local_source_editable_in_place); every URL and path argument to git follows `--` (test_subprocess_hygiene, by recording argv).
+- The by-SHA fallback test makes the `git fetch --depth 1 origin <sha>` call fail through the runner wrapper, since a `file://` server may allow it.
+- `pip` is `[sys.executable, "-m", "pip", "install", ...]` with `--no-input` and `--disable-pip-version-check`; a missing pip module is a `ConfigError` saying so (uv-made venvs have none).
+- After install call `importlib.invalidate_caches()` before reading entry points (anymap Unknowns).
+- Use `git -c protocol.file.allow=always` only in tests if newer git refuses `file://` in submodule-like contexts; never in src.
+- Security is the review focus: no `shell=True`, a timeout on every call, refs validated by the parser, symlink-resolved subdir inside the checkout.

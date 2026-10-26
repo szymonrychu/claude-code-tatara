@@ -60,17 +60,22 @@ Scope (any-mcp-tatara-plugins):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Distribution `any-mcp-tatara-orchestrator` 0.1.0, module `any_mcp_tatara_orchestrator`, `__all__ = ["OrchestratorPlugin"]`, entry point `orchestrator` in group `any_mcp.plugins`.
+- The plugin's contract is any-mcp v0.4.0's unchanged: plugin name `orchestrator`, config `OrchestratorConfig` (`base_url`, `token`, `session`, `agent`, `slug`, `max_replicas`, `static`, `hive`, `auto_compact_pct`), eleven `orchestrator_*` tools and their `/agent/v1` routes.
+- Source string the orchestrator renders (task orch-render-plugin-sources): `git::https://github.com/szymonrychu/any-mcp-tatara-plugins//orchestration/orchestrator?ref=v0.1.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator plugin installs from this repo through any-mcp v0.5.0's plugin sources and behaves exactly as it did inside any-mcp v0.4.0.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: copy the v0.4.0 test file with the new import, write `tests/test_source_install.py` and `tests/test_nomenclature.py`; run `uv run --frozen pytest -q`: fails on the missing package.
+- Green: package files, root dev group and `uv lock`; run the task's verify: passes. Run the ac2 and ac3 diff commands: print nothing beyond import and docstring lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy from the any-mcp tag, not a working tree: `git -C <any-mcp> show v0.4.0:src/any_mcp/orchestrator.py` and `v0.4.0:tests/test_orchestrator_plugin.py`, and README lines 74-111 for the plugin README.
+- Rulings and their pin tests: the plugin declares `any-mcp` unversioned (test_orchestrator_distribution_metadata), so it installs beside any-mcp v0.4.0 in the orchestrator dev env before its pin moves; the nomenclature guard keeps `PINNED_NAME = "test_cluster_key_refused"` (test_no_old_nomenclature).
+- The end-to-end test builds a fresh venv (`uv venv --seed`), installs any-mcp v0.5.0 from `git+https://github.com/szymonrychu/any-mcp@v0.5.0`, runs `any-mcp plugins install` for both source forms with `ANY_MCP_CACHE_DIR` in `tmp_path`, then `--list-tools` with an orchestrator entry whose config uses literal values (no network I/O at load: `test_no_io_at_load`). The git form needs the work committed (`git+file`-style HEAD sha, as in any-mcp's release tests).
+- Never the word "cluster" outside the pinned test name.

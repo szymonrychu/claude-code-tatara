@@ -46,17 +46,21 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/presets/pluginSource.ts`: `export function pluginSourceError(text: string): string | undefined` (undefined when valid; the caller stores the trimmed text).
+- Consumed by `src/sessions/sessionSpecForm.ts` in task web-preset-plugin-sources.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The web app refuses, with a readable reason, every source the orchestrator would refuse under design D1 and D8, and accepts every one it would accept.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/presets/pluginSource.test.ts` with the four `describe`/`it` groups named in the acceptance conditions as tables of accepted and refused strings; run `npx vitest run src/presets/pluginSource.test.ts`: fails on the missing module.
+- Green: write `src/presets/pluginSource.ts`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: only `git::https://` and `github.com/` forms are valid (refuses local and non-https sources; gate Q1 recommended answer); `?depth=` is refused naming `depth` (refuses malformed sources).
+- Mirror the accept and reject cases of any-mcp `tests/test_sources.py` (task anymcp-source-parser) for the forms D8 keeps; messages need the same meaning, not the same bytes.
+- Test names must contain the `-t` strings of the acceptance conditions.
+- No text uses the word "cluster" (`src/nomenclature.test.ts`); `npm run build` runs `tsc -b`.

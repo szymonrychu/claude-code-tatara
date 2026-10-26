@@ -59,17 +59,25 @@ Scope (any-mcp):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/any_mcp/config.py:PluginEntry`: `plugin: str | None = None`, `source: str | None = None`; a model validator enforcing design D2 and calling `any_mcp.sources.parse_source` on `source`.
+- `src/any_mcp/discovery.py:load_plugins(config, *, http_transport=None)`: unchanged signature; source entries go through `any_mcp.install.installed(...)`, else `install(..., refresh=False)`, base dir `config.base_dir`.
+- CLI: `any-mcp plugins install [--config PATH] [SOURCE ...]`, exit 0 on success, 78 with one stderr line on a ConfigError, printing one line per installed source (`<source> <distribution> <sha or local>`).
+- `tests/fixtures/source_plugin/`: a hatchling package `any-mcp-source-plugin` exposing entry point `source_plugin` with one tool.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An any-mcp config entry `{name: x, source: <git or local source>}` installs and loads like any other plugin, and `any-mcp plugins install` pre-installs sources for a hook.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_source_plugins.py` and the fixture package; run `uv run --frozen pytest -q tests/test_source_plugins.py`: fails.
+- Green: config, discovery and CLI changes; run the task's verify: passes.
+- Docs: update `docs/configuration.md`; run ac6 and ac7 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: with a source, `plugin` names an entry point, never `module:Class` (test_entry_source_validation); `plugins install --config` expands `${VAR}` only inside source strings (test_plugins_install_command, with a config whose plugin config names an unset variable); install-on-miss at startup does not refresh (test_load_plugins_source_entries).
+- The end-to-end test follows `tests/test_release.py`: `uv venv --seed` in `tmp_path`, install any-mcp from `ROOT` (the working tree, not a git URL, so uncommitted work counts), then run the venv's `any-mcp`; set `ANY_MCP_CACHE_DIR` into `tmp_path`. The git variant commits the fixture into a temp repo under a subdir and tags it.
+- The subcommand must not break `any-mcp --config ...` or `any-mcp --plugin ...` with no subcommand (ac6 covers the CLI tests).
+- `tests/test_docs_reference.py` requires every top-level config key and CLI flag documented; `ANY_MCP_CONFIG is the only variable` is no longer true and changes in configuration.md.
+- `tests/test_import_boundary.py` scans `src/any_mcp` and `examples`: keep fastmcp imports out of the new code.

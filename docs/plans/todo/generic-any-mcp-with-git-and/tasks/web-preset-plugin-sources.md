@@ -54,17 +54,23 @@ Scope (agents-web, base: the merged state of epic cross-session-messaging-and):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `sessionSpecForm.ts`: `FormValues.anyMcpSources: string[]`, `FormErrors.anyMcpSources?: (string | undefined)[]`, `SetKey` gains `'anyMcpSources'`; `toPresetSpec` writes `spec.any_mcp_sources` (trimmed rows) only when the list is non-empty.
+- `PresetForm.tsx`: "any-mcp plugins" section; add button `aria-label="Add any-mcp plugin"` with the `Add` icon; remove buttons `aria-label="Remove any-mcp plugin <n>"`; one single-line `TextField` per row labelled "any-mcp plugin <n>".
+- Generated: `openapi/orchestrator.json`, `openapi/orchestrator.source`, `src/api/schema.d.ts` from the orchestrator tree carrying task orch-any-mcp-sources-spec.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A preset author clicks "+", pastes a source per row, sees an inline error on a bad one, and the saved preset carries `any_mcp_sources` in row order; an untouched form stays sparse.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Sync: `npm run sync:api -- orchestrator` (with `--from <orchestrator tree>` if needed); run `npm run check:api`: passes.
+- Red: write the four PresetForm tests; run `npx vitest run src/presets/PresetForm.test.tsx`: fails.
+- Green: sessionSpecForm.ts and PresetForm.tsx; run the task's verify, then `npm test`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Row-list precedent: init scripts (`PresetForm.tsx` around the "Add init script" button) and `errors.initScripts?.[i]`; "+" icon precedent `src/chat/ScaleControl.tsx`.
+- Rulings and their pin tests: rows are trimmed on save (add rows and save); an empty row is an error, not silently dropped (validate and load); removing every row makes the field sparse again (remove rows).
+- The preset copy path (`copiedSpec`) copies the spec as is; no change needed.
+- No text uses the word "cluster" (`src/nomenclature.test.ts`); `npm run build` runs `tsc -b`.

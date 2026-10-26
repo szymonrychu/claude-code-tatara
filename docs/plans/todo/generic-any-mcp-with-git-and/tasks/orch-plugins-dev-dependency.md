@@ -51,17 +51,20 @@ Scope (agents-orchestrator, base: the merged state of epic cross-session-messagi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `pyproject.toml` `[dependency-groups].dev`: `any-mcp-tatara-orchestrator @ git+https://github.com/szymonrychu/any-mcp-tatara-plugins@v0.1.0#subdirectory=orchestration/orchestrator`.
+- Test import: `from any_mcp_tatara_orchestrator import OrchestratorPlugin`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator test suite drives the released plugins-repo plugin, so any-mcp can move to v0.5.0 (which has no `any_mcp.orchestrator`) without breaking a test.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the four imports; run the task's verify: fails with ModuleNotFoundError.
+- Green: add the dev dependency, `uv lock`, `uv sync`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- any-mcp stays at v0.4.0 here; both modules coexist because the plugin package declares `any-mcp` unversioned.
+- Leave the rendered `plugin: any_mcp.orchestrator:OrchestratorPlugin` strings in test_on_start.py alone; task orch-render-plugin-sources changes them with on_start.py.
+- Orchestrator tests need Docker (testcontainers; check the Docker VM disk first) and run with `VIRTUAL_ENV` unset; if pytest fails with import errors from a stale `.venv` shebang, recreate it with `uv sync`.

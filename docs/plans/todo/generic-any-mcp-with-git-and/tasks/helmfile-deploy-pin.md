@@ -56,17 +56,20 @@ Scope (agents-helmfile, base: the merged state of epic cross-session-messaging-a
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/common.yaml` `env`: `ORCH_ANY_MCP_REPO`, `ORCH_ANY_MCP_REF: v0.5.0`, `ORCH_ANY_MCP_PLUGINS_REPO: https://github.com/szymonrychu/any-mcp-tatara-plugins`, `ORCH_ANY_MCP_PLUGINS_REF: v0.1.0` (read by `scripts/smoke.sh` in task helmfile-smoke-plugin-tools).
+- Chart and image pins: `0.1.0-main.<sha7>` and `<sha7>` for agents-orchestrator and agents-web.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run diff` shows only the new orchestrator and web releases with the new settings; after the apply new sessions install any-mcp v0.5.0 and the orchestrator plugin from the plugins repo.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the pinned values in the three test files; run `uv run --frozen pytest -q tests/test_orchestrator_release.py tests/test_web_release.py tests/test_smoke_script.py`: fails.
+- Green: helmfile.yaml.gotmpl and the two values files, README; run the task's verify, then `mise run test`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The shas come from Rollout R3 through `ticket.py amend` before dispatch (precedent: epic leader-auto-handover task helmfile-deploy-pin); an all-digit sha7 is quoted in YAML.
+- The apply, diff and smoke are orchestrator steps (Rollout R4, R5), never this task's.
+- Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py`.

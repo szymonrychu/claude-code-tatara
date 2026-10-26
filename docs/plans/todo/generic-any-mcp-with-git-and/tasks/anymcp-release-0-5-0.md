@@ -56,17 +56,20 @@ Scope (any-mcp):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Version `0.5.0` everywhere the release tests pin it; CHANGELOG section `## v0.5.0` (the release workflow extracts it verbatim).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The any-mcp tree is ready for the orchestrator to tag `v0.5.0` (Rollout R1): versions agree, CHANGELOG and MEMORY explain the breaking change.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change the pinned versions in the three test files; run `uv run --frozen pytest -q tests/test_release.py tests/test_package.py tests/test_docs_links.py`: fails.
+- Green: bump pyproject, `uv lock`, README pins, CHANGELOG, MEMORY; commit, then run `mise run test` (the install tests read the committed HEAD): passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_release.py` installs from `git+file://ROOT@<HEAD sha>`: commit before running the full suite or those tests see the old tree.
+- CHANGELOG style: one or two summary lines with the "Breaking:" prefix, then `- ` bullets wrapped near 100 columns (see v0.3.0).
+- MEMORY entries are `## YYYY-MM-DD - title`, newest first.
+- The tag push is Rollout R1, not this task.

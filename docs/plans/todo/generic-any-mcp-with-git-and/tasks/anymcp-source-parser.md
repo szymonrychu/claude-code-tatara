@@ -52,17 +52,22 @@ Scope (any-mcp), the grammar of design D1:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/any_mcp/sources.py:Source`, a frozen dataclass: `raw: str`, `kind: Literal["local", "git"]`, `path: str | None` (local only, verbatim), `url: str | None` (git only, without `git::`, shorthand expanded to `https://github.com/<owner>/<repo>.git`), `subdir: str` (`""` when none), `ref: str | None`.
+- `src/any_mcp/sources.py:parse_source(text: str) -> Source`, raising `any_mcp.errors.ConfigError` whose message starts with `plugin source '<text>': `.
+- Consumers: `any_mcp.install` (task anymcp-source-installer), `any_mcp.config` (task anymcp-source-plugin-loading), agents-orchestrator `spec.py` (task orch-any-mcp-sources-spec) imports `parse_source` and reads `kind`, `url`, `subdir`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every accepted form of design D1 parses into a `Source`, and every refused form fails with one `ConfigError` line that says what is wrong.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_sources.py` with the eight acceptance tests as parametrised accept and reject tables; run `uv run --frozen pytest -q tests/test_sources.py`: fails on the missing module.
+- Green: write `src/any_mcp/sources.py`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: local wins only on `./`, `../`, `/` prefixes (test_local_sources); the first `//` after the scheme's `://` splits the subdir (test_git_sources, with a URL whose path has no `//`); `?ref=` is parsed after the subdir (test_git_sources); a shorthand keeps a given `.git` suffix and adds none twice (test_github_shorthand); `depth` is named in the error (test_unsupported_query_refused).
+- Pure string work: no I/O, no git call. Use `urllib.parse` only where it does not normalise the URL in surprising ways; the url field is the user's URL minus `git::` and the `//subdir?query` tail.
+- The orchestrator restricts further (https only); this parser stays generic (https, ssh, file).
+- Never the word "cluster" in new text.

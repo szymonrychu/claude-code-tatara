@@ -50,17 +50,21 @@ Scope (any-mcp):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Removed: module `any_mcp.orchestrator` (`OrchestratorPlugin`, `OrchestratorConfig`); no alias anywhere.
+- Kept: `any_mcp.errors.error_result`, `redact`, `UpstreamError` (the moved plugin imports them).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+any-mcp's tracked tree has no platform-specific plugin, its README points platform users at any-mcp-tatara-plugins and plugin sources, and the full suite is green.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_generic.py`; run `uv run --frozen pytest -q tests/test_generic.py`: ac1, ac2 (README excluded from ac2), ac3 and ac4 fail.
+- Green: `git rm src/any_mcp/orchestrator.py tests/test_orchestrator_plugin.py tests/test_nomenclature.py`; rewrite the README section; run the task's verify, then `mise run test`: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- TDD exception for the deletions: deletion pinned by a retirement test (`test_orchestrator_plugin_retired` asserts on `git ls-files`, never on the filesystem).
+- Ruling and its pin test: ac2 scans only `src/`, `examples/` and `docs/` (test_no_platform_names); CHANGELOG and MEMORY keep their history.
+- The README Plugin sources section documents the command from task anymcp-source-plugin-loading; keep `tests/test_docs_links.py` green (README links every docs page, Quickstart equals `examples/hello/hello.py`).
+- The plugin's README content (tools table) is reused by task plugins-orchestration-plugin from any-mcp `v0.4.0`, so nothing needs saving here.

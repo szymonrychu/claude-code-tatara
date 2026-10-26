@@ -49,17 +49,21 @@ Scope (agents-helmfile `scripts/smoke.sh`, in the style of its existing steps, s
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `scripts/smoke.sh`: reads `ORCH_ANY_MCP_PLUGINS_REF` from the orchestrator values the way it reads `ORCH_ANY_MCP_REF`; failure lines `smoke: FAIL: <check>`; new session name `smoke-src-<ts>`.
+- In-pod commands: `/opt/any-mcp/bin/pip show any-mcp-tatara-orchestrator`, `cat /opt/any-mcp/etc/any-mcp.yaml`, `/opt/any-mcp/bin/any-mcp --config /opt/any-mcp/etc/any-mcp.yaml --list-tools`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` after the apply proves the live sessions get the orchestrator tools from the plugins repo at the pinned tag and that a per-session extra source installs in its pod.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the four tests with the existing fake kubectl and curl harness (fake answers for pip show, the config cat and list-tools); run `uv run --frozen pytest -q tests/test_smoke_script.py`: fails.
+- Green: the two steps and the trap entry in smoke.sh, README; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: the extra source uses the petstore example at the any-mcp tag from the values (test_extra_plugin_source_step asserts the created spec); the list-tools output is matched on `orchestrator_sessions_list` and a `petstore_` prefix, never on a full list (test_orchestrator_plugin_from_plugins_repo, test_extra_plugin_source_step).
+- `--list-tools` in the pod expands `${ORCH_AGENT_*}` from the container env; the exec must not echo it (test_plugin_steps_print_no_token).
+- Live run is Rollout R5, by the orchestrator, not this task.
+- Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py` (`in-cluster` is allowed).

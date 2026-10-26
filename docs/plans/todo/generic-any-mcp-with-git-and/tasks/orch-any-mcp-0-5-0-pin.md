@@ -58,17 +58,20 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.any_mcp_ref = "v0.5.0"`, `any_mcp_plugins_repo: str = "https://github.com/szymonrychu/any-mcp-tatara-plugins"`, `any_mcp_plugins_ref: str = "v0.1.0"` (env `ORCH_ANY_MCP_PLUGINS_REPO`, `ORCH_ANY_MCP_PLUGINS_REF`), the ref validated by `_TAG_RE`.
+- Consumed by task orch-render-plugin-sources (`k8s/on_start.py`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator runs on any-mcp v0.5.0 (its spec validation understands `source` entries) and knows the plugins repo and tag to render.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `test_defaults`, add `test_any_mcp_plugins_ref_must_be_release_tag` and `test_plugins_dev_pin_matches_settings_ref`; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py`: fails.
+- Green: settings, pyproject, `uv lock`, README; regenerate goldens with `UPDATE_GOLDEN=1`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_settings.py:test_env_names_documented_in_readme` requires every setting documented as `ORCH_<NAME>` in README `## Configuration`.
+- The golden diff is the any-mcp ref only; on_start.py does not change here.
+- Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`.

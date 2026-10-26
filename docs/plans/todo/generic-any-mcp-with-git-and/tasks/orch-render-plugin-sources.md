@@ -56,17 +56,23 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `k8s/on_start.py`: reserved entry `{"name": "orchestrator", "namespace": "orchestrator", "source": f"git::{settings.any_mcp_plugins_repo}//orchestration/orchestrator?ref={settings.any_mcp_plugins_ref}", "allow": ..., "config": ...}`; user source entries `{"name": source_plugin_name(s), "source": s}`.
+- onStart script order: install any-mcp when `.ref` differs, write the config heredoc, `/opt/any-mcp/bin/any-mcp plugins install --config /opt/any-mcp/etc/any-mcp.yaml`, `/opt/any-mcp/bin/any-mcp --help >/dev/null`.
+- Unchanged: `RESERVED_PLUGIN`, `main_agent_only_tools = ["mcp__any-mcp__orchestrator_*"]`, the any-mcp MCP server command, `on_error: deny`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every agent pod installs the orchestrator plugin from the plugins repo at the pinned tag plus the session's extra sources before claude starts, and its leader sees the same orchestrator tools as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `test_reserved_entry_is_plugins_repo_source`, `test_any_mcp_sources_rendered`, `test_on_start_installs_plugin_sources`, `test_config_hash_follows_plugin_sources`, and update the inaccurate entry assertions named in the Requirement; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_on_start.py tests/test_render.py`: fails.
+- Green: on_start.py; regenerate goldens with `UPDATE_GOLDEN=1`; update the e2e assertions; run the task's verify: passes. README and MEMORY; run ac5, ac6, ac7: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: the install line runs on every onStart run, not only on a new any-mcp ref (test_on_start_installs_plugin_sources: the stub `any-mcp` logs `plugins install` on the second run too); source entries sit before the reserved entry (test_any_mcp_sources_rendered); the reserved entry exists for exactly the sessions it did before (test_reserved_entry_is_plugins_repo_source, both alone and hive).
+- The `test_render.py` stub `python3 -m venv` writes fake `pip` and `any-mcp` scripts that log their argv: extend the existing pattern.
+- An install failure fails the onStart hook, which blocks the session (`on_error: deny`): that is the intended visible failure (design D4).
+- The kind e2e runs in CI (`mise run test:e2e`); locally ac6 only proves it collects.
+- Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`. Never the word "cluster" in new text.

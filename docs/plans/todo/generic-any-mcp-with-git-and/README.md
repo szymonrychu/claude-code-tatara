@@ -1,6 +1,6 @@
 ---
 title: Generic any-mcp with git and local plugin sources
-blockers: []
+blockers: [cross-session-messaging-and]
 stage: build
 owner: ""
 repos: [any-mcp, any-mcp-tatara-plugins, agents-orchestrator, agents-web, agents-helmfile]

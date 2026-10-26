@@ -56,17 +56,22 @@ Scope (any-mcp-tatara-plugins):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `.mise.toml` tasks `install`, `test`, `lint`, `fmt` (the commands in the Requirement); later tasks and CI call only these.
+- Layout contract pinned by `tests/test_repo.py::test_plugin_layout`: `<topic>/<plugin>/pyproject.toml` with an `[project.entry-points."any_mcp.plugins"]` table, `<topic>/<plugin>/src/`, `<topic>/<plugin>/tests/`; every such directory is a uv workspace member.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run install && mise run test && mise run lint` pass on Python 3.12 locally and in CI, and the README tells a plugin author where a plugin goes and how users reference it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_repo.py`; run `uv run pytest -q tests/test_repo.py` (after a first `.mise.toml` python change so the interpreter is 3.12): fails.
+- Green: `.mise.toml`, root `pyproject.toml`, `uv lock`, CI workflow, README; `git rm tests/test_smoke.py`; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The scaffold's `.mise.toml` pins `python = "3.14.6"`, `uv = "0.12.23"`, `ruff`, `pipx:pytest`; replace with any-mcp's shape (`python = "3.12"`, `uv`, `_.python.venv`).
+- The workspace member glob must not pick up `tests/` or `.github/` (uv refuses a member without a pyproject); with no plugin yet, ac4 holds vacuously and becomes concrete in task plugins-orchestration-plugin.
+- Same-named test modules in several plugins need pytest `--import-mode=importlib` or unique names: choose one and pin it in test_repo.py.
+- CI action shas: copy any-mcp's `.github/workflows/ci.yml` pins.
+- The repo is public and its CI needs no secrets (user, 2026-10-26).

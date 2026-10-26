@@ -56,17 +56,23 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.py:SessionSpec.any_mcp_sources: list[str] | None = None`; `ANY_MCP_SOURCES_MAX = 20`; `ANY_MCP_SOURCE_MAX_CHARS = 500`.
+- `spec.py:source_plugin_name(source: str) -> str`: the D8 derivation on a parsed source (no validation of the result; validation reports bad names).
+- Errors keep the `validate_spec` / field-validator style: `any_mcp_sources[<i>]: <reason>`.
+- OpenAPI: `SessionSpec.any_mcp_sources` as an optional array of strings (consumed by task web-preset-plugin-sources through `npm run sync:api`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Presets and sessions accept a sparse list of remote plugin sources, refuse anything the pods could not install or that would clash with another plugin name, and the API schema shows the field.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_spec_any_mcp_sources.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_spec_any_mcp_sources.py`: fails.
+- Green: spec.py; regenerate `openapi.json` (`uv run python -m agents_orchestrator.api.openapi > openapi.json`); README and MEMORY; run the task's verify: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: remote https git only, local, ssh and file refused (test_refused_sources; gate Q1 recommended answer); names collide also with the settings default any-mcp config when the spec has none (test_name_collisions_refused); a stored preset is re-validated on PUT like other fields (no "unchanged from stored" exemption).
+- Persistence needs no migration: spec is jsonb; presets dump `exclude_unset`, sessions `exclude_none`, so `None` stays sparse (test_sparse_when_unset).
+- Precedent for list caps and messages: `init_scripts` (`spec.py:483`).
+- Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`. Never the word "cluster" in new text (`tests/test_nomenclature.py`).
