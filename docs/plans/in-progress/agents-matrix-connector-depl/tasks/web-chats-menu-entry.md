@@ -1,6 +1,6 @@
 ---
 title: web chats menu entry
-status: in-progress
+status: done
 repo: agents-web
 value: the Chats page is reachable from the menu between Schedules and Presets
 files: [src/matrix/menu.tsx, src/backends/registry.ts, src/backends/registry.test.ts]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/backends/registry.tes
 depends_on: [web-chats-access-panels]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 162770e3207614d19913e7c6426cb40b9b5390db
 points: 1
 expected_minutes: 5
 expected_tokens: 678580
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 194601
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 136995, review 57606"
 ---
 
 # web chats menu entry
@@ -58,3 +58,5 @@ With `config.json` listing `{id: matrix, label: Chats, basePath: /matrix/api/v1}
 ## Notes
 
 - Same shape as agents-webhook-microservice task web-webhook-menu-entry.
+
+- 2026-10-26 done
