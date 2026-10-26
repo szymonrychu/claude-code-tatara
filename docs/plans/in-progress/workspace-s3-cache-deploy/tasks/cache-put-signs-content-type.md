@@ -1,6 +1,6 @@
 ---
 title: cache put signs content type
-status: todo
+status: done
 repo: agents-orchestrator
 value: workspace cache saves succeed on Ceph RGW
 files: [src/agents_orchestrator/cache/presign.py, src/agents_orchestrator/cache/transfer.py, tests/test_cache_presign.py, tests/test_cache_cli.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -o addopts='-m \"not integration and not e2e\"' tests/
 depends_on: []
 model: ""
 review: ""
-verified_head: ""
+verified_head: 9c8bb44
 points: 1
 expected_minutes: 4
 expected_tokens: 669602
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 440023
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 339337, review 100686"
 ---
 
 # cache put signs content type
@@ -54,3 +54,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 done
