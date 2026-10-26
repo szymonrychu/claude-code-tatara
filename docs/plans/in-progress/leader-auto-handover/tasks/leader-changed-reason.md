@@ -1,6 +1,6 @@
 ---
 title: leader changed reason
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: API and stream clients see why leadership moved
 files: [src/agents_orchestrator/db/leadership.py, src/agents_orchestrator/api/streams.py, tests/test_leader_views.py, tests/test_leadership_pass.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_leader_views.py tests/test_leaders
 depends_on: [leadership-auto-handover, reconciler-leader-pod-hold]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8bb46459db60b14e86d848fa245c6b9ff7ea3f98
 points: 2
 expected_minutes: 6
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 591802
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 428969, review 162833"
 ---
 
 # leader changed reason
@@ -71,3 +71,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
