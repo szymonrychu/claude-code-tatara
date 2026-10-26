@@ -1,6 +1,6 @@
 ---
 title: orch session message sender
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a message from another session reaches the target's leader as a turn that names the sender session"
 files: [src/agents_orchestrator/db/migrations/0007_session_messages.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/dispatcher/session_frame.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_migrations.py, tests/test_session_message_delivery.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_session_messa
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: dc9d165fe99d1cc45777e7afe7dfa0b7a1515e71
 points: 5
 expected_minutes: 12
 expected_tokens: 1686779
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 1551801
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 1480703, review 71098"
 ---
 
 # orch session message sender
@@ -89,3 +89,5 @@ A queued message that carries a sender session is delivered to the target's lead
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
