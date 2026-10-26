@@ -1,6 +1,6 @@
 ---
 title: orchestrator repin ab37f1e
-status: todo
+status: done
 repo: agents-helmfile
 value: the orchestrator cache self-repair ships with the connector apply
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [smoke-matrix-check]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 2a8376b2336d83a7d270bfe5e1b44a168c7324c5
 points: 1
 expected_minutes: 4
 expected_tokens: 669602
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 182128
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 124122, review 58006"
 ---
 
 # orchestrator repin ab37f1e
@@ -58,3 +58,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-26 done
