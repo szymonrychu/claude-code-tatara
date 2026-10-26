@@ -1,6 +1,6 @@
 ---
 title: web preset plugin sources
-status: in-progress
+status: done
 repo: agents-web
 value: "users paste plugin source links into the preset form, one row per source"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run build && mise
 depends_on: [web-plugin-source-parser, orch-any-mcp-sources-spec]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 97b68456158eeb8ede9460b5dea424c6fcd48bdb
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 754804
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 628369, review 126435"
 ---
 
 # web preset plugin sources
@@ -74,3 +74,5 @@ A preset author clicks "+", pastes a source per row, sees an inline error on a b
 - Rulings and their pin tests: rows are trimmed on save (add rows and save); an empty row is an error, not silently dropped (validate and load); removing every row makes the field sparse again (remove rows).
 - The preset copy path (`copiedSpec`) copies the spec as is; no change needed.
 - No text uses the word "cluster" (`src/nomenclature.test.ts`); `npm run build` runs `tsc -b`.
+
+- 2026-10-27 done
