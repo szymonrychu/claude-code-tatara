@@ -1,6 +1,6 @@
 ---
 title: orch render session tools
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the leader of every session, hive or alone, sees the session tools"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/e2e/test_e2e_kind.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_on_start.py t
 depends_on: [orch-agent-session-messaging, orch-any-mcp-pin-0-4-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 87c7833de203c4bb53159591197429159b98ddb7
 points: 3
 expected_minutes: 6
 expected_tokens: 553016
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 1565873
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 1399565, review 166308"
 ---
 
 # orch render session tools
@@ -83,3 +83,5 @@ The leader of every session, hive or alone, sees the two session tools; what eac
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
