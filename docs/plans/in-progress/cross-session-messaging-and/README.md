@@ -1,7 +1,7 @@
 ---
 title: Cross-session messaging and Kubernetes access session options
 blockers: []
-stage: review
+stage: build
 owner: Szymon Richert
 repos: [agents-orchestrator, any-mcp, agents-web, agents-helmfile]
 created: 2026-10-26
