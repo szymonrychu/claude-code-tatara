@@ -1,6 +1,6 @@
 ---
 title: chart kube access rbac
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the deployment can grant full Kubernetes access to opted-in sessions behind one chart value
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/serviceaccount.yaml, chart/agents-orchestrator/templates/kube-access-binding.yaml, chart/agents-orchestrator/templates/configmap.yaml, tests/test_chart_kube_access.py, tests/test_chart_config.py, tests/test_chart_deployments.py, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run pytest tests/test_chart_*.py -q && mise run
 depends_on: [orch-session-options-spec]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 93821049e05ebbabe35151cd43f24efa8be7711a
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 874456
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 704670, review 169786"
 ---
 
 # chart kube access rbac
@@ -81,3 +81,5 @@ Installing the chart with `kubeAccess.enabled` gives the orchestrator a privileg
 - `tests/helm_render.py` renders the chart; `ci/lint-values.yaml` is the lint input.
 - `cluster-admin`, `ClusterRole` and `ClusterRoleBinding` are allowed by the nomenclature guard (after task orch-session-options-spec); no other "cluster" word.
 - Chart tests need helm on PATH; run with `VIRTUAL_ENV` unset.
+
+- 2026-10-26 done
