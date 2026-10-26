@@ -1,6 +1,6 @@
 ---
 title: orch plugins dev dependency
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: orchestrator tests exercise the released plugins-repo orchestrator plugin
 files: [pyproject.toml, uv.lock, tests/test_on_start.py, tests/test_agent_scale.py, tests/test_agent_init_scripts.py, tests/test_agent_session_messaging.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_on_start.py t
 depends_on: [plugins-orchestration-plugin]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 77e270ecec6cedbc4e71fe0b44df0e3b7e1abd88
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 569303
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 479430, review 89873"
 ---
 
 # orch plugins dev dependency
@@ -68,3 +68,5 @@ The orchestrator test suite drives the released plugins-repo plugin, so any-mcp 
 - any-mcp stays at v0.4.0 here; both modules coexist because the plugin package declares `any-mcp` unversioned.
 - Leave the rendered `plugin: any_mcp.orchestrator:OrchestratorPlugin` strings in test_on_start.py alone; task orch-render-plugin-sources changes them with on_start.py.
 - Orchestrator tests need Docker (testcontainers; check the Docker VM disk first) and run with `VIRTUAL_ENV` unset; if pytest fails with import errors from a stale `.venv` shebang, recreate it with `uv sync`.
+
+- 2026-10-27 done
