@@ -1,6 +1,6 @@
 ---
 title: restore resets workdir on unreadable archive
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: A corrupt cache key repairs itself instead of blocking its key forever
 files: [src/agents_orchestrator/cache/transfer.py, src/agents_orchestrator/reconciler/cache.py, tests/test_cache_cli.py, tests/test_cache_save.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: mise run test
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6ec2d89
 points: 3
 expected_minutes: 6
 expected_tokens: 999852
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 1164665
+actual_roles: "impl 7, review 3"
+actual_role_tokens: "impl 951619, review 213046"
 ---
 
 # restore resets workdir on unreadable archive
@@ -67,3 +67,5 @@ Every acceptance condition holds on the committed HEAD.
 - See the Requirement and the epic design.md.
 - DB tests: Docker disk is full, so testcontainers fail; use the shared local Postgres at postgresql://test@127.0.0.1:55433/postgres (trust auth) through a temporary, uncommitted fixture override with a fresh template DB name (for example `csr_tpl_1`). Run the full suite through plugins/workbench/skills/worktree-merge/scripts/suite-lock.sh in the workbench root.
 - D11 in MEMORY.md is the save allow-list decision this amends; keep the allow-list shape (fail safe), only add `reset`.
+
+- 2026-10-26 done
