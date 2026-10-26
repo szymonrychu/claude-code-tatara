@@ -1,6 +1,6 @@
 ---
 title: Agent ServiceAccounts do not inherit api annotations
-status: todo
+status: done
 repo: agents-orchestrator
 value: Cloud-identity annotations on the api ServiceAccount can never leak to agent pods or Jobs
 files: [chart/agents-orchestrator/templates/serviceaccount.yaml, chart/agents-orchestrator/values.yaml, tests/test_chart_kube_access.py, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run pytest tests/test_chart_kube_access.py -q -
 depends_on: [chart-kube-access-rbac]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 876e70f70b8add65eca1840a259853353a3a4ad8
 points: 1
 expected_minutes: 4
 expected_tokens: 661202
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 235424
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 172723, review 62701"
 ---
 
 # Agent ServiceAccounts do not inherit api annotations
@@ -56,3 +56,5 @@ No agent-facing ServiceAccount can pick up the api ServiceAccount's annotations;
 
 - From the phase-5 security review (security-researcher, sonnet), verified by reading serviceaccount.yaml lines 37-40 and 55-58.
 - Keep the word cluster out of new text except cluster-admin, ClusterRole, ClusterRoleBinding; nomenclature checks tracked files, so run it after committing.
+
+- 2026-10-26 done
