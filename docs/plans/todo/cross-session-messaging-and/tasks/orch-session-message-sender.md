@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Goal G1 (epic README), verbatim: "... and receives messages sent to it as turns on its leader that name the sender session." Epic description, verbatim: "Messages go through the orchestrator's existing message queue, so delivery is durable and follows the target's leader." Design D8 and D9.
+Goal G1 (epic README), verbatim: "... every session receives messages sent to it as turns on its leader that name the sender session." Epic description, verbatim: "Messages go through the orchestrator's existing message queue, so delivery is durable and follows the target's leader." Design D8 and D9.
 
 Scope (agents-orchestrator):
 - New migration `src/agents_orchestrator/db/migrations/0007_session_messages.sql`, idempotent like 0003 and 0006: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS sender_session_id uuid` (no foreign key: a purged sender leaves the row intact), `ADD COLUMN IF NOT EXISTS sender_slug text`, `ADD COLUMN IF NOT EXISTS hop integer NOT NULL DEFAULT 0`, and `CREATE INDEX IF NOT EXISTS` on `messages (sender_session_id, created_at)`.
@@ -87,3 +87,5 @@ A queued message that carries a sender session is delivered to the target's lead
 - Precedents: `0006_compaction.sql` for an idempotent ALTER; `tests/test_migrations.py::test_0006_compaction_column` for the test shape; `tests/test_queue_leader_routing.py` for leader-claim fixtures; `tests/test_dispatcher.py` and `tests/fakes/fake_wrapper.py` for capturing submitted turns.
 - Do not write the word "cluster" in new lines (nomenclature guard).
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
+
+- 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
