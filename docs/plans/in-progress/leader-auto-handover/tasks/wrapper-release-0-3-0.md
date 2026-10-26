@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.3.0
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: the orchestrator and the live agents can run a wrapper that emits compacting
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_packaging.py && uv run ruff check . && uv r
 depends_on: [wrapper-compacting-event]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6d1d36ef05da8f88467915b0ae340a6c15b26347
 points: 1
 expected_minutes: 4
 expected_tokens: 662742
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 16
+actual_tokens: 302582
+actual_roles: "impl 15, review 1"
+actual_role_tokens: "impl 222024, review 80558"
 ---
 
 # wrapper release 0.3.0
@@ -62,3 +62,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
