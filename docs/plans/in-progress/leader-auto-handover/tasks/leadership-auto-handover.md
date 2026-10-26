@@ -1,6 +1,6 @@
 ---
 title: leadership auto handover
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a compacted or leaving leader passes leadership to an agent that stays, without the user acting"
 files: [src/agents_orchestrator/db/leadership.py, tests/test_leadership_pass.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_leadership_pass.py tests/test_queu
 depends_on: [compaction-status-projection]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d2ca76c8efe33e088a71b41117adfb526d579786
 points: 5
 expected_minutes: 11
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 18
+actual_tokens: 1400013
+actual_roles: "impl 17, review 1"
+actual_role_tokens: "impl 1191369, review 208644"
 ---
 
 # leadership auto handover
@@ -88,3 +88,5 @@ See the Requirement and the acceptance conditions above.
 See the Requirement and the acceptance conditions above.
 
 - 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): findings 1, 2, 4, 6, 7, 8
+
+- 2026-10-26 done
