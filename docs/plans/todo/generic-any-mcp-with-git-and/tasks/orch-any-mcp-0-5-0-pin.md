@@ -1,0 +1,74 @@
+---
+title: orch any-mcp 0.5.0 pin
+status: todo
+repo: agents-orchestrator
+value: the orchestrator pins generic any-mcp v0.5.0 and the plugins repo tag in one place each
+files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, tests/test_settings.py, tests/test_images.py, README.md, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml]
+verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_on_start.py && mise run lint"
+depends_on: [orch-plugins-dev-dependency, anymcp-release-0-5-0]
+model: opus
+review: ""
+verified_head: ""
+points: 2
+expected_minutes: 5
+expected_tokens: 546295
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
+---
+
+# orch any-mcp 0.5.0 pin
+
+## Requirement
+
+Goal G4 (epic README), verbatim: "agents-orchestrator renders the orchestrator plugin from the plugins repo at a pinned ref and accepts a list of extra plugin sources per preset and session, installed in agent pods." Design D7, verbatim: "New settings `any_mcp_plugins_repo` (`ORCH_ANY_MCP_PLUGINS_REPO`, default `https://github.com/szymonrychu/any-mcp-tatara-plugins`) and `any_mcp_plugins_ref` (`ORCH_ANY_MCP_PLUGINS_REF`, default `v0.1.0`, release tag only like `ORCH_ANY_MCP_REF`). ... Settings default `any_mcp_ref` `v0.5.0`." Design D9, verbatim: "`tests/test_images.py` pins the dev dependency tag to `any_mcp_plugins_ref`, as it pins any-mcp's."
+
+Needs a merged upstream: any-mcp tag `v0.5.0` (design Rollout R1). Do not start before `git ls-remote https://github.com/szymonrychu/any-mcp refs/tags/v0.5.0` prints a sha.
+
+Scope (agents-orchestrator):
+- `src/agents_orchestrator/settings.py`: `any_mcp_ref = "v0.5.0"`; new `any_mcp_plugins_repo`, `any_mcp_plugins_ref` with the `_TAG_RE` validator of `any_mcp_ref`.
+- `pyproject.toml`: `any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.5.0`; `uv.lock` refreshed.
+- `README.md`: Configuration rows `ORCH_ANY_MCP_PLUGINS_REPO` and `ORCH_ANY_MCP_PLUGINS_REF`; the `ORCH_ANY_MCP_REF` default and the `## Images` any-mcp sentence name `v0.5.0`, and that sentence names the plugins dev dependency pin too.
+- `tests/test_settings.py::test_defaults` asserts any-mcp `v0.4.0`: no longer accurate because the pin moves to v0.5.0 (design D7); it asserts `v0.5.0` and the two plugins defaults. New `test_any_mcp_plugins_ref_must_be_release_tag`.
+- `tests/test_images.py`: new `test_plugins_dev_pin_matches_settings_ref`.
+- `tests/golden/session_single.yaml`, `tests/golden/session_two_peers.yaml`: regenerated with the golden helper of `tests/test_render.py` (`UPDATE_GOLDEN=1`; the onStart script names the ref).
+
+## Acceptance conditions
+
+- ac1: the pyproject any-mcp pin, uv.lock and the settings default agree on v0.5.0 [evidence: test:tests/test_images.py::test_pyproject_any_mcp_pin_matches_settings_ref]
+- ac2: the plugins dev dependency tag and uv.lock agree with the any_mcp_plugins_ref default [evidence: test:tests/test_images.py::test_plugins_dev_pin_matches_settings_ref]
+- ac3: the defaults are any_mcp_ref v0.5.0, any_mcp_plugins_repo https://github.com/szymonrychu/any-mcp-tatara-plugins and any_mcp_plugins_ref v0.1.0 [evidence: test:tests/test_settings.py::test_defaults]
+- ac4: ORCH_ANY_MCP_PLUGINS_REF accepts only a vX.Y.Z tag [evidence: test:tests/test_settings.py::test_any_mcp_plugins_ref_must_be_release_tag]
+- ac5: README documents both new settings and the v0.5.0 default [evidence: command:grep -qF '`ORCH_ANY_MCP_REF` | `v0.5.0`' README.md && grep -qF '`ORCH_ANY_MCP_PLUGINS_REF` | `v0.1.0`' README.md && grep -qF '`ORCH_ANY_MCP_PLUGINS_REPO`' README.md]
+- ac6: the settings, images, render, onStart, README and spec validation tests pass with the regenerated goldens [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_on_start.py tests/test_readme_api.py tests/test_sessions_repo.py]
+- ac7: lint passes [evidence: command:mise run lint]
+
+## Files
+
+- `src/agents_orchestrator/settings.py`
+- `pyproject.toml`
+- `uv.lock`
+- `tests/test_settings.py`
+- `tests/test_images.py`
+- `README.md`
+- `tests/golden/session_single.yaml`
+- `tests/golden/session_two_peers.yaml`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
