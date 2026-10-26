@@ -1,6 +1,6 @@
 ---
 title: deploy pin workspace cache
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployment pins the orchestrator and web builds that carry the workspace cache
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_orchestrator_release.py
 depends_on: [web-preset-cache-fields, helmfile-cache-bucket]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 9893b65
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 11
+actual_tokens: 220795
+actual_roles: impl 11
+actual_role_tokens: impl 220795
 ---
 
 # deploy pin workspace cache
@@ -66,3 +66,5 @@ agents-helmfile pins the orchestrator and web builds that carry the workspace ca
 ## Notes
 
 - webhook-event-filters (a blocker of this epic) also pins agents-web; take the latest main merge that contains both epics.
+
+- 2026-10-26 done
