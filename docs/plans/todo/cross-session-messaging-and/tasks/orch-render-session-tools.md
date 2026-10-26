@@ -53,17 +53,22 @@ Depends on any-mcp v0.4.0 pinned (task orch-any-mcp-pin-0-4-0).
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `k8s/on_start.py:SESSION_TOOLS: list[str]`, `orchestrator_allow(spec: SessionSpec) -> list[str]` (contract `orch-plugin-entry`: the only extension point).
+- Rendered tool names seen by Claude: `mcp__any-mcp__orchestrator_sessions_list`, `mcp__any-mcp__orchestrator_session_send` (already main-agent only through `main_agent_only_tools`, render.py:134).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The leader of an opted-in session, hive or alone, sees the two session tools; no other session's tool list changes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_alone_messaging_entry`, `test_hive_messaging_tools` to `tests/test_on_start.py` and `test_session_tools_parity` to `tests/test_agent_session_messaging.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_on_start.py tests/test_agent_session_messaging.py`: the two render tests fail.
+- Green: change `orchestrator_allow`; run the task's verify: passes.
+- README and MEMORY; run ac5 and ac6 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: tool order hive tools, scale, session tools (ac2); alone sessions get only the session tools, never the hive tools (ac1); goldens do not move because their specs lack the option (ac5 runs test_render.py).
+- Tool visibility is fixed at render (hive D2), which is why the option is create-time.
+- Notes stay hive-only (`render.py:169`): an alone session receives cross-session messages as turns, not notes.
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.

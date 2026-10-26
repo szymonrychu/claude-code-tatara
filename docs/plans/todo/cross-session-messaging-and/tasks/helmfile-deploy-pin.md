@@ -54,17 +54,22 @@ Scope (agents-helmfile):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Release values: `agents-orchestrator` chart `0.1.0-main.<sha7>`, `image.tag`, `env.ORCH_ANY_MCP_REF`, `kubeAccess.enabled`; `agents-web` chart and `image.tag`.
+- Chart value `kubeAccess.enabled` (task chart-kube-access-rbac) renders the kube-access ServiceAccount, its binding and `ORCH_KUBE_ACCESS_SERVICE_ACCOUNT`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run diff` against the live namespace shows the new orchestrator and agents-web versions, the any-mcp ref v0.4.0, the agent and kube-access ServiceAccounts and the binding, ready for the orchestrator's apply.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `PIN`, the any-mcp assertion, the web sha and add `test_kube_access_enabled`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_web_release.py`: fails.
+- Green: change `helmfile.yaml.gotmpl` and both values files; run the task's verify: passes.
+- Run ac5 and ac6 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: sha7 pins agree between chart and image (ac1, ac4); an all-digit sha7 is quoted (MEMORY 2026-10-25; ac4's test reads it as a string).
+- Never `mise run apply` here (MEMORY 2026-10-25); the apply is design Rollout R3.
+- Chart-pull tests blocked by a container network policy may be deselected in a local run (precedent ruling in done epic web-ui-cluster-tabs-with-fil task deploy-pin); they run unblocked before the apply.
+- `tests/test_orchestrator_release.py::test_values_dir_moved` once blocked an apply (retro agents-schedule-deploy); it must pass here.

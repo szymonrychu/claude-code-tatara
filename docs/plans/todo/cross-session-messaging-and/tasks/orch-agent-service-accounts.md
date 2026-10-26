@@ -54,17 +54,24 @@ The setting `agent_service_account` (default `default`) exists from task orch-se
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Pod spec keys on every agent StatefulSet and every Job: `serviceAccountName: <settings.agent_service_account>`, `automountServiceAccountToken: false`.
+- Reads `settings.py:Settings.agent_service_account` (task orch-session-options-spec).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No agent pod or Job rendered by the orchestrator mounts a Kubernetes token, and each names its ServiceAccount explicitly.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_service_accounts.py` with the two tests named in the acceptance conditions; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_service_accounts.py`: fails (keys absent).
+- Green: set the keys in `render.py`, `init.py`, `checks.py`, `cache.py`; regenerate the goldens; run the task's verify: passes.
+- README; run ac3 and ac4 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: one setting for pods and Jobs (ac1, ac2); Jobs stay unprivileged for every session (ac2, and task orch-kube-access-render pins it for kube_access sessions).
+- A pod-template change rolls running StatefulSets once on upgrade (render.py comment on the config hash); that is expected (design Rollout R3).
+- `tests/fakes/fake_kube.py` models the reconciler Role; it does not need ServiceAccount support because the reconciler only references an existing SA.
+- The reuse brief notes imagePullSecrets and the workspace volume are duplicated across render.py, checks.py, init.py, cache.py; a shared pod-spec helper is allowed only if it stays within these files.
+- Do not write the word "cluster" in new lines (nomenclature guard).
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.

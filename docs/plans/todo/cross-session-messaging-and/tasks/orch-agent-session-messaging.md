@@ -65,17 +65,26 @@ Scope (agents-orchestrator), two agent routes in `src/agents_orchestrator/api/ag
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `GET /agent/v1/sessions` -> 200 `{"sessions": [{"slug", "preset_name", "leader_present"}]}`.
+- `POST /agent/v1/sessions/{slug}/messages` body `{"text"}` -> 202 `{"message_id"}`; error codes per design D7.
+- Contract with any-mcp (task anymcp-session-tools): tool `sessions_list` -> `GET /agent/v1/sessions`; tool `session_send(slug, text)` -> `POST /agent/v1/sessions/{slug}/messages` with body `{"text"}`. Keep these paths exact.
+- Uses `db/queue.py:enqueue_message(..., sender_session_id=, sender_slug=, hop=)` from task orch-session-message-sender.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An opted-in leader can list the other opted-in sessions and queue a message to one of them; every refusal of design D7 answers its code and queues nothing; a ping-pong stops at the hop limit and a flood at the rate limit or queue cap.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_session_messaging.py` with the six tests named in the acceptance conditions (agent-port client fixtures as in `tests/test_api_agent.py`, `tests/test_agent_scale.py`); run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_agent_session_messaging.py`: fails (404 routes).
+- Green: add the routes and DB helpers; regenerate `openapi.json`; update README and MEMORY; run the task's verify: passes.
+- Run ac7 and ac8 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: check order (ac3, ac4: a caller failing several checks gets the first code); self-send refused (ac4); alone session agent counts as leader (ac2); hop derived only from the caller's current turn, never from the request body (ac5, `extra="forbid"` on the body); deleting sessions excluded from the list (ac1); rate window 60 seconds counting rows of any status (ac6).
+- `require_agent` already scopes the caller to its session; this is the first agent route that names another session, so look the target up by slug with `sessions_repo.get_by_slug` and never trust a session id from the body.
+- Reuse: `_require_open_session` semantics (api/messages.py:52) for deleting; `leadership.current_leader` (db/leadership.py:64); `agents_repo.list_members` for live agents. The duplicated leader check and member lookup in this file (:185, :193, :324, :329) may be folded into one helper (boy-scout, same file).
+- Layering pin `tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper`: api modules must not import k8s, reconciler or wrapper.
+- Do not write the word "cluster" in new lines (nomenclature guard).
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.

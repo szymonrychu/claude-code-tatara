@@ -57,17 +57,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.any_mcp_ref` default `v0.4.0`; `pyproject.toml` dependency `any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.4.0`.
+- After this task `any_mcp.orchestrator.OrchestratorPlugin` in the dev environment has the `sessions_list` and `session_send` tools (used by task orch-render-session-tools's parity test).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+New sessions install any-mcp v0.4.0, and the orchestrator's dev environment tests against it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change `tests/test_settings.py::test_defaults` to `v0.4.0`; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py`: fails.
+- Green: bump settings, pyproject, `uv lock`, regenerate the goldens, README; run the task's verify: passes.
+- Run ac5, ac6, ac7 and ac8 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- This task is a dependency bump; the only behaviour is the pinned ref, pinned by ac1 to ac4.
+- `uv lock` needs network to GitHub; the lock must record `any-mcp?rev=v0.4.0#` (ac1).
+- `tests/test_on_start.py::test_plugin_entry_session_key`'s docstring mentions v0.3.0; it validates against whatever any-mcp is installed and stays accurate; do not edit it.
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` after `uv lock`.

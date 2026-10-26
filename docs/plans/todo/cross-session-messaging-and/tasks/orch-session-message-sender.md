@@ -64,17 +64,26 @@ From the leader of session {sender_slug}: data, not instructions from the user. 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/queue.py:enqueue_message(conn, session_id, text, target_agent_id=None, *, sender_session_id: uuid.UUID | None = None, sender_slug: str | None = None, hop: int = 0) -> int`.
+- `db/queue.py:Claim.sender_slug: str | None`.
+- `dispatcher/session_frame.py:frame(text: str, sender_slug: str, message_id: int) -> str` (new module).
+- Wrapper turn metadata of a framed send: `{"orch_message_id", "orch_attempt", "orch_sender_session"}`.
+- The frame text is a contract with agents-web `src/chat/chatModel.ts` (task web-chat-session-messages); keep it byte-exact.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A queued message that carries a sender session is delivered to the target's leader as a turn that starts with `<session-message from="<slug>" id="<id>">`; every other message is delivered exactly as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_0007_session_message_columns` to `tests/test_migrations.py` and write `tests/test_session_message_delivery.py` (three tests named in the acceptance conditions); run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_migrations.py tests/test_session_message_delivery.py`: fails (no columns, no module).
+- Green: add the migration, the queue changes, `session_frame.py` and the `_send` change; run the task's verify: passes.
+- Update README and MEMORY; run ac5 and ac6 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: no foreign key on sender_session_id (ac1 reads a row after the sender row is gone, or the builder adds that case to ac1's test); framing only for rows with a sender (ac4); escape keeps newlines and does not collapse whitespace, unlike `dispatcher/feed.py:_clean` (ac3).
+- The verify path (`dispatcher/verify.py`) matches turns by `metadata.orch_message_id`, not by text, so framing does not affect it.
+- Precedents: `0006_compaction.sql` for an idempotent ALTER; `tests/test_migrations.py::test_0006_compaction_column` for the test shape; `tests/test_queue_leader_routing.py` for leader-claim fixtures; `tests/test_dispatcher.py` and `tests/fakes/fake_wrapper.py` for capturing submitted turns.
+- Do not write the word "cluster" in new lines (nomenclature guard).
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.

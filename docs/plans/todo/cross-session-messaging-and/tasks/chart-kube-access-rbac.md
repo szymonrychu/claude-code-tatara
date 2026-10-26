@@ -58,17 +58,25 @@ Scope (agents-orchestrator chart `chart/agents-orchestrator`):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Chart value `kubeAccess.enabled` (bool, default false).
+- Rendered objects: ServiceAccount `<fullname>-agent`; with the value, ServiceAccount `<fullname>-kube-access` and ClusterRoleBinding `<fullname>-kube-access` -> ClusterRole `cluster-admin`.
+- ConfigMap keys `ORCH_AGENT_SERVICE_ACCOUNT`, `ORCH_KUBE_ACCESS_SERVICE_ACCOUNT` (settings from task orch-session-options-spec).
+- agents-helmfile sets `kubeAccess.enabled: true` (task helmfile-deploy-pin).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Installing the chart with `kubeAccess.enabled` gives the orchestrator a privileged identity to reference and nothing else; without it the deployment refuses `kube_access` sessions; the reconciler's RBAC is the same as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_chart_kube_access.py` with the five tests named in the acceptance conditions and update the two inaccurate assertions; run `unset VIRTUAL_ENV && uv run pytest tests/test_chart_*.py -q`: fails.
+- Green: edit `values.yaml`, `serviceaccount.yaml`, `configmap.yaml`, add `clusterrolebinding.yaml`; run the task's verify: passes.
+- README; run ac6, ac7 and ac8 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: binding needs both `kubeAccess.enabled` and `rbac.create` (ac2, ac3); kube-access SA rendered even with `serviceAccount.create` false (ac3 or ac2 variant); built-in `cluster-admin`, no chart ClusterRole (ac2); privileged SA automount false, pods opt in (ac2).
+- Research: helm-owned binding to a fixed SA needs no new reconciler RBAC (rbac A9, A11); never edit the built-in cluster-admin (D7).
+- `tests/helm_render.py` renders the chart; `ci/lint-values.yaml` is the lint input.
+- `cluster-admin`, `ClusterRole` and `ClusterRoleBinding` are allowed by the nomenclature guard (after task orch-session-options-spec); no other "cluster" word.
+- Chart tests need helm on PATH; run with `VIRTUAL_ENV` unset.

@@ -58,17 +58,23 @@ The tag `v0.4.0` is pushed by the orchestrator after this merges (design Rollout
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tools (exposed as `mcp__any-mcp__orchestrator_<name>`): `sessions_list` -> `GET /agent/v1/sessions`; `session_send(slug, text)` -> `POST /agent/v1/sessions/{slug}/messages`, body `{"text"}`.
+- Server contract (task orch-agent-session-messaging): 200 `{"sessions": [...]}`; 202 `{"message_id"}`; error codes `messaging_disabled`, `not_leader`, `not_found`, `self_send`, `target_messaging_disabled`, `session_deleting`, `hop_limit`, `rate_limited`, `target_queue_full`, `invalid_request`.
+- `OrchestratorConfig` unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+any-mcp 0.4.0 offers the two session tools; which agents see them stays the orchestrator's render-time allow list.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `ELEVEN` and add the three tests named in the acceptance conditions; run `uv run --frozen pytest -q tests/test_orchestrator_plugin.py`: fails (two tools missing).
+- Green: add the tool specs and descriptions; run the task's verify: passes.
+- Bump the version, `uv lock`, CHANGELOG, README, MEMORY; run ac4, ac5 and ac6 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: `slug` goes only to the path, never into the body (ac2); errors keep the upstream code (ac3).
+- Path params are supported (`src/any_mcp/http.py:17`); `body="*"` sends every arg the path did not consume.
+- `tests/test_nomenclature.py` bans the word "cluster" (any case) in `src/any_mcp/orchestrator.py`, `tests/test_orchestrator_plugin.py` and `README.md`: no "cluster" anywhere in the new text.
+- The release workflow (`.github/workflows/release.yml`) requires the tag to equal `v` plus the pyproject version, so the version must be exactly 0.4.0.

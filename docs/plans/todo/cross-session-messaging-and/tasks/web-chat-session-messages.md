@@ -61,17 +61,21 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `chatModel.ts:ChatItem` gains `Base & { kind: 'session'; text: string; from: string; messageId: number }`.
+- The frame text is a contract with agents-orchestrator `dispatcher/session_frame.py:frame` (task orch-session-message-sender); parse it byte-exactly.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+In a session's chat, a message another session's leader sent shows as "session <slug>" with its readable body; everything else shows as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four tests named in the acceptance conditions; run `npx vitest run src/chat/chatModel.test.ts src/chat/ChatLog.test.tsx`: fails.
+- Green: edit `chatModel.ts` and `entries.tsx`; run the task's verify: passes.
+- Run ac5, ac6 and ac7 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: frame only at position 0 (ac2); unescape `&amp;` last so `&amp;lt;` becomes `&lt;` (ac3 or ac1); any origin, since the turn is `client` today and a different origin must not break it (ac1); a user typing a well-formed frame would display as a session message, accepted by design D13.
+- Today's coercion: unknown origins become `user` (chatModel.ts:66) and render as `you` (entries.tsx:70).
+- `npm run build` runs `tsc -b`, the only type check.

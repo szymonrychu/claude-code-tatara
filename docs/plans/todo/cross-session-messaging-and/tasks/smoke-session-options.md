@@ -49,17 +49,24 @@ Scope (agents-helmfile `scripts/smoke.sh`, the style of its existing steps, same
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Orchestrator API used: `GET /api/v1/meta` (`kube_access.available`), `POST /api/v1/sessions` (raw spec with `kube_access` / `session_messaging`), `GET /api/v1/messages/{id}`, the session events API, `DELETE /api/v1/sessions/{id}`.
+- Agent API used from inside a pod: `GET /agent/v1/sessions`, `POST /agent/v1/sessions/{slug}/messages` (task orch-agent-session-messaging).
+- Frame prefix checked: `<session-message from="<slug>"` (task orch-session-message-sender).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run smoke` after the apply proves in the live namespace that a `kube_access` pod has working in-cluster kubectl with full access, an ordinary pod has no token, and one opted-in session's leader can message another's.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four tests named in the acceptance conditions to `tests/test_smoke_script.py`; run `uv run --frozen pytest -q tests/test_smoke_script.py`: fails.
+- Green: add the steps and trap entries to `scripts/smoke.sh`, update its header and README; run the task's verify: passes.
+- Run ac5 and ac6 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: each failing check fails smoke with a named message (ac1, ac2); cleanup on every exit (ac3); no secret on stdout or stderr (ac4).
+- Never run `mise run smoke` or `mise run apply` in this task: the live run is the orchestrator's (design Rollout R5); the AC evidence is offline.
+- The messaging step makes session B run one real turn on "smoke ping"; keep the text short.
+- Existing patterns: session create and delete (smoke.sh:91, 201), `kubectl exec` into the smoke pod, the workspace cache step (two sessions, trap cleanup).
+- Smoke tasks ran 3-5x their minute seeds before (retro agents-schedule-deploy); the fake harness in `tests/test_smoke_script.py` is large, read its fixtures first.

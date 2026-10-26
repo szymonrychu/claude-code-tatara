@@ -53,17 +53,22 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `SessionSpec.session_messaging?: boolean | null`, `SessionSpec.kube_access?: boolean | null`, `Meta.kube_access.available: boolean` from the regenerated `src/api/schema.d.ts`.
+- `sessionSpecForm.ts:FormValues.sessionMessaging`, `FormValues.kubeAccess`; `toPresetSpec` emits `session_messaging: true` / `kube_access: true` only when set.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A user can turn either option on for a preset, the preset saves sparsely, and the Kubernetes access switch explains itself when the orchestrator is not configured for it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: sync the API, then add the three tests named in the acceptance conditions; run `npx vitest run src/presets/PresetForm.test.tsx`: fails.
+- Green: edit `sessionSpecForm.ts` and `PresetForm.tsx`; run the task's verify: passes.
+- Run ac4 to ac7 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: sparse save, no `false` written (ac1); disabled-with-helper when unavailable (ac3); a stored `kube_access: true` preset still loads with the switch on even when unavailable, matching the server's stored exemption (add to ac3's test).
+- `npm run sync:api` refuses an uncommitted orchestrator `openapi.json`; it must be the committed one from task orch-agent-session-messaging or later.
+- `npm run build` runs `tsc -b`, the only type check (retro agents-schedule-deploy: web briefs that skipped it cost fix rounds).
+- MUI only; module docstring line at the top of each file; plain functions.

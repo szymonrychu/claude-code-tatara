@@ -56,17 +56,24 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Reads `SessionSpec.kube_access`, `Settings.kube_access_service_account`, `Settings.agent_service_account`, `Settings.kubectl_version` (task orch-session-options-spec).
+- Pod spec of an opted-in agent pod: `serviceAccountName: <ORCH_KUBE_ACCESS_SERVICE_ACCOUNT>`, `automountServiceAccountToken: true`.
+- The chart (task chart-kube-access-rbac) creates that ServiceAccount and binds it to cluster-admin; the reconciler only references it.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A `kube_access` session's agents run as the privileged ServiceAccount with its token at the default path, see `KUBERNETES_SERVICE_HOST/PORT` in their Bash and have kubectl on PATH, so `kubectl get namespaces` uses the in-cluster config; every other pod and Job is unchanged.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_render_kube_access.py` with the five tests named in the acceptance conditions; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_render_kube_access.py`: fails.
+- Green: change `render.py` and `on_start.py`; run the task's verify: passes.
+- README and MEMORY; run ac6, ac7 and ac8 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: fail closed when the setting is gone (ac4); Jobs never privileged (ac5); onStart unchanged without the option, so goldens do not move (ac3, ac6).
+- Research: pod-level `automountServiceAccountToken` overrides the SA (rbac B1); kubectl uses in-cluster config only when no kubeconfig is found and `KUBERNETES_SERVICE_HOST/PORT` and the token file exist (B8, B9); no subPath for the token (B4).
+- The wrapper image has mise with `MISE_DATA_DIR=/opt/mise` and `/opt/mise/shims` on PATH (claude-code-wrapper Dockerfile:70-81); `/opt/mise` is an emptyDir, so the install runs on every pod start like the any-mcp install.
+- `cluster-admin` is on the nomenclature allowlist after task orch-session-options-spec; any other "cluster" word is not.
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.

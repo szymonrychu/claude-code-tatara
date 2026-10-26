@@ -61,17 +61,26 @@ The settings are only declared and documented here; the tasks that use them are 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.py:SessionSpec.session_messaging: bool | None` and `SessionSpec.kube_access: bool | None` (strict, sparse).
+- `spec.py:validate_spec(spec, settings, stored=None)` gains the kube_access check.
+- `settings.py:Settings.kube_access_service_account: str`, `.kube_access_available -> bool`, `.agent_service_account: str`, `.kubectl_version: str`, `.session_message_rate_per_minute: int`, `.session_message_queued_max: int`, `.session_message_max_hops: int`.
+- `api/schemas.py:MetaKubeAccess{available: bool}`, `Meta.kube_access`.
+- Contract for agents-web (task web-preset-session-options): `SessionSpec.session_messaging`, `SessionSpec.kube_access`, `Meta.kube_access.available` in `openapi.json`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A preset or session spec can carry `session_messaging` and `kube_access`; nothing changes for specs without them; `kube_access` is refused until the server is configured for it, and `/meta` says whether it is.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_spec_session_options.py` with the five tests named in the acceptance conditions; run `unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_spec_session_options.py`: fails (unknown fields, no settings, no meta key).
+- Green: edit `spec.py`, `settings.py`, `api/schemas.py`, `api/sessions.py`; regenerate `openapi.json`; update `README.md` and `tests/test_nomenclature.py` (`cluster-admin`); run the task's verify: passes.
+- Run ac6 and ac7 commands: pass.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: strict booleans (ac1); sparse storage (ac1, the session row uses `exclude_none`, the preset `exclude_unset`); stored exemption only for an unchanged value (ac3); setting bounds (ac5).
+- Precedents: `reuse_running_agent` (spec.py:436) for sparse strict booleans; the cache check in `validate_spec` (spec.py:588) and `MetaCache` (api/schemas.py:149) for the setting gate.
+- `tests/test_settings.py::test_env_names_documented_in_readme` requires each new `ORCH_*` name in README `## Configuration`.
+- Do not use the word "cluster" in new text except Kubernetes phrases on the guard's allowlist (`ClusterRole`, `in-cluster`, `cluster-admin` after this task).
+- Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset. If pytest fails on imports, the `.venv` may carry a stale shebang (retro paste-env-contents-into-the): `uv sync` recreates it.
