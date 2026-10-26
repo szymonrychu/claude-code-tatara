@@ -1,6 +1,6 @@
 ---
 title: web chats access panels
-status: in-progress
+status: done
 repo: agents-web
 value: "an operator manages allow and deny lists, people and the default preset in the UI"
 files: [src/matrix/UsersTable.tsx, src/matrix/RulesPanel.tsx, src/matrix/DefaultPreset.tsx, src/matrix/ChatsPage.tsx, src/matrix/Access.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/matrix/Access.test.ts
 depends_on: [web-chats-rooms-page]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 716ac9b09028d4c938394bb2ac1f37e3cc6f5ba6
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 538758
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 439554, review 99204"
 ---
 
 # web chats access panels
@@ -64,3 +64,5 @@ An operator allows a person by their Facebook id, sees the rule, and removes it 
 ## Notes
 
 - The UI never decides access itself; it shows the API's access views.
+
+- 2026-10-26 done
