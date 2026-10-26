@@ -1,6 +1,6 @@
 ---
 title: apply receipts live
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "Messenger shows the user's messages as seen once the agent has them"
 files: [MEMORY.md]

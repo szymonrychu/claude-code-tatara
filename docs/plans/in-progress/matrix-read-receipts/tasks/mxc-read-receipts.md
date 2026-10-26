@@ -1,6 +1,6 @@
 ---
 title: mxc read receipts
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: allowed Messenger messages show as seen once the agent has them
 files: [src/agents_matrix_connector/matrix.py, src/agents_matrix_connector/fake_homeserver.py, src/agents_matrix_connector/worker.py, tests/test_matrix_client.py, tests/test_worker.py, README.md, MEMORY.md]

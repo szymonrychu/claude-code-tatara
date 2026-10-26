@@ -1,6 +1,6 @@
 ---
 title: connector repin receipts
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the cluster runs the connector build that sends read receipts
 files: [helmfile.yaml.gotmpl, values/agents-matrix-connector/common.yaml, tests/test_matrix_connector_release.py]
