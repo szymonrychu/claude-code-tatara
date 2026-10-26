@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin 0.3.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the orchestrator validates and tests against the wrapper that emits compacting
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/test_images.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_images.py tests/test_render.py tests/test_s
 depends_on: [wrapper-release-0-3-0, leader-changed-reason]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 2529aaf34592abcf2e28e2b2db7e04f8a510d7b5
 points: 1
 expected_minutes: 4
 expected_tokens: 662742
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 7
+actual_tokens: 363796
+actual_roles: "impl 7, review 4"
+actual_role_tokens: "impl 218563, review 145233"
 ---
 
 # orch wrapper pin 0.3.0
@@ -65,3 +65,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
