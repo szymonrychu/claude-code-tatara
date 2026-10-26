@@ -51,17 +51,17 @@ Notes: the smoke's header comment (lines 1-7) names the steps; update it. Keep t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend the fake API in `tests/test_smoke_script.py` (agents list, leader route, leader moving with reason `scale_down`) and add the two failure tests; run `uv run --frozen pytest -q tests/test_smoke_script.py`: the happy path and the new tests fail.
+- Green: extend step 7 of `scripts/smoke.sh`, its header and the README smoke section; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

@@ -48,17 +48,17 @@ Notes: README `### Release`: `release.yaml` fails when the `:<shortsha>` image i
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Bump the version to 0.3.0 in `pyproject.toml` and `src/claude_code_wrapper/__init__.py`, run `uv lock` (dependency-bump exception; the packaging test is the guard); run the task's verify command: passes.
+- After the merge (orchestrator session): wait for `build.yaml` green on the merge commit, `git tag v0.3.0 <merge sha> && git push origin v0.3.0`, watch `release.yaml` green, then amend orch-wrapper-pin-0-3-0 and helmfile-deploy-pin with the merge sha.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

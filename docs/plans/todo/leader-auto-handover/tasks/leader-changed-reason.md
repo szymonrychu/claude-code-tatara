@@ -57,17 +57,17 @@ Notes: the hive push wakes on `leader_changed` regardless of payload (`tests/tes
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_auto_handover_reason_in_frame_and_view` and update the named payload assertions (`test_leader_changed_frame`, the exact payloads in `tests/test_leadership_pass.py`); run `uv run --frozen pytest -q tests/test_leader_views.py tests/test_leadership_pass.py`: they fail (no `reason`).
+- Green: add `reason` to the `_set_leader` NOTIFY and the stream frame, update README; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

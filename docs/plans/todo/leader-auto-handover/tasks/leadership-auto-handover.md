@@ -70,17 +70,18 @@ Notes: reuse the lease step pattern (`db/leadership.py:320-332`), `_set_leader` 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the new tests of the acceptance conditions to `tests/test_leadership_pass.py`; run `uv run --frozen pytest -q tests/test_leadership_pass.py`: they fail (no staying filter, no scale-down or compaction step).
+- Green: add the staying filter, the two candidate clauses, the scale-down step (before the lost-leader step) and the compaction step (before the lease step) to `db/leadership.py`; run the same command: passes.
+- Docs: rewrite README `### Leadership` and `### Leader lease`, add the two MEMORY.md entries; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

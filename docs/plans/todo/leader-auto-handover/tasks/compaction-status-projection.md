@@ -58,17 +58,17 @@ Notes: the fake wrapper's `emit` does not validate event names (`tests/fakes/fak
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three ingester tests to `tests/test_ingester.py` and the 0006 schema test plus the updated version lists to `tests/test_migrations.py`; run `uv run --frozen pytest -q tests/test_ingester.py tests/test_migrations.py`: the new tests fail (no column, no projection).
+- Green: add `0006_compaction.sql`, the `db/status.py` setter, the ingester branch with the `leadership_requested` NOTIFY, and the README row; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

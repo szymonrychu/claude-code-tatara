@@ -57,17 +57,17 @@ Notes: the existing routing tests (`test_gone_leader_waits`, `test_new_leader_af
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three routing tests to `tests/test_queue_leader_routing.py` and the new `tests/test_dispatcher_auto_handover.py`; run `uv run --frozen pytest -q tests/test_queue_leader_routing.py tests/test_dispatcher_auto_handover.py`: the hold tests and the race test fail (the compacted leader is picked).
+- Green: add the hold to `_claim_in_session` with the pass's predicate, update README Routing and Leadership; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

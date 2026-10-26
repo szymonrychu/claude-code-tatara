@@ -54,17 +54,17 @@ Notes: `tests/test_orchestrator_release.py` also holds `test_values_dir_moved`, 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the pins expected by `tests/test_orchestrator_release.py` and `tests/test_web_release.py` (orchestrator and agents-web shas from the amendment, wrapper 0.3.0); run the task's verify command: fails.
+- Green: change `helmfile.yaml.gotmpl` and the two values files; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

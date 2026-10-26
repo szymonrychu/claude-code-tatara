@@ -55,17 +55,17 @@ Notes: the fake claude's `auto_compact` step already runs the PreCompact hook (`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_pre_compact_emits_compacting` and `test_compacting_trigger_normalised` to `tests/test_command_signals.py`, update `tests/test_event_log.py::test_event_types_exact` (gains `compacting` before `compacted`); run `uv run pytest -q tests/test_command_signals.py tests/test_event_log.py`: the new tests and the exact-list test fail (no such event).
+- Green: add `compacting` to `EVENT_TYPES`, emit it in `_on_compact_hook` for PreCompact, add README `### compacting`; run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

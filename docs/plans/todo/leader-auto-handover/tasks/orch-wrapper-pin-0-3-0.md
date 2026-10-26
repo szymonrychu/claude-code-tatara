@@ -51,17 +51,17 @@ The merge sha is filled in by `ticket.py amend` when the wrapper PR merges. Depe
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Change the pins in `pyproject.toml`, `uv.lock` (`uv lock`), `e2e/agent-test.Dockerfile` and README Images to the wrapper 0.3.0 merge commit (dependency-bump exception); run `uv run pytest -q tests/test_images.py`: the equality tests fail until every pin agrees, then pass.
+- Run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.

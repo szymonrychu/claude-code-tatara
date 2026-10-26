@@ -25,7 +25,7 @@ Discovery: /Users/szymonri/Documents/claude-code-tatara/.scratchpad/leader-hando
 
 ## Goals
 
-- G1: when the leader of a hive is about to compact (auto or manual), the wrapper reports it before the compaction runs and the orchestrator moves leadership to another ready agent of the cluster; a busy leader moves at its turn boundary.
+- G1: when the leader of a hive is about to compact (auto or manual), the wrapper reports it before the compaction runs (the `compacting` event; only this report precedes the compaction) and the orchestrator then moves leadership to another ready agent of the cluster at the leader's turn boundary, which for a busy leader is after the native compaction has run.
 - G2: a scale-down whose new replica count would remove the leader's pod first hands leadership to a ready agent that stays, then shrinks; with no such agent it is refused as today.
 - G3: the new leader is chosen among ready agents that stay in the cluster (never one about to be removed); with no eligible agent the leader keeps leading and the move is retried.
 - G4: always on for every hive (max_replicas > 1); a cluster of one never hands over.

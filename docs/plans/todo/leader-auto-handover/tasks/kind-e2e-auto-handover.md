@@ -5,7 +5,7 @@ repo: agents-orchestrator
 value: compaction and scale-down handovers are proven end to end through the API
 files: [tests/e2e/test_e2e_kind.py, e2e/agent-test.scenario.json]
 verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py && uv run ruff check . && uv run ruff format --check ."
-depends_on: [orch-wrapper-pin-0-3-0, leadership-auto-handover, scale-down-staying-peer, reconciler-leader-pod-hold, leader-changed-reason]
+depends_on: [orch-wrapper-pin-0-3-0, leadership-auto-handover, scale-down-staying-peer, reconciler-leader-pod-hold, leader-changed-reason, claim-hold-and-handover-wake]
 model: sonnet
 review: ""
 verified_head: ""
@@ -50,17 +50,18 @@ Notes: run locally or in PR CI with `mise run test:e2e` (`scripts/e2e.sh`; one t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+See the Requirement and the acceptance conditions above.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+See the Requirement and the acceptance conditions above.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Add the scenario turn and the two e2e tests, move the leader part out of `test_scale_refusals`; run `uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py`: the new tests are collected.
+- Run `mise run test:e2e` (kind; or the PR CI e2e job): the new tests pass with the pinned wrapper image.
+- Run the task's verify command: passes.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+See the Requirement and the acceptance conditions above.
