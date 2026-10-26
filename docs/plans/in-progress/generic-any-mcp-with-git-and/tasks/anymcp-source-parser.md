@@ -1,6 +1,6 @@
 ---
 title: anymcp source parser
-status: in-progress
+status: done
 repo: any-mcp
 value: "one exact grammar for Terraform-like plugin sources, shared by any-mcp and the orchestrator"
 files: [src/any_mcp/sources.py, tests/test_sources.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_sources.py && mise run lint"
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: bc5dfc73f2eabdcb8de6cfdabc2dd620312a19da
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 489670
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 371301, review 118369"
 ---
 
 # anymcp source parser
@@ -71,3 +71,5 @@ Every accepted form of design D1 parses into a `Source`, and every refused form 
 - Pure string work: no I/O, no git call. Use `urllib.parse` only where it does not normalise the URL in surprising ways; the url field is the user's URL minus `git::` and the `//subdir?query` tail.
 - The orchestrator restricts further (https only); this parser stays generic (https, ssh, file).
 - Never the word "cluster" in new text.
+
+- 2026-10-26 done
