@@ -1,6 +1,6 @@
 ---
 title: anymcp remove orchestrator
-status: in-progress
+status: done
 repo: any-mcp
 value: any-mcp ships no platform-specific plugin
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, tests/test_nomenclature.py, tests/test_generic.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_generic.py tests/test_docs_links.p
 depends_on: [anymcp-source-plugin-loading]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ee0e02701a84b42ef0059bba4395308864ec4f64
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 307643
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 189434, review 118209"
 ---
 
 # anymcp remove orchestrator
@@ -68,3 +68,5 @@ any-mcp's tracked tree has no platform-specific plugin, its README points platfo
 - Ruling and its pin test: ac2 scans only `src/`, `examples/` and `docs/` (test_no_platform_names); CHANGELOG and MEMORY keep their history.
 - The README Plugin sources section documents the command from task anymcp-source-plugin-loading; keep `tests/test_docs_links.py` green (README links every docs page, Quickstart equals `examples/hello/hello.py`).
 - The plugin's README content (tools table) is reused by task plugins-orchestration-plugin from any-mcp `v0.4.0`, so nothing needs saving here.
+
+- 2026-10-27 done
