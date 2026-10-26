@@ -1,6 +1,6 @@
 ---
 title: smoke session options
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live smoke proves Kubernetes access and cross-session messaging after the deploy
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [orch-render-session-tools, chart-kube-access-rbac]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 24024b420f9ceb4457cdc9ed086d43fa35cedf6e
 points: 5
 expected_minutes: 12
 expected_tokens: 1686779
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 35
+actual_tokens: 2711690
+actual_roles: "impl 28, review 7"
+actual_role_tokens: "impl 2486122, review 225568"
 ---
 
 # smoke session options
@@ -72,3 +72,5 @@ Scope (agents-helmfile `scripts/smoke.sh`, the style of its existing steps, same
 - Smoke tasks ran 3-5x their minute seeds before (retro agents-schedule-deploy); the fake harness in `tests/test_smoke_script.py` is large, read its fixtures first.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
