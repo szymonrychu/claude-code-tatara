@@ -1,6 +1,6 @@
 ---
 title: dotenv parser module
-status: in-progress
+status: done
 repo: agents-web
 value: Turns pasted .env text into key/value pairs or per-line errors
 files: [src/sessions/dotenv.ts, src/sessions/dotenv.test.ts]
@@ -8,15 +8,15 @@ verify: "npm test -- src/sessions/dotenv.test.ts && npm run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 99ef9225a93b31c27ce30887eb7535c9d73eeffc
 points: 2
 expected_minutes: 6
 expected_tokens: 559738
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 1
+actual_tokens: 147955
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 88688, review 59267"
 ---
 
 # dotenv parser module
@@ -56,3 +56,5 @@ parseDotenv exists and returns the documented pairs and errors for every rule in
 - Error messages are short lowercase phrases, for example `missing =`, `empty key`, `unterminated quote`, `unexpected text after closing quote`; task 2 renders them as `line <n>: <message>`.
 - No new dependency (no dotenv package): the parser is small and the rules are fixed by the requirement.
 - (my call) `KEY= # c` parses to an empty value. In a double-quoted value an unknown escape such as `\x` is kept literally (backslash plus character), not an error.
+
+- 2026-10-26 done
