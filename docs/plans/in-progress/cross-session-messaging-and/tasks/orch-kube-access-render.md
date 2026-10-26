@@ -1,6 +1,6 @@
 ---
 title: orch kube access render
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agents of a kube_access session have in-cluster API access to every namespace from their shell
 files: [src/agents_orchestrator/k8s/render.py, tests/test_render_kube_access.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_render_kube_a
 depends_on: [orch-session-options-spec, orch-agent-service-accounts]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ecff370ed272a9281826da0701ac73151fb74e52
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 967422
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 839966, review 127456"
 ---
 
 # orch kube access render
@@ -79,3 +79,5 @@ A `kube_access` session's agents run as the privileged ServiceAccount with its t
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
