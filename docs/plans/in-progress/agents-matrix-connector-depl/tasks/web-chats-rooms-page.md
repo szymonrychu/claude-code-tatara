@@ -1,6 +1,6 @@
 ---
 title: web chats rooms page
-status: in-progress
+status: done
 repo: agents-web
 value: "an operator sees every discovered chat, its access and recent messages, and allows or denies it"
 files: [src/matrix/ChatsPage.tsx, src/matrix/RoomsTable.tsx, src/matrix/RoomDrawer.tsx, src/matrix/RoomMessages.tsx, src/matrix/ChatsPage.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm ci --no-audit --no-fund && npx vitest run src/matrix/ChatsPage.test
 depends_on: [web-matrix-api-client]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5fd77da5edd2960557ecd9e38e052204a932fb30
 points: 5
 expected_minutes: 14
 expected_tokens: 1860143
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 5
+actual_tokens: 1164667
+actual_roles: "impl 5, review 2"
+actual_role_tokens: "impl 833118, review 331549"
 ---
 
 # web chats rooms page
@@ -68,3 +68,5 @@ An operator sees every discovered chat, opens one, sets its preset and allows it
 
 - Follow `src/webhooks/WebhooksPage.tsx` and `EventsTable.tsx` for layout and polling; MUI components as elsewhere.
 - `RunStatusChip` statuses are new, in-progress, handled, ignored, failed, which match the inbound statuses.
+
+- 2026-10-26 done
