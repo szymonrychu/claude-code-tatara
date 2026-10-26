@@ -1,6 +1,6 @@
 ---
 title: helmfile matrix secrets
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the connector's Matrix token and orchestrator service token are stored encrypted without rotating anything"
 files: [scripts/bootstrap-secrets.sh, tests/test_secrets.py, values/agents-matrix-connector/default.secrets.yaml, values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml, .sops.yaml]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_secrets.py && 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f09b2a46b8f0b8bc0d6b7f49075e20391d6db70a
 points: 2
 expected_minutes: 7
 expected_tokens: 538938
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 569216
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 475908, review 93308"
 ---
 
 # helmfile matrix secrets
@@ -72,3 +72,5 @@ Both files are committed encrypted; the orchestrator will accept the connector's
 - The values dir is `values/agents-orchestrator/` after orchestrator-rename-sessions (design D15).
 
 - 2026-10-25 amended: revision R1 (user 2026-10-25): the connector takes over Hermes' Matrix user and Facebook account, Hermes scaled to 0; only the Hermes home-channel owner DM is allowed
+
+- 2026-10-26 done
