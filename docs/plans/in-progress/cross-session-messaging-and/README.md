@@ -42,3 +42,14 @@ Both are opt-in per session and off by default. Kubernetes access is additionall
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review (phase 5), 2026-10-27.
+- Full suites: orchestrator 1027 passed (non-integration), lint and chart tests clean; agents-web 429 passed, lint clean; any-mcp 215 passed; agents-helmfile 208 passed, lint and gitleaks clean.
+- PR CI: any-mcp #4 green; agents-web #15 green; agents-orchestrator #22 green after one e2e fix (two kind e2e assertions still expected the two-tool allow list; fixed f92cc8d); agents-helmfile #30 pending.
+- Whole-diff review (sonnet): no findings across seams (frame contract, tool names, settings names, superleader authz, ServiceAccount wiring).
+- Security review (sonnet): no critical/high. MEDIUM fixed as task agent-serviceaccounts-do-not (agent ServiceAccounts no longer inherit api annotations). LOW dismissed: 404 vs 403 slug probing (slugs are not secret); advisory limit overshoot (documented D10).
+- Interrogate panel ran on the design before the gate (fable/opus/sonnet); its findings were applied to the plan.
+- Scope audit (sonnet): all landed; G5 deploy and presets pending.
+- Discovered task: allow-the-init-scripts-tools (agents were told to use a tool no allow list included).
