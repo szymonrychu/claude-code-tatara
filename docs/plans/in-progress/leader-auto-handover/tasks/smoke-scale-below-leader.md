@@ -1,6 +1,6 @@
 ---
 title: smoke scale below leader
-status: in-progress
+status: done
 repo: agents-helmfile
 value: every deploy proves a scale-down below the leader hands over and shrinks
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [scale-down-staying-peer, leader-changed-reason]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f73dc2c2148b1ea2ee36d03398e2530eb7428198
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 21
+actual_tokens: 694284
+actual_roles: "impl 18, review 3"
+actual_role_tokens: "impl 505872, review 188412"
 ---
 
 # smoke scale below leader
@@ -65,3 +65,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
