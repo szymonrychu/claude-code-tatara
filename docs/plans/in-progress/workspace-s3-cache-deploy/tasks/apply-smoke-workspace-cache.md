@@ -31,6 +31,9 @@ Apply the pinned releases and the bucket claim to the live `agents` namespace an
 - `MEMORY.md`: a dated line: applied agents-orchestrator `0.1.0-main.<sha7>` and agents-web `0.1.0-main.<sha7>` with the workspace cache, bucket `agents-workspace-cache` on rook-ceph, smoke green (quote its last log line).
 - No other file changes.
 
+
+Orchestrator ruling 2026-10-26 (the core reviews could not prove these against moto): after the apply, run a one-off read-only probe from inside the reconciler pod, which already holds the S3 credentials, without printing any credential or URL. (1) Presign a PUT URL for a throwaway key `probe-<random>` with the app's own presign and send a GET with it: expect 403 (method is part of the signature). (2) Presign a GET for that key, which does not exist: expect 404, not 403, so a first restore is a cache miss. Run it with `kubectl exec deploy/agents-orchestrator-reconciler -- python -c ...`. No object is created. Quote both status codes in the task notes; any other result stops the task blocked.
+
 ## Acceptance conditions
 
 - AC1: the bucket claim is bound [evidence: command:kubectl -n agents get obc agents-workspace-cache -o jsonpath='{.status.phase}' | grep -qx Bound]
@@ -38,6 +41,7 @@ Apply the pinned releases and the bucket claim to the live `agents` namespace an
 - AC3: the smoke passes against the live orchestrator, including the workspace cache check [evidence: command:mise run smoke]
 - AC4: MEMORY.md records the applied versions, the bucket and the smoke result [evidence: command:grep -q "agents-workspace-cache" MEMORY.md && grep -q "0.1.0-main" MEMORY.md]
 - AC5: the pre-apply diff showed only the expected changes [evidence: judgement:the diff output quoted in the task notes]
+- AC-probe: a presigned PUT URL is refused for GET (403) and a GET on a missing key returns 404 [evidence: judgement:the task notes quote both status codes from the one-off reconciler-pod probe]
 
 ## Files
 
@@ -60,3 +64,5 @@ Every acceptance condition holds on the committed HEAD.
 ## Notes
 
 - See the Requirement and the epic design.md.
+
+- 2026-10-26 amended: live presign proofs as a one-off probe instead of permanent smoke steps
