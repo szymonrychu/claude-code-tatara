@@ -1,6 +1,6 @@
 ---
 title: anymcp source plugin loading
-status: in-progress
+status: done
 repo: any-mcp
 value: a config entry or a CLI call installs and loads a plugin from a git repo or a local dir
 files: [src/any_mcp/config.py, src/any_mcp/discovery.py, src/any_mcp/cli.py, docs/configuration.md, tests/test_source_plugins.py, tests/fixtures/source_plugin/pyproject.toml, tests/fixtures/source_plugin/src/source_plugin/__init__.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_source_plugins.py tests/test_cli.p
 depends_on: [anymcp-source-installer]
 model: opus
 review: ""
-verified_head: ""
+verified_head: dfad12bba43ab063041c75616f57a42895ae88e8
 points: 5
 expected_minutes: 11
 expected_tokens: 1694306
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 9
+actual_tokens: 2262595
+actual_roles: "impl 8, review 1"
+actual_role_tokens: "impl 2126470, review 136125"
 ---
 
 # anymcp source plugin loading
@@ -81,3 +81,5 @@ An any-mcp config entry `{name: x, source: <git or local source>}` installs and 
 - The subcommand must not break `any-mcp --config ...` or `any-mcp --plugin ...` with no subcommand (ac6 covers the CLI tests).
 - `tests/test_docs_reference.py` requires every top-level config key and CLI flag documented; `ANY_MCP_CONFIG is the only variable` is no longer true and changes in configuration.md.
 - `tests/test_import_boundary.py` scans `src/any_mcp` and `examples`: keep fastmcp imports out of the new code.
+
+- 2026-10-27 done
