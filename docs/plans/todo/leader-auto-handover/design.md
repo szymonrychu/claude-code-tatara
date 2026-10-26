@@ -307,6 +307,7 @@ Why: non-goal "the existing context advice stays as it is"; the any-mcp scale to
 ## Open questions
 
 none
+- Q1: When a compacted leader finds no eligible agent (for example a hive running one agent), is the move retried for the rest of its term, so a peer that becomes ready later or a later scale-up takes over? [recommended: yes, retried for the rest of the term; any leader change clears it]
 
 ## Irreversible operations in scope
 
