@@ -359,6 +359,13 @@ User steps, asked up front at the gate: none (the plugins repo exists and its CI
   by plugins-repo-bootstrap's own run, never assumed in a later task.
 
 ## Open questions
+
+Resolved 2026-10-27 under the user's advance gate approval ("Any-mcp is small, I approve it without seeing it"), with the recommended answers:
+- Q1: yes - the orchestrator and the web form accept only remote https git sources; local paths stay supported in any-mcp itself. (my call)
+- Q2: yes - no host allowlist. (my call)
+- Builder check: orchestrator, web and helmfile tasks start only after cross-session-messaging-and merges; their integration trees are reset onto the new main first (no commits on them before then). Deploy windows (R4) and tags are orchestrator steps. The "cluster" word guard exists in any-mcp and agents-orchestrator; new text in every repo avoids the word, existing scaffold text in the plugins repo is not touched unless the bootstrap task rewrites it. (my call)
+
+Original questions:
 - Q1: Should the orchestrator and the web form accept only remote https git sources (git::https://... and github.com/...) in any_mcp_sources and in any_mcp_config source entries, refusing local paths, git::ssh and git::file (agent pods have no SSH keys and no meaningful local plugin dirs)? Local paths stay fully supported in any-mcp itself. [recommended: yes, remote https git only in the orchestrator and web]
 - Q2: Should any_mcp_sources accept any git host and repo, with no allowlist, since preset authors can already run arbitrary init scripts in agent pods? [recommended: yes, no host allowlist]
 
