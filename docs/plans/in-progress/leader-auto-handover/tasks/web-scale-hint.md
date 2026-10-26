@@ -1,6 +1,6 @@
 ---
 title: web scale hint
-status: in-progress
+status: done
 repo: agents-web
 value: a refused scale-down tells the user the real reason
 files: [src/chat/ScaleControl.tsx, src/chat/ScaleControl.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx tsc -b && npx vitest run src/chat/ScaleControl.test.tsx && npm run 
 depends_on: [scale-down-staying-peer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d3998572f4fab98cc417c48e0513bd67a83aba1e
 points: 1
 expected_minutes: 4
 expected_tokens: 662742
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 375407
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 284246, review 91161"
 ---
 
 # web scale hint
@@ -61,3 +61,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
