@@ -1,6 +1,6 @@
 ---
 title: web preset cache fields
-status: in-progress
+status: done
 repo: agents-web
 value: users turn the workspace cache on per preset and optionally name its key in the UI
 files: [src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx, openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run lint && npm r
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 5c7f9d1
 points: 3
 expected_minutes: 6
 expected_tokens: 937864
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 6
+actual_tokens: 1636854
+actual_roles: "impl 5, review 1"
+actual_role_tokens: "impl 1482123, review 154731"
 ---
 
 # web preset cache fields
@@ -68,3 +68,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-26 done
