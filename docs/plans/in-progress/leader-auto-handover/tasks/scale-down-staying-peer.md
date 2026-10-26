@@ -1,6 +1,6 @@
 ---
 title: scale down staying peer
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a scale-down below the leader is accepted whenever another ready agent can lead
 files: [src/agents_orchestrator/db/sessions.py, tests/test_sessions_repo.py, tests/test_api_scale.py, tests/test_agent_scale.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_sessions_repo.py tests/test_api_sc
 depends_on: [leadership-auto-handover]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 8d03b3830508c724abff19565ade9a7c82c4dae7
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 1678149
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 1510053, review 168096"
 ---
 
 # scale down staying peer
@@ -81,3 +81,5 @@ See the Requirement and the acceptance conditions above.
 See the Requirement and the acceptance conditions above.
 
 - 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): finding 2 (set_replicas wakes the dispatcher)
+
+- 2026-10-26 done
