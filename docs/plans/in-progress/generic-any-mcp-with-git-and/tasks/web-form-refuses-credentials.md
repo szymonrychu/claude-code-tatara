@@ -1,6 +1,6 @@
 ---
 title: Web form refuses credentials in plugin source URLs
-status: todo
+status: done
 repo: agents-web
 value: The form rejects plugin sources with embedded tokens before saving
 files: [src/presets/pluginSource.ts, src/presets/pluginSource.test.ts]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/pluginSource.test.ts && npm run build && mis
 depends_on: [web-preset-plugin-sources]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: cd1eb81203bc605fc11d0e08a78d2d6a7ba7120f
 points: 1
 expected_minutes: 4
 expected_tokens: 656478
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 255191
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 195083, review 60108"
 ---
 
 # Web form refuses credentials in plugin source URLs
@@ -52,3 +52,5 @@ A source with credentials in its URL is refused with a redacted message.
 
 - From the phase-5 security review (sonnet), LOW finding accepted as a fix. any-mcp v0.5.0 itself still accepts userinfo for local use; a later any-mcp release may align (noted, not in scope).
 - Keep the word cluster out of new text.
+
+- 2026-10-27 done
