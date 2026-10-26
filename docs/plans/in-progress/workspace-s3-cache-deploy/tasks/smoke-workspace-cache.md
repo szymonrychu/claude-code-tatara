@@ -1,6 +1,6 @@
 ---
 title: smoke workspace cache
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployed smoke proves a workspace written in one session is restored in the next
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_smoke_script.py && uv r
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 9308871
 points: 2
 expected_minutes: 8
 expected_tokens: 542616
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 825871
+actual_roles: "impl 5, review 3"
+actual_role_tokens: "impl 493641, review 332230"
 ---
 
 # smoke workspace cache
@@ -64,3 +64,5 @@ Prove the workspace cache in the deployed smoke (design D9, D12; goal G8). Paths
 
 - Reuse the existing init-scripts wait loop and the cleanup trap; bound every wait by `SMOKE_TIMEOUT_S`.
 - The marker check relies on restore running before init (design D3).
+
+- 2026-10-26 done
