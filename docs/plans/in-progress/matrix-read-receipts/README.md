@@ -36,3 +36,15 @@ User decision 2026-10-26 (AskUserQuestion): "On handoff": mark read once the mes
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review of matrix-read-receipts, 2026-10-26.
+- Per-task reviews: mxc-read-receipts needed 1 fix round, to pin the id tiebreak. The other tasks were clean.
+- Full suites: connector 192 passed, helmfile 184 passed.
+- Live:
+  - The apply was helm rev 2 (chart 0.1.0-main.98b0803) and post-apply diff showed no drift.
+  - Smoke OK on the re-run. The first smoke run failed because the port-forward died; the leftovers were deleted with the user's OK.
+  - Receipt POST answered 200, and the user confirmed the message shows as seen.
+- Scope audit: clean.
+- PRs: agents-matrix-connector #2 (98b0803) and agents-helmfile #27 (d0a1956).
