@@ -397,6 +397,7 @@ User steps, asked up front at the gate:
 
 ## Open questions
 - Q1: kubectl availability: should the rendered onStart install kubectl through mise (pinned ORCH_KUBECTL_VERSION, default 1.33) only for kube_access sessions, rather than adding kubectl to the claude-code-wrapper image? [recommended: yes, install through mise in onStart only when kube_access is on; no wrapper image change]
+- Q2: May sessions started by trigger services (webhook, schedule, Matrix) from a preset with kube_access get cluster-admin like any other session, with the preset chosen per trigger as the only control? [recommended: yes, no extra refusal on the service port; README Security warns that untrusted webhook content reaching a kube_access session is a cluster-admin prompt-injection path]
 
 ## Irreversible operations in scope
 
