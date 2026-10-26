@@ -38,17 +38,20 @@ Discovered at deploy (2026-10-27, live `mise run smoke` after the R3 apply, inve
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- scripts/smoke.sh: `agent_of` (or a new helper) also requires `.ready == true`; the make-leader POST is retried until the leader moves or the deadline passes.
+- Orchestrator contract (unchanged): GET /api/v1/sessions/{id}/agents items carry id, pod_name, ready, gone; a /leader request for a not-ready target is rejected target_not_ready and not retried server-side.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The scale-down-below-leader smoke step passes against the live orchestrator even when the agent-ready flag lags pod readiness.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tests (fake /agents returning ready false then true; fake leader that ignores the first request); run the task's verify; expect failures.
+- Green: change smoke.sh; run the task's verify on the committed HEAD.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Root cause and repro: .scratchpad/cluster-options/leader-debug.md (repro session dbg-leader-qxzk: request 6s after Ready applied; request while ready=false rejected in 4ms).
+- Pre-existing since agents-helmfile f73dc2c (leader-auto-handover); fixed here because it blocks this epic's deploy verification (R5).
+- Never print tokens; keep the word cluster out of new text.
