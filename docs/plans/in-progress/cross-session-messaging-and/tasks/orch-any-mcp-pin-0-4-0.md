@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp pin 0.4.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: new sessions install the any-mcp release that has the session tools
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/test_agent_session_messaging.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py t
 depends_on: [anymcp-session-tools, orch-agent-service-accounts, orch-agent-session-messaging]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 566d8e92751f0ef209b6a9093fd8e1f093788d1c
 points: 2
 expected_minutes: 6
 expected_tokens: 553016
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 742305
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 616856, review 125449"
 ---
 
 # orch any-mcp pin 0.4.0
@@ -81,3 +81,5 @@ New sessions install any-mcp v0.4.0, and the orchestrator's dev environment test
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` after `uv lock`.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
