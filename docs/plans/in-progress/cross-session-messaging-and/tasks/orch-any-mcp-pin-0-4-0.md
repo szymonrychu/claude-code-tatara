@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp pin 0.4.0
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: new sessions install the any-mcp release that has the session tools
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/test_agent_session_messaging.py]

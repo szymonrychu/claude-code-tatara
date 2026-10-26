@@ -1,6 +1,6 @@
 ---
 title: anymcp session tools
-status: todo
+status: in-progress
 repo: any-mcp
 value: agents get the sessions_list and session_send tools in any-mcp 0.4.0
 files: [src/any_mcp/orchestrator.py, tests/test_orchestrator_plugin.py, README.md, CHANGELOG.md, pyproject.toml, uv.lock, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: orch session message sender
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a message from another session reaches the target's leader as a turn that names the sender session"
 files: [src/agents_orchestrator/db/migrations/0007_session_messages.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/dispatcher/session_frame.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_migrations.py, tests/test_session_message_delivery.py, README.md, MEMORY.md]

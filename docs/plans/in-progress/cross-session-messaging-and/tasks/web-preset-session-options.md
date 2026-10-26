@@ -1,6 +1,6 @@
 ---
 title: web preset session options
-status: todo
+status: in-progress
 repo: agents-web
 value: users can turn both options on in the preset form
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]

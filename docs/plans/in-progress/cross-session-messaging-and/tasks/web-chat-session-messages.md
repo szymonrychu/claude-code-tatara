@@ -1,6 +1,6 @@
 ---
 title: web chat session messages
-status: todo
+status: in-progress
 repo: agents-web
 value: cross-session messages show their sender session in the chat instead of you
 files: [src/chat/chatModel.ts, src/chat/entries.tsx, src/chat/chatModel.test.ts, src/chat/ChatLog.test.tsx]

@@ -1,6 +1,6 @@
 ---
 title: smoke session options
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live smoke proves Kubernetes access and cross-session messaging after the deploy
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]

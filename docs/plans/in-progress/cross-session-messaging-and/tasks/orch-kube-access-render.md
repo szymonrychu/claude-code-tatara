@@ -1,6 +1,6 @@
 ---
 title: orch kube access render
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: agents of a kube_access session have in-cluster API access to every namespace from their shell
 files: [src/agents_orchestrator/k8s/render.py, tests/test_render_kube_access.py, README.md, MEMORY.md]

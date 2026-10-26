@@ -1,6 +1,6 @@
 ---
 title: orch session options spec
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "presets and sessions can carry the two new options, and the server refuses Kubernetes access until it is configured"
 files: [src/agents_orchestrator/spec.py, src/agents_orchestrator/settings.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/sessions.py, openapi.json, README.md, tests/test_spec_session_options.py, tests/test_nomenclature.py]

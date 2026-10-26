@@ -1,6 +1,6 @@
 ---
 title: orch agent session messaging
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a superleader can list and message the leaders of all sessions and every leader can message superleaders, with loops and floods stopped"
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/sessions.py, openapi.json, README.md, MEMORY.md, tests/test_agent_session_messaging.py]

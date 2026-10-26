@@ -1,6 +1,6 @@
 ---
 title: chart kube access rbac
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the deployment can grant full Kubernetes access to opted-in sessions behind one chart value
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/serviceaccount.yaml, chart/agents-orchestrator/templates/kube-access-binding.yaml, chart/agents-orchestrator/templates/configmap.yaml, tests/test_chart_kube_access.py, tests/test_chart_config.py, tests/test_chart_deployments.py, README.md]

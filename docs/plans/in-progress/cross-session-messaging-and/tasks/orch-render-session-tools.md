@@ -1,6 +1,6 @@
 ---
 title: orch render session tools
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the leader of every session, hive or alone, sees the session tools"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/e2e/test_e2e_kind.py, README.md, MEMORY.md]

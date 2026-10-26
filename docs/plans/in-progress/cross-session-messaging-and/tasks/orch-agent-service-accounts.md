@@ -1,6 +1,6 @@
 ---
 title: orch agent service accounts
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: no ordinary agent pod or Job carries a Kubernetes token any more
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/reconciler/init.py, src/agents_orchestrator/reconciler/checks.py, src/agents_orchestrator/reconciler/cache.py, tests/test_service_accounts.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, README.md]
