@@ -1,6 +1,6 @@
 ---
 title: connector repin receipts
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the cluster runs the connector build that sends read receipts
 files: [helmfile.yaml.gotmpl, values/agents-matrix-connector/common.yaml, tests/test_matrix_connector_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_matrix_connect
 depends_on: [mxc-read-receipts]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5ae6486889567de0318b060f36eee2dd254ecd1b
 points: 1
 expected_minutes: 4
 expected_tokens: 665870
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 255136
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 197980, review 57156"
 ---
 
 # connector repin receipts
@@ -60,3 +60,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-26 done
