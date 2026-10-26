@@ -1,6 +1,6 @@
 ---
 title: web preset session options
-status: in-progress
+status: done
 repo: agents-web
 value: users can turn both options on in the preset form
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run build && npm 
 depends_on: [orch-session-options-spec, orch-agent-session-messaging]
 model: opus
 review: ""
-verified_head: ""
+verified_head: decf2663e33518a888d4c76672cdcefa1e01f06e
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 760642
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 632065, review 128577"
 ---
 
 # web preset session options
@@ -74,3 +74,5 @@ A user can turn either option on for a preset, the preset saves sparsely, and th
 - MUI only; module docstring line at the top of each file; plain functions.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
