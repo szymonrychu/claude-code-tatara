@@ -1,6 +1,6 @@
 ---
 title: Paste .env control in the preset form
-status: in-progress
+status: done
 repo: agents-web
 value: Users paste .env contents to fill env rows instead of adding each row by hand
 files: [src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npm test -- src/presets && npm run lint"
 depends_on: [dotenv-parser-module]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 314b6bf05cbf0eb84c9ab3ad1fded0bd203cc6e4
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 458846
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 343133, review 115713"
 ---
 
 # Paste .env control in the preset form
@@ -62,3 +62,5 @@ The env editor shows a Paste .env button; pasting valid text and applying fills 
 - Existing tests in PresetForm.test.tsx show how the form is rendered and how the submitted spec is captured; reuse those helpers.
 - The textbox holds the paste only; it is not part of FormValues and is never submitted.
 - (my call) Pasted secret-looking or reserved keys are kept as rows and flagged by envKeyError, never silently dropped. When existing rows already hold a duplicate key, a pasted key replaces the value of the first matching row only. Apply with no pairs changes nothing (drop-empty runs only on a merge with pairs). The control appears wherever PresetForm's env editor renders.
+
+- 2026-10-26 done
