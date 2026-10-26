@@ -1,6 +1,6 @@
 ---
 title: kind e2e auto handover
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: compaction and scale-down handovers are proven end to end through the API
 files: [tests/e2e/test_e2e_kind.py, e2e/agent-test.scenario.json]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/te
 depends_on: [orch-wrapper-pin-0-3-0, leadership-auto-handover, scale-down-staying-peer, reconciler-leader-pod-hold, leader-changed-reason, claim-hold-and-handover-wake]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d56162d0a7d5a1fb2419d74301598fe054a17a09
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 21
+actual_tokens: 795251
+actual_roles: "impl 20, review 1"
+actual_role_tokens: "impl 706561, review 88690"
 ---
 
 # kind e2e auto handover
@@ -67,3 +67,5 @@ See the Requirement and the acceptance conditions above.
 See the Requirement and the acceptance conditions above.
 
 - 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): finding 1 (send only after the new leader shows)
+
+- 2026-10-26 done
