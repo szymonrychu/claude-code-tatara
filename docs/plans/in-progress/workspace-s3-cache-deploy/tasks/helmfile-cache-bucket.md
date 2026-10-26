@@ -1,6 +1,6 @@
 ---
 title: helmfile cache bucket
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployment gets its own rook-ceph bucket wired into the orchestrator
 files: [raw/workspace-cache-bucket.pre.yaml, values/agents-orchestrator/common.yaml, tests/test_workspace_cache.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider tests/test_workspace_cache.py && u
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8ebfff6
 points: 2
 expected_minutes: 5
 expected_tokens: 531208
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 23
+actual_tokens: 847861
+actual_roles: impl 23
+actual_role_tokens: impl 847861
 ---
 
 # helmfile cache bucket
@@ -70,3 +70,5 @@ Every acceptance condition holds on the committed HEAD.
 - 2026-10-26 amended: epic security review: bucket quota
 
 - 2026-10-26 amended: review: the quota lives in the raw OBC file (raw resources are not templated); maxSize in rook's documented G unit
+
+- 2026-10-26 done
