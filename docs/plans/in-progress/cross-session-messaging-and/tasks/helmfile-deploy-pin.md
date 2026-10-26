@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live namespace is pinned to the versions with both options and Kubernetes access enabled
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [smoke-session-options, web-preset-session-options, web-chat-session-messages]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f81208d23fa98f7380e2888c169f4a434615d440
 points: 2
 expected_minutes: 6
 expected_tokens: 553016
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 17
+actual_tokens: 471124
+actual_roles: "impl 12, review 6"
+actual_role_tokens: "impl 383577, review 87547"
 ---
 
 # helmfile deploy pin
@@ -73,3 +73,5 @@ Scope (agents-helmfile):
 - Never `mise run apply` here (MEMORY 2026-10-25); the apply is design Rollout R3.
 - Chart-pull tests blocked by a container network policy may be deselected in a local run (precedent ruling in done epic web-ui-cluster-tabs-with-fil task deploy-pin); they run unblocked before the apply.
 - `tests/test_orchestrator_release.py::test_values_dir_moved` once blocked an apply (retro agents-schedule-deploy); it must pass here.
+
+- 2026-10-26 done
