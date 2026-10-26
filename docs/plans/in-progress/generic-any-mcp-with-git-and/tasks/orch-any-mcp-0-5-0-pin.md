@@ -1,6 +1,6 @@
 ---
 title: orch any-mcp 0.5.0 pin
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the orchestrator pins generic any-mcp v0.5.0 and the plugins repo tag in one place each
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, tests/test_settings.py, tests/test_images.py, README.md, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py t
 depends_on: [orch-plugins-dev-dependency, anymcp-release-0-5-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 745ca1daa1743320f70bd3fd6c6a54d03252a82e
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 603753
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 504744, review 99009"
 ---
 
 # orch any-mcp 0.5.0 pin
@@ -76,3 +76,5 @@ The orchestrator runs on any-mcp v0.5.0 (its spec validation understands `source
 - The golden diff is the any-mcp ref only; on_start.py does not change here.
 - Orchestrator tests need Docker (testcontainers) and `VIRTUAL_ENV` unset; recreate a stale `.venv` with `uv sync`.
 - (orchestrator note 2026-10-27) orch-plugins-dev-dependency added `[tool.uv] override-dependencies = ["any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.4.0"]` to pyproject.toml because the plugins package's workspace pins any-mcp v0.5.0 and uv refused two URLs. This task's pin move to v0.5.0 must bump that override to v0.5.0 or remove it if uv no longer needs it, and uv.lock must resolve one any-mcp.
+
+- 2026-10-27 done
