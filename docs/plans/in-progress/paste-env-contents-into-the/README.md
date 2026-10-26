@@ -1,7 +1,7 @@
 ---
 title: Paste .env contents into the preset env editor
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-web]
 created: 2026-10-26
