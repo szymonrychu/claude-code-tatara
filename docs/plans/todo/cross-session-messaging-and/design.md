@@ -200,6 +200,12 @@ advisory and may overshoot by concurrent sends of one session (documented). Reje
 identical-repeat dedup window (not asked; the rate limit bounds repeats); a model-supplied hop (the
 model could reset it). (my call)
 
+Pair budget (interrogate panel, sonnet + opus): the hop only carries over when the send happens in the
+turn that delivered the framed message, so a reply in a later turn (peer report-back, Ambiguous path
+with a null turn_id, an intervening user turn) restarts at 1 and two leaders could ping-pong forever at
+the rate limit. `ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR` (default 30) caps the messages exchanged between
+one pair of sessions, both directions, in the last hour: 429 `pair_budget`. (my call)
+
 ### D11: Rendered tools; alone sessions with messaging get the plugin
 
 `k8s/on_start.py` `SESSION_TOOLS = ["sessions_list", "session_send"]`: a hive with
@@ -249,7 +255,12 @@ agents-orchestrator README: `### RBAC` and `## Kubernetes permissions` state the
 ClusterRoleBinding exception; `## Security` states that a `kube_access` agent can read every Secret
 (including the master key, the Claude token and the database credentials) and can mint tokens,
 certificates and bindings that outlive its session, so discarding the session is not a full
-revocation (research rbac A9, A10, D1, D8). (my call)
+revocation (research rbac A9, A10, D1, D8). `## Kubernetes permissions` also says that with
+`kubeAccess.enabled` anything that can create pods, StatefulSets, Jobs or Secrets in the release
+namespace, the reconciler included, is cluster-admin-equivalent; a render test pins that only a
+`kube_access: true` spec ever yields the privileged ServiceAccount. `## Security` names the pairing
+`session_messaging` plus `kube_access`: any messaging session can feed text to a cluster-admin leader,
+with the frame trailer as the only defence (interrogate panel). (my call)
 
 ## Research
 
@@ -384,6 +395,10 @@ User steps, asked up front at the gate:
 - U2: confirm the facebook chat session discard at R6 time is still wanted (user decision says yes).
 
 ## Assumptions and unknown facts
+
+- Settled by probe at the builder check (2026-10-26): mise is in the agent image (/usr/local/bin/mise
+  in agent-mx-4-0), agent pods reach github.com (HTTP 200), and the cluster is v1.33.0, so kubectl
+  1.33 is within skew. (my call)
 
 - The mise registry resolves `kubectl@1.33` from inside agent pods (network egress as for the any-mcp
   pip install). Confirmed by smoke-session-options at R5 (`kubectl auth can-i` in the pod).

@@ -38,12 +38,13 @@ Scope (agents-orchestrator):
 ## Acceptance conditions
 
 - ac1: a kube_access session's agent pod spec sets serviceAccountName to ORCH_KUBE_ACCESS_SERVICE_ACCOUNT and automountServiceAccountToken true, with no volume or mount at the token path and no KUBECONFIG env [evidence: test:tests/test_render_kube_access.py::test_kube_access_pod_identity]
+- ac1b: no spec without kube_access true ever renders serviceAccountName ORCH_KUBE_ACCESS_SERVICE_ACCOUNT, for agent pods and every Job, with the setting present (parametrized over alone, hive, static, messaging-only and cache specs) [evidence: test:tests/test_render_kube_access.py::test_only_kube_access_yields_privileged_account]
 - ac2: claude.passthrough_env contains KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT for a kube_access session and neither for a session without it [evidence: test:tests/test_render_kube_access.py::test_kube_access_passthrough_env]
 - ac3: the onStart script of a kube_access session installs kubectl at ORCH_KUBECTL_VERSION through mise and checks kubectl version --client under set -eu, and the script of a session without kube_access is unchanged [evidence: test:tests/test_render_kube_access.py::test_kube_access_on_start_installs_kubectl]
 - ac4: a kube_access session rendered while ORCH_KUBE_ACCESS_SERVICE_ACCOUNT is empty gets the agent ServiceAccount, automountServiceAccountToken false and no KUBERNETES_* passthrough [evidence: test:tests/test_render_kube_access.py::test_kube_access_fails_closed_without_setting]
 - ac5: the init, check and cache Jobs of a kube_access session use the agent ServiceAccount with automountServiceAccountToken false [evidence: test:tests/test_render_kube_access.py::test_kube_access_jobs_stay_unprivileged]
 - ac6: render, onStart, ServiceAccount, settings and nomenclature tests still pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_render.py tests/test_on_start.py tests/test_service_accounts.py tests/test_settings.py tests/test_nomenclature.py]
-- ac7: README Security names the Secret exposure, the non-revocation and the trigger-service path [evidence: command:grep -q 'kube_access' README.md && grep -qi 'revocation' README.md]
+- ac7: README Security names the Secret exposure, the non-revocation, the trigger-service path, and that a session with both session_messaging and kube_access lets any other messaging session feed text to a cluster-admin leader (the frame trailer is the only defence) [evidence: command:grep -q 'kube_access' README.md && grep -qi 'revocation' README.md && grep -q 'session_messaging' README.md]
 - ac8: lint passes [evidence: command:mise run lint]
 
 ## Files

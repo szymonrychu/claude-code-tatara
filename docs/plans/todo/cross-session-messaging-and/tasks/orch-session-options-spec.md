@@ -30,9 +30,9 @@ Goals G1 and G2 (epic README), verbatim: "A sparse create-time spec option for c
 Scope (agents-orchestrator):
 - `src/agents_orchestrator/spec.py` `SessionSpec`: `session_messaging: bool | None = Field(default=None, strict=True)` and `kube_access: bool | None = Field(default=None, strict=True)`, each with a comment like `reuse_running_agent`'s. Unset is not stored on a session row and not dumped in a preset.
 - `validate_spec`: `kube_access` true while `settings.kube_access_service_account` is empty is an error "Kubernetes access is not configured (ORCH_KUBE_ACCESS_SERVICE_ACCOUNT is unset)", with the `stored` exemption the cache check has (accepted on a preset PUT when unchanged from the stored spec).
-- `src/agents_orchestrator/settings.py`: `kube_access_service_account: str = ""` with a property `kube_access_available`; `agent_service_account: str = "default"`; `kubectl_version: str = "1.33"`; `session_message_rate_per_minute: int = Field(default=10, ge=1)`; `session_message_queued_max: int = Field(default=20, ge=1)`; `session_message_max_hops: int = Field(default=8, ge=1)`.
+- `src/agents_orchestrator/settings.py`: `kube_access_service_account: str = ""` with a property `kube_access_available`; `agent_service_account: str = "default"`; `kubectl_version: str = "1.33"`; `session_message_rate_per_minute: int = Field(default=10, ge=1)`; `session_message_queued_max: int = Field(default=20, ge=1)`; `session_message_max_hops: int = Field(default=8, ge=1)`; `session_message_pair_max_per_hour: int = Field(default=30, ge=1)`.
 - `src/agents_orchestrator/api/schemas.py`: `MetaKubeAccess(available: bool)`; `Meta.kube_access: MetaKubeAccess`. `src/agents_orchestrator/api/sessions.py` `meta()` fills it from the setting.
-- `README.md`: the `POST /api/v1/sessions` bullet and `### Session configuration` list both sparse fields and what they do; `## Configuration` gains one row per new setting (`ORCH_KUBE_ACCESS_SERVICE_ACCOUNT`, `ORCH_AGENT_SERVICE_ACCOUNT`, `ORCH_KUBECTL_VERSION`, `ORCH_SESSION_MESSAGE_RATE_PER_MINUTE`, `ORCH_SESSION_MESSAGE_QUEUED_MAX`, `ORCH_SESSION_MESSAGE_MAX_HOPS`); `### GET /api/v1/meta` names `kube_access.available`.
+- `README.md`: the `POST /api/v1/sessions` bullet and `### Session configuration` list both sparse fields and what they do; `## Configuration` gains one row per new setting (`ORCH_KUBE_ACCESS_SERVICE_ACCOUNT`, `ORCH_AGENT_SERVICE_ACCOUNT`, `ORCH_KUBECTL_VERSION`, `ORCH_SESSION_MESSAGE_RATE_PER_MINUTE`, `ORCH_SESSION_MESSAGE_QUEUED_MAX`, `ORCH_SESSION_MESSAGE_MAX_HOPS`, `ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR`); `### GET /api/v1/meta` names `kube_access.available`.
 - `openapi.json` regenerated (`uv run python -m agents_orchestrator.api.openapi > openapi.json`).
 - `tests/test_nomenclature.py`: `ALLOWED_PHRASES` gains `"cluster-admin"`. This test is no longer accurate for this epic: its docstring allows lines naming a Kubernetes cluster, and `cluster-admin` is the Kubernetes built-in ClusterRole this epic's README and chart must name (design D2); nothing else in that test changes.
 
@@ -63,7 +63,7 @@ The settings are only declared and documented here; the tasks that use them are 
 
 - `spec.py:SessionSpec.session_messaging: bool | None` and `SessionSpec.kube_access: bool | None` (strict, sparse).
 - `spec.py:validate_spec(spec, settings, stored=None)` gains the kube_access check.
-- `settings.py:Settings.kube_access_service_account: str`, `.kube_access_available -> bool`, `.agent_service_account: str`, `.kubectl_version: str`, `.session_message_rate_per_minute: int`, `.session_message_queued_max: int`, `.session_message_max_hops: int`.
+- `settings.py:Settings.kube_access_service_account: str`, `.kube_access_available -> bool`, `.agent_service_account: str`, `.kubectl_version: str`, `.session_message_rate_per_minute: int`, `.session_message_queued_max: int`, `.session_message_max_hops: int`, `.session_message_pair_max_per_hour: int`.
 - `api/schemas.py:MetaKubeAccess{available: bool}`, `Meta.kube_access`.
 - Contract for agents-web (task web-preset-session-options): `SessionSpec.session_messaging`, `SessionSpec.kube_access`, `Meta.kube_access.available` in `openapi.json`.
 

@@ -37,6 +37,7 @@ Scope (agents-orchestrator), two agent routes in `src/agents_orchestrator/api/ag
   6. target `desired` is `deleting`: 409 `session_deleting`;
   7. hop: when the caller's current turn (`agent_status.current_turn_id`) is the `turn_id` of a message in the caller's session that has a sender, the new hop is that message's hop + 1, else 1; above `settings.session_message_max_hops`: 409 `hop_limit`;
   8. the caller's session sent `settings.session_message_rate_per_minute` or more messages (rows with that `sender_session_id`) in the last 60 seconds: 429 `rate_limited`;
+  8b. pair budget (panel finding: the hop resets across turns, so the hop limit alone does not stop a two-leader ping-pong): the number of cross-session messages between the caller's session and the target session in either direction (rows with sender_session_id = caller and session_id = target, plus rows with sender_session_id = target and session_id = caller) created in the last hour is at least `settings.session_message_pair_max_per_hour`: 429 `pair_budget`;
   9. the target holds `settings.session_message_queued_max` or more queued rows with a sender: 409 `target_queue_full`.
   Text outside 1 to 16000 characters: 422 `invalid_request` (the app's validation error shape).
 - DB helpers: in `src/agents_orchestrator/db/queue.py` the counts and the hop lookup (one function per SQL op); in `src/agents_orchestrator/db/sessions.py` the messaging-session listing if SQL is used.
@@ -49,6 +50,7 @@ Scope (agents-orchestrator), two agent routes in `src/agents_orchestrator/api/ag
 - ac3: a caller session without the option gets 403 messaging_disabled and a non-leader member of a hive gets 403 not_leader, and neither queues a row [evidence: test:tests/test_agent_session_messaging.py::test_send_refusals_for_sender]
 - ac4: an unknown slug gets 404 not_found, the caller's own slug 422 self_send, a target without the option 409 target_messaging_disabled, a deleting target 409 session_deleting, and an empty or 16001-character text 422 invalid_request, each queuing no row [evidence: test:tests/test_agent_session_messaging.py::test_send_refusals_for_target]
 - ac5: a send made while the caller's current turn delivered a cross-session message of hop h is stored with hop h+1, and is refused 409 hop_limit when h+1 exceeds ORCH_SESSION_MESSAGE_MAX_HOPS [evidence: test:tests/test_agent_session_messaging.py::test_hop_counter]
+- ac6b: once ORCH_SESSION_MESSAGE_PAIR_MAX_PER_HOUR messages were exchanged between two sessions in either direction within the last hour, a further send between them, made from a turn that did not deliver a cross-session message (hop 1), gets 429 pair_budget while sends to a third session still succeed [evidence: test:tests/test_agent_session_messaging.py::test_pair_budget_stops_cross_turn_ping_pong]
 - ac6: the send after ORCH_SESSION_MESSAGE_RATE_PER_MINUTE sends within 60 seconds gets 429 rate_limited, and a target holding ORCH_SESSION_MESSAGE_QUEUED_MAX queued cross-session messages gets 409 target_queue_full [evidence: test:tests/test_agent_session_messaging.py::test_rate_limit_and_queue_cap]
 - ac7: README routes, openapi.json, the api layering pin, the agent port gate and nomenclature still pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_readme_api.py tests/test_api_sessions.py tests/test_agent_port.py tests/test_api_agent.py tests/test_nomenclature.py]
 - ac8: lint passes [evidence: command:mise run lint]
@@ -72,7 +74,7 @@ Scope (agents-orchestrator), two agent routes in `src/agents_orchestrator/api/ag
 
 ## Expected outcome
 
-An opted-in leader can list the other opted-in sessions and queue a message to one of them; every refusal of design D7 answers its code and queues nothing; a ping-pong stops at the hop limit and a flood at the rate limit or queue cap.
+An opted-in leader can list the other opted-in sessions and queue a message to one of them; every refusal of design D7 answers its code and queues nothing; a same-turn ping-pong stops at the hop limit, a cross-turn ping-pong at the pair budget, and a flood at the rate limit or queue cap.
 
 ## Steps
 
