@@ -27,9 +27,9 @@ Add `parseDotenv(text: string): { pairs: { key: string; value: string }[]; error
 
 ## Acceptance conditions
 
-- test: src/sessions/dotenv.test.ts covers blank lines, full-line comments, `export ` prefix, CRLF input, surrounding whitespace, unquoted values with and without ` #` comments, a `#` inside an unquoted value without a preceding space kept, double-quoted values with each escape, single-quoted values kept literal (no escape decoding, `#` kept), an empty value (`KEY=`), a value containing `=`, and a repeated key keeping the last value at its first position.
-- test: src/sessions/dotenv.test.ts covers the error cases with their 1-based line numbers: no `=`, empty key, unterminated double and single quote, trailing garbage after a closing quote; valid lines in the same text are still returned in `pairs`.
-- command: `npm test -- src/sessions/dotenv.test.ts` passes and `npm run lint` is clean.
+- ac1: parseDotenv handles blank lines, full-line comments, the `export ` prefix, CRLF input, surrounding whitespace, unquoted values with and without ` #` comments, a `#` inside an unquoted value without a preceding space kept, double-quoted values with each escape decoded, single-quoted values kept literal (no escape decoding, `#` kept), an empty value (`KEY=`), a value containing `=`, and a repeated key keeping the last value at its first position [evidence: test:src/sessions/dotenv.test.ts]
+- ac2: parseDotenv reports each error case with its 1-based line number (no `=`, empty key, unterminated double quote, unterminated single quote, text after a closing quote) while still returning the valid lines of the same text in `pairs` [evidence: test:src/sessions/dotenv.test.ts]
+- ac3: the parser tests pass and lint is clean [evidence: command:npm test -- src/sessions/dotenv.test.ts && npm run lint]
 
 ## Files
 
@@ -38,17 +38,21 @@ Add `parseDotenv(text: string): { pairs: { key: string; value: string }[]; error
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New: `src/sessions/dotenv.ts:parseDotenv(text: string): { pairs: { key: string; value: string }[]; errors: { line: number; message: string }[] }`, exported, pure, no React or MUI imports.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+parseDotenv exists and returns the documented pairs and errors for every rule in the requirement; dotenv.test.ts is green and lint is clean.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write src/sessions/dotenv.test.ts covering every acceptance condition, run `npm test -- src/sessions/dotenv.test.ts`, expect it to fail because src/sessions/dotenv.ts does not exist.
+- Green: write src/sessions/dotenv.ts, run `npm test -- src/sessions/dotenv.test.ts`, expect all tests passed.
+- Run `npm run lint`, expect no output beyond the eslint banner (max-warnings 0).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Repo: code/agents-web (TypeScript, vitest, eslint). Module and test sit beside src/sessions/sessionSpecForm.ts, which owns EnvRow and envKeyError; do not import from or change it.
+- Error messages are short lowercase phrases, for example `missing =`, `empty key`, `unterminated quote`, `unexpected text after closing quote`; task 2 renders them as `line <n>: <message>`.
+- No new dependency (no dotenv package): the parser is small and the rules are fixed by the requirement.
+- (my call) `KEY= # c` parses to an empty value. In a double-quoted value an unknown escape such as `\x` is kept literally (backslash plus character), not an error.
