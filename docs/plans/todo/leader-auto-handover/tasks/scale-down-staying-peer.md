@@ -27,10 +27,12 @@ Goal G2, verbatim: "a scale-down whose new replica count would remove the leader
 
 Design D5, verbatim: `db/sessions.set_replicas` refuses `leader_would_leave` only when the leader's ordinal is at or above the new replica count and no staying peer exists: another agent of the session that is ready, not gone, has a wrapper session and has `ordinal < replicas` (the same predicate as the pick, D7). Otherwise it writes `spec.replicas` as today and answers 202. The api never moves the leader; the dispatcher derives the move from `spec.replicas` (D6). The error code keeps its name and now means "the leader would leave and no ready agent that stays can take over". Refusal order and every other code are unchanged.
 
+Design D15, verbatim (api half): `set_replicas` sends `NOTIFY leadership_requested {session_id}` when it accepts a count at or below the leader's ordinal.
+
 Scope:
-- `src/agents_orchestrator/db/sessions.py` `set_replicas`: the refusal above, reading `agents` only (never writing `session_leaders` or `agents`); one predicate shared with the pick of `db/leadership.py` (where it lives is left to the builder). Docstrings updated.
+- `src/agents_orchestrator/db/sessions.py` `set_replicas`: the refusal above, reading `agents` only (never writing `session_leaders` or `agents`); one predicate shared with the pick of `db/leadership.py` (where it lives is left to the builder); in the same transaction, after the write, `NOTIFY leadership_requested {session_id}` when the accepted count is at or below the leader's ordinal (no NOTIFY otherwise beyond today's `session_changed`). Docstrings updated.
 - Tests:
-  - `tests/test_sessions_repo.py`: a new test that a scale-down below the leader is written when a staying peer exists (no `session_leaders` change), and refused `leader_would_leave` when the only other agents are not ready, gone, without a wrapper session, or themselves leaving.
+  - `tests/test_sessions_repo.py`: a new test that a scale-down below the leader is written when a staying peer exists (no `session_leaders` change, one `leadership_requested` NOTIFY), and refused `leader_would_leave` when the only other agents are not ready, gone, without a wrapper session, or themselves leaving.
   - `tests/test_api_scale.py`: a new test that `POST /api/v1/sessions/{id}/scale` below the leader answers 202 with a staying ready peer.
   - `tests/test_agent_scale.py`: a new test that the leader's `POST /agent/v1/scale` below its own ordinal answers 202 with a staying ready peer.
 - Tests no longer accurate, to update (each asserted "a scale-down below the leader is always refused", which the user's decision replaces):
@@ -44,7 +46,7 @@ Notes: `hive()` in `tests/test_agent_scale.py` and the `insert_agent` factory de
 
 ## Acceptance conditions
 
-- AC1: `set_replicas` below the leader's ordinal writes `spec.replicas` when another ready, not gone agent with a wrapper session and `ordinal < replicas` exists, and touches no `session_leaders` row [evidence: test:tests/test_sessions_repo.py::test_set_replicas_below_leader_with_staying_peer]
+- AC1: `set_replicas` below the leader's ordinal writes `spec.replicas` when another ready, not gone agent with a wrapper session and `ordinal < replicas` exists, touches no `session_leaders` row, and sends `NOTIFY leadership_requested {session_id}`; a scale that leaves the leader in place sends none [evidence: test:tests/test_sessions_repo.py::test_set_replicas_below_leader_with_staying_peer]
 - AC2: with no such agent (others not ready, gone, without a wrapper session, or leaving) it is refused `leader_would_leave` and nothing is written [evidence: test:tests/test_sessions_repo.py::test_set_replicas_leader_rules]
 - AC3: the public scale route answers 202 below the leader with a staying ready peer [evidence: test:tests/test_api_scale.py::test_scale_below_leader_accepted]
 - AC4: the public scale route still answers 409 `leader_would_leave` with no staying ready peer [evidence: test:tests/test_api_scale.py::test_scale_leader_would_leave]
@@ -77,3 +79,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): finding 2 (set_replicas wakes the dispatcher)
