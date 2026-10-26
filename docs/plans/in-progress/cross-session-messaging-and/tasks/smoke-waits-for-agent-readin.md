@@ -1,6 +1,6 @@
 ---
 title: Smoke waits for agent readiness before make-leader
-status: todo
+status: done
 repo: agents-helmfile
 value: "The live smoke no longer fails on the orchestrator's agent-ready lag, so the deploy can be verified"
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts=\"\" tests/te
 depends_on: [helmfile-deploy-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d1c09ff9a02745452b865297d3e68955d18e362d
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 12
+actual_tokens: 543584
+actual_roles: "impl 8, review 5"
+actual_role_tokens: "impl 388606, review 154978"
 ---
 
 # Smoke waits for agent readiness before make-leader
@@ -55,3 +55,5 @@ The scale-down-below-leader smoke step passes against the live orchestrator even
 - Root cause and repro: .scratchpad/cluster-options/leader-debug.md (repro session dbg-leader-qxzk: request 6s after Ready applied; request while ready=false rejected in 4ms).
 - Pre-existing since agents-helmfile f73dc2c (leader-auto-handover); fixed here because it blocks this epic's deploy verification (R5).
 - Never print tokens; keep the word cluster out of new text.
+
+- 2026-10-26 done
