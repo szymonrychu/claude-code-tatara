@@ -1,0 +1,56 @@
+---
+title: Allow the init-scripts tools agents are told to use
+status: todo
+repo: agents-orchestrator
+value: "Agents can actually call orchestrator_init_scripts_get/edit, which the init Job tells them to use"
+files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, README.md]
+verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts=\"\" tests/test_on_start.py tests/test_render.py && mise run lint"
+depends_on: [orch-render-session-tools]
+model: sonnet
+review: ""
+verified_head: ""
+points: 2
+expected_minutes: 5
+expected_tokens: 553016
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
+---
+
+# Allow the init-scripts tools agents are told to use
+
+## Requirement
+
+Discovered during orch-render-session-tools (2026-10-27): the init Job's README text in src/agents_orchestrator/reconciler/init.py:97 tells agents that "the orchestrator_init_scripts_edit tool" applies edits to the next session, and any-mcp v0.4.0's orchestrator plugin defines init_scripts_get and init_scripts_edit (GET/PUT /init-scripts on the agent API), but orchestrator_allow in src/agents_orchestrator/k8s/on_start.py never allows them, so no agent can call them. Add init_scripts_get and init_scripts_edit to the allow list of every session that gets the orchestrator any-mcp entry (alone and hive), in a fixed position after the session tools, keeping each list's existing order. If the agent API's /init-scripts routes are restricted (for example to the leader), the tools are still listed and the server's refusal stands; do not change the routes. Update the README section that lists the rendered orchestrator tools.
+
+## Acceptance conditions
+
+- ac1: an alone session's orchestrator entry allows exactly sessions_list, session_send, init_scripts_get, init_scripts_edit in that order [evidence: test:tests/test_on_start.py::test_alone_session_tools_entry]
+- ac2: a hive session's allow list ends with sessions_list, session_send, init_scripts_get, init_scripts_edit after the hive (and scale, when scalable) tools [evidence: test:tests/test_on_start.py::test_hive_session_tools]
+- ac3: every tool name the orchestrator renders or names to agents (including the init Job text) is offered by the pinned any-mcp orchestrator plugin [evidence: test:tests/test_on_start.py::test_allowed_tools_exist_in_plugin]
+- ac4: on_start, render, init and nomenclature tests and lint pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts="" tests/test_on_start.py tests/test_render.py tests/test_init_scripts.py tests/test_nomenclature.py && mise run lint]
+
+## Files
+
+- `src/agents_orchestrator/k8s/on_start.py`
+- `tests/test_on_start.py`
+- `README.md`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
