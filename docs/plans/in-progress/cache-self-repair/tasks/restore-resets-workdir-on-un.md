@@ -1,6 +1,6 @@
 ---
 title: restore resets workdir on unreadable archive
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: A corrupt cache key repairs itself instead of blocking its key forever
 files: [src/agents_orchestrator/cache/transfer.py, src/agents_orchestrator/reconciler/cache.py, tests/test_cache_cli.py, tests/test_cache_save.py, README.md, MEMORY.md]

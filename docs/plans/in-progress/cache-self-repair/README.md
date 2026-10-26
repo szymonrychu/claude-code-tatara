@@ -2,7 +2,7 @@
 title: cache-self-repair
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-orchestrator]
 created: 2026-10-26
 ---
