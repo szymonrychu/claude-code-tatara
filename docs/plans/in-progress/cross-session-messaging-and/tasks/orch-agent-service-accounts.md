@@ -1,6 +1,6 @@
 ---
 title: orch agent service accounts
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: no ordinary agent pod or Job carries a Kubernetes token any more
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/reconciler/init.py, src/agents_orchestrator/reconciler/checks.py, src/agents_orchestrator/reconciler/cache.py, tests/test_service_accounts.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_service_accou
 depends_on: [orch-session-options-spec]
 model: opus
 review: ""
-verified_head: ""
+verified_head: bbb9c1cc2d8fa45ed2a5ab52c59f4d1aeba750fc
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 14
+actual_tokens: 1056760
+actual_roles: "impl 13, review 2"
+actual_role_tokens: "impl 932278, review 124482"
 ---
 
 # orch agent service accounts
@@ -75,3 +75,5 @@ No agent pod or Job rendered by the orchestrator mounts a Kubernetes token, and 
 - The reuse brief notes imagePullSecrets and the workspace volume are duplicated across render.py, checks.py, init.py, cache.py; a shared pod-spec helper is allowed only if it stays within these files.
 - Do not write the word "cluster" in new lines (nomenclature guard).
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
+
+- 2026-10-26 done
