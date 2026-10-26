@@ -360,6 +360,7 @@ User steps, asked up front at the gate: none (the plugins repo exists and its CI
 
 ## Open questions
 - Q1: Should the orchestrator and the web form accept only remote https git sources (git::https://... and github.com/...) in any_mcp_sources and in any_mcp_config source entries, refusing local paths, git::ssh and git::file (agent pods have no SSH keys and no meaningful local plugin dirs)? Local paths stay fully supported in any-mcp itself. [recommended: yes, remote https git only in the orchestrator and web]
+- Q2: Should any_mcp_sources accept any git host and repo, with no allowlist, since preset authors can already run arbitrary init scripts in agent pods? [recommended: yes, no host allowlist]
 
 ## Irreversible operations in scope
 
