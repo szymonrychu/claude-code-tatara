@@ -1,6 +1,6 @@
 ---
 title: any-mcp source parser parity with the web grammar
-status: todo
+status: done
 repo: any-mcp
 value: any-mcp and the web form accept exactly the same remote sources
 files: [src/any_mcp/sources.py, tests/test_sources.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts=\"\" tests/te
 depends_on: [anymcp-source-installer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4aceb148623d7ff2d0f8bfbd8fc30db90b3fc986
 points: 1
 expected_minutes: 4
 expected_tokens: 658840
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 482917
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 418730, review 64187"
 ---
 
 # any-mcp source parser parity with the web grammar
@@ -56,3 +56,5 @@ any-mcp refuses every remote source the web form refuses, with the same message 
 - The orchestrator-side check (task orch-any-mcp-sources-spec) must follow the same rules.
 
 - 2026-10-27 amended: orchestrator over-specified: local paths with spaces must keep working; whitespace refusal limited to remote sources
+
+- 2026-10-27 done
