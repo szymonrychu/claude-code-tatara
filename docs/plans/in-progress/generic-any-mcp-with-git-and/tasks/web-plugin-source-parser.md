@@ -1,6 +1,6 @@
 ---
 title: web plugin source parser
-status: in-progress
+status: done
 repo: agents-web
 value: the preset form can flag a malformed plugin source before saving
 files: [src/presets/pluginSource.ts, src/presets/pluginSource.test.ts]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/pluginSource.test.ts && npm run build && mis
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: ba3acab3274c81d8cfc3f7416ede2240c6206e09
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 507780
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 442308, review 65472"
 ---
 
 # web plugin source parser
@@ -64,3 +64,5 @@ The web app refuses, with a readable reason, every source the orchestrator would
 - Mirror the accept and reject cases of any-mcp `tests/test_sources.py` (task anymcp-source-parser) for the forms D8 keeps; messages need the same meaning, not the same bytes.
 - Test names must contain the `-t` strings of the acceptance conditions.
 - No text uses the word "cluster" (`src/nomenclature.test.ts`); `npm run build` runs `tsc -b`.
+
+- 2026-10-26 done
