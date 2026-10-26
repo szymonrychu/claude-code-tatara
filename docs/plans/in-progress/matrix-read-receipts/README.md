@@ -1,7 +1,7 @@
 ---
 title: matrix read receipts
 blockers: []
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-matrix-connector, agents-helmfile]
 created: 2026-10-26
