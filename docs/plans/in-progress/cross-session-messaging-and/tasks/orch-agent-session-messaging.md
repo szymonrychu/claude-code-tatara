@@ -1,6 +1,6 @@
 ---
 title: orch agent session messaging
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a superleader can list and message the leaders of all sessions and every leader can message superleaders, with loops and floods stopped"
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/sessions.py, openapi.json, README.md, MEMORY.md, tests/test_agent_session_messaging.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_agent_session
 depends_on: [orch-session-options-spec, orch-session-message-sender]
 model: opus
 review: ""
-verified_head: ""
+verified_head: dbff3bcf6906c001c29d17a1b783557cb5e03618
 points: 5
 expected_minutes: 12
 expected_tokens: 1686779
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 7
+actual_tokens: 3551619
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 3403145, review 148474"
 ---
 
 # orch agent session messaging
@@ -94,3 +94,5 @@ A superleader's leader can list and message the leader of every other open sessi
 - Orchestrator tests need Docker; run with `VIRTUAL_ENV` unset; `uv sync` if the `.venv` shebang is stale.
 
 - 2026-10-26 amended: gate 2026-10-26: one-sided superleader messaging (tools for every session, target_not_superleader), Q1 no orchestrator kubectl install, Q2 yes
+
+- 2026-10-26 done
