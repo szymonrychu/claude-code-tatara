@@ -1,0 +1,73 @@
+---
+title: orch any-mcp pin 0.4.0
+status: todo
+repo: agents-orchestrator
+value: new sessions install the any-mcp release that has the session tools
+files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml]
+verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_agent_init_scripts.py && mise run lint"
+depends_on: [anymcp-session-tools, orch-agent-service-accounts]
+model: opus
+review: ""
+verified_head: ""
+points: 2
+expected_minutes: 6
+expected_tokens: 553016
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
+---
+
+# orch any-mcp pin 0.4.0
+
+## Requirement
+
+Goal G5 (epic README), verbatim: "Deployed: new orchestrator, any-mcp and agents-web versions applied through agents-helmfile ...". Design D12: agents-orchestrator pins any-mcp `v0.4.0` in `settings.any_mcp_ref`, `pyproject.toml` and `uv.lock` (README and goldens follow).
+
+Needs a merged upstream: any-mcp task anymcp-session-tools merged to any-mcp main and tag `v0.4.0` pushed with a green release workflow (design Rollout R1). Do not start before `git ls-remote https://github.com/szymonrychu/any-mcp refs/tags/v0.4.0` prints a sha.
+
+Scope (agents-orchestrator):
+- `src/agents_orchestrator/settings.py`: `any_mcp_ref: str = "v0.4.0"`.
+- `pyproject.toml`: `any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.4.0`; `uv.lock` refreshed (`uv lock`).
+- `README.md`: the `ORCH_ANY_MCP_REF` row default and the `## Images` any-mcp sentence name `v0.4.0`; the dated breaking-change note ("Agents need any-mcp `v0.3.0` or later") stays as history.
+- `tests/test_settings.py::test_defaults` asserts `any_mcp_ref == "v0.3.0"`: no longer accurate because the pinned release moves to v0.4.0 by design D12; it asserts `"v0.4.0"`.
+- `tests/golden/session_single.yaml`, `tests/golden/session_two_peers.yaml`: regenerated with the golden helper of `tests/test_render.py` (the onStart script names the ref).
+
+## Acceptance conditions
+
+- ac1: the pyproject any-mcp pin, uv.lock and the settings default agree on v0.4.0 [evidence: test:tests/test_images.py::test_pyproject_any_mcp_pin_matches_settings_ref]
+- ac2: the default settings pin v0.4.0 [evidence: test:tests/test_settings.py::test_defaults]
+- ac3: the two-replica golden renders the v0.4.0 install [evidence: test:tests/test_render.py::test_golden_two_replicas_with_peers]
+- ac4: the single golden renders the v0.4.0 install [evidence: test:tests/test_render.py::test_golden_single_without_peers]
+- ac5: the plugin parity test passes against any-mcp v0.4.0 [evidence: test:tests/test_agent_init_scripts.py::test_plugin_parity]
+- ac6: README names v0.4.0 as the ORCH_ANY_MCP_REF default [evidence: command:grep -q '`ORCH_ANY_MCP_REF` | `v0.4.0`' README.md]
+- ac7: the settings, images, render, onStart and README tests pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest -q tests/test_settings.py tests/test_images.py tests/test_render.py tests/test_on_start.py tests/test_readme_api.py]
+- ac8: lint passes [evidence: command:mise run lint]
+
+## Files
+
+- `src/agents_orchestrator/settings.py`
+- `pyproject.toml`
+- `uv.lock`
+- `README.md`
+- `tests/test_settings.py`
+- `tests/golden/session_single.yaml`
+- `tests/golden/session_two_peers.yaml`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
