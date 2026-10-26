@@ -38,17 +38,19 @@ Review finding (2026-10-27, web-plugin-source-parser review, parity check agains
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/any_mcp/sources.py:_parse_git` and the top-level parse entry: stricter location checks; public API unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+any-mcp refuses every remote source the web form refuses, with the same message form.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tests; run the task's verify; expect failures.
+- Green: tighten the parser; run the task's verify and ac3 on the committed HEAD.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Depends on anymcp-source-installer only to serialize work in the any-mcp tree (same file area); no functional dependency.
+- Reference: agents-web tree /Users/szymonri/Documents/claude-code-tatara/.claude/worktrees/generic-any-mcp-with-git-and/agents-web/src/presets/pluginSource.ts (HOST_AND_PATH) and its tests.
+- The orchestrator-side check (task orch-any-mcp-sources-spec) must follow the same rules.
