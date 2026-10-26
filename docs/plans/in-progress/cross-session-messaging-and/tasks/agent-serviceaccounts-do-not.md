@@ -40,17 +40,19 @@ Security review finding (MEDIUM, verified by the orchestrator 2026-10-27): chart
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- values: `agentServiceAccount.annotations: {}`, `kubeAccess.annotations: {}` (new); `serviceAccount.annotations` unchanged for api and reconciler.
+- templates/serviceaccount.yaml: the `-agent` and `-kube-access` documents read their own annotations.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No agent-facing ServiceAccount can pick up the api ServiceAccount's annotations; each has its own empty-by-default annotations value.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tests to tests/test_chart_kube_access.py; run the task's verify; expect ac1 to fail.
+- Green: edit values.yaml and serviceaccount.yaml, README; run the task's verify and the ac3 command on the committed HEAD.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- From the phase-5 security review (security-researcher, sonnet), verified by reading serviceaccount.yaml lines 37-40 and 55-58.
+- Keep the word cluster out of new text except cluster-admin, ClusterRole, ClusterRoleBinding; nomenclature checks tracked files, so run it after committing.
