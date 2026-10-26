@@ -53,3 +53,18 @@ Epic review (phase 5), 2026-10-27.
 - Interrogate panel ran on the design before the gate (fable/opus/sonnet); its findings were applied to the plan.
 - Scope audit (sonnet): all landed; G5 deploy and presets pending.
 - Discovered task: allow-the-init-scripts-tools (agents were told to use a tool no allow list included).
+
+Verdict: pass (2026-10-26)
+
+Epic review (phase 5), 2026-10-27.
+- Full suites: orchestrator 1027 passed (non-integration), lint and chart tests clean; agents-web 429 passed, lint clean; any-mcp 215 passed; agents-helmfile 208 passed, lint and gitleaks clean.
+- PR CI: any-mcp #4 green; agents-web #15 green; agents-orchestrator #22 green after one e2e fix (two kind e2e assertions still expected the two-tool allow list; fixed f92cc8d); agents-helmfile #30 pending.
+- Whole-diff review (sonnet): no findings across seams (frame contract, tool names, settings names, superleader authz, ServiceAccount wiring).
+- Security review (sonnet): no critical/high. MEDIUM fixed as task agent-serviceaccounts-do-not (agent ServiceAccounts no longer inherit api annotations). LOW dismissed: 404 vs 403 slug probing (slugs are not secret); advisory limit overshoot (documented D10).
+- Interrogate panel ran on the design before the gate (fable/opus/sonnet); its findings were applied to the plan.
+- Scope audit (sonnet): all landed; G5 deploy and presets pending.
+- Discovered task: allow-the-init-scripts-tools (agents were told to use a tool no allow list included).
+- Deploy (R3): agents-helmfile 86ee171 applied (orchestrator de16c14, web de64208, wrapper 0.3.0 pin from the previous epic also applied for the first time); rollouts OK; ClusterRoleBinding agents-orchestrator-kube-access -> cluster-admin.
+- Smoke (R5): first run failed on a pre-existing smoke race (make-leader before agent ready); fixed as task smoke-waits-for-agent-readin (agents-helmfile #31, a68e876); third run passed incl. kube access (SelfSubjectAccessReview */* allowed) and superleader messaging (send, framed delivery, target_not_superleader refusal). Second run failed only on the orchestrator's own stray port-forward.
+- Presets (R6): facebook chat session_messaging true, claude-code-tatara kube_access true; mx-4 discarded (idle, 0 queued).
+- R7 live kubectl proof in a claude-code-tatara session: pending the user's U1 preset edit; access already proven by the smoke.
