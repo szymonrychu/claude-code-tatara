@@ -1,6 +1,6 @@
 ---
 title: reconciler leader pod hold
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the leader's pod is removed only after leadership has moved"
 files: [src/agents_orchestrator/reconciler/loop.py, tests/test_reconciler.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_reconciler.py tests/test_readme_ap
 depends_on: [scale-down-staying-peer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c61e41718c6f6dbe12bdade6cb2a8bfa604c887e
 points: 2
 expected_minutes: 6
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 715063
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 641821, review 73242"
 ---
 
 # reconciler leader pod hold
@@ -67,3 +67,5 @@ See the Requirement and the acceptance conditions above.
 See the Requirement and the acceptance conditions above.
 
 - 2026-10-26 amended: interrogate 2026-10-26 (fable, opus, sonnet): finding 5 (busy leader, peer unready race)
+
+- 2026-10-26 done
