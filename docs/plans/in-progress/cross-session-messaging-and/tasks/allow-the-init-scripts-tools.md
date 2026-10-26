@@ -1,6 +1,6 @@
 ---
 title: Allow the init-scripts tools agents are told to use
-status: todo
+status: done
 repo: agents-orchestrator
 value: "Agents can actually call orchestrator_init_scripts_get/edit, which the init Job tells them to use"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest -q -o addopts=\"\" tests/te
 depends_on: [orch-render-session-tools]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6da5e874b86c4730d87dc7713a398069efa320d1
 points: 2
 expected_minutes: 5
 expected_tokens: 553016
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 542373
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 480382, review 61991"
 ---
 
 # Allow the init-scripts tools agents are told to use
@@ -59,3 +59,5 @@ Every session's orchestrator entry allows the init-scripts tools, and a test tie
 - tests/test_nomenclature.py checks tracked files: run it after committing; avoid the word cluster.
 
 - 2026-10-26 amended: ac4 named a nonexistent test file; the init-scripts tests are tests/test_agent_init_scripts.py
+
+- 2026-10-26 done
