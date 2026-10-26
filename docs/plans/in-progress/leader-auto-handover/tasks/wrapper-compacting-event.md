@@ -1,6 +1,6 @@
 ---
 title: wrapper compacting event
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: the orchestrator learns a leader is about to compact before the compaction runs
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/events.py, README.md, tests/test_command_signals.py, tests/test_event_log.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_command_signals.py tests/test_event_log.py 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ef64fb0fbe913ca9f0a6a5ea2680ae242f04b485
 points: 2
 expected_minutes: 6
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 26
+actual_tokens: 881354
+actual_roles: "impl 25, review 1"
+actual_role_tokens: "impl 816850, review 64504"
 ---
 
 # wrapper compacting event
@@ -69,3 +69,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-26 done
