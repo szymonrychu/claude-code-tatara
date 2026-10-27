@@ -1,6 +1,6 @@
 ---
 title: web file tabs state
-status: in-progress
+status: done
 repo: agents-web
 value: "open files, their mode, unsaved edits, saves and conflicts are tracked per session without losing edits"
 files: [src/files/useFileTabs.ts, src/files/useFileTabs.test.ts]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/files/useFileTabs.test.ts && mise exec 
 depends_on: [web-sync-write-api]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 92529d1fdc3e4256246a68db975bc3dedfe26b8c
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 11
+actual_tokens: 1639317
+actual_roles: "impl 9, review 2"
+actual_role_tokens: "impl 1481501, review 157816"
 ---
 
 # web file tabs state
@@ -84,3 +84,5 @@ One hook owns every open file of a session: opening, focusing, closing with the 
 - Drop stale answers with a per-tab request token, as `FilesPanel.openFile` does today with `previewToken`.
 - Export a reset of the module store for tests only if needed; tests may simply use distinct session ids.
 - `observe` receives a lookup built by the panel from `state.dirs`; the hook never fetches listings itself (do-not-build: a second listing poll).
+
+- 2026-10-27 done
