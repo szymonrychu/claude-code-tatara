@@ -328,6 +328,19 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 - The ccw address of an agent is `<pod_name>/<wrapper_session_id>` (render sets `peers.name = ${POD_NAME}`); the live
   proof confirms a send to it is delivered.
 
+## Builder check settlements (2026-10-27)
+
+1. The build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged; the epic is blocked on them already (my call). The first task, orch-activity-route, makes the orchestrator session read the real next migration number and plugins tag from main and amend the dependent tasks (orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0, helmfile-deploy-pin). Their acceptance conditions hold the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` until then; no number is assumed (`0009` and `v0.4.0` elsewhere in this document are only the expectation). The migration test is named `test_drop_feed_cursor_migration`, without the number.
+2. The live apply rolls the agent pods of the session that runs it (my call). Before the apply the orchestrator session writes a handoff checkpoint (`workbench:handoff`) naming the apply, smoke and proof steps; the helm apply runs to completion before the reconciler rolls pods; after the roll the resumed leader re-runs smoke and the live proof from the checkpoint. Placed in helmfile-apply-live-proof (step 3, ac8).
+3. ac6 of helmfile-apply-live-proof counts only notes posted by the dispatcher (orchestrator-originated), not ccw peer messages (my call).
+4. `not_leader` and `stale_epoch` stay as 409 texts; the `leadership_request` note path tests only `target_not_ready` and `no_peers` (my call, intended).
+5. "One further user turn" before the leader hands over anyway stays prose in the `handover_due` note (my call, accepted).
+6. Staleness of the member lines and push-time candidate ranking in the note are accepted; the mitigation is the "Call orchestrator_me" sentence of the note (my call).
+7. The `handover_due` and outcome pass runs on every push tick, outside the `_claim`/`_release` hash path of `hive_state` (my call); orch-handover-due-note states it (requirement and ac11).
+8. `events.created_at` stays, per the non-goal (my call).
+
+Q8 (exclude candidates at or above the threshold) stays open for the gate.
+
 ## Open questions
 - Q1: Remove the activity feed entirely and give members an on-demand orchestrator_activity tool instead of any digest? [recommended: yes]
 - Q2: Push hive_state only when the leader, epoch, membership or readiness changes (not on busy/idle or context changes)? [recommended: yes]
