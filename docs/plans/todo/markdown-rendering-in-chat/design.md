@@ -195,6 +195,7 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 ## Open questions
 
 none
+- Q1: Markdown images in chat text (![alt](url)): render them as a new-tab link labelled with the alt text instead of loading the image (D4)? [recommended: yes: never render an img element, show a link to the URL labelled by the alt text, so message text cannot trigger remote loads]
 
 ## Irreversible operations in scope
 
