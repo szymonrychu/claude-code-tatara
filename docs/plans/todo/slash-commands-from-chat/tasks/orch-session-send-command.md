@@ -25,16 +25,19 @@ actual_role_tokens: ""
 
 Goal G2 (README), verbatim: "A superleader can send a slash command to a target session and it runs as a command, not as framed prompt text." User request, verbatim: "Both user and superleader can send them."
 
-Design D1, verbatim: "`POST /api/v1/sessions/{id}/messages` (`api/messages.py:post_message`, the chat) and `POST /agent/v1/sessions/{slug}/messages` (`api/agent.py:session_send`, the superleader) both call one new `agents_orchestrator.slash.parse(text) -> tuple[str, str] | None` and store the message with `kind = 'command'` when it matches, else `kind = 'turn'`."
+Design D1, verbatim: "`POST /api/v1/sessions/{id}/messages` (`api/messages.py:post_message`, the chat) and `POST /agent/v1/sessions/{slug}/messages` (`api/agent.py:session_send`, the superleader) both call one new `agents_orchestrator.slash.parse(text) -> tuple[str, str] | None` and store the message with `kind = 'command'` when it matches, else `kind = 'turn'`. On the agent route a match stores `kind = 'command'` only when the sender's own session has `spec.session_messaging` (a superleader); a leader of any other session sending to a superleader (admitted by the D7 check of `api/agent.py:session_send`, `own.spec.session_messaging or target.spec.session_messaging`) keeps `kind = 'turn'`, so its slash text is delivered as framed prose (my call, interrogate item 1: the user asked for "user and superleader")."
 
-Scope (agents-orchestrator): `api/agent.py:session_send` passes `kind="command"` to `queue.enqueue_message` when `slash.parse(body.text)` matches; every D7 check (leader only, self send, superleader, deleting, hop, rate, pair budget, queue cap) applies unchanged and in the same order; `README.md` (the superleader messaging section says slash text runs as a command on the target's leader, unframed).
+Interrogate item 1 (interrogate.md), verbatim: "Non-superleader to superleader command execution (A, B, C). D7 admits any leader sending to a superleader (api/agent.py:412), so with the change a plain worker session runs unframed commands on a superleader. The user asked for "user and superleader". Store `kind='command'` only when the sender's session has `session_messaging`; otherwise the text stays a framed turn. AC with a worker-to-superleader test."
+
+Scope (agents-orchestrator): `api/agent.py:session_send` passes `kind="command"` to `queue.enqueue_message` when `slash.parse(body.text)` matches and `own.spec.session_messaging` is true, else `kind="turn"`; every D7 check (leader only, self send, superleader, deleting, hop, rate, pair budget, queue cap) applies unchanged and in the same order; `README.md` (the superleader messaging section says slash text from a superleader runs as a command on the target's leader, unframed, and slash text from any other session is delivered as a framed message).
 
 ## Acceptance conditions
 
 - ac1: (Docker: CI or a Docker host) a superleader's session_send "/compact" stores kind command with sender_session_id, sender_slug and hop (new) [evidence: test:tests/test_agent_session_messaging.py::test_session_send_slash_is_command_kind]
-- ac2: (Docker) the D7 refusals still apply to slash text in the same order (not_leader, target_not_superleader, rate_limited) (new) [evidence: test:tests/test_agent_session_messaging.py::test_session_send_slash_keeps_refusals]
-- ac3: README documents that slash text from session_send runs as a command [evidence: command:grep -qi "slash" README.md]
-- ac4: Docker-free checks and lint pass [evidence: command:uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && mise run lint]
+- ac2: (Docker) a leader of a session without session_messaging sending "/compact" to a superleader is accepted 202 and stored kind turn, so the dispatcher frames it as a session message (new) [evidence: test:tests/test_agent_session_messaging.py::test_session_send_slash_from_non_superleader_stays_turn]
+- ac3: (Docker) the D7 refusals still apply to slash text in the same order (not_leader, target_not_superleader, rate_limited) (new) [evidence: test:tests/test_agent_session_messaging.py::test_session_send_slash_keeps_refusals]
+- ac4: README documents that only a superleader's slash text runs as a command [evidence: command:grep -i "slash" README.md | grep -qi "superleader"]
+- ac5: Docker-free checks and lint pass [evidence: command:uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && mise run lint]
 
 ## Files
 
@@ -59,3 +62,5 @@ A superleader's `orchestrator_session_send` with "/x ..." becomes a command mess
 
 - Reuse `_leads` and the D7 check order (api/agent.py:session_send).
 - Depends on orch-message-kind (`enqueue_message(kind=...)`).
+
+- 2026-10-27 amended: interrogate item 1 (only a superleader's slash text becomes a command; a worker-to-superleader slash text stays a framed turn), design D1 revised
