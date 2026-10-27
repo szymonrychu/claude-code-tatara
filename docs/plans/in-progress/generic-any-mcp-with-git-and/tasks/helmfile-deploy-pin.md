@@ -25,12 +25,12 @@ actual_role_tokens: ""
 
 Goal G6 (epic README), verbatim: "Deployed through agents-helmfile; agent sessions still get the orchestrator tools." Orchestrator design call, verbatim: "agents-helmfile: pin new orchestrator chart/image, ORCH_ANY_MCP_REF v0.5.0 and ORCH_ANY_MCP_PLUGINS_REF tag". Design D11, verbatim: "agents-helmfile pins the new orchestrator and web charts and images, `ORCH_ANY_MCP_REF: v0.5.0` and `ORCH_ANY_MCP_PLUGINS_REF: v0.1.0`."
 
-Needs merged upstreams: the agents-orchestrator PR of this epic merged with its image `<orchestrator sha7>` and chart `0.1.0-main.<orchestrator sha7>` published by main CI; the agents-web PR merged with its image and chart `0.1.0-main.<agents-web sha7>` published (design Rollout R3). The shas are filled in by `ticket.py amend` before dispatch.
+Needs merged upstreams: the agents-orchestrator PR of this epic merged with its image `b3a2975` and chart `0.1.0-main.b3a2975` published by main CI; the agents-web PR merged with its image and chart `0.1.0-main.4701820` published (design Rollout R3). The shas are filled in by `ticket.py amend` before dispatch.
 
 Scope (agents-helmfile, base: the merged state of epic cross-session-messaging-and):
-- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.<orchestrator sha7>`; agents-web chart `0.1.0-main.<agents-web sha7>`.
-- `values/agents-orchestrator/common.yaml`: `image.tag: <orchestrator sha7>` (quoted if all digits); `env.ORCH_ANY_MCP_REF: v0.5.0`; new `env.ORCH_ANY_MCP_PLUGINS_REPO: https://github.com/szymonrychu/any-mcp-tatara-plugins` and `env.ORCH_ANY_MCP_PLUGINS_REF: v0.1.0` with a comment: the reserved orchestrator plugin is installed from that repo at that tag.
-- `values/agents-web/common.yaml`: `image.tag: "<agents-web sha7>"`.
+- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.b3a2975`; agents-web chart `0.1.0-main.4701820`.
+- `values/agents-orchestrator/common.yaml`: `image.tag: b3a2975` (quoted if all digits); `env.ORCH_ANY_MCP_REF: v0.5.0`; new `env.ORCH_ANY_MCP_PLUGINS_REPO: https://github.com/szymonrychu/any-mcp-tatara-plugins` and `env.ORCH_ANY_MCP_PLUGINS_REF: v0.1.0` with a comment: the reserved orchestrator plugin is installed from that repo at that tag.
+- `values/agents-web/common.yaml`: `image.tag: "4701820"`.
 - Tests no longer accurate because the pins move (design D11): `tests/test_orchestrator_release.py` (`PIN`; `test_any_mcp_configured_for_new_sessions` asserts v0.5.0 and the two plugins values), `tests/test_web_release.py` (the agents-web sha), `tests/test_smoke_script.py::test_any_mcp_version_is_the_orchestrator_values_ref` (`0.5.0`).
 - `README.md`: the any-mcp line names the plugins repo source of the orchestrator tools.
 - Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py`.
