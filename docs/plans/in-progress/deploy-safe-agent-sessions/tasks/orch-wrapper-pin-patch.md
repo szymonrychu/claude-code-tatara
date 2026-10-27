@@ -63,8 +63,9 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the tests the requirement and acceptance conditions name (or, for a release/deploy/CI step, the check the evidence names); run `"uv run --frozen pytest -q tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && mise run lint"` and see them fail for the expected reason.
+- Green: implement the requirement exactly as written; run `"uv run --frozen pytest -q tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && mise run lint"` and expect every check to pass, quoting the summary line.
+- Refactor with the verify still green; update MEMORY.md with a dated entry for any non-obvious decision.
 
 ## Notes
 
