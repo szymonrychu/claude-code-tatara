@@ -1,6 +1,6 @@
 ---
 title: web code editor
-status: in-progress
+status: done
 repo: agents-web
 value: "a read-only-by-default CodeMirror editor that edits, saves on Ctrl/Cmd+S and keeps line endings intact"
 files: [src/editor/CodeEditor.tsx, src/editor/CodeEditor.test.tsx]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/editor/CodeEditor.test.tsx src/layout/d
 depends_on: [web-editor-languages, web-editor-syntax-check]
 model: opus
 review: ""
-verified_head: ""
+verified_head: dd388de129dde2e6057a4337d850c965fd3c7b32
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 1550507
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1464588, review 85919"
 ---
 
 # web code editor
@@ -80,3 +80,5 @@ A mounted `CodeEditor` shows the file with highlighting and syntax marks, is rea
 - jsdom: stub `Range.prototype.getClientRects` (returning an empty list) and `getBoundingClientRect` in the test file; assert through `view.state`; dispatch transactions instead of typing; `forceLinting(view)` instead of waiting the lint delay; fake timers for the "no hints" wait (web-libs-docs B23, B24).
 - Extensions per design D11 only; no `basicSetup`, no `autocompletion`, no `closeBrackets`, no `EditorView.lineWrapping`, no tooltips extension.
 - Keyboard test: dispatch `keydown` with `key: 's'` and `ctrlKey` or `metaKey` on `view.contentDOM`; CodeMirror's keymap maps `Mod` to Ctrl or Cmd by platform, so register both `Ctrl-s` and `Mod-s` if needed for the jsdom platform.
+
+- 2026-10-27 done
