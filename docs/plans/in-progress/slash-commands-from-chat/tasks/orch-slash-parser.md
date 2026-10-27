@@ -1,6 +1,6 @@
 ---
 title: orch slash parser
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: one rule decides for chat and superleader messages whether a text is a slash command
 files: [src/agents_orchestrator/slash.py, tests/test_slash.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_slash.py && mise run lint"
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: a84881031646a982f088104d8281ca1b1bd3b560
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 343998
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 297444, review 46554"
 ---
 
 # orch slash parser
@@ -69,3 +69,5 @@ One function decides, for both message routes, whether a text is a slash command
 - Docker-free: runs in this container.
 
 - 2026-10-27 amended: interrogate items 2 and 8 (parser mirrors claude: empty name is a command, name regex with no length cap, paths stay prose; trailing run marker stripped, multi-line args), builder check (/tmp is a command), design D2 revised
+
+- 2026-10-27 done
