@@ -42,3 +42,13 @@ Discovery: /Users/szymonri/Documents/claude-code-tatara/.scratchpad/leader-hando
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+Reviewed 2026-10-27. Full notes: .scratchpad/leader-auto-handover-review.md (whole-diff start-review --single per repo, sonnet; scope-auditor, sonnet).
+
+- Goals G1-G6 landed. G6 closed by helmfile-apply-smoke: live first-message proof after a scale-down handover (session cc2f85d7-cd74-4ea1-be90-43cb597e3eec, message 69 answered by the new pod-0 leader), `mise run smoke` green on agents-helmfile main 0ed86cf, MEMORY entry merged (agents-helmfile PR #34). Non-goals respected.
+- Acted on (new tasks, done): smoke-step7-per-wait-deadlin (step 7 agent lookup and make-leader waits reused the scale-up deadline; agents-helmfile PR #34); orch-eligibility-single-sour (duplicated eligibility and handover-pending SQL predicates moved into db/eligibility.py, behaviour unchanged, CI test 1083 passed and kind e2e green; agents-orchestrator PR #25).
+- Noted: the busy-leader race is pinned at queue level only; correctness near an election assumes wrapper and DB clocks agree; no live compaction has been observed since the apply, so real Claude Code PreCompact before an auto compaction is unproven live.
+- Dropped: none.
+- Full suite: lint green in all four repos. In this pod, tests failed only for environment reasons: no Docker, a Harbor 401, in-cluster kube config, and four wrapper PTY tests in files the epic does not touch. The DB tests were proven by agents-orchestrator CI.
