@@ -37,3 +37,30 @@ Make any-mcp a generic MCP server with no platform-specific tools, and move thos
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+# generic-any-mcp-with-git-and - review and close notes (2026-10-27)
+
+Phase 5: whole-diff review, security review and scope audit ran across any-mcp, any-mcp-tatara-plugins, agents-orchestrator, agents-web and agents-helmfile. Each finding became a task and was fixed:
+- web/any-mcp parser parity: no-path git URLs, whitespace/control characters; local paths may contain spaces (amended).
+- orchestrator refuses credentials in source URLs.
+
+Notable events:
+- GitGuardian flagged a fake basic-auth string in an orchestrator test. I folded the fix into history, but force-push was denied, so I pushed a new branch, opened PR #24 and closed #23.
+- The scope auditor left code/any-mcp detached; restored to main.
+
+Deploy:
+- Pins: helmfile be673ca (orchestrator b3a2975, web 4701820, any-mcp v0.5.0, plugins v0.1.0). Rollouts OK; helmfile tests 222 passed.
+
+Live smoke:
+- Run 1: failed at step 10b. `any-mcp --list-tools` prints a JSON array, and the smoke grepped `^petstore_` as text.
+- Fix: task helmfile-smoke-plugin-tools, fix round 1, 3fd172f.
+  - The reviewer found it clean: 120 passed, pointsActual 3.
+  - Merged as agents-helmfile PR #33 (0ed86cf).
+- Run 2: failed at the matrix step, unrelated to this epic.
+  - Cause: agents-matrix-connector was rollout-restarted at 03:30Z outside this session, and image 98b0803 was missing from Harbor.
+  - Fix: re-ran the connector CI images job (run 40282930555, attempt 2) to re-push the tag; the pods recovered.
+- Run 3: passed. Log: .logs/plugins-smoke-rerun2.log.
+  - "orchestrator plugin installed from any-mcp-tatara-plugins//orchestration/orchestrator?ref=v0.1.0; --list-tools lists orchestrator_sessions_list"
+  - "extra source git::https://github.com/szymonrychu/any-mcp//examples/petstore?ref=v0.5.0 installed ...; --list-tools lists petstore_ tools"
