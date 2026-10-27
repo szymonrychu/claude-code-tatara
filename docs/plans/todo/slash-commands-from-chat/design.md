@@ -134,6 +134,7 @@ Alternative: only the orchestrator guards (other clients and the initial prompt 
 The ccw MCP tool `command` takes `{name, args?}` (name: an enum of the agent allowlist, or a plain
 string when the allowlist holds `"*"`). The onCommand hook payload and `command_*` event records
 carry `args` as a string. Auto-compact queues `compact` with args = `auto_compact.instructions`.
+Ruling (my call): a queued duplicate coalesces only when name and args are identical, so `/model a` and `/model b` both queue.
 Alternatives: keep the five built-ins and add names one by one (never complete: every skill and plugin
 command is a command). Why: "Any / command" (user); user decision 1 adopted the replacement with no shim.
 
@@ -324,7 +325,9 @@ split off before it to keep this task as small as it can be. Opus.
 | research-papers | skipped: no algorithmic core | none | none |
 
 Probes and facts the design rests on (claude 2.1.304, throwaway session under
-/workdir/workdir/.scratchpad/probe-slash, raw screens and transcripts in out/, outA/ .. outD/):
+/workdir/workdir/.scratchpad/probe-slash: raw screens in out/, outA/ .. outD/; the per-probe transcript
+summaries in summaries/outA.txt .. outD.txt (copied there from the architect's session scratchpad); the
+last probe's full transcript in config/projects/-workdir-workdir--scratchpad-probe-slash-work/64b31430-13c7-48b0-ba54-c6c432f345db.jsonl):
 
 | Fact | Kind | Source |
 |---|---|---|
@@ -371,6 +374,8 @@ ones first:
 - recurring (matrix-read-receipts, agents-matrix-connector-depl): the permission classifier blocks
   subagent live actions; plan live steps as orchestrator-run. Acts on it: wrapper-release-0-4-0 (the
   tag push is an orchestrator-session step).
+- code proposal (generic-any-mcp-with-git-and): keep one shared parity test table so two grammars
+  cannot drift. Acts on it: orch-slash-parser and wrapper-slash-turn-guard use the same D2 case table.
 - one-off (cross-session-messaging-and): task ACs must name existing test files or mark them new.
   Acts on it: every task marks new tests "(new)".
 - one-off (cross-session-messaging-and): kind e2e allow-list assertions should derive from the
@@ -419,7 +424,7 @@ Discovery plan inputs placed:
 | D13 superleader tool description | plugin-session-send-slash |
 | D14 release and pin | wrapper-release-0-4-0, orch-wrapper-pin-0-4-0 |
 | D15 bounded metric label | wrapper-command-policy |
-| D16 fake key log | wrapper-dialog-commands |
+| D16 fake key log | wrapper-command-signals, wrapper-dialog-commands |
 | D17 wrapper docs and examples | wrapper-command-docs |
 | D18 atomic args task | wrapper-command-args |
 
@@ -464,6 +469,7 @@ Discovery plan inputs placed:
 ## Open questions
 
 none
+- Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [recommended: yes, add both tasks; the helmfile value ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision]
 
 ## Irreversible operations in scope
 
