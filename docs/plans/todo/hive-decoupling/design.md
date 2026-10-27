@@ -335,6 +335,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 - Q5: The leader picks its successor from an advised list (ready, staying, idle first, lowest context); the automatic picks of leader-auto-handover stay free-longest? [recommended: yes]
 - Q6: Drop the session_leaders.feed_cursor column in a migration rather than leave it dead? [recommended: yes]
 - Q7: Release and deploy in this epic: any-mcp-tatara-plugins next minor after the Matrix epic's pin (v0.4.0 if nothing else lands), orchestrator pins, agents-helmfile bump, apply (rolls every running session's agent pods) and a live handoff proof, same shape as leader-auto-handover? [recommended: yes]
+- Q8: Leave out of the handover_due candidate list any agent already at or above the threshold, so leadership does not ping-pong between agents that are both due? [recommended: yes]
 
 ## Irreversible operations in scope
 
