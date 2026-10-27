@@ -1,6 +1,6 @@
 ---
 title: wrapper file download route
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "any workspace file, text or binary of any size, can be fetched as raw bytes behind the existing path guards"
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, README.md, tests/test_api_files.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_files.py tes
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 7f7cd159d95e3445299b72c653eb703ef917142a
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 6
+actual_tokens: 887331
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 772118, review 115213"
 ---
 
 # wrapper file download route
@@ -83,3 +83,5 @@ Scope (claude-code-wrapper):
 - Never block the event loop on a read (worker thread); close the descriptor on every exit, including a client that disconnects mid-stream.
 - The component has no MEMORY.md; record the non-obvious calls in the README section.
 - Known environment failures outside this task's verify: `tests/test_container.py` (no docker) and the 3 process-group tests (container PID 1).
+
+- 2026-10-27 done
