@@ -1,6 +1,6 @@
 ---
 title: chat rows render markdown
-status: todo
+status: in-progress
 repo: agents-web
 value: "the user's messages, agent answers, session messages and peer messages in the chat show as rendered markdown"
 files: [src/chat/entries.tsx, src/chat/ChatLog.test.tsx]

@@ -2,7 +2,7 @@
 title: markdown rendering in chat
 blockers: [file-download-in-file-browse]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-web]
 created: 2026-10-27
 ---
