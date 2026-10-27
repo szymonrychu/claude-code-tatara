@@ -454,16 +454,31 @@ epics that bear on this epic (recurring workflow ones first).
 - SOPS encryption of the new secrets files needs only the public recipients in `.sops.yaml`; decryption
   for diff and apply needs the orchestrator session's key. Confirmed when helmfile-chat-secrets runs.
 
+## Builder check settlements (2026-10-27)
+
+The builder check (sonnet, no prior context) asked nine questions; settled here, facts probed:
+
+- B1 (vendoring from `origin/main`): the agents-matrix-connector PR merges mid-epic, as soon as its tasks before orch-chat-contract are done and green, the same way the claude-code-wrapper PRs merged mid-epic in file-download-in-file-browse and file-editor-with-tabs-and-hi; orch-chat-contract and web-room-initiate-toggle start only after that merge and are amended with its sha (my call).
+- B2 (tag v0.3.0): the orchestrator session pushes `v0.3.0` after plugins-release-0-3-0 merges with green CI and after reporting to the mx-5 leader; orch-plugins-pin-0-3-0 and orch-chat-tools-allow wait for the tag, they never start without it (my call).
+- B3 (v0.2.0 state): this epic is blocked by slash-commands-from-chat, markdown-rendering-in-chat and file-editor-with-tabs-and-hi; it is claimed only after all three are merged, so those files are read in their merged state at build time (fact: README blockers).
+- B4 (gate questions): Q1-Q9 are answered at the gate only; nothing runs before the approval.
+- B5 (flagged room without preset): a room whose routing target (D9, the last speaker) is a running session routes the user's answer there without a preset; a preset is needed only to start a new mx- session, and without one the answer is ignored as `no_preset` exactly as today (my call; gate question Q9).
+- B6 (answers into non-mx sessions mid-turn): yes, per Q2, which now names hive leaders and webhook or schedule sessions explicitly; the tracker posts that session's final answer to the chat.
+- B7 (`ORCH_CHAT_URL`): the chart default is empty (routes answer 503 chat_unconfigured); agents-helmfile sets `http://agents-matrix-connector-api-agents:8001`, the in-namespace Service name; namespace `agents` (fact: agents-helmfile values).
+- B8 (`room` argument): `room` takes a Matrix room id (`!id:server`) as listed by orchestrator_chat_rooms and as shown in the prompt's `room_id`, or is omitted; names are never accepted (my call).
+- B9 (images): each repo's CI builds and pushes the Harbor image on its `main` merge (build-push job, as for claude-code-wrapper 4581f3b); chat-live-smoke's precondition is that those main builds are green (fact: CI workflows).
+
 ## Open questions
 
 - Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [recommended: yes]
-- Q2: Your answer after an agent starts a chat goes to that session while it runs, otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
+- Q2: Your answer after an agent starts a chat or sends a follow-up goes to that session while it runs (including a hive leader or a webhook or schedule session, as a follow message mid-turn, with its final answer posted to the chat), otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]
 - Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [recommended: yes]
 - Q5: Per-session limit of 20 messages a minute (my call, pending gate)? [recommended: yes]
 - Q6: This epic's agents-helmfile values and live smoke run only after the one deploy approved for the four earlier epics (file-download, markdown, file-editor, slash-commands) has applied, so this epic's applies move only the connector, the orchestrator (chat config, plugins v0.3.0) and agents-web; if that deploy epic does not exist when this epic reaches helmfile-chat-values, the orchestrator creates and runs it first? [recommended: yes]
 - Q7: You confirm in Messenger what S1-S4 look like (one line each: shown, quoted reply shown, thumbs-up shown, second reaction replaced or rejected), while the orchestrator records the connector-side ids, statuses and reasons? [recommended: yes]
 - Q8: S1 runs at smoke time even if the owner DM had an inbound message in the last 24 h; the smoke records the hours since the last inbound, and the over-24h case is confirmed at the first natural opportunity and noted in agents-helmfile MEMORY.md without holding the epic? [recommended: yes]
+- Q9: When the last speaker in a flagged room is a running session, your answer routes there even if the room has no preset; a preset is only needed to start a new chat session (my call, pending gate)? [recommended: yes]
 
 ## Irreversible operations in scope
 
