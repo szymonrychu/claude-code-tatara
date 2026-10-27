@@ -332,9 +332,9 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 - Who runs `gh` in agents-helmfile (auth in the deploying pod) is the deploy session's; the apply task checks it first.
 
 ## Open questions
-- Q1: slash-commands-from-chat (in progress) will tag claude-code-wrapper v0.4.0; if v0.4.0 is tagged before this epic's wrapper release, cut the next patch above the latest tag (v0.4.1) instead of v0.3.2 (tasks wrapper-patch-release, orch-wrapper-pin-patch, helmfile-deploy-pins, helmfile-apply-live-check)? [recommended: yes]
-- Q2: The agent-unavailable banner shows whenever messages are queued and no agent is ready and idle, so a hive whose agents are all busy shows it too; keep that literal reading of D8? [recommended: yes, keep it; the banner gives the queued count and the oldest message's age]
-- Q3: 11 tasks share files with not-done tasks of in-progress epic slash-commands-from-chat and ticket.py new-task refuses them; add slash-commands-from-chat to this epic's README blockers so the prepared tasks (.scratchpad/session-loss/plan/tasks.json) can be created now and run after it merges? [recommended: yes, add the blocker; the ingester migration then takes 0009 and the wrapper release follows Q1]
+- Q1 (settled, my call, 2026-10-27 under the user's standing "recommended everything" approval): this epic runs before slash-commands-from-chat (user order: incident first), so it tags claude-code-wrapper v0.3.2; if a higher tag exists when wrapper-patch-release runs, it cuts the next patch above the latest tag.
+- Q2 (settled, my call): no, narrowed. The banner shows when messages are queued and either no agent is ready and alive (none ready, or all `dead`), or the oldest queued message is older than 10 minutes. A queue behind a busy leader is normal and stays quiet; a stuck busy agent still surfaces after 10 minutes. The banner gives the queued count and the oldest message's age.
+- Q3 (settled, my call): no blocker. The user order puts this epic ahead of slash-commands-from-chat, so instead the parked slash-commands-from-chat epic is put in a new `parked` stage (workbench epic parked-epic-stage), which stops its unbuilt tasks from reserving files; the 11 prepared tasks are then created from `.scratchpad/session-loss/plan/`. The ingester migration takes the next free number on main when it runs (0008 today); slash-commands-from-chat rebases onto this epic when it resumes.
 
 ## Irreversible operations in scope
 
