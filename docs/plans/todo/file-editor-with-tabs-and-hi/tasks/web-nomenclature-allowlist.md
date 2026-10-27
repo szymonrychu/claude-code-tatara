@@ -44,17 +44,20 @@ Scope (agents-web): `src/nomenclature.test.ts` only: the `ALLOWED` entry, the do
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/nomenclature.test.ts:ALLOWED` gains `'find-cluster-break'`; `offends`, `FORBIDDEN`, `HISTORY`, `GUARDED`, `RETIRED` unchanged.
+- New test in the `nomenclature` describe block, named so `-t 'npm package name'` selects it.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Installing CodeMirror (task web-editor-languages) keeps `src/nomenclature.test.ts` green, and every spelling of the retired unit other than the npm package name still fails the guard.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the new test asserting the three lockfile shapes do not offend and the four other spellings do; run `mise exec -- npx vitest run src/nomenclature.test.ts -t 'npm package name'`: the lockfile shapes offend, the test fails.
+- Green: add the `ALLOWED` entry and widen its doc comment; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Gate: this is the guard edit the user approves at the gate (design Q1). It is the deliberate exception to "never edit a test to make it pass": the guard's purpose (project nomenclature) is unchanged and a third-party npm name is the same class as the Kubernetes phrases already allowed.
+- Spell the unit through the file's `unit` constant in the new test, as the existing tests do; the literal `'find-cluster-break'` in `ALLOWED` is itself stripped by the guard.
+- Ruling and its pin test: only the exact phrase `find-cluster-break` is allowed, pinned by the new test (`find-<unit>`, `<unit>-break`, `my-<unit>-break` still offend).

@@ -54,17 +54,22 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/editor/syntaxCheck.ts`: `export function syntaxDiagnostics(language: LanguageId, state: EditorState): Diagnostic[]`; `export function syntaxChecker(language: LanguageId): Extension` (`[linter(view => syntaxDiagnostics(language, view.state)), lintGutter()]`).
+- Uses `LanguageId` and `languageFor` from `src/editor/languages.ts` (web-editor-languages).
+- Consumed by web-code-editor.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+For every language the user named, a broken file gets an error diagnostic on the offending line and a valid file none; plain text is never marked; nothing offers completions or hints.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/editor/syntaxCheck.test.ts` (node environment) with one valid and one broken sample per language plus the range and checker tests; run `mise exec -- npx vitest run src/editor/syntaxCheck.test.ts`: fails (no module).
+- Green: `syntaxCheck.ts`; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: multi-document YAML is valid (`parseAllDocuments`), pinned by the `yaml` test; an unfinished Lezer parse yields no diagnostics, not false ones (pass a timeout to `ensureSyntaxTree` and treat `null` as none), pinned by the `python` test with a valid long file; a zero-width error node at the end gets `to = from + 1` clamped inside the document, pinned by `diagnostic ranges`.
+- `jsonParseLinter()` returns `(view) => Diagnostic[]` and only reads `view.state`; call it with `{ state }` cast to `EditorView`.
+- smol-toml `TomlError` has 1-based `line` and `column`; map with `state.doc.line(line).from + column - 1`.
+- Report, never hide, a false error on the valid Terraform sample (design: `codemirror-lang-hcl` is a 0.x community grammar); a grammar gap is a question back, not a weakened sample.

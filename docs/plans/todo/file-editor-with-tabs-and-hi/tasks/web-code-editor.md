@@ -58,17 +58,25 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/editor/CodeEditor.tsx`:
+  `export interface CodeEditorProps { path: string; doc: string; docVersion: number; readOnly: boolean; onChange: (text: string) => void; onSave: () => void }` and `export default function CodeEditor(props: CodeEditorProps): JSX.Element`; root element `data-testid="file-editor"`.
+- Uses `languageFor` (src/editor/languages.ts), `editorAppearance` (src/editor/highlight.ts), `syntaxChecker` (src/editor/syntaxCheck.ts).
+- Consumed by web-file-tabs-view (through `React.lazy`) and, as the stand-in's prop type, by the `FileTabs` and `FilesPanel` tests.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A mounted `CodeEditor` shows the file with highlighting and syntax marks, is read-only until `readOnly` turns false, toggles without losing the doc or undo history, reports every change, saves on Ctrl/Cmd+S without the browser dialog, keeps line endings byte-exact and shows no hints.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Probe first: mount a bare `EditorView` in a jsdom test with the `Range` stubs; if it cannot mount, stop and return that as a question (design: Assumptions), never skip or weaken a test.
+- Red: write `src/editor/CodeEditor.test.tsx` (the nine behaviour tests); run `mise exec -- npx vitest run src/editor/CodeEditor.test.tsx`: fails (no module).
+- Green: `CodeEditor.tsx`; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: `lineSeparator` `"\r\n"` when the loaded text holds `"\r\n"`, else `"\n"`, pinned by `line endings round-trip`; Mod-s always `preventDefault` and calls `onSave` in both modes (the caller decides whether to save), pinned by `mod-s saves`; one `Compartment` for `EditorState.readOnly` plus `EditorView.editable`, reconfigured not recreated, pinned by `read-only toggle keeps the view`; a `docVersion` change resets the state (history cleared), pinned by `docVersion resets`.
+- Keep `onChange` and `onSave` in refs so a new callback identity never recreates the view.
+- jsdom: stub `Range.prototype.getClientRects` (returning an empty list) and `getBoundingClientRect` in the test file; assert through `view.state`; dispatch transactions instead of typing; `forceLinting(view)` instead of waiting the lint delay; fake timers for the "no hints" wait (web-libs-docs B23, B24).
+- Extensions per design D11 only; no `basicSetup`, no `autocompletion`, no `closeBrackets`, no `EditorView.lineWrapping`, no tooltips extension.
+- Keyboard test: dispatch `keydown` with `key: 's'` and `ctrlKey` or `metaKey` on `view.contentDOM`; CodeMirror's keymap maps `Mod` to Ctrl or Cmd by platform, so register both `Ctrl-s` and `Mod-s` if needed for the jsdom platform.

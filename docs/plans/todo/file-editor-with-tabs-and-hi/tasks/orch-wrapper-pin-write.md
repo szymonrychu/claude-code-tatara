@@ -51,17 +51,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- The wrapper pin (pyproject dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` `BASE_IMAGE` and `WRAPPER_SHA`, README `## Images`), all one sha: the claude-code-wrapper `main` merge commit carrying wrapper-file-write-route.
+- New kind e2e case `tests/e2e/test_e2e_kind.py::test_files_write_through_api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+CI's integration contract leg and kind e2e build the agent image from the wrapper commit that has the write route, and the e2e proves a save, a conflict and the guards through the API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the merged upstream (the requirement's precondition) and read the merge sha.
+- Change the pyproject pin, run `uv lock`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_images.py`: the Dockerfile and README checks fail on the old sha.
+- Update the Dockerfile args and README `## Images`, add the e2e case; run the task's verify: passes, quote the pytest summary line. The e2e runs in CI only.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha (`test_ccw_dev_dependency_matches_agent_image_sha`, `test_agent_test_dockerfile_matches_dev_dependency`); `tests/test_render.py` validates rendered configs against the pinned wrapper's config schema.
+- Another epic (leader-auto-handover, in progress) also moves the wrapper pin; take the newest `main` merge that carries this route, which includes the earlier changes.
+- The Harbor image exists only for wrapper `main` builds; check with `regctl image digest` when credentials allow, else `scripts/e2e.sh` builds from source.
+- The e2e reads the stamp from `files/content` before writing; never compute it in the test.

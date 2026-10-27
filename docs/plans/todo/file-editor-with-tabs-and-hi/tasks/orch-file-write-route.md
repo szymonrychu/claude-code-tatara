@@ -64,17 +64,27 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New route `PUT /api/v1/sessions/{session_id}/files/content?path=<rel>&agent_id=<uuid?>` in `api/workspace.py`, `dependencies=guarded`: request `schemas.WriteFile`, 200 `schemas.FileWritten`; errors as JSON envelopes: wrapper 4xx passed through (400 `invalid_path`, 400 `not_a_file`, 404 `not_found`, 409 `file_changed`, 413 `too_large`), 403 `forbidden_origin`, 404 `not_found`, 409 `agent_not_ready`, 422 `invalid_request`, 502 `wrapper_unreachable`, 502 `wrapper_error`, 503 `unavailable`.
+- `api/schemas.py`: `FileStamp {mtime: str, size: int (ge=0)}` and `WriteFile {content: str, expected: FileStamp | None}` (both `extra="forbid"`, `expected` required), `FileWritten {session_id: UUID, agent_id: UUID, path: str, size: int, mtime: str}`.
+- `api/workspace.py:_file_call` gains the HTTP method and an optional JSON body; the GET listing and content routes call it with `GET`.
+- Kept: `resolve_agent`, `forward`, the download route of the download epic, the layering pin.
+- Consumed by web-sync-write-api (openapi.json) and the web save path.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`PUT /api/v1/sessions/<id>/files/content?path=<rel>` with `{"content", "expected"}` saves the file through the first usable agent's wrapper and answers its new stamp; a stale stamp answers 409 `file_changed`; a foreign Origin is refused before anything is forwarded; README and openapi.json document it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_file_write.py` (the seven tests of the acceptance conditions) and the CI-only extensions in `tests/test_api_files.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_write.py`: fails (405, no route).
+- Green: schemas, `_file_call` generalised, the route; rerun: passes.
+- Docs: README `## API` section; `uv run python -m agents_orchestrator.api.openapi > openapi.json`; MEMORY.md entry; run the task's verify: passes, quote the pytest summary line. `tests/test_api_files.py` needs Docker and is left to CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Docker-free rig: reuse the one the download epic built in `tests/test_api_file_download.py` (`create_app(make_settings(master_key=KEY), pool=<stub>)` with a stub whose `connection()` is an async context manager, `workspace.resolve_agent` monkeypatched to return a `WrapperTarget` for a real `FakeWrapper` or raise `ApiError`, `client_for(app)`); import its helpers or mirror them, do not copy them into a third place if a shared helper fits.
+- The Origin test sets `allowed_origins` in `make_settings` and sends `Origin` headers; `require_allowed_origin` passes a request without Origin (`api/origin.py`).
+- Assert "the wrapper receives no request" by counting requests on the fake (or an `httpx.MockTransport` preset on `app.state.wrapper_http`).
+- Derive tokens at runtime (`derive_tokens(KEY.encode(), session_id).auth`), never a literal credential string (a GitGuardian false positive cost a PR in generic-any-mcp-with-git-and).
+- The 409 of `file_changed` and of `agent_not_ready` share a status; clients tell them apart by code, say so in README.
+- `tests/test_api_files.py`, `tests/test_workspace_proxy.py` and the contract real leg run only in CI (Docker); say so in the hand-back rather than claiming them.

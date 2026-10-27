@@ -64,17 +64,25 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/files/FileTabs.tsx`: `export function FileTabs({ tabs }: { tabs: FileTabs }): JSX.Element` (the `useFileTabs` result type); `const CodeEditor = lazy(() => import('../editor/CodeEditor'))`.
+- Test ids kept from today's preview: `file-preview-note`, `file-preview-error`; new: `file-editor` (inside `CodeEditor`), `file-tab-path` (the toolbar path).
+- Uses `ConfirmDialog` (src/layout/ConfirmDialog.tsx), `TOKENS`, `MONO_FONT` (src/theme.ts).
+- Consumed by web-files-split-layout.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Open files show as terminal-style tabs: closable, scrollable, all mounted, dirty ones marked and confirmed on close; text tabs have the path, the RO/RW toggle, Save and the editor; conflicts and changes on disk show as notices with their actions; the editor loads as its own chunk.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/files/FileTabs.test.tsx` (seven behaviour tests, `CodeEditor` stand-in via `vi.mock('../editor/CodeEditor', ...)`, the `FileTabs` api as `vi.fn()`s over fixture tabs); run `mise exec -- npx vitest run src/files/FileTabs.test.tsx`: fails (no module).
+- Green: `FileTabs.tsx`; rerun: passes.
+- Run `mise exec -- npm run build` and read the chunk sizes; MEMORY.md entry; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `src/terminal/TerminalPanel.tsx:132-203` for the strip and the mounted panels; the close button's `stopPropagation` precedent is `TerminalPanel.tsx:146-149`.
+- The stand-in in the test must take the real `CodeEditorProps` (import the type) so it cannot drift from the component (retro: fakes encoding a wrong assumption).
+- Rulings and their pin tests: ` *` and `data-dirty` mark, pinned by `dirty mark`; Save and Ctrl/Cmd+S only in RW with changes and not while saving, pinned by `mode toggle and save button` and `keyboard save`; Reload and Overwrite on a conflict, Reload and Keep editing on a change on disk, pinned by `notices`.
+- designRules: `aria-label` on IconButtons (never `title=`), no decorative Unicode (the dirty mark is an ASCII `*`), spacing on the 0.5 grid, colours from theme palette paths.
+- The ToggleButtonGroup's RO button is disabled while dirty (the hook refuses it too).

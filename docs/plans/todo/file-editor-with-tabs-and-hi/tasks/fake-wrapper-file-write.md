@@ -49,17 +49,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Fake route `PUT /v1/sessions/{session_id}/files/content` in `tests/fakes/fake_wrapper.py:FakeWrapper` with the contract of wrapper-file-write-route (body, response keys, error codes, `file_preview_max_bytes` cap).
+- Kept: every existing fake control (`files_max_entries`, `file_preview_max_bytes`, `set_unreachable`, `workdir(sid)`, `token`) and the download route of the download epic.
+- Consumed by orch-file-write-route (`tests/test_api_file_write.py`, `tests/test_api_files.py`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The fake answers a save exactly as the real wrapper does, and one contract suite proves it on both legs (fake here, real image in CI after orch-wrapper-pin-write).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_files_write`, `test_files_write_conflict`, `test_files_write_errors`, `test_fake_files_write_cap`, `test_fake_files_write_through_symlink`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_fake_wrapper_contract.py`: the new cases fail (405, no route).
+- Green: the fake route; run the task's verify: passes, quote the pytest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The real leg (`-m integration`, real wrapper image) runs only in CI and passes only once orch-wrapper-pin-write pins the wrapper commit carrying the route; locally the verify runs the fake leg.
+- `_tree` writes files through the turn `files` field on both legs; the stamp for `expected` comes from a `files/content` GET on the same leg, never computed by the test.
+- Symlinks and the outside file of the fake-only cases are written straight into `fake.workdir(sid)` and a `tmp_path` sibling.
+- Copy the wrapper's semantics from its `api/files.py` and README section on its epic branch; do not import the wrapper package.

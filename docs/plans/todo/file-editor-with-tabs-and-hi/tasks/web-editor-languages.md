@@ -71,17 +71,27 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/theme.ts:syntaxPalette` (keys `keyword`, `string`, `number`, `comment`, `property`, `type`, `function`, `operator`, `punctuation`, `atom`, `invalid`), `as const`, colour literals allowed here only.
+- `src/editor/languages.ts`: `export type LanguageId = 'python' | 'yaml' | 'json' | 'terraform' | 'toml' | 'plain'`; `export function languageFor(path: string): { id: LanguageId; support: Extension }` (`support` is `[]` for plain).
+- `src/editor/highlight.ts`: `export const editorHighlight: HighlightStyle`, `export const editorChrome: Extension` (`EditorView.theme(..., { dark: true })`), `export const editorAppearance: Extension`.
+- Consumed by web-editor-syntax-check and web-code-editor.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The CodeMirror packages are installed with one `@codemirror/state`, the nomenclature guard stays green, every one of the five languages is recognised from the file name and highlighted in theme colours, and other files are plain text.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Install: `mise exec -- npm install @codemirror/state@^6.7.6 @codemirror/view@^6.43.15 @codemirror/language@^6.13.1 @codemirror/commands@^6.11.1 @codemirror/lint@^6.9.7 @codemirror/lang-python@^6.2.1 @codemirror/lang-yaml@^6.1.3 @codemirror/lang-json@^6.0.2 @codemirror/legacy-modes@^6.5.5 @lezer/highlight@^1.2.5 smol-toml@^1.9.1 yaml@^2.9.1` and `mise exec -- npm install --save-exact codemirror-lang-hcl@0.2.0`; remove `yaml` from `devDependencies`; check ac1 and ac2; run `mise exec -- npx vitest run src/nomenclature.test.ts`: passes (needs web-nomenclature-allowlist).
+- Red: write `src/editor/languages.test.ts` (node environment); run `mise exec -- npx vitest run src/editor/languages.test.ts`: fails (no module).
+- Green: `syntaxPalette`, `languages.ts`, `highlight.ts`; rerun: passes.
+- MEMORY.md entry; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Highlight test: parse with the language's parser (`pythonLanguage.parser.parse`, `jsonLanguage.parser`, `yamlLanguage.parser`, `hclLanguage.parser`) or, for the toml stream language, `ensureSyntaxTree(EditorState.create({doc, extensions: [support]}), len, 1000)`, then `highlightTree(tree, editorHighlight, cb)` from `@lezer/highlight`.
+- The colour test reads the colours out of `editorHighlight.specs` and the chrome spec; keep the chrome spec an exported object so it can be inspected.
+- `@codemirror/legacy-modes/mode/toml` exports `toml`; `codemirror-lang-hcl` exports `hcl()` and `hclLanguage`.
+- No `basicSetup`, no `defaultHighlightStyle` (light theme), no `@codemirror/autocomplete` import.
+- If the markdown epic already added a code palette to `theme.ts`, reuse its hues rather than adding a near-duplicate set.
+- `package-lock.json` is guarded by the nomenclature test; after install, `grep -inE 'c[l]uster|agent[-_]orchestrator' package-lock.json` must show only `find-cluster-break` lines.

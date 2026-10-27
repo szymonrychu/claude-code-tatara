@@ -60,17 +60,28 @@ Scope (claude-code-wrapper):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New wrapper route `PUT /v1/sessions/{id}/files/content?path=<rel>` (`api/files.py`): body `{"content": str, "expected": {"mtime": str, "size": int >= 0} | null}` (both keys required, `extra="forbid"`); 200 `{"session_id", "path", "size", "mtime"}`; errors 400 `invalid_path`, 400 `not_a_file`, 401 `unauthorized`, 404 `not_found`, 409 `file_changed` (new code), 413 `too_large`, 422 `invalid_request`, as JSON envelopes.
+- New helper in `files.py` (name the builder's, for example `write_file(workdir, rel, content, expected, max_bytes) -> dict`), blocking, raising `FileError` with the codes above.
+- `api/files.py:_raise`: status by code (`not_found` 404, `file_changed` 409, `too_large` 413, else 400).
+- Kept unchanged: `resolve_in_workdir`, `_resolve`, `_open_nofollow`, `list_directory`, `read_preview`, the `GET` listing, content and download contracts.
+- Consumed by fake-wrapper-file-write (the fake mirrors it) and orch-file-write-route.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -X PUT -H "$H" -H 'Content-Type: application/json' -d '{"content":"x\n","expected":null}' "localhost:8080/v1/sessions/$SID/files/content?path=<rel>"` replaces an existing workspace file atomically and answers its new size and mtime; a stale `expected` answers 409 `file_changed`; nothing outside the workdir, no non-regular file and no missing path can be written.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the seven write tests of the acceptance conditions to `tests/test_api_files.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_files.py`: the write tests fail with 405 `method_not_allowed` (no PUT route).
+- Green: the `files.py` helper, the route and `_raise` in `api/files.py`; rerun: the file tests pass.
+- Docs: README route section, Errors table, Trust model sentence, module docstrings; run the task's verify: passes, quote the pytest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: a symlink inside the workdir writes its target and stays a link, pinned by `test_write_open_nofollow_and_fstat`; atomic replace keeps permission bits and leaves no temp file, pinned by `test_write_atomic_replace`; a missing path is 404 and never created, pinned by `test_write_guards`; the stamp compare uses `_iso(st_mtime)` (milliseconds) and `st_size` of the opened descriptor, pinned by `test_write_optimistic_concurrency`; the cap counts UTF-8 bytes, not characters, pinned by `test_write_size_cap`.
+- Order of checks (design D3): resolve, encode and cap, open parent and target and `fstat`, compare `expected`, replace. The cap is checked before the file is opened, so an over-cap body never touches the disk.
+- Mimic `test_content_open_nofollow_and_fstat` (swap the path after `resolve_in_workdir`) and `test_escapes_refused`; `make_client(work, tmp_path, file_preview_max_bytes=8)` sets the cap; count descriptors with `os.listdir("/proc/self/fd")`.
+- The download epic changed this file and `tests/test_api_files.py`; build on its state, do not undo its download route or `target_type`.
+- Never log the content. Never block the event loop (`asyncio.to_thread`, like the other file routes).
+- The component has no MEMORY.md; record the non-obvious calls (atomic replace, D4 limits) in the README section.
+- Known environment failures outside this task's verify: `tests/test_container.py` (no docker) and the 3 process-group tests (container PID 1).

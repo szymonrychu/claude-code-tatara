@@ -67,17 +67,25 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/files/FilesPanel.tsx:FilesPanel({ sessionId })` unchanged signature; renders `data-testid="files-split"` (`data-orientation` `horizontal` or `vertical`) with the tree panel first and `FileTabs` second.
+- `src/layout/Workspace.tsx`: `export { Divider, DIVIDER_WIDTH }` (no behaviour change).
+- Uses `useFileTabs` (web-file-tabs-state), `FileTabs` (web-file-tabs-view), `useLayout` (src/layout/useLayout.ts), `useFileTree`, `createFileEvents`, and the download epic's `Row` trailing action.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Files panel shows the tree on the left (above on a phone) and the open files on the right as tabs; a file click opens or focuses its tab; live refresh updates clean tabs and never overwrites unsaved edits; the single preview is gone.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the five new tests and rewrite the three named tests in `src/files/FilesPanel.test.tsx` (CodeEditor stand-in, `writeFile` in the hoisted mock, `useLayout` mocked); run `mise exec -- npx vitest run src/files/FilesPanel.test.tsx`: the new and rewritten tests fail.
+- Green: the split, the hook and `FileTabs` wiring, the stamp lookup and `written` routing, the preview removal, the `Divider` export; rerun: passes.
+- MEMORY.md entry; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Tests no longer accurate, and why (the requirement's list): `preview_kinds` (one `<pre>` preview at a time), `symlink_previews_and_escape_error` (one preview), `preview_dropped_on_session_change` (reads the removed `<pre>`, and tabs now live per session). Every other test passes unchanged; if another one fails, report it rather than editing it.
+- The stand-in renders `doc` as text inside `data-testid="file-editor"`, so `screen.findByText('v1')` in `preview refetch when the entry mtime or size changes` and `event_driven_refresh a written file open in the preview is refetched on the result` keeps working unchanged.
+- The stamp lookup returns `<mtime>|<size>` of the entry in `state.dirs[<parent>]`, or null when the entry is not listed: the same expression the removed preview effect used (FilesPanel.tsx:153-167).
+- react-resizable-panels: a `Separator` needs an inline `style={{ flexBasis }}` (MEMORY 2026-10-24); nested `Group`s inside a Workspace `Panel` are supported.
+- jsdom has no media queries: mock `../layout/useLayout` per test (`'desktop'`, `'phone'`).
+- Workspace sizes (25/45/30) stay as they are (design Non-goals).

@@ -52,17 +52,23 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Generated: `openapi/orchestrator.json`, `openapi/orchestrator.source` (`agents-orchestrator <sha>`), `src/api/schema.d.ts` (`paths['/api/v1/sessions/{session_id}/files/content']['put']`, `components['schemas']['WriteFile' | 'FileStamp' | 'FileWritten']`).
+- `src/api/files.ts`: `export type FileStamp = components['schemas']['FileStamp']`, `export type FileWritten = components['schemas']['FileWritten']`, `writeFile(sessionId: string, path: string, content: string, expected: FileStamp | null): Promise<FileWritten>`, sent with `request('PUT', ...)` to `/sessions/<id>/files/content?path=<rel>` with the body `{ content, expected }`.
+- Kept: `listFiles`, `readFile`, `fileDownloadUrl` (download epic) unchanged.
+- Consumed by web-file-tabs-state.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The web client's generated types match the orchestrator commit carrying the write route, `npm run check:api` is green, and `writeFile` saves through the relative base path.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Run `mise exec -- npm run sync:api -- orchestrator --from <agents-orchestrator tree at orch-file-write-route's commit>`: it prints the gen:api output and exits 0.
+- Red: add the two `writeFile` tests to `src/api/files.test.ts` (fetch stubbed as the file already does for `fileDownloadUrl`, or `vi.stubGlobal('fetch', ...)` as `src/api/client.test.ts` does); run `mise exec -- npx vitest run src/api/files.test.ts`: fails (no export).
+- Green: `writeFile` and the types; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The default `../agents-orchestrator` is the sibling integration tree; the script refuses an `openapi.json` with uncommitted changes.
+- If the regenerated types break compilation elsewhere (drift since the download epic's sync), report it as a `discovered` entry; do not patch it here.
+- No hand edits to generated files. `request` already sets `Content-Type: application/json` when a body is given (`src/api/client.ts:requestAt`).

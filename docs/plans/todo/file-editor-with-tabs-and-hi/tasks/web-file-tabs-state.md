@@ -59,17 +59,28 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/files/useFileTabs.ts`:
+  - `export type TabKind = 'loading' | 'text' | 'binary' | 'too_large' | 'other' | 'error'`, `export type TabMode = 'ro' | 'rw'`.
+  - `export interface FileTab { path: string; name: string; kind: TabKind; file: FileContent | null; error: string | null; mode: TabMode; baseline: FileStamp | null; doc: string; docVersion: number; dirty: boolean; saving: boolean; saveError: string | null; conflict: boolean; changedOnDisk: boolean }`.
+  - `export interface FileTabs { tabs: FileTab[]; active: string | null; open(path: string, type: FileEntry['type']): void; focus(path: string): void; close(path: string): void; setMode(path: string, mode: TabMode): void; edit(path: string, text: string): void; save(path: string): void; overwrite(path: string): void; reload(path: string): void; keepEditing(path: string): void; observe(stampOf: (path: string) => string | null): void; written(path: string): void }`.
+  - `export function useFileTabs(sessionId: string): FileTabs`.
+- Uses `readFile`, `writeFile`, `FileContent`, `FileStamp`, `FileEntry` (src/api/files.ts, web-sync-write-api) and `errorText` (src/files/useFileTree.ts).
+- Consumed by web-file-tabs-view and web-files-split-layout.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One hook owns every open file of a session: opening, focusing, closing with the neighbour rule, RO/RW, unsaved text, saves with the loaded stamp, conflicts with reload or overwrite, and the live refresh rules, and it gives a session's tabs back when the user returns to it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/files/useFileTabs.test.ts` (seven behaviour tests, `renderHook` under jsdom, `readFile` and `writeFile` mocked); run `mise exec -- npx vitest run src/files/useFileTabs.test.ts`: fails (no module).
+- Green: `useFileTabs.ts`; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: RO refused while dirty, pinned by `dirty and mode`; clean RW tabs refetch like RO ones and dirty tabs only get `changedOnDisk`, pinned by `live refresh rules`; the last seen stamp starts at the baseline when a tab opens and is never reset by a reload (so a symlink, whose listing stamp is the link's own, refetches at most once), pinned by `live refresh rules`; dirty means the text differs from the baseline text (undo back to it is clean), pinned by `dirty and mode`; the store keeps tabs per session id for the page's lifetime, pinned by `tabs per session`.
+- `keepEditing(path)` clears `changedOnDisk` and keeps the edits; a later save then answers 409 and offers Overwrite.
+- Keep per-tab text out of React state if it helps (a ref map), but `dirty` flips must re-render; typing must not re-render on every keystroke beyond that.
+- Drop stale answers with a per-tab request token, as `FilesPanel.openFile` does today with `previewToken`.
+- Export a reset of the module store for tests only if needed; tests may simply use distinct session ids.
+- `observe` receives a lookup built by the panel from `state.dirs`; the hook never fetches listings itself (do-not-build: a second listing poll).
