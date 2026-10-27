@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the deployment runs generic any-mcp with the orchestrator plugin from the plugins repo
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_orchestrator_release.py tests/test
 depends_on: [orch-render-plugin-sources, web-preset-plugin-sources]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 65fc75ba3c8f8ee0580d410cdab7e37a5a8b240c
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 39
+actual_tokens: 692184
+actual_roles: "impl 25, review 14"
+actual_role_tokens: "impl 467757, review 224427"
 ---
 
 # helmfile deploy pin
@@ -73,3 +73,5 @@ Scope (agents-helmfile, base: the merged state of epic cross-session-messaging-a
 - The shas come from Rollout R3 through `ticket.py amend` before dispatch (precedent: epic leader-auto-handover task helmfile-deploy-pin); an all-digit sha7 is quoted in YAML.
 - The apply, diff and smoke are orchestrator steps (Rollout R4, R5), never this task's.
 - Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py`.
+
+- 2026-10-27 done
