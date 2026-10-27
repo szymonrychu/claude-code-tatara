@@ -5,7 +5,7 @@ repo: agents-schedule
 value: each schedule records which session created it and the UI view shows it
 files: [src/agents_schedule/migrations/0002_schedule_owner.sql, src/agents_schedule/db/schedules.py, src/agents_schedule/api/schemas.py, src/agents_schedule/api/schedules.py, openapi.json, tests/test_migrations.py, tests/test_schedules_repo.py, tests/test_api_schedules.py]
 verify: "uv run pytest tests/test_migrations.py tests/test_schedules_repo.py tests/test_api_schedules.py tests/test_readme_api.py && mise run lint"
-depends_on: []
+depends_on: [baseline-facts]
 model: opus
 review: ""
 verified_head: ""
@@ -27,15 +27,19 @@ README Goal G3, verbatim: "A flagged session changes only the sessions, presets 
 
 README Goal G5, verbatim: "Schedule calls go through the orchestrator, which relays them to a token-protected listener on agents-schedule that records each schedule's owner; the agent token never leaves the orchestrator."
 
-Design D7, verbatim: "Migration (next free number, 0002 today) adds `owner_session_id uuid NULL` and `owner_slug text NULL`. [...] The UI API is unchanged except the schedule view gains `owner_slug` (additive); UI writes never change the owner (my call)."
+Design D7, verbatim: "Migration (next free number at build time) adds `owner_session_id uuid NULL` and `owner_slug text NULL`. [...] The UI API is unchanged except the schedule view gains `owner_slug` (additive); UI writes never change the owner (my call)."
 
-Scope (agents-schedule): `src/agents_schedule/migrations/0002_schedule_owner.sql` (the next free number at build time; 0002 today), `db/schedules.py` (owner fields on create and read, owned count, owned lookup), `api/schemas.py` (`ScheduleView.owner_slug`), `api/schedules.py` (the view carries it; UI create and replace never set or clear it), `openapi.json`, `tests/test_migrations.py`, `tests/test_schedules_repo.py`, `tests/test_api_schedules.py`. The relay listener and routes are later tasks.
+Scope (agents-schedule): `src/agents_schedule/migrations/<N>_schedule_owner.sql`, <N> being the next free agents-schedule migration number recorded by baseline-facts (it replaces the `0002_schedule_owner.sql` entry in the Files list), `db/schedules.py` (owner fields on create and read, owned count, owned lookup), `api/schemas.py` (`ScheduleView.owner_slug`), `api/schedules.py` (the view carries it; UI create and replace never set or clear it), `openapi.json`, `tests/test_migrations.py`, `tests/test_schedules_repo.py`, `tests/test_api_schedules.py`. The relay listener and routes are later tasks.
+
+User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The migration number is the one baseline-facts recorded; no number is assumed here.
+
+User settlement B3 (2026-10-27), verbatim: "agent-created schedules may be created enabled. Orphans after the owner's deletion are managed from the UI." The UI routes therefore treat a schedule whose owner session no longer exists like any other: the owner columns are never validated against a live session.
 
 ## Acceptance conditions
 
 - ac1: the migration adds owner_session_id uuid NULL and owner_slug text NULL to schedules and a rerun is a no-op [evidence: test:tests/test_migrations.py::test_schedule_owner_columns]
 - ac2: the repository stores and reads the owner, lists schedules owned by a session and counts them [evidence: test:tests/test_schedules_repo.py::test_owner_round_trip]
-- ac3: the UI schedule view carries owner_slug, null for schedules made in the UI, and a UI replace of an owned schedule keeps its owner [evidence: test:tests/test_api_schedules.py::test_owner_slug_in_view]
+- ac3: the UI schedule view carries owner_slug, null for schedules made in the UI, and a UI replace of an owned schedule keeps its owner, and a UI replace and a UI delete of an owned schedule succeed when its owner session no longer exists [evidence: test:tests/test_api_schedules.py::test_owner_slug_in_view]
 - ac4: the existing UI routes are otherwise unchanged [evidence: command:uv run pytest tests/test_api_schedules.py]
 - ac5: openapi.json matches the app [evidence: command:uv run pytest tests/test_readme_api.py::test_openapi_matches_app]
 - ac6: the targeted tests and lint pass [evidence: command:uv run pytest tests/test_migrations.py tests/test_schedules_repo.py tests/test_api_schedules.py tests/test_readme_api.py && mise run lint]
@@ -70,3 +74,5 @@ Each schedule records which session created it, and the UI can show it.
 
 - No Docker in agent pods: the DB tests run in CI.
 - `tests/test_api_schedules.py::test_crud` may compare whole views; if `owner_slug` makes such an assertion no longer accurate, name it and why.
+
+- 2026-10-27 amended: builder check B6 and B3: migration number from baseline-facts, orphaned owned schedules stay manageable from the UI
