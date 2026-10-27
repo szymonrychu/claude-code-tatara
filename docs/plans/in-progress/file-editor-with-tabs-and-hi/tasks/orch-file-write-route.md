@@ -1,6 +1,6 @@
 ---
 title: orch file write route
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the browser can save a workspace file through the orchestrator, origin-guarded, with conflicts reported"
 files: [src/agents_orchestrator/api/workspace.py, src/agents_orchestrator/api/schemas.py, README.md, openapi.json, MEMORY.md, tests/test_api_file_write.py, tests/test_api_files.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_write.p
 depends_on: [fake-wrapper-file-write]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 0c99a1a0d1060fa0426bb95e334425630f6fa019
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 10
+actual_tokens: 2156975
+actual_roles: "impl 8, review 3"
+actual_role_tokens: "impl 1881137, review 275838"
 ---
 
 # orch file write route
@@ -88,3 +88,5 @@ Scope (agents-orchestrator):
 - Derive tokens at runtime (`derive_tokens(KEY.encode(), session_id).auth`), never a literal credential string (a GitGuardian false positive cost a PR in generic-any-mcp-with-git-and).
 - The 409 of `file_changed` and of `agent_not_ready` share a status; clients tell them apart by code, say so in README.
 - `tests/test_api_files.py`, `tests/test_workspace_proxy.py` and the contract real leg run only in CI (Docker); say so in the hand-back rather than claiming them.
+
+- 2026-10-27 done
