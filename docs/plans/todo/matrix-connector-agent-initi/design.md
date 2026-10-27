@@ -470,7 +470,7 @@ The builder check (sonnet, no prior context) asked nine questions; settled here,
 
 ## Open questions
 
-- Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [recommended: yes]
+- Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
 - Q2: Your answer after an agent starts a chat or sends a follow-up goes to that session while it runs (including a hive leader or a webhook or schedule session, as a follow message mid-turn, with its final answer posted to the chat), otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]
 - Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [recommended: yes]
