@@ -1,6 +1,6 @@
 ---
 title: park and unpark an in-progress epic
-status: todo
+status: in-progress
 repo: ""
 value: Lets a reprioritised epic run ahead of a parked one
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_park.py, plugins/workbench/skills/start-development/references/tickets.md]
