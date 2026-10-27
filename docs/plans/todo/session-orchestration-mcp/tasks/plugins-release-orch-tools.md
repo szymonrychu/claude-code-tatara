@@ -38,6 +38,8 @@ Scope (any-mcp-tatara-plugins):
 - `tests/test_source_install.py::test_orchestrator_distribution_metadata` is no longer accurate (named): it pins the previous version; it asserts the new one.
 - Release step, run by the orchestrator session (never a subagent) once this repo's PR is merged to `main` with green CI: `git tag <tag> <merge sha> && git push origin <tag>` (irreversible, listed in design.md). ac3 is checked by the orchestrator after that push.
 
+User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The version this task bumps from and to is the one baseline-facts recorded in agents-orchestrator MEMORY.md; re-read it from main as the Scope says and stop on a mismatch.
+
 ## Acceptance conditions
 
 - ac1: the plugin's pyproject and installed metadata say the next minor after the version hive-decoupling pinned (updated) [evidence: test:tests/test_source_install.py::test_orchestrator_distribution_metadata]
@@ -71,3 +73,5 @@ The plugin with the orchestration tools is released as a tag the orchestrator ca
 
 - Dependency-bump TDD exception for the version values; the metadata test is the guard.
 - `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in this pod with git 2.39 (`--end-of-options`, environmental per Matrix); CI is its gate.
+
+- 2026-10-27 amended: builder check B6: version from baseline-facts
