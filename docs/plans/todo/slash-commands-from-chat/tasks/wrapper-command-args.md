@@ -88,7 +88,7 @@ Tests no longer accurate (named), because D4 removes structured params: `tests/t
 
 ## Expected outcome
 
-Any allowed command name with one line of free args can be queued through the API and the ccw tool; the typed line is `/name args`; structured params are gone everywhere in src and tests.
+Any allowed command name with free args (multi-line, up to 20000 characters) can be queued through the API and the ccw tool; the typed line is `/name args` in one paste; structured params are gone everywhere in src and tests.
 
 ## Steps
 

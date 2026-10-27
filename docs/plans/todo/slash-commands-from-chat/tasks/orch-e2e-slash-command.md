@@ -47,17 +47,19 @@ Depends on orch-render-client-commands (agents render `client: ["*"]`) and, thro
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New kind e2e case `tests/e2e/test_e2e_kind.py::test_slash_command_from_chat_keeps_session_responsive` (marker `e2e`, CI job e2e).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+CI's kind e2e proves the reported case end to end against the real agent image: a chat "/reload-plugins" completes as a command, the agent is free again, prose still runs, and "/exit" is refused with the wrapper's code.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Write the case first against the existing fixtures (`api`, `session`); it cannot run here (kind, CI only).
+- Run the task's verify: compiles and lint passes. Quote the output; the e2e leg runs in CI on the PR (green only with orch-render-client-commands and the 0.4.0 pin in place).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse the fixtures and helpers of `tests/e2e/test_e2e_kind.py` (for example the ones `test_agent_api_identity` and `test_hive_notes_delivered` use).
+- Assert on the wrapper error code `command_denied`, never on a list of names (retro proposal).
+- Depends on orch-render-client-commands.

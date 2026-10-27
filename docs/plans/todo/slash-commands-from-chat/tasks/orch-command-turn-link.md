@@ -52,17 +52,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `queue.link_command_turn(conn, wrapper_command_id: str, turn_id: str) -> bool`: `UPDATE messages SET turn_id = %s WHERE kind = 'command' AND status = 'sent' AND wrapper_command_id = %s AND turn_id IS NULL`.
+- `queue.mark_sent_command(conn, id, wrapper_command_id) -> bool` (task orch-dispatch-commands) also writes `turn_id` from a stored `command_completed` event of that command id with `result = 'turn'`.
+- Ingester `_project`: `command_completed` with `data.record.result == "turn"` and a `turn_id` -> `link_command_turn`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A command message whose prompt command became a turn carries that turn id, so a session message sent from the promoted turn counts the right hop and the hop limit holds; the message's turn also shows its completion to API readers such as agents-common.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1-ac3; on a Docker host run `uv run --frozen pytest tests/test_ingester.py tests/test_agent_session_messaging.py`: they fail (turn_id stays null, hop 1). In this container only ac5 runs.
+- Green: queue.py, ingester/loop.py, MEMORY.md; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- One writer per transition (design Constraints): `link_command_turn` for sent -> linked, `mark_sent_command` for dispatching -> sent; both guarded (`turn_id IS NULL`).
+- If a layering test forbids the ingester importing `db.queue`, return that as a question instead of moving the write elsewhere.
+- The ingester stores every envelope first (`insert_events`); the link runs in the same projection transaction.
+- Depends on orch-dispatch-commands (`kind`, `wrapper_command_id`, `mark_sent_command`).

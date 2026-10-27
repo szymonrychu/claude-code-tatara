@@ -56,7 +56,7 @@ A superleader agent reading its tool list knows that "/x" sent to another sessio
 
 ## Notes
 
-- The description reaches agents only through a plugins release and the orchestrator's `ORCH_ANY_MCP_PLUGINS_REF` pin (`v0.1.0` today); that release and pin are an open question of design.md, not part of this task.
+- The description reaches agents only through a plugins release and the orchestrator's `ORCH_ANY_MCP_PLUGINS_REF` pin (`v0.1.0` today): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 (builder check).
 - No dependency inside the epic.
 
 - 2026-10-27 amended: interrogate item 1 (the description says only a superleader's slash text runs as a command), design D13 revised

@@ -56,17 +56,21 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Settings.any_mcp_plugins_ref` default `v0.2.0` (`ORCH_ANY_MCP_PLUGINS_REF`); dev dependency `any-mcp-tatara-orchestrator` at `v0.2.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agent pods rendered by this orchestrator install the plugins release whose session_send description says slash text from a superleader runs as a command.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm tag `v0.2.0` on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins v0.2.0`).
+- Red: change `test_defaults` to v0.2.0; run `uv run --frozen pytest tests/test_settings.py tests/test_images.py`: fails.
+- Green: settings default, pyproject pin, `uv lock`, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_images.py::test_plugins_dev_pin_matches_settings_ref` ties the dev dependency, uv.lock and the settings default to one tag.
+- Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); deploy is the gate's decision.
+- Sequenced after orch-wrapper-pin-0-4-0 so one task at a time edits `pyproject.toml` and `uv.lock` (my call).
+- Depends on plugins-release-0-2-0 and orch-wrapper-pin-0-4-0.

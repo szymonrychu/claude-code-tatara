@@ -3,7 +3,7 @@ title: orch wrapper pin 0.4.0
 status: todo
 repo: agents-orchestrator
 value: "CI's contract leg and kind e2e prove slash commands from chat against the wrapper agents will run"
-files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml, README.md, tests/e2e/test_e2e_kind.py]
+files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml, README.md]
 verify: "uv run --frozen pytest tests/test_images.py tests/test_render.py tests/test_fake_wrapper_contract.py && mise run lint"
 depends_on: [wrapper-release-0-4-0, orch-dispatch-commands]
 model: opus
@@ -51,28 +51,25 @@ Scope (agents-orchestrator):
 - `e2e/agent-test.Dockerfile`
 - `e2e/agent-test.config.yaml`
 - `README.md`
-- `tests/e2e/test_e2e_kind.py`
 
 ## Interfaces
 
 - The wrapper pin (pyproject dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` `BASE_IMAGE` and `WRAPPER_SHA`, README `## Images`), all one sha: the claude-code-wrapper `main` merge commit tagged v0.4.0.
-- New kind e2e case `tests/e2e/test_e2e_kind.py::test_slash_command_from_chat_keeps_session_responsive`.
 
 ## Expected outcome
 
-CI's contract leg and kind e2e run the wrapper that takes any slash command, and the e2e proves the reported case end to end.
+CI's contract leg and kind e2e run the wrapper that takes any slash command; the e2e slash case itself lands in orch-e2e-slash-command.
 
 ## Steps
 
 - Confirm the merged upstream and read the merge sha (`git -C /workdir/workdir/code/claude-code-wrapper fetch origin main` and the `v0.4.0` tag).
 - Change the pyproject pin, run `uv lock`; run `uv run --frozen pytest tests/test_images.py`: the Dockerfile and README checks fail on the old sha.
-- Update the Dockerfile args, the agent-test config, README `## Images`, add the e2e case; run the task's verify: passes. Quote the summary line. The e2e and integration legs run in CI or on a Docker host.
+- Update the Dockerfile args, the agent-test config and README `## Images`; run the task's verify: passes. Quote the summary line. The integration leg runs in CI or on a Docker host.
 
 ## Notes
 
 - `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha; `tests/test_render.py` validates rendered configs against the pinned wrapper's config model.
-- The e2e asserts on the wrapper's error code `command_denied`, not on a hard-coded deny list (retro proposal of cross-session-messaging-and).
-- Dependency bump: the TDD exception for the pin values applies; the equality tests are the guard. The e2e case is written before the pin is final and fails against the 0.3.0 image.
+- Dependency bump: the TDD exception for the pin values applies; the equality tests are the guard.
 - Depends on wrapper-release-0-4-0, orch-wrapper-command-client and orch-dispatch-commands.
 
 - 2026-10-27 amended: interrogate item 12 (the kind e2e case moved out of the pin task to orch-e2e-slash-command after orch-render-client-commands, so the pin PR is not red with 403), design D14 revised

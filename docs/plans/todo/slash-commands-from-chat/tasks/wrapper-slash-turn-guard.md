@@ -69,7 +69,7 @@ No origin can type a slash line with a turn marker any more: the reported `/relo
 
 ## Steps
 
-- Red: add the six tests (ac1-ac6); run `uv run pytest tests/test_session_turns.py tests/test_api_turns.py tests/test_manager.py --deselect tests/test_manager.py::test_shutdown_stops_all`: they fail (the text is typed as a turn; the API answers 202).
+- Red: add the seven tests (ac1-ac7); run `uv run pytest tests/test_session_turns.py tests/test_api_turns.py tests/test_manager.py --deselect tests/test_manager.py::test_shutdown_stops_all`: they fail (the text is typed as a turn; the API answers 202).
 - Green: add the helper and the guards, the 422 mapping, the initial-turn branch and the README rows; run the task's verify: passes. Quote the summary line.
 
 ## Notes

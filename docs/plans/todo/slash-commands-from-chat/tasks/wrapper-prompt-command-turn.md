@@ -3,7 +3,7 @@ title: wrapper prompt command turn
 status: todo
 repo: claude-code-wrapper
 value: skill and plugin commands sent from the chat run as real turns that complete at their Stop
-files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_prompt_turn.py, tests/test_fake_claude_commands.py]
+files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_prompt_turn.py, tests/test_fake_claude_commands.py, MEMORY.md]
 verify: "uv run pytest tests/test_command_prompt_turn.py tests/test_fake_claude_commands.py tests/test_command_runner.py tests/test_command_turn_resume.py tests/test_session_turns.py tests/test_stop_gate.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-dialog-commands]
 model: opus
@@ -56,10 +56,12 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 - `README.md`
 - `tests/test_command_prompt_turn.py`
 - `tests/test_fake_claude_commands.py`
+- `MEMORY.md`
 
 ## Interfaces
 
 - `Session.adopt_turn(text: str, *, origin: Origin) -> TurnRecord` (turns.Origin: client, initial, agent, peer).
+- A session API that releases the commands hold of a held turn that continues as a prompt-command turn (for example `Session.release_commands_hold(record: TurnRecord) -> None`), clearing `Session._commands_turn`.
 - SignalBus kind `prompt_submitted`; command `result = "turn"`, `CommandRecord.turn_id` = the promoted (or held) turn id.
 
 ## Expected outcome
@@ -68,12 +70,13 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 
 ## Steps
 
-- Red: add `tests/test_command_prompt_turn.py` (ac1-ac5) and the fake test (ac6); run them: they fail (the command times out; the Stop is dropped as stale).
+- Probe first (real binary, throwaway dir under `/workdir/workdir/.scratchpad/probe-slash`, never a test): Stop after a promoted project command, UserPromptSubmit for a plugin command; append the dated `(slash-commands-from-chat) probe` entries to `MEMORY.md` (ac8). A contradiction, or a fact the probe cannot settle (no credentials for the model call), is returned to the orchestrator as a question before going on.
+- Red: add `tests/test_command_prompt_turn.py` (ac1-ac6) and the fake test (ac7); run them: they fail (the command times out; the Stop is dropped as stale).
 - Green: router, session, fake, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-- Rulings pinned: queued commands stay queued after a promotion (ac3); the held-turn branch (ac4).
+- Rulings pinned: queued commands stay queued after a promotion (ac3); the held-turn branch (ac4); the hold release and its ESC on interrupt (ac5).
 - The busy slot is already held by `begin_command` (idle runner) or `hold_for_commands` (held turn); `adopt_turn` must not set busy twice or emit a second `session_state`.
 - If the logged-in contract check later shows no UserPromptSubmit for plugin commands, this task is amended to promote on the echo plus isMeta pair (design Assumptions).
 - Depends on wrapper-dialog-commands (sequenced: router.py, session.py and the fake).

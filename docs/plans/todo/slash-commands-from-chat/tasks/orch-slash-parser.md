@@ -52,7 +52,7 @@ Scope (agents-orchestrator): new module `src/agents_orchestrator/slash.py` with 
 
 ## Interfaces
 
-- `agents_orchestrator.slash.parse(text: str) -> tuple[str, str] | None`: `(name, args)`; `name` without the slash.
+- `agents_orchestrator.slash.parse(text: str) -> tuple[str, str] | None`: `(name, args)`; `name` without the slash, `""` for an empty name; args with a trailing run marker removed, newlines kept.
 
 ## Expected outcome
 
@@ -60,12 +60,12 @@ One function decides, for both message routes, whether a text is a slash command
 
 ## Steps
 
-- Red: write `tests/test_slash.py` (ac1, ac2); run `uv run --frozen pytest tests/test_slash.py`: import error.
+- Red: write `tests/test_slash.py` (ac1-ac4); run `uv run --frozen pytest tests/test_slash.py`: import error.
 - Green: write `slash.py`; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-- Keep the case table identical to the wrapper's guard tests in task wrapper-slash-turn-guard (`test_slash_rule_leaves_paths_and_prose`), so the two sides cannot drift (retro proposal of generic-any-mcp-with-git-and: one shared parity table).
+- Keep the case table identical to the wrapper's guard tests in task wrapper-slash-turn-guard (`test_slash_rule_matches_claude_parser`, `test_slash_rule_leaves_paths_and_prose`), so the two sides cannot drift (retro proposal of generic-any-mcp-with-git-and: one shared parity table).
 - Docker-free: runs in this container.
 
 - 2026-10-27 amended: interrogate items 2 and 8 (parser mirrors claude: empty name is a command, name regex with no length cap, paths stay prose; trailing run marker stripped, multi-line args), builder check (/tmp is a command), design D2 revised

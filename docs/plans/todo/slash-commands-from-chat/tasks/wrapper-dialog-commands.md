@@ -66,6 +66,8 @@ Real samples the fake must match: `/workdir/workdir/.scratchpad/probe-slash/summ
 
 - `CommandsConfig.dialog_grace_seconds: float = 2.0`, `CommandsConfig.dialog_patterns: list[str]`; mirrored in `CommandsOverride`.
 - Results and errors: `result = "dismissed"`, `error = "dialog_stuck"`.
+- A session method for a wrapper-initiated restart of claude through the relaunch path (`_boot(resume=True)`), leaving `Session.restarts` unchanged (for example `Session.restart_for_dialog() -> None`).
+- One deadline: `_run_command` passes `deadline - now` to `wait_quiet` and `_await_completion`.
 - Fake scenario `commands.<name>.dialog = {"footer": str, "dismiss_stdout": str, "escs": 1 | 2}`.
 
 ## Expected outcome
@@ -74,14 +76,15 @@ A dialog command sent from the chat never leaves the session wedged: it is dismi
 
 ## Steps
 
-- Red: add `tests/test_command_dialogs.py` (ac1-ac7) and the fake test (ac8); run `uv run pytest tests/test_command_dialogs.py tests/test_fake_claude_commands.py`: they fail.
+- Red: add `tests/test_command_dialogs.py` (ac1-ac9) and the fake test (ac10); run `uv run pytest tests/test_command_dialogs.py tests/test_fake_claude_commands.py`: they fail.
 - Green: config, session, router, fake, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
 - Reuse `session.FatalScanner` (escape-, whitespace- and case-insensitive matching across chunks) for the dialog scanner.
 - ESC count and spacing are read from `fake-keys.jsonl` (D16), never from `fake-inputs.jsonl`.
-- Rulings pinned: never two ESCs within 1 s (ac2, ac3); ESC only while a dialog pattern was seen since the last ESC or at the timeout (ac4); compact excluded (ac6).
+- Rulings pinned: never two ESCs within 1 s (ac2, ac3); ESC only while a dialog pattern was seen since the last ESC or at the timeout (ac5); compact excluded (ac8); restart only with a dialog still on screen and without spending `max_restarts` (ac4, ac5); one deadline (ac6).
+- Reuse the crash relaunch path (`Session._on_exit` and `_recover`); do not add a second boot path.
 - Depends on wrapper-command-signals (class-agnostic `_await_completion`, the key log).
 
 - 2026-10-27 amended: interrogate items 6 (restart claude with --resume before releasing the slot when a dialog stays open) and 7 (one deadline per command), design D7 and Bounds revised

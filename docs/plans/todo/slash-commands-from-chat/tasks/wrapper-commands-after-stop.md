@@ -62,12 +62,13 @@ A command a user sends while the agent works waits for that turn's Stop; the tur
 
 ## Steps
 
-- Red: add ac1 and ac2, rename and rewrite the API test (ac3), switch the named resume tests to origin agent; run `uv run pytest tests/test_command_turn_resume.py tests/test_api_commands.py`: ac1 and ac3 fail.
+- Red: add ac1, ac2 and ac4, rename and rewrite the API test (ac3), switch the named resume tests to origin agent; run `uv run pytest tests/test_command_turn_resume.py tests/test_api_commands.py`: ac1, ac3 and ac4 fail.
 - Green: change `_stop_gate` and the post-completion runner start, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-- Ruling, pinned by ac4: an interrupted or failed turn cancels its queued client commands (today's behaviour, kept).
+- Ruling, pinned by ac5: an interrupted or failed turn cancels its queued client commands (today's behaviour, kept).
+- Ruling, pinned by ac4: the slot is taken for queued client commands synchronously after `session.complete`, before `_after_turn` is awaited (`begin_command` is synchronous; no await in between).
 - A gate change of the mid-turn behaviour amends only this task (user decision 2).
 - Depends on wrapper-prompt-command-turn (sequenced: router.py).
 

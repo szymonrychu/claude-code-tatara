@@ -73,12 +73,13 @@ A slash message from the chat or a superleader is delivered to the target's wrap
 
 ## Steps
 
-- Red: add the nine Docker tests (ac1-ac9); on a Docker host run `uv run --frozen pytest tests/test_dispatcher.py tests/test_queue_leader_routing.py tests/test_ambiguous_verify.py`: they fail. In this container only ac11 runs.
+- Red: add the eleven Docker tests (ac1-ac11); on a Docker host run `uv run --frozen pytest tests/test_dispatcher.py tests/test_queue_leader_routing.py tests/test_ambiguous_verify.py`: they fail. In this container only ac13 runs.
 - Green: queue, dispatcher, verifier, README, MEMORY.md; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-- Rulings and their pins (retro proposal): no reservation write (ac7), hold exemption and its limits (ac8), backoff requeue (ac4), wrapper code as error (ac5), ambiguous fails (ac6, ac9).
+- Rulings and their pins (retro proposal): no reservation write (ac8), hold exemption and its limits (ac9), per-session order behind a dispatching command (ac10), backoff requeue (ac5), wrapper code as error (ac6), ambiguous fails (ac7, ac11), run marker excluded from args (ac4).
+- The hop-guard link of a promoted command turn is task orch-command-turn-link (it extends `mark_sent_command`).
 - Every status change stays a guarded UPDATE (`WHERE status = 'dispatching'`); one writer per transition.
 - `release_agent` is skipped for command claims (nothing was reserved).
 - Depends on orch-message-kind (the `kind` column) and orch-wrapper-command-client (`command()` outcomes, the fake's command route).

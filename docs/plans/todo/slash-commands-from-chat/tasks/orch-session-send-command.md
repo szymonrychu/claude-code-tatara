@@ -55,12 +55,13 @@ A superleader's `orchestrator_session_send` with "/x ..." becomes a command mess
 
 ## Steps
 
-- Red: add ac1 and ac2; on a Docker host they fail (kind turn).
+- Red: add ac1-ac3; on a Docker host ac1 fails (kind turn).
 - Green: change `session_send` and the README; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-- Reuse `_leads` and the D7 check order (api/agent.py:session_send).
+- Reuse `_leads` and the D7 check order (api/agent.py:session_send); the kind decision reads `own.spec.session_messaging` after every refusal check.
+- Ruling, pinned by ac2: a non-superleader's slash text stays a framed turn (interrogate item 1).
 - Depends on orch-message-kind (`enqueue_message(kind=...)`).
 
 - 2026-10-27 amended: interrogate item 1 (only a superleader's slash text becomes a command; a worker-to-superleader slash text stays a framed turn), design D1 revised

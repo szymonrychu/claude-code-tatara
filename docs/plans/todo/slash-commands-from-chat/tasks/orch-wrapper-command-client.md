@@ -80,7 +80,7 @@ The orchestrator can send any slash command with args to a wrapper and knows exa
 ## Notes
 
 - The real leg of ac3 pins the fake's record shape against the real wrapper image (retro proposal: fakes checked against real output). It needs the 0.4.0 pin (orch-wrapper-pin-0-4-0) and `client: ["*"]` in `e2e/agent-test.config.yaml`; until then only the fake leg runs.
-- The fake imports nothing from claude_code_wrapper at runtime if it does not today; copy the nine deny names with a comment naming `claude_code_wrapper.config.DEFAULT_COMMAND_DENY` as the source.
+- The fake imports nothing from claude_code_wrapper at runtime if it does not today; copy the design D5 deny names (26 since the interrogate revision) with a comment naming `claude_code_wrapper.config.DEFAULT_COMMAND_DENY` as the source, and match them case-insensitively.
 - No dependency inside the epic.
 
 - 2026-10-27 amended: interrogate items 5 and 2 (the fake copies the revised DEFAULT_COMMAND_DENY, matches it case-insensitively and refuses an empty name invalid_command), design D5 revised

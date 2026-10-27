@@ -3,7 +3,7 @@ title: wrapper command signals
 status: todo
 repo: claude-code-wrapper
 value: "local and unknown commands complete on the real echo shapes, so /reload-plugins from a client completes and frees the slot"
-files: [src/claude_code_wrapper/transcript.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, tests/test_transcript_commands.py, tests/test_command_signals.py, tests/test_fake_claude_commands.py, tests/test_command_runner.py]
+files: [src/claude_code_wrapper/transcript.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, tests/test_transcript_commands.py, tests/test_command_signals.py, tests/test_fake_claude_commands.py, tests/test_command_runner.py, MEMORY.md]
 verify: "uv run pytest tests/test_transcript_commands.py tests/test_transcript.py tests/test_command_signals.py tests/test_fake_claude_commands.py tests/test_fake_claude.py tests/test_command_runner.py tests/test_command_turn_resume.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-slash-turn-guard]
 model: opus
@@ -70,10 +70,11 @@ Tests no longer accurate (named): `tests/test_fake_claude_commands.py::test_unkn
 - `tests/test_command_signals.py`
 - `tests/test_fake_claude_commands.py`
 - `tests/test_command_runner.py`
+- `MEMORY.md` (new)
 
 ## Interfaces
 
-- `transcript.CommandUnknown(_Event)` with `name: str`; part of the `Event` union.
+- `transcript.CommandUnknown(_Event)` with `name: str`; part of the `Event` union; parsed from "Unknown command: /x" with or without ". Did you mean /y?".
 - SignalBus kind `command_unknown` `{name}`.
 - `_await_completion(record, mark, timeout)` returns `("failed", None, "unknown_command", None)` on `command_unknown`.
 - Fake claude scenario: `commands.<name>: {echo: "system"|"user", echo_name, stdout, as_user, delay_seconds, hang}`; `$CLAUDE_CONFIG_DIR/fake-keys.jsonl` lines `{"key": "esc", "ts": ...}`.
@@ -84,13 +85,15 @@ Every local command on the real echo shapes completes with its stdout, an unknow
 
 ## Steps
 
-- Red: add the parser, signal, runner and fake tests (ac1, ac2, ac4-ac9) and update test_unknown_command; run `uv run pytest tests/test_transcript_commands.py tests/test_command_signals.py tests/test_command_runner.py tests/test_fake_claude_commands.py`: they fail.
+- Probe first (real binary, throwaway dir under `/workdir/workdir/.scratchpad/probe-slash`, never a test): local commands and UserPromptSubmit (a hooks log as in the first probe), `/workdir/foo is broken`, `/etc/hosts`, `/tmp`, `/ is root`; write the dated `(slash-commands-from-chat) probe` entries in a new `MEMORY.md` (ac13). A result that contradicts design D2 or D6, or a fact the probe cannot settle, is returned to the orchestrator as a question before going on.
+- Red: add the parser, signal, runner and fake tests (ac1-ac3, ac5-ac11) and update test_unknown_command; run `uv run pytest tests/test_transcript_commands.py tests/test_command_signals.py tests/test_command_runner.py tests/test_fake_claude_commands.py`: they fail.
 - Green: change transcript.py, router.py and the fake; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
 - Completion matches any `command_invoked` after the mark, never the typed name (aliases).
-- Ruling, pinned by ac7: an unknown command sends no ESC.
+- Ruling, pinned by ac8 and ac9: an unknown command, the suggestion form included, sends no ESC.
+- The probe is never a test: tests keep using the fake claude (repo CLAUDE.md).
 - The reviewer checks the fake's echo and informational lines against the cited real samples (retro proposal).
 - Depends on wrapper-slash-turn-guard (sequenced: both touch router.py).
 
