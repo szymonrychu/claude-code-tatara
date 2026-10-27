@@ -631,6 +631,7 @@ Discovery plan inputs placed:
 ## Open questions
 
 - Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision]
+- Q2: Claude Code's docs run some commands immediately even mid-turn (/status, /tasks, /usage; the 2.1.304 binary flags several commands 'immediate', .scratchpad/probe-slash/summaries/cmdtable.txt), so D9's 'run every mid-turn command at the turn's Stop' is only partly parity with the terminal. Keep D9 for every command, or run claude's immediate commands at once while a turn runs? [recommended: keep D9 for every command (the gate default: accepted at once, run at the turn's Stop); running immediate commands mid-turn would be an amend of task wrapper-commands-after-stop only]
 
 ## Irreversible operations in scope
 
