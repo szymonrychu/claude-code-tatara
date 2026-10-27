@@ -27,13 +27,13 @@ An in-progress epic can be parked and unparked: `ticket.py stage <epic> parked` 
 
 ## Acceptance conditions
 
-- `ticket.py stage <epic> parked` on an in-progress epic at stage build writes `stage: parked` and commits `chore(ticket): <epic> stage parked`; from `review` it refuses. test: plugins/workbench/skills/start-development/tests/test_ticket_park.py
-- `ticket.py stage <epic> build` on a parked epic writes `stage: build`. test: test_ticket_park.py
-- A new task sharing a file with a non-done task of a parked in-progress epic is created (no overlap failure); the same overlap against an unparked in-progress epic still fails. test: test_ticket_park.py
-- Parking leaves the epic's integration worktree and branch in place. test: test_ticket_park.py
-- `ticket.py lint` accepts `stage: parked`, and `stage <epic> review` refuses on a parked epic. test: test_ticket_park.py
-- references/tickets.md documents `parked` in the stage command line and the epic lifecycle paragraph. command: grep -n parked plugins/workbench/skills/start-development/references/tickets.md
-- The whole plugin suite and lint stay green. command: mise run test:plugin && mise run lint
+- ac1: `ticket.py stage <epic> parked` on an in-progress epic at stage build writes `stage: parked` and commits `chore(ticket): <epic> stage parked`; from `review` it refuses. [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_park.py]
+- ac2: `ticket.py stage <epic> build` on a parked epic writes `stage: build`. [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_park.py]
+- ac3: A new task sharing a file with a non-done task of a parked in-progress epic is created with no overlap failure; the same overlap against an unparked in-progress epic still fails. [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_park.py]
+- ac4: Parking leaves the epic's integration worktree and branch in place. [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_park.py]
+- ac5: `ticket.py lint` accepts `stage: parked`, and `stage <epic> review` refuses on a parked epic. [evidence: test:plugins/workbench/skills/start-development/tests/test_ticket_park.py]
+- ac6: references/tickets.md documents `parked` in the stage command line and the epic lifecycle paragraph. [evidence: command:grep -n parked plugins/workbench/skills/start-development/references/tickets.md]
+- ac7: The plugin test suite and lint stay green. [evidence: command:mise run test:plugin && mise run lint]
 
 ## Files
 
@@ -43,17 +43,21 @@ An in-progress epic can be parked and unparked: `ticket.py stage <epic> parked` 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ticket.py`: `EPIC_STAGES` gains `parked`; `cmd_stage` accepts `parked` (only from `build`) and `build` (from `parked` or `review`); `run_check` skips tasks of in-progress epics whose README `stage` is `parked`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`ticket.py stage slash-commands-from-chat parked` succeeds, after which `ticket.py new-task` in another epic no longer fails on files shared with slash-commands-from-chat's unbuilt tasks.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write tests/test_ticket_park.py covering ac1-ac5 (reuse fixtures from conftest.py and test_ticket_check.py / test_ticket_move.py); run the verify command, expect failures on the missing `parked` stage.
+- Green: implement in ticket.py; run the verify command, expect all passed.
+- Update references/tickets.md (stage command line and lifecycle paragraph); run `mise run test:plugin && mise run lint`, expect green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Parking moves and deletes nothing (no git mv, no worktree removal). `move <epic> done` on a parked epic is out of scope (unchanged behaviour).
+- No backward-compat shims. No em dashes.
+
+- 2026-10-27 amended: AC format and filled sections
