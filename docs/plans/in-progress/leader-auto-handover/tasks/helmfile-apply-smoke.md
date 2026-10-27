@@ -1,6 +1,6 @@
 ---
 title: helmfile apply smoke
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the auto-handover release runs live and passes smoke
 files: [MEMORY.md]
@@ -8,15 +8,15 @@ verify: mise run smoke
 depends_on: [helmfile-deploy-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b5ae9c39ccd972dcbc8d354ab7130df0deec4ca7
 points: 5
 expected_minutes: 11
 expected_tokens: 1836811
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 245900
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 174666, review 71234"
 ---
 
 # helmfile apply smoke
@@ -62,3 +62,5 @@ See the Requirement and the acceptance conditions above.
 ## Notes
 
 See the Requirement and the acceptance conditions above.
+
+- 2026-10-27 done: AC1 live smoke green on agents-helmfile main 0ed86cf (.logs/lah-smoke-ac1.log, exit 0, leader reason scale_down); live proof by hive leader (.logs/lah-live-proof.log); MEMORY entry b5ae9c3, reviewer clean
