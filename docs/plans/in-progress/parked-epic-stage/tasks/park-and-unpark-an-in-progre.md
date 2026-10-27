@@ -1,6 +1,6 @@
 ---
 title: park and unpark an in-progress epic
-status: in-progress
+status: done
 repo: ""
 value: Lets a reprioritised epic run ahead of a parked one
 files: [plugins/workbench/skills/start-development/scripts/ticket.py, plugins/workbench/skills/start-development/tests/test_ticket_park.py, plugins/workbench/skills/start-development/references/tickets.md]
@@ -8,15 +8,15 @@ verify: pytest plugins/workbench/skills/start-development/tests/test_ticket_park
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 610c3b55b9a5d1797f767b19db8595c77f3b97e9
 points: 3
 expected_minutes: 6
 expected_tokens: 940114
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 32
+actual_tokens: 694281
+actual_roles: "impl 25, review 7"
+actual_role_tokens: "impl 622841, review 71440"
 ---
 
 # park and unpark an in-progress epic
@@ -61,3 +61,5 @@ An in-progress epic can be parked and unparked: `ticket.py stage <epic> parked` 
 - No backward-compat shims. No em dashes.
 
 - 2026-10-27 amended: AC format and filled sections
+
+- 2026-10-27 done
