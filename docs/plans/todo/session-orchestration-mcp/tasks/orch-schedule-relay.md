@@ -41,19 +41,27 @@ Route table (agent port, prefix `/agent/v1/orchestration`): `GET /schedules` to 
 
 Scope (agents-orchestrator): `settings.py` (`schedule_url`, `schedule_token`), new `api/orchestration_relay.py`, `api/app.py`, README (Configuration rows; the schedule routes in `### Orchestration`), `openapi.json`. Nothing is stored except the audit rows.
 
+User settlement B2 (2026-10-27), verbatim: "schedule_run counts as an ok write against ORCH_ORCHESTRATION_ACTIONS_PER_HOUR. The global max_sessions is the only bound on fired sessions." `POST /schedules/{id}/run` is a write: it goes through the write gate, is audited with action `schedule_run` and an `ok` row when the upstream accepts it, and that row counts toward the hourly limit. The relay adds no cap of its own on runs.
+
+User settlement B3 (2026-10-27), verbatim: "agent-created schedules may be created enabled. Orphans after the owner's deletion are managed from the UI." The relay forwards `enabled` untouched and never forces a schedule disabled.
+
+Open question Q9 (pending; the plan follows the recommended answer), verbatim: "A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls?" recommended "yes". Create and update of a schedule read the named preset and call `api/orchestration.py:require_own_preset` (orch-orchestration-gate) besides `check_no_escalation`; the preset check is the only place that knows who created a preset, agents-schedule cannot tell, so this is the single enforcement point for schedules.
+
 ## Acceptance conditions
 
 - ac1: ORCH_SCHEDULE_URL (http or https) and ORCH_SCHEDULE_TOKEN default empty, one set without the other is a settings error naming both, and the token never appears in repr [evidence: test:tests/test_settings.py::test_schedule_relay_settings]
 - ac2: the README Configuration section names every ORCH_ variable, the two new ones included [evidence: test:tests/test_settings.py::test_env_names_documented_in_readme]
-- ac3: each schedule route forwards its method, path, query and body to ORCH_SCHEDULE_URL/relay/v1 with the relay bearer and the caller's X-Orch-Session and X-Orch-Slug, and the forwarded request carries neither the agent token nor any other inbound header [evidence: test:tests/test_orchestration_relay.py::test_forwards_with_relay_token_never_agent_token]
+- ac3: each schedule route forwards its method, path, query and body (unchanged, enabled included) to ORCH_SCHEDULE_URL/relay/v1 with the relay bearer and the caller's X-Orch-Session and X-Orch-Slug, and the forwarded request carries neither the agent token nor any other inbound header [evidence: test:tests/test_orchestration_relay.py::test_forwards_with_relay_token_never_agent_token]
 - ac4: the upstream status and JSON body (200, 201, 204, 404 not_found, 409 owned_limit, 422 too_frequent) reach the agent unchanged [evidence: test:tests/test_orchestration_relay.py::test_upstream_pass_through]
 - ac5: a connection error, a timeout and a non-JSON upstream answer give 503 schedules_unavailable without echoing upstream text [evidence: test:tests/test_orchestration_relay.py::test_upstream_failure_is_unavailable]
 - ac6: with the relay unconfigured every schedule route answers 503 schedules_unconfigured and makes no upstream call [evidence: test:tests/test_orchestration_relay.py::test_unconfigured]
 - ac7: create and update read the named preset first and refuse privilege_escalation without an upstream call when it carries session_orchestration or a flag the caller lacks [evidence: test:tests/test_orchestration_relay.py::test_schedule_preset_no_escalation]
-- ac8: schedule writes pass the orchestration checks and the user-turn gate, reads pass the checks without the gate, and every write writes an audit row with target_kind schedule and the upstream outcome [evidence: test:tests/test_orchestration_relay.py::test_relay_checks_and_audit]
-- ac9: a body over 256 KiB answers 413 payload_too_large with no upstream call, and a schedule with a 16384-character prompt of 4-byte characters escaped as surrogate pairs passes [evidence: test:tests/test_orchestration_relay.py::test_body_cap]
-- ac10: the README documents every schedule relay route and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
-- ac11: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_relay.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
+- ac8: create and update refuse 403 not_owner, audited and without an upstream call, when the named preset was made in the UI or by another session, and pass for a preset the caller created [evidence: test:tests/test_orchestration_relay.py::test_schedule_preset_must_be_own]
+- ac9: schedule writes pass the orchestration checks and the user-turn gate, reads pass the checks without the gate, and every write writes an audit row with target_kind schedule and the upstream outcome [evidence: test:tests/test_orchestration_relay.py::test_relay_checks_and_audit]
+- ac10: POST /schedules/{id}/run passes the write gate, writes an audit row with action schedule_run and outcome ok on an upstream 2xx or the upstream refusal code otherwise, the ok row counts toward ORCH_ORCHESTRATION_ACTIONS_PER_HOUR, and a create with enabled true is forwarded with enabled true [evidence: test:tests/test_orchestration_relay.py::test_schedule_run_counted_and_enabled_create_forwarded]
+- ac11: a body over 256 KiB answers 413 payload_too_large with no upstream call, and a schedule with a 16384-character prompt of 4-byte characters escaped as surrogate pairs passes [evidence: test:tests/test_orchestration_relay.py::test_body_cap]
+- ac12: the README documents every schedule relay route and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
+- ac13: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_relay.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
 
 ## Files
 
@@ -87,3 +95,5 @@ A flagged leader can manage its schedules through the orchestrator, which proves
 - Never log the relay token, the agent token or a body; log method, path, status only.
 - `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.
 - Build fake tokens at runtime in tests (GitGuardian). DB cases run in CI.
+
+- 2026-10-27 amended: builder check B2, B3 and Q9: schedule_run counted, enabled forwarded, own presets only
