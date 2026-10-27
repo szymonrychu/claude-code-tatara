@@ -1,6 +1,6 @@
 ---
 title: orch rollout replacer
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: deploys never replace a busy or leading agent pod mid-turn
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/reconciler/rollout.py, src/agents_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_rollout.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, MEMORY.md]

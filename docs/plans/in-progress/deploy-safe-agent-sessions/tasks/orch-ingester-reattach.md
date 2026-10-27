@@ -1,6 +1,6 @@
 ---
 title: orch ingester reattach
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: an agent comes back from dead after a pod restart and its queued messages are delivered
 files: [src/agents_orchestrator/db/migrations/0009_wrapper_resume.sql, src/agents_orchestrator/db/agents.py, src/agents_orchestrator/reconciler/wrapper_sessions.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_wrapper_session_bootstrap.py, MEMORY.md]

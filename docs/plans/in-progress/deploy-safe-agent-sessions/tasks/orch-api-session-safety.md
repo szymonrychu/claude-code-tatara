@@ -1,6 +1,6 @@
 ---
 title: orch api session safety
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the API tells clients what a discard keeps and how long messages have waited
 files: [src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/api/streams.py, src/agents_orchestrator/db/views.py, openapi.json, tests/test_api_session_safety.py, README.md]

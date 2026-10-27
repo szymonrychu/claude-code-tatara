@@ -1,6 +1,6 @@
 ---
 title: web ci publish gate
-status: todo
+status: in-progress
 repo: agents-web
 value: a red agents-web main build is never pushed or published
 files: [.github/workflows/ci.yaml, scripts/ci.test.mjs]

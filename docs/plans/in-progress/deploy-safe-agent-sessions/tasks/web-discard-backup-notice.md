@@ -1,6 +1,6 @@
 ---
 title: web discard backup notice
-status: todo
+status: in-progress
 repo: agents-web
 value: the user sees exactly what a discard deletes and what is kept before confirming
 files: [src/sessions/DiscardSessionDialog.tsx, src/sessions/DiscardSessionDialog.test.tsx, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: wrapper shutdown turn resume
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: a turn cut off by a pod restart continues instead of being lost
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/turns.py, src/claude_code_wrapper/router.py, tests/test_shutdown_turn_resume.py, README.md]

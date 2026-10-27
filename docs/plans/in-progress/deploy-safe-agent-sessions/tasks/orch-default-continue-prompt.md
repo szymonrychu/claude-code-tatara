@@ -1,6 +1,6 @@
 ---
 title: orch default continue prompt
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: agents continue an interrupted turn after a restart without per-preset setup
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/k8s/render.py, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, README.md]

@@ -1,6 +1,6 @@
 ---
 title: web agent unavailable banner
-status: todo
+status: in-progress
 repo: agents-web
 value: a hung session is visible at once instead of looking like silent queueing
 files: [src/chat/AgentUnavailableBanner.tsx, src/chat/AgentUnavailableBanner.test.tsx, src/chat/ChatView.tsx, src/ribbon/stateMark.tsx, src/ribbon/stateMark.test.ts, src/api/stream.ts, src/api/stream.test.ts, src/ribbon/useSessions.ts]

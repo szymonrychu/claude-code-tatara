@@ -1,6 +1,6 @@
 ---
 title: web sync session safety api
-status: todo
+status: in-progress
 repo: agents-web
 value: the web client is typed against the API fields that describe backups and queue age
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]

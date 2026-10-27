@@ -2,7 +2,7 @@
 title: deploy-safe agent sessions
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-orchestrator, claude-code-wrapper, agents-web, agents-helmfile]
 created: 2026-10-27
 ---

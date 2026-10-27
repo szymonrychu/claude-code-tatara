@@ -1,6 +1,6 @@
 ---
 title: helmfile pin check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: apply refuses to deploy any pinned build whose CI is not green
 files: [scripts/check_pins.py, tests/test_check_pins.py, tests/fixtures/check_runs_agents_orchestrator.json, mise.toml, tests/test_mise_tasks.py, README.md, MEMORY.md]

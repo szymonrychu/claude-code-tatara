@@ -1,6 +1,6 @@
 ---
 title: orch e2e rollout mid turn
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a deploy that rolls agents mid-turn is proven safe end to end on every PR
 files: [tests/e2e/test_e2e_kind.py, e2e/agent-test.scenario.json, scripts/e2e.sh, e2e/values-kind.yaml]

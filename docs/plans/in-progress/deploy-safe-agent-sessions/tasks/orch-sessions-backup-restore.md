@@ -1,6 +1,6 @@
 ---
 title: orch sessions backup restore
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: recreating a discarded session brings its Claude conversations back
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, src/agents_orchestrator/reconciler/wrapper_sessions.py, tests/test_sessions_restore.py, tests/fakes/fake_wrapper.py, tests/test_wrapper_session_bootstrap.py, MEMORY.md]

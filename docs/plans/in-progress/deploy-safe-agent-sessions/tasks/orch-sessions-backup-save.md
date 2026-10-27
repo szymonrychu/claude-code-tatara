@@ -1,6 +1,6 @@
 ---
 title: orch sessions backup save
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a discarded session's Claude conversations are saved to S3 with its workdir"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/cache/presign.py, src/agents_orchestrator/reconciler/loop.py, tests/test_sessions_backup.py, tests/test_cache_jobs_render.py, MEMORY.md]

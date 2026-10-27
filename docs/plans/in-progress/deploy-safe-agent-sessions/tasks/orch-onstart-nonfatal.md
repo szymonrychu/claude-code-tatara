@@ -1,6 +1,6 @@
 ---
 title: orch onstart nonfatal
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a failed plugin install no longer keeps an agent pod from starting
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/k8s/on_start.py, tests/test_render.py, tests/test_on_start.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: orch dead agent ineligible
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a dead agent never holds leadership, so untargeted messages reach a live leader"
 files: [src/agents_orchestrator/db/eligibility.py, src/agents_orchestrator/db/leadership.py, tests/test_dead_agent_eligibility.py, tests/test_eligibility_fragments.py, MEMORY.md]

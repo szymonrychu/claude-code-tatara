@@ -1,6 +1,6 @@
 ---
 title: orch e2e main failure
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the orchestrator main CI e2e is green, so gating publishes on it keeps main deployable"
 files: [tests/e2e/test_e2e_kind.py, tests/e2e/conftest.py, scripts/e2e.sh, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: orch ci publish gate
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a red orchestrator main build is never pushed to Harbor or published as a chart
 files: [.github/workflows/ci.yaml, tests/test_chart_ci.py, tests/test_images.py, README.md]

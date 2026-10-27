@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin patch
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: orchestrator tests and the kind e2e run the released wrapper
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md]

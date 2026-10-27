@@ -1,6 +1,6 @@
 ---
 title: helmfile apply live check
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the fix runs live and the deploy is proven not to roll a busy agent
 files: [MEMORY.md]

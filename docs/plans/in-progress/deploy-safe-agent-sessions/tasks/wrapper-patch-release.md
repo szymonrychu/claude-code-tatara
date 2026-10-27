@@ -1,6 +1,6 @@
 ---
 title: wrapper patch release
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: agents can run a wrapper image that continues interrupted turns
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]

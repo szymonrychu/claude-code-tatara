@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke continuity
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: every deploy proves an agent keeps its conversation across a pod restart
 files: [scripts/smoke.sh, tests/test_smoke_script.py, mise.toml, README.md, MEMORY.md]
