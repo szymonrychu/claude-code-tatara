@@ -1,6 +1,6 @@
 ---
 title: wrapper prompt command turn
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: skill and plugin commands sent from the chat run as real turns that complete at their Stop
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_prompt_turn.py, tests/test_fake_claude_commands.py, MEMORY.md]

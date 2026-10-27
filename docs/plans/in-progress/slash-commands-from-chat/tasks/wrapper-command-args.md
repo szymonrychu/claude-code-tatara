@@ -1,6 +1,6 @@
 ---
 title: wrapper command args
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: any slash command with free one-line args can be queued through the API and the ccw tool
 files: [src/claude_code_wrapper/commands.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/commands.py, src/claude_code_wrapper/mcp_server.py, README.md, tests/test_command_registry.py, tests/test_slash_review_fixes.py, tests/test_mcp_server.py, tests/test_api_commands.py, tests/test_command_runner.py, tests/test_auto_compact.py, tests/test_mcp_injection.py]

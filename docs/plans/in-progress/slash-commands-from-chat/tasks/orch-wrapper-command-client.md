@@ -1,6 +1,6 @@
 ---
 title: orch wrapper command client
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the orchestrator sends any slash command with args to a wrapper and knows the exact outcome, and its fake behaves like the real wrapper"
 files: [src/agents_orchestrator/wrapper/client.py, src/agents_orchestrator/wrapper/models.py, src/agents_orchestrator/wrapper/__init__.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_wrapper_client.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, tests/test_dispatcher.py]

@@ -1,6 +1,6 @@
 ---
 title: wrapper command signals
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "local and unknown commands complete on the real echo shapes, so /reload-plugins from a client completes and frees the slot"
 files: [src/claude_code_wrapper/transcript.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, tests/test_transcript_commands.py, tests/test_command_signals.py, tests/test_fake_claude_commands.py, tests/test_command_runner.py, MEMORY.md]

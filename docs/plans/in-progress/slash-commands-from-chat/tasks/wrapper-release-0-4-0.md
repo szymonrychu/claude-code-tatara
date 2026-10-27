@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.4.0
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: the orchestrator and the agents can run a wrapper that takes any slash command
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]

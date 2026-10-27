@@ -1,6 +1,6 @@
 ---
 title: wrapper slash turn guard
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "a slash line can never be typed as a turn again, so /reload-plugins cannot hang a session"
 files: [src/claude_code_wrapper/session.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/turns.py, src/claude_code_wrapper/manager.py, README.md, tests/test_session_turns.py, tests/test_api_turns.py, tests/test_manager.py]

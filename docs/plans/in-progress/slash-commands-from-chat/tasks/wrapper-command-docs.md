@@ -1,6 +1,6 @@
 ---
 title: wrapper command docs
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: operators read in the README and example configs what any slash command does and how long it can hold a session
 files: [README.md, config.example.yaml, src/claude_code_wrapper/data/config.example.yaml, src/claude_code_wrapper/data/examples/workbench.config.yaml, tests/test_slash_commands_docs.py]

@@ -1,6 +1,6 @@
 ---
 title: orch slash parser
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: one rule decides for chat and superleader messages whether a text is a slash command
 files: [src/agents_orchestrator/slash.py, tests/test_slash.py]

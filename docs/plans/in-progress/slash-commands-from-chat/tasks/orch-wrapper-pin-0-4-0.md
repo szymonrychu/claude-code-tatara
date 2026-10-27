@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin 0.4.0
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "CI's contract leg and kind e2e prove slash commands from chat against the wrapper agents will run"
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml, README.md]

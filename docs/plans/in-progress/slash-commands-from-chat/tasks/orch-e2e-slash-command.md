@@ -1,6 +1,6 @@
 ---
 title: orch e2e slash command
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "CI proves end to end, on the real agent image, that /reload-plugins from chat keeps the session responsive"
 files: [tests/e2e/test_e2e_kind.py]

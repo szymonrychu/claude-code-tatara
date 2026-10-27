@@ -1,6 +1,6 @@
 ---
 title: orch message kind
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a slash message from the chat is stored as a command message instead of a turn
 files: [src/agents_orchestrator/db/migrations/0008_slash_messages.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/views.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/messages.py, openapi.json, tests/test_api_messages.py, tests/test_migrations.py]

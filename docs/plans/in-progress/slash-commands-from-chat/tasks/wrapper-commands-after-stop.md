@@ -1,6 +1,6 @@
 ---
 title: wrapper commands after stop
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "a command sent while the agent works runs after that turn, with no fabricated continue prompt"
 files: [src/claude_code_wrapper/router.py, README.md, tests/test_command_turn_resume.py, tests/test_api_commands.py]

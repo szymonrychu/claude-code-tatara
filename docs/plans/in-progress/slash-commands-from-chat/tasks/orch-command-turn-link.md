@@ -1,6 +1,6 @@
 ---
 title: orch command turn link
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a superleader's command that becomes a turn keeps its hop count, so the session-message hop limit still holds"
 files: [src/agents_orchestrator/db/queue.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_agent_session_messaging.py, MEMORY.md]

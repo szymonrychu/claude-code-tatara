@@ -1,6 +1,6 @@
 ---
 title: web sync message kind
-status: todo
+status: in-progress
 repo: agents-web
 value: "agents-web's vendored orchestrator API matches the orchestrator that classifies slash messages"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]

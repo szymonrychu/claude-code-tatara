@@ -1,6 +1,6 @@
 ---
 title: wrapper dialog commands
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: dialog commands sent from the chat are dismissed by ESC inside a bound instead of wedging the session
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_dialogs.py, tests/test_fake_claude_commands.py]

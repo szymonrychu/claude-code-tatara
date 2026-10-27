@@ -1,6 +1,6 @@
 ---
 title: orch dispatch commands
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a slash message reaches the wrapper command queue at once, even mid-turn, never as a turn, with a visible outcome"
 files: [src/agents_orchestrator/db/queue.py, src/agents_orchestrator/dispatcher/loop.py, src/agents_orchestrator/dispatcher/verify.py, tests/test_dispatcher.py, tests/test_queue_leader_routing.py, tests/test_ambiguous_verify.py, README.md, MEMORY.md]

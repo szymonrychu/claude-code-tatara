@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.2.0
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: superleaders can install the orchestrator plugin whose session_send says what slash text does
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]

@@ -1,6 +1,6 @@
 ---
 title: wrapper command policy
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: any command name or a wildcard can be allowed while session-ending commands stay refused
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/commands.py, src/claude_code_wrapper/metrics.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/commands.py, README.md, tests/test_command_registry.py, tests/test_api_commands.py]

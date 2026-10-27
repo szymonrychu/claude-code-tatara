@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.2.0
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: agent pods install the orchestrator plugin release that tells superleaders slash text runs as a command
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]

@@ -1,6 +1,6 @@
 ---
 title: orch session send command
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a superleader's slash text to another session becomes a command for that session's leader"
 files: [src/agents_orchestrator/api/agent.py, tests/test_agent_session_messaging.py, README.md]

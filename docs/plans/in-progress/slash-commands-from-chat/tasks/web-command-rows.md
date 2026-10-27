@@ -1,6 +1,6 @@
 ---
 title: web command rows
-status: todo
+status: in-progress
 repo: agents-web
 value: "the chat shows each slash command once, with its live status and claude's output"
 files: [src/chat/chatModel.ts, src/chat/entries.tsx, src/chat/chatModel.test.ts, src/chat/ChatLog.test.tsx]

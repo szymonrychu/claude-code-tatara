@@ -1,6 +1,6 @@
 ---
 title: plugin session send slash
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: "a superleader agent's tool description says slash text runs as a command on the target session"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py]

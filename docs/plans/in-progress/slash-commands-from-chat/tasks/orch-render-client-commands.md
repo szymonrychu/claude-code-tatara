@@ -1,6 +1,6 @@
 ---
 title: orch render client commands
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "every agent's wrapper accepts the orchestrator's commands, the compact button included"
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/spec.py, README.md, openapi.json, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/test_spec_config.py]
