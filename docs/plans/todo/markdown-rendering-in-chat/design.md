@@ -178,6 +178,11 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 - package-lock.json: only the three dependencies and their transitive tree added; nomenclature guard green without an `ALLOWED` edit.
 - designRules on the new module: no colour literal, weights 400 and 500 only.
 
+## Builder check settlements (2026-10-27)
+
+- (my call) The blocker on file-download-in-file-browse is the user's stated implementation order (1. download, 2. markdown, 3. editor), not a code dependency. The epic starts after that epic merges; the implementer rebases on agents-web main (package.json, package-lock.json included) before the D10 dependency check.
+- D4 (images as new-tab links, never an `img` element) is a gate question; the plan builds the recommended answer unless the user changes it at the gate.
+
 ## Left to the builder
 
 - The exact `sx` values (spacing between blocks, list indent, code padding, table cell density) within the spacing grid and theme tokens.

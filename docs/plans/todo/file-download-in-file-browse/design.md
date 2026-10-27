@@ -254,6 +254,12 @@ Brief plan inputs:
 - `Content-Disposition` quoting for names with quotes, backslashes, control and non-ASCII characters.
 - UI: the icon click does not open the preview or select the row; the URL is relative and percent-encoded.
 
+## Builder check settlements (2026-10-27)
+
+- (my call) epic-run merges the claude-code-wrapper PR mid-epic through the normal PR flow (green, mergeable, review-clean) before `orch-wrapper-pin-download`, and amends that task with the merged sha, as in the `wrapper-sha-pin` precedent.
+- (my call) `fake-wrapper-download`'s implementer is handed the claude-code-wrapper epic worktree path and the commit of `wrapper-file-download-route` to read `api/files.py` and the README from.
+- (my call) the mid-stream abort is pinned by `orch-file-download-route` ac10.
+
 ## Left to the builder
 
 - Chunk size up to 1 MiB, and whether the wrapper stream is a sync generator in the threadpool or an async generator
