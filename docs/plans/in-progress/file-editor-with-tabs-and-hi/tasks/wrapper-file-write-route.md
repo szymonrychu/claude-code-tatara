@@ -1,6 +1,6 @@
 ---
 title: wrapper file write route
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "the editor can save a workspace file back, guarded by the workdir confinement and a stale-write check"
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, README.md, tests/test_api_files.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_files.py tes
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: d13b2a327d86f4e3ea6fd324ed087a1d27dadfb2
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 5
+actual_tokens: 1337349
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 1240006, review 97343"
 ---
 
 # wrapper file write route
@@ -85,3 +85,5 @@ Scope (claude-code-wrapper):
 - Never log the content. Never block the event loop (`asyncio.to_thread`, like the other file routes).
 - The component has no MEMORY.md; record the non-obvious calls (atomic replace, D4 limits) in the README section.
 - Known environment failures outside this task's verify: `tests/test_container.py` (no docker) and the 3 process-group tests (container PID 1).
+
+- 2026-10-27 done
