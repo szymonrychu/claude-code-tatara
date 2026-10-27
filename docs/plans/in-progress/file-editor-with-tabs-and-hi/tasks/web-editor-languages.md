@@ -1,6 +1,6 @@
 ---
 title: web editor languages
-status: in-progress
+status: done
 repo: agents-web
 value: "python, yaml, json, terraform and toml files get their language and theme-coloured highlighting"
 files: [package.json, package-lock.json, src/theme.ts, src/editor/languages.ts, src/editor/highlight.ts, src/editor/languages.test.ts, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/editor/languages.test.ts src/layout/des
 depends_on: [web-nomenclature-allowlist]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 0ed55f27897b16d29830ba6aebc2a0dbc338b9b0
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 7
+actual_tokens: 1919629
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 1827299, review 92330"
 ---
 
 # web editor languages
@@ -95,3 +95,5 @@ The CodeMirror packages are installed with one `@codemirror/state`, the nomencla
 - No `basicSetup`, no `defaultHighlightStyle` (light theme), no `@codemirror/autocomplete` import.
 - If the markdown epic already added a code palette to `theme.ts`, reuse its hues rather than adding a near-duplicate set.
 - `package-lock.json` is guarded by the nomenclature test; after install, `grep -inE 'c[l]uster|agent[-_]orchestrator' package-lock.json` must show only `find-cluster-break` lines.
+
+- 2026-10-27 done
