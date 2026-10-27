@@ -33,6 +33,9 @@ Scope (agents-orchestrator):
 - `README.md` `## Images`: the recommended agent image `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>`.
 - `tests/e2e/test_e2e_kind.py`: new `test_files_write_through_api`, modelled on `test_files_list_and_read_through_api`: the agent writes a text file through its shell; the API reads it, writes new content with the loaded `mtime` and `size` (200, content read back equal), a second write with the old stamp answers 409 `file_changed`, `expected: null` overwrites, `../etc/passwd` answers 400 `invalid_path` and a missing path 404 `not_found`.
 
+
+Merged (2026-10-27): claude-code-wrapper PR #6, merge commit `fb005fdd397183c42bb7f73b6cb67e17edc7a0b3`; `<sha>` is that value and `<sha7>` is `fb005fd`.
+
 ## Acceptance conditions
 
 - ac1: pyproject, uv.lock, README Images and the agent-test Dockerfile name the same wrapper commit, the merge commit carrying the write route [evidence: test:tests/test_images.py::test_agent_test_dockerfile_matches_dev_dependency]
@@ -70,3 +73,5 @@ CI's integration contract leg and kind e2e build the agent image from the wrappe
 - Another epic (leader-auto-handover, in progress) also moves the wrapper pin; take the newest `main` merge that carries this route, which includes the earlier changes.
 - The Harbor image exists only for wrapper `main` builds; check with `regctl image digest` when credentials allow, else `scripts/e2e.sh` builds from source.
 - The e2e reads the stamp from `files/content` before writing; never compute it in the test.
+
+- 2026-10-27 amended: wrapper PR #6 merged at fb005fd
