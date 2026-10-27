@@ -1,6 +1,6 @@
 ---
 title: web nomenclature allowlist
-status: in-progress
+status: done
 repo: agents-web
 value: "CodeMirror can be installed without turning the nomenclature guard red, and the guard still catches the retired unit"
 files: [src/nomenclature.test.ts]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/nomenclature.test.ts && mise run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8a6d7fef456956261bd627e1587ed35c02397ee5
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 223259
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 175006, review 48253"
 ---
 
 # web nomenclature allowlist
@@ -61,3 +61,5 @@ Installing CodeMirror (task web-editor-languages) keeps `src/nomenclature.test.t
 - Gate: this is the guard edit the user approves at the gate (design Q1). It is the deliberate exception to "never edit a test to make it pass": the guard's purpose (project nomenclature) is unchanged and a third-party npm name is the same class as the Kubernetes phrases already allowed.
 - Spell the unit through the file's `unit` constant in the new test, as the existing tests do; the literal `'find-cluster-break'` in `ALLOWED` is itself stripped by the guard.
 - Ruling and its pin test: only the exact phrase `find-cluster-break` is allowed, pinned by the new test (`find-<unit>`, `<unit>-break`, `my-<unit>-break` still offend).
+
+- 2026-10-27 done
