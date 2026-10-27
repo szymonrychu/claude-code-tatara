@@ -15,6 +15,14 @@ User request (2026-10-27), verbatim: "In file browser, I need to be able to down
 down" icon aligned with right side of the file browser, that's going to download a file to my computer from agent's
 workspace." Implementation order given by the user: 1. download, 2. markdown, 3. editor.
 
+User decisions (binding, numbered here U1 to U5), verbatim:
+
+- U1: "(my call) Download every file type (text and binary) of any size through a new raw-bytes streaming route in the wrapper (Content-Type application/octet-stream or sniffed mime, Content-Disposition attachment with an RFC 6266 filename*), forwarded by a streaming orchestrator route under the existing sessions/{id}/files namespace, reusing the existing path traversal and workspace-root guards and auth; no size cap beyond what the guards impose."
+- U2: "(my call) Directories, symlinks to directories and type 'other' show no download icon; symlinks to files download the target bytes only if the existing guard allows it."
+- U3: "(my call) The UI triggers the download with a plain anchor to the relative basePath URL (download attribute), no blob buffering; icon FileDownloadOutlined, small IconButton with aria-label 'Download <name>', right-aligned in the tree row, click does not open the preview (stopPropagation); errors (e.g. 404, 403) cannot be read from a plain anchor, so state in design.md how errors surface (my call: plain anchor, browser shows the error page) or choose a fetch+blob path if you judge it necessary and say why."
+- U4: "(my call) After the orchestrator route lands, regenerate the web client schema with `npm run sync:api -- orchestrator` and keep `npm run check:api` green."
+- U5: "Environment facts: the orchestrator's Postgres tests need Docker, which this container lacks (525 errors in the full run); targeted verify commands must be tests that run without Docker, and design.md must say which checks only CI can run. The wrapper has 3 process-group tests failing here because of the container PID 1 (environment, not code). agents-web full suite has 10 load-dependent 5000 ms timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor tests) that pass alone: keep task verifies targeted."
+
 Today the only file read is `files/content`, JSON only: binary and over-1-MiB files carry `content: null`, so no file
 can leave the workspace through the UI except by copying preview text.
 
@@ -271,7 +279,6 @@ Brief plan inputs:
 
 ## Open questions
 
-none
 - Q1: Deploy is not part of this epic (no agents-helmfile task), so the download works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the four queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
 - Q2: To hide the icon on symlinks to directories (U2), the file listing gains target_type (dir, file, other; null for non-symlinks and for dangling or workdir-escaping links), and symlinks whose target escapes the workdir show no icon; acceptable? [recommended: yes]
 

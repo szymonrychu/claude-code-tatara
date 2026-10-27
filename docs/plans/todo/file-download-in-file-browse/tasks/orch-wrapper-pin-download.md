@@ -33,8 +33,6 @@ Scope (agents-orchestrator):
 - `README.md` `## Images`: the recommended agent image `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>`.
 - `tests/e2e/test_e2e_kind.py`: new `test_files_download_through_api`, modelled on `test_files_list_and_read_through_api`: the agent writes a text file and a binary file (bytes 0-255) through its shell; the API download returns them byte-exact with `Content-Disposition` attachment; `..`, `../etc/passwd` and `/etc/passwd` are 400 invalid_path; the listing entry of the file has `target_type` null.
 
-Notes: `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha (`test_ccw_dev_dependency_matches_agent_image_sha`, `test_agent_test_dockerfile_matches_dev_dependency`); `tests/test_render.py` validates rendered configs against the pinned wrapper's config schema. The Harbor image exists only for wrapper `main` builds; check with `regctl image digest` when credentials allow, else `scripts/e2e.sh` builds from source. The e2e and the contract real leg run only in CI (Docker, kind).
-
 ## Acceptance conditions
 
 - ac1: pyproject, uv.lock, README Images and the agent-test Dockerfile name the same wrapper commit, the merge commit carrying the download route [evidence: test:tests/test_images.py::test_agent_test_dockerfile_matches_dev_dependency]
@@ -53,17 +51,21 @@ Notes: `tests/test_images.py` ties pyproject, uv.lock, README Images and the Doc
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- The wrapper pin (pyproject dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` `BASE_IMAGE` and `WRAPPER_SHA`, README `## Images`), all one sha, the claude-code-wrapper `main` merge commit carrying wrapper-file-download-route.
+- New kind e2e case `tests/e2e/test_e2e_kind.py::test_files_download_through_api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+CI's integration contract leg and kind e2e build the agent image from the wrapper commit that has the download route, and the e2e proves a byte-exact download through the API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the merged upstream (the requirement's precondition) and read the merge sha.
+- Change the pyproject pin, run `uv lock`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_images.py`: the Dockerfile and README checks fail on the old sha.
+- Update the Dockerfile args and README `## Images`, add the e2e case; run the task's verify: passes, quote the pytest summary line. The e2e runs in CI only.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha (`test_ccw_dev_dependency_matches_agent_image_sha`, `test_agent_test_dockerfile_matches_dev_dependency`); `tests/test_render.py` validates rendered configs against the pinned wrapper's config schema.
+- The Harbor image exists only for wrapper `main` builds; check with `regctl image digest` when credentials allow, else `scripts/e2e.sh` builds from source.
+- Precedent: done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin` (amended with the merge sha when the wrapper PR merged).

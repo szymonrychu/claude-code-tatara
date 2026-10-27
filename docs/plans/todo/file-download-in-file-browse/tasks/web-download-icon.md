@@ -42,10 +42,6 @@ Scope (agents-web):
 - `src/files/FilesPanel.test.tsx`: the new tests below; the hoisted `api` mock of `../api/files` gains `fileDownloadUrl` (the panel now imports it; this extends the mock for the new export, it does not change any existing assertion).
 - `MEMORY.md`: a dated entry (2026-10-27, file-download-in-file-browse D5): plain anchor, why not fetch plus blob, how errors surface.
 
-Rulings and their pin tests: icon rows (file, symlink with target_type file) versus no-icon rows (dir, other, symlink with target_type dir, other or null) pinned by `download_icon_only_on_file_rows`; click isolation pinned by `download_click_does_not_open_preview`; right alignment pinned by `download_icon_right_aligned`.
-
-Notes: designRules forbid `title=` on IconButton (use aria-label) and off-grid spacing; `getComputedStyle` works with emotion in jsdom (precedent `src/layout/TopBar.test.tsx:120`). The stopPropagation precedent is `src/terminal/TerminalPanel.tsx:146-149`. The full suite has 10 load-dependent timeouts in unrelated files; run only the files in `verify`.
-
 ## Acceptance conditions
 
 - ac1: `fileDownloadUrl('c1', 'src/a b.txt')` is the relative `${base()}/sessions/c1/files/download?path=src%2Fa+b.txt` under the runtime config's basePath (new) [evidence: command:mise exec -- npx vitest run src/api/files.test.ts -t 'fileDownloadUrl']
@@ -65,17 +61,24 @@ Notes: designRules forbid `title=` on IconButton (use aria-label) and off-grid s
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/api/files.ts:fileDownloadUrl(sessionId: string, path: string): string`, built with `base()` and `query({ path })`.
+- `src/files/FilesPanel.tsx:Row` gains an optional trailing action; the download anchor is `IconButton component="a" href download size="small" aria-label="Download <name>"` with `FileDownloadOutlined fontSize="small"`.
+- Kept: `listFiles`, `readFile`, preview behaviour, polling and event refresh unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Each file row (and each symlink-to-file row) of the Files tree shows a small arrow-down icon at its right edge; clicking it saves the file through the browser's download, without opening the preview.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `src/api/files.test.ts` and the three FilesPanel tests (`download_icon_only_on_file_rows`, `download_click_does_not_open_preview`, `download_icon_right_aligned`), add `fileDownloadUrl` to the hoisted `api` mock; run `mise exec -- npx vitest run src/files/FilesPanel.test.tsx src/api/files.test.ts`: the new tests fail.
+- Green: `fileDownloadUrl`, the `Row` action and the anchor; rerun: passes.
+- MEMORY.md entry; run the task's verify: passes, quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: icon rows (file, symlink with `target_type` file) versus no-icon rows (dir, other, symlink with `target_type` dir, other or null), pinned by `download_icon_only_on_file_rows`; click isolation, pinned by `download_click_does_not_open_preview`; right alignment, pinned by `download_icon_right_aligned`.
+- Extending the hoisted `api` mock with `fileDownloadUrl` is required because the panel imports it; no existing assertion changes.
+- designRules forbid `title=` on IconButton (use aria-label) and off-grid spacing; `getComputedStyle` works with emotion in jsdom (precedent `src/layout/TopBar.test.tsx:120`). The stopPropagation precedent is `src/terminal/TerminalPanel.tsx:146-149`.
+- MEMORY.md entry (2026-10-27, file-download-in-file-browse D5): plain anchor, why not fetch plus blob (buffers the whole file), errors surface in the browser, not the panel.
+- The full suite has 10 load-dependent timeouts in unrelated files (PresetForm, ScheduleForm, Endpoints, FiltersEditor); run only the files in `verify`.

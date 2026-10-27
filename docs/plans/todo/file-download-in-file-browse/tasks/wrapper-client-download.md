@@ -31,8 +31,6 @@ Scope (agents-orchestrator):
 - `src/agents_orchestrator/wrapper/client.py`: `async def open_download(self, session_id: str, path: str) -> httpx.Response`: sends `GET /v1/sessions/{session_id}/files/download` with query `path`, the bearer only in the `Authorization` header, streamed (`self._http.send(request, stream=True)`), timeout `httpx.Timeout(DEFAULT_TIMEOUT)` (connect and per read, no total). For status >= 300 it reads the body, closes the response and raises `WrapperError(status, code, message)` through `_raise_for_error`; a transport failure raises `WrapperUnreachable`. For a 2xx it returns the open response; the caller relays `aiter_raw()` and must `aclose()` it.
 - `tests/test_wrapper_client.py`: the new tests below, with `httpx.MockTransport` as the file already does.
 
-Rulings and their pin tests: raw bytes (no content decoding) pinned by `test_open_download_streams_raw_bytes`; the response is closed before an error is raised, pinned by `test_open_download_errors`.
-
 ## Acceptance conditions
 
 - ac1: `open_download` requests `GET /v1/sessions/<sid>/files/download?path=<rel>` with the bearer only in `Authorization` (not in the URL), returns the open 2xx response whose `aiter_raw()` yields the exact bytes (including NUL and non-UTF-8 bytes) and whose headers are the wrapper's (new) [evidence: test:tests/test_wrapper_client.py::test_open_download_streams_raw_bytes]
@@ -46,17 +44,20 @@ Rulings and their pin tests: raw bytes (no content decoding) pinned by `test_ope
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `wrapper/client.py:WrapperClient.open_download(self, session_id: str, path: str) -> httpx.Response`: the open, streamed 2xx response (caller relays `aiter_raw()` and calls `aclose()`); raises `WrapperError(status, code, message)` for status >= 300 (response read and closed first) and `WrapperUnreachable` for a transport failure.
+- Kept: `request_json`, `events` and every other client method unchanged.
+- Consumed by orch-file-download-route.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can open a wrapper download, see its status and headers before any byte is relayed, and stream the raw bytes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_open_download_streams_raw_bytes` and `test_open_download_errors` to `tests/test_wrapper_client.py` (`httpx.MockTransport`); run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_wrapper_client.py`: fails (no method).
+- Green: `open_download`; run the task's verify: passes, quote the pytest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: raw bytes (no content decoding) pinned by `test_open_download_streams_raw_bytes`; the response is closed before an error is raised, pinned by `test_open_download_errors`.
+- Model it on `events` (wrapper/client.py:234): `self._http.build_request(...)` then `self._http.send(request, stream=True)`; `httpx.Timeout(DEFAULT_TIMEOUT)` bounds connect and each read, never the total.

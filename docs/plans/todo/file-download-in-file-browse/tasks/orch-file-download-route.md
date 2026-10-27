@@ -42,8 +42,6 @@ Scope (agents-orchestrator):
 - `tests/test_api_file_download.py` (new, Docker-free): the tests below.
 - `tests/test_api_files.py` (CI only): `test_no_ready_agent` and `test_agent_id_selects_and_scopes` loop over `files/download` too (new route, same agent rules); `test_list_proxied_from_first_ready_agent` asserts the entry key set `{"name", "type", "size", "mtime"}`, which is no longer accurate because `target_type` joins the listing (D3): it asserts the five keys.
 
-Notes: `get_client(app)` is the shared httpx client (`trust_env=False`); tests may preset `app.state.wrapper_http`. `make_settings` and `client_for` come from `tests/test_api_sessions.py` (importing it does not start Postgres; only its fixtures do). Pass `master_key` so token derivation works. The upstream response must be closed in every exit path; pin it with a spy on `aclose`.
-
 ## Acceptance conditions
 
 - ac1: through the route, a text file, a binary file and a 3 MiB + 1 byte file download byte-exact from the fake wrapper, with the wrapper's Content-Type, Content-Length and Content-Disposition and the orchestrator's `X-Content-Type-Options: nosniff` and `Cache-Control: no-store` (new) [evidence: test:tests/test_api_file_download.py::test_download_streams_bytes_exact]
@@ -68,17 +66,26 @@ Notes: `get_client(app)` is the shared httpx client (`trust_env=False`); tests m
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New route `GET /api/v1/sessions/{session_id}/files/download?path=<rel>&agent_id=<uuid?>` in `api/workspace.py`: 200 `application/octet-stream` (OpenAPI schema `string`/`binary`) relaying the wrapper's `Content-Type`, `Content-Length`, `Content-Disposition`, plus `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`; errors as JSON envelopes: wrapper 4xx passed through, 409 `agent_not_ready`, 404 `not_found`, 502 `wrapper_unreachable`, 502 `wrapper_error`, 503 `unavailable`.
+- `api/schemas.py:FileEntry.target_type: Literal["dir", "file", "other"] | None`.
+- One error-mapping helper in `api/workspace.py` used by `forward` and the download (no copied map).
+- Uses `wrapper/client.py:WrapperClient.open_download` (wrapper-client-download) and the fake of fake-wrapper-download.
+- Consumed by web-sync-orchestrator-api (openapi.json) and web-download-icon (URL, `target_type`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`GET /api/v1/sessions/<id>/files/download?path=<rel>` streams the file byte-exact from the first usable agent, with download headers; refusals answer as JSON before any byte; the listing carries `target_type`; openapi.json and README document both.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_file_download.py` (five tests of the acceptance conditions) and the CI-only extensions in `tests/test_api_files.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_download.py`: fails (404 route, missing key).
+- Green: the route, the shared error map, `FileEntry.target_type`; rerun: passes.
+- Docs: README `## API` section and listing `target_type`; `uv run python -m agents_orchestrator.api.openapi > openapi.json`; MEMORY.md entry; run the task's verify: passes, quote the pytest summary line. `tests/test_api_files.py` needs Docker and is left to CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Docker-free rig (D7): `create_app(make_settings(master_key=KEY), pool=<stub>)` with a stub whose `connection()` is an async context manager; monkeypatch `workspace.resolve_agent` to return `WrapperTarget(agent_id, session_id, pod_name, url=fake.base_url, wrapper_session_id=sid, token=fake.token)` or raise `ApiError`; drive it with `client_for(app)` from `tests/test_api_sessions.py` (importing it does not start Postgres; only its fixtures do).
+- `get_client(app)` is the shared httpx client (`trust_env=False`); tests may preset `app.state.wrapper_http`.
+- Close the upstream response on every exit path (complete, refused, browser disconnect); pin with a spy on `httpx.Response.aclose`.
+- The fake wrapper 5xx can be produced with an `httpx.MockTransport` preset on `app.state.wrapper_http` if the fake has no control for it.
+- `tests/test_api_files.py` and the contract real leg run only in CI (Docker); say so in the hand-back rather than claiming them.

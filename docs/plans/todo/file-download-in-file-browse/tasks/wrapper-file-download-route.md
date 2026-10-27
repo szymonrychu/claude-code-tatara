@@ -37,12 +37,6 @@ Scope (claude-code-wrapper):
 - `README.md`: a `### GET /v1/sessions/{id}/files/download` section in the API reference (query, headers, no size cap, not redacted, errors), the Trust model file-API sentence naming the download route, and `target_type` in the `GET /v1/sessions/{id}/files` section.
 - `tests/test_api_files.py`: the new tests below.
 
-Interfaces: wrapper route `GET /v1/sessions/{id}/files/download?path=<rel>` -> 200 `application/octet-stream` or the guessed mime, headers `Content-Length`, `Content-Disposition`, `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`; errors as `files/content`. Listing entry `{name, type, size, mtime, target_type}` with `target_type` one of `dir`, `file`, `other`, null. Consumed by fake-wrapper-download (the fake mirrors both) and orch-file-download-route.
-
-Rulings and their pin tests: download name = last segment of the normalised requested path (link name for a symlink), pinned by `test_download_content_disposition`; fallback character set (printable ASCII 0x20-0x7E minus `"` and `\`), pinned by `test_download_content_disposition`; `target_type` null for dangling, looping and escaping links whatever the outside target is, pinned by `test_list_symlink_target_type`; bytes read stop at the `fstat` size, pinned by `test_download_bytes_exact`.
-
-Notes: mimic `test_content_open_nofollow_and_fstat` and `test_escapes_refused` for the guard tests; `make_client(work, tmp_path, file_preview_max_bytes=4)` sets limits. Compute `target_type` by `resolve_in_workdir` then `os.stat` of the resolved path (ValueError or OSError -> null). Never block the event loop on a read (worker thread). The component has no MEMORY.md; record the non-obvious calls in the README section. Known environment failures outside this task's verify: `tests/test_container.py` (no docker) and 3 process-group tests (container PID 1).
-
 ## Acceptance conditions
 
 - ac1: text, binary (NUL bytes, invalid UTF-8) and a file over 1 MiB (3 MiB + 1 byte) download byte-exact with Content-Length equal to the file size; an empty file answers 200 with no body [evidence: test:tests/test_api_files.py::test_download_bytes_exact]
@@ -66,17 +60,26 @@ Notes: mimic `test_content_open_nofollow_and_fstat` and `test_escapes_refused` f
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- New wrapper route `GET /v1/sessions/{id}/files/download?path=<rel>` (`api/files.py`): 200 with the raw bytes; headers `Content-Type` (guessed mime or `application/octet-stream`), `Content-Length` (fstat size), `Content-Disposition: attachment; filename="<fallback>"; filename*=UTF-8''<encoded>`, `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`; errors 400 `invalid_path`, 400 `not_a_file`, 401 `unauthorized`, 404 `not_found` as JSON envelopes.
+- Listing entry (`files.py:list_directory`): `{name, type, size, mtime, target_type}`, `target_type` one of `"dir"`, `"file"`, `"other"`, `null`.
+- Kept: `files.py:resolve_in_workdir`, `_resolve`, `_open_nofollow`, `read_preview` and the `files/content` contract unchanged.
+- Consumed by fake-wrapper-download (the fake mirrors both) and orch-file-download-route.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`curl -H "$H" -OJ "localhost:8080/v1/sessions/$SID/files/download?path=<rel>"` saves the file byte-exact under its name, for any size and type; every path `files/content` refuses is refused the same way; the listing tells a symlink to a file from a symlink to a directory.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the nine tests of the acceptance conditions to `tests/test_api_files.py`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_files.py`: the download tests fail with 404 (no route) and `test_list_symlink_target_type` fails on the missing key.
+- Green: the `files.py` helper and `target_type`, the route in `api/files.py`; rerun: the file tests pass.
+- Docs: README route section, Trust model sentence, listing `target_type`; run the task's verify: passes, quote the pytest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pin tests: download name = last segment of the normalised requested path (the link name for a symlink), pinned by `test_download_content_disposition`; fallback character set (printable ASCII 0x20-0x7E minus `"` and `\`, each other character `_`), pinned by `test_download_content_disposition`; `target_type` null for dangling, looping and escaping links whatever the outside target is, pinned by `test_list_symlink_target_type`; bytes read stop at the `fstat` size, pinned by `test_download_bytes_exact`.
+- Mimic `test_content_open_nofollow_and_fstat` and `test_escapes_refused` for the guard tests; `make_client(work, tmp_path, file_preview_max_bytes=4)` sets limits. Count descriptors with `os.listdir("/proc/self/fd")`.
+- Compute `target_type` with `resolve_in_workdir` then `os.stat` of the resolved path; `ValueError` or `OSError` gives null.
+- Never block the event loop on a read (worker thread); close the descriptor on every exit, including a client that disconnects mid-stream.
+- The component has no MEMORY.md; record the non-obvious calls in the README section.
+- Known environment failures outside this task's verify: `tests/test_container.py` (no docker) and the 3 process-group tests (container PID 1).

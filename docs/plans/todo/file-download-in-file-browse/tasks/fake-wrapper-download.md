@@ -31,8 +31,6 @@ Scope (agents-orchestrator):
 - `tests/fakes/fake_wrapper.py`: the download route (streamed, honours `_auth`, `_get`, `_locate`, no `file_preview_max_bytes` cap) and `target_type` in `list_files`.
 - `tests/test_fake_wrapper_contract.py`: new both-leg cases `test_files_download` and `test_files_download_errors`; new fake-only cases `test_fake_files_download_ignores_preview_cap` and `test_fake_files_symlink_target_type`. `test_files_list` asserts the entry key set `{"name", "type", "size", "mtime"}`, which is no longer accurate because the listing contract gains `target_type` (D3): it asserts the five keys and `target_type` null for the file and directory entries.
 
-Notes: the real leg (`-m integration`, real wrapper image) runs only in CI and only passes once orch-wrapper-pin-download pins the wrapper commit carrying the route; locally the verify runs the fake leg. `_tree` writes files through the turn `files` field (text only) on both legs; symlinks and the over-cap file are written straight into `fake.workdir(sid)` in the fake-only cases.
-
 ## Acceptance conditions
 
 - ac1: on both legs, `files/download` returns the exact bytes of a text file and of the `blob.bin` file of `_tree`, with Content-Length, Content-Type (`text/x-python` for `src/main.py`), Content-Disposition `attachment; filename="main.py"; filename*=UTF-8''main.py`, nosniff and no-store (new) [evidence: test:tests/test_fake_wrapper_contract.py::test_files_download]
@@ -49,17 +47,21 @@ Notes: the real leg (`-m integration`, real wrapper image) runs only in CI and o
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Fake route `GET /v1/sessions/{session_id}/files/download` in `tests/fakes/fake_wrapper.py:FakeWrapper` with the wrapper contract of wrapper-file-download-route (bytes, headers, error codes); `list_files` entries gain `target_type`.
+- Kept: every existing fake control (`files_max_entries`, `file_preview_max_bytes`, `set_unreachable`, `workdir(sid)`).
+- Consumed by orch-file-download-route (`tests/test_api_file_download.py`, `tests/test_api_files.py`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The fake answers the download and the listing exactly as the real wrapper does, and one contract suite proves it on both legs (fake here, real image in CI after orch-wrapper-pin-download).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_files_download`, `test_files_download_errors`, `test_fake_files_download_ignores_preview_cap`, `test_fake_files_symlink_target_type` and the five-key assertion in `test_files_list`; run `unset VIRTUAL_ENV && uv run --frozen pytest tests/test_fake_wrapper_contract.py`: the new cases fail (404, missing key).
+- Green: the fake route and `target_type`; run the task's verify: passes, quote the pytest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The real leg (`-m integration`, real wrapper image) runs only in CI and passes only once orch-wrapper-pin-download pins the wrapper commit carrying the route; locally the verify runs the fake leg.
+- `_tree` writes files through the turn `files` field (text only) on both legs; symlinks, the FIFO and the over-cap file are written straight into `fake.workdir(sid)` in the fake-only cases.
+- Build the fake's headers with the same rules as the wrapper (copy the semantics from the wrapper's `api/files.py` on its epic branch, do not import the wrapper package).
