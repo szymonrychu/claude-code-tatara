@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke plugin tools
-status: in-progress
+status: done
 repo: agents-helmfile
 value: smoke proves sessions get the orchestrator tools from the plugins repo and extra sources install
 files: [scripts/smoke.sh, tests/test_smoke_script.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [helmfile-deploy-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5826fd4911a163658fb99f57dcb42ee225a209f9
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 28
+actual_tokens: 1398302
+actual_roles: "impl 17, review 12"
+actual_role_tokens: "impl 1190839, review 207463"
 ---
 
 # helmfile smoke plugin tools
@@ -67,3 +67,5 @@ Scope (agents-helmfile `scripts/smoke.sh`, in the style of its existing steps, s
 - `--list-tools` in the pod expands `${ORCH_AGENT_*}` from the container env; the exec must not echo it (test_plugin_steps_print_no_token).
 - Live run is Rollout R5, by the orchestrator, not this task.
 - Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py` (`in-cluster` is allowed).
+
+- 2026-10-27 done
