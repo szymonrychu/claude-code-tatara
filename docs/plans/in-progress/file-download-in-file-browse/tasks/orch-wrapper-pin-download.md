@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin download
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "CI's real-wrapper contract leg and kind e2e prove the download against the wrapper agents will run"
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/e2e/test_e2e_kind.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_images.py tests/
 depends_on: [orch-file-download-route, wrapper-file-download-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 34194f4416736c64635cde6cd6ddba7f6f99928b
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 364866
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 223581, review 141285"
 ---
 
 # orch wrapper pin download
@@ -71,3 +71,5 @@ CI's integration contract leg and kind e2e build the agent image from the wrappe
 - Precedent: done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin` (amended with the merge sha when the wrapper PR merged).
 
 - 2026-10-27 amended: wrapper PR #5 merged at 4581f3b
+
+- 2026-10-27 done
