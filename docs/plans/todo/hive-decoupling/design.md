@@ -331,6 +331,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 - Q1: Remove the activity feed entirely and give members an on-demand orchestrator_activity tool instead of any digest? [recommended: yes]
 - Q2: Push hive_state only when the leader, epoch, membership or readiness changes (not on busy/idle or context changes)? [recommended: yes]
 - Q3: Threshold for the leader's signal is the effective compaction percentage minus 15, no new spec field (live today: mx-5 compacts at 25% so it is signalled from 10%; claude-code-tatara at 50%, from 35%; default 95%, from 80%)? [recommended: yes]
+- Q4: Two-step handoff (brief over ccw peer messaging, wait for the successor's reply, then leadership_handover(to=...)), with the leader free to hand over after one unanswered user turn? [recommended: yes]
 
 ## Irreversible operations in scope
 
