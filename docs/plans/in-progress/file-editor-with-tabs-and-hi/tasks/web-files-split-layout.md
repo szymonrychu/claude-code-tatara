@@ -58,6 +58,8 @@ Scope (agents-web):
 - ac11: MEMORY.md records the layout and refresh rulings [evidence: command:grep -q 'file-editor-with-tabs-and-hi D13' MEMORY.md && grep -qi 'changed on disk' MEMORY.md]
 - ac12: the targeted suites, the guards, the type check and lint pass [evidence: command:mise exec -- npx vitest run src/files/FilesPanel.test.tsx src/files/FileTabs.test.tsx src/files/useFileTabs.test.ts src/layout/Workspace.test.tsx src/layout/designRules.test.ts src/nomenclature.test.ts && mise exec -- npx tsc -b && mise run lint]
 
+- ac13: the production build emits the editor as its own chunk, now that FilesPanel mounts FileTabs (moved from web-file-tabs-view ac8, which could not pass before this task) [evidence: command:mise exec -- npm run build 2>&1 | grep -qE 'assets/CodeEditor-[^ ]+\.js']
+
 ## Files
 
 - `src/files/FilesPanel.tsx`
@@ -89,3 +91,5 @@ The Files panel shows the tree on the left (above on a phone) and the open files
 - react-resizable-panels: a `Separator` needs an inline `style={{ flexBasis }}` (MEMORY 2026-10-24); nested `Group`s inside a Workspace `Panel` are supported.
 - jsdom has no media queries: mock `../layout/useLayout` per test (`'desktop'`, `'phone'`).
 - Workspace sizes (25/45/30) stay as they are (design Non-goals).
+
+- 2026-10-27 amended: carry web-file-tabs-view ac8 (editor chunk) which only passes once FilesPanel mounts FileTabs
