@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke continuity
-status: in-progress
+status: done
 repo: agents-helmfile
 value: every deploy proves an agent keeps its conversation across a pod restart
 files: [scripts/smoke.sh, tests/test_smoke_script.py, mise.toml, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bdc3fca6aa195282273226c8a46b774a41697c33
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 31
+actual_tokens: 3058400
+actual_roles: "impl 25, review 6"
+actual_role_tokens: "impl 2721076, review 337324"
 ---
 
 # helmfile smoke continuity
@@ -74,3 +74,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
