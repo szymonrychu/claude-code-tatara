@@ -1,6 +1,6 @@
 ---
 title: web editor syntax check
-status: in-progress
+status: done
 repo: agents-web
 value: "syntax errors in the five languages are marked in the editor, with no hints"
 files: [src/editor/syntaxCheck.ts, src/editor/syntaxCheck.test.ts]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/editor/syntaxCheck.test.ts src/layout/d
 depends_on: [web-editor-languages]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 1c3c4da0d5eb1d851d10b9288e7aae9e53e9ab49
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 18
+actual_tokens: 1993732
+actual_roles: "impl 10, review 8"
+actual_role_tokens: "impl 1497735, review 495997"
 ---
 
 # web editor syntax check
@@ -73,3 +73,5 @@ For every language the user named, a broken file gets an error diagnostic on the
 - `jsonParseLinter()` returns `(view) => Diagnostic[]` and only reads `view.state`; call it with `{ state }` cast to `EditorView`.
 - smol-toml `TomlError` has 1-based `line` and `column`; map with `state.doc.line(line).from + column - 1`.
 - Report, never hide, a false error on the valid Terraform sample (design: `codemirror-lang-hcl` is a 0.x community grammar); a grammar gap is a question back, not a weakened sample.
+
+- 2026-10-27 done
