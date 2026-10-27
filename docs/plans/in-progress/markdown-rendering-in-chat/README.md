@@ -36,3 +36,12 @@ as title implies, render markdown in chat window (both for my input and agent's 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+# markdown-rendering-in-chat epic review notes
+
+- Whole-epic review (sonnet): clean; XSS paths (raw HTML, links, images, code), row kinds, overflow and frame parsing checked. One unnamed vitest failure on the reviewer's first full run (1 failed, 523 passed); two reruns and the orchestrator's own run green: treated as a load flake, cause not captured.
+- Scope audit (sonnet): complete, no gaps, no duplicates.
+- Full suite (orchestrator run): `Test Files  45 passed (45)`, `Tests  524 passed (524)`, lint clean (.logs/md-web-full.log).
+- Security researcher skipped: diff touches no secrets, RBAC, ingress, privilege, CI vars or image pins; XSS covered by the reviewer.
