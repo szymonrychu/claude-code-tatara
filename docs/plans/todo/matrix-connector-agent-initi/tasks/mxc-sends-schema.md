@@ -27,7 +27,7 @@ README Goals, verbatim:
 - "An agent (session leader) can send a message to the user's Matrix chat at any time, including a chat it never received a message from (initiate), through MCP tools, not only as the final answer of a chat-started turn."
 - "Agents may post only to policy-allowed rooms that are bound to their session or flagged agents_may_initiate (off by default, set per room by the user); the agent token never leaves the orchestrator."
 
-Design D7, verbatim (the schema part): "`sends` (new queue, COMMENT `queue: inserted by api, transitions by bot worker`): `id bigserial`, `session_id uuid NOT NULL`, `slug text NULL`, `kind` CHECK `message|reaction`, `room_id text NOT NULL`, `text text NULL`, `key text NULL`, `reply_to text NULL` (the `m<n>`/`s<n>` the agent gave), `ref_event_id text NULL`, `event_id text NULL`, `status` CHECK `queued|sending|sent|failed|refused`, `reason text NULL`, `created_at`, `claimed_at`, `sent_at`; indexes for queued rows, per session and time (rate), and per room and status (binding, last speaker). `outbound` keeps the bot worker as its only writer and gains `send_id bigint NULL`, `event_type text NOT NULL DEFAULT 'm.room.message'`, `relates_to jsonb NULL`; its kind CHECK gains `agent` and `reaction`. `runs` gets an index on `(session_id, room_id)` for the binding check. `room_settings` gains `agents_may_initiate`."
+Design D7, verbatim (the schema part): "`sends` (new queue, COMMENT `queue: inserted by api, transitions by bot worker`): `id bigserial`, `session_id uuid NOT NULL`, `slug text NULL`, `kind` CHECK `message|reaction`, `room_id text NOT NULL`, `text text NULL`, `key text NULL`, `reply_to text NULL` (the `m<n>`/`s<n>` the agent gave), `ref_event_id text NULL`, `event_id text NULL`, `status` CHECK `queued|sending|sent|failed|refused`, `reason text NULL`, `created_at`, `claimed_at`, `sent_at`; indexes for queued rows, per session and time (rate), and per room and status (binding, last speaker). `outbound` keeps the bot worker as its only writer and gains `send_id bigint NULL`, `event_type text NOT NULL DEFAULT 'm.room.message'`, `relates_to jsonb NULL`; its kind CHECK gains `agent` and `reaction`. `runs` gets an index on `(session_id, room_id)` for the binding check, and `runs.preset_id` drops NOT NULL with a new CHECK `kind <> 'first' OR preset_id IS NOT NULL` (D9). `room_settings` gains `agents_may_initiate`."
 
 Design D4, verbatim (binding): "Bound means a `runs` row of R with `session_id` S, or a `sends` row of R with `session_id` S and status `sent` (my call: a refused, failed or still queued send binds nothing). `room_settings.agents_may_initiate boolean NOT NULL DEFAULT false` is new; its writer stays the api."
 
@@ -36,6 +36,8 @@ Design D6, verbatim (resolution): "The connector resolves `m<n>` to the inbound 
 Design D5, verbatim (rate count): "at most `MATRIX_AGENT_RATE_PER_MINUTE` (default 20, gate question Q5) sends (messages and reactions together) per session in the last 60 s, counted on `sends` rows of any status".
 
 Design D7, verbatim (retention): "`sends` rows that ended are pruned with the existing daily retention."
+
+Design D9, verbatim (preset): "Migration 0002 drops NOT NULL on `runs.preset_id` and adds CHECK `kind <> 'first' OR preset_id IS NOT NULL` (my call: an explicit "no preset" rather than a sentinel uuid; a first run still always has one, and no NOT NULL violation is possible)."
 
 Scope (agents-matrix-connector): migration `0002_agent_sends.sql` and the repository module `db/sends.py` (insert, claim, guarded transitions, binding check, rate count, reference resolution, prune). The api routes, the bot step and the routing change are later tasks.
 
@@ -52,7 +54,8 @@ Scope (agents-matrix-connector): migration `0002_agent_sends.sql` and the reposi
 - ac7: the rate count counts a session's sends of any status and kind created in the last 60 s and no older ones [evidence: test:tests/test_sends_repo.py::test_rate_count_window]
 - ac8: `m<n>` resolves to that inbound row's event_id and room; `s<n>` resolves to that send's room, session, kind, status and event_id; an unknown or malformed reference resolves to nothing [evidence: test:tests/test_sends_repo.py::test_resolve_references]
 - ac9: prune deletes sent, failed and refused sends older than the cutoff and keeps queued and sending ones [evidence: test:tests/test_sends_repo.py::test_prune_ended_sends]
-- ac10: the targeted tests and lint pass [evidence: command:uv run pytest tests/test_schema.py tests/test_sends_repo.py && mise run lint]
+- ac10: `runs.preset_id` accepts NULL for a follow run and the CHECK refuses a first run without a preset [evidence: test:tests/test_schema.py::test_follow_run_preset_nullable]
+- ac11: the targeted tests and lint pass [evidence: command:uv run pytest tests/test_schema.py tests/test_sends_repo.py && mise run lint]
 
 ## Files
 
@@ -81,3 +84,5 @@ The connector database holds the agent send queue and the room flag; one reposit
 - Reuse `agents_common.db.queue.transition` exactly as `db/runs.py` does; no raw UPDATE of `sends.status`.
 - `sends` and `outbound` writers: the api only inserts `sends`; the bot only moves them (D7). Record the writer in the COMMENT.
 - Follow `db/runs.py` and `db/inbound.py` style (dict_row, frozen dataclasses, connection-taking writers).
+
+- 2026-10-27 amended: interrogate.md Act 1: runs.preset_id nullable for follow runs with a CHECK that first runs keep one
