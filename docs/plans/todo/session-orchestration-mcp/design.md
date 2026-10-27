@@ -391,6 +391,7 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 - Q5: Agent-created schedules may fire at most every 15 minutes, at most 10 per session; at most 5 live owned sessions and 30 writes per hour? [recommended: yes]
 - Q6: No separate confirmation step before a delete; the user-turn gate plus ownership is the safeguard? [recommended: yes]
 - Q7: agents-web shows 'created by <slug>' on sessions, presets and schedules? [recommended: yes]
+- Q8: After the deploy you flag mx-5's preset in the UI and recreate mx-5 yourself (the orchestrator sends mx-5 one line and never edits mx-5's preset or recreates it, since that drops mx-5's context), and the epic closes on the throwaway-session live smoke without waiting for the grant? [recommended: yes]
 
 ## Irreversible operations in scope
 
