@@ -1,6 +1,6 @@
 ---
 title: web symlink tab stamps
-status: todo
+status: done
 repo: agents-web
 value: "symlink tabs get no false changed-on-disk notice and keep undo history; one stamp helper"
 files: [src/files/useFileTabs.ts, src/files/useFileTabs.test.ts, src/files/FilesPanel.tsx]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/files && mise exec -- npx tsc -b && mis
 depends_on: [web-files-split-layout]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4c2690c948c72b6690bebf8dff55375f63a9100b
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 414142
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 346491, review 67651"
 ---
 
 # web symlink tab stamps
@@ -58,3 +58,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
