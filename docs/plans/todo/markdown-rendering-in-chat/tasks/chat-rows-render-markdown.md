@@ -88,8 +88,10 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `user_and_assistant_rows_render_markdown`, `session_and_peer_rows_render_markdown` and `tool_and_status_rows_stay_plain` to `src/chat/ChatLog.test.tsx` without editing existing tests; run `mise exec -- npx vitest run src/chat/ChatLog.test.tsx`; expect the first two new tests to fail on missing `strong`, `code`, table, heading, list and `em` elements, and every existing test to pass (`tool_and_status_rows_stay_plain` may already pass: it pins unchanged behaviour).
+- Green: in `src/chat/entries.tsx` switch the `user_message`, `assistant`, `session` and `peer` cases to `<ChatMarkdown text={item.text} />` (user rows with `sx` keeping `text.primary` and `TOKENS.fontWeights.medium`) and give `Row` the D9 side-by-side layout for these four kinds only; leave `chatModel.ts` untouched and other cases as before; rerun `mise exec -- npx vitest run src/chat/ChatLog.test.tsx`; expect all tests pass, including `session message labelled with its sender session`.
+- Frame guard: `git diff --quiet origin/main...HEAD -- src/chat/chatModel.ts src/chat/chatModel.test.ts && mise exec -- npx vitest run src/chat/chatModel.test.ts -t 'session frame|without a leading frame|escaped closing tag'`; expect exit 0 and the session frame tests passing.
+- Verify once: run the task's `verify` command; expect all test files and tests pass, `tsc -b` and lint exit 0; quote the vitest summary line (test files and tests counts) and the head sha it ran on.
 
 ## Notes
 

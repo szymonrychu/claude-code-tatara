@@ -118,8 +118,13 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Baseline: `mise exec -- npm run build` before any change; expect a successful build, and note the reported bundle sizes for MEMORY.md.
+- Dependency check (D10): `mise exec -- npm install react-markdown@~10.1.0 remark-gfm@~4.0.1 remark-breaks@~4.0.0`, then `grep -inE 'c[l]uster|agent[-_]orchestrator' package-lock.json`; expect no output. If it prints anything, stop, revert package.json and package-lock.json, and return the lines as a question; never edit `src/nomenclature.test.ts`. Then `mise exec -- npm ls react-markdown@10.1.0 remark-gfm@4.0.1 remark-breaks@4.0.0`; expect the three packages resolved, exit 0.
+- Red: write `src/chat/Markdown.test.tsx` (first line `// @vitest-environment jsdom`, rendered under `<ThemeProvider theme={theme}>`) with `renders_gfm_elements_as_mui`, `raw_html_renders_as_text`, `links_open_in_new_tab_and_unsafe_urls_drop`, `images_render_as_links`, `single_newline_is_a_line_break` and `fenced_code_block_shows_language_without_highlighting`, plus an empty `ChatMarkdown` stub in `src/chat/Markdown.tsx`; run `mise exec -- npx vitest run src/chat/Markdown.test.tsx`; expect the six tests to fail on their assertions, not on import errors.
+- Green: implement `ChatMarkdown` (D5 components map, D7 code block, D3 links, D4 images, `remarkPlugins={[remarkGfm, remarkBreaks]}`, default `urlTransform`, no `rehypePlugins`, no `skipHtml`); add a `src/theme.ts` token only if a code background is missing; rerun `mise exec -- npx vitest run src/chat/Markdown.test.tsx`; expect 6 passed.
+- Guards: `mise exec -- npx vitest run src/layout/designRules.test.ts src/nomenclature.test.ts`; expect both files pass with `src/nomenclature.test.ts` unchanged.
+- Build and MEMORY.md: `mise exec -- npm run build`; expect success and record both bundle sizes (before and after) in the dated D13 entry; then `grep -q 'markdown-rendering-in-chat' MEMORY.md`; expect exit 0.
+- Verify once: run the task's `verify` command; expect all test files and tests pass, `tsc -b` and lint exit 0; quote the vitest summary line (test files and tests counts) and the head sha it ran on.
 
 ## Notes
 
