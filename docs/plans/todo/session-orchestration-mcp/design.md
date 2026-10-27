@@ -386,6 +386,7 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 ## Open questions
 - Q1: A flagged session may change only the sessions, presets and schedules it created, and may read everything with secrets masked? [recommended: yes]
 - Q2: Grant mx-5 by flagging its preset in the UI and recreating the session (spec stays immutable)? [recommended: yes]
+- Q3: Writes are allowed only in turns started from the UI or the Matrix connector, and you flag only the owner DM's preset, so group chats cannot drive it? [recommended: yes]
 
 ## Irreversible operations in scope
 
