@@ -1,6 +1,6 @@
 ---
 title: web file tabs state
-status: todo
+status: in-progress
 repo: agents-web
 value: "open files, their mode, unsaved edits, saves and conflicts are tracked per session without losing edits"
 files: [src/files/useFileTabs.ts, src/files/useFileTabs.test.ts]

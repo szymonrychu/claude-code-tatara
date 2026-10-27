@@ -1,6 +1,6 @@
 ---
 title: wrapper file write route
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "the editor can save a workspace file back, guarded by the workdir confinement and a stale-write check"
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, README.md, tests/test_api_files.py]

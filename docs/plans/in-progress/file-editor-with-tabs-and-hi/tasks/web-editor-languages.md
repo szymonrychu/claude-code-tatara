@@ -1,6 +1,6 @@
 ---
 title: web editor languages
-status: todo
+status: in-progress
 repo: agents-web
 value: "python, yaml, json, terraform and toml files get their language and theme-coloured highlighting"
 files: [package.json, package-lock.json, src/theme.ts, src/editor/languages.ts, src/editor/highlight.ts, src/editor/languages.test.ts, MEMORY.md]

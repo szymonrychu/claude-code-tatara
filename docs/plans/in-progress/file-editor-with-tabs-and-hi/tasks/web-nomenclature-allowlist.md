@@ -1,6 +1,6 @@
 ---
 title: web nomenclature allowlist
-status: todo
+status: in-progress
 repo: agents-web
 value: "CodeMirror can be installed without turning the nomenclature guard red, and the guard still catches the retired unit"
 files: [src/nomenclature.test.ts]

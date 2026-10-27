@@ -1,6 +1,6 @@
 ---
 title: web files split layout
-status: todo
+status: in-progress
 repo: agents-web
 value: "the Files panel shows the tree on the left and the open files on the right, refreshed without losing edits"
 files: [src/files/FilesPanel.tsx, src/files/FilesPanel.test.tsx, src/layout/Workspace.tsx, MEMORY.md]

@@ -1,6 +1,6 @@
 ---
 title: web file tabs view
-status: todo
+status: in-progress
 repo: agents-web
 value: "open files show as terminal-style tabs with an RO/RW toggle, Save and conflict notices"
 files: [src/files/FileTabs.tsx, src/files/FileTabs.test.tsx, MEMORY.md]

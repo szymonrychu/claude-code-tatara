@@ -2,7 +2,7 @@
 title: file editor with tabs and highlighting
 blockers: [file-download-in-file-browse, markdown-rendering-in-chat]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [claude-code-wrapper, agents-orchestrator, agents-web]
 created: 2026-10-27
 ---

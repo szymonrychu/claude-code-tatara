@@ -1,6 +1,6 @@
 ---
 title: web sync write api
-status: todo
+status: in-progress
 repo: agents-web
 value: the web client can call the save route with typed requests and answers
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/api/files.ts, src/api/files.test.ts]

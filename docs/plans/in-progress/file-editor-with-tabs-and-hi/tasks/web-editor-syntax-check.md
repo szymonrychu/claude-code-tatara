@@ -1,6 +1,6 @@
 ---
 title: web editor syntax check
-status: todo
+status: in-progress
 repo: agents-web
 value: "syntax errors in the five languages are marked in the editor, with no hints"
 files: [src/editor/syntaxCheck.ts, src/editor/syntaxCheck.test.ts]

@@ -1,6 +1,6 @@
 ---
 title: orch file write route
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the browser can save a workspace file through the orchestrator, origin-guarded, with conflicts reported"
 files: [src/agents_orchestrator/api/workspace.py, src/agents_orchestrator/api/schemas.py, README.md, openapi.json, MEMORY.md, tests/test_api_file_write.py, tests/test_api_files.py]

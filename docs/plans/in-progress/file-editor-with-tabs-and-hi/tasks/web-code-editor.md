@@ -1,6 +1,6 @@
 ---
 title: web code editor
-status: todo
+status: in-progress
 repo: agents-web
 value: "a read-only-by-default CodeMirror editor that edits, saves on Ctrl/Cmd+S and keeps line endings intact"
 files: [src/editor/CodeEditor.tsx, src/editor/CodeEditor.test.tsx]
