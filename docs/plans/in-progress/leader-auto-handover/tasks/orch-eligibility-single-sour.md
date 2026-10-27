@@ -1,6 +1,6 @@
 ---
 title: orch eligibility single source
-status: todo
+status: done
 repo: agents-orchestrator
 value: "the pass, the claim hold and set_replicas cannot drift apart on who may lead"
 files: [src/agents_orchestrator/db/eligibility.py, src/agents_orchestrator/db/leadership.py, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/sessions.py]
@@ -8,15 +8,15 @@ verify: "uv run ruff check . && uv run ruff format --check . && uv run --frozen 
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 059372fcd3ce0453be243bd7b62ad1a15fd67d56
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 15
+actual_tokens: 900392
+actual_roles: "impl 10, review 5"
+actual_role_tokens: "impl 695880, review 204512"
 ---
 
 # orch eligibility single source
@@ -69,3 +69,5 @@ Every eligibility and handover-pending predicate is spelled once in `eligibility
 ## Notes
 
 Keep `_target_ready` without the `wrapper_session_id` requirement (manual make-leader target), exactly as today. `_CANDIDATES` uses alias `c` for the session and `REPLICAS`; `ELIGIBLE` uses a subquery `STAYS` - equivalent, choose the shared fragment that preserves semantics. The module docstring explains why eligibility.py lives apart from leadership.py (import cycle with queue.py).
+
+- 2026-10-27 done: reviewer clean (SQL equivalence); PR #25 CI test '1083 passed, 56 deselected' and kind e2e pass on 059372f (DB tests need Docker, absent in this pod)
