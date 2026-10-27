@@ -390,6 +390,7 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 - Q4: A session and the sessions it created may message each other even when neither is a superleader? [recommended: yes]
 - Q5: Agent-created schedules may fire at most every 15 minutes, at most 10 per session; at most 5 live owned sessions and 30 writes per hour? [recommended: yes]
 - Q6: No separate confirmation step before a delete; the user-turn gate plus ownership is the safeguard? [recommended: yes]
+- Q7: agents-web shows 'created by <slug>' on sessions, presets and schedules? [recommended: yes]
 
 ## Irreversible operations in scope
 
