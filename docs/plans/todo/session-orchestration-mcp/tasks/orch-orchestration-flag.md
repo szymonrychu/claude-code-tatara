@@ -53,17 +53,19 @@ Tests no longer accurate (named): `tests/test_spec_session_options.py::test_opti
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.py:SessionSpec.session_orchestration: bool | None = Field(default=None, strict=True)`.
+- `api/agent.py:Me.orchestration: bool` (`bool(session.spec.session_orchestration)`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user can set session_orchestration on a preset or a spec at create, and an agent can read whether its own session carries it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: extend the two spec tests, add `test_me_orchestration_flag` and `test_session_orchestration_immutable`; run `uv run --frozen pytest tests/test_spec_session_options.py tests/test_api_agent.py`: the new cases fail.
+- Green: spec field, `Me`, README, `uv run python -m agents_orchestrator.api.openapi > openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `session_messaging` exactly (sparse, strict, preset round trip).
+- DB cases run in CI (no Docker in agent pods).

@@ -64,17 +64,23 @@ Scope (agents-orchestrator): the migration `src/agents_orchestrator/db/migration
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Migration `NNNN_session_orchestration.sql`: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS origin text`; `ALTER TABLE sessions ADD COLUMN IF NOT EXISTS created_by_session_id uuid`, `created_by_slug text`; same pair on `presets`; `CREATE TABLE IF NOT EXISTS orchestration_actions (id bigserial PRIMARY KEY, caller_session_id uuid NOT NULL, caller_slug text NOT NULL, message_id bigint, action text NOT NULL, target_kind text NOT NULL, target_id text, target_name text, outcome text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())` plus an index on `(caller_session_id, created_at)`. No FK anywhere.
+- `db/queue.py:enqueue_message(conn, session_id, text, target_agent_id=None, *, sender_session_id=None, sender_slug=None, hop=0, origin: str)`; origin `session` when a sender is present.
+- `db/queue.py:turn_origin(conn, agent_id) -> TurnOrigin | None` with `TurnOrigin(message_id: int, origin: str | None)`, same join as `turn_hop` without the sender filter.
+- `ServiceGate`: `scope.setdefault("state", {})["service"] = <name>` before calling the app; `api/messages.py:post_message` reads `request.state.service` (absent on the main port).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every message row records where it came from, and the schema of the whole epic exists.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `ls src/agents_orchestrator/db/migrations/` and pick the next free number; stop and report if another epic's migration with that number is in flight on another branch.
+- Red: add the migration and origin tests; run `uv run --frozen pytest tests/test_message_origin.py tests/test_migrations.py`: the new tests fail (DB tests run in CI; see Notes).
+- Green: migration, queue, messages, ServiceGate, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No Docker in agent pods: the DB tests (ac1-ac6) run in CI; keep the ServiceGate state assertion (ac4's scope part) non-DB with a stub app so the local verify has signal.
+- Confirm the connector's service token name from `ORCH_SERVICE_TOKENS` handling and the helmfile file `service-token-agents-matrix-connector.secrets.yaml` (design Assumptions); the default origins setting lands in orch-orchestration-gate.
+- Do not touch `tests/test_service_port.py` assertions unless one is no longer accurate; name it if so.

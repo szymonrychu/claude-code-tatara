@@ -59,17 +59,21 @@ Tests no longer accurate (named): `tests/test_orchestrator_release.py::test_orch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/common.yaml`: `schedule.url: http://agents-schedule-api-relay:8001`; token from `schedule-token.secrets.yaml`.
+- `values/agents-schedule/common.yaml`: relay on (`relay.port: 8001`), hash from `relay-token.secrets.yaml`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile pins the orchestrator, schedule and web builds of this epic and wires the relay.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read each repo's main sha7 carrying the tasks named in ac8 and confirm CI green on it; stop and report if not.
+- Red: update the named tests and add the two new ones; run them: fail.
+- Green: values and chart versions; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The images and charts are checked in Harbor by orchestration-live-smoke before any apply; this task does not apply.
+- Builds on Matrix's and hive-decoupling's orchestrator values (shared file): keep their chat and other settings.
+- agents-helmfile has no CI (retro): the local verify is the evidence.

@@ -50,17 +50,20 @@ Scope (agents-helmfile): `scripts/bootstrap-secrets.sh` (a `bootstrap_schedule_r
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/schedule-token.secrets.yaml`: `schedule: {token: <secret>}`.
+- `values/agents-schedule/relay-token.secrets.yaml`: `relay: {tokenSha256: <hex>}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The one relay token exists, encrypted, in the shape both charts read, and never rotates.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the tests (fake sops as the existing schedule service-token tests do); run `uv run pytest tests/test_secrets.py`: fail.
+- Green: the bootstrap step, helmfile listing, README; the orchestrator session runs the script with the SOPS key and commits both encrypted files; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `test_secrets_files_encrypted_with_expected_keys` is parametrized; add the two files to its table (extended, not weakened).
+- agents-helmfile has no CI (retro): the local verify is the only evidence; ac6 needs the SOPS key and is run by the orchestrator session.
+- Build fake tokens at runtime in tests (GitGuardian).

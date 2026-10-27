@@ -46,17 +46,17 @@ Scope (agents-web): `src/sessions/SessionsPage.tsx` and `src/presets/PresetsPage
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Reads `SessionView.created_by_slug` and `PresetView.created_by_slug` from the vendored types (web-orchestration-switch).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user sees which session created a session or a preset.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add one "created by" test to each page test; run them: fail.
+- Green: render the label; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep the label secondary text in the existing row layout; no new column needed.

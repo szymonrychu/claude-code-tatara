@@ -53,17 +53,20 @@ Scope (agents-schedule): `src/agents_schedule/migrations/0002_schedule_owner.sql
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/schedules.py:Schedule.owner_session_id: uuid.UUID | None`, `owner_slug: str | None`; `create(conn, data, *, owner_session_id=None, owner_slug=None)`; `count_owned(conn, owner_session_id) -> int`; `get_owned(conn, schedule_id, owner_session_id) -> Schedule | None`.
+- `api/schemas.py:ScheduleView.owner_slug: str | None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Each schedule records which session created it, and the UI can show it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `ls src/agents_schedule/migrations/` and take the next free number.
+- Red: add the three tests; run `uv run pytest tests/test_migrations.py tests/test_schedules_repo.py tests/test_api_schedules.py`: fail.
+- Green: migration, repo, view, `openapi.json` (the repo's generator, as in README); run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No Docker in agent pods: the DB tests run in CI.
+- `tests/test_api_schedules.py::test_crud` may compare whole views; if `owner_slug` makes such an assertion no longer accurate, name it and why.

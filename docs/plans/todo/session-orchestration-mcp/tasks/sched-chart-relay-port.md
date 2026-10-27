@@ -52,17 +52,19 @@ Scope (agents-schedule chart): `chart/agents-schedule/values.yaml` (`relay.port:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Values: `relay: {port: 8001, tokenSha256: "", tokenSecret: {name: "", key: tokenSha256}}`.
+- Service `{{ fullname }}-api-relay`, port name `relay`, port 8001, `targetPort: relay`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The deployed agents-schedule exposes its relay listener to the orchestrator through its own Service, the hash only in a Secret.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four chart tests; run `uv run pytest tests/test_chart.py`: fail.
+- Green: values, templates, README; run the task's verify and `mise run lint:chart`. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror Matrix mxc-chart-agent-port (the connector's agent Service and hash Secret).
+- The Ingress keeps routing only `/schedules` to the -api Service (`tests/test_chart_ingress.py` stays green).

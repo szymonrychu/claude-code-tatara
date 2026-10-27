@@ -46,17 +46,18 @@ Scope (agents-orchestrator): `api/agent.py:session_send` (the target_not_superle
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/agent.py:session_send`: `if not (own.spec.session_messaging or target.spec.session_messaging or target.created_by_session_id == own.id or own.created_by_session_id == target.id)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An orchestrating session and the sessions it created can talk to each other without either being a superleader.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_creator_and_created_may_message`; run `uv run --frozen pytest tests/test_agent_session_messaging.py`: fails.
+- Green: the rule, README, MEMORY; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `sessions_list` peer listing is unchanged (D10 changes the send rule only; `sessions_overview` lists every session for a flagged caller).
+- DB test runs in CI (no Docker in agent pods).

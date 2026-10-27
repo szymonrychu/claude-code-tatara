@@ -53,17 +53,17 @@ Scope (agents-orchestrator chart): `chart/agents-orchestrator/values.yaml` (`sch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Values: `schedule: {url: "", token: "", existingSecret: ""}`; the chart Secret key `schedule-token` (or the existing Secret's key named in values, as the chat block does).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator chart can turn the schedule relay on with its token kept in a Secret.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the five chart tests; run `uv run --frozen pytest tests/test_chart_config.py`: fail.
+- Green: values, templates, README; run the task's verify and `mise run lint:chart`. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy the shape of the Matrix chat block (orch-chart-chat) next to it; if both blocks repeat the same helper logic, factor one named template both use (boy scout, same files).

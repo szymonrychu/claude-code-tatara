@@ -52,17 +52,19 @@ Test no longer accurate (named): the plugin's tool-count test (`test_lists_<n>_t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tool to route map (prefix `/agent/v1/orchestration`): `presets_list` GET `/presets`; `preset_get` GET `/presets/{id}`; `preset_create` POST `/presets` `{name, spec}`; `preset_update` PUT `/presets/{id}` `{name, spec}`; `preset_delete` DELETE `/presets/{id}`; `sessions_overview` GET `/sessions`; `session_create` POST `/sessions` `{preset_id?, spec?, slug?, prompt?}`; `session_scale` POST `/sessions/{slug}/scale` `{replicas}`; `session_delete` DELETE `/sessions/{slug}`; `schedules_list` GET `/schedules`; `schedule_create` POST `/schedules`; `schedule_update` PUT `/schedules/{id}`; `schedule_delete` DELETE `/schedules/{id}`; `schedule_run` POST `/schedules/{id}/run`; `schedule_runs` GET `/schedules/{id}/runs`; `orchestration_actions` GET `/actions`.
+- Read the final paths and bodies from the orchestrator README `### Orchestration` on agents-orchestrator main; the map above is the design's.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agents of flagged sessions get sixteen tools that drive the orchestration routes, with descriptions that keep them on the user's request.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rename and extend the count test, add the three new tests; run `uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: fails.
+- Green: tool specs, descriptions, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Builds on hive-decoupling's and Matrix's `__init__.py` (shared file); read it first.
+- The plugin does no I/O at load (`test_no_io_at_load` stays green).

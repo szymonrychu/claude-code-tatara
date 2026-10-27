@@ -69,17 +69,24 @@ Scope (agents-orchestrator): new `api/orchestration_sessions.py` (`GET /sessions
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/orchestration_sessions.py`: `router = APIRouter(prefix="/agent/v1/orchestration/sessions", tags=["agent"])`; body of create `{preset_id?: uuid, spec?: object, slug?: str, prompt?: str (<= 16000 chars)}`, exactly one of `preset_id` and `spec`.
+- `api/sessions.py:_insert(conn, slug, spec, **provenance)` gains `created_by_session_id`, `created_by_slug`; the public create path passes none.
+- `db/sessions.py:Session.created_by_session_id`, `created_by_slug`; owned check by session id.
+- `schemas.SessionView.created_by_slug: str | None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A flagged leader can see every session and create, scale and delete only the ones it created, never itself or a protected one.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestration_sessions.py`; run `uv run --frozen pytest tests/test_orchestration_sessions.py`: fails.
+- Green: module, create-path provenance, repo, view, app wiring, README, `openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `check_spec`, `_create_from_preset`, `_CREATE_LOCK`, `request_delete`, `set_replicas`; import, never copy.
+- The live-owned count is `db/orchestration.py:count_live_owned_sessions` (one predicate; retro: duplicate predicates were found late). The owned check is one predicate too.
+- Prompt hop: `db/queue.py:turn_hop` of the caller plus 1 (1 in a user turn); origin `session`.
+- `tests/test_api_sessions.py` and `tests/test_api_create_from_preset.py` must stay green; name any assertion on exact view keys that `created_by_slug` makes no longer accurate.
+- DB cases run in CI (no Docker in agent pods).

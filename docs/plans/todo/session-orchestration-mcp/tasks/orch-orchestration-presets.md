@@ -63,17 +63,23 @@ Scope (agents-orchestrator): new `api/orchestration_presets.py` (`GET /presets`,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/orchestration_presets.py`: `router = APIRouter(prefix="/agent/v1/orchestration/presets", tags=["agent"])`; reads use `orchestration_reader`, writes `orchestration_writer`.
+- `mask_spec(spec: dict) -> dict`: one function, one placeholder string, covering `SessionSpec.env`, `WrapperSettings` hooks (`WebhookHook.secret`, `WebhookHook.headers`, `CommandHook.env`), `McpStdio.env`, `McpRemote.headers`.
+- `db/presets.py`: `create(..., created_by_session_id=None, created_by_slug=None)`; `Preset.created_by_session_id`, `created_by_slug`.
+- `schemas.PresetView.created_by_slug: str | None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A flagged leader can list and read every preset safely and create, edit and delete only its own.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestration_presets.py`; run `uv run --frozen pytest tests/test_orchestration_presets.py`: fails.
+- Green: module, repo, view, app wiring, README, `openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `api/presets.py:_validated` and the default and last-preset refusal mapping; do not copy the validation.
+- `check_no_escalation` and the audit helper come from `api/orchestration.py` (orch-orchestration-gate).
+- `tests/test_api_presets.py` must stay green; if an assertion on the exact `PresetView` keys is no longer accurate because of `created_by_slug`, name it and why.
+- DB cases run in CI (no Docker in agent pods); `mask_spec` cases are non-DB.

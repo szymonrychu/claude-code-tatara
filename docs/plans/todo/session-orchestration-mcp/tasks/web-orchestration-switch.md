@@ -53,17 +53,19 @@ Tests no longer accurate (named): `src/presets/PresetForm.test.tsx` "session opt
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `sessionSpecForm.ts`: value key `sessionOrchestration: boolean`; `spec.session_orchestration = true` only when set and on.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user can flag a preset for session orchestration in the UI; sessions created from it get the tools.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm agents-orchestrator main carries orch-schedule-relay; stop and report if not.
+- Red: extend the two tests; run `npx vitest run src/presets/PresetForm.test.tsx`: fails.
+- Green: `npm run sync:api -- orchestrator`, the switch, the mapping; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The help text says the session's leader may create, change and delete presets, sessions and schedules it created, on the user's request.
+- Retro: PresetForm tests are load-sensitive (name_rules_default_name_and_pvc timed out at 5 s once); the extended tests keep their 15000 ms timeouts. On a first-run failure save the failing test name and output tail before any rerun.

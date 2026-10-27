@@ -54,17 +54,20 @@ Scope (any-mcp-tatara-plugins):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Distribution `any-mcp-tatara-orchestrator` version X.(Y+1).0; git tag `vX.(Y+1).0` on the `main` merge commit.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The plugin with the orchestration tools is released as a tag the orchestrator can pin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read the orchestrator's pinned plugins ref and the latest tag on origin (`git ls-remote --tags origin`); compute the next minor; stop and report on a mismatch.
+- Red: change `test_orchestrator_distribution_metadata` to the new version; run it: fails.
+- Green: bump pyproject, `uv lock`, README example; run the task's verify. Quote the summary line.
+- After the merge (orchestrator session): wait for CI green on the merge commit, push the tag, check ac3.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values; the metadata test is the guard.
+- `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in this pod with git 2.39 (`--end-of-options`, environmental per Matrix); CI is its gate.

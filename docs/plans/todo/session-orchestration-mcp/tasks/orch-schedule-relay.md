@@ -67,17 +67,23 @@ Scope (agents-orchestrator): `settings.py` (`schedule_url`, `schedule_token`), n
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.schedule_url: str = ""`, `schedule_token: str = Field(default="", repr=False)`; validator for both-or-neither and the scheme, next to the chat pair.
+- `api/orchestration_relay.py`: `router = APIRouter(prefix="/agent/v1/orchestration/schedules", tags=["agent"])`; one `httpx.AsyncClient` (timeout 10 s); `forward(method, path, body, session, slug)`.
+- Agent-facing errors added: 503 `schedules_unconfigured`, 503 `schedules_unavailable`; everything else is the upstream's or the gate's.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A flagged leader can manage its schedules through the orchestrator, which proves who calls and keeps the agent token to itself.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestration_relay.py` (an `httpx.MockTransport` upstream; non-DB cases for ac3-ac6 and ac9; DB cases for ac7 and ac8), add `test_schedule_relay_settings`; run them: fail.
+- Green: settings, module, app wiring, README, `openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `api/chat.py` (Matrix orch-chat-relay) for the forward helper and error mapping; if Matrix extracted a shared forward helper, reuse it.
+- The relay reads the preset by id through `db/presets.py` before forwarding create and update (D5) and applies `check_no_escalation`.
+- Never log the relay token, the agent token or a body; log method, path, status only.
+- `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.
+- Build fake tokens at runtime in tests (GitGuardian). DB cases run in CI.

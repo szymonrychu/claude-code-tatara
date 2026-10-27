@@ -49,17 +49,18 @@ Scope (agents-web): `openapi/schedules.json` and `openapi/schedules.source` (`np
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Reads `ScheduleView.owner_slug` from the regenerated `schedules-schema.d.ts`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user sees which session created a schedule.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm agents-schedule main carries sched-schedule-owner; stop and report if not.
+- Red: add the "created by" test; run it: fails.
+- Green: `npm run sync:api -- schedules`, the label; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same label style as web-created-by.

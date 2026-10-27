@@ -55,17 +55,21 @@ Scope (agents-schedule): `settings.py` (`relay_port` 8001, `relay_token_sha256`,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.relay_port: int = 8001`, `relay_token_sha256: str = Field("", repr=False)`, `relay_max_per_owner: int = Field(10, ge=1)`, `relay_min_interval_minutes: int = Field(15, ge=1)`.
+- `api/relay.py:create_relay_app(settings, pool, client) -> FastAPI` with `RelayGate` middleware (sha256 hex compare with `hmac.compare_digest`) and `RELAY_PREFIX = "/relay/v1"`; `caller(request) -> RelayCaller(session_id: uuid.UUID, slug: str)` dependency.
+- `runtime.py`: a second `_Server` on `settings.relay_port` sharing the pool and client, started only when `relay_token_sha256` is set.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-schedule can be reached by the orchestrator on its own token-protected port without opening the SSO-protected UI API.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_relay_gate.py`, add `test_relay_settings` and the entrypoint test; run them: fail.
+- Green: settings, relay app, runtime, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror the orchestrator's `api/service_auth.py:ServiceGate` (constant-time compare, no early exit, no token in logs) and the connector's agent listener (Matrix mxc-agent-listener).
+- `proxy_headers=False` on the relay server too.
+- Build fake tokens at runtime in tests (GitGuardian). The entrypoint test needs a DB and runs in CI.

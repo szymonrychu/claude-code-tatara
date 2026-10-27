@@ -58,17 +58,23 @@ Test no longer accurate (named): `tests/test_settings.py::test_defaults` pins th
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `k8s/on_start.py:ORCHESTRATION_TOOLS = ["presets_list", "preset_get", "preset_create", "preset_update", "preset_delete", "sessions_overview", "session_create", "session_scale", "session_delete", "schedules_list", "schedule_create", "schedule_update", "schedule_delete", "schedule_run", "schedule_runs", "orchestration_actions"]`; `orchestrator_allow(spec)` appends it when `spec.session_orchestration`.
+- `Settings.any_mcp_plugins_ref` default: the new tag (`ORCH_ANY_MCP_PLUGINS_REF`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agent pods of flagged sessions install the plugins release with the orchestration tools and may call them; no other session sees them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the new tag on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins <tag>`); stop and report if absent.
+- Red: update `test_defaults`, add `test_orchestration_tools_only_when_flagged` and the parity test; run them: fail.
+- Green: settings default, pyproject pin, `uv lock`, `on_start.py`, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties them to one tag.
+- Builds on hive-decoupling's and Matrix's versions of `on_start.py` and `settings.py` (shared files); read them first.
+- The flag does not change for a running session, so the render stays fixed (D1).
+- Changing the default changes the rendered config hash and rolls agent pods on deploy (orchestration-live-smoke).
+- The parity test's DB cases run in CI.

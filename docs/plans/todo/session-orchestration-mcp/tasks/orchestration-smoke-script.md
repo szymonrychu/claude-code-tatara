@@ -53,17 +53,21 @@ Scope (agents-helmfile): new `scripts/orchestration-smoke.sh` (env `RELEASE`, `N
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `mise run orchestration-smoke` (env above); output one `orchestration-smoke: <step> <status> <id>` line per step, ending `orchestration-smoke: OK`.
+- Throwaway names: `orch-smoke-<ts>` (session and caller preset base), `orch-smoke-<ts>-p` (owned preset), `orch-smoke-<ts>-s` (owned session), `orch-smoke-<ts>` (schedule, disabled).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One command proves the orchestration tools live end to end and leaves nothing behind but audit rows.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestration_smoke_script.py` (fakebin kubectl and curl, as `tests/test_smoke_script.py` does); run it: fails.
+- Green: the script, mise task, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Model on `scripts/smoke.sh` and Matrix's `scripts/chat-smoke.sh` (port-forward ownership, pod exec with the pod's own env, per-wait deadlines).
+- The held turn: the user message asks the agent to run `sleep $ORCH_SMOKE_HOLD_S` and then reply ok; the script waits until the message's turn is the agent's current turn before the first write, and until it ends before the not_user_turn check.
+- The owned session is created from the owned preset (alone, 1 replica) and deleted before the owned preset.
+- Never print `ORCH_AGENT_TOKEN`; read it inside the pod exec only.

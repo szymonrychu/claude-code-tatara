@@ -60,17 +60,20 @@ Scope (agents-schedule): `api/relay.py` (routes `GET /relay/v1/schedules`, `POST
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Relay bodies: create and update take `ScheduleIn`; views are `ScheduleView` (with `owner_slug`) and `RunView`; errors `{error: {code, message}}` like the UI API.
+- `api/openapi.py`: writes `openapi.json` (UI) and `openapi-relay.json` (relay).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can list all schedules and manage its callers' own through one documented contract.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_relay_schedules.py` and the two readme tests; run them: fail.
+- Green: routes on the relay app reusing the UI handler bodies, the openapi generator, `openapi-relay.json`, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `_validate_cron`, `_check_preset` and the run-now path; do not copy them. The run-now path must NOTIFY `runs_new` like the UI route (MEMORY 2026-10-25).
+- The fire-interval check uses the repo's cron module over the schedule's timezone.
+- DB cases run in CI (no Docker in agent pods).

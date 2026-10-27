@@ -51,17 +51,22 @@ Scope: run by the orchestrator session (live cluster, SOPS key); the only file w
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Live releases: agents-schedule, agents-orchestrator, agents-web in namespace agents.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestration tools are live, proven by the smoke, and mx-5 knows how to get them.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check every tag in Harbor (`crane digest` or `helm show chart`); stop and report a missing one.
+- `mise run diff -- --selector name=agents-schedule`, review, `mise run apply -- --selector name=agents-schedule`; wait for the api and worker Ready (the init container ran the migration).
+- Send mx-5 one line, then the same for agents-orchestrator; then agents-web.
+- `mise run diff` (expect no change), `mise run smoke`, `mise run orchestration-smoke`; probe mx-5's preset and the owner DM binding; message mx-5 the grant line; write MEMORY.md.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- helmfile MEMORY gotcha: a new or changed service Secret does not restart the orchestrator api pods; when the relay answers schedules_unconfigured or an upstream 401, run `kubectl rollout restart deploy/agents-orchestrator-api` (least destructive first), then rerun the smoke.
+- Live and irreversible operations are listed in design.md (applies, both migrations, the relay token, the smoke objects). Standing rule: deploy whenever possible; live applies need no approval.
+- Live apply and smoke tasks have run 3-4x over the minutes seed in past epics (retro); several runs are likely.
+- Never edit mx-5's preset or recreate mx-5 (D19).

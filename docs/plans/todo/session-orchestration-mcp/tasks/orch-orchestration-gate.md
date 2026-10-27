@@ -72,17 +72,24 @@ Scope (agents-orchestrator): `settings.py` (`orchestration_origins`, `orchestrat
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.orchestration_origins: CsvList = ["user", "service:agents-matrix-connector"]`, `orchestration_actions_per_hour: int = Field(30, ge=1)`, `orchestration_max_owned_sessions: int = Field(5, ge=1)`.
+- `api/orchestration.py`: `router = APIRouter(prefix="/agent/v1/orchestration", tags=["agent"])`; `public_router` for `GET /api/v1/orchestration/actions`; dependencies `orchestration_reader` and `orchestration_writer(action, target_kind)` returning an `OrchestrationCaller(agent, session, message_id)`; `check_no_escalation(spec: SessionSpec, caller: SessionSpec) -> None` raising 403 `privilege_escalation`; `record(conn, caller, action, target_kind, target_id, target_name, outcome)`.
+- `db/orchestration.py`: `insert_action(...)`, `list_actions(conn, caller_session_id | None, limit)`, `count_ok_writes(conn, caller_session_id, seconds)`, `count_live_owned_sessions(conn, owner_session_id)` (one predicate; used by orch-orchestration-sessions).
+- Error codes added: 403 `not_orchestrator`, `not_leader`, `not_user_turn`, `privilege_escalation`; 429 `rate_limited`; 413 `payload_too_large`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One dependency proves who may orchestrate, in which turn, records every write and enforces the limits; the resource routes plug into it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_orchestration_gate.py` with a test-only write and read route mounted on the agent app (non-DB cases with `require_agent` overridden for ac3, ac8, ac9; DB cases like `tests/test_agent_session_messaging.py` for ac4-ac7), add `test_orchestration_settings`; run `uv run --frozen pytest tests/test_orchestration_gate.py tests/test_settings.py`: the new tests fail.
+- Green: settings, modules, app wiring, README, `openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Import `require_agent`, `_leads` from `api/agent.py`; do not copy them. The current-turn lookup is `db/queue.py:turn_origin` (orch-message-origin).
+- The refusal order is part of the contract: a non-leader of a flagged session gets not_leader, never not_user_turn.
+- 401 answers write no audit row (no proven caller); every later refusal does.
+- No Docker in agent pods: DB cases run in CI; keep the order and escalation cases non-DB.
+- Build fake tokens at runtime in tests (GitGuardian).

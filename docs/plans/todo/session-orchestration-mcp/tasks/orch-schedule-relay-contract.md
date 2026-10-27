@@ -51,17 +51,19 @@ Scope (agents-orchestrator): vendor `openapi-relay.json` from agents-schedule ma
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tests/fakes/schedule_relay.py`: an ASGI fake of `/relay/v1/schedules*` (in-memory, owner from `X-Orch-Session`), mountable as an `httpx.ASGITransport`.
+- `tests/fakes/schedule_relay_openapi.source`: one line `agents-schedule <sha>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator's relay and its fake are pinned to the contract agents-schedule actually serves.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm agents-schedule main carries `openapi-relay.json` (sched-relay-routes merged); stop and report if not.
+- Red: write `tests/test_schedule_relay_contract.py` against the vendored file; run it: fails.
+- Green: vendor the file and source, write the fake, point the relay tests at it; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow Matrix orch-chat-contract for the vendoring and schema validation helpers; reuse them if they exist.
