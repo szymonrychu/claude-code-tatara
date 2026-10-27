@@ -49,6 +49,8 @@ User settlement B2 (2026-10-27), verbatim: "schedule_run counts as an ok write a
 
 User settlement B4 (2026-10-27), verbatim: "Command-kind messages and orchestrator-internal enqueues (no sender, no port) store NULL and never pass the user-turn gate." A NULL origin is refused `not_user_turn` whatever `ORCH_ORCHESTRATION_ORIGINS` holds; the setting accepts only `user`, `session` and `service:<name>`, never an empty or NULL entry.
 
+Open question Q9 (pending; the plan follows the recommended answer), verbatim: "A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls?" recommended "yes". This task adds the one shared predicate `api/orchestration.py:require_own_preset(preset, caller_session_id)` that orch-orchestration-sessions (create from preset_id) and orch-schedule-relay (the preset of a schedule) both call; it raises 403 `not_owner`.
+
 ## Acceptance conditions
 
 - ac1: ORCH_ORCHESTRATION_ORIGINS defaults to user,service:agents-matrix-connector and accepts only user, session or service:<name> entries (never NULL), else a settings error naming it; ORCH_ORCHESTRATION_ACTIONS_PER_HOUR defaults to 30 and ORCH_ORCHESTRATION_MAX_OWNED_SESSIONS to 5, both at least 1 [evidence: test:tests/test_settings.py::test_orchestration_settings]
@@ -60,9 +62,10 @@ User settlement B4 (2026-10-27), verbatim: "Command-kind messages and orchestrat
 - ac7: the hourly count includes ok rows whose action is schedule_run and excludes refused rows, so a caller whose last ORCH_ORCHESTRATION_ACTIONS_PER_HOUR ok writes were all schedule_run is refused rate_limited and a caller with that many refusals is not [evidence: test:tests/test_orchestration_gate.py::test_rate_limit_counts_schedule_run_not_refusals]
 - ac8: GET /agent/v1/orchestration/actions returns only the caller's rows newest first, GET /api/v1/orchestration/actions on the main port returns every row, and the agent route is served only on the agent port [evidence: test:tests/test_orchestration_gate.py::test_actions_views]
 - ac9: an agent-supplied spec with session_orchestration true is refused privilege_escalation always, and kube_access or session_messaging true unless the caller's own session has that flag [evidence: test:tests/test_orchestration_gate.py::test_no_escalation]
-- ac10: a write body over 256 KiB answers 413 payload_too_large before parsing and changes nothing [evidence: test:tests/test_orchestration_gate.py::test_body_cap]
-- ac11: the README documents the orchestration checks in order, the origins, the refusal codes, the limits and both actions routes, and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
-- ac12: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_gate.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
+- ac10: require_own_preset passes a preset whose created_by_session_id equals the caller session id and raises 403 not_owner for a preset the user made (created_by_session_id NULL) and for a preset another session created, naming no secret in the answer [evidence: test:tests/test_orchestration_gate.py::test_require_own_preset]
+- ac11: a write body over 256 KiB answers 413 payload_too_large before parsing and changes nothing [evidence: test:tests/test_orchestration_gate.py::test_body_cap]
+- ac12: the README documents the orchestration checks in order, the origins, the refusal codes, the limits and both actions routes, and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
+- ac13: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_gate.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
 
 ## Files
 
@@ -100,3 +103,5 @@ One dependency proves who may orchestrate, in which turn, records every write an
 - Build fake tokens at runtime in tests (GitGuardian).
 
 - 2026-10-27 amended: builder check B2 and B4 settlements: schedule_run counts as an ok write, NULL origin never passes the gate
+
+- 2026-10-27 amended: Q9: one shared require_own_preset predicate
