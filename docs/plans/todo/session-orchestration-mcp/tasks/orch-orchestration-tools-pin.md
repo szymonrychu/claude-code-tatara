@@ -35,6 +35,8 @@ Scope (agents-orchestrator): `settings.py` (`any_mcp_plugins_ref` default the ne
 
 Test no longer accurate (named): `tests/test_settings.py::test_defaults` pins the plugins ref hive-decoupling left; it asserts the new tag.
 
+User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The tag this task pins is the one plugins-release-orch-tools pushed, derived from the plugins version baseline-facts recorded; the sixteen is this epic's own tool count.
+
 ## Acceptance conditions
 
 - ac1: the plugins ref settings default is the tag released by plugins-release-orch-tools (updated) [evidence: test:tests/test_settings.py::test_defaults]
@@ -78,3 +80,5 @@ Agent pods of flagged sessions install the plugins release with the orchestratio
 - The flag does not change for a running session, so the render stays fixed (D1).
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (orchestration-live-smoke).
 - The parity test's DB cases run in CI.
+
+- 2026-10-27 amended: builder check B6: tag from baseline-facts
