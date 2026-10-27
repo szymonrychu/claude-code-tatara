@@ -1,6 +1,6 @@
 ---
 title: wrapper client download
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the orchestrator can open a streamed wrapper download and learn its errors before relaying a byte
 files: [src/agents_orchestrator/wrapper/client.py, tests/test_wrapper_client.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_wrapper_client.p
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e6aaf416717ce80333604f89da894e501740a7e4
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 338636
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 257896, review 80740"
 ---
 
 # wrapper client download
@@ -61,3 +61,5 @@ The orchestrator can open a wrapper download, see its status and headers before 
 
 - Rulings and their pin tests: raw bytes (no content decoding) pinned by `test_open_download_streams_raw_bytes`; the response is closed before an error is raised, pinned by `test_open_download_errors`.
 - Model it on `events` (wrapper/client.py:234): `self._http.build_request(...)` then `self._http.send(request, stream=True)`; `httpx.Timeout(DEFAULT_TIMEOUT)` bounds connect and each read, never the total.
+
+- 2026-10-27 done
