@@ -1,0 +1,33 @@
+{
+  "epic": "parked-epic-stage",
+  "base": "main",
+  "baseBefore": "2965bf0d6b8d001d3cd1c00e6919f4a2e30e64bd",
+  "baseAfter": "3bc9738e71f678cd5f2f535a06579f95528f9c80",
+  "epicTip": "3bc9738e71f678cd5f2f535a06579f95528f9c80",
+  "integrationVerify": {
+    "command": "mise run test:plugin && mise run lint",
+    "passed": true
+  },
+  "mainVerify": {
+    "command": "mise run test:plugin && mise run lint",
+    "passed": true,
+    "tail": [
+      "[lint:plugin] $ /workdir/workdir/mise-tasks/lint/plugin",
+      "[lint:root] $ /workdir/workdir/mise-tasks/lint/root",
+      "[lint:secrets] $ /workdir/workdir/mise-tasks/lint/secrets",
+      "[lint:plugin] [lint] $ ruff check scripts skills hooks",
+      "[lint:harness] Finished in 491.8ms",
+      "[lint:plugin] [lint] $ shellcheck scripts/*.sh skills/*/scripts/*.sh skills/_lib/*.sh hooks/*.sh",
+      "[lint:em-dash] Finished in 616.8ms",
+      "[lint:root] Finished in 712.4ms",
+      "[lint:config-dir] Finished in 807.2ms",
+      "[lint:plugin] Finished in 2.69s",
+      "[lint:personal] Finished in 3.64s",
+      "[lint:secrets] \u001b[90m10:34PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mscanned ~7378588 bytes (7.38 MB) in 733ms\u001b[0m",
+      "[lint:secrets] \u001b[90m10:34PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m",
+      "[lint:secrets] Finished in 8.52s",
+      "Finished in 8.58s"
+    ]
+  },
+  "at": "2026-10-27T22:34:07+00:00"
+}
