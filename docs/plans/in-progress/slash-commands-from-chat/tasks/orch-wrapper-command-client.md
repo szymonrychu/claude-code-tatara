@@ -1,6 +1,6 @@
 ---
 title: orch wrapper command client
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the orchestrator sends any slash command with args to a wrapper and knows the exact outcome, and its fake behaves like the real wrapper"
 files: [src/agents_orchestrator/wrapper/client.py, src/agents_orchestrator/wrapper/models.py, src/agents_orchestrator/wrapper/__init__.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_wrapper_client.py, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py, tests/test_dispatcher.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_wrapper_client.py tests/test_fake_wra
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 85cd446f37647b73a97a8f1e74326522f0236c38
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 16
+actual_tokens: 5134639
+actual_roles: "impl 15, review 2"
+actual_role_tokens: "impl 4936736, review 197903"
 ---
 
 # orch wrapper command client
@@ -84,3 +84,5 @@ The orchestrator can send any slash command with args to a wrapper and knows exa
 - No dependency inside the epic.
 
 - 2026-10-27 amended: interrogate items 5 and 2 (the fake copies the revised DEFAULT_COMMAND_DENY, matches it case-insensitively and refuses an empty name invalid_command), design D5 revised
+
+- 2026-10-27 done
