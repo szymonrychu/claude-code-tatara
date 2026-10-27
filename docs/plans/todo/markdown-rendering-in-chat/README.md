@@ -1,6 +1,6 @@
 ---
 title: markdown rendering in chat
-blockers: []
+blockers: [file-download-in-file-browse]
 stage: build
 owner: ""
 repos: [agents-web]

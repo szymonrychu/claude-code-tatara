@@ -1,6 +1,6 @@
 ---
 title: file editor with tabs and highlighting
-blockers: []
+blockers: [file-download-in-file-browse, markdown-rendering-in-chat]
 stage: build
 owner: ""
 repos: [claude-code-wrapper, agents-orchestrator, agents-web]
