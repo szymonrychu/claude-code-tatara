@@ -273,6 +273,7 @@ Brief plan inputs:
 
 none
 - Q1: Deploy is not part of this epic (no agents-helmfile task), so the download works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the four queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
+- Q2: To hide the icon on symlinks to directories (U2), the file listing gains target_type (dir, file, other; null for non-symlinks and for dangling or workdir-escaping links), and symlinks whose target escapes the workdir show no icon; acceptable? [recommended: yes]
 
 ## Irreversible operations in scope
 
