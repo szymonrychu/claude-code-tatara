@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [helmfile-deploy-pin]
 model: sonnet
 review: ""
-verified_head: 5826fd4911a163658fb99f57dcb42ee225a209f9
+verified_head: 3fd172f
 points: 3
 expected_minutes: 7
 expected_tokens: 977684
 points_actual: 3
-actual_minutes: 28
-actual_tokens: 1398302
-actual_roles: "impl 17, review 12"
-actual_role_tokens: "impl 1190839, review 207463"
+actual_minutes: 184
+actual_tokens: 2007788
+actual_roles: "impl 50, review 168"
+actual_role_tokens: "impl 1713701, review 294087"
 ---
 
 # helmfile smoke plugin tools
@@ -67,5 +67,7 @@ Scope (agents-helmfile `scripts/smoke.sh`, in the style of its existing steps, s
 - `--list-tools` in the pod expands `${ORCH_AGENT_*}` from the container env; the exec must not echo it (test_plugin_steps_print_no_token).
 - Live run is Rollout R5, by the orchestrator, not this task.
 - Never the word "cluster" outside the allowed phrases of `tests/test_nomenclature.py` (`in-cluster` is allowed).
+
+- 2026-10-27 done
 
 - 2026-10-27 done
