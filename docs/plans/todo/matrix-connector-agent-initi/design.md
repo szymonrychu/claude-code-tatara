@@ -460,6 +460,7 @@ none
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]
 - Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [recommended: yes]
 - Q5: Per-session limit of 20 messages a minute (my call, pending gate)? [recommended: yes]
+- Q6: This epic's agents-helmfile values and live smoke run only after the one deploy approved for the four earlier epics (file-download, markdown, file-editor, slash-commands) has applied, so this epic's applies move only the connector, the orchestrator (chat config, plugins v0.3.0) and agents-web; if that deploy epic does not exist when this epic reaches helmfile-chat-values, the orchestrator creates and runs it first? [recommended: yes]
 
 ## Irreversible operations in scope
 
