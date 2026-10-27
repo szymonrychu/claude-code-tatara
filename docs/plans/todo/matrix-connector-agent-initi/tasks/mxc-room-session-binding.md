@@ -82,17 +82,30 @@ Scope (agents-matrix-connector): `worker.py` (`Worker._room` routes by the room'
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `db/bindings.py` (mxc-sends-schema): `reserve_for_run`, `fill_session`, `release`, `active_for_room`, `active_with_session`; any extra worker query goes there too (readers or bot-worker writers only).
+- `worker.py:Worker._room(room_id)`: reads the room's active binding first; a session binding checks `agent_runs.running_session` and, running, claims a `follow` run with `preset_id` from that `Session.preset_id`, else the room's effective preset, else None; `None` from the check releases (`session_gone`) and falls through to the unbound path; an `OrchestratorError` other than not found keeps the binding and the rows; a reservation does nothing; unbound: `_preset` decides between a `first` run (whose claim transaction calls `reserve_for_run`) and `no_preset`.
+- `worker.py:_RoomRunStore.set_session` fills the run's binding in the same transaction as the runs update; `_RoomRunStore.finish` releases (`run_failed`) the reservation of a run that ends with no session; `Worker._session_gone` releases (`session_gone`) the binding of the gone session in the transaction that fails the run.
+- `worker.py:Worker.tick` runs the binding sweep at most once per 60 s (clock from `now`), before the room pass: `running_session` per `active_with_session` row; None releases `session_gone`; `OrchestratorUnavailable` ends the sweep; `OrchestratorError` keeps that binding.
+- `db/runs.py`: `latest_session` removed; `RunRow.preset_id: uuid.UUID | None`; `create_run(conn, *, room_id, preset_id: str | None, kind)`; `has_other_run(conn, session_id, room_id, exclude_run_id) -> bool` (name left to the builder).
+- `worker.py:Worker._deliver` renders `first=True` when the session has no other run in the room, so `Worker._resume` (which calls `_deliver` for follow runs) keeps the PREAMBLE; `RunRef.preset_id` of a follow run without a preset is `""` (never read by `deliver`).
+- Release reasons (constants in `worker.py`): `session_gone` (reuse `tracker.SESSION_GONE`), `run_failed`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every chat room talks to exactly one session: the user's messages in a bound room always reach its bound session (an `mx-` chat session or a session that started the chat with agents_may_initiate), with or without a preset; a room is bound when an inbound chat starts its session; deleting the session frees the room within about a minute, after which the next message starts a new chat session.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rename `test_create_run_and_latest_session` to `test_create_run` without the `latest_session` assertions, add the eleven worker tests (ac1 to ac11); run `uv run pytest tests/test_runs_repo.py tests/test_worker.py`: the new tests fail (no binding routing, `latest_session` still present is caught by `test_create_run`).
+- Green: `db/runs.py`, `db/bindings.py` if a query is missing, `worker.py`, README, MEMORY; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Retires and replaces mxc-route-last-speaker (user decision 2026-10-27): no candidate list, no last-speaker ordering, no walk over several sessions. A user message never goes to any session but the bound one.
+- The binding check runs before the preset check (interrogate Act 1, Q9 adapted): a bound running session takes the batch without a preset; the no_preset ignore and the new-session cap apply only to an unbound room, unchanged there.
+- `running_session` already returns `agents_common.orchestrator.Session`, which carries `preset_id` (nullable); no new orchestrator call. It returns None both for not found and for desired `deleting`, the only two ways a session is deleted.
+- A refused check keeps the binding (my call in D9: a hard binding never moves on an ambiguous answer); pin test `test_refused_check_keeps_binding`.
+- The worker, the sender (mxc-bot-sends-delivery) and the tracker run sequentially in the one bot process; the partial unique indexes still decide any conflict: a `reserve_for_run` that loses (the room got an agent binding between the read and the claim) rolls the claim back and the room is retried next tick as bound.
+- `test_session_gone_falls_back` stays unchanged and must keep passing; the binding assertions of that path live in the new `test_session_gone_releases_binding`.
+- MEMORY.md entry format: `- One session per room and one room per session (2026-10-27, epic matrix-connector-agent-initi): hard 1:1 binding in room_bindings, released only when the session is deleted; why: the user's final-gate decision ...` amending the 2026-10-25 line, newest first.
+- DB-backed tests (CI); keep the routing decision (binding state and check result to action) a pure function with a non-DB test in `tests/test_worker.py` so the local run has signal.

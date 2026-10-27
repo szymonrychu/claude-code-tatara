@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: "one command proves send without inbound, quoted reply and reactions live, leaving nothing behind"
 files: [scripts/chat-smoke.sh, mise.toml, tests/test_chat_smoke_script.py, README.md, tests/test_mise_tasks.py]
 verify: "uv run pytest tests/test_chat_smoke_script.py tests/test_mise_tasks.py && mise run lint"
-depends_on: [mxc-agent-routes, orch-chat-relay]
+depends_on: [mxc-agent-routes, orch-chat-relay, mxc-room-initiate-flag]
 model: opus
 review: ""
 verified_head: ""
@@ -64,7 +64,8 @@ Scope (agents-helmfile): new `scripts/chat-smoke.sh` (env `RELEASE`, `NAMESPACE`
 ## Interfaces
 
 - `mise run chat-smoke` = `bash scripts/chat-smoke.sh`.
-- Output lines: `S1 s<n> sent`, `S2 s<n> sent`, `S3 s<n> sent`, `S4 s<n> <status> <reason>`, `hours since last inbound: <n>`.
+- Output lines: `caller: bound <slug>` or `caller: throwaway <slug>`, `binding before: <slug or none>`, `hours since last inbound: <n>`, `S1 s<n> sent`, `S2 s<n> sent`, `S3 s<n> sent`, `S4 s<n> <status> <reason>`, `binding after: <slug or none>`.
+- Reads `binding` from `GET /matrix/api/v1/rooms/{room_id}` of the connector UI API (mxc-room-initiate-flag) through the api container port-forward.
 
 ## Expected outcome
 
@@ -78,6 +79,7 @@ One command proves send without inbound, quoted reply and reactions against the 
 ## Notes
 
 - Reuse `scripts/smoke.sh`'s patterns: session creation through the orchestrator API port-forward, waiting for a Ready pod, running curl inside the pod with its own `ORCH_AGENT_*` env (never printed), trap cleanup.
+- Bound case (Q11, recommended answer; the plan follows it until Q11 is answered): the caller is the bound session's leader pod. How to find that pod for a hive session is a fact to probe at build time (the orchestrator API's session view and the pod labels `agents.szymonrichert.pl/session=<slug>` used by `scripts/smoke.sh`); if neither names the leader pod, return it as a question, never guess. The script only runs curl in that pod; it never posts a session message, never scales, restarts or deletes that session.
 - The calls go through the orchestrator agent routes from inside the session pod (agent identity is the pod IP), never directly to the connector agent port, so the smoke proves the whole path including the relay.
 - Each wait gets its own deadline variable computed when that wait starts (retro: a shared deadline failed a smoke spuriously).
 - Never add these steps to `scripts/smoke.sh`: that smoke must never send a Matrix message.

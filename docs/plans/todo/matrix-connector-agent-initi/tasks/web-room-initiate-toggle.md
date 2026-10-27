@@ -68,3 +68,5 @@ The user turns "Agents may start chats" on or off per room in the web UI.
 - Held until markdown-rendering-in-chat and file-editor-with-tabs-and-hi are done (README blockers).
 - Use the MUI `Switch` with `FormControlLabel` as other drawers do; the label text is the accessible name the test queries.
 - The connector keeps the stored flag when the field is omitted (mxc-room-initiate-flag), but the UI always sends it, so what the user sees is what is saved.
+- The vendored `openapi/matrix.json` and the generated types also gain the room `binding` field (D9, mxc-room-initiate-flag); this task shows nothing new for it (noted, not doing now: a "bound to session <slug>" hint in the drawer). Under the 1:1 rule the flag lets an agent start a chat only while the room is unbound; the switch label stays "Agents may start chats".
+- Retro (markdown-rendering-in-chat): one vitest test is flaky under load with no captured name; on a first-run failure capture the failing test name and the output tail before any rerun.

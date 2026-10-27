@@ -2,16 +2,16 @@
 title: mxc sends schema
 status: todo
 repo: agents-matrix-connector
-value: "agent sends get a queue, a room flag and the binding and reference queries every later task needs"
-files: [src/agents_matrix_connector/migrations/0002_agent_sends.sql, src/agents_matrix_connector/db/sends.py, tests/test_schema.py, tests/test_sends_repo.py]
-verify: "uv run pytest tests/test_schema.py tests/test_sends_repo.py && mise run lint"
+value: "agent sends get a queue, a room flag, a database-enforced 1:1 room-session binding and the reference queries every later task needs"
+files: [src/agents_matrix_connector/migrations/0002_agent_sends.sql, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, tests/test_schema.py, tests/test_sends_repo.py, tests/test_bindings_repo.py]
+verify: "uv run pytest tests/test_schema.py tests/test_sends_repo.py tests/test_bindings_repo.py && mise run lint"
 depends_on: []
 model: opus
 review: ""
 verified_head: ""
-points: 5
-expected_minutes: 9
-expected_tokens: 1836811
+points: 8
+expected_minutes: 14
+expected_tokens: 3155191
 points_actual: ""
 actual_minutes: ""
 actual_tokens: ""
@@ -77,28 +77,33 @@ Scope (agents-matrix-connector): migration `0002_agent_sends.sql`, the repositor
 
 - `src/agents_matrix_connector/migrations/0002_agent_sends.sql`
 - `src/agents_matrix_connector/db/sends.py`
+- `src/agents_matrix_connector/db/bindings.py`
 - `tests/test_schema.py`
 - `tests/test_sends_repo.py`
+- `tests/test_bindings_repo.py`
 
 ## Interfaces
 
-- `src/agents_matrix_connector/migrations/0002_agent_sends.sql`: table `sends` (D7 columns), `outbound` new columns, widened kind CHECK, `room_settings.agents_may_initiate`, indexes, `runs.preset_id` DROP NOT NULL plus CHECK `kind <> 'first' OR preset_id IS NOT NULL`; COMMENT on `sends`.
-- `src/agents_matrix_connector/db/sends.py` (new): a frozen `SendRow` dataclass; `insert(conn, *, session_id, slug, kind, room_id, text, key, reply_to, ref_event_id) -> int`; `claim_queued(conn) -> list[SendRow]` (queued to sending, sets `claimed_at`); `mark_sent(conn, id, event_id)`, `mark_failed(conn, id, reason)`, `mark_refused(conn, id, reason)` through `queue.transition`; `is_bound(conn, session_id, room_id) -> bool`; `bound_rooms(conn, session_id) -> list[str]`; `count_recent(conn, session_id, seconds) -> int`; `resolve(conn, ref) -> Ref | None` for `m<n>`/`s<n>`; `get(conn, id) -> SendRow | None`; `prune(conn, older_than) -> int`. Writers take a connection and never commit, as in `db/runs.py`.
+- `src/agents_matrix_connector/migrations/0002_agent_sends.sql`: table `sends` (D7 columns), `outbound` new columns, widened kind CHECK, `room_settings.agents_may_initiate`, indexes, `runs.preset_id` DROP NOT NULL plus CHECK `kind <> 'first' OR preset_id IS NOT NULL`; table `room_bindings` (D9 columns, origin CHECK, the inbound/agent CHECKs, partial unique indexes `(room_id) WHERE released_at IS NULL` and `(session_id) WHERE released_at IS NULL AND session_id IS NOT NULL`) and its backfill; COMMENTs on `sends` and `room_bindings`.
+- `src/agents_matrix_connector/db/sends.py` (new): a frozen `SendRow` dataclass; `insert(conn, *, session_id, slug, kind, room_id, text, key, reply_to, ref_event_id) -> int`; `claim_queued(conn) -> list[SendRow]` (queued to sending, sets `claimed_at`); `mark_sent(conn, id, event_id)`, `mark_failed(conn, id, reason)`, `mark_refused(conn, id, reason)` through `queue.transition`; `count_recent(conn, session_id, seconds) -> int`; `resolve(conn, ref) -> Ref | None` for `m<n>`/`s<n>`; `get(conn, id) -> SendRow | None`; `prune(conn, older_than) -> int`. No binding query here: the binding is `db/bindings.py`.
+- `src/agents_matrix_connector/db/bindings.py` (new, writer: bot worker; names left to the builder): a frozen `BindingRow(id, room_id, session_id, slug, origin, run_id, send_id, created_at, released_at, release_reason)`; `reserve_for_run(conn, room_id, run_id) -> bool`; `fill_session(conn, run_id, session_id, slug) -> bool` (idempotent for the same id); `bind_for_send(conn, *, room_id, session_id, slug, send_id) -> Literal["bound", "already", "room_bound", "session_bound"]` (a unique violation maps to the matching refusal inside a savepoint, never an exception for the caller's transaction); `release(conn, binding_id, reason, *, session_id=None) -> bool` (guarded on `released_at IS NULL` and the expected session); `active_for_room(conn, room_id) -> BindingRow | None`; `active_for_session(conn, session_id) -> BindingRow | None`; `active_with_session(conn) -> list[BindingRow]` (the sweep); `prune_released(conn, older_than) -> int`. Writers take a connection and never commit, as in `db/runs.py`; the api uses only the readers.
 
 ## Expected outcome
 
-The connector database holds the agent send queue and the room flag; one repository module offers every query the api, the bot step and the routing change need.
+The connector database holds the agent send queue, the room flag and the room-session bindings, and the database itself refuses a second active binding of a room or of a session; two repository modules offer every query the api, the bot step and the routing change need; existing chats keep their session through the backfill.
 
 ## Steps
 
-- Red: add `test_agent_sends_columns`, extend `test_writer_comments` and `test_check_constraints`, write `tests/test_sends_repo.py`; run `uv run pytest tests/test_schema.py tests/test_sends_repo.py`: the new tests fail (no table, no module).
-- Green: write the migration and `db/sends.py`; run the task's verify: passes. Quote the summary line with counts.
+- Red: add `test_agent_sends_columns`, `test_binding_backfill`, extend `test_writer_comments` and `test_check_constraints`, write `tests/test_sends_repo.py` and `tests/test_bindings_repo.py`; run `uv run pytest tests/test_schema.py tests/test_sends_repo.py tests/test_bindings_repo.py`: the new tests fail (no tables, no modules).
+- Green: write the migration, `db/sends.py` and `db/bindings.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-- DB tests use testcontainers (Docker); agent pods have none, so they run in GitHub CI (retro proposal: CI is the DB gate). Keep the reference parser (`m<n>`/`s<n>` to kind and id) a pure function with its own non-DB test so the local run has signal.
-- Reuse `agents_common.db.queue.transition` exactly as `db/runs.py` does; no raw UPDATE of `sends.status`.
-- `sends` and `outbound` writers: the api only inserts `sends`; the bot only moves them (D7). Record the writer in the COMMENT.
+- DB tests use testcontainers (Docker); agent pods have none, so they run in GitHub CI (retro proposal: CI is the DB gate). Keep the reference parser (`m<n>`/`s<n>` to kind and id) and the mapping of a unique-index name to `room_bound`/`session_bound` pure functions with their own non-DB tests so the local run has signal.
+- Reuse `agents_common.db.queue.transition` exactly as `db/runs.py` does; no raw UPDATE of `sends.status`. `room_bindings` is not a queue; its release is still one guarded UPDATE (`released_at IS NULL`).
+- Writers: the api only inserts `sends`; the bot only moves them (D7); `room_bindings` is written only by the bot worker (D9), the api only reads it. Record the writers in the COMMENTs.
+- `test_binding_backfill` applies `0001_init.sql`, seeds runs, then applies `0002_agent_sends.sql` on a fresh database; the tiebreak "a session newest in two rooms binds only its newest run's room" is a ruling and this test is its pin (retro proposal).
+- The backfill is part of the approved migration 0002 (no down step); gate question Q12 (recommended yes) settles it. The task builds it as recommended; Q12 must be answered before the live apply (chat-live-smoke), and a "no" removes ac10 and the backfill by amend before then.
 - Follow `db/runs.py` and `db/inbound.py` style (dict_row, frozen dataclasses, connection-taking writers).
 
 - 2026-10-27 amended: interrogate.md Act 1: runs.preset_id nullable for follow runs with a CHECK that first runs keep one

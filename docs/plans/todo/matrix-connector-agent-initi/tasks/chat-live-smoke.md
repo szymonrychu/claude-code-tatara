@@ -66,13 +66,14 @@ The chat tools work live: an agent posted, replied and reacted in the owner DM w
 
 ## Steps
 
-- Preconditions: helmfile-chat-secrets ac6 (hash matches) green; Q6 precondition holds; tags exist (ac1).
+- Preconditions: helmfile-chat-secrets ac6 (hash matches) green; Q6 precondition holds; Q11 and Q12 answered (design.md Open questions; a "no" amends chat-smoke-script or mxc-sends-schema first); tags exist (ac1).
 - Diff and apply per release in D18's order; after each apply wait for the rollout; then `mise run diff` (ac2).
-- `mise run smoke` (ac3); set the flag (ac4); `mise run chat-smoke` (ac5); ask the user (ac6); write MEMORY.md (ac7) and commit it.
+- `mise run smoke` (ac3); set the flag (ac4); quote the owner DM's binding, `mise run chat-smoke`, quote the binding again (ac5, ac6); ask the user (ac7); write MEMORY.md (ac8) and commit it.
 
 ## Notes
 
-- Live and irreversible operations listed in design.md: the applies (the plugins ref rolls every running agent pod, including the mx-5 hive), migration 0002, the flag grant, the Messenger sends.
+- Live and irreversible operations listed in design.md: the applies (the plugins ref rolls every running agent pod, including the mx-5 hive), migration 0002 (with the room_bindings backfill), the flag grant, the Messenger sends. Standing rule (user, 2026-10-27): deploy whenever possible; live applies need no approval.
+- After migration 0002 the owner DM is expected to be bound to the session of its newest run (backfill); if that session was already deleted the first binding sweep releases it within about a minute: quote the binding only after that minute.
 - Never put an apply in AC evidence (workbench MEMORY 2026-10-25); `mise run diff` exits 0 only when nothing is pending.
 - If S2 or S3 shows wrongly in Messenger, reply/react are dropped and send stays (user decision 2026-10-27): record it in MEMORY.md and add the removal (connector reply_to and reactions routes, orchestrator reactions route and `reply_to`, plugin chat_react and `reply_to`, docs) as new tasks of this epic with `ticket.py new-task`; do not stop to ask.
 - Minutes run 3-4x over seeds for live tasks in recent epics (retro); plan for several smoke runs.

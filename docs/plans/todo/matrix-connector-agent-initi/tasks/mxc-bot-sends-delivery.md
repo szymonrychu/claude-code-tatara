@@ -3,15 +3,15 @@ title: mxc bot sends delivery
 status: todo
 repo: agents-matrix-connector
 value: "accepted agent messages, quoted replies and reactions reach the chat at once, exactly once, even during a running chat turn"
-files: [src/agents_matrix_connector/sender.py, src/agents_matrix_connector/bot.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/tracker.py, tests/test_sender.py, tests/test_tracker.py]
+files: [src/agents_matrix_connector/sender.py, src/agents_matrix_connector/bot.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/tracker.py, tests/test_sender.py, tests/test_tracker.py]
 verify: "uv run pytest tests/test_sender.py tests/test_tracker.py && mise run lint"
 depends_on: [mxc-sends-schema, mxc-matrix-send-event, mxc-agent-room-policy]
 model: opus
 review: ""
 verified_head: ""
-points: 8
-expected_minutes: 14
-expected_tokens: 3155191
+points: 13
+expected_minutes: 22
+expected_tokens: 3916941
 points_actual: ""
 actual_minutes: ""
 actual_tokens: ""
@@ -73,6 +73,7 @@ Scope (agents-matrix-connector): new bot module `sender.py` (claim, policy re-ch
 - `src/agents_matrix_connector/bot.py`
 - `src/agents_matrix_connector/db/runs.py`
 - `src/agents_matrix_connector/db/sends.py`
+- `src/agents_matrix_connector/db/bindings.py`
 - `src/agents_matrix_connector/tracker.py`
 - `tests/test_sender.py`
 - `tests/test_tracker.py`
@@ -80,19 +81,20 @@ Scope (agents-matrix-connector): new bot module `sender.py` (claim, policy re-ch
 ## Interfaces
 
 - Uses `matrix.py:MatrixClient.send_event(room_id, event_type, txn_id, content) -> str` (mxc-matrix-send-event) and `api/rooms.py:agent_room_decision(room, rule_list, settings) -> policy.Decision` (mxc-agent-room-policy).
-- `sender.py` (new): `class Sender(matrix, pool, settings, *, now=utcnow)` with `async tick()`: claim queued sends, re-check (a) through `agent_room_decision`, insert outbound rows, settle sending sends whose rows all ended.
+- `sender.py` (new): `class Sender(matrix, pool, settings, *, now=utcnow)` with `async tick()`: claim queued sends; per send, in its claim transaction, re-check (a) through `agent_room_decision`, then (b) through `db/bindings.py` (`active_for_room`, `active_for_session`, the room flag, and `bind_for_send` for an unbound flagged room), refusing `room_bound`, `session_bound` or `room_not_authorised`; insert outbound rows; settle sending sends whose rows all ended, releasing (`send_failed`) a binding the send created when none of its rows was sent.
+- `tracker.py:Tracker._prune_daily` also calls `sends.prune` and `bindings.prune_released` with the existing retention.
 - `db/runs.py:add_outbound(conn, *, room_id, run_id=None, send_id=None, kind, chunks, event_type="m.room.message", relates_to=None)`; txn ids `mxc-<run>-<n>`, `mxc-<run>-notice` (unchanged), `mxa-<send>-<n>`, `mxa-<send>-r`. `OutboundRow` gains `send_id`, `event_type`, `relates_to`.
-- `tracker.py:Tracker._send_pending` builds each row's content from `event_type`, `body` and `relates_to` and calls `send_event`; for a row with a `send_id` it first re-checks (a) for the row's room (rules and the room loaded once per pass) and, when denied, fails the send's pending rows and moves the send `sending -> refused` with the policy reason in one transaction.
+- `tracker.py:Tracker._send_pending` builds each row's content from `event_type`, `body` and `relates_to` and calls `send_event`; for a row with a `send_id` it first re-checks (a) for the row's room (rules and the room loaded once per pass) and, when denied, fails the send's pending rows, moves the send `sending -> refused` with the policy reason and, when none of its rows was sent, releases a binding the send created (`send_failed`), in one transaction.
 - `tests/test_tracker.py:SpyMatrix` gains `send_event`, recording `(room_id, event_type, txn_id, content)`.
 
 ## Expected outcome
 
-Every accepted agent send reaches the room as a message (chunked, optionally a quoted reply) or a reaction, exactly once, at once, even while a chat run is in progress, and its status reports how it ended.
+Every accepted agent send reaches the room as a message (chunked, optionally a quoted reply) or a reaction, exactly once, at once, even while a chat run is in progress, and its status reports how it ended; an initiation binds its room to its session at claim, a send that lost a binding race is refused before anything is sent, and an initiation that never reached the user leaves the room unbound.
 
 ## Steps
 
 - Red: write `tests/test_sender.py`, add `test_agent_rows_rechecked_before_send` and the `SpyMatrix.send_event` spy to `tests/test_tracker.py`; run `uv run pytest tests/test_sender.py tests/test_tracker.py`: the new tests fail.
-- Green: `db/runs.py`, `db/sends.py`, `sender.py`, `tracker.py`, `bot.py`; run the task's verify: passes. Quote the summary line with counts.
+- Green: `db/runs.py`, `db/sends.py`, `db/bindings.py` (only if a query is missing), `sender.py`, `tracker.py`, `bot.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
@@ -100,7 +102,7 @@ Every accepted agent send reaches the room as a message (chunked, optionally a q
 - The fake homeserver's `_send` (`fake_homeserver.py`) already accepts any event type and records content: assert relations on what it recorded.
 - Typing stays keyed by run id; agent sends neither start nor stop typing.
 - Every (a) check (claim and send time) calls `api/rooms.py:agent_room_decision` with `rules.list_rules` and the settings, the same function as the api; never `policy.evaluate` on the room subject alone (interrogate Act 2).
-- The bot is the only mover of `sends` and the only writer of `outbound` (D7); every status move goes through `queue.transition`.
+- The bot is the only mover of `sends` and the only writer of `outbound` and `room_bindings` (D7, D9); every status move goes through `queue.transition`. A unique-index conflict in `bind_for_send` is mapped to a refusal inside a savepoint, so the claim transaction of the other sends in the batch survives.
 - `tests/test_sender.py` and `tests/test_tracker.py` are DB-backed (CI). Keep the content builder (event type, body, relation) a pure function with a non-DB test in `tests/test_sender.py` so the local run has signal.
 - `tests/test_tracker.py`: the spy gains `send_event`; no existing assertion is edited (interrogate Act 5).
 

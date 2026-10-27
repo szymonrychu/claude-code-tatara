@@ -12,7 +12,7 @@ created: 2026-10-27
 ## Project brief
 
 What: Agents send, follow up, reply and react in the user's Matrix (Messenger) chat at any time, not only as the answer to a chat-started turn
-How: orchestrator-relayed orchestrator_chat_* MCP tools, a token-protected agent port and sends queue on the connector, room authorisation by session binding or a per-room agents_may_initiate flag
+How: orchestrator-relayed orchestrator_chat_* MCP tools, a token-protected agent port and sends queue on the connector, a hard 1:1 room-session binding (user decision 2026-10-27), and a per-room agents_may_initiate flag that lets an agent start a chat in an unbound room
 Why: Replies to turns not started from the chat (session messages, background completions) never reach the user, and agents cannot start a chat
 
 ## Description
@@ -26,6 +26,8 @@ Requirements from the user:
 2. Must: an agent can send follow-ups (multiple messages without a user reply in between).
 3. Ideally: an agent can reply to a specific message (threaded/quoted reply) and react to messages with emoji (reactions may be enough for acknowledgements)."
 
+Final gate answer (2026-10-27, relayed by the mx-5 leader), verbatim: "1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go". The last-speaker routing is replaced by a hard 1:1 room-session binding (design D9).
+
 Queued after the four epics in flight (file-download, markdown, file-editor, slash-commands).
 
 Discovery (2026-10-27): .scratchpad/discovery/matrix-outbound.md. Architecture decision: .scratchpad/design/matrix-outbound-arch.md (orchestrator-relayed orchestrator_chat_* tools, connector agent port, `sends` queue, room authorisation by binding or an agents_may_initiate flag, short m<n>/s<n> message references).
@@ -37,7 +39,7 @@ Discovery (2026-10-27): .scratchpad/discovery/matrix-outbound.md. Architecture d
 - An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji.
 - An agent can list the rooms it may post to and read the delivery status of what it sent.
 - Agents may post only to policy-allowed rooms that are bound to their session or flagged agents_may_initiate (off by default, set per room by the user); the agent token never leaves the orchestrator.
-- The user's next chat message after an agent-initiated or follow-up message reaches the session that last spoke in the room while it runs.
+- A chat room and a session are bound one to one: a room has at most one bound session and a session at most one bound room, and the user's chat messages in a bound room, including the answer to an agent-initiated or follow-up message, always reach its bound session.
 - Docs, tests (unit, contract, e2e) and a live smoke in the owner DM covering send without inbound, quoted reply and reaction.
 
 ## Non-goals

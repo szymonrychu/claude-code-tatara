@@ -2,10 +2,10 @@
 title: mxc e2e agent sends
 status: todo
 repo: agents-matrix-connector
-value: "one end-to-end suite proves initiate, follow-ups, reply, react and answer routing across the real processes"
+value: "one end-to-end suite proves initiate, follow-ups, reply, react and the 1:1 room-session binding across the real processes"
 files: [tests/e2e/conftest.py, tests/e2e/test_e2e_agent.py]
 verify: "uv run pytest tests/e2e/test_e2e_agent.py && mise run lint"
-depends_on: [mxc-agent-routes, mxc-bot-sends-delivery, mxc-route-last-speaker, mxc-skip-duplicate-final, mxc-prompt-message-refs]
+depends_on: [mxc-agent-routes, mxc-bot-sends-delivery, mxc-room-session-binding, mxc-skip-duplicate-final, mxc-prompt-message-refs]
 model: sonnet
 review: ""
 verified_head: ""
@@ -62,7 +62,7 @@ Scope (agents-matrix-connector): the e2e stack (`tests/e2e/conftest.py`) also st
 
 ## Expected outcome
 
-One end-to-end suite proves G1, G2, G3 and G6 across the real api and bot processes.
+One end-to-end suite proves G1, G2, G3 and G6 (the 1:1 binding: bind on initiation, answers to the bound session, room_bound and session_bound, release on session delete) across the real api and bot processes.
 
 ## Steps
 
@@ -72,7 +72,7 @@ One end-to-end suite proves G1, G2, G3 and G6 across the real api and bot proces
 ## Notes
 
 - The stack needs Docker (Postgres); this pod has none, so GitHub CI runs it; quote the CI run's summary.
-- Use `agents_common.fake_orchestrator.FakeOrchestrator` as the existing e2e cases do; a non-mx session is a session the fake reports running whose slug does not start with `mx-`.
+- Use `agents_common.fake_orchestrator.FakeOrchestrator` as the existing e2e cases do; a non-mx session is a session the fake reports running whose slug does not start with `mx-`; deleting a session is removing it from the fake (or setting its desired state to deleting), after which the next user message or the 60 s binding sweep releases the binding (shorten the wait through the stack's clock or by sending the next message, never by sleeping 60 s).
 - Build the test token at runtime (`secrets.token_hex(32)`) and pass its sha256 in the stack env.
 
 - 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters delivered end to end

@@ -3,7 +3,7 @@ title: mxc agent routes
 status: todo
 repo: agents-matrix-connector
 value: "agents can list their rooms, send, reply, react and read delivery status, refused at once when the room is not theirs"
-files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/api/openapi.py, openapi-agent.json, README.md, tests/test_api_agent.py, tests/test_readme_api.py]
+files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/api/openapi.py, openapi-agent.json, README.md, tests/test_api_agent.py, tests/test_readme_api.py]
 verify: "uv run pytest tests/test_api_agent.py tests/test_readme_api.py tests/test_agent_gate.py && mise run lint"
 depends_on: [mxc-sends-schema, mxc-room-initiate-flag, mxc-agent-listener, mxc-agent-room-policy]
 model: opus
@@ -74,6 +74,7 @@ Interrogate verdict, verbatim: "4. Reaction and reply room authorisation (A high
 
 - `src/agents_matrix_connector/api/agent.py`
 - `src/agents_matrix_connector/db/sends.py`
+- `src/agents_matrix_connector/db/bindings.py`
 - `src/agents_matrix_connector/api/openapi.py`
 - `openapi-agent.json`
 - `README.md`
@@ -82,18 +83,18 @@ Interrogate verdict, verbatim: "4. Reaction and reply room authorisation (A high
 
 ## Interfaces
 
-- `GET /chat/v1/rooms` -> 200 `{"rooms": [{"room_id", "name", "kind", "bound", "agents_may_initiate"}]}`.
+- `GET /chat/v1/rooms` -> 200 `{"rooms": [{"room_id", "name", "kind", "bound", "agents_may_initiate"}]}`: the caller's bound room only (`bound` true), or, for a caller bound to no room, every unbound flagged room passing (a).
 - `POST /chat/v1/messages` body `{"text": str, "room": str | null, "reply_to": "m<n>" | "s<n>" | null}` -> 202 `{"id": "s<n>", "status": "queued"}`; a duplicate (D5) -> 202 with the existing id and its status `queued`, `sending` or `sent`.
 - `POST /chat/v1/reactions` body `{"to": "m<n>" | "s<n>", "key": str}` -> 202 `{"id": "s<n>", "status": "queued"}`.
 - `GET /chat/v1/messages/{id}` (`id` is `s<n>`) -> 200 `{"id", "kind", "status", "reason", "room_id", "created_at", "sent_at"}`.
-- Errors `{"error": {"code", "message"}}`: 401 `unauthorized`, 404 `not_found`, 422 `invalid_request`, `invalid_key`, `bad_reference`, `room_required`, 403 `room_not_allowed`, `room_not_authorised`, 429 `rate_limited`, 503 `unavailable` (database).
-- One predicate, for example `api/agent.py:may_post(conn, session_id, room, rules, settings) -> Literal["ok", "room_not_allowed", "room_not_authorised"]`, used by the send and reaction routes (for given and derived rooms) and by the listing; its (a) part is `api/rooms.py:agent_room_decision` (mxc-agent-room-policy).
+- Errors `{"error": {"code", "message"}}`: 401 `unauthorized`, 404 `not_found`, 422 `invalid_request`, `invalid_key`, `bad_reference`, `room_required`, 403 `room_not_allowed`, `room_not_authorised`, 409 `room_bound`, `session_bound`, 429 `rate_limited`, 503 `unavailable` (database).
+- One predicate, for example `api/agent.py:may_post(conn, session_id, room, rules, settings) -> Literal["ok", "room_not_allowed", "room_bound", "room_not_authorised", "session_bound"]`, used by the send and reaction routes (for given and derived rooms) and by the listing; its (a) part is `api/rooms.py:agent_room_decision` (mxc-agent-room-policy), its (b) part reads `db/bindings.py:active_for_room` and `active_for_session` (mxc-sends-schema) and `room_settings.agents_may_initiate`, in the D4 order (room_bound, room_not_authorised, session_bound).
 - `db/sends.py:find_duplicate(conn, *, session_id, room_id, kind, text, key, reply_to, seconds=60) -> SendRow | None` (name left to the builder): the newest queued, sending or sent send matching exactly.
 - `api/openapi.py`: `export()` (UI, unchanged) and `export_agent()`; `python -m agents_matrix_connector.api.openapi --agent > openapi-agent.json` (or an equivalent documented command).
 
 ## Expected outcome
 
-The orchestrator can ask the connector, on the session's behalf, which rooms it may post to, queue a message, a quoted reply or a reaction there, and read back what happened, with every refusal synchronous and nothing queued on a refusal.
+The orchestrator can ask the connector, on the session's behalf, which rooms it may post to (its one bound room, or the unbound flagged rooms while it has none), queue a message, a quoted reply or a reaction there, and read back what happened, with every refusal (including `room_bound` and `session_bound`) synchronous and nothing queued on a refusal.
 
 ## Steps
 
@@ -104,9 +105,9 @@ The orchestrator can ask the connector, on the session's behalf, which rooms it 
 
 - (a) is `api/rooms.py:agent_room_decision(room, rules.list_rules(...), settings)`; never `policy.evaluate` on the room subject alone (interrogate Act 2). Import it rather than copying it.
 - The room ordering rule is a tiebreak ruling: its pin test is `test_rooms_listing_order` (retro proposal). The single-predicate rule is pinned by `test_listing_matches_send_checks` (retro proposal: duplicate-predicate sweep before the last code task merges).
-- The api only inserts `sends`; it never updates them (single writer, D7).
+- The api only inserts `sends`; it never updates them (single writer, D7). It never writes `room_bindings` either: an initiation is accepted with no binding, and the bot binds at claim (D9); seed bindings in tests with plain INSERTs. Any new reader goes in `db/bindings.py`, no writer.
 - `tests/test_api_agent.py` is DB-backed (CI); keep the key validator and the reference parser as pure functions with non-DB tests in it too.
-- The rate limit and the duplicate lookup are advisory like the orchestrator's session-message limits: the lookup or count and the insert are not one atomic step; document that in README.
+- The rate limit, the duplicate lookup and the (b) binding check are advisory like the orchestrator's session-message limits: the lookup or count and the insert are not one atomic step, and the bot's claim re-checks (b) (D5, D9); document that in README.
 - A duplicate is checked after (b) and before the rate limit, so a retry at the limit still gets its `s<n>` (D5 check order).
 
 - 2026-10-27 amended: interrogate.md Acts 2, 4, 6, 9: member-aware (a), derived-room authorisation, 16000 4-byte text, duplicate returns the existing send

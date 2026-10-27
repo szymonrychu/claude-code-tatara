@@ -2,9 +2,9 @@
 title: mxc room initiate flag
 status: todo
 repo: agents-matrix-connector
-value: "the user can flag a room so agents may start a chat there, off by default"
-files: [src/agents_matrix_connector/db/rules.py, src/agents_matrix_connector/api/rooms.py, src/agents_matrix_connector/api/schemas.py, openapi.json, README.md, tests/test_api_rooms.py]
-verify: "uv run pytest tests/test_api_rooms.py tests/test_readme_api.py tests/test_rules_repo.py && mise run lint"
+value: "the user can flag a room so agents may start a chat there, off by default, and sees which session each room is bound to"
+files: [src/agents_matrix_connector/db/rules.py, src/agents_matrix_connector/db/directory.py, src/agents_matrix_connector/api/rooms.py, src/agents_matrix_connector/api/schemas.py, openapi.json, README.md, tests/test_api_rooms.py]
+verify: "uv run pytest tests/test_api_rooms.py tests/test_readme_api.py tests/test_rules_repo.py tests/test_directory_repo.py && mise run lint"
 depends_on: [mxc-sends-schema]
 model: opus
 review: ""
@@ -50,6 +50,7 @@ Scope (agents-matrix-connector): `db/rules.py` (`RoomSettings` and `set_room_set
 ## Files
 
 - `src/agents_matrix_connector/db/rules.py`
+- `src/agents_matrix_connector/db/directory.py`
 - `src/agents_matrix_connector/api/rooms.py`
 - `src/agents_matrix_connector/api/schemas.py`
 - `openapi.json`
@@ -58,24 +59,27 @@ Scope (agents-matrix-connector): `db/rules.py` (`RoomSettings` and `set_room_set
 
 ## Interfaces
 
-- `api/schemas.py:RoomSettingsIn` gains `agents_may_initiate: bool | None = None`; `RoomView` (and so `RoomDetail`) gains `agents_may_initiate: bool`.
+- `api/schemas.py:RoomSettingsIn` gains `agents_may_initiate: bool | None = None`; `RoomView` (and so `RoomDetail`) gains `agents_may_initiate: bool` and `binding: BindingView | None`, `BindingView {session_id: uuid | null, slug: str | null, origin: "inbound" | "agent", since: datetime}` (the active `room_bindings` row; `since` is its `created_at`).
 - `db/rules.py:RoomSettings` gains `agents_may_initiate: bool`; `set_room_settings(pool, room_id, *, preset_id, trigger, agents_may_initiate: bool | None = None)`: None keeps the stored value (false for a new row).
-- `PUT /matrix/api/v1/rooms/{room_id}/settings` body `{preset_id?, trigger?, agents_may_initiate?}`; response `RoomDetail` with the flag.
+- `db/directory.py`: the room list and room detail queries join the active `room_bindings` row (read only); `RoomRow` gains a `binding` field defaulting to None, so existing constructions in tests stay valid. `session` (the latest run) is unchanged.
+- `PUT /matrix/api/v1/rooms/{room_id}/settings` body `{preset_id?, trigger?, agents_may_initiate?}`; response `RoomDetail` with the flag and the binding.
 
 ## Expected outcome
 
-The user can flag a room so agents may start a chat there; nothing changes for rooms left unflagged, and a settings save that does not name the flag leaves it as it was.
+The user can flag a room so agents may start a chat there while it is unbound; nothing changes for rooms left unflagged, a settings save that does not name the flag leaves it as it was, and every room view shows which session the room is bound to.
 
 ## Steps
 
-- Red: add the three new tests in `tests/test_api_rooms.py`; run `uv run pytest tests/test_api_rooms.py`: they fail.
-- Green: schemas, repository, route; regenerate `openapi.json` with `uv run python -m agents_matrix_connector.api.openapi > openapi.json`; update README; run the task's verify: passes. Quote the summary line with counts.
+- Red: add the four new tests in `tests/test_api_rooms.py`; run `uv run pytest tests/test_api_rooms.py`: they fail.
+- Green: schemas, repositories, route; regenerate `openapi.json` with `uv run python -m agents_matrix_connector.api.openapi > openapi.json`; update README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
 - The omitted-keeps rule is a merge-semantics ruling: its pin test is `test_room_settings_flag_omitted_keeps_value` (retro proposal).
-- The column exists after mxc-sends-schema (migration 0002); do not add another migration.
-- `tests/test_api_rooms.py` is DB-backed (Docker); it runs in CI here. `test_readme_api.py` runs locally.
+- The column and the `room_bindings` table exist after mxc-sends-schema (migration 0002); do not add another migration. Seed bindings in tests with plain INSERTs (the bot is the writer in production; the api only reads).
+- The binding view is read only: no UI API route writes, releases or moves a binding (D9).
+- `tests/test_api_rooms.py` and `tests/test_directory_repo.py` are DB-backed (Docker); they run in CI here. `test_readme_api.py` runs locally. `test_directory_repo.py` is in the verify to prove the directory change keeps its assertions; it is not edited.
 - `set_room_settings` keeps its single upsert statement; the keep-value rule is `COALESCE(EXCLUDED.agents_may_initiate, room_settings.agents_may_initiate)` or equivalent.
+- The vendored schema in agents-web (web-room-initiate-toggle) picks up `binding` with the rest of `openapi.json`; showing it in the UI is noted, not doing now.
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): binding shown in the room views
