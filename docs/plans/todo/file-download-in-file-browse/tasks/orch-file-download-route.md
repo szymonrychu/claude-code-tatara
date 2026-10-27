@@ -53,6 +53,7 @@ Scope (agents-orchestrator):
 - ac7: only `api/workspace.py` imports the wrapper package (layering pin unchanged) [evidence: test:tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper]
 - ac8: (CI only, needs Docker) the DB-backed file route tests cover agent choice and scoping on `files/download` and the five listing keys [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_files.py]
 - ac9: targeted Docker-free suites and lint pass [evidence: command:unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_download.py tests/test_readme_api.py tests/test_fake_wrapper_contract.py tests/test_wrapper_client.py tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper && mise run lint]
+- ac10: a wrapper stream that fails after the first byte aborts the client response (it errors, never ends as a clean short body) and the upstream is closed (new) [evidence: test:tests/test_api_file_download.py::test_download_midstream_failure_aborts]
 
 ## Files
 
@@ -89,3 +90,5 @@ Scope (agents-orchestrator):
 - Close the upstream response on every exit path (complete, refused, browser disconnect); pin with a spy on `httpx.Response.aclose`.
 - The fake wrapper 5xx can be produced with an `httpx.MockTransport` preset on `app.state.wrapper_http` if the fake has no control for it.
 - `tests/test_api_files.py` and the contract real leg run only in CI (Docker); say so in the hand-back rather than claiming them.
+
+- 2026-10-27 amended: builder check: design's abort-after-first-byte behaviour had no acceptance condition (my call)
