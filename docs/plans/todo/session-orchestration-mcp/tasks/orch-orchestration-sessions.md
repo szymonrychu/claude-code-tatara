@@ -1,0 +1,85 @@
+---
+title: orch orchestration sessions
+status: todo
+repo: agents-orchestrator
+value: "a flagged leader can create, scale and delete the sessions it created, never itself or a protected one"
+files: [src/agents_orchestrator/api/orchestration_sessions.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/db/sessions.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/app.py, README.md, openapi.json, tests/test_orchestration_sessions.py]
+verify: "uv run --frozen pytest tests/test_orchestration_sessions.py tests/test_api_sessions.py tests/test_api_create_from_preset.py tests/test_readme_api.py && mise run lint"
+depends_on: [orch-orchestration-presets]
+model: opus
+review: ""
+verified_head: ""
+points: 8
+expected_minutes: 14
+expected_tokens: 3155191
+points_actual: ""
+actual_minutes: ""
+actual_tokens: ""
+actual_roles: ""
+actual_role_tokens: ""
+---
+
+# orch orchestration sessions
+
+## Requirement
+
+README Goal G1, verbatim: "A session the user flagged `session_orchestration` (a per-preset or per-spec switch, off by default, set only by the user through agents-web or the public API) has orchestrator MCP tools to list, create, edit and delete presets, list, create, scale and delete sessions, and list, create, edit, delete and run cron schedules, on the user's request; only its leader may call them, and no unflagged session gets the tools."
+
+README Goal G3, verbatim: "A flagged session changes only the sessions, presets and schedules it created; it reads all of them, with preset secrets masked except on its own; it cannot grant more privilege than it holds (`session_orchestration` is never grantable), cannot delete itself, and cannot delete a superleader or orchestrating session."
+
+Design D4, verbatim: "Reads cover everything through trimmed views. Sessions: slug, id, preset, state, replicas, superleader, orchestration, created_by, no spec. [...] Ownership is by session id; when the owner is deleted, its objects stay and are managed from the UI. [...] The public `SessionView` and `PresetView` gain `created_by_slug` (additive; null for objects the user made) so agents-web can show it (Q7; my call pending the gate)."
+
+Design D5, verbatim: "Applies to an agent-written preset spec, an agent-created session spec (from a spec or a preset) and the preset named by an agent-written schedule (the relay reads it first). `session_orchestration: true` is always refused; `kube_access` or `session_messaging` true only if the caller's own session has that same flag. Refusal: 403 `privilege_escalation`."
+
+Design D6, verbatim: "1. 404 `not_found`; 2. 422 `self_delete`; 3. 403 `not_owner`; 4. 409 `protected_target` (the target has `session_orchestration` or `session_messaging`); 5. 409 `session_deleting`. Then `request_delete`. [...] Owned-session scale goes through `set_replicas`."
+
+Design D9, verbatim: "`ORCH_ORCHESTRATION_MAX_OWNED_SESSIONS` (5): live owned sessions, else 409 `owned_limit`; the global `max_sessions` still applies."
+
+Design D10, verbatim: "`session_create` takes an optional `prompt`, queued as a session message: sender the caller, hop the caller's hop plus 1, origin `session`."
+
+Design D12, verbatim: "a session cannot delete itself, so mx-5 never releases its own room binding; deleting an owned session bound to a room releases that binding through the existing Matrix Q10 sweep (intended)."
+
+Architect fix-as-ac, verbatim: "`self_delete`, `not_owner`, `protected_target` refusals."
+
+Scope (agents-orchestrator): new `api/orchestration_sessions.py` (`GET /sessions`, `POST /sessions`, `POST /sessions/{slug}/scale`, `DELETE /sessions/{slug}` under `/agent/v1/orchestration`), `api/sessions.py` (the create path takes provenance; no copy of `check_spec` or `_create_from_preset`), `db/sessions.py` (store and read `created_by_*`), `api/schemas.py` (`SessionView.created_by_slug`), `api/app.py`, README, `openapi.json`.
+
+## Acceptance conditions
+
+- ac1: the sessions overview lists every session with slug, id, preset, state, replicas, superleader, orchestration and created_by, and no spec [evidence: test:tests/test_orchestration_sessions.py::test_overview_trimmed]
+- ac2: session create from a preset id or a spec runs the same checks as POST /api/v1/sessions (check_spec, the create lock, max_sessions), stores the caller as created_by and refuses privilege_escalation for a preset or spec carrying session_orchestration or a flag the caller lacks [evidence: test:tests/test_orchestration_sessions.py::test_create_owned_no_escalation]
+- ac3: with ORCH_ORCHESTRATION_MAX_OWNED_SESSIONS live owned sessions a create is refused 409 owned_limit, and deleting or purged sessions do not count [evidence: test:tests/test_orchestration_sessions.py::test_owned_limit]
+- ac4: a create with prompt queues the prompt to the new session as a session message from the caller with hop the caller's hop plus 1 and origin session [evidence: test:tests/test_orchestration_sessions.py::test_create_with_prompt]
+- ac5: session delete checks in order 404 not_found, 422 self_delete, 403 not_owner, 409 protected_target for a target with session_orchestration or session_messaging, 409 session_deleting, then requests the delete [evidence: test:tests/test_orchestration_sessions.py::test_delete_checks_in_order]
+- ac6: session scale changes only owned sessions through set_replicas with its existing refusal codes, and 403 not_owner otherwise [evidence: test:tests/test_orchestration_sessions.py::test_scale_owned_only]
+- ac7: the public SessionView carries created_by_slug, null for sessions the user made [evidence: test:tests/test_orchestration_sessions.py::test_public_view_created_by]
+- ac8: every session write, refusals included, writes an audit row with target_kind session and the target id and slug [evidence: test:tests/test_orchestration_sessions.py::test_session_writes_audited]
+- ac9: the README documents every session orchestration route with its checks in order, and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
+- ac10: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_sessions.py tests/test_api_sessions.py tests/test_api_create_from_preset.py tests/test_readme_api.py && mise run lint]
+
+## Files
+
+- `src/agents_orchestrator/api/orchestration_sessions.py`
+- `src/agents_orchestrator/api/sessions.py`
+- `src/agents_orchestrator/db/sessions.py`
+- `src/agents_orchestrator/api/schemas.py`
+- `src/agents_orchestrator/api/app.py`
+- `README.md`
+- `openapi.json`
+- `tests/test_orchestration_sessions.py`
+
+## Interfaces
+
+Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+
+## Expected outcome
+
+What is true and observable when the task is done.
+
+## Steps
+
+Test first. One step per bullet, with the exact command and the output to expect.
+A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+
+## Notes
+
+Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
