@@ -1,6 +1,6 @@
 ---
 title: chat rows render markdown
-status: in-progress
+status: done
 repo: agents-web
 value: "the user's messages, agent answers, session messages and peer messages in the chat show as rendered markdown"
 files: [src/chat/entries.tsx, src/chat/ChatLog.test.tsx]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/chat/ChatLog.test.tsx src/chat/chatMode
 depends_on: [chat-markdown-renderer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 12e1b773d6d5025bae927ca354712825cb2970ac
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 452225
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 237143, review 215082"
 ---
 
 # chat rows render markdown
@@ -96,3 +96,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
