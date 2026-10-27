@@ -1,6 +1,6 @@
 ---
 title: helmfile pin check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: apply refuses to deploy any pinned build whose CI is not green
 files: [scripts/check_pins.py, tests/test_check_pins.py, tests/fixtures/check_runs_agents_orchestrator.json, mise.toml, tests/test_mise_tasks.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_check_pins.py tests/test_mise_tasks.py && m
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: fdedfc74fbedcc32063e8b3198523ebbbd1a1f71
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 22
+actual_tokens: 2535829
+actual_roles: "impl 21, review 2"
+actual_role_tokens: "impl 2444176, review 91653"
 ---
 
 # helmfile pin check
@@ -83,3 +83,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
