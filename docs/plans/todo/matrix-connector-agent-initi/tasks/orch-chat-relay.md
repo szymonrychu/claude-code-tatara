@@ -36,7 +36,9 @@ The D2 route table: `GET /agent/v1/chat/rooms` to `GET {ORCH_CHAT_URL}/chat/v1/r
 
 Design D12, verbatim: "`api/chat.py` (new router, agent port only): every route runs `require_agent`, then `_leads` (403 `not_leader`), then requires chat configured (503 `chat_unconfigured`), then forwards (D2). Settings `ORCH_CHAT_URL` (http or https URL) and `ORCH_CHAT_TOKEN` (secret, never in repr or logs): both set or both empty, else a settings error naming both (my call). Nothing is stored."
 
-Design D5, verbatim (orchestrator caps): "The orchestrator caps the forwarded request body at 32 KiB (413 `payload_too_large`) and the upstream call at 10 s."
+Design D5, verbatim (orchestrator caps): "The orchestrator caps the forwarded request body at 256 KiB (413 `payload_too_large`) and the upstream call at 10 s. The cap covers the worst case of a valid maximal request (interrogate Act 6; my call on the figure): 16000 characters of 4 bytes each are 64000 bytes raw (the plugin's httpx encodes JSON as raw UTF-8), and up to 192000 bytes when a client escapes every character as a JSON surrogate pair (12 bytes), plus a room id of up to 255 characters, `reply_to` and the JSON keys; 256 KiB (262144 bytes) covers all of it, where the verdict's example of 80 KiB would refuse the escaped form."
+
+Interrogate verdict, verbatim: "6. Size caps (A,C medium): 16000 characters can exceed the orchestrator's 32 KiB body cap. Make the relay cap cover the worst case (4 bytes per character plus JSON overhead, e.g. 80 KiB) with an AC sending 16000 4-byte characters end to end."
 
 Scope (agents-orchestrator): `settings.py` (`chat_url`, `chat_token`), new `api/chat.py`, `api/app.py` (include the router), README (Configuration rows; `## Agent API` gets a `### Chat` section with one `#### `METHOD /agent/v1/chat/...`` heading per route, the checks in order and the pass-through rule), committed `openapi.json`, `MEMORY.md` (dated entry: the chat upstream relay and why the orchestrator names it chat, not matrix). The chart, the plugin tools and the allow list are later tasks.
 
@@ -48,12 +50,13 @@ Scope (agents-orchestrator): `settings.py` (`chat_url`, `chat_token`), new `api/
 - ac4: the upstream status and JSON body (202, 403 room_not_allowed, 422 bad_reference, 429 rate_limited) reach the agent unchanged [evidence: test:tests/test_agent_chat.py::test_upstream_status_and_body_pass_through]
 - ac5: a connection error, a timeout and a non-JSON upstream answer give 503 chat_unavailable without echoing the upstream text [evidence: test:tests/test_agent_chat.py::test_upstream_failure_is_chat_unavailable]
 - ac6: with chat unconfigured every chat route answers 503 chat_unconfigured and makes no upstream call [evidence: test:tests/test_agent_chat.py::test_unconfigured]
-- ac7: a request body over 32 KiB answers 413 payload_too_large and makes no upstream call [evidence: test:tests/test_agent_chat.py::test_body_cap]
-- ac8: a non-leader member gets 403 not_leader, a bad token 401 and a foreign peer IP 403, and none of them reaches the upstream [evidence: test:tests/test_agent_chat.py::test_leader_only_and_identity]
-- ac9: the chat routes are served only on the agent port; the main and service ports answer 404 or 403 for them [evidence: test:tests/test_agent_chat.py::test_chat_routes_only_on_agent_port]
-- ac10: the README documents every chat route and the committed openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py::test_every_route_documented tests/test_readme_api.py::test_openapi_json_matches_app]
-- ac11: MEMORY.md records the chat upstream relay decision, dated [evidence: command:grep -qi "chat upstream" MEMORY.md]
-- ac12: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_agent_chat.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
+- ac7: a request body over 256 KiB answers 413 payload_too_large and makes no upstream call (updated) [evidence: test:tests/test_agent_chat.py::test_body_cap]
+- ac8: a message of 16000 4-byte characters, sent as raw UTF-8 JSON and as JSON with every character escaped as a surrogate pair, passes the cap and reaches the upstream with the same text [evidence: test:tests/test_agent_chat.py::test_max_text_passes_cap]
+- ac9: a non-leader member gets 403 not_leader, a bad token 401 and a foreign peer IP 403, and none of them reaches the upstream [evidence: test:tests/test_agent_chat.py::test_leader_only_and_identity]
+- ac10: the chat routes are served only on the agent port; the main and service ports answer 404 or 403 for them [evidence: test:tests/test_agent_chat.py::test_chat_routes_only_on_agent_port]
+- ac11: the README documents every chat route and the committed openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py::test_every_route_documented tests/test_readme_api.py::test_openapi_json_matches_app]
+- ac12: MEMORY.md records the chat upstream relay decision, dated [evidence: command:grep -qi "chat upstream" MEMORY.md]
+- ac13: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_agent_chat.py tests/test_settings.py tests/test_readme_api.py && mise run lint]
 
 ## Files
 
@@ -88,3 +91,5 @@ A session leader can call four chat routes on the orchestrator agent port; the o
 - Build fake tokens at runtime in tests (retro proposal, GitGuardian).
 - Never log the chat token, the agent token or the upstream body; log method, path, status only.
 - `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.
+
+- 2026-10-27 amended: interrogate.md Act 6: body cap 256 KiB covering 16000 4-byte characters raw and escaped
