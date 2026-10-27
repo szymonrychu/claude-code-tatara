@@ -389,6 +389,7 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 - Q3: Writes are allowed only in turns started from the UI or the Matrix connector, and you flag only the owner DM's preset, so group chats cannot drive it? [recommended: yes]
 - Q4: A session and the sessions it created may message each other even when neither is a superleader? [recommended: yes]
 - Q5: Agent-created schedules may fire at most every 15 minutes, at most 10 per session; at most 5 live owned sessions and 30 writes per hour? [recommended: yes]
+- Q6: No separate confirmation step before a delete; the user-turn gate plus ownership is the safeguard? [recommended: yes]
 
 ## Irreversible operations in scope
 
