@@ -1,6 +1,6 @@
 ---
 title: web sync write api
-status: in-progress
+status: done
 repo: agents-web
 value: the web client can call the save route with typed requests and answers
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts, src/api/files.ts, src/api/files.test.ts]
@@ -8,15 +8,15 @@ verify: "mise exec -- npm run check:api && mise exec -- npx vitest run src/api/f
 depends_on: [orch-file-write-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 45a1e37ccf5c6c7080e17352c433929af76b21da
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 485827
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 398978, review 86849"
 ---
 
 # web sync write api
@@ -72,3 +72,5 @@ The web client's generated types match the orchestrator commit carrying the writ
 - The default `../agents-orchestrator` is the sibling integration tree; the script refuses an `openapi.json` with uncommitted changes.
 - If the regenerated types break compilation elsewhere (drift since the download epic's sync), report it as a `discovered` entry; do not patch it here.
 - No hand edits to generated files. `request` already sets `Content-Type: application/json` when a body is given (`src/api/client.ts:requestAt`).
+
+- 2026-10-27 done
