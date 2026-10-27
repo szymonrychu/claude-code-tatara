@@ -53,17 +53,18 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `k8s/on_start.py:HIVE_TOOLS` order `me, activity, leadership_handover, lock_claim, lock_release, lock_list, lock_reassign`; rendered plugin `config.auto_compact_pct` is the effective value.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Hive agents see `orchestrator_activity`; the plugin's threshold advice shows for every hive, with the real value.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the test `HIVE_TOOLS` list and add `test_plugin_config_effective_auto_compact`; run `uv run --frozen pytest tests/test_on_start.py`: fails.
+- Green: on_start.py, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `test_allowed_tools_exist_in_plugin` needs the v0.4.0 dev pin (orch-plugins-pin-0-4-0) to see `activity`.
+- Golden render files (`tests/golden/*.yaml`) may embed the on-start config; if `tests/test_render.py` fails on them, stop and report (they are not in this task's files) so the task is amended.

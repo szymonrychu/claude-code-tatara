@@ -56,17 +56,20 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Keyed note `leadership_request` to the request's `from_agent_id`: "handover request <id> applied: <pod> leads at epoch N" or "handover request <id> rejected: <reason>".
+- `hive.OUTCOME_WINDOW_SECONDS = 300`; `Dispatcher._drain_leadership` sets `self._push_wake` after any pass.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A leader that asked for a handover always learns the outcome, within the push throttle, including rejections.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the tests of ac1-ac4 in `tests/test_hive_push.py`; run `uv run --frozen pytest tests/test_hive_push.py`: they fail.
+- Green: hive.py, loop.py, README, MEMORY; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `leadership_pass` keeps its signature; `_decide` already stamps `decided_at` and `reject_reason`.
+- For ac4, follow `test_dispatcher_run_pushes_on_leader_changed`; force a dispatcher-side rejection with a `to_agent_id` target that goes unready after the API accepted the request.
+- DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.

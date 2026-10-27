@@ -58,17 +58,21 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Migration `0009_drop_feed_cursor.sql` (or the next free number; amend the task if 0009 is taken): `ALTER TABLE session_leaders DROP COLUMN IF EXISTS feed_cursor;`.
+- `db/leadership.py:_set_leader` INSERT columns `(session_id, agent_id, epoch, since, reason)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The live schema has no `feed_cursor`; elections write no cursor; the 0003 tests still describe 0003.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Check the free migration number: `ls src/agents_orchestrator/db/migrations/`; if 0009 exists, stop and report so the task is amended.
+- Red: add `test_0009_drops_feed_cursor`, restrict `test_0003_hive_schema` and `test_0003_feed_cursor_default` to 0001-0003, drop the cursor assertion in `test_initial_leader`; run `uv run --frozen pytest tests/test_migrations.py tests/test_leadership_pass.py`: the new test fails.
+- Green: the migration, `_set_leader`, README step 1; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Data change: the column's values are dropped in the live database on deploy (listed in design.md Irreversible operations).
+- Follow the per-version copy pattern of `test_0006_compaction_column` (`MIGRATIONS_DIR.glob("000[1-3]_*.sql")`).
+- DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.

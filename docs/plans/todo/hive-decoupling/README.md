@@ -1,9 +1,9 @@
 ---
 title: hive decoupling
-blockers: [matrix-connector-agent-initi]
+blockers: [slash-commands-from-chat, matrix-connector-agent-initi]
 stage: build
 owner: ""
-repos: []
+repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile]
 created: 2026-10-27
 ---
 
@@ -28,11 +28,22 @@ Queued after matrix-connector-agent-initi.
 
 ## Goals
 
-
+- G1: Members receive no streamed activity: the dispatcher sends no appended feed note, `hive_state` is re-pushed only when the leader, epoch, membership or readiness changes, and `session_leaders.feed_cursor` is dropped.
+- G2: Any hive agent pulls recent activity on demand: `GET /agent/v1/activity` (optional `agent`, `limit` 1..200) and the plugin tool `orchestrator_activity`.
+- G3: A leader at or above the effective handover threshold (its compaction percentage minus 15) gets one keyed `handover_due` note with ranked successor candidates, their ccw addresses and the handoff protocol; the `hive_state` hint and the plugin advice always use the effective threshold.
+- G4: The leader briefs a chosen successor directly over ccw peer messaging, then hands over with `orchestrator_leadership_handover(to=..., epoch=...)`; the requester learns every handover request outcome (applied, or rejected with its reason) as a keyed `leadership_request` note.
+- G5: Released and deployed: any-mcp-tatara-plugins next minor tag, orchestrator pins, agents-helmfile bump, apply, a smoke covering the activity route and tool, and a live handoff proof.
 
 ## Non-goals
 
-
+- Any claude-code-wrapper change or release; any agents-web change.
+- A digest or summarised stream to members, or a shared journal file.
+- An automatic threshold handover by the orchestrator, or any new automatic pick rule.
+- An orchestrator-mediated handoff protocol, or a new table or writer for the brief.
+- A new `session_leaders.reason` value or stream frame; a per-session switch for the signal or the pull tool.
+- Pushing the compact summary to the successor.
+- Changing any leader-auto-handover backstop (compaction and scale-down handover, claim hold, reconciler pod hold).
+- Rate limiting `activity`; dropping `events.created_at` (the session export reads it).
 
 ## Review
 

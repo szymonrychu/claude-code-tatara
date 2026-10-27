@@ -49,17 +49,17 @@ Scope (agents-orchestrator, `tests/e2e/test_e2e_kind.py` only):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Uses `agent_call(pod, "GET", "/agent/v1/activity?agent=<writer pod>")` and the `note_received` events of `all_events`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The kind e2e proves the pull path and the absence of the feed note end to end.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red/green under the e2e harness: the kind job runs only in CI; rewrite the test, run `uv run --frozen python -m py_compile tests/e2e/test_e2e_kind.py && mise run lint` locally, push, and read the PR's e2e job result.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- No kind in agent pods: the reviewer judges ac1, ac2 and ac4 from the CI e2e job of the PR head.
+- slash-commands-from-chat and matrix-connector-agent-initi also edit this file; build on their merged cases.

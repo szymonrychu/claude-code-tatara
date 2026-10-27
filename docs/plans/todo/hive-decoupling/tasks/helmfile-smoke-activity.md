@@ -47,17 +47,18 @@ Scope (agents-helmfile):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Smoke step 4a: `jq -e 'any(.[]?; .name == "orchestrator_activity")'` over `--list-tools`; step 6a: in-pod python prints `<status> <has_lines>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every `mise run smoke` proves the activity route from an agent pod and the tool in the plugin listing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the tests of ac1-ac3 in `tests/test_smoke_script.py` with the fake kubectl; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.py`: they fail.
+- Green: `scripts/smoke.sh` steps 4a and 6a and the header comment; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror the step 6 `/agent/v1/me` check (`smoke.sh:346-356`) and its tests `test_agent_me_check_*` (`tests/test_smoke_script.py:950-964`).
+- Recurring retro: fakes must answer the real output shapes; each wait gets its own deadline.

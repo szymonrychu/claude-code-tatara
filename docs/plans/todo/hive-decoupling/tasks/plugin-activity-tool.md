@@ -57,17 +57,19 @@ Scope (any-mcp-tatara-plugins, `orchestration/orchestrator`):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tool `orchestrator_activity(agent?: string, limit?: integer)`: `HttpBinding("GET", "/agent/v1/activity", query=("agent", "limit"), base_url=...)` (any-mcp `HttpBinding.query`, `any_mcp/types.py:82`).
+- Route contract: agents-orchestrator README `### GET /agent/v1/activity` (task orch-activity-route).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The plugin offers the activity tool and describes the brief-then-handover protocol and the outcome note.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the tests of ac1-ac4 (and the renamed listing test); run `uv run --frozen pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: they fail.
+- Green: `__init__.py`, plugin README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Shared file with slash-commands-from-chat and matrix-connector-agent-initi: build on their merged tools.
+- No release here (plugins-release-0-4-0).

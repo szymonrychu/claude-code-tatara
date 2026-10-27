@@ -67,17 +67,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Keyed note `handover_due` (wrapper `POST /v1/sessions/{id}/notes` with `key`), leader only.
+- `hive._CANDIDATES` (or the chosen name): SQL embedding `eligibility.ELIGIBLE`, ordered idle first, then `context_pct` ascending (nulls last), then ordinal.
+- Candidate line: `<pod_name> (<pod_name>/<wrapper_session_id>, <state>, <N>% context)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A leader at or above the threshold sees, within one push tick plus wrapper delivery, who can take over, how to reach them, and the brief-then-handover protocol; nobody else is disturbed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the tests of ac1-ac6 in `tests/test_hive_push.py` and the ac7 assertion; run `uv run --frozen pytest tests/test_hive_push.py tests/test_eligibility_fragments.py`: they fail.
+- Green: hive.py, README, MEMORY; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Threshold: the helper from orch-hive-feed-removal; never respell it.
+- Q8 (candidates at or above the threshold left out) is an open gate question; if answered no, the task is amended before it starts.
+- The scalable test is `spec.scalable` (as `on_start.orchestrator_allow` uses it).
+- DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.

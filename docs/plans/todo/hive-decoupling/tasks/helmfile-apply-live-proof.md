@@ -56,17 +56,18 @@ Notes: never put `mise run apply` in AC evidence (agents-helmfile MEMORY 2026-10
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new; uses `mise run diff`, `mise run apply`, `mise run smoke`, the public orchestrator API (port-forward as the smoke does) and read-only `psql` on the orchestrator database.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The decoupled hive runs live: members get no feed note, the activity route answers, and a real leader near its threshold briefed a successor over ccw and handed over.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session only: steps 1-7 of the Requirement, in order; stop at step 2 if the diff shows more than the pins.
+- Record each result in the task Notes as it happens (session id, event ids, request id, smoke tail), then the MEMORY.md entry; commit it through the agents-helmfile PR flow.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Recurring retro: live apply and proof tasks run several times their seed; budget for more than one proof attempt.
+- The apply rolls the agent pods of every running session (mx-5 and claude-code-tatara included; orchestrator README Images, design.md D9, gate question Q7). If the session running this task lives in one of those pods, it restarts at step 3: write the Notes before the apply.

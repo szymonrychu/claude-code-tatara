@@ -66,17 +66,23 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `hive.handover_threshold(spec: dict, settings: Settings) -> int`: `max(coalesce(auto_compact_pct, default_auto_compact_pct) - HANDOVER_MARGIN_PCT, 1)`.
+- `hive.state_hash(leader, epoch, members) -> str`: leader, epoch, `[pod_name, wrapper_session_id, ready]` per member.
+- `hive.render_hive_state(payload, slug, threshold: int) -> str` (the threshold replaces the optional `auto_compact_pct`).
+- `HiveState`: keeps `last_tick` only (D4 and D6 add their own fields later).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Members get only the keyed `hive_state` note, and only on structural change; the feed code is gone; the hint always names the real threshold.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite and add the tests of ac1-ac5 in `tests/test_hive_push.py`, remove the four feed tests and `tests/test_hive_feed.py::test_render_feed` (named in the Requirement); run `uv run --frozen pytest tests/test_hive_push.py tests/test_hive_feed.py`: the new ones fail.
+- Green: hive.py, feed.py, loop.py docstring, README, MEMORY; run the task's verify: passes. Quote the summary line.
+- The removal of `render_feed` and the constants is pinned by ac6 (deletion pinned by a retirement grep).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `feed_cursor` still exists in the schema after this task; only hive.py stops using it (orch-drop-feed-cursor drops it). `_set_leader` still writes it until then.
+- Keep `_claim`/`_release`: one failing receiver retries alone; `state_pushed_at` moves only when every receiver took the state.
+- DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.

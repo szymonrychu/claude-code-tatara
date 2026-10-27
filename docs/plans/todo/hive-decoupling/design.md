@@ -168,7 +168,8 @@ Decision: the push pass reads, per hive session, the `handover` requests decided
 within the last 300 s (module constant `OUTCOME_WINDOW_SECONDS`, my call) and sends each `from_agent_id`, once per
 request id per dispatcher process (tracked in `HiveState`), a keyed note `leadership_request`: "handover request <id>
 applied: <pod> leads at epoch N" or "handover request <id> rejected: <reason>" (`not_leader`, `stale_epoch`,
-`target_not_ready`, `no_peers`). `_drain_leadership` sets the push wake after it ran a pass for any session (my call:
+`target_not_ready`, `no_peers`). The applied text names the current leader row at push time, so it is true for an untargeted
+request (its row has no `to_agent_id`) and after a later change (my call). `_drain_leadership` sets the push wake after it ran a pass for any session (my call:
 no change to `leadership_pass`'s signature); the per-session 10 s throttle still applies. The DB read makes it work
 with any number of dispatchers (live: one dispatcher pod, chart default `components.dispatcher.replicas: 1`); a
 duplicate keyed note replaces itself in the wrapper inbox.

@@ -62,17 +62,20 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `GET /agent/v1/activity?agent=<pod>&limit=<1..200>` on the agent port; 200 `{"lines": [{"id": int, "agent": str, "text": str, "ts": datetime}]}`; 401/403 from `require_agent`; 422 `invalid_request` for a bad `limit`.
+- Reuses `agents_orchestrator.dispatcher.feed.digest_lines(rows, now, workdir) -> (lines, pending)` unchanged; rows carry `id`, `type`, `data`, `ts`, `agent` (pod name).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An agent calling the route sees the newest digest lines of its session (commands with status, files written, finished turns), bounded and on demand; nothing is written.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_activity.py` (ac1-ac5; reuse the agent-identity setup of `tests/test_api_agent.py` and `factories.insert_event`); run `uv run --frozen pytest tests/test_api_activity.py`: fails (404 route).
+- Green: the route and the bounded read; README section; `uv run python -m agents_orchestrator.api.openapi > openapi.json`; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB tests need testcontainers (Docker); there is none in agent pods, so CI on the PR is the gate for them (recurring retro). Run what runs locally and quote both.
+- Shared files with slash-commands-from-chat (`api/agent.py`, `openapi.json`): read them as merged on `main` first.
+- The newest-rows bound: `ORDER BY e.id DESC LIMIT 1000`, then reverse; filter by type in SQL.

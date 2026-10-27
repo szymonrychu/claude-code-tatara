@@ -50,17 +50,20 @@ Scope (agents-helmfile):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/common.yaml`: `image.tag`, `env.ORCH_ANY_MCP_PLUGINS_REF`; `helmfile.yaml.gotmpl`: agents-orchestrator chart `version`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile pins the hive-decoupling orchestrator and the v0.4.0 plugins release, ready to apply.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: point the expectations of `test_any_mcp_configured_for_new_sessions` at v0.4.0 and run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: fails.
+- Green: values and chart version (the sha7 from the amendment, after confirming it exists in Harbor); run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception (a pin change); the release tests are the guard.
+- `tests/test_orchestrator_release.py` also holds `test_values_dir_moved`, which once blocked an apply; it must pass.
+- `test_release_chart_version_and_needs` runs `helmfile build` and needs network; environmental in agent pods, run before the apply.
+- The Matrix epic also edits these values; build on its merged pins (agent image untouched here).
