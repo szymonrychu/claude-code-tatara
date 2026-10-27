@@ -57,12 +57,30 @@ Delivery order; written by `ticket.py retro`.
 
 ## Retro
 
-Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
-
 | Went well | Went bad / could be improved |
 |---|---|
-| ... | ... |
+| 18 tasks delivered; points held (MdAPE 0.0%, 50 est vs 48 post-delivery; plugins orchestration plugin re-scored 5 to 3). | helmfile smoke plugin tools: step 10b was written against an assumed text output of `any-mcp --list-tools`, which prints a JSON array. Its unit-test fakes mirrored the wrong assumption (120 passed), so it failed only live (run 1). Fix round 1, 3fd172f, PR #33. |
+| Phase 5 whole-diff review, security review and scope audit turned each finding into a task (parser parity, credentials refused in source URLs in web and orchestrator), all closed fast (1 to 5 min). | helmfile smoke plugin tools took 184 min vs 7 (26.29x) and 2007788 tokens vs 977684 (2.05x), mostly three live smoke runs. |
+| Deploy pins landed and rollouts were OK (helmfile be673ca; helmfile tests 222 passed); smoke run 3 passed, listing orchestrator_sessions_list and petstore_ tools. | any-mcp source parser parity with the web grammar: the spec over-banned whitespace and had to be amended so local paths may contain spaces (5 min vs 4). |
+| Most small tasks finished under the minutes seed (anymcp source parser 3 vs 7, plugins repo bootstrap 3 vs 7, orch render plugin sources 5 vs 11). | GitGuardian flagged a fake basic-auth string in an orchestrator test. Force-push was denied, so a v2 branch was pushed, PR #24 opened and #23 closed. |
+| | An unrelated Harbor image loss (agents-matrix-connector 98b0803, restarted at 03:30Z outside this session) broke smoke run 2 at the matrix step; fixed by re-running the connector CI images job (run 40282930555, attempt 2). |
+| | web plugin source parser took 36 min vs 5 (7.20x, 2.08x tokens); helmfile deploy pin 39 vs 5 (7.80x). Minutes MdAPE 80.6%, tokens 27.3%. |
+| | The scope auditor left code/any-mcp detached; restored to main by hand. |
 
 ## Improvements
 
-Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+- Code:
+  - agents-helmfile smoke script (plugin tools step 10b): parse `any-mcp --list-tools` as JSON; keep a unit test whose fake emits the real JSON array, not text.
+  - agents-orchestrator credentials test: the fake basic-auth literal tripped GitGuardian; build the string at runtime or use an allowlisted placeholder.
+  - any-mcp and agents-web source parsers: keep one shared parity test table so the two grammars cannot drift again.
+- Delivered differently:
+  - Parser parity spec banned whitespace in local paths; amended to allow spaces, because local paths legitimately contain them.
+  - Added beyond the plan, from review: parity task and the two credential-refusal tasks (web and orchestrator).
+  - Smoke step 10b was reworked after run 1 (text grep replaced by JSON parsing), because the real output is JSON.
+- Tech debt:
+  - PR #23 closed and PR #24 opened from a v2 branch to clear a secret-scan false positive; no code debt, but history on #23 is orphaned.
+  - Smoke depends on the live Harbor registry holding every deployed image tag: a missing tag fails unrelated steps; a pre-smoke image-existence check would remove it.
+- Workflow:
+  - recurring (cross-session-messaging-and, matrix-read-receipts, agents-matrix-connector-depl): live apply/smoke tasks run far over the minutes seed (184 vs 7 here, 39 vs 5 for the deploy pin; 35 vs 12 and 17 vs 6 before; 90 vs 4; 26 vs 5). Change: seed live apply/smoke tasks at 15-25 min (more when several runs are likely) in planning, calibrated from earlier actuals.
+  - recurring (cross-session-messaging-and, paste-env-contents-into-the): a defect found only late (live run here) that per-task verify missed, because test fakes encoded the same wrong assumption. Change: any task that shells out to an external tool must have its AC cite a captured real output sample, and the reviewer checks fakes against it.
+  - Secret-scan false positives (GitGuardian) with force-push denied: add a pre-push secret scan note to the implementer brief (one-off, Retro table only).
