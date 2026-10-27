@@ -479,6 +479,7 @@ The builder check (sonnet, no prior context) asked nine questions; settled here,
 - Q7: You confirm in Messenger what S1-S4 look like (one line each: shown, quoted reply shown, thumbs-up shown, second reaction replaced or rejected), while the orchestrator records the connector-side ids, statuses and reasons? [recommended: yes]
 - Q8: S1 runs at smoke time even if the owner DM had an inbound message in the last 24 h; the smoke records the hours since the last inbound, and the over-24h case is confirmed at the first natural opportunity and noted in agents-helmfile MEMORY.md without holding the epic? [recommended: yes]
 - Q9: When the last speaker in a flagged room is a running session, your answer routes there even if the room has no preset; a preset is only needed to start a new chat session (my call, pending gate)? [recommended: yes]
+- Q10: A session stays bound to a room it posted in; turning agents_may_initiate off does not unbind it; revocation is a deny rule on the room or deleting the session? [recommended: yes]
 
 ## Irreversible operations in scope
 
