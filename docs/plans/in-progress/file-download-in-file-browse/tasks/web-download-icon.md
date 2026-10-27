@@ -1,6 +1,6 @@
 ---
 title: web download icon
-status: in-progress
+status: done
 repo: agents-web
 value: "a right-aligned arrow-down icon on each file row saves the file to the user's computer"
 files: [src/api/files.ts, src/api/files.test.ts, src/files/FilesPanel.tsx, src/files/FilesPanel.test.tsx, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/files/FilesPanel.test.tsx src/api/files
 depends_on: [web-sync-orchestrator-api]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e7a2499db68fcf04a25f324fed88875c3faea644
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 534640
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 479836, review 54804"
 ---
 
 # web download icon
@@ -82,3 +82,5 @@ Each file row (and each symlink-to-file row) of the Files tree shows a small arr
 - designRules forbid `title=` on IconButton (use aria-label) and off-grid spacing; `getComputedStyle` works with emotion in jsdom (precedent `src/layout/TopBar.test.tsx:120`). The stopPropagation precedent is `src/terminal/TerminalPanel.tsx:146-149`.
 - MEMORY.md entry (2026-10-27, file-download-in-file-browse D5): plain anchor, why not fetch plus blob (buffers the whole file), errors surface in the browser, not the panel.
 - The full suite has 10 load-dependent timeouts in unrelated files (PresetForm, ScheduleForm, Endpoints, FiltersEditor); run only the files in `verify`.
+
+- 2026-10-27 done
