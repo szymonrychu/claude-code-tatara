@@ -40,6 +40,11 @@ Scope (agents-orchestrator):
 - No writer is added: the route only reads `events` (single-writer rule; the ingester writes `events`).
 - `dispatcher/feed.py` is not changed here (orch-hive-feed-removal drops `render_feed`).
 
+Builder check settlement 1 (2026-10-27, my call): the build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged (this epic is blocked on them already). This is the first task, so it also fixes the numbers the later tasks need, run by the orchestrator session (not a subagent: `ticket.py amend` and `git ls-remote` are its tools) before the first implementer is dispatched:
+- the next free orchestrator migration number: the highest `NNNN_*.sql` in `src/agents_orchestrator/db/migrations/` on `main`, plus one;
+- the next free plugins release: the newest `vX.Y.Z` tag on the any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins 'v*'`), next minor.
+It then replaces the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` by `ticket.py amend` in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin (Requirement and acceptance conditions), and edits the same placeholders in their frontmatter `files` and bodies. The task slugs keep their historical names.
+
 ## Acceptance conditions
 
 - ac1: the route returns the session's digest lines as {lines: [{id, agent, text, ts}]}, oldest first, own lines included, paths relative to the workdir [evidence: test:tests/test_api_activity.py::test_activity_lists_digest_lines]
@@ -51,6 +56,7 @@ Scope (agents-orchestrator):
 - ac7: openapi.json matches the app [evidence: test:tests/test_readme_api.py::test_openapi_json_matches_app]
 - ac8: the route only reads events; no INSERT, UPDATE or DELETE is added [evidence: judgement:reviewer reads the diff of api/agent.py and db/events.py]
 - ac9: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_api_activity.py tests/test_readme_api.py tests/test_hive_feed.py && mise run lint]
+- ac10: (orchestrator session, before dispatch) the real next migration number and plugins tag read from main replace the placeholders in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin [evidence: judgement:orchestrator quotes the numbers read and a grep of the epic's other task files showing no <MIGRATION>, <TAG> or <VERSION> left]
 
 ## Files
 
@@ -71,6 +77,7 @@ An agent calling the route sees the newest digest lines of its session (commands
 
 ## Steps
 
+- First, before any implementer is dispatched (orchestrator session, settlement 1): read the next free migration number and plugins tag from main and amend the four dependent tasks (ac10).
 - Red: write `tests/test_api_activity.py` (ac1-ac5; reuse the agent-identity setup of `tests/test_api_agent.py` and `factories.insert_event`); run `uv run --frozen pytest tests/test_api_activity.py`: fails (404 route).
 - Green: the route and the bounded read; README section; `uv run python -m agents_orchestrator.api.openapi > openapi.json`; run the task's verify: passes. Quote the summary line.
 
@@ -79,3 +86,5 @@ An agent calling the route sees the newest digest lines of its session (commands
 - DB tests need testcontainers (Docker); there is none in agent pods, so CI on the PR is the gate for them (recurring retro). Run what runs locally and quote both.
 - Shared files with slash-commands-from-chat (`api/agent.py`, `openapi.json`): read them as merged on `main` first.
 - The newest-rows bound: `ORDER BY e.id DESC LIMIT 1000`, then reverse; filter by type in SQL.
+
+- 2026-10-27 amended: builder check settlement 1: first task reads the real next migration number and plugins tag from main and amends the dependent tasks
