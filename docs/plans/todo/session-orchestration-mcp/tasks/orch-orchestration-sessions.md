@@ -43,18 +43,23 @@ Architect fix-as-ac, verbatim: "`self_delete`, `not_owner`, `protected_target` r
 
 Scope (agents-orchestrator): new `api/orchestration_sessions.py` (`GET /sessions`, `POST /sessions`, `POST /sessions/{slug}/scale`, `DELETE /sessions/{slug}` under `/agent/v1/orchestration`), `api/sessions.py` (the create path takes provenance; no copy of `check_spec` or `_create_from_preset`), `db/sessions.py` (store and read `created_by_*`), `api/schemas.py` (`SessionView.created_by_slug`), `api/app.py`, README, `openapi.json`.
 
+Open question Q9 (pending; the plan follows the recommended answer), verbatim: "A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls?" recommended "yes". Session create with `preset_id` calls `api/orchestration.py:require_own_preset` (orch-orchestration-gate) before any create work, so a preset the user made in the UI, or another session made, is refused 403 `not_owner`; a `spec` in the body is not restricted by it (the caller can only write what it can read, and reads mask other presets' secrets) and still passes `check_no_escalation`.
+
+User settlement B4 (2026-10-27), verbatim: "Store origin `session` or `user` the same way on every enqueue path." The prompt of session_create is enqueued with the explicit origin `session` through the `origin` argument orch-message-origin made required.
+
 ## Acceptance conditions
 
 - ac1: the sessions overview lists every session with slug, id, preset, state, replicas, superleader, orchestration and created_by, and no spec [evidence: test:tests/test_orchestration_sessions.py::test_overview_trimmed]
 - ac2: session create from a preset id or a spec runs the same checks as POST /api/v1/sessions (check_spec, the create lock, max_sessions), stores the caller as created_by and refuses privilege_escalation for a preset or spec carrying session_orchestration or a flag the caller lacks [evidence: test:tests/test_orchestration_sessions.py::test_create_owned_no_escalation]
-- ac3: with ORCH_ORCHESTRATION_MAX_OWNED_SESSIONS live owned sessions a create is refused 409 owned_limit, and deleting or purged sessions do not count [evidence: test:tests/test_orchestration_sessions.py::test_owned_limit]
-- ac4: a create with prompt queues the prompt to the new session as a session message from the caller with hop the caller's hop plus 1 and origin session [evidence: test:tests/test_orchestration_sessions.py::test_create_with_prompt]
-- ac5: session delete checks in order 404 not_found, 422 self_delete, 403 not_owner, 409 protected_target for a target with session_orchestration or session_messaging, 409 session_deleting, then requests the delete [evidence: test:tests/test_orchestration_sessions.py::test_delete_checks_in_order]
-- ac6: session scale changes only owned sessions through set_replicas with its existing refusal codes, and 403 not_owner otherwise [evidence: test:tests/test_orchestration_sessions.py::test_scale_owned_only]
-- ac7: the public SessionView carries created_by_slug, null for sessions the user made [evidence: test:tests/test_orchestration_sessions.py::test_public_view_created_by]
-- ac8: every session write, refusals included, writes an audit row with target_kind session and the target id and slug [evidence: test:tests/test_orchestration_sessions.py::test_session_writes_audited]
-- ac9: the README documents every session orchestration route with its checks in order, and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
-- ac10: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_sessions.py tests/test_api_sessions.py tests/test_api_create_from_preset.py tests/test_readme_api.py && mise run lint]
+- ac3: session create with a preset_id the caller did not create (made in the UI, or by another session) is refused 403 not_owner with an audit row and no session, create from the caller's own preset and from an explicit spec pass, and the answer names no preset env value [evidence: test:tests/test_orchestration_sessions.py::test_create_from_foreign_preset_refused]
+- ac4: with ORCH_ORCHESTRATION_MAX_OWNED_SESSIONS live owned sessions a create is refused 409 owned_limit, and deleting or purged sessions do not count [evidence: test:tests/test_orchestration_sessions.py::test_owned_limit]
+- ac5: a create with prompt queues the prompt to the new session as a session message from the caller with hop the caller's hop plus 1 and origin session, passed explicitly [evidence: test:tests/test_orchestration_sessions.py::test_create_with_prompt]
+- ac6: session delete checks in order 404 not_found, 422 self_delete, 403 not_owner, 409 protected_target for a target with session_orchestration or session_messaging, 409 session_deleting, then requests the delete [evidence: test:tests/test_orchestration_sessions.py::test_delete_checks_in_order]
+- ac7: session scale changes only owned sessions through set_replicas with its existing refusal codes, and 403 not_owner otherwise [evidence: test:tests/test_orchestration_sessions.py::test_scale_owned_only]
+- ac8: the public SessionView carries created_by_slug, null for sessions the user made [evidence: test:tests/test_orchestration_sessions.py::test_public_view_created_by]
+- ac9: every session write, refusals included, writes an audit row with target_kind session and the target id and slug [evidence: test:tests/test_orchestration_sessions.py::test_session_writes_audited]
+- ac10: the README documents every session orchestration route with its checks in order, and openapi.json matches the app [evidence: command:uv run --frozen pytest tests/test_readme_api.py]
+- ac11: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_orchestration_sessions.py tests/test_api_sessions.py tests/test_api_create_from_preset.py tests/test_readme_api.py && mise run lint]
 
 ## Files
 
@@ -90,3 +95,5 @@ A flagged leader can see every session and create, scale and delete only the one
 - Prompt hop: `db/queue.py:turn_hop` of the caller plus 1 (1 in a user turn); origin `session`.
 - `tests/test_api_sessions.py` and `tests/test_api_create_from_preset.py` must stay green; name any assertion on exact view keys that `created_by_slug` makes no longer accurate.
 - DB cases run in CI (no Docker in agent pods).
+
+- 2026-10-27 amended: Q9: create from own presets only; B4: explicit session origin
