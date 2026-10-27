@@ -458,6 +458,7 @@ none
 - Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [recommended: yes]
 - Q2: Your answer after an agent starts a chat goes to that session while it runs, otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]
+- Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [recommended: yes]
 
 ## Irreversible operations in scope
 
