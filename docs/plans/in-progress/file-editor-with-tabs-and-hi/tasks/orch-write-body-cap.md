@@ -1,6 +1,6 @@
 ---
 title: orch write body cap
-status: todo
+status: done
 repo: agents-orchestrator
 value: oversized saves are refused at the orchestrator before buffering and forwarding
 files: [src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/workspace.py, tests/test_api_file_write.py, openapi.json, README.md]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_write.p
 depends_on: [orch-wrapper-pin-write]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1cd6f3b877c50d6fa3901e8566d1fe31323b5156
 points: 2
 expected_minutes: 5
 expected_tokens: 543940
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 13
+actual_tokens: 822045
+actual_roles: "impl 4, review 9"
+actual_role_tokens: "impl 574863, review 247182"
 ---
 
 # orch write body cap
@@ -58,3 +58,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
