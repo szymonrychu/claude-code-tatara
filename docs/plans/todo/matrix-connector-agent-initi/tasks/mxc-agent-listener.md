@@ -57,17 +57,23 @@ Scope (agents-matrix-connector): settings `MATRIX_AGENT_PORT` (int, default 8001
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:ConnectorSettings` gains `agent_port: int = 8001`, `agent_token_sha256: SecretStr` or a repr-hidden str (empty default), `agent_rate_per_minute: int = Field(20, ge=1)`.
+- `api/agent.py` (new): `AgentGate(app, token_sha256)` ASGI middleware; `create_agent_app(pool, settings) -> FastAPI` with `openapi_url="/chat/v1/openapi.json"`, docs off, the `{error: {code, message}}` handlers of `api/app.py`, and an `APIRouter(prefix="/chat/v1")` that mxc-agent-routes fills.
+- `cli.py:_cmd_api` serves both apps until `stop` (two `serve_asgi` calls or one server per socket; left to the builder).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The api process can expose a token-protected agent listener that the orchestrator reaches directly, without opening the SSO-protected UI app to the pod network.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_gate.py`, add `test_agent_listener_settings` and `test_api_binds_agent_listener_only_with_hash`; run `uv run pytest tests/test_settings.py tests/test_agent_gate.py tests/test_cli.py`: the new tests fail.
+- Green: settings, `api/agent.py`, `cli.py`, README rows; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror `agents_orchestrator/api/service_auth.py:ServiceGate`: sha256 hex of the presented bearer compared with `hmac.compare_digest`; one shared 401 message.
+- Build fake tokens at runtime in tests (for example `secrets.token_hex(32)`), never a literal that a secret scanner flags (retro proposal, GitGuardian).
+- `/healthz` and `/readyz` on the agent app stay open (probes), like the orchestrator's `EXEMPT_PATHS`.
+- The UI app's `SourceAllowlist` and `MATRIX_API_ALLOWED_CIDRS` stay exactly as they are.
+- Non-DB tests: use `httpx.ASGITransport(app=..., client=("10.0.0.5", 1234))` to set the peer.

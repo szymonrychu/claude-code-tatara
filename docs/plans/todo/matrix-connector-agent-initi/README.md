@@ -1,6 +1,6 @@
 ---
 title: matrix connector agent-initiated and follow-up messages
-blockers: [slash-commands-from-chat]
+blockers: [slash-commands-from-chat, markdown-rendering-in-chat, file-editor-with-tabs-and-hi]
 stage: build
 owner: ""
 repos: [agents-matrix-connector, agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile, agents-web]

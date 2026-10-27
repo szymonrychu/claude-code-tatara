@@ -57,17 +57,21 @@ Scope (agents-helmfile): new `scripts/chat-smoke.sh` (env `RELEASE`, `NAMESPACE`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `mise run chat-smoke` = `bash scripts/chat-smoke.sh`.
+- Output lines: `S1 s<n> sent`, `S2 s<n> sent`, `S3 s<n> sent`, `S4 s<n> <status> <reason>`, `hours since last inbound: <n>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One command proves send without inbound, quoted reply and reactions against the live deployment, leaving no session or port-forward behind.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_chat_smoke_script.py` following `tests/test_smoke_script.py` (PATH-injected kubectl and curl fakes); run `uv run pytest tests/test_chat_smoke_script.py`: fails (no script).
+- Green: write the script and the mise task, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `scripts/smoke.sh`'s patterns: session creation through the orchestrator API port-forward, waiting for a Ready pod, running curl inside the pod with its own `ORCH_AGENT_*` env (never printed), trap cleanup.
+- The calls go through the orchestrator agent routes from inside the session pod (agent identity is the pod IP), never directly to the connector agent port, so the smoke proves the whole path including the relay.
+- Each wait gets its own deadline variable computed when that wait starts (retro: a shared deadline failed a smoke spuriously).
+- Never add these steps to `scripts/smoke.sh`: that smoke must never send a Matrix message.

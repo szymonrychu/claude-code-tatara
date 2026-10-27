@@ -53,17 +53,20 @@ Scope (agents-orchestrator chart): `values.yaml` (`chat: {url: "", token: "", ex
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values.yaml`: `chat.url`, `chat.token`, `chat.existingSecret`, `chat.existingSecretKey` (default `chat-token`).
+- Secret `<fullname>-chat` key `chat-token` (chart-made) or the named existing Secret.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Deploying the orchestrator chart with a chat URL and token turns the chat routes on, with the token only in a Secret mounted on the api container.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the four chart tests; run `uv run --frozen pytest tests/test_chart_config.py`: they fail.
+- Green: values and templates, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirror the `masterKey` and `serviceApi` patterns already in `templates/secret.yaml` and `_config.tpl`.
+- Chart tests render with `helm`; if this pod lacks a helm version (as in the connector), the CI chart job is the gate; quote its run.
+- `tests/test_chart_deployments.py` guards the other containers; it must still pass with the env only on the api container.

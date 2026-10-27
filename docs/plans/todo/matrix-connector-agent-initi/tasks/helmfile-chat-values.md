@@ -54,17 +54,22 @@ Scope (agents-helmfile): `values/agents-matrix-connector/common.yaml` (image tag
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/common.yaml`: `chat.url`, `env.ORCH_ANY_MCP_PLUGINS_REF: v0.3.0`, `image.tag`.
+- `values/agents-matrix-connector/common.yaml`: `image.tag`.
+- `helmfile.yaml.gotmpl`: chart `version` of both releases.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile describes the deployed state this epic needs; one apply per release (connector, then orchestrator) brings it live.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm Q6's precondition: the earlier four epics' deploy is applied (the orchestrator image and agent image pins already moved past b3a2975 and claude-code-wrapper 0.3.0); stop and report if not.
+- Red: add `test_chat_upstream_wired`, update `test_any_mcp_configured_for_new_sessions` and the pin expectations; run `uv run pytest tests/test_matrix_connector_release.py tests/test_orchestrator_release.py`: they fail.
+- Green: values and chart versions; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Tests that run `helmfile build` or `helm pull oci://harbor...` fail without network in this pod (discovery sec 5); quote them as environmental and name which ones.
+- The image tags must exist in Harbor (CI images job of each merge); chat-live-smoke checks them before applying.
+- agents-helmfile has no CI workflow: the reviewer's local verify is the evidence.

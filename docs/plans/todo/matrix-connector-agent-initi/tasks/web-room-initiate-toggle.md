@@ -50,17 +50,21 @@ Scope (agents-web): `npm run sync:api -- matrix` from the agents-matrix-connecto
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `RoomSettingsIn` (generated) gains `agents_may_initiate?: boolean | null`; `RoomView` gains `agents_may_initiate: boolean`.
+- `RoomDrawer`: state `mayInitiate`, loaded from `RoomDetail.agents_may_initiate`, sent as `agents_may_initiate` in `setRoomSettings(roomId, {preset_id, trigger, agents_may_initiate})`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user turns "Agents may start chats" on or off per room in the web UI.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Sync: `npm run sync:api -- matrix` (reads the sibling agents-matrix-connector checkout at its `main`; confirm `main` carries the flag first).
+- Red: add the "agents may start chats" test, update 'saves room settings'; run `npx vitest run src/matrix/ChatsPage.test.tsx`: they fail.
+- Green: the switch in `RoomDrawer.tsx`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Held until markdown-rendering-in-chat and file-editor-with-tabs-and-hi are done (README blockers).
+- Use the MUI `Switch` with `FormControlLabel` as other drawers do; the label text is the accessible name the test queries.
+- The connector keeps the stored flag when the field is omitted (mxc-room-initiate-flag), but the UI always sends it, so what the user sees is what is saved.

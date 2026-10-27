@@ -80,9 +80,11 @@ NetworkPolicies.
   `pyproject.toml`, `uv.lock`, `tests/test_settings.py`, and releases plugins v0.3.0 on top of
   v0.2.0). README blocker `slash-commands-from-chat` holds the whole epic.
 - `web-room-initiate-toggle` lands after markdown-rendering-in-chat and file-editor-with-tabs-and-hi
-  (shared agents-web files); ticket `depends_on` cannot name another epic's task, so epic-run holds
-  that task until both epics are done (both precede slash-commands in the approved order, so the
-  README blocker covers it in practice).
+  (shared agents-web files). Ticket `depends_on` cannot name another epic's task, and `ticket.py
+  new-task` refuses files shared with an in-progress epic that is not a blocker (file-editor shares
+  the orchestrator `openapi.json`, `pyproject.toml`, `uv.lock` and `tests/e2e/test_e2e_kind.py`), so
+  both epics are README blockers too (my call); both precede slash-commands in the approved order, so
+  the extra blockers delay nothing.
 - No `mise run apply` or other live deploy in AC evidence; `mise run diff` or a judgement AC
   instead; the orchestrator session runs applies and tag pushes (workbench MEMORY 2026-10-25).
 - No Docker in agent pods: DB-backed tests (testcontainers) and chart tests needing `helm` run in
@@ -454,7 +456,6 @@ epics that bear on this epic (recurring workflow ones first).
 
 ## Open questions
 
-none
 - Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [recommended: yes]
 - Q2: Your answer after an agent starts a chat goes to that session while it runs, otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]

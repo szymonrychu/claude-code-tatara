@@ -56,17 +56,22 @@ Scope (agents-matrix-connector chart): values `agentApi.port` (8001), `agentApi.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values.yaml`: `agentApi: {port: 8001, tokenSha256: "", tokenSecret: {name: "", key: token-sha256}}`, `limits.agentRatePerMinute: 20`.
+- Service `<fullname>-api-agents` (port name `agents`, 8001).
+- Chart Secret key `agent-token-sha256` when `agentApi.tokenSha256` is set and no `tokenSecret.name`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Deploying the chart exposes the connector's agent listener to in-cluster callers through its own Service, with the token hash only in a Secret on the api pod.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite `test_services_select_api_only`, add the two workload tests, extend `test_config_rendered`; run `uv run pytest tests/test_chart_network.py tests/test_chart_workloads.py`: the new tests fail.
+- Green: templates and values; run the task's verify and `mise run lint:chart`: pass. Quote the summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Chart tests and `helm lint` need `helm`; this pod has no helm version set ("mise ERROR No version is set for shim: helm"), so the CI `chart` job (`mise run lint:chart`, `mise run test:chart`) is the gate; say so in the hand-back with the CI run link.
+- Follow the existing `matrix.accessTokenSecret` pattern in `templates/_helpers.tpl`/`secret.yaml` for the hash secret.
+- The oauth2-proxy admission sidecar takes the port name `http`; name the new port `agents` and target it by name.
+- Update `ci/lint-values.yaml` only if the lint needs a value (it should render with the defaults).

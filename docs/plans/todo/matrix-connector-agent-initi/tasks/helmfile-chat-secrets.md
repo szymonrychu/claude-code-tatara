@@ -50,17 +50,22 @@ Scope (agents-helmfile): `bootstrap_chat_token` in `scripts/bootstrap-secrets.sh
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-orchestrator/chat-token.secrets.yaml`: `{chat: {token: <64 hex>}}` (SOPS).
+- `values/agents-matrix-connector/agent-token.secrets.yaml`: `{agentApi: {tokenSha256: <64 hex>}}` (SOPS).
+- `scripts/bootstrap-secrets.sh:bootstrap_chat_token`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The one chat token exists, encrypted, in the shape each chart reads, and re-running the bootstrap never rotates it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the five non-decrypting tests and `test_chat_token_hash_matches` (extend the parametrised `test_secrets_files_encrypted_with_expected_keys`); run `uv run pytest tests/test_secrets.py`: the new tests fail.
+- Green: the function, the helmfile listing, README; run `bash scripts/bootstrap-secrets.sh` (only the new function writes; every existing file is left untouched) and commit the two encrypted files; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `bootstrap_service_token` and `bootstrap_matrix_connector` exactly (pipes and env of one command only; nothing echoed or traced).
+- `test_chat_token_hash_matches` decrypts and needs the SOPS age key, like `test_matrix_connector_token_hash_matches`; if this pod has no key it fails "sops could not decrypt (key unavailable?)": the orchestrator session runs it (ac6) before chat-live-smoke.
+- Build fake tokens at runtime in tests (retro proposal, GitGuardian); gitleaks runs in lint.
+- agents-helmfile has no CI workflow (retro tech debt): the reviewer's local verify is the evidence; quote it.

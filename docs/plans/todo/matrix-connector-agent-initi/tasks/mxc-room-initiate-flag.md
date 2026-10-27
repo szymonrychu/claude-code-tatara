@@ -52,17 +52,22 @@ Scope (agents-matrix-connector): `db/rules.py` (`RoomSettings` and `set_room_set
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/schemas.py:RoomSettingsIn` gains `agents_may_initiate: bool | None = None`; `RoomView` (and so `RoomDetail`) gains `agents_may_initiate: bool`.
+- `db/rules.py:RoomSettings` gains `agents_may_initiate: bool`; `set_room_settings(pool, room_id, *, preset_id, trigger, agents_may_initiate: bool | None = None)`: None keeps the stored value (false for a new row).
+- `PUT /matrix/api/v1/rooms/{room_id}/settings` body `{preset_id?, trigger?, agents_may_initiate?}`; response `RoomDetail` with the flag.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The user can flag a room so agents may start a chat there; nothing changes for rooms left unflagged, and a settings save that does not name the flag leaves it as it was.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the three new tests in `tests/test_api_rooms.py`; run `uv run pytest tests/test_api_rooms.py`: they fail.
+- Green: schemas, repository, route; regenerate `openapi.json` with `uv run python -m agents_matrix_connector.api.openapi > openapi.json`; update README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The omitted-keeps rule is a merge-semantics ruling: its pin test is `test_room_settings_flag_omitted_keeps_value` (retro proposal).
+- The column exists after mxc-sends-schema (migration 0002); do not add another migration.
+- `tests/test_api_rooms.py` is DB-backed (Docker); it runs in CI here. `test_readme_api.py` runs locally.
+- `set_room_settings` keeps its single upsert statement; the keep-value rule is `COALESCE(EXCLUDED.agents_may_initiate, room_settings.agents_may_initiate)` or equivalent.

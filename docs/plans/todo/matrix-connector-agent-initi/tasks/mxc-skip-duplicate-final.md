@@ -49,17 +49,20 @@ Scope (agents-matrix-connector): `tracker.py` (the match in the completed-turn b
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tracker.py:ALREADY_SENT = "already_sent"`.
+- `db/sends.py:message_texts_since(conn, session_id, since) -> list[str]` (name left to the builder): texts of the session's non-refused message sends created at or after `since`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An agent that sends its answer with `orchestrator_chat_send` during a chat-started turn and ends the turn with the same text does not post it twice.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the two tracker tests and `ALREADY_SENT` to the README reason test; run `uv run pytest tests/test_tracker.py tests/test_readme_api.py`: they fail.
+- Green: tracker, query, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Compare `str.strip()` of both sides only; no fuzzy matching (D10).
+- The inbound rows of the run settle `handled` with the same reason, as for `empty_reply`.
+- DB-backed tracker tests (CI); `test_readme_api.py` runs locally.

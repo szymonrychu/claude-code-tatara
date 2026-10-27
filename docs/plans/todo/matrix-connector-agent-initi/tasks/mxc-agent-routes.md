@@ -71,17 +71,27 @@ Scope (agents-matrix-connector): the four `/chat/v1` routes in `api/agent.py` (`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `GET /chat/v1/rooms` -> 200 `{"rooms": [{"room_id", "name", "kind", "bound", "agents_may_initiate"}]}`.
+- `POST /chat/v1/messages` body `{"text": str, "room": str | null, "reply_to": "m<n>" | "s<n>" | null}` -> 202 `{"id": "s<n>", "status": "queued"}`.
+- `POST /chat/v1/reactions` body `{"to": "m<n>" | "s<n>", "key": str}` -> 202 `{"id": "s<n>", "status": "queued"}`.
+- `GET /chat/v1/messages/{id}` (`id` is `s<n>`) -> 200 `{"id", "kind", "status", "reason", "room_id", "created_at", "sent_at"}`.
+- Errors `{"error": {"code", "message"}}`: 401 `unauthorized`, 404 `not_found`, 422 `invalid_request`, `invalid_key`, `bad_reference`, `room_required`, 403 `room_not_allowed`, `room_not_authorised`, 429 `rate_limited`, 503 `unavailable` (database).
+- One predicate, for example `api/agent.py:may_post(conn, session_id, room, rules, settings) -> Literal["ok", "room_not_allowed", "room_not_authorised"]`, used by the send and reaction routes and by the listing.
+- `api/openapi.py`: `export()` (UI, unchanged) and `export_agent()`; `python -m agents_matrix_connector.api.openapi --agent > openapi-agent.json` (or an equivalent documented command).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can ask the connector, on the session's behalf, which rooms it may post to, queue a message, a quoted reply or a reaction there, and read back what happened, with every refusal synchronous and nothing queued on a refusal.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_api_agent.py` and the two README/OpenAPI tests; run `uv run pytest tests/test_api_agent.py tests/test_readme_api.py`: the new tests fail.
+- Green: routes, predicate, any repository helpers, OpenAPI export and README; regenerate both documents; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The policy subject is `api/rooms.py:_room_subject`; evaluate with `rules.list_rules` and `settings.default_policy`, as the rooms route does. Import it rather than copying it.
+- The room ordering rule is a tiebreak ruling: its pin test is `test_rooms_listing_order` (retro proposal). The single-predicate rule is pinned by `test_listing_matches_send_checks` (retro proposal: duplicate-predicate sweep before the last code task merges).
+- The api only inserts `sends`; it never updates them (single writer, D7).
+- `tests/test_api_agent.py` is DB-backed (CI); keep the key validator and the reference parser as pure functions with non-DB tests in it too.
+- The rate limit is advisory like the orchestrator's session-message limits: the count and the insert are not one atomic step; document that in README.

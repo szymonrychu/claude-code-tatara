@@ -54,17 +54,21 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Settings.any_mcp_plugins_ref` default `v0.3.0` (`ORCH_ANY_MCP_PLUGINS_REF`); dev dependency `any-mcp-tatara-orchestrator` at `v0.3.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agent pods rendered by this orchestrator install the plugins release that offers the chat tools.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm tag `v0.3.0` on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins v0.3.0`); stop and report if absent.
+- Red: change `test_defaults` to v0.3.0; run `uv run --frozen pytest tests/test_settings.py tests/test_images.py`: fails.
+- Green: settings default, pyproject pin, `uv lock`, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties dev dependency, uv.lock and the default to one tag.
+- Builds on slash-commands' orch-plugins-pin-0-2-0 (same files); this epic is blocked until it merged.
+- The README check of ac3 assumes slash-commands wrote "plugins release tag (`v0.2.0`)"; read the README first and adapt the grep only in wording if the sentence differs, keeping the intent (no v0.2.0 plugins pin left).
+- Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is chat-live-smoke.

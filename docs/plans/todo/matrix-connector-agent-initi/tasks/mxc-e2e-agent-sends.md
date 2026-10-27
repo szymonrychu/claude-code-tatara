@@ -53,17 +53,19 @@ Scope (agents-matrix-connector): the e2e stack (`tests/e2e/conftest.py`) also st
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tests/e2e/conftest.py:Stack` gains the agent listener base URL and a helper that calls `/chat/v1/*` with the test bearer, `X-Orch-Session` and `X-Orch-Slug`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One end-to-end suite proves G1, G2, G3 and G6 across the real api and bot processes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/e2e/test_e2e_agent.py` against the extended stack; run `uv run pytest tests/e2e/test_e2e_agent.py`: the cases fail before the stack serves the agent listener.
+- Green: extend the stack fixture; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The stack needs Docker (Postgres); this pod has none, so GitHub CI runs it; quote the CI run's summary.
+- Use `agents_common.fake_orchestrator.FakeOrchestrator` as the existing e2e cases do; a non-mx session is a session the fake reports running whose slug does not start with `mx-`.
+- Build the test token at runtime (`secrets.token_hex(32)`) and pass its sha256 in the stack env.

@@ -53,17 +53,21 @@ Scope (agents-helmfile, orchestrator session; no subagent applies): check the ne
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new; uses `mise run diff`, `mise run apply`, `mise run smoke`, `mise run chat-smoke`, the connector UI API through a port-forward.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The chat tools work live: an agent posted, replied and reacted in the owner DM without an inbound message, and the user saw it in Messenger.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Preconditions: helmfile-chat-secrets ac6 (hash matches) green; Q6 precondition holds; tags exist (ac1).
+- Diff and apply per release in D18's order; after each apply wait for the rollout; then `mise run diff` (ac2).
+- `mise run smoke` (ac3); set the flag (ac4); `mise run chat-smoke` (ac5); ask the user (ac6); write MEMORY.md (ac7) and commit it.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Live and irreversible operations listed in design.md: the applies (the plugins ref rolls every running agent pod, including the mx-5 hive), migration 0002, the flag grant, the Messenger sends.
+- Never put an apply in AC evidence (workbench MEMORY 2026-10-25); `mise run diff` exits 0 only when nothing is pending.
+- If S2 or S3 shows wrongly in Messenger, stop and ask the user (design Assumptions) before closing the epic.
+- Minutes run 3-4x over seeds for live tasks in recent epics (retro); plan for several smoke runs.

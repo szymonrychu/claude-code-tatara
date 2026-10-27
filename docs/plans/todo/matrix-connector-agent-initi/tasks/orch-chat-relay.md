@@ -68,17 +68,23 @@ Scope (agents-orchestrator): `settings.py` (`chat_url`, `chat_token`), new `api/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.chat_url: str = ""`, `chat_token: str = Field(default="", repr=False)`; a validator for both-or-neither and the URL scheme.
+- `api/chat.py` (new): `router = APIRouter(prefix="/agent/v1/chat", tags=["agent"])` with `GET /rooms`, `POST /messages`, `POST /reactions`, `GET /messages/{send_id}`; one `httpx.AsyncClient` (timeout 10 s) owned by the app lifespan or created per app; a `forward(method, path, body, session, slug)` helper.
+- Agent-facing errors added: 403 `not_leader`, 503 `chat_unconfigured`, 503 `chat_unavailable`, 413 `payload_too_large`; everything else is the upstream's.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A session leader can call four chat routes on the orchestrator agent port; the orchestrator proves who is calling and relays to the chat upstream with its own token, storing nothing.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_agent_chat.py` (non-DB cases with `require_agent` overridden and an `httpx.MockTransport` upstream; DB cases for identity and leadership like `tests/test_agent_session_messaging.py`), add `test_chat_settings`; run `uv run --frozen pytest tests/test_agent_chat.py tests/test_settings.py`: the new tests fail.
+- Green: settings, router, app wiring, README, `openapi.json` (`uv run python -m agents_orchestrator.api.openapi > openapi.json`), MEMORY; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `api/agent.py:require_agent` and `_leads` (import them; do not copy). Leader check exactly as `session_send`.
+- No Docker in agent pods: the DB-backed cases (ac8) run in CI; ac3-ac7 and ac9 must be non-DB so the local verify has signal (retro proposal).
+- Build fake tokens at runtime in tests (retro proposal, GitGuardian).
+- Never log the chat token, the agent token or the upstream body; log method, path, status only.
+- `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.

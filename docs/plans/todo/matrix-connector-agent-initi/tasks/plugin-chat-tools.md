@@ -53,17 +53,19 @@ Scope (any-mcp-tatara-plugins, `orchestration/orchestrator`): four `spec(...)` e
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tools (namespace `orchestrator`, so agents see `orchestrator_chat_*`): `chat_rooms {}`; `chat_send {text: string, room?: string, reply_to?: string}`; `chat_react {to: string, key: string}`; `chat_status {id: string}`; all `additionalProperties: false`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator plugin offers the four chat tools against the orchestrator's chat routes, ready to release.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rename and update `test_lists_eleven_tools`, add the three chat tests; run `uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: they fail.
+- Green: the four specs and descriptions, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Follow `test_session_tools_call_agent_routes` and `test_scale_and_init_tools_match_contracts` for the route assertions.
+- Optional body fields that the agent omits must not be sent as null if the binding would send them; the connector rejects unknown fields, not nulls, so either is accepted, but keep it consistent with `session_send`.
+- Depends on orch-chat-relay only for the agreed paths; nothing here imports the orchestrator.

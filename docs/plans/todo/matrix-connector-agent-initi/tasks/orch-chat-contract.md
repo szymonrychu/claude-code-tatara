@@ -48,17 +48,21 @@ Scope (agents-orchestrator, tests only): vendor `openapi-agent.json` from agents
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tests/fakes/fake_chat.py`: `FakeChat(token: str)` with `.app` (ASGI), `.calls` (method, path, headers, body), `.refuse(route, status, code)`; validates against `tests/fakes/chat_openapi.json`.
+- `tests/fakes/chat_openapi.source`: one line `agents-matrix-connector <40-hex sha>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator's view of the chat upstream cannot drift from the connector's: the fake is checked against the connector's own committed document, and the relay's requests against the same.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Vendor the document: `git -C <agents-matrix-connector checkout> show origin/main:openapi-agent.json > tests/fakes/chat_openapi.json`, write the source line with that commit.
+- Red: write `tests/test_chat_contract.py`; run `uv run --frozen pytest tests/test_chat_contract.py`: fails (no fake).
+- Green: write `tests/fakes/fake_chat.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `jsonschema` and `openapi-schema-validator` are already in `uv.lock` (transitive); use one of them if it is importable in the dev environment, else resolve the document's `$ref`s by hand in the fake. A new direct dependency would touch `pyproject.toml` and `uv.lock`, which this task may not: return it as a `discovered` entry.
+- ac2 and ac4 run without a database (override `require_agent` as in `tests/test_agent_chat.py`).
+- orch-chat-tools-allow reuses `FakeChat` for the plugin parity test.

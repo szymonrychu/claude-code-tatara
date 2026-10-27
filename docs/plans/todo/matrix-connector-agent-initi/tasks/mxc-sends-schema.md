@@ -63,17 +63,21 @@ Scope (agents-matrix-connector): migration `0002_agent_sends.sql` and the reposi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_matrix_connector/migrations/0002_agent_sends.sql`: table `sends` (D7 columns), `outbound` new columns, widened kind CHECK, `room_settings.agents_may_initiate`, indexes; COMMENT on `sends`.
+- `src/agents_matrix_connector/db/sends.py` (new): a frozen `SendRow` dataclass; `insert(conn, *, session_id, slug, kind, room_id, text, key, reply_to, ref_event_id) -> int`; `claim_queued(conn) -> list[SendRow]` (queued to sending, sets `claimed_at`); `mark_sent(conn, id, event_id)`, `mark_failed(conn, id, reason)`, `mark_refused(conn, id, reason)` through `queue.transition`; `is_bound(conn, session_id, room_id) -> bool`; `bound_rooms(conn, session_id) -> list[str]`; `count_recent(conn, session_id, seconds) -> int`; `resolve(conn, ref) -> Ref | None` for `m<n>`/`s<n>`; `get(conn, id) -> SendRow | None`; `prune(conn, older_than) -> int`. Writers take a connection and never commit, as in `db/runs.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The connector database holds the agent send queue and the room flag; one repository module offers every query the api, the bot step and the routing change need.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_agent_sends_columns`, extend `test_writer_comments` and `test_check_constraints`, write `tests/test_sends_repo.py`; run `uv run pytest tests/test_schema.py tests/test_sends_repo.py`: the new tests fail (no table, no module).
+- Green: write the migration and `db/sends.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB tests use testcontainers (Docker); agent pods have none, so they run in GitHub CI (retro proposal: CI is the DB gate). Keep the reference parser (`m<n>`/`s<n>` to kind and id) a pure function with its own non-DB test so the local run has signal.
+- Reuse `agents_common.db.queue.transition` exactly as `db/runs.py` does; no raw UPDATE of `sends.status`.
+- `sends` and `outbound` writers: the api only inserts `sends`; the bot only moves them (D7). Record the writer in the COMMENT.
+- Follow `db/runs.py` and `db/inbound.py` style (dict_row, frozen dataclasses, connection-taking writers).

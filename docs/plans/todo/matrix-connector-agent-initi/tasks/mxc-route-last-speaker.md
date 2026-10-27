@@ -60,17 +60,23 @@ Scope (agents-matrix-connector): `db/runs.py` (the candidate query replacing `la
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/runs.py:room_speakers(conn, room_id, limit=5) -> list[uuid.UUID]` (name left to the builder), replacing `latest_session`.
+- `worker.py:Worker._room`: for each candidate, `agent_runs.running_session`; the first running one gets a `follow` run with `preset_id` from that `Session.preset_id`, else the room preset; `first=True` rendering when the session has no earlier run in the room.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+When an agent started or continued a chat, the user's answer reaches that agent while it runs; otherwise the room behaves as today.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite `test_create_run_and_latest_session`, add the four worker tests; run `uv run pytest tests/test_runs_repo.py tests/test_worker.py`: the new tests fail.
+- Green: query, worker, README, MEMORY; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The equal-time tiebreak is pinned by `test_create_run_and_latest_session` (retro proposal: every tiebreak ruling names a pin test).
+- `running_session` already returns `agents_common.orchestrator.Session`, which carries `preset_id` (nullable); no new orchestrator call.
+- An `OrchestratorUnavailable` during the candidate walk keeps today's behaviour (log once a minute, retry next tick); an `OrchestratorError` for one candidate skips it.
+- The no_preset ignore and the new-session cap stay where they are.
+- MEMORY.md entry format: `- One session per room at a time: the one that last spoke (2026-10-27, epic matrix-connector-agent-initi): ...` amending the 2026-10-25 line, newest first.
+- DB-backed tests (CI).

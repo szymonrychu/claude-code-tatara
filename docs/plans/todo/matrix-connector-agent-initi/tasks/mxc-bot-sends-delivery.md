@@ -65,17 +65,25 @@ Scope (agents-matrix-connector): new bot module `sender.py` (claim, policy re-ch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `matrix.py:MatrixClient.send_event(room_id: str, event_type: str, txn_id: str, content: dict) -> str`; `send_text(room_id, txn_id, body)` calls it with `m.room.message` and `{"msgtype": "m.text", "body": body}`.
+- `sender.py` (new): `class Sender(matrix, pool, settings, *, now=utcnow)` with `async tick()`: claim queued sends, re-check policy, insert outbound rows, settle sending sends whose rows all ended.
+- `db/runs.py:add_outbound(conn, *, room_id, run_id=None, send_id=None, kind, chunks, event_type="m.room.message", relates_to=None)`; txn ids `mxc-<run>-<n>`, `mxc-<run>-notice` (unchanged), `mxa-<send>-<n>`, `mxa-<send>-r`. `OutboundRow` gains `send_id`, `event_type`, `relates_to`.
+- `tracker.py:Tracker._send_pending` builds each row's content from `event_type`, `body` and `relates_to` and calls `send_event`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every accepted agent send reaches the room as a message (chunked, optionally a quoted reply) or a reaction, exactly once, at once, even while a chat run is in progress, and its status reports how it ended.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_sender.py`, add `test_send_event_type_and_content`; run `uv run pytest tests/test_sender.py tests/test_matrix_client.py`: the new tests fail.
+- Green: `matrix.py`, `db/runs.py`, `db/sends.py`, `sender.py`, `tracker.py`, `bot.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `MatrixClient._request` and its error taxonomy, `chunks.split`, the deterministic txn-id scheme and `Tracker._send_pending`'s ordering (an unavailable homeserver stops the pass; a lost token propagates) (discovery "reuse").
+- The fake homeserver's `_send` (`fake_homeserver.py`) already accepts any event type and records content: assert relations on what it recorded.
+- Typing stays keyed by run id; agent sends neither start nor stop typing.
+- The policy re-check uses the same room subject as the api (`api/rooms.py:_room_subject`) and `rules.list_rules`.
+- The bot is the only mover of `sends` and the only writer of `outbound` (D7); every status move goes through `queue.transition`.
+- `tests/test_sender.py` and `tests/test_tracker.py` are DB-backed (CI). `test_matrix_client.py` runs locally.

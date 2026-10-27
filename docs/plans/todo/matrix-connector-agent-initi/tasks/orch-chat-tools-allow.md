@@ -53,17 +53,19 @@ Scope (agents-orchestrator): `k8s/on_start.py` (`CHAT_TOOLS = ["chat_rooms", "ch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `k8s/on_start.py:CHAT_TOOLS`; `orchestrator_allow(spec)` returns `[*SESSION_TOOLS, *INIT_SCRIPTS_TOOLS, *CHAT_TOOLS]` for alone sessions and the hive list followed by `CHAT_TOOLS`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every new session's agents see the four chat tools; only the leader's calls succeed, and the released plugin is proven against the real routes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the two on-start tests, add `test_chat_tools_parity`, change the e2e helper; run `uv run --frozen pytest tests/test_on_start.py tests/test_agent_chat.py`: they fail.
+- Green: `CHAT_TOOLS`, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `test_chat_tools_parity` follows `tests/test_agent_session_messaging.py::test_session_tools_parity` (PluginHarness with an ASGI transport and the caller's pod IP) and uses `tests/fakes/fake_chat.py:FakeChat` as the upstream. It is DB-backed (CI).
+- The kind e2e runs only in CI (kind); the local check is ac5.
+- Changing the allow list changes the rendered on-start config hash: existing sessions roll on deploy (chat-live-smoke).

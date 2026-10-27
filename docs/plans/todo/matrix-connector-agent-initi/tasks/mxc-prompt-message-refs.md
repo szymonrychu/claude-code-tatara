@@ -46,17 +46,20 @@ Scope (agents-matrix-connector): `prompt.py` only. `tests/test_prompt.py::test_m
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `prompt.render(room_name, room_kind, rows, *, first, facebook_id)` keeps its signature; the room id comes from the rows (`InboundRow.room_id`; all rows of a batch share one room).
+- Output: `<chat room="..." kind="..." room_id="...">` and `<message id="m<n>" from="..." facebook_id="..." at="...">...</message>`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every chat prompt names its room and each message's short id, and the agent is told how to reach the user outside a chat-started turn.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `test_messages_in_order_with_attributes`, extend `test_escaping_cannot_break_out` with a room id containing `"<&`, add `test_preamble_names_chat_tools`; run `uv run pytest tests/test_prompt.py`: they fail.
+- Green: change `prompt.py`; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Pure module, no DB: the whole verify runs locally.
+- Keep the PREAMBLE's existing untrusted-input sentence verbatim; append the new sentences.
+- Tool names are `orchestrator_chat_send` and `orchestrator_chat_react` (D13); do not name `mcp__any-mcp__` prefixes.
