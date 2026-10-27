@@ -2,7 +2,7 @@
 title: file download in file browser
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [claude-code-wrapper, agents-orchestrator, agents-web]
 created: 2026-10-27
 ---

@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin download
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "CI's real-wrapper contract leg and kind e2e prove the download against the wrapper agents will run"
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/e2e/test_e2e_kind.py]

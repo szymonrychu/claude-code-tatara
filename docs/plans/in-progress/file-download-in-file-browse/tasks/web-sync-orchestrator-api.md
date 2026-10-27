@@ -1,6 +1,6 @@
 ---
 title: web sync orchestrator api
-status: todo
+status: in-progress
 repo: agents-web
 value: "the web client's generated types know the download route and the listing target_type"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]

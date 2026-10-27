@@ -1,6 +1,6 @@
 ---
 title: wrapper client download
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the orchestrator can open a streamed wrapper download and learn its errors before relaying a byte
 files: [src/agents_orchestrator/wrapper/client.py, tests/test_wrapper_client.py]

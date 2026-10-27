@@ -1,6 +1,6 @@
 ---
 title: orch file download route
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the browser can download any workspace file through the orchestrator, streamed and byte-exact"
 files: [src/agents_orchestrator/api/workspace.py, src/agents_orchestrator/api/schemas.py, README.md, openapi.json, MEMORY.md, tests/test_api_file_download.py, tests/test_api_files.py]

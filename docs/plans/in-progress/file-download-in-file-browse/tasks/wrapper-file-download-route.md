@@ -1,6 +1,6 @@
 ---
 title: wrapper file download route
-status: todo
+status: in-progress
 repo: claude-code-wrapper
 value: "any workspace file, text or binary of any size, can be fetched as raw bytes behind the existing path guards"
 files: [src/claude_code_wrapper/files.py, src/claude_code_wrapper/api/files.py, README.md, tests/test_api_files.py]

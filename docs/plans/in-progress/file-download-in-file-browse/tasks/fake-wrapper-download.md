@@ -1,6 +1,6 @@
 ---
 title: fake wrapper download
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: orchestrator tests exercise a fake wrapper held to the real download and listing contract
 files: [tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py]

@@ -1,6 +1,6 @@
 ---
 title: web download icon
-status: todo
+status: in-progress
 repo: agents-web
 value: "a right-aligned arrow-down icon on each file row saves the file to the user's computer"
 files: [src/api/files.ts, src/api/files.test.ts, src/files/FilesPanel.tsx, src/files/FilesPanel.test.tsx, MEMORY.md]
