@@ -58,17 +58,21 @@ Test no longer accurate (named): `tests/test_migrations.py::test_fresh_database_
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `messages.kind text NOT NULL DEFAULT 'turn' CHECK (kind IN ('turn','command'))`, `messages.wrapper_command_id text`.
+- `queue.enqueue_message(conn, session_id, text, target_agent_id=None, *, kind="turn", sender_session_id=None, sender_slug=None, hop=0) -> int`.
+- `MessageView.kind`, `MessageView.wrapper_command_id`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A chat message starting with a slash command is stored as a command message; the queue view and the API expose its kind.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1 and ac2, update the migrations version list; on a Docker host run `uv run --frozen pytest tests/test_api_messages.py tests/test_migrations.py`: they fail. In this container only ac4 and ac5 run.
+- Green: migration, queue, views, schemas, route, openapi.json; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The api module may import `agents_orchestrator.slash` (no wrapper import: the layering pin `tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper` must stay green).
+- Text is stored raw; never rewrite it (agents-orchestrator.md do-not-build).
+- Depends on orch-slash-parser.

@@ -64,17 +64,23 @@ Tests no longer accurate (named): `tests/test_fake_claude_commands.py::test_unkn
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `transcript.CommandUnknown(_Event)` with `name: str`; part of the `Event` union.
+- SignalBus kind `command_unknown` `{name}`.
+- `_await_completion(record, mark, timeout)` returns `("failed", None, "unknown_command", None)` on `command_unknown`.
+- Fake claude scenario: `commands.<name>: {echo: "system"|"user", echo_name, stdout, as_user, delay_seconds, hang}`; `$CLAUDE_CONFIG_DIR/fake-keys.jsonl` lines `{"key": "esc", "ts": ...}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every local command on the real echo shapes completes with its stdout, an unknown command fails at once, and the reported `/reload-plugins` sent through the command path completes and frees the slot.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the parser, signal, runner and fake tests (ac1, ac2, ac4-ac9) and update test_unknown_command; run `uv run pytest tests/test_transcript_commands.py tests/test_command_signals.py tests/test_command_runner.py tests/test_fake_claude_commands.py`: they fail.
+- Green: change transcript.py, router.py and the fake; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Completion matches any `command_invoked` after the mark, never the typed name (aliases).
+- Ruling, pinned by ac7: an unknown command sends no ESC.
+- The reviewer checks the fake's echo and informational lines against the cited real samples (retro proposal).
+- Depends on wrapper-slash-turn-guard (sequenced: both touch router.py).

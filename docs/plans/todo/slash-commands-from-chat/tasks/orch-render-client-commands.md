@@ -56,17 +56,20 @@ Tests no longer accurate (named): `tests/golden/session_single.yaml` and `tests/
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Rendered wrapper config: `sessions.commands = {"client": ["*"]}` plus `"agent": [...]` when the spec sets `agent_commands`.
+- `SessionSpec.wrapper.agent_commands: list[str] | None`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every agent pod's wrapper accepts client commands from the orchestrator, so chat and superleader commands (and the existing compact button) are no longer refused 403.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1, update the spec case and ac4; run `uv run --frozen pytest tests/test_render.py tests/test_spec_config.py`: they fail.
+- Green: render, spec, regenerate the goldens and openapi.json, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Changing the rendered config changes the config hash and rolls agent pods on deploy (README `## Images` note); deploy is decided at the gate.
+- `tests/test_api_config.py` uses `agent_commands: ["compact", "context"]` and must stay green.
+- Depends on orch-wrapper-pin-0-4-0 (the pinned wrapper must accept `"*"`).

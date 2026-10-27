@@ -56,17 +56,21 @@ Scope (agents-orchestrator): `db/queue.py` (`Claim.kind`, `_PICK_COMMAND`, the k
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Claim.kind: str`; `queue.mark_sent_command(conn, id, wrapper_command_id) -> bool`; a guarded requeue with `not_before` (for example `queue.requeue_later(conn, id, seconds) -> bool`).
+- `messages.error` values for commands: `command_denied`, `command_not_allowed`, `invalid_command`, `ambiguous`, `config_error`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A slash message from the chat or a superleader is delivered to the target's wrapper command queue at once, even mid-turn, and never as a turn; its delivery outcome is visible on the message.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the nine Docker tests (ac1-ac9); on a Docker host run `uv run --frozen pytest tests/test_dispatcher.py tests/test_queue_leader_routing.py tests/test_ambiguous_verify.py`: they fail. In this container only ac11 runs.
+- Green: queue, dispatcher, verifier, README, MEMORY.md; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings and their pins (retro proposal): no reservation write (ac7), hold exemption and its limits (ac8), backoff requeue (ac4), wrapper code as error (ac5), ambiguous fails (ac6, ac9).
+- Every status change stays a guarded UPDATE (`WHERE status = 'dispatching'`); one writer per transition.
+- `release_agent` is skipped for command claims (nothing was reserved).
+- Depends on orch-message-kind (the `kind` column) and orch-wrapper-command-client (`command()` outcomes, the fake's command route).

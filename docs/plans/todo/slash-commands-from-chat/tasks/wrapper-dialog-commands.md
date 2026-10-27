@@ -58,17 +58,22 @@ Real samples the fake must match: `/workdir/workdir/.scratchpad/probe-slash/summ
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `CommandsConfig.dialog_grace_seconds: float = 2.0`, `CommandsConfig.dialog_patterns: list[str]`; mirrored in `CommandsOverride`.
+- Results and errors: `result = "dismissed"`, `error = "dialog_stuck"`.
+- Fake scenario `commands.<name>.dialog = {"footer": str, "dismiss_stdout": str, "escs": 1 | 2}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A dialog command sent from the chat never leaves the session wedged: it is dismissed with claude's own message, or fails `dialog_stuck` or `timeout` inside the D7 bound, and the slot is released.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `tests/test_command_dialogs.py` (ac1-ac7) and the fake test (ac8); run `uv run pytest tests/test_command_dialogs.py tests/test_fake_claude_commands.py`: they fail.
+- Green: config, session, router, fake, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `session.FatalScanner` (escape-, whitespace- and case-insensitive matching across chunks) for the dialog scanner.
+- ESC count and spacing are read from `fake-keys.jsonl` (D16), never from `fake-inputs.jsonl`.
+- Rulings pinned: never two ESCs within 1 s (ac2, ac3); ESC only while a dialog pattern was seen since the last ESC or at the timeout (ac4); compact excluded (ac6).
+- Depends on wrapper-command-signals (class-agnostic `_await_completion`, the key log).

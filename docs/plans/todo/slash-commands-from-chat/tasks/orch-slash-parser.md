@@ -44,17 +44,18 @@ Scope (agents-orchestrator): new module `src/agents_orchestrator/slash.py` with 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_orchestrator.slash.parse(text: str) -> tuple[str, str] | None`: `(name, args)`; `name` without the slash.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One function decides, for both message routes, whether a text is a slash command, with the same rule the wrapper's turn guard uses.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write `tests/test_slash.py` (ac1, ac2); run `uv run --frozen pytest tests/test_slash.py`: import error.
+- Green: write `slash.py`; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep the case table identical to the wrapper's guard tests in task wrapper-slash-turn-guard (`test_slash_rule_leaves_paths_and_prose`), so the two sides cannot drift (retro proposal of generic-any-mcp-with-git-and: one shared parity table).
+- Docker-free: runs in this container.

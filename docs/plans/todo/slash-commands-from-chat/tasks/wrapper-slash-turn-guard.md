@@ -55,17 +55,22 @@ Scope (claude-code-wrapper): `session.py` (the D2 rule as one shared helper, the
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- One helper for the D2 rule, for example `claude_code_wrapper.session.slash_command(text) -> tuple[str, str] | None` (name, args), used by `Session.submit`, `SessionRouter.submit_turn` and `SessionManager._initial_turn`.
+- `TurnRejected("slash_command")`; HTTP 422 envelope code `slash_command`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No origin can type a slash line with a turn marker any more: the reported `/reload-plugins` hang cannot recur through the turns path, and a slash initial prompt runs as a command.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the six tests (ac1-ac6); run `uv run pytest tests/test_session_turns.py tests/test_api_turns.py tests/test_manager.py --deselect tests/test_manager.py::test_shutdown_stops_all`: they fail (the text is typed as a turn; the API answers 202).
+- Green: add the helper and the guards, the 422 mapping, the initial-turn branch and the README rows; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_manager.py::test_shutdown_stops_all` fails in this container (PID 1 process group, design Constraints); it is deselected, not changed.
+- The guard runs before `check_submittable` side effects and before the slot is reserved (`Session.submit` reserves before the first byte today).
+- The probe that defines the hang: a paste "/x\n\n<!-- ccw turn: id -->" runs /x with the marker as `<command-args>` (design Research, probed).
+- `peer_inbox.py` needs no change (frames every peer turn); ac2 still covers origin peer at the session level.
+- Depends on wrapper-command-args (`request_command(name, args, origin=...)`).

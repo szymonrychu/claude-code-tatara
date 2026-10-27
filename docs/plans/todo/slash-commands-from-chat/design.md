@@ -468,7 +468,6 @@ Discovery plan inputs placed:
 
 ## Open questions
 
-none
 - Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [recommended: yes, add both tasks; the helmfile value ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision]
 
 ## Irreversible operations in scope

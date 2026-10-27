@@ -62,17 +62,21 @@ Tests no longer accurate (named): `tests/test_wrapper_client.py::test_sessions_a
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `WrapperClient.command(session_id: str, name: str, args: str = "") -> CommandOutcome`.
+- `CommandAccepted(command_id: str, record: dict)`; `CommandOutcome = CommandAccepted | Busy | ConfigError | Rejected | Gone | Unavailable | Ambiguous`; `Rejected.code`, `Busy.code`.
+- Fake wrapper: `FakeWrapper.commands_client: list[str]` (default `["*"]`), deny list = the wrapper's `DEFAULT_COMMAND_DENY` names.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can send any slash command with args to a wrapper and knows exactly what happened; its fake behaves like the real wrapper on the commands route, so dispatcher tests see refusals.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1, ac3, ac4, update ac2; run `uv run --frozen pytest tests/test_wrapper_client.py tests/test_fake_wrapper_contract.py`: they fail.
+- Green: client, models, exports, `_run_command`, the fake; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The real leg of ac3 pins the fake's record shape against the real wrapper image (retro proposal: fakes checked against real output). It needs the 0.4.0 pin (orch-wrapper-pin-0-4-0) and `client: ["*"]` in `e2e/agent-test.config.yaml`; until then only the fake leg runs.
+- The fake imports nothing from claude_code_wrapper at runtime if it does not today; copy the nine deny names with a comment naming `claude_code_wrapper.config.DEFAULT_COMMAND_DENY` as the source.
+- No dependency inside the epic.

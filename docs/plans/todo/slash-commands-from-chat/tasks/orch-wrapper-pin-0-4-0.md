@@ -56,17 +56,22 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- The wrapper pin (pyproject dev dependency, `uv.lock`, `e2e/agent-test.Dockerfile` `BASE_IMAGE` and `WRAPPER_SHA`, README `## Images`), all one sha: the claude-code-wrapper `main` merge commit tagged v0.4.0.
+- New kind e2e case `tests/e2e/test_e2e_kind.py::test_slash_command_from_chat_keeps_session_responsive`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+CI's contract leg and kind e2e run the wrapper that takes any slash command, and the e2e proves the reported case end to end.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the merged upstream and read the merge sha (`git -C /workdir/workdir/code/claude-code-wrapper fetch origin main` and the `v0.4.0` tag).
+- Change the pyproject pin, run `uv lock`; run `uv run --frozen pytest tests/test_images.py`: the Dockerfile and README checks fail on the old sha.
+- Update the Dockerfile args, the agent-test config, README `## Images`, add the e2e case; run the task's verify: passes. Quote the summary line. The e2e and integration legs run in CI or on a Docker host.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha; `tests/test_render.py` validates rendered configs against the pinned wrapper's config model.
+- The e2e asserts on the wrapper's error code `command_denied`, not on a hard-coded deny list (retro proposal of cross-session-messaging-and).
+- Dependency bump: the TDD exception for the pin values applies; the equality tests are the guard. The e2e case is written before the pin is final and fails against the 0.3.0 image.
+- Depends on wrapper-release-0-4-0, orch-wrapper-command-client and orch-dispatch-commands.

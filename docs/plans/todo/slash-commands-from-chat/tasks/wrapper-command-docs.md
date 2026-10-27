@@ -50,17 +50,19 @@ Tests no longer accurate (named): `tests/test_slash_commands_docs.py::test_workb
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+None beyond the documented config keys (`sessions.commands.deny`, `dialog_grace_seconds`, `dialog_patterns`, agent/client names or `"*"`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An operator reading the README or the example configs learns that any command except the deny list runs, how each class completes and the worst-case hold.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update the docs tests (ac1, ac3, ac4); run `uv run pytest tests/test_slash_commands_docs.py`: they fail.
+- Green: README and the example configs; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Doc and config edit with test pins; the docs tests are written first.
+- `config.example.yaml` at the repo root and `src/claude_code_wrapper/data/config.example.yaml`: check whether one is a copy of the other (`test_config_example_documents_command_keys` reads the root one) and keep both consistent.
+- Depends on wrapper-commands-after-stop (every behaviour the docs describe has landed).

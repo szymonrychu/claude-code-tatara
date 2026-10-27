@@ -48,17 +48,19 @@ Scope:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Package version `0.4.0`; image tags `:0.4.0` and `:latest` from `release.yaml`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator and, after the gate's deploy decision, the live agents can run a wrapper that takes any slash command.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Bump the version to 0.4.0 in `pyproject.toml` and `src/claude_code_wrapper/__init__.py`, run `uv lock` (dependency-bump exception; the packaging test is the guard); run the task's verify: passes.
+- After the merge (orchestrator session): wait for `build.yaml` green on the merge commit, `git tag v0.4.0 <merge sha> && git push origin v0.4.0`, watch `release.yaml` green, then amend orch-wrapper-pin-0-4-0 with the merge sha.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- README `### Release`: `release.yaml` fails when the `:<shortsha>` image is missing, so tag only after the main build is green.
+- If another epic releases the wrapper first, this task and orch-wrapper-pin-0-4-0 are amended to the next minor (design Assumptions).
+- Depends on every wrapper task of this epic.

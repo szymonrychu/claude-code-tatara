@@ -41,17 +41,18 @@ Scope (any-mcp-tatara-plugins): `orchestration/orchestrator/src/any_mcp_tatara_o
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `orchestrator_session_send` tool description text (no schema change).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A superleader agent reading its tool list knows that "/x" sent to another session runs as a command there.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the assertions to `test_descriptions_from_config`; run it: fails.
+- Green: change the description; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The description reaches agents only through a plugins release and the orchestrator's `ORCH_ANY_MCP_PLUGINS_REF` pin (`v0.1.0` today); that release and pin are an open question of design.md, not part of this task.
+- No dependency inside the epic.

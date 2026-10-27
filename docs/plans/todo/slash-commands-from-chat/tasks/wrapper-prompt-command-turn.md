@@ -52,17 +52,21 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Session.adopt_turn(text: str, *, origin: Origin) -> TurnRecord` (turns.Origin: client, initial, agent, peer).
+- SignalBus kind `prompt_submitted`; command `result = "turn"`, `CommandRecord.turn_id` = the promoted (or held) turn id.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`/init`, a skill or a plugin command sent from the chat runs as a normal turn with assistant rows, turn accounting and the usual bounds, and the session is ready again at its Stop.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `tests/test_command_prompt_turn.py` (ac1-ac5) and the fake test (ac6); run them: they fail (the command times out; the Stop is dropped as stale).
+- Green: router, session, fake, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Rulings pinned: queued commands stay queued after a promotion (ac3); the held-turn branch (ac4).
+- The busy slot is already held by `begin_command` (idle runner) or `hold_for_commands` (held turn); `adopt_turn` must not set busy twice or emit a second `session_state`.
+- If the logged-in contract check later shows no UserPromptSubmit for plugin commands, this task is amended to promote on the echo plus isMeta pair (design Assumptions).
+- Depends on wrapper-dialog-commands (sequenced: router.py, session.py and the fake).

@@ -67,17 +67,23 @@ Tests no longer accurate (named): `tests/test_command_registry.py::test_unknown_
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.config.DEFAULT_COMMAND_DENY: tuple[str, ...]` (or list): the nine names, the only place the deny list is written.
+- `CommandsConfig.deny: list[str]`, `CommandsOverride.deny: list[str] | None`; `agent`, `client`: pattern names or `"*"`.
+- `CommandRejected("denied", message)` -> HTTP 403 `command_denied` (`api/commands.py:_REJECT`).
+- `metrics.METRIC_COMMAND_NAMES`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A session config can allow any command name or `"*"` for clients and agents; the nine session-ending or account commands are refused 403 `command_denied` before any allowlist; nothing else about running commands changes yet.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the five new tests (ac1-ac5) and rewrite the two inaccurate config tests; run `uv run pytest tests/test_command_registry.py tests/test_api_commands.py`: the new ones fail (unknown command, no deny key).
+- Green: change config.py, commands.py, router.py, metrics.py, api/commands.py, README.md; run the task's verify: passes. Quote the pytest summary line with its counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ruling, pinned by ac3: deny is checked before the allowlist; a name in both deny and the allowlist is denied.
+- `CommandsOverride` merges through `commands.effective_commands` (model_copy update): a set `deny` replaces the default, it does not extend it.
+- `test_command_vocabulary.py::test_command_metrics_bounded` must stay green unchanged.
+- No LSP: find every `BUILTIN_COMMAND_NAMES` use with `grep -rn BUILTIN_COMMAND_NAMES src tests` (config.py, commands.py, metrics.py today).

@@ -51,17 +51,21 @@ Test no longer accurate (named): `src/chat/chatModel.test.ts` "maps event types 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ChatItem` variant `Base & { kind: 'command'; commandId: string; name: string; args: string; status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'; result?: string; error?: string; output?: string }`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A slash command sent from the chat appears as one row that updates from queued to its outcome, with claude's output when there is any.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the chatModel and ChatLog tests (ac1, ac2, ac4), update ac3; run `npx vitest run src/chat/chatModel.test.ts src/chat/ChatLog.test.tsx`: they fail.
+- Green: chatModel.ts and entries.tsx; run the task's verify: passes. Quote the vitest summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse the tool-row pairing pattern (`chatModel.ts` merge: update items already in the window, keep the earliest eventId as the row position).
+- Status colours come from theme tokens (`STATUS_COLOUR` pattern in entries.tsx); no colour literals, no arrows (designRules).
+- Ruling pinned by ac3: the typed-line echo folds into the command row.
+- Run only the chat test files: the full suite has 10 load-dependent timeouts here (design Constraints).
+- No dependency inside the epic (the event shape is the wrapper's existing one; `args` becomes a string with wrapper-command-args).

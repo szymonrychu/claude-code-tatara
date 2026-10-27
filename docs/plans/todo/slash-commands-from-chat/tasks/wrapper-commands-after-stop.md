@@ -49,17 +49,19 @@ Tests no longer accurate (named): `tests/test_api_commands.py::test_client_comma
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- No API change: `POST /v1/sessions/{id}/commands` during a turn answers 202 `queued` with `turn_id`, as today.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A command a user sends while the agent works waits for that turn's Stop; the turn completes untouched and the command then runs on the idle session. No fabricated "continue" prompt appears for a human-sent command.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1 and ac2, rename and rewrite the API test (ac3), switch the named resume tests to origin agent; run `uv run pytest tests/test_command_turn_resume.py tests/test_api_commands.py`: ac1 and ac3 fail.
+- Green: change `_stop_gate` and the post-completion runner start, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ruling, pinned by ac4: an interrupted or failed turn cancels its queued client commands (today's behaviour, kept).
+- A gate change of the mid-turn behaviour amends only this task (user decision 2).
+- Depends on wrapper-prompt-command-turn (sequenced: router.py).

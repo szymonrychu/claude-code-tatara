@@ -44,17 +44,18 @@ Scope (agents-orchestrator): `api/agent.py:session_send` passes `kind="command"`
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `POST /agent/v1/sessions/{slug}/messages` unchanged on the wire; the stored message carries `kind`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A superleader's `orchestrator_session_send` with "/x ..." becomes a command message for the target session's leader; the dispatcher (orch-dispatch-commands) sends it unframed.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add ac1 and ac2; on a Docker host they fail (kind turn).
+- Green: change `session_send` and the README; run the task's verify: passes. Quote the summary line; the Docker legs run in CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `_leads` and the D7 check order (api/agent.py:session_send).
+- Depends on orch-message-kind (`enqueue_message(kind=...)`).

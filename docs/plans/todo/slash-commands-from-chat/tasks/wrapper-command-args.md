@@ -75,17 +75,25 @@ Tests no longer accurate (named), because D4 removes structured params: `tests/t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `commands.validate(name: str, args: str, *, allow_force: bool) -> str`, `commands.render(name: str, args: str = "") -> str`.
+- `CommandRecord.args: str`; `CommandQueue.request(name, args, *, origin, turn_id)`.
+- `SessionRouter.request_command(name: str, args: str = "", *, origin) -> CommandRecord`.
+- HTTP `POST /v1/sessions/{id}/commands` body `{"name": str, "args": str = ""}`; response the record (`id`, `name`, `args`, `origin`, `state`, ...).
+- ccw MCP tool `command` arguments `{"name": str, "args"?: str}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Any allowed command name with one line of free args can be queued through the API and the ccw tool; the typed line is `/name args`; structured params are gone everywhere in src and tests.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: rewrite the named inaccurate tests and add the new ones (ac1-ac5, ac7, ac8); run `uv run pytest tests/test_command_registry.py tests/test_slash_review_fixes.py tests/test_mcp_server.py`: they fail (old signatures).
+- Green: change commands.py, router.py, api/commands.py, mcp_server.py, README.md together (one commit: no intermediate is green); run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ruling, pinned by ac4: coalescing matches (name, args), so `/model a` and `/model b` both queue.
+- Ruling, pinned by ac3: only `reload-plugins` checks `--force` (as today); the token check splits args on whitespace.
+- The fake claude still knows only its five names in this task: tests of arbitrary names that need completion come in wrapper-command-signals; use the five names here.
+- Depends on wrapper-command-policy (deny list, wildcard, the name pattern constant in config.py).
+- Sizing exception D18: 12 files, opus.
