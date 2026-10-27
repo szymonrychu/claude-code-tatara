@@ -12,7 +12,7 @@ connector checks the room (policy-allowed, and bound to the session or flagged
 event ids. A chat room and a session are bound one to one (user decision at the final gate,
 D9): the user's chat messages always go to the room's one bound session, an agent starts a chat
 only in an unbound flagged room (which binds it to that agent's session), and the binding is
-released only when the session is deleted. any-mcp-tatara-plugins v0.3.0 ships the tools; agents-helmfile wires one new secret, the
+released only when the session is deleted. any-mcp-tatara-plugins v0.2.0 ships the tools; agents-helmfile wires one new secret, the
 values and a live smoke (S1-S4) in the owner DM. Architecture decision adopted from
 `.scratchpad/design/matrix-outbound-arch.md` (every "(pick)" is the design); deviations forced by
 probed facts are marked "(probe)".
@@ -79,16 +79,21 @@ NetworkPolicies.
 
 - Services talk only through HTTP or a queue; each table has exactly one writer; queue tables change
   rows only through status-guarded updates (`agents_common.db.queue.transition`).
-- Ordering after slash-commands-from-chat: its `plugins-release-0-2-0` tag and
-  `orch-plugins-pin-0-2-0` merge first (this epic edits the same orchestrator `settings.py`,
-  `pyproject.toml`, `uv.lock`, `tests/test_settings.py`, and releases plugins v0.3.0 on top of
-  v0.2.0). README blocker `slash-commands-from-chat` holds the whole epic.
+- Ordering (user decision 2026-10-27, via mx-5, "Yes!"): this epic runs next, ahead of
+  slash-commands-from-chat, which is parked and resumes after this epic merges; the order is this
+  epic, slash-commands-from-chat, hive-decoupling, session-orchestration-mcp. This epic builds
+  every shared file from `main` (orchestrator `settings.py`, `pyproject.toml`, `uv.lock`,
+  `tests/test_settings.py`, `openapi.json`, `README.md`, `MEMORY.md`, `tests/e2e/test_e2e_kind.py`;
+  the plugin `__init__.py`, its tests, `pyproject.toml`, README, `uv.lock` and
+  `tests/test_source_install.py`) and releases any-mcp-tatara-plugins v0.2.0 from `main` (main is at
+  v0.1.0), its own chat tools only; slash-commands then releases v0.3.0 on top. See
+  Reprioritisation.
 - `web-room-initiate-toggle` lands after markdown-rendering-in-chat and file-editor-with-tabs-and-hi
   (shared agents-web files). Ticket `depends_on` cannot name another epic's task, and `ticket.py
   new-task` refuses files shared with an in-progress epic that is not a blocker (file-editor shares
   the orchestrator `openapi.json`, `pyproject.toml`, `uv.lock` and `tests/e2e/test_e2e_kind.py`), so
-  both epics are README blockers too (my call); both precede slash-commands in the approved order, so
-  the extra blockers delay nothing.
+  both epics are README blockers too (my call); both are merged (done), so the extra blockers delay
+  nothing.
 - No `mise run apply` or other live deploy in AC evidence; `mise run diff` or a judgement AC
   instead; the orchestrator session runs applies and tag pushes (workbench MEMORY 2026-10-25).
   Standing rule (user, 2026-10-27): deploy whenever possible; live applies need no approval.
@@ -109,7 +114,7 @@ connector checks the room and queues a `sends` row, which the bot delivers throu
 (architecture fork 1, option A, pick).
 
 Alternatives: B outbox table in the orchestrator pulled by the connector (refusals arrive late as a
-status, agents cannot list rooms, needs orchestrator migration 0009 behind slash-commands' 0008 and an
+status, agents cannot list rooms, needs a new orchestrator migration and an
 agents-common client and tag); C the connector verifies agent tokens through an orchestrator route
 (the agent token reaches a second service; pod-IP binding depends on the connector seeing the real
 source IP, unknown); D a connector-issued credential per session (no way to inject it; a token in the
@@ -451,13 +456,13 @@ or both empty, else a settings error naming both (my call). Nothing is stored. T
 `chat.url`, `chat.token` or `chat.existingSecret`/`chat.existingSecretKey`, renders `ORCH_CHAT_URL`
 in the settings ConfigMap and `ORCH_CHAT_TOKEN` from a Secret, on the api container only (my call).
 
-### D13: plugin tools, release v0.3.0, allow list with the pin
+### D13: plugin tools, release v0.2.0, allow list with the pin
 
 The orchestrator plugin gains `chat_rooms`, `chat_send`, `chat_react`, `chat_status` (HttpBinding
 tools, existing `on_error` mapping); descriptions say the final answer reaches the chat only for
 chat-started turns, sends are asynchronous and return `s<n>`, `reply_to`/`to` take `m<n>`/`s<n>`,
-leader only, status via `orchestrator_chat_status`, and the 1:1 binding (D9): a session talks in at most one chat room, its bound room, and starts a chat only in an unbound flagged room while it is bound to none (`room_bound`, `session_bound` otherwise). any-mcp-tatara-plugins releases v0.3.0 (the
-orchestrator session pushes the tag after merge). The orchestrator then pins v0.3.0 and adds
+leader only, status via `orchestrator_chat_status`, and the 1:1 binding (D9): a session talks in at most one chat room, its bound room, and starts a chat only in an unbound flagged room while it is bound to none (`room_bound`, `session_bound` otherwise). any-mcp-tatara-plugins releases v0.2.0 (the
+orchestrator session pushes the tag after merge). The orchestrator then pins v0.2.0 and adds
 `CHAT_TOOLS` to every session's allow list (`k8s/on_start.py:orchestrator_allow`); the routes decide.
 
 (probe) The allow-list change must land with the pin, not with the routes:
@@ -475,7 +480,7 @@ an existing target, so the token goes to two new files instead:
 `values/agents-matrix-connector/agent-token.secrets.yaml` (`{agentApi: {tokenSha256}}`), both listed
 on their releases in `helmfile.yaml.gotmpl`. Values: connector image tag and chart version, agent
 port; orchestrator image tag and chart version, `chat.url:
-http://agents-matrix-connector-api-agents:8001`, `ORCH_ANY_MCP_PLUGINS_REF: v0.3.0`; agents-web tag
+http://agents-matrix-connector-api-agents:8001`, `ORCH_ANY_MCP_PLUGINS_REF: v0.2.0`; agents-web tag
 with the toggle.
 
 ### D15: agents-web toggle
@@ -490,7 +495,7 @@ Unit tests per task. Contract: the connector commits its agent listener OpenAPI 
 (`openapi-agent.json`, pinned like `openapi.json`); the orchestrator vendors it with a source line
 (`tests/fakes/chat_openapi.json`, `tests/fakes/chat_openapi.source`), its fake chat upstream
 validates against it, and a test asserts every relay route maps to a path and method of the
-vendored document (my call). The orchestrator's tools-parity test drives the released v0.3.0 plugin
+vendored document (my call). The orchestrator's tools-parity test drives the released v0.2.0 plugin
 against the real routes and the fake upstream. E2E: the connector stack test (real api and bot
 processes, fake homeserver, fake orchestrator) covers send without inbound, follow-ups during a
 running chat run, reply and reaction relations, refusals, the 1:1 binding (an initiation binds the
@@ -528,14 +533,17 @@ failure)."
 
 ### D18: deploy order
 
-(1) slash-commands' plugins v0.2.0 tag and orchestrator pin merge first (README blocker). (2) No
+(1) Nothing of slash-commands-from-chat precedes this epic (reprioritised 2026-10-27). (2) No
 orchestrator migration. (3) Apply the connector first (migration 0002 runs in its init container,
 creating `room_bindings` with its backfill; the agent listener comes up), then the orchestrator with
-its chat secret and the v0.3.0 plugins ref (until then the routes answer 503 `chat_unconfigured`;
+its chat secret and the v0.2.0 plugins ref (until then the routes answer 503 `chat_unconfigured`;
 the ref rolls agent pods), then agents-web. (4) The orchestrator session runs every apply with
 `--selector` in that order; no AC runs an apply. Standing rule (user, 2026-10-27): deploy whenever
 possible; live applies need no approval. Gate question Q6 (approved) settles how this deploy
-relates to the one deploy epic approved for the four earlier epics.
+relates to the one deploy epic approved for the four earlier epics; since the reprioritisation that
+deploy is the epics 1-3 deploy (file-download, markdown, file-editor; agents-helmfile `d624985`:
+orchestrator `96e46f3`, agents-web `01e971c`, agent image claude-code-wrapper `0.3.1`), and
+slash-commands deploys after its own merge.
 
 ## Research
 
@@ -674,8 +682,8 @@ epics that bear on this epic (recurring workflow ones first).
 The builder check (sonnet, no prior context) asked nine questions; settled here, facts probed:
 
 - B1 (vendoring from `origin/main`): the agents-matrix-connector PR merges mid-epic, as soon as its tasks before orch-chat-contract are done and green, the same way the claude-code-wrapper PRs merged mid-epic in file-download-in-file-browse and file-editor-with-tabs-and-hi; orch-chat-contract and web-room-initiate-toggle start only after that merge and are amended with its sha (my call).
-- B2 (tag v0.3.0): the orchestrator session pushes `v0.3.0` after plugins-release-0-3-0 merges with green CI and after reporting to the mx-5 leader; orch-plugins-pin-0-3-0 and orch-chat-tools-allow wait for the tag, they never start without it (my call).
-- B3 (v0.2.0 state): this epic is blocked by slash-commands-from-chat, markdown-rendering-in-chat and file-editor-with-tabs-and-hi; it is claimed only after all three are merged, so those files are read in their merged state at build time (fact: README blockers).
+- B2 (tag v0.2.0, approved as v0.3.0, number swapped 2026-10-27): the orchestrator session pushes `v0.2.0` after plugins-release-0-3-0 merges with green CI and after reporting to the mx-5 leader; orch-plugins-pin-0-3-0 and orch-chat-tools-allow wait for the tag, they never start without it (my call).
+- B3 (state of shared files): this epic is blocked by markdown-rendering-in-chat and file-editor-with-tabs-and-hi (both done); since the reprioritisation (2026-10-27) slash-commands-from-chat is no longer a blocker but follows this epic, so every shared file is read as it is on `main` at build time (fact: README blockers).
 - B4 (gate questions): Q1-Q10 were answered at the gate (final answer 2026-10-27); Q11 and Q12 came with the 1:1 rework and are answered before the tasks they touch start (chat-smoke-script, mxc-sends-schema).
 - B5 (flagged room without preset): a room bound to a running session (D9; for example one an agent bound by initiating there) routes the user's answer to it without a preset; a preset is needed only to start a new mx- session in an unbound room, and without one the answer is ignored as `no_preset` exactly as today (my call; Q9 adapted to the 1:1 rule).
 - B6 (answers into non-mx sessions mid-turn): yes: a room bound to a non-mx session (a hive leader, a webhook or schedule session that initiated there) sends every user message to it as a follow message queued behind its current turn, and the tracker posts that session's final answer to the chat (D9; Q2's last-speaker routing was rejected, the 1:1 binding decides).
@@ -700,11 +708,11 @@ The builder check (sonnet, no prior context) asked nine questions; settled here,
 
 ## Irreversible operations in scope
 
-Approved at the final gate (2026-10-27): the plugins tag v0.3.0, migration 0002 without a down
+Approved at the final gate (2026-10-27): the plugins tag v0.3.0 (now v0.2.0: the number swapped with slash-commands-from-chat, user decision 2026-10-27, both tags user-approved), migration 0002 without a down
 step, the new SOPS token and the live applies; standing rule since then: deploy whenever possible
 (live applies need no approval).
 
-- Tag `v0.3.0` pushed to any-mcp-tatara-plugins origin on the merge commit of plugins-release-0-3-0
+- Tag `v0.2.0` pushed to any-mcp-tatara-plugins origin on the merge commit of plugins-release-0-3-0
   (orchestrator session, after green CI). Safeguard: approved at the gate; ac on the tag checked
   after the push.
 - Live migration 0002 on the agents-matrix-connector database (runs in the connector init container
@@ -713,7 +721,7 @@ step, the new SOPS token and the live applies; standing rule since then: deploy 
   approved at the gate (the backfill inside it: gate question Q12); migration idempotence,
   constraint, uniqueness and backfill tests in mxc-sends-schema.
 - Live applies (orchestrator session, chat-live-smoke): agents-matrix-connector, agents-orchestrator
-  (the v0.3.0 plugins ref changes the rendered config hash and rolls every running agent pod,
+  (the v0.2.0 plugins ref changes the rendered config hash and rolls every running agent pod,
   including the mx-5 hive), agents-web. Safeguard: approved at the gate and the standing deploy
   rule; `--selector` per release in D18's order; `mise run diff` reviewed before each apply.
 - New credential: the chat token generated by `bootstrap-secrets.sh` and committed SOPS-encrypted.
