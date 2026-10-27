@@ -385,6 +385,7 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 
 ## Open questions
 - Q1: A flagged session may change only the sessions, presets and schedules it created, and may read everything with secrets masked? [recommended: yes]
+- Q2: Grant mx-5 by flagging its preset in the UI and recreating the session (spec stays immutable)? [recommended: yes]
 
 ## Irreversible operations in scope
 
