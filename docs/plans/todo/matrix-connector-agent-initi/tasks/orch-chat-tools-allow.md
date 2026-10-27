@@ -33,15 +33,20 @@ Retro proposal (cross-session-messaging-and), verbatim: "agents-orchestrator kin
 
 Scope (agents-orchestrator): `k8s/on_start.py` (`CHAT_TOOLS = ["chat_rooms", "chat_send", "chat_react", "chat_status"]` appended for every session, alone and hive), README (the Agent API chat section says the tools are in every allow list, leader only), `tests/test_agent_chat.py` (`test_chat_tools_parity`). Named tests no longer accurate: `tests/test_on_start.py::test_alone_session_tools_entry` and `tests/test_on_start.py::test_hive_session_tools` pin the allow lists without the chat tools; they are updated to include them. `tests/e2e/test_e2e_kind.py:assert_alone_session_tools` pins a literal list; it is changed to compare with `on_start.orchestrator_allow(SessionSpec(replicas=1))` (retro proposal).
 
+Design D5, verbatim (orchestrator caps): "The orchestrator caps the forwarded request body at 256 KiB (413 `payload_too_large`) and the upstream call at 10 s. The cap covers the worst case of a valid maximal request (interrogate Act 6; my call on the figure): 16000 characters of 4 bytes each are 64000 bytes raw (the plugin's httpx encodes JSON as raw UTF-8), and up to 192000 bytes when a client escapes every character as a JSON surrogate pair (12 bytes), plus a room id of up to 255 characters, `reply_to` and the JSON keys; 256 KiB (262144 bytes) covers all of it, where the verdict's example of 80 KiB would refuse the escaped form."
+
+Interrogate verdict, verbatim: "6. Size caps (A,C medium): 16000 characters can exceed the orchestrator's 32 KiB body cap. Make the relay cap cover the worst case (4 bytes per character plus JSON overhead, e.g. 80 KiB) with an AC sending 16000 4-byte characters end to end." (this task: the end-to-end leg through the released plugin, the real relay route and the fake upstream).
+
 ## Acceptance conditions
 
 - ac1: an alone session's allow list is the session, init-scripts and chat tools (updated) [evidence: test:tests/test_on_start.py::test_alone_session_tools_entry]
 - ac2: a hive session's allow list ends with the chat tools (updated) [evidence: test:tests/test_on_start.py::test_hive_session_tools]
 - ac3: every allowed tool, the chat tools included, exists in the pinned plugin [evidence: test:tests/test_on_start.py::test_allowed_tools_exist_in_plugin]
 - ac4: the released plugin drives chat_rooms, chat_send, chat_react and chat_status against the real agent routes and the fake chat upstream, and the results equal the direct route answers [evidence: test:tests/test_agent_chat.py::test_chat_tools_parity]
-- ac5: the kind e2e allow-list assertion is derived from on_start instead of a literal list [evidence: command:grep -q "orchestrator_allow" tests/e2e/test_e2e_kind.py && ! grep -q '"init_scripts_edit",$' tests/e2e/test_e2e_kind.py]
-- ac6: the README says the chat tools are in every session's allow list [evidence: command:grep -q "orchestrator_chat_send" README.md]
-- ac7: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_on_start.py tests/test_agent_chat.py && mise run lint]
+- ac5: orchestrator_chat_send through the released plugin with a text of 16000 4-byte characters is relayed and the fake upstream receives that exact text [evidence: test:tests/test_agent_chat.py::test_chat_send_max_text_through_plugin]
+- ac6: the kind e2e allow-list assertion is derived from on_start instead of a literal list [evidence: command:grep -q "orchestrator_allow" tests/e2e/test_e2e_kind.py && ! grep -q '"init_scripts_edit",$' tests/e2e/test_e2e_kind.py]
+- ac7: the README says the chat tools are in every session's allow list [evidence: command:grep -q "orchestrator_chat_send" README.md]
+- ac8: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_on_start.py tests/test_agent_chat.py && mise run lint]
 
 ## Files
 
@@ -69,3 +74,5 @@ Every new session's agents see the four chat tools; only the leader's calls succ
 - `test_chat_tools_parity` follows `tests/test_agent_session_messaging.py::test_session_tools_parity` (PluginHarness with an ASGI transport and the caller's pod IP) and uses `tests/fakes/fake_chat.py:FakeChat` as the upstream. It is DB-backed (CI).
 - The kind e2e runs only in CI (kind); the local check is ac5.
 - Changing the allow list changes the rendered on-start config hash: existing sessions roll on deploy (chat-live-smoke).
+
+- 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters end to end through the released plugin
