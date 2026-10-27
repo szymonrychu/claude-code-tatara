@@ -1,6 +1,6 @@
 ---
 title: web file tabs view
-status: in-progress
+status: done
 repo: agents-web
 value: "open files show as terminal-style tabs with an RO/RW toggle, Save and conflict notices"
 files: [src/files/FileTabs.tsx, src/files/FileTabs.test.tsx, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/files/FileTabs.test.tsx src/layout/desi
 depends_on: [web-file-tabs-state, web-code-editor]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 618d5dae343d4deb88a08351f660e49d38ba62ab
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 7
+actual_tokens: 1828146
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 1726090, review 102056"
 ---
 
 # web file tabs view
@@ -86,3 +86,5 @@ Open files show as terminal-style tabs: closable, scrollable, all mounted, dirty
 - Rulings and their pin tests: ` *` and `data-dirty` mark, pinned by `dirty mark`; Save and Ctrl/Cmd+S only in RW with changes and not while saving, pinned by `mode toggle and save button` and `keyboard save`; Reload and Overwrite on a conflict, Reload and Keep editing on a change on disk, pinned by `notices`.
 - designRules: `aria-label` on IconButtons (never `title=`), no decorative Unicode (the dirty mark is an ASCII `*`), spacing on the 0.5 grid, colours from theme palette paths.
 - The ToggleButtonGroup's RO button is disabled while dirty (the hook refuses it too).
+
+- 2026-10-27 done: ac8 (editor chunk) moved to web-files-split-layout ac13 by orchestrator ruling
