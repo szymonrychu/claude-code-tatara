@@ -417,6 +417,7 @@ Brief plan inputs:
 Product questions that need the user, collected across epics by `ticket.py questions`.
 - Q1: CodeMirror 6 pulls the npm package @marijn/find-cluster-break into package-lock.json, which trips src/nomenclature.test.ts; may task web-nomenclature-allowlist add exactly the phrase 'find-cluster-break' to the guard's ALLOWED list, with a new test proving every other spelling of the retired unit still fails? [recommended: yes; the guard keeps its purpose and a third-party npm name is the same class as the Kubernetes phrases already allowed (the only alternative, Monaco, has no toml and loads from a CDN)]
 - Q2: Deploy is not part of this epic (no agents-helmfile task), so the editor's save works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
+- Q3: A save replaces the file atomically (temporary file in the same directory, then rename), so a reader never sees a half-written file and a failed save leaves the original intact, but the file gets a new inode: hard links to it are not updated (permission bits are kept); acceptable? [recommended: yes]
 
 ## Irreversible operations in scope
 
