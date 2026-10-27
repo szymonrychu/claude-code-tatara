@@ -29,12 +29,14 @@ Goal G7, verbatim: "The web discard dialog states what history is lost or backed
 
 Design D8 (my call), verbatim: "`agentMarkState('dead', ready)` returns `error`. The banner shows when `summary.queued > 0` and no agent is ready and `idle` (Q2 asks whether busy-only hives should show it)."
 
+Q2 answer (my call, design.md Open questions): "The banner shows when messages are queued and either no agent is ready and alive (none ready, or all `dead`), or the oldest queued message is older than 10 minutes. A queue behind a busy leader is normal and stays quiet; a stuck busy agent still surfaces after 10 minutes."
+
 Scope (agents-web):
-- `src/chat/AgentUnavailableBanner.tsx` (new): an MUI Alert "Agent unavailable: N messages queued, oldest <age> ago" when `summary.queued > 0` and no agent is `ready` with state `idle`; the age from `summary.oldest_queued_at` through `formatAge`/`useNow` (`src/chat/agentAge.ts`); hidden otherwise.
+- `src/chat/AgentUnavailableBanner.tsx` (new): an MUI Alert "Agent unavailable: N messages queued, oldest <age> ago" when `summary.queued > 0` and either no agent is `ready` with a state other than `dead`, or the oldest queued message is older than 10 minutes; the age from `summary.oldest_queued_at` through `formatAge`/`useNow` (`src/chat/agentAge.ts`); hidden otherwise.
 - `src/chat/ChatView.tsx`: renders it above QueueStrip.
 - `src/ribbon/stateMark.tsx`: `agentMarkState` maps `dead` to `error`; `src/ribbon/stateMark.test.ts` (new).
 - `src/api/stream.ts` and `src/api/stream.test.ts`: the `message_status` event carries `oldestQueuedAt` (from `oldest_queued_at`); `src/ribbon/useSessions.ts` applies it to the session summary so the banner stays live.
-- `src/chat/AgentUnavailableBanner.test.tsx`: tests named "shows when messages are queued and no agent is free", "hidden when an agent is ready and idle", "hidden when nothing is queued", "updates the age from the status stream".
+- `src/chat/AgentUnavailableBanner.test.tsx`: tests named "shows when messages are queued and no agent is alive", "shows when the oldest queued message is older than 10 minutes", "hidden when a ready agent is busy and the queue is younger than 10 minutes", "hidden when an agent is ready and idle", "hidden when nothing is queued", "updates the age from the status stream".
 
 Steps: tests first, seen failing; then the code; run the verify.
 
@@ -42,12 +44,14 @@ Notes: on the first full-suite failure, save the failing test name and output ta
 
 ## Acceptance conditions
 
-- AC1: the banner shows with the queued count and the oldest message's age when messages are queued and no agent is ready and idle [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "shows when messages are queued and no agent is free"]
-- AC2: the banner is hidden when an agent is ready and idle [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "hidden when an agent is ready and idle"]
-- AC3: the banner is hidden when nothing is queued [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "hidden when nothing is queued"]
-- AC4: the age follows oldest_queued_at from the message_status frame [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx src/api/stream.test.ts]
-- AC5: agentMarkState maps dead to error [evidence: command:npx vitest run src/ribbon/stateMark.test.ts]
-- AC6: lint and typecheck pass [evidence: command:npm run lint && npx tsc -b]
+- AC1: the banner shows with the queued count and the oldest message's age when messages are queued and no agent is ready and alive [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "shows when messages are queued and no agent is alive"]
+- AC2: the banner shows when the oldest queued message is older than 10 minutes even with a ready busy agent [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "shows when the oldest queued message is older than 10 minutes"]
+- AC3: the banner is hidden when a ready agent is busy and the oldest queued message is younger than 10 minutes [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "hidden when a ready agent is busy and the queue is younger than 10 minutes"]
+- AC4: the banner is hidden when an agent is ready and idle [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "hidden when an agent is ready and idle"]
+- AC5: the banner is hidden when nothing is queued [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx -t "hidden when nothing is queued"]
+- AC6: the age follows oldest_queued_at from the message_status frame [evidence: command:npx vitest run src/chat/AgentUnavailableBanner.test.tsx src/api/stream.test.ts]
+- AC7: agentMarkState maps dead to error [evidence: command:npx vitest run src/ribbon/stateMark.test.ts]
+- AC8: lint and typecheck pass [evidence: command:npm run lint && npx tsc -b]
 
 ## Files
 
@@ -70,9 +74,11 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the tests named in the requirement; run the verify, expect them to fail.
+- Green: implement the banner, the stateMark mapping and the stream field; run the verify, expect all passed.
 
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 amended: Q2 settled: narrowed banner rule
