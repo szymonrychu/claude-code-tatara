@@ -1,6 +1,6 @@
 ---
 title: web files split layout
-status: in-progress
+status: done
 repo: agents-web
 value: "the Files panel shows the tree on the left and the open files on the right, refreshed without losing edits"
 files: [src/files/FilesPanel.tsx, src/files/FilesPanel.test.tsx, src/layout/Workspace.tsx, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/files/FilesPanel.test.tsx src/files/Fil
 depends_on: [web-file-tabs-view, web-file-tabs-state, web-sync-write-api]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 8a20af29af3e61beee7396475d627ad485e1174d
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 1811472
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1702700, review 108772"
 ---
 
 # web files split layout
@@ -93,3 +93,5 @@ The Files panel shows the tree on the left (above on a phone) and the open files
 - Workspace sizes (25/45/30) stay as they are (design Non-goals).
 
 - 2026-10-27 amended: carry web-file-tabs-view ac8 (editor chunk) which only passes once FilesPanel mounts FileTabs
+
+- 2026-10-27 done
