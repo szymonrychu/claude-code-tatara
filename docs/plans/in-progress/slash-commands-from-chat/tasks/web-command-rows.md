@@ -1,6 +1,6 @@
 ---
 title: web command rows
-status: in-progress
+status: done
 repo: agents-web
 value: "the chat shows each slash command once, with its live status and claude's output"
 files: [src/chat/chatModel.ts, src/chat/entries.tsx, src/chat/chatModel.test.ts, src/chat/ChatLog.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/chat/chatModel.test.ts src/chat/ChatLog.test.tsx src
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 24e6911363fc1ba04c254a883d21cb77bc047917
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 665380
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 590527, review 74853"
 ---
 
 # web command rows
@@ -69,3 +69,5 @@ A slash command sent from the chat appears as one row that updates from queued t
 - Ruling pinned by ac3: the typed-line echo folds into the command row.
 - Run only the chat test files: the full suite has 10 load-dependent timeouts here (design Constraints).
 - No dependency inside the epic (the event shape is the wrapper's existing one; `args` becomes a string with wrapper-command-args).
+
+- 2026-10-27 done
