@@ -1,6 +1,6 @@
 ---
 title: fake wrapper file write
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: orchestrator tests exercise a fake wrapper held to the real write contract
 files: [tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_fake_wrapper_con
 depends_on: [wrapper-file-write-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: cf729243c3abf7cd49d04a9f518377eca81d94b2
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 759899
+actual_roles: "impl 4, review 1"
+actual_role_tokens: "impl 654989, review 104910"
 ---
 
 # fake wrapper file write
@@ -68,3 +68,5 @@ The fake answers a save exactly as the real wrapper does, and one contract suite
 - `_tree` writes files through the turn `files` field on both legs; the stamp for `expected` comes from a `files/content` GET on the same leg, never computed by the test.
 - Symlinks and the outside file of the fake-only cases are written straight into `fake.workdir(sid)` and a `tmp_path` sibling.
 - Copy the wrapper's semantics from its `api/files.py` and README section on its epic branch; do not import the wrapper package.
+
+- 2026-10-27 done
