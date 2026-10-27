@@ -1,6 +1,6 @@
 ---
 title: web sync orchestrator api
-status: in-progress
+status: done
 repo: agents-web
 value: "the web client's generated types know the download route and the listing target_type"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]
@@ -8,15 +8,15 @@ verify: "mise exec -- npm run check:api && mise exec -- npx tsc -b && mise run l
 depends_on: [orch-file-download-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 47a13832e81939c5500e81a061d4b92ca953e01c
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 4
+actual_tokens: 458404
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 386810, review 71594"
 ---
 
 # web sync orchestrator api
@@ -61,3 +61,5 @@ The web client's generated types match the orchestrator commit carrying the down
 - The default `../agents-orchestrator` is the sibling integration tree; the script refuses an `openapi.json` with uncommitted changes.
 - If the regenerated types break compilation elsewhere (drift since ff54218), report it as a `discovered` entry; do not patch it here.
 - No hand edits to generated files.
+
+- 2026-10-27 done
