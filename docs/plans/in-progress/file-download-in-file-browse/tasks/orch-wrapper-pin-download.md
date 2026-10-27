@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Design D9, verbatim: "once the wrapper change is merged on claude-code-wrapper `main`, the orchestrator pins that merge commit in the dev dependency (`pyproject.toml`, `uv.lock`), README `## Images` and `e2e/agent-test.Dockerfile` (`BASE_IMAGE`, `WRAPPER_SHA`), and the kind e2e gets a download case, so CI's integration leg and e2e run the real route. Precedent: done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin`."
 
-Needs a merged upstream: the claude-code-wrapper PR carrying task wrapper-file-download-route merged on `main`. Do not start before `git -C <wrapper checkout> fetch origin main` shows a `main` commit whose `src/claude_code_wrapper/api/files.py` has the `files/download` route; the pin is that merge commit (40-character sha, image tag its first 7 characters). The orchestrator amends this task with the sha when the PR merges.
+Needs a merged upstream: the claude-code-wrapper PR carrying task wrapper-file-download-route merged on `main`. Do not start before `git -C <wrapper checkout> fetch origin main` shows a `main` commit whose `src/claude_code_wrapper/api/files.py` has the `files/download` route; the pin is that merge commit (40-character sha, image tag its first 7 characters). Merged (2026-10-27): claude-code-wrapper PR #5, merge commit `4581f3bff79741d934272653c1a93d0ccfc95ba8`; `<sha>` is that value and `<sha7>` is `4581f3b`.
 
 Scope (agents-orchestrator):
 - `pyproject.toml`: dev dependency `claude-code-wrapper @ git+https://github.com/szymonrychu/claude-code-wrapper@<sha>`; `uv.lock` refreshed with `uv lock`.
@@ -69,3 +69,5 @@ CI's integration contract leg and kind e2e build the agent image from the wrappe
 - `tests/test_images.py` ties pyproject, uv.lock, README Images and the Dockerfile to one sha (`test_ccw_dev_dependency_matches_agent_image_sha`, `test_agent_test_dockerfile_matches_dev_dependency`); `tests/test_render.py` validates rendered configs against the pinned wrapper's config schema.
 - The Harbor image exists only for wrapper `main` builds; check with `regctl image digest` when credentials allow, else `scripts/e2e.sh` builds from source.
 - Precedent: done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin` (amended with the merge sha when the wrapper PR merged).
+
+- 2026-10-27 amended: wrapper PR #5 merged at 4581f3b
