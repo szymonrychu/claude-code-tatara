@@ -594,6 +594,11 @@ Discovery plan inputs placed:
   `max_restarts` untouched.
 - The fake claude's echo shapes match the probe transcripts (retro proposal).
 
+## Lead settlements after the revision (2026-10-27)
+
+- (my call) The path-like-prose probe ('/workdir/foo is broken', '/etc/hosts') runs first: the implementers of orch-slash-parser and wrapper-slash-turn-guard run it before writing their classifier and pin its result; wrapper-command-signals re-checks it on the final parser.
+- (my call) Real-binary probes use the pod's existing Claude Code login in a throwaway dir under .scratchpad/probe-slash, trivial model calls only, every process killed afterwards; credentials are never copied or printed.
+
 ## Left to the builder
 
 - Internal helper names and module layout inside the named files (for example where `is_slash_text`
