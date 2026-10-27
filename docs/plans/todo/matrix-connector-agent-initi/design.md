@@ -457,6 +457,7 @@ epics that bear on this epic (recurring workflow ones first).
 none
 - Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [recommended: yes]
 - Q2: Your answer after an agent starts a chat goes to that session while it runs, otherwise to the room's chat session (my call, pending gate)? [recommended: yes]
+- Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [recommended: yes]
 
 ## Irreversible operations in scope
 
