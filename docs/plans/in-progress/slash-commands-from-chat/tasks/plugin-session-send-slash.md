@@ -1,6 +1,6 @@
 ---
 title: plugin session send slash
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: "a superleader agent's tool description says slash text runs as a command on the target session"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 932d12e3d93c482514ca2f5ccfcaa35d6ef5419d
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 327684
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 284957, review 42727"
 ---
 
 # plugin session send slash
@@ -60,3 +60,5 @@ A superleader agent reading its tool list knows that "/x" sent to another sessio
 - No dependency inside the epic.
 
 - 2026-10-27 amended: interrogate item 1 (the description says only a superleader's slash text runs as a command), design D13 revised
+
+- 2026-10-27 done
