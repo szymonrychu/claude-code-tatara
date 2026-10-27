@@ -1,6 +1,6 @@
 ---
 title: orch file download route
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the browser can download any workspace file through the orchestrator, streamed and byte-exact"
 files: [src/agents_orchestrator/api/workspace.py, src/agents_orchestrator/api/schemas.py, README.md, openapi.json, MEMORY.md, tests/test_api_file_download.py, tests/test_api_files.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_api_file_downloa
 depends_on: [fake-wrapper-download, wrapper-client-download]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 33d1c8fafb09af72ec2dbb3d1683547e438f36d6
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 9
+actual_tokens: 3271323
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 3068146, review 203177"
 ---
 
 # orch file download route
@@ -92,3 +92,5 @@ Scope (agents-orchestrator):
 - `tests/test_api_files.py` and the contract real leg run only in CI (Docker); say so in the hand-back rather than claiming them.
 
 - 2026-10-27 amended: builder check: design's abort-after-first-byte behaviour had no acceptance condition (my call)
+
+- 2026-10-27 done
