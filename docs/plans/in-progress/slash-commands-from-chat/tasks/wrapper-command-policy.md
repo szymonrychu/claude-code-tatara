@@ -1,6 +1,6 @@
 ---
 title: wrapper command policy
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: any command name or a wildcard can be allowed while session-ending commands stay refused
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/commands.py, src/claude_code_wrapper/metrics.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/commands.py, README.md, tests/test_command_registry.py, tests/test_api_commands.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_registry.py tests/test_api_commands.py
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: f03cf5000bce9f032468fb5bf6dbc332e1a41120
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 32
+actual_tokens: 2573841
+actual_roles: "impl 31, review 2"
+actual_role_tokens: "impl 2453131, review 120710"
 ---
 
 # wrapper command policy
@@ -96,3 +96,5 @@ A session config can allow any command name or `"*"` for clients and agents; the
 - No LSP: find every `BUILTIN_COMMAND_NAMES` use with `grep -rn BUILTIN_COMMAND_NAMES src tests` (config.py, commands.py, metrics.py today).
 
 - 2026-10-27 amended: interrogate item 5 (aliases reset, new, continue, update, quit, bg, tp, rc; cd and the reviewed session-moving and account commands; case-insensitive; one config value) and item 2 (D2 name pattern), design D5 revised
+
+- 2026-10-27 done
