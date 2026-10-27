@@ -31,7 +31,7 @@ README Goals, verbatim:
 - "An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji."
 - "The user's next chat message after an agent-initiated or follow-up message reaches the session that last spoke in the room while it runs."
 
-Design D16, verbatim (e2e): "E2E: the connector stack test (real api and bot processes, fake homeserver, fake orchestrator) covers send without inbound, follow-ups during a running chat run, reply and reaction relations, refusals, and the answer routed to the last speaker."
+Design D16, verbatim (e2e): "E2E: the connector stack test (real api and bot processes, fake homeserver, fake orchestrator) covers send without inbound, follow-ups during a running chat run, reply and reaction relations, refusals, the answer routed to the last speaker, and a 16000-character text of 4-byte characters accepted and delivered in chunks (interrogate Act 6)."
 
 Scope (agents-matrix-connector): the e2e stack (`tests/e2e/conftest.py`) also starts the api's agent listener with a test token hash and exposes a client for `/chat/v1`; new `tests/e2e/test_e2e_agent.py`.
 
@@ -43,8 +43,9 @@ Scope (agents-matrix-connector): the e2e stack (`tests/e2e/conftest.py`) also st
 - ac4: a denied room, an unflagged unbound room and a bad reference are refused at once and nothing reaches the homeserver [evidence: test:tests/e2e/test_e2e_agent.py::test_refusals]
 - ac5: after a non-mx session's delivered send, the user's next message in that room is delivered to that session as a follow run [evidence: test:tests/e2e/test_e2e_agent.py::test_answer_routed_to_last_speaker]
 - ac6: a chat-started turn whose final answer equals what the session already sent is not posted twice [evidence: test:tests/e2e/test_e2e_agent.py::test_no_double_output]
-- ac7: the existing e2e cases still pass [evidence: command:uv run pytest tests/e2e/test_e2e_api.py]
-- ac8: the targeted tests and lint pass [evidence: command:uv run pytest tests/e2e/test_e2e_agent.py && mise run lint]
+- ac7: a message of 16000 4-byte characters is accepted by the agent listener and reaches the fake homeserver in MATRIX_REPLY_CHUNK_CHARS chunks whose bodies join to that text, and its status reads sent [evidence: test:tests/e2e/test_e2e_agent.py::test_max_text_delivered]
+- ac8: the existing e2e cases still pass [evidence: command:uv run pytest tests/e2e/test_e2e_api.py]
+- ac9: the targeted tests and lint pass [evidence: command:uv run pytest tests/e2e/test_e2e_agent.py && mise run lint]
 
 ## Files
 
@@ -69,3 +70,5 @@ One end-to-end suite proves G1, G2, G3 and G6 across the real api and bot proces
 - The stack needs Docker (Postgres); this pod has none, so GitHub CI runs it; quote the CI run's summary.
 - Use `agents_common.fake_orchestrator.FakeOrchestrator` as the existing e2e cases do; a non-mx session is a session the fake reports running whose slug does not start with `mx-`.
 - Build the test token at runtime (`secrets.token_hex(32)`) and pass its sha256 in the stack env.
+
+- 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters delivered end to end
