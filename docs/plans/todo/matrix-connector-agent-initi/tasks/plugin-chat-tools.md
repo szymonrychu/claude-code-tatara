@@ -28,7 +28,9 @@ README Goals, verbatim:
 - "An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji."
 - "An agent can list the rooms it may post to and read the delivery status of what it sent."
 
-Design D13, verbatim: "The orchestrator plugin gains `chat_rooms`, `chat_send`, `chat_react`, `chat_status` (HttpBinding tools, existing `on_error` mapping); descriptions say the final answer reaches the chat only for chat-started turns, sends are asynchronous and return `s<n>`, `reply_to`/`to` take `m<n>`/`s<n>`, leader only, and status via `orchestrator_chat_status`."
+Design D13, verbatim: "The orchestrator plugin gains `chat_rooms`, `chat_send`, `chat_react`, `chat_status` (HttpBinding tools, existing `on_error` mapping); descriptions say the final answer reaches the chat only for chat-started turns, sends are asynchronous and return `s<n>`, `reply_to`/`to` take `m<n>`/`s<n>`, leader only, status via `orchestrator_chat_status`, and the 1:1 binding (D9): a session talks in at most one chat room, its bound room, and starts a chat only in an unbound flagged room while it is bound to none (`room_bound`, `session_bound` otherwise)."
+
+User decision (final gate, 2026-10-27), verbatim: "1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go". Design D2, verbatim: "the binding refusals of D4 (b) are 409 `room_bound` and 409 `session_bound`."
 
 Design D2, verbatim (the routes the tools call): "`GET /agent/v1/chat/rooms` [...] `POST /agent/v1/chat/messages` body `{text, room?, reply_to?}` [...] `POST /agent/v1/chat/reactions` body `{to, key}` [...] `GET /agent/v1/chat/messages/{id}`".
 
@@ -40,9 +42,9 @@ Scope (any-mcp-tatara-plugins, `orchestration/orchestrator`): four `spec(...)` e
 
 - ac1: the plugin lists fifteen tools, the eleven existing ones plus chat_rooms, chat_send, chat_react and chat_status (updated) [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_lists_fifteen_tools]
 - ac2: chat_rooms calls GET /agent/v1/chat/rooms, chat_send POST /agent/v1/chat/messages with {text, room?, reply_to?}, chat_react POST /agent/v1/chat/reactions with {to, key}, chat_status GET /agent/v1/chat/messages/{id}, each with the session credentials [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_chat_tools_call_agent_routes]
-- ac3: upstream refusals (room_not_allowed, room_not_authorised, bad_reference, rate_limited, not_leader, chat_unavailable) surface their code and status, the token redacted [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_chat_errors_surface_code]
-- ac4: the chat_send description says the final answer reaches the chat only for chat-started turns, that sends are asynchronous and return s<n>, that reply_to takes m<n> or s<n>, and that only the leader may send; chat_react and chat_status descriptions name their references [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_chat_descriptions]
-- ac5: the plugin README lists the four chat tools [evidence: command:grep -q orchestrator_chat_send orchestration/orchestrator/README.md && grep -q orchestrator_chat_status orchestration/orchestrator/README.md]
+- ac3: upstream refusals (room_not_allowed, room_not_authorised, room_bound, session_bound, bad_reference, rate_limited, not_leader, chat_unavailable) surface their code and status, the token redacted [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_chat_errors_surface_code]
+- ac4: the chat_send description says the final answer reaches the chat only for chat-started turns, that sends are asynchronous and return s<n>, that reply_to takes m<n> or s<n>, that only the leader may send, and that a session talks in at most one chat room (its bound room) and starts a chat only in an unbound flagged room while bound to none; chat_rooms, chat_react and chat_status descriptions name the binding rule or their references [evidence: test:orchestration/orchestrator/tests/test_orchestrator_plugin.py::test_chat_descriptions]
+- ac5: the plugin README lists the four chat tools and the one-room-per-session rule [evidence: command:grep -q orchestrator_chat_send orchestration/orchestrator/README.md && grep -q orchestrator_chat_status orchestration/orchestrator/README.md && grep -qi "one room" orchestration/orchestrator/README.md]
 - ac6: the targeted tests and lint pass [evidence: command:uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py tests/test_repo.py && mise run lint]
 
 ## Files
@@ -69,3 +71,5 @@ The orchestrator plugin offers the four chat tools against the orchestrator's ch
 - Follow `test_session_tools_call_agent_routes` and `test_scale_and_init_tools_match_contracts` for the route assertions.
 - Optional body fields that the agent omits must not be sent as null if the binding would send them; the connector rejects unknown fields, not nulls, so either is accepted, but keep it consistent with `session_send`.
 - Depends on orch-chat-relay only for the agreed paths; nothing here imports the orchestrator.
+
+- 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): descriptions and binding refusal codes
