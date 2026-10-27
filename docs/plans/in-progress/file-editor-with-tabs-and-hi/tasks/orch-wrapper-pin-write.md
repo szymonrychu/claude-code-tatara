@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin write
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "CI's real-wrapper contract leg and kind e2e prove the save against the wrapper agents will run"
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/e2e/test_e2e_kind.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_images.py tests/
 depends_on: [orch-file-write-route, wrapper-file-write-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c6860bb2419af9a90931c50e968bc6d2a3d6a8f5
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 392937
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 250119, review 142818"
 ---
 
 # orch wrapper pin write
@@ -75,3 +75,5 @@ CI's integration contract leg and kind e2e build the agent image from the wrappe
 - The e2e reads the stamp from `files/content` before writing; never compute it in the test.
 
 - 2026-10-27 amended: wrapper PR #6 merged at fb005fd
+
+- 2026-10-27 done
