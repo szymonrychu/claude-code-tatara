@@ -79,6 +79,7 @@ NetworkPolicies.
 
 - Services talk only through HTTP or a queue; each table has exactly one writer; queue tables change
   rows only through status-guarded updates (`agents_common.db.queue.transition`).
+- Ordering amendment (user decision 2026-10-27 20:44Z and 20:52Z, via mx-34): the session-loss incident epic deploy-safe-agent-sessions runs first and is a README blocker (it edits shared orchestrator files: `openapi.json`, `settings.py`, `tests/e2e/test_e2e_kind.py`, `render.py`); this epic builds on `main` after it merges. slash-commands-from-chat is in stage `parked` (ticket.py), so it no longer reserves files.
 - Ordering (user decision 2026-10-27, via mx-5, "Yes!"): this epic runs next, ahead of
   slash-commands-from-chat, which is parked and resumes after this epic merges; the order is this
   epic, slash-commands-from-chat, hive-decoupling, session-orchestration-mcp. This epic builds
