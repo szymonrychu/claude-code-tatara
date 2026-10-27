@@ -44,6 +44,8 @@ Scope (agents-orchestrator):
 - `README.md`: the hive-state push paragraph gains the `handover_due` note (threshold, receivers, candidates, re-send rule, protocol); `### Hive` names it.
 - `MEMORY.md`: dated entry: third amendment of hive D26 (targeted advice), Q8's exclusion as decided at the gate.
 
+Builder check settlement 7 (2026-10-27, my call): the `handover_due` evaluation (and the `leadership_request` outcome pass of orch-handover-outcome-note) runs on every push tick, outside the `_claim`/`_release` hash path of `hive_state`: an unchanged `hive_state` hash never skips it.
+
 ## Acceptance conditions
 
 - ac1: a leader at or above the threshold gets one keyed handover_due note; members get none; a leader below the threshold gets none [evidence: test:tests/test_hive_push.py::test_handover_due_sent_to_leader_at_threshold]
@@ -56,6 +58,7 @@ Scope (agents-orchestrator):
 - ac8: the leader-auto-handover backstops are unchanged [evidence: command:uv run --frozen pytest tests/test_dispatcher_auto_handover.py tests/test_leadership_pass.py]
 - ac9: README and MEMORY.md document handover_due [evidence: command:grep -q "handover_due" README.md && grep -q "handover_due" MEMORY.md]
 - ac10: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_hive_push.py tests/test_eligibility_fragments.py && mise run lint]
+- ac11: the handover_due evaluation runs on every tick even when the hive_state hash is unchanged (outside the _claim/_release path) [evidence: test:tests/test_hive_push.py::test_handover_due_runs_when_hive_state_unchanged]
 
 ## Files
 
@@ -77,7 +80,7 @@ A leader at or above the threshold sees, within one push tick plus wrapper deliv
 
 ## Steps
 
-- Red: the tests of ac1-ac6 in `tests/test_hive_push.py` and the ac7 assertion; run `uv run --frozen pytest tests/test_hive_push.py tests/test_eligibility_fragments.py`: they fail.
+- Red: the tests of ac1-ac6 and ac11 in `tests/test_hive_push.py` and the ac7 assertion; run `uv run --frozen pytest tests/test_hive_push.py tests/test_eligibility_fragments.py`: they fail.
 - Green: hive.py, README, MEMORY; run the task's verify: passes. Quote the summary line.
 
 ## Notes
@@ -86,3 +89,5 @@ A leader at or above the threshold sees, within one push tick plus wrapper deliv
 - Q8 (candidates at or above the threshold left out) is an open gate question; if answered no, the task is amended before it starts.
 - The scalable test is `spec.scalable` (as `on_start.orchestrator_allow` uses it).
 - DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.
+
+- 2026-10-27 amended: builder check settlement 7: handover_due and outcome pass run every tick outside the _claim/_release hash path
