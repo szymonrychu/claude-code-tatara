@@ -1,6 +1,6 @@
 ---
 title: fake wrapper download
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: orchestrator tests exercise a fake wrapper held to the real download and listing contract
 files: [tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py]
@@ -8,15 +8,15 @@ verify: "unset VIRTUAL_ENV && uv run --frozen pytest tests/test_fake_wrapper_con
 depends_on: [wrapper-file-download-route]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bd809e04997d2b08d5af63df3527aabaf5bed737
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 4
+actual_tokens: 370840
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 264955, review 105885"
 ---
 
 # fake wrapper download
@@ -65,3 +65,5 @@ The fake answers the download and the listing exactly as the real wrapper does, 
 - The real leg (`-m integration`, real wrapper image) runs only in CI and passes only once orch-wrapper-pin-download pins the wrapper commit carrying the route; locally the verify runs the fake leg.
 - `_tree` writes files through the turn `files` field (text only) on both legs; symlinks, the FIFO and the over-cap file are written straight into `fake.workdir(sid)` in the fake-only cases.
 - Build the fake's headers with the same rules as the wrapper (copy the semantics from the wrapper's `api/files.py` on its epic branch, do not import the wrapper package).
+
+- 2026-10-27 done
