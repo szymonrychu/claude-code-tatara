@@ -1,6 +1,6 @@
 ---
 title: smoke step7 per-wait deadlines
-status: todo
+status: done
 repo: agents-helmfile
 value: the scale-below-leader smoke step never fails spuriously on a slow pod-1
 files: [scripts/smoke.sh, tests/test_smoke_script.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_smoke_script.py && mise run lint"
 depends_on: [helmfile-apply-smoke]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c8141fa00c2a2603470bf0dce369e36086353ed7
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 20
+actual_tokens: 715527
+actual_roles: "impl 13, review 7"
+actual_role_tokens: "impl 356407, review 359120"
 ---
 
 # smoke step7 per-wait deadlines
@@ -65,3 +65,5 @@ Every wait in step 7 gets its own `SMOKE_TIMEOUT_S` window; a pod-1 Ready that u
 ## Notes
 
 d1c09ff (after the epic merge) added the agent-ready wait and make-leader retry in this region; build on it. Never run `mise run smoke` or `mise run apply` (live); the orchestrator does that. helmfile-apply-smoke commits its MEMORY.md entry first in the same tree; keep it.
+
+- 2026-10-27 done: reviewer clean: 113 passed, lint green; new tests fail on pre-fix smoke.sh
