@@ -1,6 +1,6 @@
 ---
 title: chat markdown renderer
-status: in-progress
+status: done
 repo: agents-web
 value: "agent answers and user input can be rendered as safe GFM markdown (tables, lists, code, links) with raw HTML shown as text"
 files: [package.json, package-lock.json, src/chat/Markdown.tsx, src/chat/Markdown.test.tsx, src/theme.ts, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise exec -- npx vitest run src/chat/Markdown.test.tsx src/layout/desig
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: c2693f2310c7808442dabe7ae0e16315bf7bed62
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 8
+actual_tokens: 1454781
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1323140, review 131641"
 ---
 
 # chat markdown renderer
@@ -129,3 +129,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-27 done
