@@ -23,20 +23,24 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Design D14, verbatim: "claude-code-wrapper 0.4.0 (version bump, tag `v0.4.0` on the merge commit after the `main` build, run by the orchestrator session), then agents-orchestrator pins that merge commit (pyproject, uv.lock, `e2e/agent-test.Dockerfile`, README Images) and enables `client: ["*"]` in `e2e/agent-test.config.yaml` for the real contract leg and e2e. No agents-helmfile task (user decision 4). Precedent: in-progress epic leader-auto-handover tasks wrapper-release-0-3-0 and orch-wrapper-pin-0-3-0."
+Design D14, verbatim: "claude-code-wrapper 0.4.0 (version bump, tag `v0.4.0` on the merge commit after the `main` build, run by the orchestrator session), then agents-orchestrator pins that merge commit (pyproject, uv.lock, `e2e/agent-test.Dockerfile`, README Images) and enables `client: ["*"]` in `e2e/agent-test.config.yaml` for the real contract leg and e2e. No agents-helmfile task (user decision 4). Precedent: in-progress epic leader-auto-handover tasks wrapper-release-0-3-0 and orch-wrapper-pin-0-3-0. Builder check settlements (my call): the wrapper PR merges mid-epic through the normal PR flow; the orchestrator session pushes tag `v0.4.0`, and wrapper-release-0-4-0's "tag exists on origin" condition is checked by the orchestrator after that push, not by the implementer or reviewer."
 
 User decision, verbatim: "Release and pin flow like done epic leader-auto-handover (wrapper release, orchestrator pin) if the orchestrator needs a new wrapper API".
+
+User decision (builder check), verbatim: "the wrapper PR merges mid-epic through the normal PR flow, the orchestrator session pushes tag v0.4.0, and wrapper-release-0-4-0's 'tag exists on origin' AC is checked by the orchestrator after the push (state that in the task)".
 
 Scope:
 - Version `0.4.0` in `pyproject.toml` and `src/claude_code_wrapper/__init__.py`; `uv lock`.
 - `tests/test_packaging.py::test_version_matches_pyproject` keeps pyproject, `__version__` and the installed metadata in agreement.
-- Release steps, run by the orchestrator session (never a subagent) once this epic's wrapper PR is merged to `main`: wait for `build.yaml` to push `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>`, push tag `v0.4.0` on the merge commit (`release.yaml` retags `:0.4.0` and `:latest`; irreversible, listed in design.md), then amend `orch-wrapper-pin-0-4-0` with the merge sha.
+- The wrapper PR of this epic (every wrapper task) merges to `main` mid-epic through the normal PR flow, before the orchestrator pin tasks start.
+- Release steps, run by the orchestrator session (never a subagent) once that PR is merged to `main`: wait for `build.yaml` to push `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>`, push tag `v0.4.0` on the merge commit (`release.yaml` retags `:0.4.0` and `:latest`; irreversible, listed in design.md), then amend `orch-wrapper-pin-0-4-0` with the merge sha.
+- ac3 ("tag exists on origin") is checked by the orchestrator session after it pushed the tag; the implementer and the reviewer check ac1, ac2 and ac4 only.
 
 ## Acceptance conditions
 
 - ac1: pyproject, __version__ and the installed metadata agree [evidence: test:tests/test_packaging.py::test_version_matches_pyproject]
 - ac2: the version is 0.4.0 in pyproject and the package [evidence: command:grep -q '^version = "0.4.0"' pyproject.toml && grep -q '__version__ = "0.4.0"' src/claude_code_wrapper/__init__.py]
-- ac3: after the merge, tag v0.4.0 exists on origin at the merge commit [evidence: command:test -n "$(git ls-remote --tags origin v0.4.0)"]
+- ac3: (checked by the orchestrator session after it pushed the tag) tag v0.4.0 exists on origin at the merge commit [evidence: command:test -n "$(git ls-remote --tags origin v0.4.0)"]
 - ac4: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
 ## Files
@@ -64,3 +68,5 @@ The orchestrator and, after the gate's deploy decision, the live agents can run 
 - README `### Release`: `release.yaml` fails when the `:<shortsha>` image is missing, so tag only after the main build is green.
 - If another epic releases the wrapper first, this task and orch-wrapper-pin-0-4-0 are amended to the next minor (design Assumptions).
 - Depends on every wrapper task of this epic.
+
+- 2026-10-27 amended: builder check settlement: the wrapper PR merges mid-epic through the normal PR flow, the orchestrator session pushes v0.4.0 and checks ac3 after the push, design D14 revised
