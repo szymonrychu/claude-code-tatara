@@ -332,7 +332,7 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 - Who runs `gh` in agents-helmfile (auth in the deploying pod) is the deploy session's; the apply task checks it first.
 
 ## Open questions
-
+- Q1: slash-commands-from-chat (in progress) will tag claude-code-wrapper v0.4.0; if v0.4.0 is tagged before this epic's wrapper release, cut the next patch above the latest tag (v0.4.1) instead of v0.3.2 (tasks wrapper-patch-release, orch-wrapper-pin-patch, helmfile-deploy-pins, helmfile-apply-live-check)? [recommended: yes]
 
 ## Irreversible operations in scope
 
