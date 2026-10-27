@@ -71,7 +71,7 @@ The chat tools work live: an agent posted, replied and reacted in the owner DM w
 
 - Live and irreversible operations listed in design.md: the applies (the plugins ref rolls every running agent pod, including the mx-5 hive), migration 0002, the flag grant, the Messenger sends.
 - Never put an apply in AC evidence (workbench MEMORY 2026-10-25); `mise run diff` exits 0 only when nothing is pending.
-- If S2 or S3 shows wrongly in Messenger, stop and ask the user (design Assumptions) before closing the epic.
+- If S2 or S3 shows wrongly in Messenger, reply/react are dropped and send stays (user decision 2026-10-27): record it in MEMORY.md and add the removal (connector reply_to and reactions routes, orchestrator reactions route and `reply_to`, plugin chat_react and `reply_to`, docs) as new tasks of this epic with `ticket.py new-task`; do not stop to ask.
 - Minutes run 3-4x over seeds for live tasks in recent epics (retro); plan for several smoke runs.
 
 - 2026-10-27 amended: user decision 2026-10-27: reply/react dropped and send kept if S2 or S3 fails, no stop to ask; Q1 approved

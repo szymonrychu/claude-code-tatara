@@ -54,17 +54,22 @@ Scope (agents-matrix-connector): `policy.py` (the pure `evaluate_agent_room`), `
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `policy.py:evaluate_agent_room(room: Subject, members: Sequence[Subject], rules: Sequence[Rule], default_policy: str) -> Decision` (pure): `room` has `sender_id` None; each member subject carries the member as sender. Order (D4): infrastructure, encrypted, room/alias deny, member deny, room/alias allow, any member allowed by `evaluate`, else `not_allowed`. Reasons reuse `ROOM_INFRASTRUCTURE`, `ROOM_ENCRYPTED`, `denied(kind)`, `NOT_ALLOWED`; `rule_id` and `source` as in `evaluate`.
+- `api/rooms.py:agent_room_decision(room: directory.RoomRow, rule_list: list[policy.Rule], settings: ConnectorSettings) -> policy.Decision`: members with `membership == "join"` whose `user_id` is not in `settings.self_ids()` or `settings.bridge_bots`, built with `_member_subject`; the room with `_room_subject`.
+- `policy.evaluate` is unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One function answers whether agents may post to a room under the user's existing rules: a chat allowed through a person's facebook or user rule is reachable, a chat with any denied member is not.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the six `test_agent_room_*` tests to `tests/test_policy.py`; run `uv run pytest tests/test_policy.py`: they fail (no function).
+- Green: `policy.evaluate_agent_room`, `api/rooms.py:agent_room_decision`, README; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Pure and non-DB: build `directory.RoomRow` and `MemberRow` values in memory for the `agent_room_decision` test; the whole file runs locally.
+- `room_infrastructure` and `room_encrypted` come first, exactly as `evaluate` does.
+- Do not change `evaluate` or the inbound path (README Non-goal: no change to the inbound allow/deny policy model).
+- The callers are mxc-agent-routes (routes and listing) and mxc-bot-sends-delivery (claim and send time); this task only provides the function.

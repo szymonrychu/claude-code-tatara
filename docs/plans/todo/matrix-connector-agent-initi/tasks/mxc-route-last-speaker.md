@@ -9,9 +9,9 @@ depends_on: [mxc-sends-schema, mxc-bot-sends-delivery]
 model: opus
 review: ""
 verified_head: ""
-points: 5
-expected_minutes: 9
-expected_tokens: 1836811
+points: 8
+expected_minutes: 14
+expected_tokens: 3155191
 points_actual: ""
 actual_minutes: ""
 actual_tokens: ""
@@ -73,8 +73,10 @@ Scope (agents-matrix-connector): `db/runs.py` (the candidate query replacing `la
 
 ## Interfaces
 
-- `db/runs.py:room_speakers(conn, room_id, limit=5) -> list[uuid.UUID]` (name left to the builder), replacing `latest_session`.
-- `worker.py:Worker._room`: for each candidate, `agent_runs.running_session`; the first running one gets a `follow` run with `preset_id` from that `Session.preset_id`, else the room preset; `first=True` rendering when the session has no earlier run in the room.
+- `db/runs.py:room_speakers(conn, room_id, limit=5) -> list[uuid.UUID]` (name left to the builder), replacing `latest_session`: sessions ordered by when each last spoke (a run at its last sent `reply` outbound row's `sent_at`, else its `started_at`; a send at its `sent_at`), ties by the higher row id.
+- `db/runs.py:RunRow.preset_id: uuid.UUID | None`; `create_run(conn, *, room_id, preset_id: str | None, kind)`; `has_other_run(conn, session_id, room_id, exclude_run_id) -> bool` (name left to the builder).
+- `worker.py:Worker._room`: walks the candidates first (`agent_runs.running_session` each); the first running one gets a `follow` run with `preset_id` from that `Session.preset_id`, else the room's effective preset, else None; only with none running does `_preset` decide between a first run and `no_preset`.
+- `worker.py:Worker._deliver` decides `first=True` rendering when the session has no other run in the room, so `Worker._resume` (which calls `_deliver` for follow runs) keeps the PREAMBLE; `RunRef.preset_id` of a follow run without a preset is `""` (never read by `deliver`).
 
 ## Expected outcome
 
@@ -82,7 +84,7 @@ When an agent started or continued a chat, the user's answer reaches that agent 
 
 ## Steps
 
-- Red: rewrite `test_create_run_and_latest_session`, add the four worker tests; run `uv run pytest tests/test_runs_repo.py tests/test_worker.py`: the new tests fail.
+- Red: rewrite `test_create_run_and_latest_session`, add the seven worker tests (ac2 to ac8); run `uv run pytest tests/test_runs_repo.py tests/test_worker.py`: the new tests fail.
 - Green: query, worker, README, MEMORY; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
@@ -90,7 +92,9 @@ When an agent started or continued a chat, the user's answer reaches that agent 
 - The equal-time tiebreak is pinned by `test_create_run_and_latest_session` (retro proposal: every tiebreak ruling names a pin test).
 - `running_session` already returns `agents_common.orchestrator.Session`, which carries `preset_id` (nullable); no new orchestrator call.
 - An `OrchestratorUnavailable` during the candidate walk keeps today's behaviour (log once a minute, retry next tick); an `OrchestratorError` for one candidate skips it.
-- The no_preset ignore and the new-session cap stay where they are.
+- The no_preset ignore and the new-session cap now apply only when no candidate runs (interrogate Act 1); their behaviour for a room with no running speaker is unchanged.
+- `runs.preset_id` is nullable from migration 0002 (mxc-sends-schema), with a CHECK that first runs keep one.
+- The ordering scenario (A starts, B sends, A answers, user replies -> A) is the pin test of the last-spoke rule (`test_answer_goes_to_session_that_last_spoke`).
 - MEMORY.md entry format: `- One session per room at a time: the one that last spoke (2026-10-27, epic matrix-connector-agent-initi): ...` amending the 2026-10-25 line, newest first.
 - DB-backed tests (CI).
 

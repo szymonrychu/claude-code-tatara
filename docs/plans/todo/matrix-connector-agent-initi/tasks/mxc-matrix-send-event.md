@@ -45,17 +45,19 @@ Scope (agents-matrix-connector): `matrix.py` (`MatrixClient.send_event`; `send_t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `matrix.py:MatrixClient.send_event(room_id: str, event_type: str, txn_id: str, content: dict) -> str`: `PUT /_matrix/client/v3/rooms/{room_id}/send/{event_type}/{txn_id}` through `_request`, returning the event id.
+- `send_text(room_id, txn_id, body)` calls `send_event(room_id, "m.room.message", txn_id, {"msgtype": "m.text", "body": body})`; its signature and callers are unchanged.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The bot has one PUT for every event type, so quoted replies and reactions can be sent with the same error handling and txn-id dedup as replies today.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_send_event_type_and_content` and `test_send_event_errors` to `tests/test_matrix_client.py`; run `uv run pytest tests/test_matrix_client.py`: they fail (no method).
+- Green: `send_event`, `send_text` through it; run the task's verify: passes. Quote the summary line with counts.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `MatrixClient._request` and its error taxonomy; build the path with `_path("rooms", room_id, "send", event_type, txn_id)` as `send_text` does today.
+- `tests/test_matrix_client.py` runs locally (no DB).

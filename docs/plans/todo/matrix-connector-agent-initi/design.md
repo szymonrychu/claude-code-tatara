@@ -130,7 +130,7 @@ The orchestrator stays free of Matrix concepts: it calls a generic chat upstream
 Every upstream call carries `Authorization: Bearer <ORCH_CHAT_TOKEN>`, `X-Orch-Session: <session
 uuid>` and `X-Orch-Slug: <slug>`, and never the agent token. Responses: rooms 200 `{"rooms": [{room_id,
 name, kind, bound, agents_may_initiate}]}`; messages and reactions 202 `{id: "s<n>", status:
-"queued"}`; status 200 `{id, kind, status, reason, room_id, created_at, sent_at}`. Errors use the
+"queued"}` (a duplicate, D5: the existing send's id and current status); status 200 `{id, kind, status, reason, room_id, created_at, sent_at}`. Errors use the
 shared `{"error": {"code", "message"}}` shape. The orchestrator passes the upstream status and JSON
 body through unchanged, and answers 503 `chat_unavailable` on a connection error, timeout or a
 non-JSON upstream answer. There is one upstream: no multi-channel registry (YAGNI).
@@ -161,9 +161,26 @@ bot (puts an HTTP surface next to the Matrix token; breaks "nothing reaches the 
 ### D4: room authorisation and room choice
 
 Session S may post to room R only if both hold (architecture fork 2, pick):
-(a) `policy.evaluate(room subject R)` is allow, checked when the api accepts the request and again
-when the bot delivers it;
+(a) R is policy-allowed for agent sends, checked when the api accepts the request, when the bot
+claims the send, and again right before each of its outbound rows is sent to the homeserver;
 (b) R is bound to S, or `room_settings.agents_may_initiate` is true for R.
+
+(a) defined (interrogate Act 2, the lead's call): agents send with no sender, so the room subject
+alone (`policy.evaluate(_room_subject(R))`) would default-deny a room allowed only by `facebook:` or
+`user:` rules and would ignore deny rules on its members. R is policy-allowed for agent sends when a
+room or alias rule allows it, or when the inbound policy would accept a message from at least one
+current non-bot member of R; any member matching a deny rule denies. In order: an infrastructure or
+encrypted room is refused exactly as for inbound (`room_infrastructure`, `room_encrypted`); a room or
+alias deny rule denies (`denied: <kind>`); a deny rule (user, facebook or display_name) matching any
+current non-bot member denies (`denied: <kind>`); a room or alias allow rule allows; one current
+non-bot member for whom `policy.evaluate` with that member as sender allows makes R allowed; else
+`not_allowed`. A current non-bot member is a `room_members` row with membership `join` whose user id
+is not `MATRIX_USER_ID` and not in `MATRIX_SELF_IDENTITIES` or `MATRIX_BRIDGE_BOTS` (my call: the
+exclusion discovery already applies). One function, `api/rooms.py:agent_room_decision(room,
+rule_list, settings) -> policy.Decision` over the pure `policy.evaluate_agent_room(room_subject,
+member_subjects, rules, default_policy)`, serves the api checks, the listing, the bot's claim and the
+send-time check (task mxc-agent-room-policy). The inbound policy model is unchanged (README
+Non-goal); this is how its rules read for a sender-less agent message.
 
 Bound means a `runs` row of R with `session_id` S, or a `sends` row of R with `session_id` S and
 status `sent` (my call: a refused, failed or still queued send binds nothing).
@@ -174,7 +191,11 @@ from an older UI never silently grants or revokes it); `RoomView` and `RoomDetai
 
 Room choice for a send: `room` given, that room; `room` omitted and `reply_to` given, the room of the
 referenced message (my call); both omitted, S's bound room when there is exactly one, else 422
-`room_required`. A reaction's room is always its target's room. An unknown room and a room failing
+`room_required`. A reaction's room is always its target's room. A room taken from `reply_to` or
+from a reaction's target goes through (a) and (b) exactly like a given room: a reply or reaction
+whose referenced message's room fails (a) answers 403 `room_not_allowed` and one failing (b) 403
+`room_not_authorised`, including an `m<n>` of an ignored inbound row in a denied room (interrogate
+Act 4). An unknown room and a room failing
 (a) answer the same 403 `room_not_allowed` (my call: no probing of room existence); a room passing
 (a) but failing (b) answers 403 `room_not_authorised`. `GET /chat/v1/rooms` lists exactly the rooms
 passing (a) and (b) for S, bound rooms first, then by name, then room id (my call: tiebreak pinned
@@ -193,12 +214,25 @@ Facebook account); a single configured home room (a helm value the user cannot c
 - `key`: 1 to 16 code points, no whitespace, no control characters and no ASCII characters; else
   422 `invalid_key`. Whether Messenger accepts arbitrary emoji is unknown; S4 shows it.
 - Request bodies reject unknown fields (422 `invalid_request`).
+- Duplicate (interrogate Act 9, the lead's call): an agent that retries after a 503
+  `chat_unavailable` timeout must not post twice. A request identical to a send of the same
+  session, room and kind, with the same `text` (message) or `key` (reaction) and the same
+  `reply_to` (the `m<n>`/`s<n>` given, or none; a reaction's `to`), compared exactly, with status
+  `queued`, `sending` or `sent` and created within the last 60 s, answers 202 with that send's id and
+  its current status (`{id: "s<n>", status: "queued" | "sending" | "sent"}`) and stores no new row
+  (my call: `sending` is in flight like `queued`; a duplicate is not counted by the rate limit; a
+  `failed` or `refused` send is not a duplicate, so a retry after a failure queues anew).
 - Check order on the connector, a refusal queues nothing: token (401 `unauthorized`), body
   validation (422 `invalid_request`, `invalid_key`), reference resolution (422 `bad_reference`),
   room choice (422 `room_required`), (a) 403 `room_not_allowed`, (b) 403 `room_not_authorised`,
-  rate 429 `rate_limited`.
-- The orchestrator caps the forwarded request body at 32 KiB (413 `payload_too_large`) and the
-  upstream call at 10 s.
+  duplicate (202, the existing send), rate 429 `rate_limited`.
+- The orchestrator caps the forwarded request body at 256 KiB (413 `payload_too_large`) and the
+  upstream call at 10 s. The cap covers the worst case of a valid maximal request (interrogate Act
+  6; my call on the figure): 16000 characters of 4 bytes each are 64000 bytes raw (the plugin's httpx
+  encodes JSON as raw UTF-8), and up to 192000 bytes when a client escapes every character as a
+  JSON surrogate pair (12 bytes), plus a room id of up to 255 characters, `reply_to` and the JSON
+  keys; 256 KiB (262144 bytes) covers all of it, where the verdict's example of 80 KiB would refuse
+  the escaped form.
 
 ### D6: message references `m<n>` and `s<n>`
 
@@ -221,15 +255,21 @@ NULL`, `text text NULL`, `key text NULL`, `reply_to text NULL` (the `m<n>`/`s<n>
 time (rate), and per room and status (binding, last speaker). `outbound` keeps the bot worker as its
 only writer and gains `send_id bigint NULL`, `event_type text NOT NULL DEFAULT 'm.room.message'`,
 `relates_to jsonb NULL`; its kind CHECK gains `agent` and `reaction`. `runs` gets an index on
-`(session_id, room_id)` for the binding check. `room_settings` gains `agents_may_initiate`.
+`(session_id, room_id)` for the binding check, and `runs.preset_id` drops NOT NULL with a new CHECK
+`kind <> 'first' OR preset_id IS NOT NULL` (D9). `room_settings` gains `agents_may_initiate`.
 
 Flow: the api inserts `sends(queued)`; a new bot step (`sender.py`, run in the bot work loop between
 `Worker.tick` and `Tracker.tick`) claims queued rows `queued -> sending`, re-checks (a) (denied:
 `refused` with the policy reason, no outbound row), and inserts the outbound rows in the same
 transaction with transaction ids `mxa-<send id>-<n>` (message chunks) or `mxa-<send id>-r`
 (reaction); `Tracker._send_pending` sends every pending row with its own event type and content;
-once every outbound row of a `sending` send has ended, the bot marks it `sent` (all sent, `event_id`
-of the first row) or `failed` (the first failed row's reason). Sends never wait on
+before it sends a row of a send (kind `agent` or `reaction`) it re-checks (a) for that row's room,
+and when (a) now fails it marks every still-pending outbound row of that send `failed` with the
+policy reason and moves the send `sending -> refused` with the same reason, in one transaction, and
+sends nothing of it (interrogate Act 10: rows already pending while the homeserver was down are not
+delivered after the policy turned to deny; my call: chunks already sent stay sent); once every
+outbound row of a `sending` send has ended, the bot marks it `sent` (all sent, `event_id` of the
+first row) or `failed` (the first failed row's reason). Sends never wait on
 `inbound.rooms_ready`, so follow-ups go out while a chat run is in progress (G2). `sends` rows that
 ended are pruned with the existing daily retention.
 
@@ -243,31 +283,59 @@ the one PUT; `send_text` becomes a call of it.
 
 ### D9: the user's answer goes to the session that last spoke, while it runs
 
-The room's target is the newest running session among those that started a run in it or had a send
-delivered in it (architecture fork 3, pick). `runs.latest_session` becomes a newest-first list of
-distinct candidate sessions ordered by their latest activity in the room (run `started_at`, send
-`sent_at`), at most 5 per room (my call: bounds the orchestrator lookups per tick); the worker takes
-the first one `agents_common.runs.running_session` reports running, else falls back to a new `mx-`
-session as today. The batch goes in as a normal `follow` run, so the tracker posts its final answer
-as today. Tiebreak on equal times: the higher row id wins (my call, pinned by a test).
+The room's target is the running session that last spoke in it (architecture fork 3, pick).
+`runs.latest_session` becomes a newest-first list of distinct candidate sessions: those with a run in
+the room or a `sent` send in it, at most 5 per room (my call: bounds the orchestrator lookups per
+tick). Each session is ordered by when it last spoke in the room (interrogate Act 8): a run counts
+at the `sent_at` of its last sent `reply` outbound row (its final answer's delivery), or at its
+`started_at` when no reply row of it was sent yet (my call: notices are the bot's, not the
+session's, and do not count); a send counts at its `sent_at`; a session's time is the latest of
+its runs and sends. Tiebreak on equal times: the higher row id wins (my call, pinned by a test).
+Example pinned by a test: a chat run of session A starts, session B's send is delivered, A's final
+answer posts, the user replies: the reply goes to A.
 
-`runs.preset_id` (NOT NULL) of a follow run (settled here): the target session's `preset_id` from
-the `running_session` lookup the worker already makes; when it is null, the room's effective preset
-(room setting, else default) the worker resolved first. No migration change, no extra orchestrator
-call. A room without any preset still ignores its rows `no_preset` before routing (unchanged).
+"While it runs" means `agents_common.runs.running_session` reports the session running: it exists
+and its desired state is active, not that it is mid-turn. The worker walks the candidates first,
+before any preset check (interrogate Act 1, B5, Q9), and the first running one gets the batch as a
+normal `follow` run, so the tracker posts its final answer as today. A busy session (for example a
+hive leader in a long turn) gets the batch as a follow message queued behind its current turn; the
+tracker follows that message for at most `MATRIX_RUN_TIMEOUT_SECONDS` (default 1800 s, 30 min), and
+meanwhile the room's later messages stay `new`, because a room with a run in progress is not ready
+(`inbound.rooms_ready`), as for every run today (Q2). Only when no candidate runs does the preset
+matter: the room's effective preset (room setting, else default) starts a new `mx-` session under
+the new-session cap as today, and with no preset the rows are ignored `no_preset` as today.
 
-A follow run into a session that has no earlier run in this room renders the prompt with the
-PREAMBLE (as a first prompt), because that session never saw the untrusted-input framing (my call).
+`runs.preset_id` of a follow run (interrogate Act 1): the target session's `preset_id` from the
+`running_session` lookup (`GET /api/v1/sessions/{id}`) the worker already makes; when it is null,
+the room's effective preset; when that is null too, NULL. Migration 0002 drops NOT NULL on
+`runs.preset_id` and adds CHECK `kind <> 'first' OR preset_id IS NOT NULL` (my call: an explicit
+"no preset" rather than a sentinel uuid; a first run still always has one, and no NOT NULL
+violation is possible). No extra orchestrator call; agents-common is unchanged (a follow run's
+`RunRef.preset_id` is never read by `deliver`).
+
+A follow run into a session that has no other run in this room (the run itself excluded) renders
+the prompt with the PREAMBLE (as a first prompt), because that session never saw the
+untrusted-input framing (my call). This holds on the first delivery and on every retry through
+`Worker._resume`, which today renders `first=False` for every follow run (interrogate Act 7).
 
 MEMORY amendment (connector MEMORY.md, dated): 2026-10-25 "One agent session per room" becomes "one
 session per room at a time: the one that last spoke".
 
 ### D10: no double output (my call on the match rule)
 
-When a chat-started run completes and its `final_text`, stripped, equals the stripped `text` of a
-`message` send of the same session created at or after the run's `started_at` (any status except
-`refused`), the tracker closes the run `handled` with reason `already_sent` and stores no outbound
-row. Anything else posts as today.
+When a chat-started run's turn completes, the tracker compares its `final_text`, stripped, with the
+stripped `text` of every `message` send of the same session created at or after the run's
+`started_at`. Only a send that reached the user counts (interrogate Act 3, the lead's call):
+
+- a matching send that is `sent`: the run closes `handled` with reason `already_sent` and no
+  outbound row is stored;
+- else a matching send still `queued` or `sending`: the run stays in progress and the check
+  repeats each tick until that send settles, bounded by the run timeout (`MATRIX_RUN_TIMEOUT_SECONDS`
+  from the run's `started_at`); when the timeout passes first, the final answer is posted (my call:
+  a late duplicate beats a lost answer);
+- a matching send that ended `failed` or `refused` does not count, so the final answer is posted.
+
+Anything else posts as today.
 
 ### D11: prompt changes
 
@@ -327,7 +395,10 @@ validates against it, and a test asserts every relay route maps to a path and me
 vendored document (my call). The orchestrator's tools-parity test drives the released v0.3.0 plugin
 against the real routes and the fake upstream. E2E: the connector stack test (real api and bot
 processes, fake homeserver, fake orchestrator) covers send without inbound, follow-ups during a
-running chat run, reply and reaction relations, refusals, and the answer routed to the last speaker.
+running chat run, reply and reaction relations, refusals, the answer routed to the last speaker, and
+a 16000-character text of 4-byte characters accepted and delivered in chunks (interrogate Act 6).
+On the orchestrator side the tools-parity test also sends that text through the released plugin,
+the relay and the fake upstream, and the relay test sends it raw and fully escaped.
 
 ### D17: live smoke S1-S4 in the owner DM, in its own script
 
@@ -340,7 +411,10 @@ with a second, different emoji to the same target; it polls each send's status t
 `failed` with its own deadline per wait, prints the ids, statuses and reasons, owns its
 port-forwards (trap cleanup) and deletes the session. The orchestrator session runs it after the
 applies and after setting `agents_may_initiate` on the owner DM; the user confirms in Messenger what
-S1-S4 look like (gate question Q7). Architecture S1-S4: "S1 a send with no inbound message for >24h
+S1-S4 look like (gate question Q7). If S2 or S3 shows that the deployed mautrix-meta does not carry
+quoted replies or reactions to Messenger, reply and react are dropped and send stays (user decision
+2026-10-27): the orchestrator records it in agents-helmfile MEMORY.md and adds the removal as tasks
+of this epic (`ticket.py new-task`), without asking again. Architecture S1-S4: "S1 a send with no inbound message for >24h
 shows up in Messenger; S2 a reply shows as a quoted reply; S3 a thumbs-up reaction shows; S4 a
 second, different reaction replaces the first or is rejected (and how the connector sees the
 failure)."
@@ -393,7 +467,19 @@ epics that bear on this epic (recurring workflow ones first).
 - Discovery do-not-build: E2EE, appservice, display-name allow rules, Matrix token or master key for agents, NetworkPolicies. Acted on: none built (Non-goals).
 - Discovery idea: inbound Messenger reactions and replies as prompt context. Noted, not doing now.
 - Architecture risk: double output. Acted on: mxc-skip-duplicate-final, mxc-prompt-message-refs (PREAMBLE), plugin-chat-tools (description).
-- Architecture unknown: deployed mautrix-meta behaviour for replies and reactions. Acted on: chat-live-smoke (S1-S4).
+- Architecture unknown: deployed mautrix-meta behaviour for replies and reactions. Acted on: chat-live-smoke (S1-S4; user decision 2026-10-27: reply/react dropped and send kept if S2 or S3 fails).
+- Interrogate verdict (`interrogate.md`, 2026-10-27), Act on 1 preset contradiction. Acted on: mxc-route-last-speaker, mxc-sends-schema (D9).
+- Interrogate Act 2 policy for sender-less agent sends. Acted on: mxc-agent-room-policy, mxc-agent-routes, mxc-bot-sends-delivery (D4).
+- Interrogate Act 3 failed send suppresses the final answer. Acted on: mxc-skip-duplicate-final (D10).
+- Interrogate Act 4 reaction and reply room authorisation. Acted on: mxc-agent-routes (D4).
+- Interrogate Act 5 tracker test spy. Acted on: mxc-bot-sends-delivery (tests/test_tracker.py in its files; MatrixClient.send_event split out to mxc-matrix-send-event to stay within 8 files).
+- Interrogate Act 6 size caps. Acted on: orch-chat-relay, orch-chat-tools-allow, mxc-agent-routes, mxc-e2e-agent-sends (D5, D16).
+- Interrogate Act 7 PREAMBLE lost on resume. Acted on: mxc-route-last-speaker (D9).
+- Interrogate Act 8 last-speaker ordering. Acted on: mxc-route-last-speaker (D9).
+- Interrogate Act 9 duplicate send on timeout retry. Acted on: mxc-agent-routes (D5).
+- Interrogate Act 10 policy re-check at send time. Acted on: mxc-bot-sends-delivery (D4, D7).
+- Interrogate Consider (binding never expires; busy hive leader; "while it runs"). Acted on: Q10, Q2 reworded, D9.
+- Interrogate Noted (error codes reveal m<n> existence; token-only agent port; reaction rows in the UI feed). Noted, not doing now.
 
 ## Decision coverage
 
@@ -402,12 +488,12 @@ epics that bear on this epic (recurring workflow ones first).
 | D1 orchestrator-relayed tools | orch-chat-relay, mxc-agent-routes, plugin-chat-tools |
 | D2 chat upstream contract | orch-chat-relay, mxc-agent-routes, orch-chat-contract |
 | D3 connector agent listener | mxc-agent-listener, mxc-chart-agent-port |
-| D4 room authorisation and room choice | mxc-sends-schema, mxc-room-initiate-flag, mxc-agent-routes, mxc-bot-sends-delivery |
-| D5 limits and validation | mxc-agent-listener, mxc-agent-routes, orch-chat-relay |
+| D4 room authorisation and room choice | mxc-sends-schema, mxc-room-initiate-flag, mxc-agent-room-policy, mxc-agent-routes, mxc-bot-sends-delivery |
+| D5 limits and validation | mxc-agent-listener, mxc-agent-routes, orch-chat-relay, orch-chat-tools-allow |
 | D6 message references | mxc-agent-routes, mxc-sends-schema |
 | D7 sends queue and outbound | mxc-sends-schema, mxc-bot-sends-delivery |
-| D8 reply and reaction content | mxc-bot-sends-delivery |
-| D9 answer to the last speaker | mxc-route-last-speaker |
+| D8 reply and reaction content | mxc-matrix-send-event, mxc-bot-sends-delivery |
+| D9 answer to the last speaker | mxc-route-last-speaker, mxc-sends-schema |
 | D10 no double output | mxc-skip-duplicate-final |
 | D11 prompt changes | mxc-prompt-message-refs |
 | D12 orchestrator relay | orch-chat-relay, orch-chart-chat |
@@ -420,16 +506,24 @@ epics that bear on this epic (recurring workflow ones first).
 
 ## Review focus
 
-- Authorisation (mxc-agent-routes, mxc-bot-sends-delivery): (a) and (b) on every route, (a) again at
-  delivery, the same predicate for listing; no route accepts a raw event id; a session cannot read
-  or reference another session's `s<n>`.
+- Authorisation (mxc-agent-room-policy, mxc-agent-routes, mxc-bot-sends-delivery): (a) as defined
+  in D4 (member-aware, deny on any member) on every route, at claim and again right before each
+  agent row is sent; the same predicate for listing; a room taken from `reply_to` or a reaction
+  target checked like a given room; no route accepts a raw event id; a session cannot read or
+  reference another session's `s<n>`.
+- Duplicate suppression (mxc-skip-duplicate-final, mxc-agent-routes): only `sent` sends suppress a
+  final answer; a pending match delays the close within the run timeout; a retried identical send
+  returns the existing `s<n>`.
 - Secrets: the agent token never leaves the orchestrator (forwarded headers asserted); the chat token
   and its hash never logged or echoed; the agent listener has no SourceAllowlist bypass of the UI app.
 - Single writer and guarded transitions: `sends` inserted only by the api, moved only by the bot,
   every move through `queue.transition`; `outbound` still written only by the bot.
 - Exactly-once delivery across a bot restart between send and mark (deterministic `mxa-` txn ids).
-- The routing change (mxc-route-last-speaker): a gone or deleting candidate is skipped; the no_preset
-  and new-session cap behaviour is unchanged; the PREAMBLE reaches a session new to the room.
+- The routing change (mxc-route-last-speaker): candidates walked before the preset check, ordered by
+  when each last spoke (final-answer delivery, not run start); a gone or deleting candidate is
+  skipped; the no_preset and new-session cap behaviour is unchanged when no candidate runs; a follow
+  run's preset_id is never a NOT NULL violation; the PREAMBLE reaches a session new to the room on
+  the first delivery and on a resume.
 - Smoke script: every wait has its own deadline; nothing secret printed; cleanup on every exit path.
 
 ## Left to the builder
@@ -445,7 +539,8 @@ epics that bear on this epic (recurring workflow ones first).
 
 - The deployed mautrix-meta bridges Matrix `m.in_reply_to` and `m.annotation` to Messenger (upstream
   ROADMAP says done; deployed version unknown). Confirmed by chat-live-smoke S2-S4; if S2 or S3 fails,
-  the orchestrator stops and asks (architecture "changes my mind": drop reply/react, keep send).
+  reply/react are dropped and send stays (architecture "changes my mind"; user-approved 2026-10-27,
+  no stop to ask).
 - Messenger accepts arbitrary emoji keys or a fixed set: unknown; S4 and the key rule (D5) bound it.
 - Messenger automation or rate limits on the owner account: unknown; the per-session rate limit bounds it.
 - The oauth2-proxy admission sidecar on the connector api pod does not intercept a second container
@@ -471,7 +566,7 @@ The builder check (sonnet, no prior context) asked nine questions; settled here,
 ## Open questions
 
 - Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
-- Q2: Your answer after an agent starts a chat or sends a follow-up goes to that session while it runs (including a hive leader or a webhook or schedule session, as a follow message mid-turn, with its final answer posted to the chat), otherwise to the room's chat session (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
+- Q2: Your next chat message after an agent starts a chat or sends a follow-up goes to the session that last spoke in the room while it runs ('while it runs' means the session exists with desired state active, not that it is mid-turn), including a hive leader or a webhook or schedule session, as a follow message with its final answer posted to the chat; if that session is busy (for example a hive leader in a long turn), your message waits behind its current turn and the connector tracks the reply for up to 30 min (the run timeout), holding your later messages in that room meanwhile; otherwise it goes to the room's chat session? [answer: yes (approved by the user 2026-10-27, 'All yes', on the earlier wording; reworded the same day per interrogate.md Consider items 2 and 3, re-shown at the gate)]
 - Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
 - Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
 - Q5: Per-session limit of 20 messages a minute (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]

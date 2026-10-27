@@ -66,7 +66,7 @@ Scope (agents-matrix-connector): migration `0002_agent_sends.sql` and the reposi
 
 ## Interfaces
 
-- `src/agents_matrix_connector/migrations/0002_agent_sends.sql`: table `sends` (D7 columns), `outbound` new columns, widened kind CHECK, `room_settings.agents_may_initiate`, indexes; COMMENT on `sends`.
+- `src/agents_matrix_connector/migrations/0002_agent_sends.sql`: table `sends` (D7 columns), `outbound` new columns, widened kind CHECK, `room_settings.agents_may_initiate`, indexes, `runs.preset_id` DROP NOT NULL plus CHECK `kind <> 'first' OR preset_id IS NOT NULL`; COMMENT on `sends`.
 - `src/agents_matrix_connector/db/sends.py` (new): a frozen `SendRow` dataclass; `insert(conn, *, session_id, slug, kind, room_id, text, key, reply_to, ref_event_id) -> int`; `claim_queued(conn) -> list[SendRow]` (queued to sending, sets `claimed_at`); `mark_sent(conn, id, event_id)`, `mark_failed(conn, id, reason)`, `mark_refused(conn, id, reason)` through `queue.transition`; `is_bound(conn, session_id, room_id) -> bool`; `bound_rooms(conn, session_id) -> list[str]`; `count_recent(conn, session_id, seconds) -> int`; `resolve(conn, ref) -> Ref | None` for `m<n>`/`s<n>`; `get(conn, id) -> SendRow | None`; `prune(conn, older_than) -> int`. Writers take a connection and never commit, as in `db/runs.py`.
 
 ## Expected outcome

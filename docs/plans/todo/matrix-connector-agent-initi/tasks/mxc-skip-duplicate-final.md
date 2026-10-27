@@ -9,9 +9,9 @@ depends_on: [mxc-bot-sends-delivery, mxc-agent-routes]
 model: sonnet
 review: ""
 verified_head: ""
-points: 3
-expected_minutes: 6
-expected_tokens: 941421
+points: 5
+expected_minutes: 8
+expected_tokens: 1847647
 points_actual: ""
 actual_minutes: ""
 actual_tokens: ""
@@ -65,7 +65,8 @@ Interrogate verdict, verbatim: "3. Failed send suppresses the final answer (A,B,
 ## Interfaces
 
 - `tracker.py:ALREADY_SENT = "already_sent"`.
-- `db/sends.py:message_texts_since(conn, session_id, since) -> list[str]` (name left to the builder): texts of the session's non-refused message sends created at or after `since`.
+- `db/sends.py:message_sends_since(conn, session_id, since) -> list[tuple[str, str]]` (name left to the builder): `(text, status)` of the session's message sends created at or after `since`.
+- `tracker.py:Tracker._outcome`: a completed turn with a `sent` match closes `already_sent`; with only a `queued`/`sending` match returns None (still running) until the run timeout, then posts; otherwise posts.
 
 ## Expected outcome
 
@@ -79,6 +80,7 @@ An agent that sends its answer with `orchestrator_chat_send` during a chat-start
 ## Notes
 
 - Compare `str.strip()` of both sides only; no fuzzy matching (D10).
+- While the close waits on a pending match, the run stays in progress, so the room's next batch waits too (as for any running run); typing stays on as for a running turn.
 - The inbound rows of the run settle `handled` with the same reason, as for `empty_reply`.
 - DB-backed tracker tests (CI); `test_readme_api.py` runs locally.
 
