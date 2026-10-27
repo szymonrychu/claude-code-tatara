@@ -5,7 +5,7 @@ repo: agents-orchestrator
 value: "every message records whether the user, a service or a session sent it, and the epic's schema exists"
 files: [src/agents_orchestrator/db/migrations/NNNN_session_orchestration.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/api/messages.py, src/agents_orchestrator/api/service_auth.py, README.md, tests/test_migrations.py, tests/test_message_origin.py, tests/test_service_port.py]
 verify: "uv run --frozen pytest tests/test_migrations.py tests/test_message_origin.py tests/test_service_port.py && mise run lint"
-depends_on: []
+depends_on: [baseline-facts]
 model: opus
 review: ""
 verified_head: ""
@@ -39,17 +39,25 @@ Architect fix-as-ac, verbatim: "`messages.origin` recorded on every insert path:
 
 Scope (agents-orchestrator): the migration `src/agents_orchestrator/db/migrations/NNNN_session_orchestration.sql`, where NNNN is the next free number in that directory at build time (after slash-commands' 0008 and any hive-decoupling migration; never guessed); `db/queue.py` (`enqueue_message` takes and stores `origin`; new `turn_origin`); `api/messages.py` (main-port post stores `user`, service-port post stores `service:<name>`); `api/service_auth.py` (`ServiceGate` sets `scope["state"]["service"]`); README (messages origin values). The created_by and audit columns are only created here; later tasks write them.
 
+User settlement B4 (2026-10-27), verbatim: "build on the merged slash-commands code. Store origin `session` or `user` the same way on every enqueue path. Command-kind messages and orchestrator-internal enqueues (no sender, no port) store NULL and never pass the user-turn gate."
+
+Reading of B4 (supersedes the Interfaces line `origin: str`): `enqueue_message` takes `origin: str | None` as a required keyword argument with no default, so no caller can forget it. Every call site passes it explicitly: the main-port post `user`, the service-port post `service:<name>`, a session message (sender present) `session`, and a command-kind message (the slash-command messages the merged slash-commands epic added) and any orchestrator-internal enqueue (no sender, no port) `None`, stored as NULL. NULL never passes the gate (orch-orchestration-gate). The call sites are the ones recorded by baseline-facts in agents-orchestrator `MEMORY.md` ("Baseline for session-orchestration-mcp"); the files holding them are in scope for this task in addition to the Files list.
+
+User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The migration number in this task is the one baseline-facts recorded.
+
 ## Acceptance conditions
 
-- ac1: the migration NNNN_session_orchestration.sql (next free number at build time) adds messages.origin text, sessions.created_by_session_id uuid and created_by_slug text, presets.created_by_session_id uuid and created_by_slug text, and table orchestration_actions with the D8 columns and no foreign key, and a rerun is a no-op [evidence: test:tests/test_migrations.py::test_session_orchestration_schema]
+- ac1: the migration <the number baseline-facts recorded>_session_orchestration.sql adds messages.origin text, sessions.created_by_session_id uuid and created_by_slug text, presets.created_by_session_id uuid and created_by_slug text, and table orchestration_actions with the D8 columns and no foreign key, and a rerun is a no-op [evidence: test:tests/test_migrations.py::test_session_orchestration_schema]
 - ac2: an orchestration_actions row stays after its caller session is purged [evidence: test:tests/test_migrations.py::test_orchestration_actions_outlive_sessions]
 - ac3: a message posted on the main port is stored with origin user [evidence: test:tests/test_message_origin.py::test_main_port_origin_user]
 - ac4: a message posted on the service port is stored with origin service:<name>, the name of the authenticated service token, which ServiceGate puts in scope["state"] [evidence: test:tests/test_message_origin.py::test_service_port_origin_names_service]
 - ac5: a session message enqueued with a sender is stored with origin session [evidence: test:tests/test_message_origin.py::test_session_message_origin]
 - ac6: turn_origin returns the origin and id of the message the agent's current turn delivered, and None when the current turn delivered no message [evidence: test:tests/test_message_origin.py::test_turn_origin]
 - ac7: the service port's routes, 401 and 403 answers and log lines are unchanged [evidence: command:uv run --frozen pytest tests/test_service_port.py]
-- ac8: the README documents the origin values user, session and service:<name> [evidence: command:grep -q 'service:<name>' README.md]
-- ac9: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_migrations.py tests/test_message_origin.py tests/test_service_port.py && mise run lint]
+- ac8: the README documents the origin values user, session, service:<name> and NULL (command and internal messages) [evidence: command:grep -q 'service:<name>' README.md]
+- ac9: every enqueue path states its origin: enqueue_message has no default for origin, and the main-port post, the service-port post, the session-message path, the command-kind messages and each orchestrator-internal enqueue named in the baseline-facts entry pass it explicitly (user, service:<name>, session, NULL, NULL) [evidence: test:tests/test_message_origin.py::test_every_enqueue_path_states_origin]
+- ac10: a command-kind message and an orchestrator-internal enqueue with no sender and no port are stored with origin NULL, and turn_origin reports NULL for a turn they delivered [evidence: test:tests/test_message_origin.py::test_command_and_internal_enqueue_store_null]
+- ac11: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_migrations.py tests/test_message_origin.py tests/test_service_port.py && mise run lint]
 
 ## Files
 
@@ -84,3 +92,5 @@ Every message row records where it came from, and the schema of the whole epic e
 - No Docker in agent pods: the DB tests (ac1-ac6) run in CI; keep the ServiceGate state assertion (ac4's scope part) non-DB with a stub app so the local verify has signal.
 - Confirm the connector's service token name from `ORCH_SERVICE_TOKENS` handling and the helmfile file `service-token-agents-matrix-connector.secrets.yaml` (design Assumptions); the default origins setting lands in orch-orchestration-gate.
 - Do not touch `tests/test_service_port.py` assertions unless one is no longer accurate; name it if so.
+
+- 2026-10-27 amended: builder check B4 and B6 settlements: explicit origin on every enqueue path, NULL for command and internal messages, migration number from baseline-facts
