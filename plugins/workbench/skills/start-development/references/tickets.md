@@ -51,7 +51,8 @@ Core in `ticket.py`, the rest one module each under `skills/start-development/sc
 - `move`: `move <epic> in-progress` claims the epic, sets every todo task to in-progress and creates the
   integration tree; `move <epic> done` needs the pass verdict, every task done and the epic on main, then
   removes the integration tree and branch.
-- `stage`: `stage <epic> review|build` (`review` refuses while a task is not done).
+- `stage`: `stage <epic> review|build|parked` (`review` refuses while a task is not done or the epic is
+  parked; `parked` is allowed only from `build`, `build` unparks it).
 - `review`: `review <epic> --verdict pass|fail --notes-file <f>` writes the README Review section.
 - `lint`: `lint [<epic>]` checks statuses, dependencies, cycles, every task's Requirement, acceptance
   conditions, `verify` and `files`, its points, minutes, tokens and roles fields (todo and in-progress
@@ -116,7 +117,10 @@ anyway. One in `done/` is only a note. `check --title` only lists near duplicate
 ## State machines
 
 Epic: `todo` -> `in-progress` -> `done`. Under `in-progress/` the README `stage` is `build`, then
-`review`; `stage build` sends it back.
+`review`; `stage build` sends it back. `stage parked` (from `build` only) parks a reprioritised epic: it
+keeps its integration branch and worktrees untouched, and the cross-epic file overlap check (`new-task`,
+`check`, `move <epic> in-progress`) stops counting its tasks against other epics, because it rebuilds its
+unmerged work on top of main when `stage build` resumes it.
 
 Task `status` is exactly one of `todo`, `in-progress`, `done`, `blocked`, `escalated`. There is no parked,
 deferred or wontfix state: a task is delivered, blocked on a named external blocker, or escalated after

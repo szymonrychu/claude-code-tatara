@@ -33,7 +33,7 @@ import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
 TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
-EPIC_STAGES = ("build", "review")
+EPIC_STAGES = ("build", "review", "parked")
 SLUG_MAX = 28
 WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
 NEAR_DUP = 0.6
@@ -638,6 +638,10 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     return left
 
 
+def _is_parked(epic: Ticket) -> bool:
+    return epic.meta.get("stage") == "parked"
+
+
 def run_check(
     root: Path,
     title: str | None = None,
@@ -663,6 +667,8 @@ def run_check(
     if epic is not None:
         named |= set(epics[epic].meta.get("blockers", []))
     own_blockers = {_blocker_slug(b, epics) for b in named}
+    # a parked epic is not building: it rebuilds its unmerged work on main when it resumes
+    parked = {s for s, e in epics.items() if e.phase == "in-progress" and _is_parked(e)}
 
     def candidates() -> list[tuple[str, list[str], str]]:
         """(repo, files, label) to run the cross-epic file overlap check on."""
@@ -706,7 +712,7 @@ def run_check(
     if epic is not None:
         for trepo, tfiles, label in candidates():
             for t in tickets:
-                if t.kind != "task" or t.epic == epic or t.epic in own_blockers:
+                if t.kind != "task" or t.epic == epic or t.epic in own_blockers | parked:
                     continue
                 if t.meta.get("repo", "") != trepo:
                     continue
@@ -1247,6 +1253,11 @@ def cmd_stage(a: argparse.Namespace) -> int:
     name, phase = epic_dir.name, _phase_of(epic_dir)
     if phase != "in-progress":
         raise TicketError(f"epic {name!r} is in {phase}; stage needs it in-progress")
+    current = _read_doc(epic_dir / "README.md").meta.get("stage", "build")
+    if a.stage == "parked" and current != "build":
+        raise TicketError(f"epic {name!r} is at stage {current!r}; parked needs stage build")
+    if a.stage == "review" and current == "parked":
+        raise TicketError(f"epic {name!r} is parked; run `stage {name} build` to unpark it first")
     if a.stage == "review":
         tasks = _tasks_of(epic_dir)
         if not tasks:

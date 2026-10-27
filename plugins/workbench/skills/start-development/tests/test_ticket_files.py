@@ -485,7 +485,7 @@ def test_templates_have_no_parking_statuses():
 
 def test_task_statuses(t):
     assert t.TASK_STATUSES == ("todo", "in-progress", "done", "blocked", "escalated")
-    assert t.EPIC_STAGES == ("build", "review")
+    assert t.EPIC_STAGES == ("build", "review", "parked")
 
 
 # (8, 12) reference doc
