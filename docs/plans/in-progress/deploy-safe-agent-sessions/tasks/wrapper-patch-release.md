@@ -1,6 +1,6 @@
 ---
 title: wrapper patch release
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: agents can run a wrapper image that continues interrupted turns
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -75,3 +75,5 @@ Context the implementer needs: pitfalls, existing code to reuse, decisions alrea
 - 2026-10-28 done: merged PR #7 as 5fd93ff (main CI 40651891291 green), tag v0.3.2 pushed, release run 40653754978 success
 
 - 2026-10-28 in-progress: tag v0.3.2 pushed; release run 40653754978 concluded cancelled - investigating
+
+- 2026-10-28 done: merged PR #7 as 5fd93ff (main CI 40651891291 green); tag v0.3.2 pushed; release run 40653754978 attempt 1 cancelled (Harbor pull stalled to the 15 min timeout), attempt 2 success; AC3 git ls-remote shows v0.3.2
