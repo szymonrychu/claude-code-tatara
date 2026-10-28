@@ -1,6 +1,6 @@
 ---
 title: helmfile-pin-check-attempts
-status: todo
+status: done
 repo: agents-helmfile
 value: a harmless re-run of a published build never blocks a deploy
 files: [scripts/check_pins.py, tests/test_check_pins.py, tests/fixtures, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_check_pins.py"
 depends_on: [helmfile-pin-check]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5a726d0868e5090af7dbc3656f89ebedfa603ed2
 points: 2
 expected_minutes: 5
 expected_tokens: 556633
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 435637
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 350990, review 84647"
 ---
 
 # helmfile-pin-check-attempts
@@ -55,3 +55,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
