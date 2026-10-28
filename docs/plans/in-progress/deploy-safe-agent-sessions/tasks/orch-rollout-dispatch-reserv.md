@@ -1,6 +1,6 @@
 ---
 title: orch-rollout-dispatch-reservation
-status: todo
+status: done
 repo: agents-orchestrator
 value: the replacer never deletes a pod that was just handed a turn
 files: [src/agents_orchestrator/reconciler/rollout.py, tests/test_rollout.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_rollout.py -q
 depends_on: [orch-rollout-replacer]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 053d32353328e02739e32e0df6f14ae1b5ca4a4d
 points: 3
 expected_minutes: 6
 expected_tokens: 950968
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 18
+actual_tokens: 1029725
+actual_roles: "impl 18, review 1"
+actual_role_tokens: "impl 929354, review 100371"
 ---
 
 # orch-rollout-dispatch-reservation
@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
