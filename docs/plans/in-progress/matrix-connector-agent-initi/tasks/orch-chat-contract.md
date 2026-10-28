@@ -1,6 +1,6 @@
 ---
 title: orch chat contract
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "the orchestrator's idea of the chat upstream cannot drift from what the connector really serves"
 files: [tests/fakes/fake_chat.py, tests/fakes/chat_openapi.json, tests/fakes/chat_openapi.source, tests/test_chat_contract.py]

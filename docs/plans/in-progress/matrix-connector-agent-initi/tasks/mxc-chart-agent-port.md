@@ -1,6 +1,6 @@
 ---
 title: mxc chart agent port
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the deployed connector exposes its agent listener to the orchestrator through its own Service, the hash only in a Secret"
 files: [chart/agents-matrix-connector/templates/deployment.yaml, chart/agents-matrix-connector/templates/service-agents.yaml, chart/agents-matrix-connector/templates/_config.tpl, chart/agents-matrix-connector/templates/secret.yaml, chart/agents-matrix-connector/values.yaml, chart/agents-matrix-connector/ci/lint-values.yaml, tests/test_chart_network.py, tests/test_chart_workloads.py]

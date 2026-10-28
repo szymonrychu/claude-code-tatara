@@ -1,6 +1,6 @@
 ---
 title: mxc room session binding
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "each chat room talks to exactly one session: the user's messages always reach the room's bound session, and deleting the session frees the room"
 files: [src/agents_matrix_connector/worker.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/bindings.py, MEMORY.md, README.md, tests/test_worker.py, tests/test_runs_repo.py]

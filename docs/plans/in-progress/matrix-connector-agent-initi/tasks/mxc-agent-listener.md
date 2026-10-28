@@ -1,6 +1,6 @@
 ---
 title: mxc agent listener
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: the orchestrator gets a token-protected way into the connector without opening the SSO-protected UI api
 files: [src/agents_matrix_connector/settings.py, src/agents_matrix_connector/cli.py, src/agents_matrix_connector/api/agent.py, README.md, tests/test_settings.py, tests/test_cli.py, tests/test_agent_gate.py]

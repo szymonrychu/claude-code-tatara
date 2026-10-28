@@ -1,6 +1,6 @@
 ---
 title: mxc e2e agent sends
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "one end-to-end suite proves initiate, follow-ups, reply, react and the 1:1 room-session binding across the real processes"
 files: [tests/e2e/conftest.py, tests/e2e/test_e2e_agent.py]

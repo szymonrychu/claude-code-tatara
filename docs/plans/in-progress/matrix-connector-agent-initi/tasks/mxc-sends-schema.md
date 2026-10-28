@@ -1,6 +1,6 @@
 ---
 title: mxc sends schema
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "agent sends get a queue, a room flag, a database-enforced 1:1 room-session binding and the reference queries every later task needs"
 files: [src/agents_matrix_connector/migrations/0002_agent_sends.sql, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, tests/test_schema.py, tests/test_sends_repo.py, tests/test_bindings_repo.py]

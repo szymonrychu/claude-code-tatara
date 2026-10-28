@@ -1,6 +1,6 @@
 ---
 title: chat smoke script
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "one command proves send without inbound, quoted reply and reactions live, leaving nothing behind"
 files: [scripts/chat-smoke.sh, mise.toml, tests/test_chat_smoke_script.py, README.md, tests/test_mise_tasks.py]

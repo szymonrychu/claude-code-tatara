@@ -1,6 +1,6 @@
 ---
 title: orch chat relay
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "session leaders reach the chat through the orchestrator, which proves who calls and keeps the agent token to itself"
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/api/chat.py, src/agents_orchestrator/api/app.py, README.md, openapi.json, MEMORY.md, tests/test_agent_chat.py, tests/test_settings.py]

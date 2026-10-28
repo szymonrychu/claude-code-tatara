@@ -1,6 +1,6 @@
 ---
 title: orch chat tools allow
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "every new session's agents see the chat tools, proven against the real routes with the released plugin"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, tests/e2e/test_e2e_kind.py, tests/test_agent_chat.py, README.md]

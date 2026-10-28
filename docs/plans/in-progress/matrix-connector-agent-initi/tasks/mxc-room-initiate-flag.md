@@ -1,6 +1,6 @@
 ---
 title: mxc room initiate flag
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the user can flag a room so agents may start a chat there, off by default, and sees which session each room is bound to"
 files: [src/agents_matrix_connector/db/rules.py, src/agents_matrix_connector/db/directory.py, src/agents_matrix_connector/api/rooms.py, src/agents_matrix_connector/api/schemas.py, openapi.json, README.md, tests/test_api_rooms.py]

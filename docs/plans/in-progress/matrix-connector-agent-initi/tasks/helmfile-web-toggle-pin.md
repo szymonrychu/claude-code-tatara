@@ -1,6 +1,6 @@
 ---
 title: helmfile web toggle pin
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "agents-helmfile pins the web build with the 'Agents may start chats' switch"
 files: [values/agents-web/common.yaml, helmfile.yaml.gotmpl, tests/test_web_release.py]

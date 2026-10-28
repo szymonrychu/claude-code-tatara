@@ -1,6 +1,6 @@
 ---
 title: mxc agent routes
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "agents can list their rooms, send, reply, react and read delivery status, refused at once when the room is not theirs"
 files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/api/openapi.py, openapi-agent.json, README.md, tests/test_api_agent.py, tests/test_readme_api.py]

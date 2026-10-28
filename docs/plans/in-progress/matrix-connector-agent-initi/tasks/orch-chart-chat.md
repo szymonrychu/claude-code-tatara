@@ -1,6 +1,6 @@
 ---
 title: orch chart chat
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the orchestrator chart can turn the chat relay on with its token kept in a Secret
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/secret.yaml, chart/agents-orchestrator/templates/_config.tpl, chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, README.md, tests/test_chart_config.py]

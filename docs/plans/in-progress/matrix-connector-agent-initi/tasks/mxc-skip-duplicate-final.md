@@ -1,6 +1,6 @@
 ---
 title: mxc skip duplicate final
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "an answer the agent already sent is not posted a second time as the turn's final reply"
 files: [src/agents_matrix_connector/tracker.py, src/agents_matrix_connector/db/sends.py, README.md, tests/test_tracker.py, tests/test_readme_api.py]

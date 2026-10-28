@@ -1,6 +1,6 @@
 ---
 title: plugin chat tools
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: "agents get the four chat tools: rooms, send, react and status"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md]

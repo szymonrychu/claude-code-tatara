@@ -2,7 +2,7 @@
 title: matrix connector agent-initiated and follow-up messages
 blockers: [deploy-safe-agent-sessions, markdown-rendering-in-chat, file-editor-with-tabs-and-hi]
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-matrix-connector, agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile, agents-web]
 created: 2026-10-27
 ---

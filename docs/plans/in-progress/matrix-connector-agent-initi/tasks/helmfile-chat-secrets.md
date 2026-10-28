@@ -1,6 +1,6 @@
 ---
 title: helmfile chat secrets
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the one chat token exists, encrypted, in the shape both charts read, and never rotates"
 files: [scripts/bootstrap-secrets.sh, helmfile.yaml.gotmpl, values/agents-orchestrator/chat-token.secrets.yaml, values/agents-matrix-connector/agent-token.secrets.yaml, tests/test_secrets.py, README.md]

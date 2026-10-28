@@ -1,6 +1,6 @@
 ---
 title: mxc agent room policy
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "agents reach rooms the user allowed through a person's rule and never a chat with a denied member"
 files: [src/agents_matrix_connector/policy.py, src/agents_matrix_connector/api/rooms.py, tests/test_policy.py, README.md]

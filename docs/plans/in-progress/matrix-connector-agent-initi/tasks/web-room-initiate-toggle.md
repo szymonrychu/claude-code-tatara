@@ -1,6 +1,6 @@
 ---
 title: web room initiate toggle
-status: todo
+status: in-progress
 repo: agents-web
 value: "the user switches 'Agents may start chats' on or off per room in the web UI"
 files: [openapi/matrix.json, openapi/matrix.source, src/api/matrix-schema.d.ts, src/matrix/RoomDrawer.tsx, src/matrix/ChatsPage.test.tsx]

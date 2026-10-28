@@ -1,6 +1,6 @@
 ---
 title: mxc bot sends delivery
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "accepted agent messages, quoted replies and reactions reach the chat at once, exactly once, even during a running chat turn"
 files: [src/agents_matrix_connector/sender.py, src/agents_matrix_connector/bot.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/tracker.py, tests/test_sender.py, tests/test_tracker.py]

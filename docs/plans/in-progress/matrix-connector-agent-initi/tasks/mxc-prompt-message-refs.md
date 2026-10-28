@@ -1,6 +1,6 @@
 ---
 title: mxc prompt message refs
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "agents see which room and which message they can reply or react to, and learn how to reach the user outside a chat turn"
 files: [src/agents_matrix_connector/prompt.py, tests/test_prompt.py]

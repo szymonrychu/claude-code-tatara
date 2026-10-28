@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.3.0
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: the chat tools ship as plugins release v0.3.0 that the orchestrator can pin
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]

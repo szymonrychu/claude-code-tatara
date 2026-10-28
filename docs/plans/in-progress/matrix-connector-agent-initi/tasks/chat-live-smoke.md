@@ -1,6 +1,6 @@
 ---
 title: chat live smoke
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "the chat tools are live and the user saw an agent post, reply and react in Messenger"
 files: [MEMORY.md]

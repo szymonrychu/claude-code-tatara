@@ -1,6 +1,6 @@
 ---
 title: mxc matrix send event
-status: todo
+status: in-progress
 repo: agents-matrix-connector
 value: "the bot can send any Matrix event type, which quoted replies and reactions need"
 files: [src/agents_matrix_connector/matrix.py, tests/test_matrix_client.py]

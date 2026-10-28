@@ -1,6 +1,6 @@
 ---
 title: helmfile chat values
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: agents-helmfile pins the connector and orchestrator builds with the chat path and the v0.3.0 plugins
 files: [values/agents-matrix-connector/common.yaml, values/agents-orchestrator/common.yaml, helmfile.yaml.gotmpl, tests/test_matrix_connector_release.py, tests/test_orchestrator_release.py]
