@@ -1,6 +1,6 @@
 ---
 title: helmfile chat secrets
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the one chat token exists, encrypted, in the shape both charts read, and never rotates"
 files: [scripts/bootstrap-secrets.sh, helmfile.yaml.gotmpl, values/agents-orchestrator/chat-token.secrets.yaml, values/agents-matrix-connector/agent-token.secrets.yaml, tests/test_secrets.py, README.md]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_secrets.py && mise run lint"
 depends_on: [mxc-chart-agent-port, orch-chart-chat]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 4c7ef2aa9c1bebfdc96c825d9f53797b7fd2f3fb
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -69,3 +69,7 @@ The one chat token exists, encrypted, in the shape each chart reads, and re-runn
 - `test_chat_token_hash_matches` decrypts and needs the SOPS age key, like `test_matrix_connector_token_hash_matches`; if this pod has no key it fails "sops could not decrypt (key unavailable?)": the orchestrator session runs it (ac6) before chat-live-smoke.
 - Build fake tokens at runtime in tests (retro proposal, GitGuardian); gitleaks runs in lint.
 - agents-helmfile has no CI workflow (retro tech debt): the reviewer's local verify is the evidence; quote it.
+
+- 2026-10-28 done: PR #41 held unmerged until chat-values (my call)
+
+- 2026-10-28 actuals: no agent records
