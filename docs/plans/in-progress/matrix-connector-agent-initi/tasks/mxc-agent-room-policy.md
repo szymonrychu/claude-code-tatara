@@ -1,6 +1,6 @@
 ---
 title: mxc agent room policy
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "agents reach rooms the user allowed through a person's rule and never a chat with a denied member"
 files: [src/agents_matrix_connector/policy.py, src/agents_matrix_connector/api/rooms.py, tests/test_policy.py, README.md]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_policy.py && mise run lint"
 depends_on: [mxc-room-initiate-flag]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fc70272669797c8dc0ae4a18cb0b6ba08b0d22ba
 points: 3
 expected_minutes: 6
 expected_tokens: 940114
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -73,3 +73,7 @@ One function answers whether agents may post to a room under the user's existing
 - `room_infrastructure` and `room_encrypted` come first, exactly as `evaluate` does.
 - Do not change `evaluate` or the inbound path (README Non-goal: no change to the inbound allow/deny policy model).
 - The callers are mxc-agent-routes (routes and listing) and mxc-bot-sends-delivery (claim and send time); this task only provides the function.
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
