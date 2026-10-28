@@ -1,6 +1,6 @@
 ---
 title: web discard backup notice
-status: in-progress
+status: done
 repo: agents-web
 value: the user sees exactly what a discard deletes and what is kept before confirming
 files: [src/sessions/DiscardSessionDialog.tsx, src/sessions/DiscardSessionDialog.test.tsx, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/sessions/DiscardSessionDialog.test.tsx && npm run li
 depends_on: [web-sync-session-safety-api]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 29e97bed08ea753cf8f055331123e59e4df30bbf
 points: 3
 expected_minutes: 6
 expected_tokens: 940114
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 13
+actual_tokens: 965826
+actual_roles: "impl 10, review 3"
+actual_role_tokens: "impl 823384, review 142442"
 ---
 
 # web discard backup notice
@@ -72,3 +72,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
