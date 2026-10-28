@@ -1,6 +1,6 @@
 ---
 title: helmfile orch chat pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the merged orchestrator chat relay and plugins v0.2.0 run live before the connector lands
 files: [values/agents-orchestrator/common.yaml, helmfile.yaml.gotmpl, tests/test_orchestrator_release.py, MEMORY.md]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-chat-tools-allow]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6998c2bcd1c3e9cc2551195fe3b58fbd1395b997
 points: 2
 expected_minutes: 5
 expected_tokens: 556633
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -65,3 +65,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done: check-pins ok 9 pins; apply by supervisor after merge
+
+- 2026-10-28 actuals: no agent records
