@@ -1,6 +1,6 @@
 ---
 title: wrapper shutdown turn resume
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: a turn cut off by a pod restart continues instead of being lost
 files: [src/claude_code_wrapper/manager.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/turns.py, src/claude_code_wrapper/router.py, tests/test_shutdown_turn_resume.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_shutdown_turn_resume.py tests/test_e2e_resu
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 91d785dddb0601fef9cf33ac3d18816b6bbafbdb
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 211
+actual_tokens: 12569789
+actual_roles: "impl 69, review 15"
+actual_role_tokens: "impl 12282803, review 286986"
 ---
 
 # wrapper shutdown turn resume
@@ -79,3 +79,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
