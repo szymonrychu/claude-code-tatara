@@ -28,13 +28,13 @@ Design D13, user decision verbatim: "Delivery: wrapper tag 0.3.2, orchestrator/w
 Goal G10, verbatim: "Released and deployed: wrapper release tag, orchestrator and web pins, agents-helmfile bump, apply and smoke green, with a live check that the deploy did not roll a busy agent."
 
 Scope (agents-helmfile):
-- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.<orchestrator merge sha7>`; agents-web chart `0.1.0-main.<agents-web merge sha7>`.
-- `values/agents-orchestrator/common.yaml`: `image.tag` `<orchestrator sha7>`; `agentImage` and `env.ORCH_AGENT_IMAGES` `harbor.szymonrichert.pl/containers/claude-code-wrapper:0.3.2` (a release tag: Harbor prunes sha7 tags).
-- `values/agents-web/common.yaml`: `image.tag` `<agents-web sha7>`.
+- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.b451f08`; agents-web chart `0.1.0-main.4d066a4`.
+- `values/agents-orchestrator/common.yaml`: `image.tag` `b451f08`; `agentImage` and `env.ORCH_AGENT_IMAGES` `harbor.szymonrichert.pl/containers/claude-code-wrapper:0.3.2` (a release tag: Harbor prunes sha7 tags).
+- `values/agents-web/common.yaml`: `image.tag` `4d066a4`.
 - Tests: `tests/test_orchestrator_release.py` and `tests/test_web_release.py` keep the pins in agreement.
 - `mise run check-pins` (task helmfile-pin-check) passes on the new pins: their main CI runs are green.
 
-The shas are filled in by `ticket.py amend` when the orchestrator and agents-web PRs merge.
+Merged shas (2026-10-28): agents-orchestrator PR #28 merge commit b451f08 (main CI run 40716752343 green, images and chart-publish), agents-web PR #20 merge commit 4d066a4 (main CI run 40722375652 green). claude-code-wrapper v0.3.2 released. The helmfile epic branch must contain origin/main (hotfix pins #36); rebase on it first if it does not.
 
 Notes: `tests/test_orchestrator_release.py` holds `test_values_dir_moved`; it must pass so the apply is not stopped by a stale test (retro). Chart-pull tests blocked by a container network policy may be deselected locally (precedent); they run unblocked before the apply.
 
@@ -72,3 +72,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: fill merged shas b451f08 and 4d066a4
