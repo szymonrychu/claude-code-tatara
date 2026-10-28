@@ -50,6 +50,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Red: write the tests the acceptance conditions name; run `uv run pytest tests/test_cache_save.py -q` and see them fail for the expected reason.
+- Green: implement the requirement as written; run `uv run pytest tests/test_cache_save.py -q` and expect every test to pass.
+- Refactor with the verify green; add a dated MEMORY.md entry for any non-obvious decision.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.

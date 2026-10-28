@@ -52,6 +52,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Red: add the attempt fixtures and tests AC1 and AC2; run the verify and see AC1 fail (latest attempt only).
+- Green: read every attempt's jobs of the pinned run in scripts/check_pins.py; run the verify, expect all passed.
+- Run `mise run check-pins` and expect every pin ok; add the dated MEMORY.md rule.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
