@@ -1,6 +1,6 @@
 ---
 title: chat smoke script
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "one command proves send without inbound, quoted reply and reactions live, leaving nothing behind"
 files: [scripts/chat-smoke.sh, mise.toml, tests/test_chat_smoke_script.py, README.md, tests/test_mise_tasks.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_chat_smoke_script.py tests/test_mise_tasks.py 
 depends_on: [mxc-agent-routes, orch-chat-relay, mxc-room-initiate-flag]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 0804582c1488b5b936ee1969aa62bfd61ac923e9
 points: 5
 expected_minutes: 8
 expected_tokens: 1727786
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -85,3 +85,7 @@ One command proves send without inbound, quoted reply and reactions against the 
 - Never add these steps to `scripts/smoke.sh`: that smoke must never send a Matrix message.
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): caller picked from the owner DM binding (Q11)
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
