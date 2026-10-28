@@ -1,6 +1,6 @@
 ---
 title: orch chat tools allow
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "every new session's agents see the chat tools, proven against the real routes with the released plugin"
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, tests/e2e/test_e2e_kind.py, tests/test_agent_chat.py, README.md]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_on_start.py tests/test_agent_chat.py 
 depends_on: [orch-plugins-pin-0-3-0, orch-chat-contract]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1be7f315f8ba40435d7ab661f416493440730ab7
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -78,3 +78,7 @@ Every new session's agents see the four chat tools; only the leader's calls succ
 - 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters end to end through the released plugin
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-28 done: CI test/lint/chart green run 40742034508; e2e pending at review
+
+- 2026-10-28 actuals: no agent records
