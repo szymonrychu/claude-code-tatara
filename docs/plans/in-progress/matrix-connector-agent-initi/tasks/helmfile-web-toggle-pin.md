@@ -1,6 +1,6 @@
 ---
 title: helmfile web toggle pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "agents-helmfile pins the web build with the 'Agents may start chats' switch"
 files: [values/agents-web/common.yaml, helmfile.yaml.gotmpl, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_web_release.py && mise run lint"
 depends_on: [web-room-initiate-toggle, helmfile-chat-values]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c1825b744ea639c297fe605331b668a1f5d15290
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 82937
+actual_roles: review 1
+actual_role_tokens: review 82937
 ---
 
 # helmfile web toggle pin
@@ -64,3 +64,5 @@ agents-helmfile pins the agents-web build with the "Agents may start chats" swit
 - The apply is in chat-live-smoke, after the orchestrator.
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-28 done
