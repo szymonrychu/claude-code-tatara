@@ -27,7 +27,7 @@ Design D14, verbatim (values): "agents-web tag with the toggle."
 
 Design D15, verbatim: "The room drawer gets an "Agents may start chats" switch bound to `agents_may_initiate`, saved with the preset and trigger in the one PUT (gate question Q4)."
 
-Design D18, verbatim: "then the orchestrator with its chat secret and the v0.3.0 plugins ref [...], then agents-web."
+Design D18, verbatim: "then the orchestrator with its chat secret and the v0.2.0 plugins ref [...], then agents-web."
 
 Scope (agents-helmfile): `values/agents-web/common.yaml` image tag and `helmfile.yaml.gotmpl` agents-web chart version `0.1.0-main.<sha7>`, both the agents-web `main` sha7 that carries web-room-initiate-toggle (CI-published). No apply here.
 
@@ -62,3 +62,5 @@ agents-helmfile pins the agents-web build with the "Agents may start chats" swit
 - Dependency-bump TDD exception (a pin change with no behaviour change here); the pin test is the guard.
 - `test_web_release_chart` runs `helmfile build` and needs network; environmental in this pod.
 - The apply is in chat-live-smoke, after the orchestrator.
+
+- 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
