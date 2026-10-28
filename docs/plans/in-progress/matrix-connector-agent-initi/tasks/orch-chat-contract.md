@@ -1,6 +1,6 @@
 ---
 title: orch chat contract
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the orchestrator's idea of the chat upstream cannot drift from what the connector really serves"
 files: [tests/fakes/fake_chat.py, tests/fakes/chat_openapi.json, tests/fakes/chat_openapi.source, tests/test_chat_contract.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_chat_contract.py tests/test_agent_cha
 depends_on: [orch-chat-relay, mxc-agent-routes]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 9d5419c096c9fd1004bbcee84241d1f4d762451f
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -66,3 +66,7 @@ The orchestrator's view of the chat upstream cannot drift from the connector's: 
 - `jsonschema` and `openapi-schema-validator` are already in `uv.lock` (transitive); use one of them if it is importable in the dev environment, else resolve the document's `$ref`s by hand in the fake. A new direct dependency would touch `pyproject.toml` and `uv.lock`, which this task may not: return it as a `discovered` entry.
 - ac2 and ac4 run without a database (override `require_agent` as in `tests/test_agent_chat.py`).
 - orch-chat-tools-allow reuses `FakeChat` for the plugin parity test.
+
+- 2026-10-28 done: vendored doc from connector branch 0380120; re-check on connector main after its merge commit
+
+- 2026-10-28 actuals: no agent records
