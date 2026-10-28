@@ -1,6 +1,6 @@
 ---
 title: orch-chat-env-scope
-status: todo
+status: done
 repo: agents-orchestrator
 value: "the orchestrator starts with chat enabled: the chat URL and token reach only the api, always together"
 files: [chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, chart/agents-orchestrator/templates/_helpers.tpl, tests/test_chart_config.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_chart_config.py -q
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: df3998301fecec1cf0a757c539bb8a6f423d7130
 points: 3
 expected_minutes: 6
 expected_tokens: 962516
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 40
+actual_tokens: 1224382
+actual_roles: "impl 38, review 2"
+actual_role_tokens: "impl 926540, review 297842"
 ---
 
 # orch-chat-env-scope
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
