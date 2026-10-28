@@ -1,6 +1,6 @@
 ---
 title: plugin chat tools
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: "agents get the four chat tools: rooms, send, react and status"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md]
@@ -8,11 +8,11 @@ verify: "uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin
 depends_on: [orch-chat-relay]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 670e021f935418761112c27e3e90a773803d37a7
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -73,3 +73,7 @@ The orchestrator plugin offers the four chat tools against the orchestrator's ch
 - Depends on orch-chat-relay only for the agreed paths; nothing here imports the orchestrator.
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): descriptions and binding refusal codes
+
+- 2026-10-28 done: CI runs 40734865565, 40734905366 green; test_source_install local fail is pod git version
+
+- 2026-10-28 actuals: no agent records
