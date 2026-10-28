@@ -1,6 +1,6 @@
 ---
 title: mxc chart agent port
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the deployed connector exposes its agent listener to the orchestrator through its own Service, the hash only in a Secret"
 files: [chart/agents-matrix-connector/templates/deployment.yaml, chart/agents-matrix-connector/templates/service-agents.yaml, chart/agents-matrix-connector/templates/_config.tpl, chart/agents-matrix-connector/templates/secret.yaml, chart/agents-matrix-connector/values.yaml, chart/agents-matrix-connector/ci/lint-values.yaml, tests/test_chart_network.py, tests/test_chart_workloads.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_chart_network.py tests/test_chart_workloads.py
 depends_on: [mxc-agent-listener]
 model: opus
 review: ""
-verified_head: ""
+verified_head: cc19c54edeca87373337fb5d2a1a1c4a3b2d94f4
 points: 5
 expected_minutes: 9
 expected_tokens: 1836811
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -75,3 +75,7 @@ Deploying the chart exposes the connector's agent listener to in-cluster callers
 - Follow the existing `matrix.accessTokenSecret` pattern in `templates/_helpers.tpl`/`secret.yaml` for the hash secret.
 - The oauth2-proxy admission sidecar takes the port name `http`; name the new port `agents` and target it by name.
 - Update `ci/lint-values.yaml` only if the lint needs a value (it should render with the defaults).
+
+- 2026-10-28 done: CI 40749340758 green
+
+- 2026-10-28 actuals: no agent records
