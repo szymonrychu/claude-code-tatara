@@ -50,6 +50,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Sync the tree to origin/main (`git merge --ff-only origin/main`), then change the orchestrator pin assertions in tests/test_orchestrator_release.py to 6b467b7 and run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: the pin tests fail.
+- Set the chart version and image tag to 6b467b7, rerun: pass (Harbor-401 template tests may be deselected locally, name them).
+- `mise run check-pins`: every pin ok. `mise run lint`: clean.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
