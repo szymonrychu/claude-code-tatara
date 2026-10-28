@@ -1,6 +1,6 @@
 ---
 title: helmfile apply live check
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the fix runs live and the deploy is proven not to roll a busy agent
 files: [MEMORY.md]
@@ -8,11 +8,11 @@ verify: mise run smoke
 depends_on: [helmfile-deploy-pins]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 2bc3ddd3
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -67,3 +67,7 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done: applied 16:34Z by tatara-0 from main 030c93d; smoke OK incl. continuity; MEMORY entry PR #38 merged c9ba047; evidence .logs/deploy-safe-2026-10-28/live-check.md
+
+- 2026-10-28 actuals: no agent records
