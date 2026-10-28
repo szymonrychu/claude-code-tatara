@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pins
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the release that keeps sessions alive is pinned for deploy
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [wrapper-patch-release, orch-onstart-nonfatal, orch-sessions-backup-restore, orch-api-session-safety, orch-ci-publish-gate, orch-e2e-rollout-mid-turn, web-discard-backup-notice, web-agent-unavailable-banner, web-ci-publish-gate, helmfile-pin-check, helmfile-smoke-continuity, orch-rollout-dispatch-reserv, orch-sessions-save-unconverg, orch-security-hardening, web-review-fixes, helmfile-pin-check-attempts]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3b1bc0b
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 11
+actual_tokens: 564830
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 451716, review 113114"
 ---
 
 # helmfile deploy pins
@@ -74,3 +74,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: fill merged shas b451f08 and 4d066a4
+
+- 2026-10-28 done
