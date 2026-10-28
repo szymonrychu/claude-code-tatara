@@ -1,6 +1,6 @@
 ---
 title: mxc e2e agent sends
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "one end-to-end suite proves initiate, follow-ups, reply, react and the 1:1 room-session binding across the real processes"
 files: [tests/e2e/conftest.py, tests/e2e/test_e2e_agent.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/e2e/test_e2e_agent.py && mise run lint"
 depends_on: [mxc-agent-routes, mxc-bot-sends-delivery, mxc-room-session-binding, mxc-skip-duplicate-final, mxc-prompt-message-refs]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 40810bd99d90a3628dfbb1f3ee7ff6786aac447e
 points: 5
 expected_minutes: 9
 expected_tokens: 1836811
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -78,3 +78,7 @@ One end-to-end suite proves G1, G2, G3 and G6 (the 1:1 binding: bind on initiati
 - 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters delivered end to end
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): binding, refusals and release end to end
+
+- 2026-10-28 done: CI 40751882452 green (345 passed)
+
+- 2026-10-28 actuals: no agent records
