@@ -56,6 +56,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Read every file the step touches, write the AC tests first and run the task verify: the new tests fail for the expected reason.
+- Implement the smallest change that passes, rerun the verify and `mise run lint`: green.
+- Commit, push, open or update the PR and quote its CI result per job.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
