@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: "the chat tools are live and the user saw an agent post, reply and react in Messenger"
 files: [MEMORY.md]
 verify: "mise run lint && grep -q chat-smoke MEMORY.md"
-depends_on: [helmfile-chat-values, helmfile-web-toggle-pin, helmfile-chat-secrets, chat-smoke-script]
+depends_on: [helmfile-chat-values, helmfile-web-toggle-pin, helmfile-chat-secrets, chat-smoke-script, helmfile-orch-chat-fix-pin]
 model: sonnet
 review: ""
 verified_head: ""
