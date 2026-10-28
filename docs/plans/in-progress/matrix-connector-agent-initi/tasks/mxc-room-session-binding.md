@@ -1,6 +1,6 @@
 ---
 title: mxc room session binding
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "each chat room talks to exactly one session: the user's messages always reach the room's bound session, and deleting the session frees the room"
 files: [src/agents_matrix_connector/worker.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/bindings.py, MEMORY.md, README.md, tests/test_worker.py, tests/test_runs_repo.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_runs_repo.py tests/test_worker.py && mise run 
 depends_on: [mxc-sends-schema, mxc-bot-sends-delivery]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 9c031d0d9dfd5c3d52a8023a382a4354d9586e55
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
+points_actual: 8
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -109,3 +109,7 @@ Every chat room talks to exactly one session: the user's messages in a bound roo
 - `test_session_gone_falls_back` stays unchanged and must keep passing; the binding assertions of that path live in the new `test_session_gone_releases_binding`.
 - MEMORY.md entry format: `- One session per room and one room per session (2026-10-27, epic matrix-connector-agent-initi): hard 1:1 binding in room_bindings, released only when the session is deleted; why: the user's final-gate decision ...` amending the 2026-10-25 line, newest first.
 - DB-backed tests (CI); keep the routing decision (binding state and check result to action) a pure function with a non-DB test in `tests/test_worker.py` so the local run has signal.
+
+- 2026-10-28 done: CI 40746644847 green
+
+- 2026-10-28 actuals: no agent records
