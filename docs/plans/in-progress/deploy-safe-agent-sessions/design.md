@@ -94,6 +94,11 @@ re-attach so the dispatcher delivers."
 
 - (my call) "After it" is decided by database order (the events row id or the database clock), never by comparing the
   wrapper's event `ts` with the database clock (clock-skew debt recorded by leader-auto-handover).
+- (my call, amended 2026-10-28 during build, fable architect) Database order cannot decide it: when the orchestrator
+  restarts in the same deploy, the close is emitted before the resume but stored after it. A stored or received
+  `session_closed` is honoured only when the wrapper's live snapshot maps to `dead`; on a live snapshot the ingester
+  re-attaches from the close's seq. The resume marker stays a re-attach trigger in `AgentRef` only. Rule and tests:
+  `.scratchpad/session-loss/decisions/d3-close-after-resume.md`.
 - (my call) The marker is a new column on `agents` written only by the reconciler (the agents row's writer), in a new
   migration numbered after the highest one on main when the task runs (0008 today; 0009 if
   slash-commands-from-chat's `0008_slash_messages.sql` lands first).
