@@ -1,6 +1,6 @@
 ---
 title: web agent unavailable banner
-status: in-progress
+status: done
 repo: agents-web
 value: a hung session is visible at once instead of looking like silent queueing
 files: [src/chat/AgentUnavailableBanner.tsx, src/chat/AgentUnavailableBanner.test.tsx, src/chat/ChatView.tsx, src/ribbon/stateMark.tsx, src/ribbon/stateMark.test.ts, src/api/stream.ts, src/api/stream.test.ts, src/ribbon/useSessions.ts]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/chat/AgentUnavailableBanner.test.tsx src/ribbon/stat
 depends_on: [web-sync-session-safety-api]
 model: opus
 review: ""
-verified_head: ""
+verified_head: d3be27faa9138dff98812231a256e1b2f4fdbef9
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 9
+actual_tokens: 868989
+actual_roles: "impl 6, review 3"
+actual_role_tokens: "impl 757205, review 111784"
 ---
 
 # web agent unavailable banner
@@ -82,3 +82,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-27 amended: Q2 settled: narrowed banner rule
+
+- 2026-10-28 done
