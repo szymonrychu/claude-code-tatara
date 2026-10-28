@@ -1,6 +1,6 @@
 ---
 title: orch default continue prompt
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agents continue an interrupted turn after a restart without per-preset setup
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/k8s/render.py, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_render.py && uv run ruff check . && uv run 
 depends_on: [orch-onstart-nonfatal]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 6982b3be4ba76d42889e6254d69086055de58f1e
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 19
+actual_tokens: 1172307
+actual_roles: "impl 3, review 16"
+actual_role_tokens: "impl 857088, review 315219"
 ---
 
 # orch default continue prompt
@@ -74,3 +74,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
