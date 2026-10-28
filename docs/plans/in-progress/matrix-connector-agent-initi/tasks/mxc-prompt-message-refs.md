@@ -1,6 +1,6 @@
 ---
 title: mxc prompt message refs
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "agents see which room and which message they can reply or react to, and learn how to reach the user outside a chat turn"
 files: [src/agents_matrix_connector/prompt.py, tests/test_prompt.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_prompt.py && mise run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 456802230799dc68180547c1b24a7f05c0235c62
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -63,3 +63,7 @@ Every chat prompt names its room and each message's short id, and the agent is t
 - Pure module, no DB: the whole verify runs locally.
 - Keep the PREAMBLE's existing untrusted-input sentence verbatim; append the new sentences.
 - Tool names are `orchestrator_chat_send` and `orchestrator_chat_react` (D13); do not name `mcp__any-mcp__` prefixes.
+
+- 2026-10-28 done: CI 40748215902 green
+
+- 2026-10-28 actuals: no agent records
