@@ -46,17 +46,22 @@ Discovery (verbatim): "`scripts/ci.test.mjs` (node:test, 13 tests) ... ORPHANED:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `package.json` `scripts["test:scripts"]` = `node --test 'scripts/*.test.mjs'` (quoted glob: node expands it, so it works the same in npm's sh and in mise).
+- `.github/workflows/ci.yaml` job `web`: a step `- run: npm run test:scripts` directly after `- run: npm test`.
+- `.mise.toml` `[tasks.test]` `run = ["npm test", "npm run test:scripts"]`.
+- New node:test in `scripts/ci.test.mjs`: `test_scripts_tests_are_wired`, reading package.json, ci.yaml and .mise.toml.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`mise run test` and the `web` CI job run every `scripts/*.test.mjs` file, so `scripts/ci.test.mjs` and `scripts/sync-api.test.mjs` stop being dead, and web-release-job's `scripts/next_version.test.mjs` runs as soon as it exists.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+1. Red: add `test_scripts_tests_are_wired` to `scripts/ci.test.mjs`; run `mise exec -- node --test --test-name-pattern=test_scripts_tests_are_wired scripts/ci.test.mjs`; expect it to fail on the missing `test:scripts` script.
+2. Green: add the npm script, the CI step and the mise task change; rerun the same command (pass), then `mise exec -- npm run test:scripts` (expect `fail 0`, about 23 tests) and `mise run lint`.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Do not change `"test": "vitest run"`: agents run `npm test -- <file>` and appending node to it would hand that file to node.
+- `mise run test` locally also runs vitest, which needs `npm ci --no-audit --no-fund` first in a stale tree (missing `@codemirror/*`); that is a local env step, not a code change.
+- The existing test "web job: node 24 with npm cache and the four npm scripts" stays accurate; extend nothing else in ci.test.mjs here (the release layout is web-release-job's).
