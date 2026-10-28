@@ -38,7 +38,7 @@ Scope (agents-orchestrator):
 
 Interfaces: `render_cache_job(session, settings, action, url, target=...)` or an equivalent parameter object; `status.cache.sessions_save` run dict as above; the CLI `orch cache save|restore` is unchanged (it already reads `CACHE_DIR`).
 
-Steps: tests first in `tests/test_sessions_backup.py` (fake kube and real Postgres, as `tests/test_cache_save.py`), seen failing; then the parameterisation; `tests/test_cache_jobs_render.py`, `tests/test_cache_save.py` and `tests/test_cache_restore.py` keep passing unchanged (workdir behaviour is unchanged); run the verify.
+Steps: tests first in `tests/test_sessions_backup.py` (fake kube and real Postgres, as `tests/test_cache_save.py`), seen failing; then the parameterisation; `tests/test_cache_jobs_render.py` and `tests/test_cache_restore.py` keep passing unchanged (workdir behaviour is unchanged); `tests/test_cache_save.py` is no longer accurate in one assumption (the discard ends one tick after the workdir save, which no longer holds once a sessions save follows it): only its session setup helper changes, giving each session a sessions restore record whose state skips the sessions save, so it keeps testing the workdir save alone with no assertion changed; run the verify.
 
 Notes: reuse.md do-not-build: "A second S3 client or credential path - presign.py (Job gets one URL, no Secret)". The Job never gets a Secret, `spec.env` or a service account token (module docstring D4). DB tests need Docker: PR CI is the evidence. MEMORY.md: dated entry on the object name and the save condition.
 
@@ -52,7 +52,7 @@ Notes: reuse.md do-not-build: "A second S3 client or credential path - presign.p
 - AC6: a sessions restore state that does not allow a save skips it with the reason; an absent record or skipped pods_exist saves [evidence: test:tests/test_sessions_backup.py::test_sessions_save_skip_rules]
 - AC7: the sessions save carries CACHE_MAX_BYTES and an emptyDir scratch sized to it, as the workdir save [evidence: test:tests/test_sessions_backup.py::test_sessions_save_respects_max_bytes]
 - AC8: the sessions object name never equals a workspace key's object and both are signed by the one presign client [evidence: test:tests/test_sessions_backup.py::test_sessions_object_name_distinct_from_cache_keys]
-- AC9: the workdir cache suites pass unchanged [evidence: command:uv run pytest -q tests/test_cache_jobs_render.py tests/test_cache_save.py tests/test_cache_restore.py tests/test_cache_presign.py]
+- AC9: the workdir cache suites pass, unchanged except the tests/test_cache_save.py session setup helper (sessions restore record that skips the sessions save; no assertion changed) [evidence: command:uv run pytest -q tests/test_cache_jobs_render.py tests/test_cache_save.py tests/test_cache_restore.py tests/test_cache_presign.py]
 - AC10: MEMORY.md records the decision [evidence: command:grep -q "sessions/<slug>.tar.zst" MEMORY.md]
 - AC11: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
@@ -82,3 +82,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: test_cache_save.py assumes discard ends one tick after the workdir save; the required sessions save (absent restore record saves) contradicts 'unchanged'. Setup-helper-only change accepted (supervisor, standing approval).
