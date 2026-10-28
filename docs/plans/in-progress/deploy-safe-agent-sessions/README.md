@@ -46,3 +46,22 @@ User request (2026-10-27 20:44Z, relayed by mx-34 msg 150), verbatim: "Figuring 
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-28)
+
+# Phase 5 judgement (tatara-0, 2026-10-28)
+Fix tasks (real):
+- orch README:119 onStart wording (review Act on) -> orch-review-fixes
+- rollout.py:50 replacer ignores dispatch reservation (sent-not-busy pod deletable) -> orch-rollout-reservation (deploy-safety core, real)
+- save_rule.py:31 discard before first converge: sessions save Job on missing PVC holds discard up to 30m -> orch-review-fixes
+- security M1 orchestrator ci.yaml regctl-installer@main -> pin by SHA (+ least-privilege permissions block) -> orch-review-fixes
+- security M2 part: /sessions archive has no excludes, so Claude credentials (config/.credentials.json) land in S3 -> exclude credential files (my call) -> orch-review-fixes
+- web: chart-publish-tag needs only chart (tag publish of red web build), DiscardSessionDialog wording for transcripts-skipped, ChatView banner mount test, permissions block -> web-review-fixes
+Accepted / noted:
+- M2 restore planting via bucket write: bucket write access is already trusted for the workdir cache restore; same trust boundary. Noted.
+- M3 check_pins name-only repo mapping: pins live in our own helmfile reviewed by PR; noted.
+- L check_pins all-skipped green: noted (no skip in our pins).
+- L on_error allow: by design D6.
+Scope audit gap dropped: helmfile-pin-check AC9 (grep for 96e46f3 refused) was a point-in-time check against the pins of that day; the hotfix moved pins to c042f79 (green), and the refusal is proven by tests/fixtures/check_runs_agents_orchestrator.json in the task's tests. Not a code gap.
+Noted, not doing now: claude-code-wrapper tests/test_manager.py::test_shutdown_stops_all fails locally on base fb005fd too (pre-existing).
+Fix task start heads: orchestrator e0b6e12 (rollout-dispatch-reserv), web 29e97be (web-review-fixes).
