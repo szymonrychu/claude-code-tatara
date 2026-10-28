@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Pin the agents-orchestrator release to the merge commit of task orch-chat-env-scope (chart `0.1.0-main.<sha7>` in helmfile.yaml.gotmpl and `image.tag` `<sha7>` in values/agents-orchestrator/common.yaml; the orchestrator session fills the sha with `ticket.py amend` after the orchestrator PR merges and its main CI is green). The previous pin 37edd58 with chat enabled crash-looped every migrate init container (live apply 2026-10-28 21:32Z, rolled back). Keep every other pin unchanged, including the agent image. Update tests/test_orchestrator_release.py to the new pin. `mise run check-pins` must pass. Never run an apply.
+Pin the agents-orchestrator release to the merge commit of task orch-chat-env-scope (chart `0.1.0-main.6b467b7` in helmfile.yaml.gotmpl and `image.tag` `6b467b7` in values/agents-orchestrator/common.yaml; merge commit 6b467b7 of PR #31; its main CI run 40779692636 must be green, including chart-publish). The previous pin 37edd58 with chat enabled crash-looped every migrate init container (live apply 2026-10-28 21:32Z, rolled back). Keep every other pin unchanged, including the agent image claude-code-wrapper:0.3.3 applied by cct2 from helmfile main 260bdc2. Start from origin/main (sync the tree first). Update tests/test_orchestrator_release.py to the new pin. `mise run check-pins` must pass. Never run an apply.
 
 ## Acceptance conditions
 
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: fill merged sha 6b467b7
