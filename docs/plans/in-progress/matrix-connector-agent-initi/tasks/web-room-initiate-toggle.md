@@ -1,6 +1,6 @@
 ---
 title: web room initiate toggle
-status: in-progress
+status: done
 repo: agents-web
 value: "the user switches 'Agents may start chats' on or off per room in the web UI"
 files: [openapi/matrix.json, openapi/matrix.source, src/api/matrix-schema.d.ts, src/matrix/RoomDrawer.tsx, src/matrix/ChatsPage.test.tsx]
@@ -8,11 +8,11 @@ verify: "npx vitest run src/matrix && npm run check:api && npm run lint"
 depends_on: [mxc-room-initiate-flag]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 431f8d23f9cec4a141871c989499f24d1f6309e9
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -70,3 +70,7 @@ The user turns "Agents may start chats" on or off per room in the web UI.
 - The connector keeps the stored flag when the field is omitted (mxc-room-initiate-flag), but the UI always sends it, so what the user sees is what is saved.
 - The vendored `openapi/matrix.json` and the generated types also gain the room `binding` field (D9, mxc-room-initiate-flag); this task shows nothing new for it (noted, not doing now: a "bound to session <slug>" hint in the drawer). Under the 1:1 rule the flag lets an agent start a chat only while the room is unbound; the switch label stays "Agents may start chats".
 - Retro (markdown-rendering-in-chat): one vitest test is flaky under load with no captured name; on a first-run failure capture the failing test name and the output tail before any rerun.
+
+- 2026-10-28 done: openapi synced from connector branch 23f0424 (my call); CI 40735421358 pending at review
+
+- 2026-10-28 actuals: no agent records
