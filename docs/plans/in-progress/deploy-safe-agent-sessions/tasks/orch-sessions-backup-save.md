@@ -1,6 +1,6 @@
 ---
 title: orch sessions backup save
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a discarded session's Claude conversations are saved to S3 with its workdir"
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/cache/presign.py, src/agents_orchestrator/reconciler/loop.py, tests/test_sessions_backup.py, tests/test_cache_jobs_render.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_sessions_backup.py tests/test_cache_jobs_re
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 65f92de1c9e6df13862a14a3e38d564f93267749
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 40
+actual_tokens: 6393804
+actual_roles: "impl 22, review 18"
+actual_role_tokens: "impl 5910970, review 482834"
 ---
 
 # orch sessions backup save
@@ -84,3 +84,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: test_cache_save.py assumes discard ends one tick after the workdir save; the required sessions save (absent restore record saves) contradicts 'unchanged'. Setup-helper-only change accepted (supervisor, standing approval).
+
+- 2026-10-28 done
