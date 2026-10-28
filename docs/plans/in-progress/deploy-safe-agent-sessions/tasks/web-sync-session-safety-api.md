@@ -1,6 +1,6 @@
 ---
 title: web sync session safety api
-status: in-progress
+status: done
 repo: agents-web
 value: the web client is typed against the API fields that describe backups and queue age
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]
@@ -8,15 +8,15 @@ verify: "npm run check:api && npx tsc -b && npm run lint"
 depends_on: [orch-api-session-safety]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ace35f85df49e5319f62e52cadd0065a84ea2a75
 points: 1
 expected_minutes: 4
 expected_tokens: 641999
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 8
+actual_tokens: 306882
+actual_roles: "impl 6, review 3"
+actual_role_tokens: "impl 238352, review 68530"
 ---
 
 # web sync session safety api
@@ -62,3 +62,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
