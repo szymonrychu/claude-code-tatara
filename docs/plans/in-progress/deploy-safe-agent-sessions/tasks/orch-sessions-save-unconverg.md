@@ -1,6 +1,6 @@
 ---
 title: orch-sessions-save-unconverged
-status: todo
+status: done
 repo: agents-orchestrator
 value: discarding a never-started session is instant and the README states the non-fatal onStart
 files: [src/agents_orchestrator/cache/save_rule.py, tests/test_cache_save.py, README.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_cache_save.py -q
 depends_on: [orch-sessions-backup-save]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: bd1024124be889099be4208a4b883572973a493a
 points: 3
 expected_minutes: 6
 expected_tokens: 950968
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 10
+actual_tokens: 1555464
+actual_roles: "impl 4, review 7"
+actual_role_tokens: "impl 1161216, review 394248"
 ---
 
 # orch-sessions-save-unconverged
@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
