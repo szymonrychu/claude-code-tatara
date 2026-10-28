@@ -1,6 +1,6 @@
 ---
 title: mxc api blank text
-status: todo
+status: done
 repo: agents-matrix-connector
 value: an agent learns at once that a whitespace-only message cannot be sent
 files: [src/agents_matrix_connector/api/agent.py, tests/test_api_agent.py, MEMORY.md]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_api_agent.py && mise run lint"
 depends_on: [mxc-agent-routes]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ed9c0f71164f5efe4fe56c01d9f967982f7d8224
 points: 1
 expected_minutes: 4
 expected_tokens: 637069
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -57,3 +57,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done: CI 40750406829 green
+
+- 2026-10-28 actuals: no agent records
