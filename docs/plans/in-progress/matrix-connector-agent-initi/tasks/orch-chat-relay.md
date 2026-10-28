@@ -1,6 +1,6 @@
 ---
 title: orch chat relay
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "session leaders reach the chat through the orchestrator, which proves who calls and keeps the agent token to itself"
 files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/api/chat.py, src/agents_orchestrator/api/app.py, README.md, openapi.json, MEMORY.md, tests/test_agent_chat.py, tests/test_settings.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_agent_chat.py tests/test_settings.py 
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 62e1908f82094202b1193127f5fa0659d8931812
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -93,3 +93,7 @@ A session leader can call four chat routes on the orchestrator agent port; the o
 - `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.
 
 - 2026-10-27 amended: interrogate.md Act 6: body cap 256 KiB covering 16000 4-byte characters raw and escaped
+
+- 2026-10-28 done: CI test/lint/chart green run 40732285270; e2e pending at review
+
+- 2026-10-28 actuals: no agent records
