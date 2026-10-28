@@ -1,6 +1,6 @@
 ---
 title: mxc sends schema
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "agent sends get a queue, a room flag, a database-enforced 1:1 room-session binding and the reference queries every later task needs"
 files: [src/agents_matrix_connector/migrations/0002_agent_sends.sql, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, tests/test_schema.py, tests/test_sends_repo.py, tests/test_bindings_repo.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_schema.py tests/test_sends_repo.py tests/test_
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: bb794edaf29ff524d8c895c943cdacb03d287f75
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
+points_actual: 8
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -109,3 +109,7 @@ The connector database holds the agent send queue, the room flag and the room-se
 - 2026-10-27 amended: interrogate.md Act 1: runs.preset_id nullable for follow runs with a CHECK that first runs keep one
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): room_bindings table, unique indexes, backfill, db/bindings.py
+
+- 2026-10-28 done: DB tests CI-only (run 40732610268 green); backfill slug from first run (my call)
+
+- 2026-10-28 actuals: no agent records
