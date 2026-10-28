@@ -1,6 +1,6 @@
 ---
 title: orch-security-hardening
-status: todo
+status: done
 repo: agents-orchestrator
 value: Claude credentials never land in S3 and CI cannot run a moving third-party action with push secrets
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/spec.py, tests/test_cache_jobs_render.py, tests/test_cache_archive.py, .github/workflows/ci.yaml, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_cache_jobs_render.py tests/test_cache_archive.p
 depends_on: [orch-sessions-save-unconverg]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 28459cc92129977fdcb13079796badfc4a5474ed
 points: 3
 expected_minutes: 6
 expected_tokens: 950968
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 57
+actual_tokens: 1883710
+actual_roles: "impl 56, review 2"
+actual_role_tokens: "impl 1722487, review 161223"
 ---
 
 # orch-security-hardening
@@ -61,3 +61,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
