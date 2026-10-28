@@ -1,6 +1,6 @@
 ---
 title: mxc room initiate flag
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the user can flag a room so agents may start a chat there, off by default, and sees which session each room is bound to"
 files: [src/agents_matrix_connector/db/rules.py, src/agents_matrix_connector/db/directory.py, src/agents_matrix_connector/api/rooms.py, src/agents_matrix_connector/api/schemas.py, openapi.json, README.md, tests/test_api_rooms.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_api_rooms.py tests/test_readme_api.py tests/te
 depends_on: [mxc-sends-schema]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 23f0424bc0d26a387f33e7c30a591ce7c0dc6c11
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -83,3 +83,7 @@ The user can flag a room so agents may start a chat there while it is unbound; n
 - The vendored schema in agents-web (web-room-initiate-toggle) picks up `binding` with the rest of `openapi.json`; showing it in the UI is noted, not doing now.
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): binding shown in the room views
+
+- 2026-10-28 done: CI run 40734264708 green
+
+- 2026-10-28 actuals: no agent records
