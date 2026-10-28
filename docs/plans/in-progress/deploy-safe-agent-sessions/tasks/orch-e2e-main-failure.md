@@ -1,6 +1,6 @@
 ---
 title: orch e2e main failure
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "the orchestrator main CI e2e is green, so gating publishes on it keeps main deployable"
 files: [tests/e2e/test_e2e_kind.py, tests/e2e/conftest.py, scripts/e2e.sh, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/te
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5736cbf25d5b742cf0e4491f4206dc09af93258b
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 22
+actual_tokens: 1504839
+actual_roles: "impl 3, review 18"
+actual_role_tokens: "impl 1090072, review 414767"
 ---
 
 # orch e2e main failure
@@ -67,3 +67,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
