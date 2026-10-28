@@ -1,5 +1,5 @@
 ---
-title: orch plugins pin 0.3.0
+title: orch plugins pin 0.2.0
 status: in-progress
 repo: agents-orchestrator
 value: agent pods install the plugins release that offers the chat tools
@@ -19,7 +19,7 @@ actual_roles: ""
 actual_role_tokens: ""
 ---
 
-# orch plugins pin 0.3.0
+# orch plugins pin 0.2.0
 
 ## Requirement
 
@@ -54,7 +54,7 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-- `Settings.any_mcp_plugins_ref` default `v0.3.0` (`ORCH_ANY_MCP_PLUGINS_REF`); dev dependency `any-mcp-tatara-orchestrator` at `v0.3.0`.
+- `Settings.any_mcp_plugins_ref` default `v0.2.0` (`ORCH_ANY_MCP_PLUGINS_REF`); dev dependency `any-mcp-tatara-orchestrator` at `v0.2.0`.
 
 ## Expected outcome
 
@@ -62,15 +62,15 @@ Agent pods rendered by this orchestrator install the plugins release that offers
 
 ## Steps
 
-- Confirm tag `v0.3.0` on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins v0.3.0`); stop and report if absent.
-- Red: change `test_defaults` to v0.3.0; run `uv run --frozen pytest tests/test_settings.py tests/test_images.py`: fails.
+- Confirm tag `v0.2.0` on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins v0.2.0`); stop and report if absent.
+- Red: change `test_defaults` to v0.2.0; run `uv run --frozen pytest tests/test_settings.py tests/test_images.py`: fails.
 - Green: settings default, pyproject pin, `uv lock`, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
 - Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties dev dependency, uv.lock and the default to one tag.
-- Builds on slash-commands' orch-plugins-pin-0-2-0 (same files); this epic is blocked until it merged.
-- The README check of ac3 assumes slash-commands wrote "plugins release tag (`v0.2.0`)"; read the README first and adapt the grep only in wording if the sentence differs, keeping the intent (no v0.2.0 plugins pin left).
+- Since the swap this epic precedes slash-commands: it builds on main (plugins pin v0.1.0), not on slash-commands' pin task.
+- The README check of ac3 matches README line 120 ("plugins release tag (`v0.1.0`)"); read the README first and adapt the grep only in wording if the sentence differs, keeping the intent (no v0.1.0 plugins pin left).
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is chat-live-smoke.
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0

@@ -2,7 +2,7 @@
 title: helmfile chat values
 status: in-progress
 repo: agents-helmfile
-value: agents-helmfile pins the connector and orchestrator builds with the chat path and the v0.3.0 plugins
+value: agents-helmfile pins the connector and orchestrator builds with the chat path and the v0.2.0 plugins
 files: [values/agents-matrix-connector/common.yaml, values/agents-orchestrator/common.yaml, helmfile.yaml.gotmpl, tests/test_matrix_connector_release.py, tests/test_orchestrator_release.py]
 verify: "uv run pytest tests/test_matrix_connector_release.py tests/test_orchestrator_release.py && mise run lint"
 depends_on: [helmfile-chat-secrets, mxc-e2e-agent-sends, mxc-chart-agent-port, orch-chart-chat, orch-chat-tools-allow, plugins-release-0-3-0]
@@ -54,7 +54,7 @@ Scope (agents-helmfile): `values/agents-matrix-connector/common.yaml` (image tag
 
 ## Interfaces
 
-- `values/agents-orchestrator/common.yaml`: `chat.url`, `env.ORCH_ANY_MCP_PLUGINS_REF: v0.3.0`, `image.tag`.
+- `values/agents-orchestrator/common.yaml`: `chat.url`, `env.ORCH_ANY_MCP_PLUGINS_REF: v0.2.0`, `image.tag`.
 - `values/agents-matrix-connector/common.yaml`: `image.tag`.
 - `helmfile.yaml.gotmpl`: chart `version` of both releases.
 

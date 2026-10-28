@@ -1,8 +1,8 @@
 ---
-title: plugins release 0.3.0
+title: plugins release 0.2.0
 status: in-progress
 repo: any-mcp-tatara-plugins
-value: the chat tools ship as plugins release v0.3.0 that the orchestrator can pin
+value: the chat tools ship as plugins release v0.2.0 that the orchestrator can pin
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
 verify: "uv run pytest tests/test_source_install.py::test_orchestrator_distribution_metadata tests/test_repo.py && mise run lint"
 depends_on: [plugin-chat-tools]
@@ -19,7 +19,7 @@ actual_roles: ""
 actual_role_tokens: ""
 ---
 
-# plugins release 0.3.0
+# plugins release 0.2.0
 
 ## Requirement
 
@@ -53,18 +53,18 @@ Scope (any-mcp-tatara-plugins):
 
 ## Interfaces
 
-- Distribution `any-mcp-tatara-orchestrator` version `0.3.0`; git tag `v0.3.0` on the `main` merge commit.
+- Distribution `any-mcp-tatara-orchestrator` version `0.2.0`; git tag `v0.2.0` on the `main` merge commit.
 
 ## Expected outcome
 
-The orchestrator plugin with the chat tools is released as tag v0.3.0, so the orchestrator can pin it.
+The orchestrator plugin with the chat tools is released as tag v0.2.0, so the orchestrator can pin it.
 
 ## Steps
 
-- Confirm `v0.2.0` exists on origin (`git ls-remote --tags origin v0.2.0`) and `main` already carries slash-commands' release; stop and report if not.
-- Red: change `test_orchestrator_distribution_metadata` to 0.3.0; run `uv run pytest tests/test_source_install.py::test_orchestrator_distribution_metadata`: fails.
+- Confirm the plugins' newest tag on origin is `v0.1.0` and `v0.2.0` does not exist yet (`git ls-remote --tags origin`); stop and report if not.
+- Red: change `test_orchestrator_distribution_metadata` to 0.2.0; run `uv run pytest tests/test_source_install.py::test_orchestrator_distribution_metadata`: fails.
 - Green: bump the plugin pyproject, `uv lock`, the plugin README example; run the task's verify: passes. Quote the summary line.
-- After the merge (orchestrator session): wait for CI green on the merge commit, `git tag v0.3.0 <merge sha> && git push origin v0.3.0`, then check ac3.
+- After the merge (orchestrator session): wait for CI green on the merge commit, `git tag v0.2.0 <merge sha> && git push origin v0.2.0`, then check ac3.
 
 ## Notes
 
