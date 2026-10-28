@@ -69,3 +69,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 in-progress: AC1 AC2 AC4 reviewed clean on cb51746 (CI 40650156587 green); merging PR #7, tag pending
