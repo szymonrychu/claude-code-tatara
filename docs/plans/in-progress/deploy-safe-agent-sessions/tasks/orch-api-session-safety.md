@@ -1,6 +1,6 @@
 ---
 title: orch api session safety
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the API tells clients what a discard keeps and how long messages have waited
 files: [src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/sessions.py, src/agents_orchestrator/api/streams.py, src/agents_orchestrator/db/views.py, openapi.json, tests/test_api_session_safety.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_api_session_safety.py tests/test_readme_api
 depends_on: [orch-sessions-backup-restore]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 07fce279e134fe8caa398d301bd0889cd2c5be31
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 31
+actual_tokens: 3378333
+actual_roles: "impl 13, review 18"
+actual_role_tokens: "impl 3070111, review 308222"
 ---
 
 # orch api session safety
@@ -82,3 +82,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
