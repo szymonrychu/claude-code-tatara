@@ -1,6 +1,6 @@
 ---
 title: orch rollout replacer
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: deploys never replace a busy or leading agent pod mid-turn
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/reconciler/rollout.py, src/agents_orchestrator/reconciler/loop.py, tests/fakes/fake_kube.py, tests/test_rollout.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_rollout.py tests/test_reconciler.py tests/t
 depends_on: [orch-default-continue-prompt, orch-dead-agent-ineligible]
 model: opus
 review: ""
-verified_head: ""
+verified_head: ba2ef3b8434e23bb0d9b5f02b2b1cbd09dcb605f
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 8
+actual_minutes: 83
+actual_tokens: 10288310
+actual_roles: "impl 47, review 34"
+actual_role_tokens: "impl 9355223, review 933087"
 ---
 
 # orch rollout replacer
@@ -89,3 +89,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
