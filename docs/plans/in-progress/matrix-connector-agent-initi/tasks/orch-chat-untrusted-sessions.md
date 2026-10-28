@@ -27,6 +27,7 @@ Epic review findings for agents-orchestrator, my call to fix:
 1. Security MEDIUM 1 (.scratchpad/matrix/review/security.md): `k8s/on_start.py` (about line 41) grants CHAT_TOOLS to every session, so a webhook or schedule session that reads attacker-controlled PR, issue or alert text can be prompt-injected into `chat_send` and message the real Messenger user wherever `agents_may_initiate` is on. Sessions started by the trigger services agents-webhook and agents-schedule (identified by the orchestrator's own record of who created the session, for example the service token name; read how sessions record their creator first, and if no reliable record exists, stop and return that as a question) get no chat tools rendered in onStart, and the chat relay (`api/chat.py`) refuses their calls with 403 and a distinct error code. Every other session keeps today's behaviour (user and connector sessions, including mx-34).
 2. Review Consider (.scratchpad/matrix/review/orch-plugins.md): `tests/e2e/test_e2e_kind.py` (about line 292) compares the allow list to `orchestrator_allow()`, i.e. the code to itself; restore a literal expected list there.
 Test first. Record the rule in MEMORY.md with the date and why.
+Decision (my call, 2026-10-28, answering the implementer's question): the orchestrator records no session creator today (`ServiceGate` in `api/service_auth.py` only logs the service name; `sessions` has no creator column). Add a nullable `created_by_service` column in a new migration (next free number), set it from the authenticated service name when a service creates a session (`create_session`), expose nothing new in the public API unless a test needs it, and treat NULL (user-created and pre-existing sessions) as not a trigger service. Pre-existing webhook and schedule sessions keep chat tools until they end; they are short-lived run sessions, so this is accepted.
 
 ## Acceptance conditions
 
@@ -65,3 +66,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: creator record decision: created_by_service column
