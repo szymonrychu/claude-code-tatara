@@ -1,6 +1,6 @@
 ---
 title: web ci publish gate
-status: in-progress
+status: done
 repo: agents-web
 value: a red agents-web main build is never pushed or published
 files: [.github/workflows/ci.yaml, scripts/ci.test.mjs]
@@ -8,15 +8,15 @@ verify: node --test scripts/ci.test.mjs
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: eec81ddc874dd2a3b626e042e099b04a0747a225
 points: 1
 expected_minutes: 4
 expected_tokens: 641999
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 5
+actual_tokens: 250789
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 200822, review 49967"
 ---
 
 # web ci publish gate
@@ -65,3 +65,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
