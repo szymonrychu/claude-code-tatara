@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.2.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agent pods install the plugins release that offers the chat tools
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_settings.py tests/test_images.py test
 depends_on: [plugins-release-0-3-0, orch-chat-relay]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: af167e81460d0fa45e16099cef440eea61bed4ce
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -74,3 +74,7 @@ Agent pods rendered by this orchestrator install the plugins release that offers
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is chat-live-smoke.
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
