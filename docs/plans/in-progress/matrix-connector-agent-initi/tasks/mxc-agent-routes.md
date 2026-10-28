@@ -1,6 +1,6 @@
 ---
 title: mxc agent routes
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "agents can list their rooms, send, reply, react and read delivery status, refused at once when the room is not theirs"
 files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/api/openapi.py, openapi-agent.json, README.md, tests/test_api_agent.py, tests/test_readme_api.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_api_agent.py tests/test_readme_api.py tests/te
 depends_on: [mxc-sends-schema, mxc-room-initiate-flag, mxc-agent-listener, mxc-agent-room-policy]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 03801200ffbb1a15d97f63e214238bc6778f75f9
 points: 13
 expected_minutes: 22
 expected_tokens: 3916941
-points_actual: ""
+points_actual: 8
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -113,3 +113,7 @@ The orchestrator can ask the connector, on the session's behalf, which rooms it 
 - 2026-10-27 amended: interrogate.md Acts 2, 4, 6, 9: member-aware (a), derived-room authorisation, 16000 4-byte text, duplicate returns the existing send
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): (b) through room_bindings, 409 room_bound and session_bound, listing
+
+- 2026-10-28 done: CI 40740444262 green; MEMORY entries for implementer calls follow in a docs commit
+
+- 2026-10-28 actuals: no agent records
