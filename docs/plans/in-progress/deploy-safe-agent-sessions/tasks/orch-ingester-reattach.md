@@ -1,6 +1,6 @@
 ---
 title: orch ingester reattach
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: an agent comes back from dead after a pod restart and its queued messages are delivered
 files: [src/agents_orchestrator/db/migrations/0009_wrapper_resume.sql, src/agents_orchestrator/db/agents.py, src/agents_orchestrator/reconciler/wrapper_sessions.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_wrapper_session_bootstrap.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_ingester.py tests/test_wrapper_session_boot
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 4ca88eacea5f0c226b8b917c505e1991269c8f62
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 67
+actual_tokens: 7999692
+actual_roles: "impl 31, review 35"
+actual_role_tokens: "impl 7206272, review 793420"
 ---
 
 # orch ingester reattach
@@ -81,3 +81,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
