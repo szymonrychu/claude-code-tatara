@@ -8,7 +8,7 @@ verify: mise run smoke
 depends_on: [helmfile-deploy-pins]
 model: sonnet
 review: ""
-verified_head: 2bc3ddd3
+verified_head: 2bc3ddd2228605a3c1d204bd502bffd3fbee1d54
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
@@ -69,5 +69,9 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 done: applied 16:34Z by tatara-0 from main 030c93d; smoke OK incl. continuity; MEMORY entry PR #38 merged c9ba047; evidence .logs/deploy-safe-2026-10-28/live-check.md
+
+- 2026-10-28 actuals: no agent records
+
+- 2026-10-28 done
 
 - 2026-10-28 actuals: no agent records
