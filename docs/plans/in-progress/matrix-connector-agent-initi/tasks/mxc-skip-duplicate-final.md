@@ -1,6 +1,6 @@
 ---
 title: mxc skip duplicate final
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "an answer the agent already sent is not posted a second time as the turn's final reply"
 files: [src/agents_matrix_connector/tracker.py, src/agents_matrix_connector/db/sends.py, README.md, tests/test_tracker.py, tests/test_readme_api.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_tracker.py tests/test_readme_api.py && mise ru
 depends_on: [mxc-bot-sends-delivery, mxc-agent-routes]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f9d489922cfa4ac63b49747906c4e83be4ea6ba0
 points: 5
 expected_minutes: 8
 expected_tokens: 1847647
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -85,3 +85,7 @@ An agent that sends its answer with `orchestrator_chat_send` during a chat-start
 - DB-backed tracker tests (CI); `test_readme_api.py` runs locally.
 
 - 2026-10-27 amended: interrogate.md Act 3: only sent sends suppress the final answer; pending matches delay the close within the run timeout
+
+- 2026-10-28 done: CI 40747755877 green
+
+- 2026-10-28 actuals: no agent records
