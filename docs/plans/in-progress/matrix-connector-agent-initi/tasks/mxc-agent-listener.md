@@ -1,6 +1,6 @@
 ---
 title: mxc agent listener
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: the orchestrator gets a token-protected way into the connector without opening the SSO-protected UI api
 files: [src/agents_matrix_connector/settings.py, src/agents_matrix_connector/cli.py, src/agents_matrix_connector/api/agent.py, README.md, tests/test_settings.py, tests/test_cli.py, tests/test_agent_gate.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_settings.py tests/test_agent_gate.py tests/tes
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 221c793e1b2354ea68e3f700931ad5355eafb671
 points: 5
 expected_minutes: 9
 expected_tokens: 1836811
-points_actual: ""
+points_actual: 5
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -77,3 +77,7 @@ The api process can expose a token-protected agent listener that the orchestrato
 - `/healthz` and `/readyz` on the agent app stay open (probes), like the orchestrator's `EXEMPT_PATHS`.
 - The UI app's `SourceAllowlist` and `MATRIX_API_ALLOWED_CIDRS` stay exactly as they are.
 - Non-DB tests: use `httpx.ASGITransport(app=..., client=("10.0.0.5", 1234))` to set the peer.
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
