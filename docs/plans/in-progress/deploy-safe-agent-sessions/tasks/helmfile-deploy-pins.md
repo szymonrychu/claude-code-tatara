@@ -5,7 +5,7 @@ repo: agents-helmfile
 value: the release that keeps sessions alive is pinned for deploy
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_web_release.py && mise run lint"
-depends_on: [wrapper-patch-release, orch-onstart-nonfatal, orch-sessions-backup-restore, orch-api-session-safety, orch-ci-publish-gate, orch-e2e-rollout-mid-turn, web-discard-backup-notice, web-agent-unavailable-banner, web-ci-publish-gate, helmfile-pin-check, helmfile-smoke-continuity]
+depends_on: [wrapper-patch-release, orch-onstart-nonfatal, orch-sessions-backup-restore, orch-api-session-safety, orch-ci-publish-gate, orch-e2e-rollout-mid-turn, web-discard-backup-notice, web-agent-unavailable-banner, web-ci-publish-gate, helmfile-pin-check, helmfile-smoke-continuity, orch-rollout-dispatch-reserv, orch-sessions-save-unconverg, orch-security-hardening, web-review-fixes]
 model: sonnet
 review: ""
 verified_head: ""

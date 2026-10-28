@@ -5,7 +5,7 @@ repo: agents-orchestrator
 value: Claude credentials never land in S3 and CI cannot run a moving third-party action with push secrets
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/spec.py, tests/test_cache_jobs_render.py, tests/test_cache_archive.py, .github/workflows/ci.yaml, MEMORY.md]
 verify: uv run pytest tests/test_cache_jobs_render.py tests/test_cache_archive.py -q
-depends_on: [orch-sessions-save-unconverged]
+depends_on: [orch-sessions-save-unconverg]
 model: sonnet
 review: ""
 verified_head: ""
