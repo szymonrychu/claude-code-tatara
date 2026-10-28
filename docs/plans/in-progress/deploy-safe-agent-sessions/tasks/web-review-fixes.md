@@ -1,6 +1,6 @@
 ---
 title: web-review-fixes
-status: todo
+status: done
 repo: agents-web
 value: a red web build never publishes a tagged chart and the discard notice names the right data
 files: [.github/workflows/ci.yaml, scripts/ci.test.mjs, src/sessions/DiscardSessionDialog.tsx, src/sessions/DiscardSessionDialog.test.tsx, src/chat/ChatView.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/sessions/DiscardSessionDialog.test.tsx src/chat/Chat
 depends_on: [web-discard-backup-notice]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 454e1aa2a40f252bfdcbca82a5ebabe74140195c
 points: 3
 expected_minutes: 6
 expected_tokens: 950968
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 6
+actual_tokens: 644127
+actual_roles: "impl 6, review 1"
+actual_role_tokens: "impl 555731, review 88396"
 ---
 
 # web-review-fixes
@@ -61,3 +61,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
