@@ -1,6 +1,6 @@
 ---
 title: mxc matrix send event
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "the bot can send any Matrix event type, which quoted replies and reactions need"
 files: [src/agents_matrix_connector/matrix.py, tests/test_matrix_client.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_matrix_client.py && mise run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1153021ade112e9725cba092b91a8fc82e2b493a
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -61,3 +61,7 @@ The bot has one PUT for every event type, so quoted replies and reactions can be
 
 - Reuse `MatrixClient._request` and its error taxonomy; build the path with `_path("rooms", room_id, "send", event_type, txn_id)` as `send_text` does today.
 - `tests/test_matrix_client.py` runs locally (no DB).
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
