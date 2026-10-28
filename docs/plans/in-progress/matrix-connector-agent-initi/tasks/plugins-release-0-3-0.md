@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.2.0
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: the chat tools ship as plugins release v0.2.0 that the orchestrator can pin
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_source_install.py::test_orchestrator_distribut
 depends_on: [plugin-chat-tools]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 073328ede436c782f832988ab8d0723e1b4378f8
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -72,3 +72,7 @@ The orchestrator plugin with the chat tools is released as tag v0.2.0, so the or
 - `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in this pod with git 2.39 (`--end-of-options`); it is environmental (discovery sec 5) and CI is the gate for it.
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-28 done: PR #2 merged 4506e70, main CI 40736029763 green, tag v0.2.0 pushed (ac3 ok)
+
+- 2026-10-28 actuals: no agent records
