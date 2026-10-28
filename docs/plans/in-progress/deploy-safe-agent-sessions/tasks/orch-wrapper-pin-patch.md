@@ -30,9 +30,9 @@ Design D13, verbatim: "Precedent: leader-auto-handover tasks wrapper-release-0-3
 Needs a merged upstream: the claude-code-wrapper PR of this epic merged on `main` and tagged (task wrapper-patch-release). The orchestrator amends this task with the merge sha.
 
 Scope (agents-orchestrator):
-- `pyproject.toml`: dev dependency `claude-code-wrapper @ git+https://github.com/szymonrychu/claude-code-wrapper@<merge sha>`; `uv lock`.
-- `e2e/agent-test.Dockerfile`: `BASE_IMAGE` tag `<sha7>` and `WRAPPER_SHA` `<merge sha>` (`scripts/e2e.sh` builds the wrapper from source when the sha7 image was pruned).
-- README `## Images`: recommended agent image `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>` (`tests/test_images.py::test_ccw_dev_dependency_matches_agent_image_sha` requires the sha7 form; the release tag `0.3.2` is what agents-helmfile pins).
+- `pyproject.toml`: dev dependency `claude-code-wrapper @ git+https://github.com/szymonrychu/claude-code-wrapper@5fd93ff52236790a7131755141d328b25826213a`; `uv lock`.
+- `e2e/agent-test.Dockerfile`: `BASE_IMAGE` tag `5fd93ff` and `WRAPPER_SHA` `5fd93ff52236790a7131755141d328b25826213a` (`scripts/e2e.sh` builds the wrapper from source when the sha7 image was pruned).
+- README `## Images`: recommended agent image `harbor.szymonrichert.pl/containers/claude-code-wrapper:5fd93ff` (`tests/test_images.py::test_ccw_dev_dependency_matches_agent_image_sha` requires the sha7 form; the release tag `0.3.2` is what agents-helmfile pins).
 
 Steps: pin, `uv lock`, run the verify; the real contract leg runs in CI.
 
@@ -70,3 +70,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: wrapper PR #7 merged as 5fd93ff, tagged v0.3.2 (release image retagged)
