@@ -1,6 +1,6 @@
 ---
 title: wrapper patch release
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: agents can run a wrapper image that continues interrupted turns
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_packaging.py && uv run ruff check . && uv r
 depends_on: [wrapper-shutdown-turn-resume]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5fd93ff52236790a7131755141d328b25826213a
 points: 1
 expected_minutes: 4
 expected_tokens: 641999
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 17
+actual_tokens: 247269
+actual_roles: "impl 1, review 16"
+actual_role_tokens: "impl 140175, review 107094"
 ---
 
 # wrapper patch release
@@ -71,3 +71,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 in-progress: AC1 AC2 AC4 reviewed clean on cb51746 (CI 40650156587 green); merging PR #7, tag pending
+
+- 2026-10-28 done: merged PR #7 as 5fd93ff (main CI 40651891291 green), tag v0.3.2 pushed, release run 40653754978 success
