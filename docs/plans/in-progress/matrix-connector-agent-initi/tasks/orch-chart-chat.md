@@ -1,6 +1,6 @@
 ---
 title: orch chart chat
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the orchestrator chart can turn the chat relay on with its token kept in a Secret
 files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/secret.yaml, chart/agents-orchestrator/templates/_config.tpl, chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, README.md, tests/test_chart_config.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_chart_config.py tests/test_chart_depl
 depends_on: [orch-chat-relay]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 2ff2888056bf4c8eacb105bdb2735ba85fce4703
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 3
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -70,3 +70,7 @@ Deploying the orchestrator chart with a chat URL and token turns the chat routes
 - Mirror the `masterKey` and `serviceApi` patterns already in `templates/secret.yaml` and `_config.tpl`.
 - Chart tests render with `helm`; if this pod lacks a helm version (as in the connector), the CI chart job is the gate; quote its run.
 - `tests/test_chart_deployments.py` guards the other containers; it must still pass with the env only on the api container.
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
