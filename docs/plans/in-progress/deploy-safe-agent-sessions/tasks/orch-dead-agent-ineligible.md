@@ -1,6 +1,6 @@
 ---
 title: orch dead agent ineligible
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a dead agent never holds leadership, so untargeted messages reach a live leader"
 files: [src/agents_orchestrator/db/eligibility.py, src/agents_orchestrator/db/leadership.py, tests/test_dead_agent_eligibility.py, tests/test_eligibility_fragments.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_dead_agent_eligibility.py tests/test_eligib
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c822ff50fd66d41c7ce30089ca9f5151fd7a8559
 points: 3
 expected_minutes: 6
 expected_tokens: 940114
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 37
+actual_tokens: 1862484
+actual_roles: "impl 3, review 31"
+actual_role_tokens: "impl 1167668, review 694816"
 ---
 
 # orch dead agent ineligible
@@ -78,3 +78,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
