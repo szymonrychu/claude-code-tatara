@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin patch
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: orchestrator tests and the kind e2e run the released wrapper
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q tests/test_images.py tests/test_render.py tes
 depends_on: [wrapper-patch-release]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 288d9afdc6e4d6c53c26a99e5458d2fdcf17b402
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 69
+actual_tokens: 2223518
+actual_roles: "impl 10, review 56"
+actual_role_tokens: "impl 1296935, review 926583"
 ---
 
 # orch wrapper pin patch
@@ -72,3 +72,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: wrapper PR #7 merged as 5fd93ff, tagged v0.3.2 (release image retagged)
+
+- 2026-10-28 done
