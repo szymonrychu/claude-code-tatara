@@ -25,9 +25,9 @@ actual_role_tokens: ""
 
 README Goal, verbatim: "An agent (session leader) can send a message to the user's Matrix chat at any time, including a chat it never received a message from (initiate), through MCP tools, not only as the final answer of a chat-started turn."
 
-Design D13, verbatim: "The orchestrator then pins v0.3.0 and adds `CHAT_TOOLS` to every session's allow list (`k8s/on_start.py:orchestrator_allow`); the routes decide. (probe) The allow-list change must land with the pin, not with the routes: `tests/test_on_start.py::test_allowed_tools_exist_in_plugin` requires every allowed tool to exist in the pinned plugin. `claude.main_agent_only_tools` already covers `mcp__any-mcp__orchestrator_*` (`k8s/render.py:159`), so subagents cannot call them."
+Design D13, verbatim: "The orchestrator then pins v0.2.0 and adds `CHAT_TOOLS` to every session's allow list (`k8s/on_start.py:orchestrator_allow`); the routes decide. (probe) The allow-list change must land with the pin, not with the routes: `tests/test_on_start.py::test_allowed_tools_exist_in_plugin` requires every allowed tool to exist in the pinned plugin. `claude.main_agent_only_tools` already covers `mcp__any-mcp__orchestrator_*` (`k8s/render.py:159`), so subagents cannot call them."
 
-Design D16, verbatim: "The orchestrator's tools-parity test drives the released v0.3.0 plugin against the real routes and the fake upstream."
+Design D16, verbatim: "The orchestrator's tools-parity test drives the released v0.2.0 plugin against the real routes and the fake upstream."
 
 Retro proposal (cross-session-messaging-and), verbatim: "agents-orchestrator kind e2e tests: allow-list assertions hard-code tool names; derive them from the shared allow-list constant so a list change cannot break e2e only."
 
@@ -76,3 +76,5 @@ Every new session's agents see the four chat tools; only the leader's calls succ
 - Changing the allow list changes the rendered on-start config hash: existing sessions roll on deploy (chat-live-smoke).
 
 - 2026-10-27 amended: interrogate.md Act 6: 16000 4-byte characters end to end through the released plugin
+
+- 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
