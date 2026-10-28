@@ -1,6 +1,6 @@
 ---
 title: helmfile chat values
-status: in-progress
+status: done
 repo: agents-helmfile
 value: agents-helmfile pins the connector and orchestrator builds with the chat path and the v0.2.0 plugins
 files: [values/agents-matrix-connector/common.yaml, values/agents-orchestrator/common.yaml, helmfile.yaml.gotmpl, tests/test_matrix_connector_release.py, tests/test_orchestrator_release.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_matrix_connector_release.py tests/test_orchest
 depends_on: [helmfile-chat-secrets, mxc-e2e-agent-sends, mxc-chart-agent-port, orch-chart-chat, orch-chat-tools-allow, plugins-release-0-3-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ab481511369e1480041c6ed329cbad1f965e02fd
 points: 3
 expected_minutes: 6
 expected_tokens: 941421
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -75,3 +75,7 @@ agents-helmfile describes the deployed state this epic needs; one apply per rele
 - agents-helmfile has no CI workflow: the reviewer's local verify is the evidence.
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-28 done
+
+- 2026-10-28 actuals: no agent records
