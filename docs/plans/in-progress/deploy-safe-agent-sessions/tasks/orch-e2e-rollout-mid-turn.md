@@ -1,6 +1,6 @@
 ---
 title: orch e2e rollout mid turn
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a deploy that rolls agents mid-turn is proven safe end to end on every PR
 files: [tests/e2e/test_e2e_kind.py, e2e/agent-test.scenario.json, scripts/e2e.sh, e2e/values-kind.yaml]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/te
 depends_on: [orch-wrapper-pin-patch, orch-rollout-replacer, orch-ingester-reattach, orch-e2e-main-failure, orch-default-continue-prompt, orch-dead-agent-ineligible]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e0b6e127060a598e8c8b7d38248a36ab929de184
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 104
+actual_tokens: 15410029
+actual_roles: "impl 31, review 71"
+actual_role_tokens: "impl 13288696, review 2121333"
 ---
 
 # orch e2e rollout mid turn
@@ -79,3 +79,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: D1 transition amendment: prove RollingUpdate->OnDelete switch on a real API server
+
+- 2026-10-28 done
