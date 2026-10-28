@@ -76,6 +76,13 @@ that dies anyway comes back on the new template (accepted)."
   `{"revision": <updateRevision>, "pending": [ordinals], "waiting": [ordinals held busy], "leader_pending": bool}`.
 - (my call) The switch to OnDelete and any template change of the same release reach the StatefulSet in one
   server-side apply, so the deploy of this epic itself rolls no pod by the controller.
+- (my call, amended 2026-10-28 during build) Transition: StatefulSets created under RollingUpdate carry a defaulted
+  `rollingUpdate.partition`, which the API server may reject next to `type: OnDelete` under server-side apply. Before
+  applying, the reconciler moves a live StatefulSet whose strategy is not OnDelete with a strategy-only merge patch
+  (`type: OnDelete`, `rollingUpdate: null`, no template change, so nothing rolls), then applies as usual; the kind e2e
+  (orch-e2e-rollout-mid-turn) applies the previous release's StatefulSet first and proves the switch rolls no pod.
+- (my call, amended 2026-10-28 during build) The `rollout` handover is queued only when the leader is idle, like the
+  lease and compaction handovers: leadership never moves mid-turn for a rollout.
 
 ### D2: A deploy never runs inside a pod that the same deploy rolls
 
