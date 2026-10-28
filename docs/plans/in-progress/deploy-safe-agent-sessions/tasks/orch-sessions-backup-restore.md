@@ -1,6 +1,6 @@
 ---
 title: orch sessions backup restore
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: recreating a discarded session brings its Claude conversations back
 files: [src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/reconciler/loop.py, src/agents_orchestrator/reconciler/wrapper_sessions.py, tests/test_sessions_restore.py, tests/fakes/fake_wrapper.py, tests/test_wrapper_session_bootstrap.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_sessions_restore.py tests/test_wrapper_sess
 depends_on: [orch-sessions-backup-save]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 10ba36a63946b59d2926fbc4fe03675ba03874c9
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 42
+actual_tokens: 7308288
+actual_roles: "impl 25, review 16"
+actual_role_tokens: "impl 6577155, review 731133"
 ---
 
 # orch sessions backup restore
@@ -82,3 +82,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
