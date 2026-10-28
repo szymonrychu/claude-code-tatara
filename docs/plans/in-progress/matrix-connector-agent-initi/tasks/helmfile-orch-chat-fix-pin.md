@@ -1,6 +1,6 @@
 ---
 title: helmfile-orch-chat-fix-pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the fixed orchestrator chart is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-chat-env-scope]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1f0ca4bab540747c8688b6d9a85212088820f547
 points: 2
 expected_minutes: 5
 expected_tokens: 551464
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 8
+actual_tokens: 528003
+actual_roles: "impl 6, review 2"
+actual_role_tokens: "impl 399801, review 128202"
 ---
 
 # helmfile-orch-chat-fix-pin
@@ -59,3 +59,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: fill merged sha 6b467b7
+
+- 2026-10-28 done
