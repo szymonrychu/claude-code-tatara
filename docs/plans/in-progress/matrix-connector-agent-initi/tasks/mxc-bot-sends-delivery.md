@@ -1,6 +1,6 @@
 ---
 title: mxc bot sends delivery
-status: in-progress
+status: done
 repo: agents-matrix-connector
 value: "accepted agent messages, quoted replies and reactions reach the chat at once, exactly once, even during a running chat turn"
 files: [src/agents_matrix_connector/sender.py, src/agents_matrix_connector/bot.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, src/agents_matrix_connector/db/bindings.py, src/agents_matrix_connector/tracker.py, tests/test_sender.py, tests/test_tracker.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_sender.py tests/test_tracker.py && mise run li
 depends_on: [mxc-sends-schema, mxc-matrix-send-event, mxc-agent-room-policy]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 18963f2cf28e23055874352f1aa5dd1bde71dcfe
 points: 13
 expected_minutes: 22
 expected_tokens: 3916941
-points_actual: ""
+points_actual: 13
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -109,3 +109,7 @@ Every accepted agent send reaches the room as a message (chunked, optionally a q
 - 2026-10-27 amended: interrogate.md Acts 2, 5, 10: member-aware (a) at claim and send time, tests/test_tracker.py added with a send_event spy, send_event split out to mxc-matrix-send-event
 
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): binding at claim, claim-time refusals, release of a failed initiation, prune
+
+- 2026-10-28 done: fix1 dropped unused matrix param; CI 40744168950 green
+
+- 2026-10-28 actuals: no agent records
