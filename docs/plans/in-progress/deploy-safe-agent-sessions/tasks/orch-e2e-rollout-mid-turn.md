@@ -38,6 +38,9 @@ Steps: scenario and script first; then the test; `uv run pytest -q -p no:cachepr
 
 Notes: run with `mise run test:e2e` (kind; or the PR CI e2e job; `E2E_HOLD_FILE` for one test). Reuse `wait_for`, `pods_of`, `scale_session`, the message helpers and `test_scale_down_waits_for_busy_agent` (mid-turn pattern). Needs the pinned wrapper with the continuation (task orch-wrapper-pin-patch) and the replacer, re-attach and default prompt tasks.
 
+
+Amendment 2026-10-28 (supervisor, design D1 transition bullet): the test also proves the RollingUpdate-to-OnDelete transition on a real API server: with a busy agent, `kubectl patch` its StatefulSet to `updateStrategy: {type: RollingUpdate}` (strategy only, as a StatefulSet created by the previous release has it, partition defaulted), then trigger a template change (`helm upgrade ... --set agentImage=<second tag>`); assert the orchestrator's apply succeeds (no reconciler apply error in its logs or session status), the StatefulSet ends `type: OnDelete` without `rollingUpdate`, and the busy pod keeps its uid until its turn completed (the controller rolled nothing).
+
 ## Acceptance conditions
 
 - AC1: the new e2e tests are collected under the e2e marker [evidence: command:uv run pytest -q -p no:cacheprovider -m e2e --collect-only tests/e2e/test_e2e_kind.py]
@@ -47,6 +50,7 @@ Notes: run with `mise run test:e2e` (kind; or the PR CI e2e job; `E2E_HOLD_FILE`
 - AC5: on kind, messages posted during the roll are delivered and none fails [evidence: command:mise run test:e2e]
 - AC6: on kind, a busy pod deleted by hand returns on the new revision with the same wrapper session id and its interrupted turn completes [evidence: command:mise run test:e2e]
 - AC7: the scenario stays valid JSON and keeps the 4 s slow turn [evidence: command:python3 -c "import json; d = json.load(open('e2e/agent-test.scenario.json')); t = [x for x in d['turns'] if x['match'] == 'slow'][0]; assert {'sleep': 4} in t['steps'] and len(d['turns']) >= 5"]
+- AC9: on kind, a StatefulSet left on RollingUpdate is switched to OnDelete by a template-changing apply without the controller replacing the busy pod [evidence: command:mise run test:e2e]
 - AC8: lint passes [evidence: command:uv run ruff check . && uv run ruff format --check .]
 
 ## Files
@@ -73,3 +77,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 amended: D1 transition amendment: prove RollingUpdate->OnDelete switch on a real API server
