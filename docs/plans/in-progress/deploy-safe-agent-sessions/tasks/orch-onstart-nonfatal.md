@@ -1,6 +1,6 @@
 ---
 title: orch onstart nonfatal
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a failed plugin install no longer keeps an agent pod from starting
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/k8s/on_start.py, tests/test_render.py, tests/test_on_start.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_render.py tests/test_on_start.py && uv run 
 depends_on: []
 model: opus
 review: ""
-verified_head: ""
+verified_head: 289be85a6859eb7a923fd98ce8feb045ceafefcc
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 20
+actual_tokens: 820107
+actual_roles: "impl 4, review 16"
+actual_role_tokens: "impl 609387, review 210720"
 ---
 
 # orch onstart nonfatal
@@ -76,3 +76,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
