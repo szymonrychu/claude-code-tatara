@@ -1,6 +1,6 @@
 ---
 title: orch ci publish gate
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a red orchestrator main build is never pushed to Harbor or published as a chart
 files: [.github/workflows/ci.yaml, tests/test_chart_ci.py, tests/test_images.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest -q tests/test_chart_ci.py tests/test_images.py && uv run 
 depends_on: [orch-e2e-main-failure]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ca39f8ee5baa654247c08ce641a8a9021bec4500
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 19
+actual_tokens: 556633
+actual_roles: "impl 2, review 17"
+actual_role_tokens: "impl 449426, review 107207"
 ---
 
 # orch ci publish gate
@@ -71,3 +71,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-28 done
