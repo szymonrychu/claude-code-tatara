@@ -1,6 +1,6 @@
 ---
 title: wrapper command docs
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: operators read in the README and example configs what any slash command does and how long it can hold a session
 files: [README.md, config.example.yaml, src/claude_code_wrapper/data/config.example.yaml, src/claude_code_wrapper/data/examples/workbench.config.yaml, tests/test_slash_commands_docs.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_slash_commands_docs.py tests/test_readme_api.p
 depends_on: [wrapper-commands-after-stop]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 6b4353e729402f34162a75f8affbe3eb855df5b2
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 1064695
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 882647, review 182048"
 ---
 
 # wrapper command docs
@@ -66,3 +66,5 @@ An operator reading the README or the example configs learns that any command ex
 - Doc and config edit with test pins; the docs tests are written first.
 - `config.example.yaml` at the repo root and `src/claude_code_wrapper/data/config.example.yaml`: check whether one is a copy of the other (`test_config_example_documents_command_keys` reads the root one) and keep both consistent.
 - Depends on wrapper-commands-after-stop (every behaviour the docs describe has landed).
+
+- 2026-10-29 done
