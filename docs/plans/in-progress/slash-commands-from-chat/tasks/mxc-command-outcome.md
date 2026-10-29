@@ -1,6 +1,6 @@
 ---
 title: mxc command outcome
-status: todo
+status: done
 repo: agents-matrix-connector
 value: "a Messenger slash message finishes by the command's outcome, with the usual notice on failure, instead of timing out"
 files: [pyproject.toml, uv.lock, src/agents_matrix_connector/tracker.py, README.md, MEMORY.md, tests/test_tracker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_tracker.py tests/test_readme_api.py &
 depends_on: [common-release-0-4-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 534f886bf0331f5e05d16b4fc53f7401203948cb
 points: 3
 expected_minutes: 8
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 8
+actual_tokens: 1548043
+actual_roles: "impl 7, review 1"
+actual_role_tokens: "impl 1459280, review 88763"
 ---
 
 # mxc command outcome
@@ -82,3 +82,5 @@ A Messenger message "/compact" finishes `handled` silently when the command comp
 - The silent completed outcome is the planner's recommendation pending design Open questions Q4; an answer that wants a confirmation message amends this task.
 - The todo epic immediate-message-delivery-w (mxc-relay-once-per-turn) also edits `tracker.py`, `pyproject.toml` and `uv.lock` and planned the same pin; it rebases on this when claimed.
 - A Messenger contact can send any non-denied slash command once this lands (architect note); the wrapper deny list (wrapper-deny-list-extend) bounds it.
+
+- 2026-10-29 done: completed command posts nothing (task file behaviour; matches the recommendation in pending user question mx-34 #454)
