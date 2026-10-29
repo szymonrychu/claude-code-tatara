@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Pin agents-orchestrator to the merge commit of PR #32 (task orch-chat-untrusted-sessions; migration 0009 created_by_service): chart `0.1.0-main.<sha7>` in helmfile.yaml.gotmpl and `image.tag` `<sha7>` in values/agents-orchestrator/common.yaml. The orchestrator session fills the sha with `ticket.py amend` once the PR merges and its main CI is green. Keep every other pin unchanged (connector c98c501, web 6ea3457, agent image 0.3.3). Update tests/test_orchestrator_release.py to the new pin. `mise run check-pins` must pass. Never run an apply.
+Pin agents-orchestrator to the merge commit of PR #32 (task orch-chat-untrusted-sessions; migration 0009 created_by_service): chart `0.1.0-main.a9f936f` in helmfile.yaml.gotmpl and `image.tag` `a9f936f` in values/agents-orchestrator/common.yaml. Merge commit a9f936f; main CI run 40796228385 green incl chart-publish. Keep every other pin unchanged (connector c98c501, web 6ea3457, agent image 0.3.3). Update tests/test_orchestrator_release.py to the new pin. `mise run check-pins` must pass. Never run an apply.
 
 ## Acceptance conditions
 
@@ -56,3 +56,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 amended: fill merged sha a9f936f
