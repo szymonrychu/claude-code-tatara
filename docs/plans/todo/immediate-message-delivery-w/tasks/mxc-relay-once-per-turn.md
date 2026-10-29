@@ -50,17 +50,24 @@ Scope (agents-matrix-connector): `pyproject.toml` and `uv.lock` (agents-common v
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tracker._outcome` (or the caller `tick`): when the run's message has `turn.status == "completed"` and another in-progress run of the same room with a lower id links to the same `message.turn_id`, the outcome is `_Outcome("handled", "merged")` with no chunks; the lowest run relays as today (including `_send_match`).
+- New reason constant `MERGED = "merged"` beside `ALREADY_SENT` / `EMPTY_REPLY`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+When several chat messages were answered by one merged agent turn, the room gets that answer once.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `pyproject.toml`, `src/agents_matrix_connector/tracker.py`, `db/runs.py`, `tests/test_tracker.py`, `tests/conftest.py` and agents-common's `fake_orchestrator.complete_turn(..., turn_id=)` in one pass.
+- Move the pin (`uv lock`); red: add ac2 and ac3; they need Postgres and fail in CI until green.
+- Green: implement the once-per-turn rule and the MEMORY entry; run the task's verify; expect lint clean (the tracker suite runs in CI). Quote the summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Depends on the agents-common v0.4.0 tag on origin (common-release-0-4-0 ac3, pushed by the orchestrator session).
+- Runs finish through the existing guarded transitions in `db/runs.py`; no new writer.
+- Tree state: the connector's repo tests (`pool`, `conn`, `url` fixtures from `agents_common.testing.migrated_db`) need Postgres through Docker, absent in agent pods; they run in CI on the PR and the reviewer quotes the CI summary line.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
