@@ -50,17 +50,23 @@ Scope (agents-orchestrator): `db/queue.py` (`turn_hop`), `dispatcher/verify.py` 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/queue.py:turn_hop(conn, agent_id) -> int | None`: `SELECT max(m.hop) ...` over `messages m` with `m.turn_id = s.current_turn_id` and `m.sender_session_id IS NOT NULL`; None when there is none.
+- `dispatcher/verify.py:_carries(record: TurnRecord, message_id: int) -> bool`: true when `record.metadata["orch_message_id"]` or any `record.merged[i].metadata["orch_message_id"]` equals the id (compared as strings, as today).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A message merged into another message's turn is counted correctly by the hop guard and is never delivered twice after an ambiguous send.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `db/queue.py:turn_hop`, `dispatcher/verify.py`, `wrapper/models.py:TurnRecord` (with `merged` from orch-wrapper-client-priority), `tests/test_agent_session_messaging.py` and `tests/test_ambiguous_verify.py` in one pass.
+- Red: add the four tests; they need Postgres and fail in CI until green.
+- Green: change `turn_hop` and `_carries`, MEMORY entry; run the task's verify; expect all passed. Quote the summary line; the reviewer quotes the CI summary for the Postgres tests.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The verifier looks at the newest turns (`NEWEST_TURNS`); a merged delivery lives in the running turn, which is among them.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
