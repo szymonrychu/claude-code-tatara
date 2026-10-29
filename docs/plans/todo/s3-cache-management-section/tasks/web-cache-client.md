@@ -46,17 +46,25 @@ This task delivers the agents-web side of D5's `sync:api`: `npm run sync:api -- 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/api/client.ts`: `type CacheSummary = S['CacheSummary']`, `CacheObjectView`, `CacheObjectsPage`, `CacheRequestView`, `DeleteCacheObject`, `type CacheClass = 'in_use' | 'preset' | 'legacy' | 'saved' | 'other'`; `getCache(): Promise<CacheSummary>`, `listCacheObjects(params: { class?: CacheClass; q?: string; after?: string; limit?: number }): Promise<CacheObjectsPage>`, `requestCacheDeletion(object: string, etag: string): Promise<CacheRequestView>`, `refreshCache(): Promise<CacheRequestView>`, `getCacheRequest(id: number): Promise<CacheRequestView>`; all through the existing `request` and `query` helpers.
+- Schema names come from agents-orchestrator `api/schemas.py` (task orch-cache-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-web has a typed client for the cache routes, generated from the orchestrator's committed openapi.json, ready for the Cache section.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `scripts/sync-api.mjs`, `src/api/client.ts` and `src/api/client.test.ts` in one pass; confirm `../agents-orchestrator` (the integration tree) is at the commit carrying the cache routes.
+- `npm ci --no-audit --no-fund`; `npm run sync:api -- orchestrator`; expect openapi/orchestrator.json, openapi/orchestrator.source and src/api/schema.d.ts to change and `npm run check:api` to exit 0.
+- Red: add `cache_routes_paths_and_bodies` and `cache_errors_carry_status_and_code` to `src/api/client.test.ts`; run `npx vitest run src/api/client.test.ts`; expect failures on the missing functions.
+- Green: add the types and functions; rerun; expect passed; `npm run build && npm run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Retro (matrix-connector-agent-initi, deploy-safe-agent-sessions): `openapi/orchestrator.source` pinned an epic-branch commit twice, and the orchestrator PR then had to merge with a merge commit so that sha stayed reachable. Sync from the orchestrator commit that will be on main (merge the agents-orchestrator PR first when possible); otherwise record in the task Notes that the orchestrator PR must merge with a merge commit.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main; both edit `src/sessions/DiscardSessionDialog.tsx`, the openapi files and `src/api/schema.d.ts` before this epic. Read the landed files first.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring; agents-web has a known load-dependent vitest timeout in PresetForm `name_rules_default_name_and_pvc`).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes, no colour literals, decorative Unicode or off-grid spacing (`layout/designRules.ts`), never the word "cluster" (`nomenclature.test.ts`). No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
