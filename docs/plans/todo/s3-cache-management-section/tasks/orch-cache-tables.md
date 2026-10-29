@@ -29,7 +29,7 @@ Design D1 (Reconciler-owned inventory table), verbatim: "`cache_objects` (key, k
 
 Design D2 (Delete and refresh requests through a guarded queue), the table part, verbatim: "`cache_requests` (id, kind `delete|refresh`, object, etag, size, status `queued|running|done|refused|failed`, reason, timestamps): the api inserts `queued` rows and notifies a new channel `cache_requested` [...]"
 
-Design constraint, verbatim: "One SQL migration, numbered `<MIGRATION>` = next free at build time (0010, 0012 and decouple's are claimed)."
+Design constraint, verbatim: "One SQL migration, numbered `<MIGRATION>` = next free at build time (expected 0016, after 0015 of decouple-s3-session-cache-fr; 0010 and 0012 are slash's, 0013 session-orchestration-mcp's, 0014 immediate-message-delivery-w's)."
 
 User decision, verbatim: "Builds after both blockers land on main; the SQL migration number is the placeholder <MIGRATION>, resolved at build time exactly as /workdir/workdir/docs/plans/in-progress/hive-decoupling does".
 
@@ -88,3 +88,5 @@ Tests no longer accurate because they pin the applied migration list and a new m
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 - (my call) Builder check Q2: the orchestrator session amends `<MIGRATION>` to the next free number on agents-orchestrator main through `ticket.py amend`, after both blockers landed and before this task is dispatched.
+
+- 2026-10-29 amended: design constraint quote follows the design: expected 0016 (mx-34 #469/#470)
