@@ -44,6 +44,8 @@ Real samples the fake must match (retro proposal: cite captured real output): `/
 
 Tests no longer accurate (named): `tests/test_fake_claude_commands.py::test_unknown_command` asserts that an unknown name writes no transcript line; real claude writes `system/informational` lines (outC.txt:15-16), so it asserts those lines instead. If `tests/test_transcript_commands.py::test_other_system_lines_yield_nothing` or `::test_other_system_lines_ignored` use an informational "Unknown command" line, they change to another informational text.
 
+Amendment (2026-10-29, user-approved release order agreed between hives 2026-10-28): claude-code-wrapper `main` is now at `v0.3.3`, which adds a transcript fix in `src/claude_code_wrapper/transcript.py` (`parse_line` reads an `attachment` line through the new `_attachment_events`: a `queued_command` attachment's prompt is a prompt event, other attachment types yield nothing; pinned in `tests/test_transcript.py`). This task also edits `transcript.py`, so the epic's wrapper branch `slash-commands-from-chat` is rebased onto wrapper `main` (`v0.3.3`) before this task's commits, and this task keeps the `queued_command` attachment handling and its tests intact next to its own `_system_events` changes. This epic's wrapper release stays 0.4.0 (task wrapper-release-0-4-0).
+
 ## Acceptance conditions
 
 - ac1: a system local_command line whose body starts with <command-name> parses as CommandInvoked with name and args (new) [evidence: test:tests/test_transcript_commands.py::test_system_command_echo_is_command_invoked]
@@ -60,6 +62,7 @@ Tests no longer accurate (named): `tests/test_fake_claude_commands.py::test_unkn
 - ac12: the fake writes the two informational lines for an unknown name, and the suggestion form when the scenario sets suggest (updated) [evidence: test:tests/test_fake_claude_commands.py::test_unknown_command]
 - ac13: MEMORY.md records the real-binary probe of this task: whether local commands fire UserPromptSubmit and how path-like prose, /tmp and "/ is root" are treated, each with its observed result or "not settled" [evidence: command:grep -E "^- 2026-[0-9-]+ \(slash-commands-from-chat\) probe" MEMORY.md | grep -q "UserPromptSubmit" && grep -E "^- 2026-[0-9-]+ \(slash-commands-from-chat\) probe" MEMORY.md | grep -q "/workdir/foo is broken"]
 - ac14: targeted suites and lint pass [evidence: command:uv run pytest tests/test_transcript_commands.py tests/test_transcript.py tests/test_command_signals.py tests/test_fake_claude_commands.py tests/test_fake_claude.py tests/test_command_runner.py tests/test_command_turn_resume.py && uv run ruff check . && uv run ruff format --check .]
+- ac15: the branch is rebased onto wrapper main v0.3.3 and its queued_command attachment parsing still holds (updated) [evidence: command:git merge-base --is-ancestor v0.3.3 HEAD && uv run pytest tests/test_transcript.py -k "queued_command or other_attachment_types"]
 
 ## Files
 
@@ -98,3 +101,5 @@ Every local command on the real echo shapes completes with its stdout, an unknow
 - Depends on wrapper-slash-turn-guard (sequenced: both touch router.py).
 
 - 2026-10-27 amended: interrogate item 11 (suggestion form 'Unknown command: /x. Did you mean /y?' fails fast), user decision on the Noted items (real-binary probe of local commands and UserPromptSubmit and of path-like prose, recorded in MEMORY.md, contradictions reported back), builder check (/tmp fails unknown_command), design D6 revised
+
+- 2026-10-29 amended: wrapper main is at v0.3.3 with a queued_command attachment fix in transcript.py, which this task also edits: the wrapper branch rebases onto main and keeps that fix (ac15); release stays 0.4.0
