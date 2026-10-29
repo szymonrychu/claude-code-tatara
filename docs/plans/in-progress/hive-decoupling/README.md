@@ -48,3 +48,39 @@ Queued after matrix-connector-agent-initi.
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-29)
+
+# hive-decoupling phase 5 judgement (tatara-2, 2026-10-29)
+
+Ranges: orchestrator a9f936f..be554bb; plugins 4506e70..6d5cc19 (v0.4.0); helmfile 52b6893..c786dc4 excluding PR #51. Reviewer sonnet (whole diff) and security-researcher sonnet.
+
+## Act on
+- F1 (validated: plugins __init__.py:119-123 renders `auto_compact_pct - 15` with no floor; spec.py:475 allows ge=1): G3 says the plugin advice always uses the effective threshold `max(compact - 15, 1)`. Fix task plugin-advice-threshold-floo, plugin 0.5.1 on cct2's v0.5.0; the ref pin rides with cct2's slash deploy.
+
+## Consider
+- F2: the effective compaction point is spelled in 4 places (hive.py compact_pct, k8s/on_start.py:73, k8s/render.py:149, db/views.py:76). Design line 205 itself spells the rendered plugin config inline, so this is not a spec breach; reuse of hive.compact_pct is a cheap cleanup for cct2.
+- F3: dispatcher/feed.py keeps the synthetic `leadership` branch (nothing produces it) and digest_lines returns a `pending` list the only caller drops. Design D1/D3 say digest_lines stays unchanged; the anti-goal says no dead feed code. Low cost cleanup; handed to cct2 as optional.
+
+## Noted
+- Security LOW: GET /agent/v1/activity loads up to 1000 event rows with full data per call, no rate limit (own session only; rate limiting is a non-goal).
+- Security LOW: activity lines carry Bash commands unredacted to every pod of the session (pre-existing with the feed; now pulled, not pushed).
+- Security INFO: authz (require_agent, session-scoped query), SQL parameterized, migration 0011 DROP COLUMN IF EXISTS, helmfile exposes no secrets.
+- Live orchestrator df2b80e lacks the PR #37 fix fe2c623 until be554bb is deployed (task helmfile-orch-flaky-fix-pin).
+
+## Dismissed
+- none.
+
+## Cannot verify
+- Live apply and handoff proof rest on MEMORY.md and .logs/hive-decoupling-deploy-2026-10-29/live-proof.md (the reviewer of PR #53 checked them against the logs).
+- Migration 0010 from slash-commands merging after 0011 (migrator applies by set, per run notes).
+
+## Independent verification (supervisor, review worktrees at origin/main heads)
+- agents-helmfile c786dc4: test "301 passed in 479.74s"; lint "All checks passed!", "no leaks found".
+- agents-orchestrator be554bb: lint "All checks passed!"; test "1 failed, 699 passed, 69 deselected, 1 warning, 629 errors": the 629 errors are DB tests without Docker (docker unixconn FileNotFoundError, CI-only per design); the 1 failure test_reconciler.py::test_lightkube_default_client_uses_env_config is pod-environment (in-cluster SA env wins over KUBECONFIG). CI evidence: main run 40901222840 test/lint/chart green, e2e as watched by the pin task.
+- any-mcp-tatara-plugins dfa0355: lint "All checks passed!"; test "1 failed, 27 passed": known pod-only tests/test_source_install.py (git 2.39 --end-of-options), CI green.
+
+## After the scope audit
+- F2 and F3 (also scope audit gaps 1 and 2) were acted on, not left as Consider: task orch-feed-dead-code-and-comp (orchestrator PR #38, 2d6d722), pinned by helmfile-orch-cleanup-pin (PR #55), deployed and smoke OK.
+- F1 fixed in plugins v0.5.1 (PR #5). Its live pin rides with cct2's slash deploy (mx-34 #460/#461).
+- Verdict: pass.
