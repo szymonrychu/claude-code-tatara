@@ -47,6 +47,8 @@ This task delivers the executor of D2 in agents-orchestrator, new module `src/ag
 - Every completion is `UPDATE ... WHERE id = %s AND status = 'running'`.
 - README `## Workspace cache` gains `### Cache deletes` (the refusal rules and outcomes, and that the cleanup epic reuses this executor); MEMORY.md gains a dated entry (why deletes run in the reconciler pass; HEAD plus ETag as the guard, If-Match as backup).
 
+Review fix (interrogate 2026-10-29, act on 2: S3 errors and hangs block the whole reconcile pass): every request is wrapped. Any exception while executing a request (a connection error, a read timeout, an error from `cache.pins` or from reading the session rows, anything other than cancellation) ends that request `failed` with the exception class name as reason (for example `EndpointConnectionError`, `ReadTimeoutError`); a `ClientError` keeps the `<Error.Code> <HTTP status>` reason above. `CacheRequestRunner.run_once` never raises out of the runner (only `asyncio.CancelledError` propagates): a failure outside a request is logged and the runner returns, so `reconcile_once` always reaches the session loop in the same pass. HEAD and `delete_object` use the bounded client of `presign._client` (connect and read timeouts and a retry bound, added by orch-cache-inventory), so a hung RGW ends the request `failed` within that bound instead of stalling every pass.
+
 ## Acceptance conditions
 
 - AC1: a delete is refused in_use, naming the slug, for an object pinned by a live row's status.cache.key, object or sessions_object, by spec.cache.key of a row never restored, by a row in desired deleting, and by a row whose save, sessions_save or sessions_backup run is running; the object is still in the bucket [evidence: test:tests/test_cache_requests.py::test_pinned_objects_refused_at_execution]
@@ -61,6 +63,8 @@ This task delivers the executor of D2 in agents-orchestrator, new module `src/ag
 - AC10: the refusal uses cache.pins and carries no second copy of the pin fields [evidence: command:grep -q "pins_by_object" src/agents_orchestrator/reconciler/cache_requests.py && ! grep -nE "sessions_object|from_key" src/agents_orchestrator/reconciler/cache_requests.py]
 - AC11: README documents the deletes and MEMORY.md records the guard [evidence: command:grep -q "### Cache deletes" README.md && grep -qE "If-Match|IfMatch" MEMORY.md]
 - AC12: lint passes [evidence: command:mise run lint]
+- AC13: a connection error and a hang (an endpoint that accepts and never answers, timeouts lowered in the test) on HEAD or delete_object end the request failed with the exception class name as reason, and the session loop still converges a session in the same reconcile_once pass (interrogate act on 2) [evidence: test:tests/test_cache_requests.py::test_s3_connection_error_and_hang_fail_request_and_pass_continues]
+- AC14: any other exception while executing a request (for example raised by cache.pins) ends it failed with the exception class name as reason, the next queued request still runs, and run_once does not raise (interrogate act on 2) [evidence: test:tests/test_cache_requests.py::test_any_request_exception_ends_failed_without_raising]
 
 ## Files
 
@@ -102,3 +106,5 @@ A queued delete request is executed by the reconciler within one pass: refused w
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 2
