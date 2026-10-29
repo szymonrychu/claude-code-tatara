@@ -1,6 +1,6 @@
 ---
 title: orch hive tools activity
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: hive agents see orchestrator_activity and the plugin advice always shows the real threshold
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_on_start.py tests/test_render.py && m
 depends_on: [orch-plugins-pin-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b883ca92b3e2e34a48f110c541e6b28ef076800b
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 46
+actual_tokens: 710729
+actual_roles: "impl 45, review 1"
+actual_role_tokens: "impl 615214, review 95515"
 ---
 
 # orch hive tools activity
@@ -68,3 +68,5 @@ Hive agents see `orchestrator_activity`; the plugin's threshold advice shows for
 
 - `test_allowed_tools_exist_in_plugin` needs the v0.4.0 dev pin (orch-plugins-pin-0-4-0) to see `activity`.
 - Golden render files (`tests/golden/*.yaml`) may embed the on-start config; if `tests/test_render.py` fails on them, stop and report (they are not in this task's files) so the task is amended.
+
+- 2026-10-29 done
