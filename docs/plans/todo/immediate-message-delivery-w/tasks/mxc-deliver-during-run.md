@@ -50,17 +50,25 @@ Scope (agents-matrix-connector): `src/agents_matrix_connector/db/inbound.py` (`r
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/inbound.rooms_ready(conn) -> list[str]`: a room is ready when it has `status = 'new'` rows and every `runs` row of it with `status = 'in-progress'` has `kind = 'follow'`, `message_id IS NOT NULL` and `session_id IS NOT NULL` (none in progress keeps today's meaning); order by the oldest new row as today.
+- The worker's `_room` / `_follow` / `_claim` path is reused unchanged: a bound room's new rows become a new follow run.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A Matrix user's follow-up message reaches the agent at once while it is still working on the previous one; the answer reaches the room once (mxc-relay-once-per-turn).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `db/inbound.py`, `db/runs.py`, `worker.py` (`tick`, `_room`, `_follow`, `_claim`, `_deliver`), `tests/test_inbound_repo.py`, `tests/test_worker.py`, README and MEMORY.md in one pass.
+- Red: add ac1 to ac3; they need Postgres and fail in CI until green.
+- Green: change `rooms_ready`, README and MEMORY; run the task's verify; expect lint clean (the suites run in CI). Quote the summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ordering inside a room stays by row id: a new follow run claims only rows newer than every claimed one, because `claim_room` takes `status = 'new'` rows only.
+- The PREAMBLE rule of `_deliver` (sent when the session has no other run in the room) stays as is; a second concurrent run gets no preamble.
+- Depends on mxc-relay-once-per-turn, so a room can never get the same merged answer twice.
+- Tree state: the connector's repo tests (`pool`, `conn`, `url` fixtures from `agents_common.testing.migrated_db`) need Postgres through Docker, absent in agent pods; they run in CI on the PR and the reviewer quotes the CI summary line.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
