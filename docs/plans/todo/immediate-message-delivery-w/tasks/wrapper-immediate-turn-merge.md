@@ -73,17 +73,30 @@ Scope (claude-code-wrapper): `api/turns.py` (`TurnRequest.priority`, response `m
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/turns.py:TurnRequest.priority: Literal["immediate", "idle"] = "immediate"`. Response 202: `{"turn_id", "state", "merged": bool, "merge_id": str | None}`. Refusals: 409 `busy` (idle while busy), 409 `command_active`, 409 `dialog_open`, 409 `interrupting`, 429 `merge_queue_full`, 503 `booting` / `dead`, 403 `vetoed`, 413 `too_large`.
+- `router.SessionRouter.submit_turn(text, *, files=None, callback_url=None, origin="client", metadata=None, priority: Literal["immediate", "idle"] = "idle") -> TurnRecord | MergeResult`: the router's own default stays `idle` so internal callers (peer inbox, tests) keep today's behaviour; the API passes the body's value. The builder picks the return shape (for example a `MergeResult(record, merge_id)`), documented in the docstring.
+- `session.Session.merge(text, *, origin, metadata, callback_url) -> MergedPrompt`: raises `TurnRejected("busy" | "command_active" | "dialog_open" | "interrupting" | "merge_queue_full" | "booting" | "dead")`; pastes `self._with_marker(text, running)` plus `\n<!-- ccw merge: <merge_id> -->` through `pty.send_prompt`, appends the entry to `running.merged`, persists.
+- `turns.MergedPrompt(BaseModel)`: `merge_id: str`, `origin: Origin`, `metadata: dict`, `callback_url: str | None` (alias `callbackUrl`), `pasted_at: str`, `absorbed_at: str | None = None`. `TurnRecord.merged: list[MergedPrompt] = []`.
+- `config.py`: `sessions.merge.max_unconfirmed: int = 4`, `sessions.merge.max_per_turn: int = 32` (task wrapper-merge-stop-gate adds `settle_seconds`).
+- Events: `user_message` gains `merged: true` on the merge leg; new `turn_merged`, `turn_merge_absorbed`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A message posted to a busy session is pasted into the running turn at once, joins it and is answered by its final text; the session cannot wedge on the marker; commands, dialogs and interrupts are never disturbed by a paste; a flood is refused with 429.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `api/turns.py`, `router.py` (`submit_turn`, `_submit_turn`, `_on_transcript_events`, `_after_turn`, `_deliver`), `session.py` (`check_submittable`, `submit`, `continue_turn`, `_with_marker`, `command_active`, `_commands_turn`, `_interrupting`), `turns.py`, `config.py`, the slash epic's `DialogScanner` and command queue in `commands.py` / `router.py`, `tests/test_api_turns.py`, `tests/test_submit_busy_first.py`, `tests/test_stop_gate.py`, `tests/conftest.py`, the fake's queue mode and `docs/claude-midturn-input.md` in one pass.
+- Red: write `tests/test_turn_merge.py` with every test named ac1 to ac11 (fake claude in `"midturn_input": "queue"` where absorption is needed) and change the stub signature in `tests/test_api_turns.py`; run `uv run pytest tests/test_turn_merge.py tests/test_api_turns.py`; expect the new tests to fail.
+- Green: implement the field, the merge leg, the refusals, the record, the events, the absorption handling, README and MEMORY; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The anti-goal this task pins: never `new_turn_id()` on the merge leg; the turn marker is always the running record's (`_with_marker`).
+- `check_submittable` stays the idle-path gate; the merge leg has its own checks in `Session.merge`, all synchronous before the paste (no await between the checks and the slot-free write except the PTY lock).
+- `dialog_open`: read the current screen with the slash epic's `DialogScanner` patterns (`sessions.commands.dialog_patterns`); the builder chooses ring tail or screen snapshot.
+- Per-task security check (retro, recurring): this route sends text into a running agent on a caller's behalf; check the size caps, the 429 cap, the onTurn veto and that no metadata or text reaches a log line beyond today's redaction.
+- If the probe's consequences table contradicts D3, D4 or D5, the orchestrator amends this task before it starts; do not work around a contradiction here.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
