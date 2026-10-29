@@ -48,17 +48,23 @@ Scope (agents-orchestrator): `api/agent.py` (`SessionMessageIn.priority`, passed
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/agent.py:SessionMessageIn.priority: MessagePriority = "immediate"` (the type from `api/schemas.py`, task orch-priority-column); `session_send` passes `priority=body.priority` to `q.enqueue_message`. The D7 checks, hop guard, rate, pair and `target_queue_full` checks are unchanged and run before the insert as today.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A superleader can ask for a message to reach the target's busy leader at once (the default) or to wait until it is idle, and the README tells API users what each does.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `api/agent.py` (`SessionMessageIn`, `session_send`), `api/schemas.py`, `tests/test_agent_session_messaging.py` and the README message sections in one pass.
+- Red: add `test_session_send_priority` and run ac2's command; expect ac2 to fail.
+- Green: add the field and pass it through; regenerate `openapi.json`; document both routes in the README; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Per-task security check (retro, recurring): this route sends on a session's behalf; the rate, pair, hop and queue limits must still apply to immediate messages exactly as before (no new bypass).
+- The README is overlap-ignored but shared with orch-dispatch-immediate; this task writes the route docs, that task the dispatch section.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
