@@ -188,6 +188,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q1: Does the one cache name cover both S3 objects of a session, the workspace archive and the Claude transcripts, which move from sessions/<slug> to sessions/<name>? Sessions sharing a name then also share transcripts, and a recreated session resumes the last conversation saved under it. D5 [recommended: yes, one name covers both objects]
 - Q2: Is the template the preset's existing cache.key field read as a Jinja2 template, empty meaning the default and a literal key keeping today's shared-cache behaviour, rather than a new field or a global setting? D1 [recommended: yes, cache.key is the template]
 - Q3: Are the template variables preset (slugified preset name), preset_id, session (slug) and created_by, with the default rendering <preset>-<session> and shortening the preset part so it always fits the 63-character key rule, and a rendered name that breaks the rule refused with 422? D2 [recommended: yes, those four variables and that default]
+- Q4: Does rotation mean a session discarded and recreated with the same slug, so the migration copies each existing session's objects to its new name and repoints the session so its next save goes to the new name? D7 [recommended: yes, rotation is discard plus recreate with the same slug]
 
 ## Irreversible operations in scope
 
