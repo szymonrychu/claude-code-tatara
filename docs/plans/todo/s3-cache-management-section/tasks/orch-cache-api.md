@@ -52,6 +52,8 @@ This task delivers D5, the read side of D4 and the settings of D7 in agents-orch
 - The routes stay out of `service_auth.ALLOWED_ROUTES` and off the agent port; the api makes no S3 call.
 - README `## API` gains one `### <METHOD> <path>` entry per route; `openapi.json` regenerated (`uv run python -m agents_orchestrator.api.openapi > openapi.json`).
 
+Review fix (interrogate 2026-10-29, act on 3: class rule in two places): the SQL class filter of `GET /api/v1/cache/objects` carries no pattern of its own. The `legacy`, `saved` and `other` key patterns are `cache.pins` constants (`LEGACY_RE`, `SAVED_RE`, written in the regex subset Python `re` and Postgres share and passed as parameters to `~`), and `in_use` and `preset` come from the `cache.pins` name maps; `cache.pins.classify` uses the same constants. One test runs the same key set (every class, including scheme-shaped smoke names, `sessions/` names, keys outside the scheme and pinned or preset-named legacy keys) through the SQL filter and through `classify` and asserts they agree for every class.
+
 ## Acceptance conditions
 
 - AC1: GET /api/v1/cache reports available, prefix, listed_at of the newest done listing, the newest listing's state and reason, refresh_pending, the current generation's totals and the quota settings [evidence: test:tests/test_api_cache_section.py::test_cache_summary_reports_listing_totals_and_quota]
@@ -72,6 +74,7 @@ This task delivers D5, the read side of D4 and the settings of D7 in agents-orch
 - AC16: the api imports nothing from k8s or the reconciler [evidence: test:tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper]
 - AC17: every setting is documented in the README [evidence: test:tests/test_settings.py::test_env_names_documented_in_readme]
 - AC18: lint passes [evidence: command:mise run lint]
+- AC19: for one key set covering every class, the SQL class filter of GET /api/v1/cache/objects returns for each class exactly the keys cache.pins.classify puts in that class, and api/cache.py holds no class key pattern of its own (interrogate act on 3) [evidence: test:tests/test_api_cache_section.py::test_sql_class_filter_agrees_with_classify]
 
 ## Files
 
@@ -115,3 +118,5 @@ The web port serves a classified, paged, searchable view of the inventory, the q
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 3
