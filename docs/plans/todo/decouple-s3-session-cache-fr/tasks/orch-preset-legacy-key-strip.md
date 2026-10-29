@@ -27,7 +27,7 @@ User request (2026-10-29 04:52Z, mx-34 #343), verbatim: "I also want to decouple
 
 Leader constraint: the migration copies only, never moves or deletes S3 objects.
 
-This task delivers design D10 in agents-orchestrator: a new SQL migration `src/agents_orchestrator/db/migrations/<NNNN>_preset_cache_default_name.sql`, where `<NNNN>` is the next free number on the base branch when the task is built (0010 on main today; the blocking epics add 0010 or 0011), removes `cache.key` from every preset whose stored key equals its own pre-epic derived key (`'preset-' || left(encode(sha256(convert_to('workspace-cache:', 'UTF8') || uuid_send(id)), 'hex'), 16)`), so that preset gets the default cache name. Every other preset, including other literal keys, is unchanged. Idempotent and safe to re-run, like the earlier migrations.
+This task delivers design D10 in agents-orchestrator: a new SQL migration `src/agents_orchestrator/db/migrations/<NNNN>_preset_cache_default_name.sql`, where `<NNNN>` is the next free number on the base branch when the task is built (expected 0015, after 0014 of immediate-message-delivery-w; main ends at 0011_drop_feed_cursor, slash adds 0010 and 0012, session-orchestration-mcp 0013), removes `cache.key` from every preset whose stored key equals its own pre-epic derived key (`'preset-' || left(encode(sha256(convert_to('workspace-cache:', 'UTF8') || uuid_send(id)), 'hex'), 16)`), so that preset gets the default cache name. Every other preset, including other literal keys, is unchanged. Idempotent and safe to re-run, like the earlier migrations.
 
 Tests no longer accurate because they pin the migration list and a new migration exists; each gains the new version: tests/test_migrations.py::test_fresh_database_gets_all_tables, ::test_presets_migration_on_existing_sessions, ::test_concurrent_migrate_serialises and ::test_0005_renames_clusters_to_sessions.
 
@@ -64,10 +64,12 @@ After `orch migrate`, a preset that stored `preset-<its own hash>` has `spec.cac
 
 - `sha256(bytea)` exists in Postgres 11 and later; `uuid_send(id)` gives the 16 bytes Python's `uuid.UUID.bytes` gives. AC3 pins the formula against `preset-4660fe5f5bc805e5` for `uuid.UUID(int=1)`, the value tests/test_api_cache.py pinned before this epic.
 - Whether any live preset stores its own derived key is unknown (no DB read was made); the migration is correct either way.
-- The blocking epics (hive decoupling: 0011_drop_feed_cursor; slash commands from chat) add migrations too; rebase onto the base branch first and take the next number then.
+- Expected number 0015 (negotiated 2026-10-29, mx-34 #469/#470): this lands after immediate-message-delivery-w's 0014, which follows session-orchestration-mcp's 0013, slash's 0010 and 0012 and main's 0011_drop_feed_cursor, not right after 0011. Rebase onto the base branch first and take the next free number then.
 - Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
 - If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
 - Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: migration number is 0015, after immediate delivery's 0014 (mx-34 #469/#470)
