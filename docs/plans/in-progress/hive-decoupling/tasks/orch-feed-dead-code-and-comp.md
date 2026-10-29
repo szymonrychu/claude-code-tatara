@@ -1,6 +1,6 @@
 ---
 title: orch feed dead code and compact helper
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "no dead feed code and one effective-compaction helper, as the design says"
 files: [src/agents_orchestrator/dispatcher/feed.py, src/agents_orchestrator/api/agent.py, src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/k8s/on_start.py, src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/db/views.py, tests/test_hive_feed.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest -q tests/test_hive_feed.py && mise run lint"
 depends_on: [orch-flaky-push-after-decisi]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 35e8f2a4e1dd9ec19b7b1614a949d302be729d6f
 points: 2
 expected_minutes: 6
 expected_tokens: 546295
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -65,3 +65,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-29 in-progress
+
+- 2026-10-29 done: PR #38 review pass (CI test/lint/e2e/chart green), merged 2d6d722
+
+- 2026-10-29 actuals: no agent records
