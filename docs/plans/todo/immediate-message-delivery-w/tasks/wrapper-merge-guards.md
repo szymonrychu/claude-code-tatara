@@ -61,17 +61,26 @@ Scope (claude-code-wrapper): `session.py` (`dialog_open` and cap checks inside `
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `pty_proc.PtyProcess.send_prompt(text, delay, *, before_cr: Callable[[], bool] | None = None)`: paste, wait `delay`, then call `before_cr()` under the same lock hold; when it refuses, no CR is written, the P6 clear key is written instead within the same lock hold (no other writer between), and the method raises or returns a value the caller can tell apart (builder's choice, documented in the docstring).
+- `session.Session.merge`: after the onTurn hook, synchronously checks `dialog_open` (current screen) and the caps together with the refusals of wrapper-immediate-turn-merge, appends the entry, then pastes with `before_cr` re-checking `dialog_open`; on a refusal at that point (clear key already written by `send_prompt`) it removes the entry, persists and raises `TurnRejected("dialog_open")`.
+- Current-screen source (design D4, "Left to the builder"): a screen snapshot or the scanner's last hit cleared by the dismissal output P6 recorded; whichever is chosen is named in README; a byte tail alone does not qualify.
+- `config.py`: `sessions.merge.max_unconfirmed: int = 4`, `sessions.merge.max_per_turn: int = 32`; `sessions.commands.dialog_patterns` defaults extended only as far as needed to match the captured footers.
+- Refusals added: 409 `dialog_open`, 429 `merge_queue_full`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A mid-turn paste is never typed into, or submitted onto, a dialog of the real Claude Code 2.1.304; a dismissed dialog does not block delivery; no turn holds more unconfirmed pastes than the cap, even under concurrent requests.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `session.py` (`Session.merge` from wrapper-immediate-turn-merge, `FatalScanner`, the slash epic's `DialogScanner`), `pty_proc.py` (`send_prompt`, `paste_bytes`), `ring.py`, `config.py` (`sessions.commands.dialog_patterns`), `README.md`, `tests/test_turn_merge.py`, `tests/test_pty_proc.py`, `tests/fixtures/screens/midturn-dialogs.txt` and `docs/claude-midturn-input.md` (P6) in one pass.
+- Red: write `tests/test_turn_merge_guards.py` with every test named in the acceptance conditions and add `test_send_prompt_checks_before_the_cr` to `tests/test_pty_proc.py`; run `uv run pytest tests/test_turn_merge_guards.py tests/test_pty_proc.py::test_send_prompt_checks_before_the_cr`; expect them to fail.
+- Green: implement the screen source, the checks, the pre-CR hook, the caps, config and README; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- If P6 is recorded unsettled or found no safe clear key, the orchestrator amends this task before it starts (design D11); never invent footers or keys.
+- Agents boot in bypass-permissions mode (boot dialog in `config.py`), so AskUserQuestion and MCP elicitation are the likely dialogs mid-turn; still pin all three captured kinds.
+- `ESC` is never a clear key here: mid-turn it interrupts the turn, and two ESCs at an empty prompt open the rewind menu.
+- Per-task security check (retro, recurring): the 429 cap is the flood bound for immediate messages (the orchestrator adds no second cap).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.

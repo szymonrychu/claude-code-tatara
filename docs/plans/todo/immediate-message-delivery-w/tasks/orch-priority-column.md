@@ -5,7 +5,7 @@ repo: agents-orchestrator
 value: every message records whether it should reach the agent at once or wait until idle
 files: [src/agents_orchestrator/db/migrations/0012_message_priority.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/views.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/messages.py, openapi.json, tests/test_api_messages.py, tests/test_migrations.py]
 verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && mise run lint"
-depends_on: []
+depends_on: [wrapper-midturn-probe]
 model: opus
 review: ""
 verified_head: ""
@@ -82,3 +82,5 @@ Every stored message carries a priority the dispatcher can act on; messages queu
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: ac4 command simplified (two python -c calls instead of exec)
+
+- 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)

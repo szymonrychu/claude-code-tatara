@@ -5,7 +5,7 @@ repo: any-mcp-tatara-plugins
 value: a superleader can ask for immediate or wait-until-idle delivery and knows what each does
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md]
 verify: "uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py && mise run lint"
-depends_on: []
+depends_on: [wrapper-midturn-probe]
 model: sonnet
 review: ""
 verified_head: ""
@@ -64,3 +64,5 @@ A superleader sees that its messages reach a busy leader at once by default, can
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)

@@ -5,7 +5,7 @@ repo: agents-common
 value: trigger services can tell when merged messages share one answer
 files: [src/agents_common/orchestrator.py, src/agents_common/fake_orchestrator.py, tests/test_orchestrator_client.py]
 verify: "uv run pytest tests/test_orchestrator_client.py tests/test_runs.py && uv run ruff check . && uv run ruff format --check ."
-depends_on: []
+depends_on: [wrapper-midturn-probe]
 model: sonnet
 review: ""
 verified_head: ""
@@ -64,3 +64,5 @@ Consumers of agents-common (the Matrix connector first) can tell when two messag
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)

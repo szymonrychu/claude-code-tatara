@@ -14,7 +14,7 @@ composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector s
 room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
 comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.5.0, agents-common
 0.4.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
-the priority option alone (the user's "maybe"): about 13 of the epic's 65 points (tasks
+the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
 orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
 web-sync-message-priority, web-composer-send-when-idle and the `priority` legs of the wrapper and
 peer tasks); flagged at the gate as Q10.
@@ -94,7 +94,15 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
   0010 and wrapper 0.4.0, plugins 0.3.0. Built on hive-decoupling (README blocker): migration 0011,
   plugins 0.4.0 and its orchestrator plugin pin. This epic therefore takes migration 0012, wrapper
   0.5.0, plugins 0.5.0; when a number is taken at build time the task takes the next free one and
-  the orchestrator amends its `files`.
+  the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
+  repo's main and the submodules are advanced, never against their branches (my call, builder Q1);
+  the connector's own migration is the next free one after `0002_agent_sends.sql`.
+- Pull requests (my call, builder Q5): one PR per repo for the epic. The wrapper, plugins and
+  agents-common PRs merge when their release task is green (the tag needs the merge commit); the
+  connector PR after common-release-0-4-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
+  and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.0 wrapper in
+  CI; it merges with a merge commit, so the epic-branch commit that agents-web's
+  `openapi/orchestrator.source` names stays reachable (builder Q6); the web PR merges after it.
 - Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
   the probe task (wrapper-midturn-probe) runs the real binary, in a throwaway dir under
   `/workdir/workdir/.scratchpad/probe-midturn`; only wrapper-fake-claude-queue edits
@@ -174,6 +182,17 @@ the turn's (my call). `files` are written as for a turn; a merge's `callbackUrl`
 merge entry and receives the turn's terminal event (my call). Events: `user_message` at paste time
 (turn_id of the running turn, `merged: true`), `turn_merged {turn_id, merge_id, origin, metadata}`
 at paste time, `turn_merge_absorbed {turn_id, merge_id}` when the transcript shows the paste.
+Order of a merge (interrogate 7, as `Session.submit` reserves before the first byte): the onTurn hook
+first, then every refusal re-checked and the merge entry appended to the running record and persisted
+synchronously, then the paste; a paste that fails (`PtyClosed`) removes the entry. A Stop during the
+paste delay therefore already sees the pending merge (D6), and concurrent merges cannot pass the cap.
+`dialog_open` (interrogate 5): the wrapper reads a named "current screen" source in which a dialog
+footer that was dismissed no longer matches (a byte tail alone does not qualify); the default
+patterns must match the permission, AskUserQuestion and MCP elicitation footers probe P6 captured;
+the check runs before the paste and again under the PTY lock just before the CR; a dialog seen at the
+second check withholds the CR, clears the unsent text with the key P6 recorded as safe and refuses
+409 `dialog_open` with the entry removed. The dialog guard and the caps are task
+wrapper-merge-guards; the rest of D4 is wrapper-immediate-turn-merge.
 Alternatives: a separate `POST /sessions/{id}/inject` (a second client contract for the same
 write, cartographer F3).
 Why: one route keeps the orchestrator's `TurnAccepted` shape (it gains `merged`), and the refusals
@@ -183,11 +202,15 @@ are the anti-goals.
 
 `TurnRecord.merged: list[MergedPrompt]`, `MergedPrompt {merge_id, origin, metadata, callback_url,
 pasted_at, absorbed_at}` (persisted with the record, served by `GET /turns/{id}`). The transcript
-parser reads `<!-- ccw merge: <id> -->` into `UserPrompt.merge_marker` from every prompt-bearing
-line: a `user` line, a `queued_command` attachment (wrapper 0.3.3) and a `user` line with
-`promptSource: "queued"` (docs A10, issue 92478); the probe records which ones 2.1.304 writes. The
-router sets `absorbed_at` once (first sighting) and emits `turn_merge_absorbed`. A merge marker
-never moves `_last_marker` by itself: the turn marker on the same line names the running turn.
+parser reads every `<!-- ccw merge: <id> -->` into `UserPrompt.merge_markers: list[str]` from every
+prompt-bearing line: a `user` line, a `queued_command` attachment (wrapper 0.3.3) and a `user` line
+with `promptSource: "queued"` (docs A10, issue 92478); the probe records which ones 2.1.304 writes.
+`UserPrompt.turn_marker` is the last turn marker of the text, not the first (interrogate 4): a merge
+left queued after the settle bound or an interrupt and combined with the next turn's paste must not
+name the old turn, or the new turn's Stop is dropped as stale (the 0.3.3 wedge). The router sets
+`absorbed_at` once (first sighting) for each listed merge of the running turn, ignores merge ids of
+any other turn, and emits `turn_merge_absorbed`. A merge marker never moves `_last_marker` by itself:
+the turn marker on the same line names the running turn.
 Alternatives: the UserPromptSubmit hook as the acknowledgement (docs C1: silent on mid-turn
 injections; only if the probe's P3 confirms it, and it would still need the per-paste id); no
 tracking (D6 and D14 would have nothing to look at).
@@ -206,7 +229,10 @@ the wrapper completes the turn from the deferred Stop's payload (`last_assistant
 and leaves the unseen merges with `absorbed_at: null`. Order inside `_stop_gate`: onStop block wins,
 then the hook or background defer, then `merge_pending`, then the slash epic's command hold; queued
 commands stay queued until the turn really completes. A Stop with every merge confirmed completes
-as today.
+as today. Compaction (interrogate 9): the settle wait pauses from a PreCompact hook until the
+`compact_boundary` signal (both already observed by the router), for at most
+`sessions.merge.compact_settle_seconds` (default 600, the slash epic's compact timeout), so an
+end-of-turn auto-compaction cannot make the bound expire and orphan the merged prompt.
 Alternatives: complete at the first Stop and adopt the follow-up prompt as a new `origin="agent"`
 turn (the messages would link to an answer that never addressed them); wait without a bound (a
 dropped paste would wedge the session, the anti-goal).
@@ -269,7 +295,14 @@ Task wrapper-midturn-probe runs claude 2.1.304 under a PTY in
 records P1-P12 of the docs brief in `docs/claude-midturn-input.md` of the wrapper, with captured
 transcript lines as a fixture and a consequences table naming each design decision it confirms or
 contradicts. A contradiction is a `ticket.py amend` of the named task by the orchestrator before
-that task starts; nothing downstream guesses.
+that task starts; nothing downstream guesses. Gate (interrogate 6, builder Q4, my call): every
+other task depends on the probe, directly or through its chain; epic-run stops after it, the
+orchestrator reads the consequences table (rows D2-D7, D9, D10, D13, D14, D17, D18) and amends before
+any other task starts. P1, P2, P4 and P5 must be observed, never `not run`; P4 also records input
+combined across a turn end and across an Esc; P6 captures the real dialog footers, their dismissal
+output and a key that safely clears unsent input with a dialog open; P7 records how long an
+end-of-turn auto-compaction with queued input takes; the Stop and UserPromptSubmit payloads are
+captured beside the transcript lines, so wrapper-merge-stop-gate replays both through the Router.
 Alternatives: build on the docs alone (silent on the Stop count, the hook for injections and
 compaction, docs synthesis).
 Why: the docs brief lists facts only the binary can settle (P1-P12); the user decision requires a
@@ -287,24 +320,29 @@ Alternatives: one `DEFAULT 'immediate'` (silently turns rows already queued at d
 ones, cartographer section 5).
 Why: a deploy does not change the semantics of messages already waiting.
 
-### D13: immediate dispatch skips the idle pick, the reservation and the busy-leader hold
+### D13: immediate dispatch skips the idle pick and the busy-leader hold, and keeps the reservation
 
 In `_claim_in_session`, a `priority = 'immediate'` head picks with `_PICK_IMMEDIATE`: the target
-or the leader, `ready`, not gone, with a wrapper session, any state; no `state = 'idle'`, no
-`free_since` predicate and no `agents.last_dispatched_at` write (the slash D10 rule for commands; a
-busy agent has no turn slot to reserve). It is exempt from the busy-leader hold, so it overtakes
-older queued `idle` messages of its session (Q5), and it still waits for backoff (`not_before`),
-the handover hold (`_handover_pending`, so it reaches the successor leader) and a gone leader.
-Order: an immediate message is not claimed while an older message of its session is `dispatching`
-(the slash D10 per-session order rule), so pastes reach the wrapper in id order. `loop._send` sends
-`priority`; 202 `merged` or not is `mark_sent` with the returned turn id; a 409 other than
-booting|dead (`busy`, `command_active`, `dialog_open`, `interrupting`) and 429 `merge_queue_full`
-requeue with `not_before = now() + retry_backoff_base_seconds`, no attempt counted, no reservation
-to release (my call: an immediate requeue would spin against a busy wrapper). `idle` messages keep
-today's path exactly.
+or the leader, `ready`, not gone, with a wrapper session, any state; no `state = 'idle'` and no
+`free_since` predicate. The claim writes the `agents.last_dispatched_at` reservation exactly as an
+idle claim does (interrogate 2): an immediate message that starts a turn on an idle agent would
+otherwise leave the agent pickable by `_PICK` until the ingester flips its state, and the next idle
+message would be dispatched, refused 409 and requeued every poll; on a busy agent the reservation is
+harmless (the turn's end moves `free_since` past it). It is exempt from the busy-leader hold, so it
+overtakes older queued `idle` messages of its session (Q5), and it still waits for backoff
+(`not_before`), the handover hold (`_handover_pending`, so it reaches the successor leader) and a
+gone leader. Order: an immediate message is not claimed while an older message of its session is
+`dispatching` (the slash D10 per-session order rule), nor while an older `immediate` message of its
+session on the same route (untargeted, or the same target) is still queued, for example in backoff
+(interrogate 3), so pastes reach the wrapper in id order. `loop._send` sends `priority`; 202 `merged`
+or not is `mark_sent` with the returned turn id; a 409 other than booting|dead (`busy`,
+`command_active`, `dialog_open`, `interrupting`) and 429 `merge_queue_full` release the reservation
+(`release_agent`, as every non-accept does today) and requeue with `not_before = now() +
+retry_backoff_base_seconds`, no attempt counted (my call: an immediate requeue would spin against a
+busy wrapper). `idle` messages keep today's path exactly.
 Alternatives: keep the idle pick and only skip the wrapper's 409 (the message would still wait for
-`agent_free`); write the reservation (a rejected immediate send would leave `last_dispatched_at >
-free_since` and starve idle messages).
+`agent_free`); skip the reservation (the idle-agent spin above; the starvation it was meant to
+avoid is already prevented by `release_agent` on every refusal).
 Why: the four idle waits of the Intent section are exactly the predicates this skips.
 
 ### D14: merged deliveries keep the hop guard, the verifier and the run trackers honest
@@ -359,12 +397,16 @@ Why: hive peers are the other half of the messaging system; Q7 confirms.
 posted message (`message_id` set) and a session, so its new rows are claimed into a new follow run
 and posted at once (server default `immediate`); a room whose first run has not posted yet still
 waits (there is no session to post to). The tracker relays a completed turn's final text once per
-turn: among in-progress runs whose messages link to the same `turn_id`, the run with the lowest id
-relays and the others finish `handled` with reason `merged` and no reply. agents-common
+turn, in any evaluation order (interrogate 1: `tick` finishes runs one at a time, so a rule over
+in-progress runs relays twice): a run that finishes from a completed turn records that turn id in
+`runs.relayed_turn_id` (new nullable column, migration `0003_run_relayed_turn.sql`, written only by
+the tracker inside the same guarded `runs.finish`); a run whose message links to a turn already
+recorded on another run of its room finishes `handled` with reason `merged` and no reply. agents-common
 `Message.turn_id` (new, released 0.4.0, connector pin moved) carries the link; the fake orchestrator
 can complete one turn for several messages.
 Alternatives: leave the connector (Matrix chat, the user's own channel, would still wait for the
-turn, cartographer section 1 item 8); dedupe by `completed_at` and text (a heuristic).
+turn, cartographer section 1 item 8); dedupe by `completed_at` and text (a heuristic); the lowest
+in-progress run id (order-dependent, interrogate 1).
 Why: G4; Q6 confirms adding the two repos.
 
 ### D19: release and pin like the slash epic; no deploy task
@@ -375,7 +417,10 @@ orchestrator pins the wrapper merge commit of v0.5.0 (pyproject, uv.lock, `e2e/a
 README Images) with a real-wrapper contract case and a kind e2e case for a merged message, then the
 plugins ref v0.5.0; the connector pins agents-common v0.4.0. The wrapper is pinned by its release
 tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags).
-No agents-helmfile task (Q9).
+The agent-test scenario (`e2e/agent-test.scenario.json`) sets `"midturn_input": "queue"`, so the
+real contract case and the kind e2e prove real delivery (the merge's `absorbed_at` set, the turn
+completed on the merged prompt's Stop), not the settle-bound fallback (interrogate 8). PR order:
+Constraints. No agents-helmfile task (Q9).
 Alternatives: pin branch commits (pruned images, unreachable shas).
 Why: precedent slash D14, leader-auto-handover.
 
@@ -387,6 +432,7 @@ Why: precedent slash D14, leader-auto-handover.
 | research-docs (docs purist) | ran: `.scratchpad/immediate-delivery/brief-docs.md` | queueing and tool-boundary injection (A1, A2); commands held to turn end (A3); Esc sends queued input (B1) and the double-Esc hazard (B3); invisible-character strip (G3); dialog Enter hazard (D1); probes P1-P12 | send-now and queueSubmit keystrokes (A7, A8); native cross-session messaging (H1); UserPromptSubmit as the ack before P3 (C1) |
 | debug record | ran: `docs/plans/2026-10-28-wrapper-queued-command-wedge-debug-record.md` | the stale-Stop mechanism the merge marker must never trigger; 0.3.3 `queued_command` parsing to extend | the stale-busy detector follow-up (noted, not doing now) |
 | slash-commands-from-chat design | ran: `docs/plans/in-progress/slash-commands-from-chat/design.md` | D7 `DialogScanner`, D9 commands at Stop and slot handover, D10 pick and order rule, D14 release and pin, D16 fake key log separation | none |
+| interrogate (panel fable, opus, sonnet; builder check; lead verdict) | ran: `.scratchpad/immediate-delivery/interrogate.md` (panel-A-fable.md, panel-B-opus.md, panel-C-sonnet.md, builder-check.md) | connector relayed turn id persisted (all three); D13 reservation kept and released on refusal (fable, opus); immediate held behind an older immediate (opus); last turn marker and every merge marker (opus, sonnet); dialog guard on a named screen with captured footers and a pre-CR re-check, new task wrapper-merge-guards (opus, sonnet); probe gates every root task, P1/P2/P4/P5 observed, D13/D14/D17/D18 rows, hook payload replay (opus, sonnet); merge entry before the paste (sonnet); e2e in queue mode (fable); settle pause during compaction (opus); TurnRecord field-set pin (lead); builder Q1, Q2, Q4, Q5, Q6 my call | "agent pods roll before the orchestrator" (the orchestrator drives the rollout; mixed versions go to Q14); forbidding `not run` for P6 (Q12); the unabsorbed-merge outcome goes to the user (Q15) |
 | research-code-external | skipped: no analogue drives Claude Code's TUI queue; the forks are settled by the probe | none | none |
 | architect (fable) | skipped: every fork has a user decision or a probe; no framed question remained | none | none |
 
@@ -454,9 +500,9 @@ Findings:
 | D1 one priority field | wrapper-immediate-turn-merge, orch-priority-column, orch-session-send-priority, orch-wrapper-client-priority, plugin-session-send-priority, wrapper-peer-priority, web-composer-send-when-idle |
 | D2 PTY paste channel | wrapper-immediate-turn-merge |
 | D3 merge into the running turn | wrapper-immediate-turn-merge |
-| D4 field on POST /turns, refusals and cap | wrapper-immediate-turn-merge |
+| D4 field on POST /turns, refusals and cap | wrapper-immediate-turn-merge, wrapper-merge-guards |
 | D5 merged paste tracking | wrapper-merge-marker-parse, wrapper-immediate-turn-merge |
-| D6 bounded Stop defer | wrapper-merge-stop-gate |
+| D6 bounded Stop defer | wrapper-merge-stop-gate, wrapper-midturn-probe |
 | D7 interrupt with merged messages | wrapper-merge-stop-gate |
 | D8 slash commands unaffected | wrapper-immediate-turn-merge, orch-dispatch-immediate |
 | D9 invisible characters stripped | wrapper-paste-hygiene |
@@ -479,9 +525,12 @@ Findings:
 - `_stop_gate` order and the D6 bound: no path leaves a turn busy past `merge.settle_seconds`
   without a Stop; the defer timer is cancelled when the turn ends any other way.
 - Every refusal of D4 writes nothing to the PTY (assert on `fake-inputs.jsonl`).
-- `_claim_in_session` (D13): an immediate message never writes `last_dispatched_at`, still waits
-  for the handover hold and a gone leader, and keeps per-session id order; idle messages behave
+- `_claim_in_session` (D13): an immediate message writes the reservation like an idle claim and
+  every refusal releases it, still waits for the handover hold and a gone leader, never passes an
+  older queued immediate message of its route, and keeps per-session id order; idle messages behave
   byte for byte as before (the existing `test_queue_leader_routing.py` cases stay green unchanged).
+- The merge entry exists on the record before the first pasted byte (D4); a dialog seen just before
+  the CR withholds it.
 - The verifier (D14): an ambiguous send merged into a turn resolves `started`, never resent.
 - Connector dedupe (D18): exactly one reply per turn, and a room whose first run has no session
   still waits.
@@ -492,8 +541,9 @@ Findings:
 
 - Internal names of helpers, timers and the exact placement of the merge-pending wait inside the
   router, within D6's order and bound.
-- How `dialog_open` reads the screen (the slash epic's scanner over the ring or a screen snapshot),
-  as long as a dialog footer pattern on the current screen refuses the paste.
+- How the "current screen" source of `dialog_open` is built (a screen snapshot, or the scanner's
+  last hit cleared by the dismissal output P6 recorded), as long as it is named in the README, a
+  footer on screen refuses and a dismissed footer does not (D4).
 - Log lines and metrics; a `ccw_turn_merges_total`-style counter is allowed, not required.
 - The probe's driver (the wrapper's own `PtyProcess` from a scratch script, `expect`, or similar),
   under `/workdir/workdir/.scratchpad/probe-midturn`.
@@ -506,7 +556,9 @@ Findings:
   two: wrapper-midturn-probe; D6 depends on it.
 - U3/P3: whether UserPromptSubmit fires for an injected prompt (affects notes and the slash D8
   signal): probe; D5 does not depend on it.
-- U4/P4: two quick pastes queue as two items or one: probe; D5 assumes two (each has its marker).
+- U4/P4: two quick pastes queue as two items or one, and input queued across a turn end or an Esc
+  combines with the next paste or not: probe; D5 reads the last turn marker and every merge marker,
+  so either shape is safe.
 - U5/P5: Esc with queued input: probe; D7 depends on it.
 - U6/P7: a paste during auto-compaction or `/compact`: probe; assumed kept and delivered after
   (D4 refuses during a running `/compact` command anyway via `command_active`); a loss amends

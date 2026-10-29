@@ -59,7 +59,9 @@ The web client's types know the message priority field.
 ## Notes
 
 - Never hand-edit `schema.d.ts` or the vendored JSON.
-- The orchestrator commit is on the epic's orchestrator branch until it merges; if the pin must name a PR-branch commit, the orchestrator PR is merged with a merge commit so the sha stays reachable (precedent in retro deploy-safe-agent-sessions, matrix-connector-agent-initi).
+- Source commit (my call, builder Q6): `openapi/orchestrator.source` names the orchestrator epic-branch commit that carries orch-session-send-priority; the orchestrator PR is merged with a merge commit so that sha stays reachable (precedent in retro deploy-safe-agent-sessions, matrix-connector-agent-initi). ac3 reads `../agents-orchestrator`, the sibling tree in the epic worktree layout (`.claude/worktrees/immediate-message-delivery-w/agents-orchestrator`), as in `code/`.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun; a named load-dependent flake becomes a reported finding, not a silent rerun (retro).
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: source commit and worktree path settled (builder Q6, my call; Notes edited directly)

@@ -5,7 +5,7 @@ repo: agents-orchestrator
 value: the orchestrator can ask a wrapper for immediate delivery and read a merged answer
 files: [src/agents_orchestrator/wrapper/client.py, src/agents_orchestrator/wrapper/models.py, tests/fakes/fake_wrapper.py, tests/test_wrapper_client.py, tests/test_fake_wrapper_contract.py]
 verify: "uv run --frozen pytest tests/test_wrapper_client.py tests/test_fake_wrapper_contract.py -m \"not integration\" && mise run lint"
-depends_on: []
+depends_on: [wrapper-midturn-probe]
 model: sonnet
 review: ""
 verified_head: ""
@@ -73,3 +73,5 @@ The orchestrator can ask the wrapper for immediate or idle delivery and understa
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)
