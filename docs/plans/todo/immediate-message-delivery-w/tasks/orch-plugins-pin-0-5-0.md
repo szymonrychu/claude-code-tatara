@@ -23,11 +23,11 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Design D15, verbatim: "Released as plugins 0.7.0 on top of session-orchestration-mcp's 0.7.0; the orchestrator pins it."
+Design D15, verbatim: "Released as plugins 0.7.0 on top of session-orchestration-mcp's 0.6.0; the orchestrator pins it."
 
 Design D19, verbatim: "The orchestrator pins the wrapper merge commit of v0.5.0 [...] then the plugins ref v0.7.0".
 
-Scope (agents-orchestrator): `src/agents_orchestrator/settings.py` (`ORCH_ANY_MCP_PLUGINS_REF` default v0.7.0 from session-orchestration-mcp, the live baseline, to v0.7.0), `pyproject.toml` and `uv.lock` (the `any-mcp-tatara-orchestrator` dev dependency), `README.md` (settings table), `tests/test_settings.py` (the default pin, no longer accurate after the bump).
+Scope (agents-orchestrator): `src/agents_orchestrator/settings.py` (`ORCH_ANY_MCP_PLUGINS_REF` default v0.6.0 from session-orchestration-mcp, the live baseline, to v0.7.0), `pyproject.toml` and `uv.lock` (the `any-mcp-tatara-orchestrator` dev dependency), `README.md` (settings table), `tests/test_settings.py` (the default pin, no longer accurate after the bump).
 
 ## Acceptance conditions
 
@@ -70,3 +70,5 @@ Superleaders get the session_send tool that offers immediate or idle delivery.
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: plugins pin renumbered v0.6.0 -> v0.7.0 (mx-34 #469/#470): the baseline pin is session-orchestration-mcp's v0.6.0
+
+- 2026-10-29 amended: fix: baseline pin is v0.6.0 (session-orchestration-mcp), the bump goes to v0.7.0
