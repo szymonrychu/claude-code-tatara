@@ -47,12 +47,16 @@ This task delivers D1 in agents-orchestrator:
 - `reconciler/loop.py`: `CHANNELS` gains `cache_requested`; `Reconciler.run` starts the inventory task only when `settings.cache_available`, wakes it on `cache_requested`, and cancels it on stop; `reconcile_once` never lists the bucket.
 - README: the NOTIFY channels table gains `cache_requested` (`{request_id}`, sent by the api, heard by the reconciler); `## Workspace cache` gains `### Cache inventory`. MEMORY.md gains a dated entry with the why (only the reconciler holds S3 credentials; a page view never lists the bucket).
 
+Review fix (interrogate 2026-10-29, act on 1: refresh request stuck `running`): a pass also takes every `refresh` request already `running` when it starts (left by a previous process or a pass stopped mid-listing; one active reconciler holds `advisory_singleton(dsn, "reconciler")`, so no other pass owns it), re-runs the listing for it and completes it `done` or `failed` exactly like a freshly claimed one, as the delete runner does for `running` deletes (orch-cache-requests AC7). A refresh request never stays `running` past the next pass, so `refresh_pending` clears and Refresh works again after a reconciler restart.
+
+Review fix (interrogate 2026-10-29, act on 2: S3 errors and hangs): the S3 client is bounded. `presign._client` builds its botocore `Config` with `connect_timeout=S3_CONNECT_TIMEOUT_SECONDS` (5), `read_timeout=S3_READ_TIMEOUT_SECONDS` (30) and `retries={"mode": "standard", "total_max_attempts": S3_MAX_ATTEMPTS}` (2), module constants in `cache/presign.py` (my call values; presigning makes no network call, so presigned URLs are unchanged); the listing and the delete executor (orch-cache-requests) both use this one client. Every listing pass is wrapped: a `ClientError` fails the listing with `<Error.Code> <HTTP status>` as above, and any other exception (a connection error, a read timeout, anything else) fails the listing with the exception class name as reason (for example `EndpointConnectionError`, `ReadTimeoutError`), keeps the previous generation current and fails the claimed refresh requests with that reason. `CacheInventory.run` never ends on a pass error (only on stop or cancellation): it logs and runs the next pass on schedule.
+
 ## Acceptance conditions
 
 - AC1: list_bucket returns every object under the prefix across more than one listing page with name (prefix stripped), kind, size, etag and last_modified, and leaves out keys outside the prefix [evidence: test:tests/test_cache_inventory.py::test_list_bucket_pages_and_strips_prefix]
 - AC2: a pass writes a new generation, marks its listing done with object and byte totals and drops every older generation in one transaction [evidence: test:tests/test_cache_inventory.py::test_pass_swaps_generation_atomically]
 - AC3: a listing error marks the listing failed with a reason holding the S3 error code and status and no access key, secret or URL, and the previous generation stays current [evidence: test:tests/test_cache_inventory.py::test_listing_failure_keeps_previous_generation]
-- AC4: a queued refresh request is claimed by the next pass and ends done (failed with the reason when the listing fails); a request in any other status is untouched [evidence: test:tests/test_cache_inventory.py::test_refresh_request_runs_a_pass]
+- AC4: a queued refresh request is claimed by the next pass and ends done (failed with the reason when the listing fails); a request already done or failed is untouched [evidence: test:tests/test_cache_inventory.py::test_refresh_request_runs_a_pass]
 - AC5: no second pass runs before ORCH_CACHE_INVENTORY_INTERVAL_SECONDS has passed, one runs after it, and a queued refresh runs one at once [evidence: test:tests/test_cache_inventory.py::test_interval_and_refresh_schedule_passes]
 - AC6: an object whose delete request finished done after the pass started is not in the new generation [evidence: test:tests/test_cache_inventory.py::test_delete_during_pass_stays_deleted]
 - AC7: CHANNELS holds cache_requested, Reconciler.run starts the inventory task only with the cache configured, and reconcile_once makes no S3 call [evidence: test:tests/test_cache_inventory.py::test_reconciler_runs_inventory_off_the_session_pass]
@@ -60,6 +64,9 @@ This task delivers D1 in agents-orchestrator:
 - AC9: every setting is documented in the README [evidence: test:tests/test_settings.py::test_env_names_documented_in_readme]
 - AC10: README documents the channel and the inventory, MEMORY.md records it [evidence: command:grep -q "cache_requested" README.md && grep -q "### Cache inventory" README.md && grep -qi "cache inventory" MEMORY.md]
 - AC11: lint passes [evidence: command:mise run lint]
+- AC12: a refresh request left running by a stopped pass (refresh_pending true) is re-run by the next pass of a new CacheInventory and ends done, or failed with the reason when the listing fails, and refresh_pending reads false after it (interrogate act on 1) [evidence: test:tests/test_cache_inventory.py::test_running_refresh_resumed_by_next_pass]
+- AC13: a connection error and a hang (an endpoint that accepts and never answers, timeouts lowered in the test) during the listing end the listing failed with the exception class name as reason within the client's bound, keep the previous generation current, fail the claimed refresh requests, and the inventory task runs its next pass (interrogate act on 2) [evidence: test:tests/test_cache_inventory.py::test_listing_connection_error_and_hang_fail_the_pass]
+- AC14: presign._client builds its S3 client with connect_timeout S3_CONNECT_TIMEOUT_SECONDS, read_timeout S3_READ_TIMEOUT_SECONDS and at most S3_MAX_ATTEMPTS total attempts (interrogate act on 2) [evidence: test:tests/test_cache_inventory.py::test_s3_client_has_bounded_timeouts_and_retries]
 
 ## Files
 
@@ -102,3 +109,5 @@ With the cache configured, the reconciler keeps `cache_objects` at most `ORCH_CA
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 1, 2
