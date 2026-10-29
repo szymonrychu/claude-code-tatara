@@ -1,6 +1,6 @@
 ---
 title: CI secret hardening for all tests
-status: todo
+status: done
 repo: agents-helmfile
 value: "CI runs every test, including SOPS decryption, without exposing the key or decrypted values in a public repo"
 files: [.github/workflows/ci.yaml, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "mise run lint && mise run test"
 depends_on: [ci-workflow-running-lint-tes]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 77979dfa9db4f741c3530998e3007063c3f3653d
 points: 3
 expected_minutes: 7
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 43
+actual_tokens: 4760308
+actual_roles: "impl 42, review 1"
+actual_role_tokens: "impl 4597775, review 162533"
 ---
 
 # CI secret hardening for all tests
@@ -64,3 +64,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
