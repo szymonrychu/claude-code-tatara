@@ -186,6 +186,7 @@ Brief plan inputs:
 
 The plan follows each recommended answer; a "no" changes the tasks named in the decision before the build.
 - Q1: Does the one cache name cover both S3 objects of a session, the workspace archive and the Claude transcripts, which move from sessions/<slug> to sessions/<name>? Sessions sharing a name then also share transcripts, and a recreated session resumes the last conversation saved under it. D5 [recommended: yes, one name covers both objects]
+- Q2: Is the template the preset's existing cache.key field read as a Jinja2 template, empty meaning the default and a literal key keeping today's shared-cache behaviour, rather than a new field or a global setting? D1 [recommended: yes, cache.key is the template]
 
 ## Irreversible operations in scope
 
