@@ -27,25 +27,29 @@ README Goal G7, verbatim: "The plugin release, orchestrator pin, agents-helmfile
 
 Design D15, verbatim: "The orchestrator values set `schedule.url: http://agents-schedule-api-relay:8001`."
 
-Design D17, verbatim: "agents-schedule is pinned by its main build: chart `0.1.0-main.<sha7>` (`scripts/chart-version.sh`) and image `<sha7>`, no schedule tag (my call; the 0.1.0 release pin is replaced). The orchestrator and agents-web are pinned by main sha7 as today; the agent image stays on its release tag (Harbor prunes wrapper sha7 tags)."
+Design D17, verbatim: "agents-schedule is pinned by its release tag v0.2.0 (negotiated, user answer pending): chart `0.2.0`, published by the tag's `chart-publish-tag` job, and image `<sha7>` of the tagged commit, published by its main build, the way v0.1.0 is pinned today (chart `0.1.0`, image `6cfa955`). The orchestrator and agents-web are pinned by main sha7 as today; the agent image stays on its release tag. `mise run check-pins` resolves `0.2.0` through tag `v0.2.0` and must pass before any apply."
 
 Standing user rule (2026-10-27), verbatim from the lead: "Deploy whenever possible: live applies need no approval, so include the agents-helmfile values, apply and live smoke tasks in this epic."
 
-Scope (agents-helmfile): `values/agents-orchestrator/common.yaml` (image tag, `schedule.url`, `ORCH_ANY_MCP_PLUGINS_REF` the new tag), `values/agents-schedule/common.yaml` (image tag, relay on), `values/agents-web/common.yaml` (image tag), `helmfile.yaml.gotmpl` (chart versions), `tests/test_orchestrator_release.py`, `tests/test_schedule_release.py`, `tests/test_web_release.py`.
+Design D16 (staleness refresh 2026-10-29), verbatim: "`ORCH_SCHEDULE_URL` and `ORCH_SCHEDULE_TOKEN` are env of the api main container only, always together, rendered by one `agents-orchestrator.scheduleEnv` helper next to `agents-orchestrator.chatEnv`, never in the shared settings ConfigMap, the migrate init containers or the other components (orchestrator MEMORY 2026-10-28, orch-chat-env-scope: the chart once put `ORCH_CHAT_URL` in the shared ConfigMap with the token on the api only, and every migrate init container crash-looped on a URL without its token)."
+
+Scope (agents-helmfile): `values/agents-orchestrator/common.yaml` (image tag, `schedule.url`, `ORCH_ANY_MCP_PLUGINS_REF` `v0.6.0`, was `v0.5.1` after the slash-commands-from-chat deploy), `values/agents-schedule/common.yaml` (image tag the sha7 of the commit tagged v0.2.0, relay on), `values/agents-web/common.yaml` (image tag), `helmfile.yaml.gotmpl` (orchestrator and web chart versions `0.1.0-main.<sha7>`, schedule chart version `0.2.0`), `tests/test_orchestrator_release.py`, `tests/test_schedule_release.py`, `tests/test_web_release.py`.
 
 Tests no longer accurate (named): `tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image` (its `PIN`) and `::test_any_mcp_configured_for_new_sessions` (the plugins ref), `tests/test_schedule_release.py::test_release_declared` and `::test_schedule_pin_matches_release` (they pin chart `0.1.0` and image `6cfa955`), `tests/test_web_release.py::test_web_pin_matches_image` (its pin); each asserts the new pin.
 
 ## Acceptance conditions
 
 - ac1: the orchestrator image tag and chart version name the same orchestrator main sha7 (updated) [evidence: test:tests/test_orchestrator_release.py::test_orchestrator_pin_matches_image]
-- ac2: the orchestrator values set schedule.url to http://agents-schedule-api-relay:8001 and no plaintext schedule token [evidence: test:tests/test_orchestrator_release.py::test_schedule_relay_wired]
-- ac3: new sessions install the orchestrator plugin at the tag released by plugins-release-orch-tools (updated) [evidence: test:tests/test_orchestrator_release.py::test_any_mcp_configured_for_new_sessions]
-- ac4: the schedule chart version is 0.1.0-main.<sha7> and the image tag the same sha7, and the release still needs its database and the orchestrator (updated) [evidence: test:tests/test_schedule_release.py::test_schedule_pin_matches_release]
+- ac2: the orchestrator values set schedule.url to http://agents-schedule-api-relay:8001 and no plaintext schedule token, the token coming from the encrypted schedule-token.secrets.yaml listed in the release [evidence: test:tests/test_orchestrator_release.py::test_schedule_relay_wired]
+- ac3: new sessions install the orchestrator plugin at v0.6.0 (updated) [evidence: test:tests/test_orchestrator_release.py::test_any_mcp_configured_for_new_sessions]
+- ac4: the schedule chart version is 0.2.0 and the image tag the sha7 of the commit tagged v0.2.0, and the release still needs its database and the orchestrator (updated) [evidence: test:tests/test_schedule_release.py::test_schedule_pin_matches_release]
 - ac5: the schedule release is still declared with its chart, namespace, labels and the orchestrator service token file (updated) [evidence: test:tests/test_schedule_release.py::test_release_declared]
 - ac6: the schedule values turn the relay listener on with its hash from relay-token.secrets.yaml and no plaintext hash [evidence: test:tests/test_schedule_release.py::test_relay_listener_enabled]
 - ac7: the web image tag and chart version name the same agents-web main sha7 (updated) [evidence: test:tests/test_web_release.py::test_web_pin_matches_image]
-- ac8: the pinned orchestrator sha7 contains orch-orchestration-tools-pin and orch-chart-schedule-relay, the schedule sha7 contains sched-chart-relay-port, the web sha7 contains web-created-by and web-schedule-owner, each on its repo's main with green CI [evidence: judgement:reviewer checks git merge-base --is-ancestor of each task's verified_head against the pinned sha and the CI run of that sha]
-- ac9: the targeted tests and lint pass [evidence: command:uv run pytest tests/test_orchestrator_release.py tests/test_schedule_release.py tests/test_web_release.py && mise run lint]
+- ac8: the pinned orchestrator sha7 contains orch-orchestration-tools-pin and orch-chart-schedule-relay, the commit tagged v0.2.0 contains sched-release-0-2-0 and sched-chart-relay-port, and the web sha7 contains web-created-by and web-schedule-owner, each on its repo's main [evidence: judgement:reviewer checks git merge-base --is-ancestor of each task's verified_head against the pinned sha or the tagged commit]
+- ac9: the rendered agents-orchestrator release has no ORCH_SCHEDULE_URL in any ConfigMap and puts ORCH_SCHEDULE_URL and ORCH_SCHEDULE_TOKEN together on the api main container only, with one -schedule Secret [evidence: test:tests/test_orchestrator_release.py::test_schedule_url_and_token_render_together]
+- ac10: every pinned build, the schedule chart 0.2.0 through tag v0.2.0 included, has all-green check runs [evidence: command:mise run check-pins]
+- ac11: the targeted tests, check-pins and lint pass [evidence: command:uv run pytest tests/test_orchestrator_release.py tests/test_schedule_release.py tests/test_web_release.py && mise run check-pins && mise run lint]
 
 ## Files
 
@@ -77,3 +81,5 @@ agents-helmfile pins the orchestrator, schedule and web builds of this epic and 
 - The images and charts are checked in Harbor by orchestration-live-smoke before any apply; this task does not apply.
 - Builds on Matrix's and hive-decoupling's orchestrator values (shared file): keep their chat and other settings.
 - agents-helmfile has no CI (retro): the local verify is the evidence.
+
+- 2026-10-29 amended: staleness refresh: schedule pinned by release v0.2.0 (negotiated, user answer pending); plugins v0.6.0; check-pins; schedule pair render test
