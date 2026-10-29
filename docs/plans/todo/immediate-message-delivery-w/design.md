@@ -531,6 +531,7 @@ Findings:
 - Q7: Should the ccw peer send_message (hive peers) get the same priority option and mid-turn delivery? [recommended: yes, same option for hive peers (D17)]
 - Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [recommended: yes, the wrapper default is immediate too (D1)]
 - Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [recommended: yes, deploy is decided at the gate (D19)]
+- Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 64 points? [recommended: yes, keep it in scope]
 
 ## Irreversible operations in scope
 
