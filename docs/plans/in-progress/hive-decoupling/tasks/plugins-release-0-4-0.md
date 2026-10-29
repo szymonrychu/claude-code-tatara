@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.4.0
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: the activity tool and new handover texts ship as a plugins release the orchestrator can pin
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]

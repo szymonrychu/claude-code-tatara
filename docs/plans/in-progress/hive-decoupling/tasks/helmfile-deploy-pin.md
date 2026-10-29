@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live namespace is pinned to the hive-decoupling orchestrator and plugins release
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]

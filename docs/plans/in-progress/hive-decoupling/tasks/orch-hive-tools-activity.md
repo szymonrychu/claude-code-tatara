@@ -1,6 +1,6 @@
 ---
 title: orch hive tools activity
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: hive agents see orchestrator_activity and the plugin advice always shows the real threshold
 files: [src/agents_orchestrator/k8s/on_start.py, tests/test_on_start.py, README.md]

@@ -1,6 +1,6 @@
 ---
 title: helmfile apply live proof
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: members run unstreamed live and a real leader hands over after briefing its successor
 files: [MEMORY.md]

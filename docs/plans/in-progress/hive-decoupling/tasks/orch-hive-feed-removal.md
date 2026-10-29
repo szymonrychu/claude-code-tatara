@@ -1,6 +1,6 @@
 ---
 title: orch hive feed removal
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "members stop receiving the leader's truncated activity stream and the per-flip hive_state churn"
 files: [src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/dispatcher/feed.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_hive_push.py, tests/test_hive_feed.py, README.md, MEMORY.md]

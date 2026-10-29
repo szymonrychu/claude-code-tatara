@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke activity
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the live smoke proves the activity route and tool on every deploy
 files: [scripts/smoke.sh, tests/test_smoke_script.py]

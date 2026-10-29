@@ -1,6 +1,6 @@
 ---
 title: orch e2e hive activity
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: the kind e2e proves members pull activity and get no feed note
 files: [tests/e2e/test_e2e_kind.py]

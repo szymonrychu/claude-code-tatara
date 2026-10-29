@@ -1,6 +1,6 @@
 ---
 title: orch handover outcome note
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: a leader learns whether its handover request was applied or why it was rejected
 files: [src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_hive_push.py, README.md, MEMORY.md]

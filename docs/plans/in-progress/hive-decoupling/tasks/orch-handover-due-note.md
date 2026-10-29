@@ -1,6 +1,6 @@
 ---
 title: orch handover due note
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "a leader near its limit is told to hand over, to whom and how, before its details are compacted away"
 files: [src/agents_orchestrator/dispatcher/hive.py, tests/test_hive_push.py, tests/test_eligibility_fragments.py, README.md, MEMORY.md]

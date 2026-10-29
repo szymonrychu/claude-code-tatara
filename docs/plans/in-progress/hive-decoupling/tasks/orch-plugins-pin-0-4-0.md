@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.4.0
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: agent pods install the plugins release that offers the activity tool
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]

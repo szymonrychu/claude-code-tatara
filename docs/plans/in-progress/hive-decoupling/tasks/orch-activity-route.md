@@ -1,6 +1,6 @@
 ---
 title: orch activity route
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "any hive agent can pull what its peers did, on demand, instead of having it streamed"
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/db/events.py, openapi.json, README.md, tests/test_api_activity.py]
