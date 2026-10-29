@@ -1,6 +1,6 @@
 ---
 title: orch hive feed removal
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "members stop receiving the leader's truncated activity stream and the per-flip hive_state churn"
 files: [src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/dispatcher/feed.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_hive_push.py, tests/test_hive_feed.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_hive_push.py tests/test_hive_feed.py 
 depends_on: [orch-activity-route]
 model: opus
 review: ""
-verified_head: ""
+verified_head: ca0b11901ac6bc269295a1b1ad7d74fadfe5733b
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 72
+actual_tokens: 3139018
+actual_roles: "impl 36, review 37"
+actual_role_tokens: "impl 2584814, review 554204"
 ---
 
 # orch hive feed removal
@@ -86,3 +86,5 @@ Members get only the keyed `hive_state` note, and only on structural change; the
 - `feed_cursor` still exists in the schema after this task; only hive.py stops using it (orch-drop-feed-cursor drops it). `_set_leader` still writes it until then.
 - Keep `_claim`/`_release`: one failing receiver retries alone; `state_pushed_at` moves only when every receiver took the state.
 - DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.
+
+- 2026-10-29 done
