@@ -50,6 +50,17 @@ never matched (router) and every later Stop was treated as stale (session), with
 - tatara-1: quiet-gated interrupt (approved via mx-34), running after the 0.3.3 deploy; transcript
   copy `.logs/tatara-1-transcript-pre-interrupt.jsonl` (sha256 380210fc...) kept until tatara
   confirms Matrix resumed.
+- cct2-1 (tatara, 2026-10-29, mx-34 #310): wedged on 0.3.2, last turn ended 21:49:47Z, DB busy
+  since 18:51Z, 9 queued (240-295). Quiet-gated interrupt (one POST, 200); free at 02:23:39Z and
+  msg 240 dispatched at once, the rest queued serially. No roll: it went busy again before the
+  reconciler could replace it, so it stays on 0.3.2 in the same session until its next idle
+  reconcile. Record: tatara `.scratchpad/cct2-wedge/record.md`.
+
+## Follow-up (not started)
+
+- A 0.3.3 wrapper fix does not help a pod still on 0.3.2 that the orchestrator thinks is busy,
+  because it never rolls. Follow-up: an orchestrator-side stale-busy detector (busy with no wrapper
+  progress past a threshold gets flagged or interrupted).
 
 ## Out of scope (noted)
 
