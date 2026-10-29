@@ -36,6 +36,8 @@ Scope (agents-orchestrator):
 - README `## Images`: recommended agent image `harbor.szymonrichert.pl/containers/claude-code-wrapper:<sha7>`.
 - This task does not touch `tests/e2e/test_e2e_kind.py` (the kind e2e slash case is task orch-e2e-slash-command).
 
+Merged upstream (2026-10-29): claude-code-wrapper PR #10 merged to `main` as `e94628868d28416e9e33b9f5dcb0f8c829cf2fd8` (sha7 `e946288`), tagged `v0.4.0`; `build.yaml` pushed `harbor.szymonrichert.pl/containers/claude-code-wrapper:e946288` and `release.yaml` retagged `:0.4.0` and `:latest`, both green. `<merge sha>` above reads `e94628868d28416e9e33b9f5dcb0f8c829cf2fd8` and `<sha7>` reads `e946288`. The epic branch is already rebased onto orchestrator `main` (HEAD 402d1ae).
+
 ## Acceptance conditions
 
 - ac1: pyproject, uv.lock, README Images and the agent-test Dockerfile name the same wrapper commit [evidence: test:tests/test_images.py::test_agent_test_dockerfile_matches_dev_dependency]
@@ -73,3 +75,5 @@ CI's contract leg and kind e2e run the wrapper that takes any slash command; the
 - Depends on wrapper-release-0-4-0, orch-wrapper-command-client and orch-dispatch-commands.
 
 - 2026-10-27 amended: interrogate item 12 (the kind e2e case moved out of the pin task to orch-e2e-slash-command after orch-render-client-commands, so the pin PR is not red with 403), design D14 revised
+
+- 2026-10-29 amended: wrapper v0.4.0 merged and tagged: merge sha e946288
