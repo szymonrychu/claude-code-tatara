@@ -27,21 +27,21 @@ README Goal G1, verbatim: "A session the user flagged `session_orchestration` (a
 
 Design D1, verbatim: "The orchestrator tools render only when the flag is true: `orchestrator_allow` adds `ORCHESTRATION_TOOLS`, as with `scale`."
 
-Design D11, verbatim: "The release is the next minor after the version hive-decoupling leaves pinned. The allow-list change lands with the pin in one task, per Matrix D13 (`test_allowed_tools_exist_in_plugin` needs both)."
+Design D11, verbatim: "The release is any-mcp-tatara-plugins v0.6.0, the next minor after the latest tag v0.5.1 that slash-commands-from-chat leaves pinned (negotiated 2026-10-29, mx-34 #469/#470). The allow-list change lands with the pin in one task, per Matrix D13 (`test_allowed_tools_exist_in_plugin` needs both)."
 
-Needs a merged upstream: the any-mcp-tatara-plugins release tag pushed by plugins-release-orch-tools.
+Needs a merged upstream: the any-mcp-tatara-plugins tag v0.6.0 pushed by plugins-release-orch-tools.
 
-Scope (agents-orchestrator): `settings.py` (`any_mcp_plugins_ref` default the new tag), `pyproject.toml` and `uv.lock` (dev dependency at the new tag), `k8s/on_start.py` (`ORCHESTRATION_TOOLS`, added to a flagged session's list, alone and hive), README (the default ref, the `## Images` plugins tag, the tools only for flagged sessions), `tests/test_settings.py`, `tests/test_on_start.py`, new `tests/test_orchestration_tools_parity.py`.
+Scope (agents-orchestrator): `settings.py` (`any_mcp_plugins_ref` default `v0.6.0`, was `v0.5.1` after slash-commands-from-chat), `pyproject.toml` and `uv.lock` (dev dependency `any-mcp-tatara-orchestrator` at `v0.6.0`), `k8s/on_start.py` (`ORCHESTRATION_TOOLS`, appended to a flagged session's list in both branches of `orchestrator_allow(spec, *, chat=True)`, the alone/non-hive early return and the hive return, whatever `chat` is; `chat=False` still drops only the chat tools), README (the default ref, the `## Images` plugins tag, the tools only for flagged sessions), `tests/test_settings.py`, `tests/test_on_start.py`, new `tests/test_orchestration_tools_parity.py`.
 
-Test no longer accurate (named): `tests/test_settings.py::test_defaults` pins the plugins ref hive-decoupling left; it asserts the new tag.
+Test no longer accurate (named): `tests/test_settings.py::test_defaults` asserts `any_mcp_plugins_ref == "v0.5.1"`; it asserts `v0.6.0`.
 
-User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The tag this task pins is the one plugins-release-orch-tools pushed, derived from the plugins version baseline-facts recorded; the sixteen is this epic's own tool count.
+User settlement B6 (2026-10-27), verbatim: "the build starts only after all three blockers have merged. The first task reads the real migration number, plugins version and tool counts from main and amends the dependent tasks. No assumed numbers in ACs." The tag is v0.6.0 as baseline-facts confirmed; the sixteen is this epic's own tool count (32 plugin tools in all).
 
 ## Acceptance conditions
 
-- ac1: the plugins ref settings default is the tag released by plugins-release-orch-tools (updated) [evidence: test:tests/test_settings.py::test_defaults]
-- ac2: the dev dependency and uv.lock pin the same plugins tag as the settings default [evidence: test:tests/test_images.py::test_plugins_dev_pin_matches_settings_ref]
-- ac3: a flagged session's allow list, alone and hive, ends with the sixteen orchestration tools, and an unflagged session's list has none of them [evidence: test:tests/test_on_start.py::test_orchestration_tools_only_when_flagged]
+- ac1: the plugins ref settings default is v0.6.0, the tag released by plugins-release-orch-tools (updated) [evidence: test:tests/test_settings.py::test_defaults]
+- ac2: the dev dependency and uv.lock pin v0.6.0, the same plugins tag as the settings default [evidence: test:tests/test_images.py::test_plugins_dev_pin_matches_settings_ref]
+- ac3: a flagged session's allow list ends with the sixteen orchestration tools for an alone session and a hive, each with chat true and with chat false (a trigger-service session), and an unflagged session's list has none of them in any of these cases [evidence: test:tests/test_on_start.py::test_orchestration_tools_only_when_flagged]
 - ac4: every allowed tool, the orchestration tools included, exists in the pinned plugin [evidence: test:tests/test_on_start.py::test_allowed_tools_exist_in_plugin]
 - ac5: the released plugin drives every orchestration tool against the real agent routes and the fake schedule relay, and each result equals the direct route answer [evidence: test:tests/test_orchestration_tools_parity.py::test_orchestration_tools_parity]
 - ac6: the README documents the new default ref and that the orchestration tools render only for flagged sessions [evidence: command:grep -q "orchestrator_session_create" README.md]
@@ -82,3 +82,5 @@ Agent pods of flagged sessions install the plugins release with the orchestratio
 - The parity test's DB cases run in CI.
 
 - 2026-10-27 amended: builder check B6: tag from baseline-facts
+
+- 2026-10-29 amended: staleness refresh: pin v0.6.0 from v0.5.1; both orchestrator_allow branches and chat=False
