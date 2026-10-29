@@ -1,6 +1,6 @@
 ---
 title: wrapper commands after stop
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "a command sent while the agent works runs after that turn, with no fabricated continue prompt"
 files: [src/claude_code_wrapper/router.py, README.md, tests/test_command_turn_resume.py, tests/test_api_commands.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_turn_resume.py tests/test_api_commands
 depends_on: [wrapper-prompt-command-turn]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: cd9bed696a48b25e7d802c9bed21c0a773918c4d
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 125
+actual_tokens: 2446911
+actual_roles: "impl 30, review 5"
+actual_role_tokens: "impl 2330796, review 116115"
 ---
 
 # wrapper commands after stop
@@ -73,3 +73,5 @@ A command a user sends while the agent works waits for that turn's Stop; the tur
 - Depends on wrapper-prompt-command-turn (sequenced: router.py).
 
 - 2026-10-27 amended: interrogate item 4 (take the slot for queued client commands at Stop before any await; POST /turns gets 409 until they drain), design D9 revised; gate default kept (run at the turn's Stop)
+
+- 2026-10-29 done
