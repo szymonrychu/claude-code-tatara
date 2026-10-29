@@ -45,17 +45,22 @@ Scope (claude-code-wrapper): `pyproject.toml` and `src/claude_code_wrapper/__ini
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Version string `0.5.0` in `pyproject.toml` `[project].version` and `claude_code_wrapper.__version__`; `uv.lock` regenerated with `uv lock`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A wrapper release carrying the mid-turn merge, the bounded Stop defer, the paste hygiene and the peer priority exists for the orchestrator to pin by tag.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `pyproject.toml`, `src/claude_code_wrapper/__init__.py`, `tests/test_packaging.py` and the slash epic's wrapper-release-0-4-0 task in one pass.
+- Bump the version, run `uv lock`; this is a version bump with no behaviour change (TDD exception: dependency or version bump), so there is no red step; if `tests/test_packaging.py` names the version, update that pin (no longer accurate after the bump).
+- Run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The tag is pushed by the orchestrator session after the PR merges green; ac3 is checked by it, not by the implementer or reviewer.
+- If 0.5.0 is taken at build time, take the next free minor and report it so the orchestrator amends this task and orch-wrapper-pin-0-5-0.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
