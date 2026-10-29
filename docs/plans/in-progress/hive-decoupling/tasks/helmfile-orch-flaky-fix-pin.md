@@ -1,6 +1,6 @@
 ---
 title: helmfile orch flaky fix pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the orchestrator with the push-after-decision flaky-test fix is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-flaky-push-after-decisi]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 26aa34004d50de67a908e861ed0cf8252985bda5
 points: 1
 expected_minutes: 4
 expected_tokens: 632059
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -63,3 +63,7 @@ Context the implementer needs: pitfalls, existing code to reuse, decisions alrea
 - 2026-10-29 todo: handed to cct2 (tatara decommissioned, mx-34 #437); implementer stopped before any change; be554bb main CI was in progress
 
 - 2026-10-29 in-progress: resumed per mx-34 #440 (user: let it finish)
+
+- 2026-10-29 done: PR #54 review pass, merged; deploy follows in the supervisor session
+
+- 2026-10-29 actuals: no agent records
