@@ -29,20 +29,22 @@ Builder check settlement (user decision), verbatim: "add two tasks, any-mcp-tata
 
 Design D13, verbatim (the pin part): "then the orchestrator pins it (task orch-plugins-pin-0-2-0: the `ORCH_ANY_MCP_PLUGINS_REF` default, the `any-mcp-tatara-orchestrator` dev dependency, README, tests), so superleaders actually see the description. The helmfile value of `ORCH_ANY_MCP_PLUGINS_REF` stays with the gate's deploy decision."
 
-Needs a merged upstream: any-mcp-tatara-plugins tag `v0.2.0` on origin (task plugins-release-0-2-0).
+Amendment (2026-10-29, user-approved release order agreed between hives 2026-10-28): the epic matrix-connector-agent-initi ran first, released any-mcp-tatara-plugins `v0.2.0` (commit 4506e70) and already pinned agents-orchestrator `main` to it (settings default, dev dependency, uv.lock, README, `tests/test_settings.py::test_defaults`, merge a9f936f). This epic releases `v0.3.0` (task plugins-release-0-2-0), so this pin moves `v0.2.0` -> `v0.3.0`: the release named `v0.2.0` in the quotes above now reads `v0.3.0` (design D13 amended the same way). The task slug stays orch-plugins-pin-0-2-0. Where the Interfaces, Steps and Notes sections below still name v0.2.0 (written before this amendment), they read v0.3.0.
 
-Scope (agents-orchestrator):
-- `src/agents_orchestrator/settings.py`: `any_mcp_plugins_ref` default `v0.2.0`.
-- `pyproject.toml`: dev dependency `any-mcp-tatara-orchestrator @ git+https://github.com/szymonrychu/any-mcp-tatara-plugins@v0.2.0#subdirectory=orchestration/orchestrator`; `uv lock` updates `uv.lock`.
-- `README.md`: the `ORCH_ANY_MCP_PLUGINS_REF` row default `v0.2.0` and the `## Images` any-mcp paragraph (`v0.1.0` -> `v0.2.0` for the plugins release tag only; the any-mcp `v0.5.0` pin is unchanged).
-- `tests/test_settings.py::test_defaults` is no longer accurate (named): it pins `any_mcp_plugins_ref == "v0.1.0"`; it asserts `v0.2.0`.
+Needs a merged upstream: any-mcp-tatara-plugins tag `v0.3.0` on origin (task plugins-release-0-2-0).
+
+Scope (agents-orchestrator), on the epic branch rebased onto orchestrator `main` (which carries the v0.2.0 pin):
+- `src/agents_orchestrator/settings.py`: `any_mcp_plugins_ref` default `v0.2.0` -> `v0.3.0`.
+- `pyproject.toml`: dev dependency `any-mcp-tatara-orchestrator @ git+https://github.com/szymonrychu/any-mcp-tatara-plugins@v0.3.0#subdirectory=orchestration/orchestrator` (was `@v0.2.0`); `uv lock` updates `uv.lock`.
+- `README.md`: the `ORCH_ANY_MCP_PLUGINS_REF` row default `v0.3.0` and the `## Images` any-mcp paragraph (`v0.2.0` -> `v0.3.0` for the plugins release tag only; the any-mcp `v0.5.0` pin is unchanged).
+- `tests/test_settings.py::test_defaults` is no longer accurate (named): on `main` it pins `any_mcp_plugins_ref == "v0.2.0"`; it asserts `v0.3.0`.
 - No agents-helmfile change (the gate's deploy decision).
 
 ## Acceptance conditions
 
-- ac1: the settings default is v0.2.0 (updated) [evidence: test:tests/test_settings.py::test_defaults]
+- ac1: the settings default is v0.3.0 (updated) [evidence: test:tests/test_settings.py::test_defaults]
 - ac2: the dev dependency and uv.lock pin the same plugins tag as the settings default [evidence: test:tests/test_images.py::test_plugins_dev_pin_matches_settings_ref]
-- ac3: the README documents the v0.2.0 default and no longer names v0.1.0 for the plugins [evidence: command:grep -qF '| `ORCH_ANY_MCP_PLUGINS_REF` | `v0.2.0` |' README.md && ! grep -q "plugins release tag (\`v0.1.0\`)" README.md]
+- ac3: the README documents the v0.3.0 default and no longer names v0.2.0 or v0.1.0 for the plugins [evidence: command:grep -qF '| `ORCH_ANY_MCP_PLUGINS_REF` | `v0.3.0` |' README.md && ! grep -qF '| `ORCH_ANY_MCP_PLUGINS_REF` | `v0.2.0` |' README.md && ! grep -qF 'pin the same plugins release tag (`v0.2.0`)' README.md && ! grep -q "plugins release tag (\`v0.1.0\`)" README.md]
 - ac4: the pinned orchestrator plugin carries the new session_send description [evidence: command:grep -rq "Claude Code slash command" "$(uv run --frozen python -c 'import os, any_mcp_tatara_orchestrator as m; print(os.path.dirname(m.__file__))')"]
 - ac5: settings, images and on-start suites and lint pass [evidence: command:uv run --frozen pytest tests/test_settings.py tests/test_images.py tests/test_on_start.py && mise run lint]
 
@@ -74,3 +76,5 @@ Agent pods rendered by this orchestrator install the plugins release whose sessi
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); deploy is the gate's decision.
 - Sequenced after orch-wrapper-pin-0-4-0 so one task at a time edits `pyproject.toml` and `uv.lock` (my call).
 - Depends on plugins-release-0-2-0 and orch-wrapper-pin-0-4-0.
+
+- 2026-10-29 amended: release order changed (user-approved, agreed between hives 2026-10-28): orchestrator main already pins plugins v0.2.0 (matrix-connector-agent-initi), so this pin moves v0.2.0 -> v0.3.0; slug stays orch-plugins-pin-0-2-0
