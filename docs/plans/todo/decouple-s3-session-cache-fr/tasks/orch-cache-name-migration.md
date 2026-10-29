@@ -62,17 +62,33 @@ This task delivers design D7 and D9 in agents-orchestrator: the reconciler copie
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/reconciler/cache_migration.py` (new): a class or function the `Reconciler` calls with the session and a `during_discard: bool`, writing through the reconciler's `_write_status` (the reconciler is the only writer of `sessions.status`); `legacy_preset_key(preset_id: uuid.UUID) -> str` lives here only.
+- `reconciler/loop.py`: `_converge` calls it before `self.cache.sessions_restore_step`; `_discard` calls it after `_quiesce` and before the workdir `save_step`; the session is reloaded after a repoint so the next step reads the new `status.cache`.
+- Reads the source preset with `db/presets.get(conn, preset_id)` (read only; the api stays the only writer of `presets`).
+- Uses `cache.naming.render_cache_name`, `cache.naming.DEFAULT_CACHE_NAME_TEMPLATE`, `spec.slugify`, `cache.copy.copy_if_absent`, `presign.object_name`, `presign.sessions_object_name`.
+- `status.cache.migration`: `{state: "done"|"failed", from_key, workdir, sessions, finished_at, reason, failures, next_at}` (absent keys omitted). Contract change for `orch-session-status-cache` recorded by the orchestrator.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After deploy, each live session that existed before the epic has its `preset-<hash>.tar.zst` object copied to `<preset>-<slug>.tar.zst` (and any `sessions/<slug>.tar.zst` to `sessions/<preset>-<slug>.tar.zst`), its `status.cache` repointed and a `migration` record; its discard saves under the new names and a session recreated from the same preset with the same slug restores them. No S3 object is moved, deleted or overwritten.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read reconciler/loop.py (`_converge`, `_discard`, `_write_status`, `_reload`), reconciler/cache.py (`_begin`, `_write`), cache/copy.py, cache/naming.py, db/presets.py, db/sessions.py (`Session` fields), settings.py (`retry_delay_seconds`), tests/test_cache_restore.py (`Env`) and tests/test_cache_save.py (`SaveEnv`) in one pass.
+- Red: write tests/test_cache_migration.py with the tests named in the acceptance conditions (moto server for the bucket as in tests/test_cache_presign.py, the `Env` helpers for sessions and Jobs); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_migration.py`; expect failure on the missing module (DB tests: on CI or a local Postgres).
+- Green: write cache_migration.py and wire it into loop.py; rerun the verify; expect passed, and the existing cache and sessions suites unchanged.
+- Document the migration and the `status.cache` fields in README `## Workspace cache`; add the MEMORY.md entry; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Live facts (cartographer brief section 4, read-only probe 2026-10-29): 3 live sessions (cct2, claude-code-tatara, mx-34); bucket objects `preset-00f3b4fa52bbda02.tar.zst` 8.5 KB, `preset-55ab25edd7a675ed.tar.zst` 434 MB, `preset-5aa1667ff178f9ae.tar.zst` 18 B, `smoke-workspace-cache.tar.zst`, 14 `sessions/smoke-*` objects; no transcripts object of a live session. Which live session holds which key is unknown (no DB read was made).
+- Timing trap the repoint closes: a live session saves to `status.cache.key`; copying without repointing would leave the fresh save under the old name and a recreated session restoring a stale copy.
+- The copy is a blocking server-side CopyObject inside the reconciler tick (the largest object today is 434 MB); it runs once per pre-epic session. Run it with `asyncio.to_thread` so the event loop stays free.
+- Copy only (leader constraint): grep the diff for `delete_object`, `delete_objects` and `put_object`; AC3 proves it against moto.
+- Headline promise end to end (retro, recurring): AC2 must exercise migrate, discard save, recreate and restore in one test, not separate pieces.
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
+- Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
