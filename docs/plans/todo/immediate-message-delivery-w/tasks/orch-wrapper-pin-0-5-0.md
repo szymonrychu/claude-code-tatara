@@ -62,7 +62,7 @@ The orchestrator runs against a wrapper that merges mid-turn messages, and the r
 ## Steps
 
 - Read `pyproject.toml`, `uv.lock`, `e2e/agent-test.Dockerfile`, `e2e/agent-test.config.yaml`, the README Images section, `tests/test_images.py`, `tests/test_fake_wrapper_contract.py`, `tests/fakes/real_wrapper.py`, `tests/e2e/test_e2e_kind.py` and the slash epic's orch-wrapper-pin-0-4-0 task in one pass.
-- Red: remove the real-leg skip and add the e2e case; run `uv run --frozen python -c` of ac3; expect it to fail on the 0.4.0 pin.
+- Red: remove the real-leg skip and add the e2e case; run `uv run --frozen python -c` of ac3; expect it to fail on the 0.4.1 pin.
 - Green: move the pin (`uv lock`), Dockerfile and README; run the task's verify; expect all passed. Quote the summary line; the reviewer quotes the CI integration and e2e job summaries.
 
 ## Notes

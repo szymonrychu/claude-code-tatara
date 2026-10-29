@@ -91,7 +91,7 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
   a guarded UPDATE in `db/queue.py`; the connector's `inbound` and `runs` likewise.
 - Built on the merged slash-commands-from-chat epic (README blocker): its command queue held until
   Stop (D9), `_PICK_COMMAND` and the per-session order rule (D10), `DialogScanner` (D7), migration
-  0010 and wrapper 0.4.0, plugins 0.5.0. Built on hive-decoupling (README blocker): migration 0011,
+  0010 and wrapper 0.4.1 (fix round; 0.4.0 never deployed), plugins 0.5.0. Built on hive-decoupling (README blocker): migration 0011,
   plugins 0.4.0 and its orchestrator plugin pin. This epic therefore takes migration 0012, wrapper
   0.5.0, plugins 0.6.0; when a number is taken at build time the task takes the next free one and
   the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
@@ -100,7 +100,7 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
 - Pull requests (my call, builder Q5): one PR per repo for the epic. The wrapper, plugins and
   agents-common PRs merge when their release task is green (the tag needs the merge commit); the
   connector PR after common-release-0-5-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
-  and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.0 wrapper in
+  and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.1 wrapper in
   CI; it merges with a merge commit, so the epic-branch commit that agents-web's
   `openapi/orchestrator.source` names stays reachable (builder Q6); the web PR merges after it.
 - Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
@@ -588,7 +588,7 @@ Findings:
 - Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q12: Builder Q3: may the probe (wrapper-midturn-probe) run the real claude 2.1.304 in this container with the existing login, spending real tokens on P1 to P12 (permission dialog, AskUserQuestion, /compact, MCP elicitation), and may the epic continue when P6 or another probe the container cannot run is recorded unsettled, the orchestrator then amending wrapper-merge-guards to the dialog footers it can prove? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q13: Builder Q7: are Q1 to Q11 accepted as recommended, including Q8 (the wrapper's POST /turns defaults to immediate for every client) and Q10 (the priority option stays in scope, now about 13 of the epic's 78 points)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q14: During a deploy the orchestrator rolls agent pods itself, idle only, after it is deployed, so pods still on wrapper 0.4.0 answer 422 invalid_request to the new priority field and today's mapping fails those messages for good (rejected). For this rollout window only, should the orchestrator requeue such a message with backoff and no attempt counted until that pod rolls (a temporary compatibility shim, pinned by a dispatcher test in orch-dispatch-immediate and removed in a later epic)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q14: During a deploy the orchestrator rolls agent pods itself, idle only, after it is deployed, so pods still on wrapper 0.4.1 answer 422 invalid_request to the new priority field and today's mapping fails those messages for good (rejected). For this rollout window only, should the orchestrator requeue such a message with backoff and no attempt counted until that pod rolls (a temporary compatibility shim, pinned by a dispatcher test in orch-dispatch-immediate and removed in a later epic)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q15: When a merged message is never seen by Claude Code before its turn ends (the settle bound expired or the turn was interrupted), should the orchestrator mark that message failed with error not_absorbed (shown in the queue strip with Retry, not relayed to Matrix) instead of leaving it sent and linked to an answer that never addressed it, accepting that a later agent turn may still act on the queued text (about 3 more points in orch-merged-delivery and mxc-relay-once-per-turn)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 
 ## Irreversible operations in scope

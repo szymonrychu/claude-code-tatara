@@ -67,7 +67,7 @@ The orchestrator can ask the wrapper for immediate or idle delivery and understa
 
 ## Notes
 
-- The real contract leg runs against the pinned wrapper image (0.4.0 until orch-wrapper-pin-0-5-0), which refuses an unknown `priority` field; the merge case's real leg is skipped until that task removes the skip.
+- The real contract leg runs against the pinned wrapper image (0.4.1 until orch-wrapper-pin-0-5-0), which refuses an unknown `priority` field; the merge case's real leg is skipped until that task removes the skip.
 - `command()` keeps its own 429 mapping; only the turn send changes.
 - Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.

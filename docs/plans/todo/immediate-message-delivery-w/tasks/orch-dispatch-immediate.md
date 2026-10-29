@@ -77,7 +77,7 @@ A message to a busy agent is dispatched at once and lands in its running turn; i
 ## Notes
 
 - Headline promise check (retro, recurring): every place that reads or writes the reservation (`_PICK`, `_PICK_IMMEDIATE`, `release_agent`, `retry_message`, the rollout replacer's BUSY predicate) must stay correct now that an immediate claim reserves too (design D13, interrogate 2); name each in the report.
-- CI: from this task until orch-wrapper-pin-0-5-0 the real-wrapper integration and kind legs run against wrapper 0.4.0, which refuses `priority`; the orchestrator PR merges only after the pin tasks are green (design Constraints, builder Q5). Do not skip or xfail those legs here.
+- CI: from this task until orch-wrapper-pin-0-5-0 the real-wrapper integration and kind legs run against wrapper 0.4.1, which refuses `priority`; the orchestrator PR merges only after the pin tasks are green (design Constraints, builder Q5). Do not skip or xfail those legs here.
 - Per-task security check (retro): `target_queue_full` counts queued rows only, so the wrapper's 429 cap is the flood bound for immediate messages; do not add a second cap here.
 - The busy-leader hold still applies to idle messages behind an immediate one; the handover hold applies to both.
 - Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.

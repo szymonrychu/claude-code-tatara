@@ -53,7 +53,7 @@ A wrapper release carrying the mid-turn merge, the bounded Stop defer, the paste
 
 ## Steps
 
-- Read `pyproject.toml`, `src/claude_code_wrapper/__init__.py`, `tests/test_packaging.py` and the slash epic's wrapper-release-0-4-0 task in one pass.
+- Read `pyproject.toml`, `src/claude_code_wrapper/__init__.py`, `tests/test_packaging.py` and the slash epic's wrapper-release-0-4-1 task in one pass.
 - Bump the version, run `uv lock`; this is a version bump with no behaviour change (TDD exception: dependency or version bump), so there is no red step; if `tests/test_packaging.py` names the version, update that pin (no longer accurate after the bump).
 - Run the task's verify; expect all passed. Quote the summary line.
 
