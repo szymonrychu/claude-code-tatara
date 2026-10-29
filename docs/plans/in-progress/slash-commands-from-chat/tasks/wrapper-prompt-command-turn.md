@@ -47,6 +47,7 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 - ac7: the fake's prompt scenario writes the echo, the isMeta body, fires UserPromptSubmit, runs the turn and fires Stop (new) [evidence: test:tests/test_fake_claude_commands.py::test_prompt_command_scenario]
 - ac8: MEMORY.md records the real-binary probe of this task: whether Stop fires after a promoted prompt-command turn and whether a plugin command fires UserPromptSubmit, each with its observed result or "not settled" [evidence: command:grep -E "^- 2026-[0-9-]+ \(slash-commands-from-chat\) probe" MEMORY.md | grep -qi "promoted" && grep -E "^- 2026-[0-9-]+ \(slash-commands-from-chat\) probe" MEMORY.md | grep -qi "plugin"]
 - ac9: targeted suites and lint pass [evidence: command:uv run pytest tests/test_command_prompt_turn.py tests/test_fake_claude_commands.py tests/test_command_runner.py tests/test_command_turn_resume.py tests/test_session_turns.py tests/test_stop_gate.py && uv run ruff check . && uv run ruff format --check .]
+- ac10: a command whose name claude sends to the model with no command echo (fake scenario `commands.<name>.prose: true`: a plain user prompt line, UserPromptSubmit, a turn, Stop; the real case `/tmp`, probe 2026-10-29) is promoted on `prompt_submitted` alone, completes result `turn` with its turn_id, the Stop completes the turn, and the session is ready within the fake turn, never at `timeout_seconds` (new) [evidence: test:tests/test_command_prompt_turn.py::test_prose_dispatched_command_promotes_to_turn]
 
 ## Files
 
@@ -82,3 +83,5 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 - Depends on wrapper-dialog-commands (sequenced: router.py, session.py and the fake).
 
 - 2026-10-27 amended: interrogate item 10 (release the held-turn hold through a session API so an interrupt sends ESC), user decision on the Noted items (real-binary probe of Stop after a promoted turn and of plugin commands and UserPromptSubmit, recorded in MEMORY.md, contradictions reported back), design D8 revised
+
+- 2026-10-29 amended: fable ruling 2026-10-29 on the wrapper-command-signals probe: claude sends a bare name that exists on disk (/tmp) to the model; D2 rule unchanged, ac8 uses nonexistent, D8 promotion pins the prose case
