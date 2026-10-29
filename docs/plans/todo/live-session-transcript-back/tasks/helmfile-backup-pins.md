@@ -66,6 +66,8 @@ agents-helmfile main pins the orchestrator and web releases of this epic (which 
 
 ## Notes
 
+- (my call, builder Q4) `<ORCH_SHA>` and `<WEB_SHA>` mean the 7-character short merge sha (the pin tests require `[0-9a-f]{7}`), never the full 40.
+- (my call, builder Q5) the orchestrator session amends the placeholders with `ticket.py amend` after both epic PRs (agents-orchestrator, agents-web) have merged and their main CI runs are green; the Red step then edits the test literals first.
 - `<ORCH_SHA>` and `<WEB_SHA>` are placeholders; the orchestrator replaces them with `ticket.py amend` once both epic PRs merged and their main CI runs (images and chart publish) are green. Never pin an epic-branch commit.
 - Chart-pull tests blocked by a container network policy may be deselected locally (precedent); they run unblocked before the apply.
 - Never run an apply in this task.

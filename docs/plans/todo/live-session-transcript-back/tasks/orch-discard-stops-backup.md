@@ -3,10 +3,10 @@ title: orch discard stops backup
 status: todo
 repo: agents-orchestrator
 value: "A discard always writes the final transcripts backup, never raced or replaced by a live one"
-files: [src/agents_orchestrator/reconciler/loop.py, src/agents_orchestrator/reconciler/live_backup.py, src/agents_orchestrator/reconciler/cache.py, tests/test_sessions_backup.py, README.md]
+files: [src/agents_orchestrator/reconciler/loop.py, src/agents_orchestrator/reconciler/live_backup.py, src/agents_orchestrator/reconciler/cache.py, src/agents_orchestrator/cache/presign.py, tests/test_sessions_backup.py, README.md]
 verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_backup.py tests/test_sessions_live_backup.py && mise run lint"
 depends_on: [orch-sessions-live-backup]
-model: sonnet
+model: opus
 review: ""
 verified_head: ""
 points: 3
@@ -57,6 +57,7 @@ Builder question Q10 (my call: yes): with `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS
 - `src/agents_orchestrator/reconciler/loop.py`
 - `src/agents_orchestrator/reconciler/live_backup.py`
 - `src/agents_orchestrator/reconciler/cache.py`
+- `src/agents_orchestrator/cache/presign.py`
 - `tests/test_sessions_backup.py`
 - `README.md`
 
@@ -64,7 +65,9 @@ Builder question Q10 (my call: yes): with `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS
 
 - `reconciler/loop.py:_discard`: after the workdir save and `_reload`, before `self.cache.save_step(session, "sessions")`, a call (for example `CacheRunner.stop_live_backup(session) -> bool`, True when the final save may start) that: marks a `running` `sessions_backup` record `failed` with reason `superseded_by_discard` and `finished_at` (database clock), keeping `job` and `last_saved`; deletes the owned Job `agent-<slug>-sessions-backup`; returns False (the discard writes `phase: deleting`, message `stopping the live transcripts backup`) while that Job or an owned pod labelled `agents.szymonrichert.pl/cache: sessions-backup` of the session exists, until `discard_quiesce_timeout_seconds` after the record's `finished_at`, then logs a warning naming the session and returns True.
 - A non-running record whose Job still exists (crash between the record write and the delete) takes the same delete-and-wait path.
+- `reconciler/loop.py:_discard` reloads the session (`_reload`) after the stop step returns True and before `self.cache.save_step(session, "sessions")` (review fix, interrogate Act on 1).
 - `CacheRunner.save_step(session, "sessions")` is unchanged: it never reads `sessions_backup`.
+- `cache/presign.py:presign` gains a keyword-only expiry override (the builder names it); the live backup run passes `cache_timeout_seconds + 60` (a named constant beside `EXPIRY_MARGIN_SECONDS`); every other caller keeps `cache_timeout_seconds + EXPIRY_MARGIN_SECONDS` (600) (review decision, interrogate Consider 1).
 
 ## Expected outcome
 
@@ -72,14 +75,16 @@ Discarding a session while its live backup runs: the backup Job is killed, the d
 
 ## Steps
 
-- Read `reconciler/loop.py` (`_discard`, `_quiesce`, `_reload`, `_db_now`), the live backup step from orch-sessions-live-backup (`reconciler/cache.py` or `reconciler/live_backup.py`), `reconciler/cache.py:_delete_job`, `k8s/kube.py:delete`, `tests/fakes/fake_kube.py` (`delete`, `list_pods`, `get_job`), `tests/test_sessions_backup.py` and `tests/test_sessions_live_backup.py` (helpers), and the README discard paragraph in one pass.
-- Red: add the tests named in AC1-AC6 to tests/test_sessions_backup.py; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_backup.py`; expect them to fail (DB tests: on CI, `DockerException` locally).
+- Read `reconciler/loop.py` (`_discard`, `_quiesce`, `_reload`, `_db_now`), `cache/presign.py` (`presign`, `EXPIRY_MARGIN_SECONDS`), `tests/test_cache_presign.py`, the live backup step from orch-sessions-live-backup (`reconciler/cache.py` or `reconciler/live_backup.py`), `reconciler/cache.py:_delete_job`, `k8s/kube.py:delete`, `tests/fakes/fake_kube.py` (`delete`, `list_pods`, `get_job`), `tests/test_sessions_backup.py` and `tests/test_sessions_live_backup.py` (helpers), and the README discard paragraph in one pass.
+- Red: add the tests named in AC1-AC6 and AC8-AC10 to tests/test_sessions_backup.py; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_backup.py`; expect them to fail (DB tests: on CI, `DockerException` locally).
 - Green: add the stop step and wire it into `_discard`; rerun the verify; expect every test passed on CI and the existing sessions backup tests unchanged.
 - Add the README sentence (the discard stops a running live backup, `superseded_by_discard`, then saves); `mise run lint`; expect exit 0.
 
 ## Notes
 
 - Order: write the `failed` record first, then delete. Either crash point is safe because the step acts on any `running` record (mark it, then delete; an absent Job is fine) and on any non-running record whose Job still exists (delete and wait); `_converge`, which would observe a running record, never runs for a deleting session.
+- (my call, interrogate Consider 1) residual risk: a backup pod still terminating after the bounded wait can PUT only while its URL is valid, that is within `cache_timeout_seconds + 60` of its presign; recorded in design Assumptions, no user question.
+- (my call, builder Q10) with the interval 0 a leftover `running` `sessions_backup` record still takes the stop path (AC10).
 - AC5 is the headline promise end to end (retro, recurring): live backup, discard, final save and recreate in one test, asserting the order of the PUT Jobs and the restore's GET object, not separate pieces.
 - The quiesce already scales the StatefulSet to zero; backup Job pods are not agent pods (`rollout.agent_pods` matches only `agent-<slug>-<ordinal>`), so the quiesce never waits for them; this task's wait is the only one.
 - Base: this epic builds after decouple-s3-session-cache-fr, hive decoupling and slash commands from chat have landed on main; rebase onto main first and use the decouple names as they landed (`presign.sessions_object_name`, `status.cache.sessions_object`, the `cache_migration` pending predicate, `CacheRunner._begin` pinning). No SQL migration is planned; if one proves necessary it takes the next free number on main at build time (`<MIGRATION>`), and the builder raises it as a question first.

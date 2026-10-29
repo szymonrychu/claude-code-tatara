@@ -4,7 +4,7 @@ status: todo
 repo: agents-web
 value: The discard dialog tells the user when the transcripts were last backed up and that a final backup follows
 files: [src/sessions/DiscardSessionDialog.tsx, src/sessions/DiscardSessionDialog.test.tsx, src/api/schema.d.ts, openapi/orchestrator.json, openapi/orchestrator.source]
-verify: "npm ci --no-audit --no-fund && npx vitest run src/sessions/DiscardSessionDialog.test.tsx && npm run check:api && npm run lint"
+verify: "npm ci --no-audit --no-fund && npx vitest run src/sessions/DiscardSessionDialog.test.tsx && npm run check:api && npm run build && npm run lint"
 depends_on: [orch-backup-view-latest]
 model: sonnet
 review: ""
@@ -69,6 +69,8 @@ Opening the discard dialog of a live session that had a live backup shows when t
 
 ## Notes
 
+- (my call, builder Q6) the four orchestrator tasks ship as one agents-orchestrator epic PR, merged to main before this task starts; this task syncs the schema from that merge commit.
+- (my call, builder Q7) AC5's commands are the real check; the verify runs `npm run build` too.
 - The dialog's workspace and transcripts lines were reworded by decouple-s3-session-cache-fr (web-discard-effective-name, effective cache name); keep that wording, change only the last-backup sentence.
 - Sync from the orchestrator merge commit on main, not an epic-branch commit: an epic-branch pin forced a merge commit in matrix-connector-agent-initi (retro).
 - Tree state: `npm test` had test files failing to import `@codemirror/*` with a stale node_modules, so the verify runs `npm ci --no-audit --no-fund` first.

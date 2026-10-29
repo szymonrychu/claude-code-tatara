@@ -72,6 +72,9 @@ Alternatives: on demand only (needs an api-to-reconciler signal and UI; the user
 button; Q3); before pod rolls (the PVC survives rolls, low value); at every turn end (Job bursts on busy
 sessions). Interval default 1800 s (my call; Q1).
 
+(review fix) Interrogate Act on 2: the change signal is an agent of the session `busy` now or its `agent_status.free_since`
+(database `now()`) later than `last_saved.started_at`, never the wrapper-clock `turns.completed_at`, so long running turns are backed up too; still at most once per interval. Act on 1: `_converge` reloads the session (`_reload`) right before the backup step, so no backup write merges a stale `status.cache`. Acts: orch-sessions-live-backup.
+
 ### D2: Its own status record and Job name; the discard save stays one-shot
 
 `status.cache.sessions_backup {state, started_at, finished_at, bytes, reason, job}` and Job name
@@ -90,6 +93,8 @@ failure or a `shared_name` skip retries after the interval); the change signal i
 session's agents completed after `last_saved.started_at` (with no `last_saved`, any completed turn).
 Acts: orch-sessions-live-backup, orch-backup-view-latest.
 
+(review fix) Interrogate Act on 5: `CacheOp.action` stays `save` (one Job action contract: read-only mount, PUT, `saved`); the live run differs only in status key `sessions_backup`, Job name suffix `-sessions-backup` and cache label `sessions-backup` (my call, so neither run lists the other's pods). The change signal sentence above is replaced by D1's review fix. Acts: orch-sessions-live-backup AC19.
+
 ### D3: Discard removes a running backup first
 
 In `_discard`, before the sessions save step, a running backup Job is deleted (foreground) and its record
@@ -107,6 +112,8 @@ tick (a non-running record whose Job still exists). The wait is bounded by
 `discard_quiesce_timeout_seconds` from the supersede (the record's `finished_at`), after which the final
 save runs and a warning is logged (anti-goal: no unbounded delay). Acts: orch-discard-stops-backup.
 
+(review fix) Interrogate Act on 1: `_discard` reloads the session between the stop step and the final save, so the final save keeps `superseded_by_discard`. Consider 1 (my call): the bounded wait stays; the live run's presign expires `cache_timeout_seconds + 60` (covers its `activeDeadlineSeconds`), every other presign keeps `+ 600`; residual risk in Assumptions. Builder Q10: the stop step also handles a leftover `running` record when the interval is 0. Acts: orch-discard-stops-backup AC8-AC10.
+
 ### D4: Object name and the decouple migration
 
 A live backup presigns exactly what the discard save would: `status.cache.sessions_object` when pinned.
@@ -115,12 +122,16 @@ not recorded; it simply waits), so it never writes the legacy name the migration
 decouple migration's "no copy while a save run is `running`" guard (decouple interrogate item 4) also
 counts a running live backup (fix-as-ac).
 
+(review fix) Interrogate Act on 4: "reason not recorded; it simply waits" is replaced: while the migration is pending or failed the backup records `skipped` with reason `migration_pending`, written only on change (no churn), keeping `last_saved` and the previous `started_at` (my call: it never restarts the interval). Acts: orch-sessions-live-backup AC8.
+
 ### D5: Shared names
 
 With a shared literal template, several live sessions pin one transcripts object; each live backup would
 overwrite the others' with only its own pod dirs. A live backup is skipped (record `skipped`, reason
 `shared_name`) while another live session (not discarded) pins the same `sessions_object`; the discard save
 keeps today's last-writer-wins semantics (decouple Q1/Q10) (my call; Q4).
+
+(review fix) Interrogate Act on 3 (builder Q9 overridden): the guard compares effective transcripts objects (pinned `sessions_object`, else the name the session will pin from its rendered `spec.cache.key`) against every row not yet purged, deleting and unconverged rows included. Consider 2: a backup already running when a peer row appears can still overwrite the shared object once, bounded by one backup's duration after the peer's row exists. Acts: orch-sessions-live-backup AC10, AC18.
 
 ### D6: Archive reads safe for live files
 
@@ -139,6 +150,8 @@ and the JSONL cut only to the transcripts archive: only the sessions Job carries
 (absent means no cut, so the workdir Job env stays as it is), and `transfer.save` passes it to
 `archive.pack(..., trim_jsonl=...)`. A "no" to Q6 drops the env variable and applies the cut to every save as first
 written. Acts: orch-archive-live-files.
+
+(review fix) Interrogate Act on 6: the open adds `O_NONBLOCK`, so a FIFO swapped in after the lstat never blocks the pack; it fails the fstat check and is skipped. Builder Q3 (my call): a file shrunk below its fstat size mid-read still fails the pack; the old object stays and the next interval retries. Acts: orch-archive-live-files AC5.
 
 ### D7: Visibility
 
@@ -256,14 +269,26 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 
 ## Left to the builder
 
-- Module placement (cache.py vs a new `reconciler/live_backup.py`), helper names, the SQL for the "turn
-  completed since" check, test file split, within D1-D8.
+- Module placement (cache.py vs a new `reconciler/live_backup.py`), helper names, the SQL for the
+  busy-or-`free_since` check (review fix of D1), test file split, within D1-D8.
+- Builder questions settled (`.scratchpad/live-backup/builder-check.md`, my call): Q1 orch-archive-live-files may
+  start before the blockers land, the rest waits; Q2 superseded by D1's review fix; Q3 yes (D6); Q4 the pins
+  are the 7-character short merge sha; Q5 the orchestrator session amends the placeholders via `ticket.py amend`
+  after both PRs merge; Q6 one agents-orchestrator PR for all four orch tasks, merged before the web task; Q7
+  the web AC5 commands are the real check and its verify matches; Q8 helmfile-backup-live-check is
+  orchestrator-session work; Q9 overridden, deleting rows count (D5); Q10 yes to both (D3, orch-sessions-live-backup AC7).
 
 ## Assumptions and unknown facts
 
 - Claude Code's `--resume` tolerance of a torn final JSONL line: unknown; D6 removes the case.
 - Backup Job cost: one Job pod with a 5 GiB emptyDir per changed session per interval; acceptable at the
   current session count (a handful) (my call).
+- (review fix) Residual late PUT (interrogate Consider 1, my call): a backup pod still terminating after the
+  bounded discard wait can PUT after the final save only while its URL is valid, within
+  `cache_timeout_seconds + 60` of its presign; accepted rather than delaying every discard up to 40 min.
+- (review fix) `free_since` also moves on a booting-to-idle transition, so a pod roll can make one extra backup
+  due after the interval; accepted, bounded by the interval (my call).
+- (review fix) Builder Q3: a file shrunk mid-read fails that pack; retried next interval (my call).
 
 ## Open questions
 

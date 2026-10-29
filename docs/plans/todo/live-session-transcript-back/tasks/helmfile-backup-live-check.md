@@ -76,7 +76,8 @@ The orchestrator and web releases of this epic run live; a running session's Cla
 ## Notes
 
 - Never put `mise run apply` in AC evidence (agents-helmfile MEMORY 2026-10-25). Subagent `kubectl exec` is denied by the permission classifier; the whole task is orchestrator-run.
-- The first live backup runs within a reconcile tick for a session with a completed turn and no backup record, so step 7 needs no 30-minute wait; if no running session has a completed turn, send one short read-only message to a session first and record it.
+- (my call, builder Q8) the whole task is orchestrator-session work (live apply, Lease, kubectl); a builder subagent stops after helmfile-backup-pins.
+- The first live backup runs within a reconcile tick for a session with an agent busy or gone idle (`agent_status.free_since` set, a completed turn implies it) and no backup record, so step 7 needs no 30-minute wait; if no running session has a completed turn, send one short read-only message to a session first and record it.
 - Q7 is open; the plan follows its recommended answer (the decouple changes deploy here). A "no" adds a decouple-only deploy before this one.
 - Recurring retro: live apply and proof tasks run several times their seed; budget for more than one attempt. A defect found live becomes a new task, never a hand fix.
 - `gh` must be authenticated in the deploying pod for check-pins.
