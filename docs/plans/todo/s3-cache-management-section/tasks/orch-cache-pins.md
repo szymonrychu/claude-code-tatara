@@ -61,17 +61,37 @@ This task delivers D3 and the class rule of D4 in agents-orchestrator as the new
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/cache/pins.py` (new, pure, synchronous):
+  - `ObjectKind = Literal["workspace", "transcripts"]`, `CacheClass = Literal["in_use", "preset", "legacy", "saved", "other"]`, `LEGACY_RE` (fullmatch `preset-[0-9a-f]{16}\.tar\.zst`).
+  - `class PinRow(Protocol)`: `slug: str`, `spec` (a `SessionSpec`: `spec.cache` is None or has `.key`), `status: Mapping[str, Any]`; `db.sessions.Session` satisfies it, so callers pass rows from `sessions.list_sessions` unchanged.
+  - `object_kind(name: str) -> ObjectKind`.
+  - `session_pins(row: PinRow, prefix: str) -> frozenset[str]`.
+  - `pins_by_object(rows: Iterable[PinRow], prefix: str) -> dict[str, tuple[str, ...]]` (object name -> sorted slugs).
+  - `preset_objects(presets: Iterable[PresetLike]) -> dict[str, str]` (object name -> preset name), `PresetLike` having `id`, `name`, `spec` (`db.presets.Preset` satisfies it); trial-renders each template with `cache.naming.render_cache_name` twice with different `session` and `created_by` values (`preset=spec.slugify(name)`, `preset_id=str(id)`), equal output = a fixed name.
+  - `legacy_copies(rows: Iterable[PinRow]) -> dict[str, int]` (`<from_key>.tar.zst` -> count).
+  - `classify(name: str, pins: Mapping[str, tuple[str, ...]], presets: Mapping[str, str]) -> CacheClass`.
+- Consumers: `reconciler/cache_requests.py` (task orch-cache-requests) and `api/cache.py` (task orch-cache-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+One importable rule decides which objects session rows pin and which class every object name has; the api badge and the reconciler refusal both call it, so they cannot disagree.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `cache/save_rule.py` (the pure-module shape), `cache/naming.py`, `cache/presign.py` (`object_name`, `sessions_object_name`), `reconciler/cache_migration.py` (the `migration` record and the pending rule), `reconciler/cache.py` (where `key`, `object`, `sessions_object` are pinned), `spec.py` (`CACHE_KEY_RE`, `slugify`, `WorkspaceCache`), `db/sessions.py` (`Session`) and `db/presets.py` (`Preset`) in one pass.
+- Red: write `tests/test_cache_pins.py` with every test named in the acceptance conditions (plain `Session`/`Preset` instances, no database); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_pins.py`; expect collection to fail on the missing module.
+- Green: write `cache/pins.py`; rerun; expect all passed.
+- `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- (my call) The class rule is structural: smoke objects whose names fit the scheme (for example `smoke-workspace-cache.tar.zst`, `sessions/smoke-123.tar.zst`) read `saved`; only keys outside the scheme read `other` (open question Q7, planned on its recommended answer).
+- Over-pinning is safe (a refusal), under-pinning loses data: when a field's shape is ambiguous, pin.
+- No database read, no S3 call, no clock: everything comes in as arguments.
+- These tests need no Postgres, so they run locally.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
