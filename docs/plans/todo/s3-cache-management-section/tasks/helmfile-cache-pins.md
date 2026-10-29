@@ -55,17 +55,27 @@ Scope (agents-helmfile): pin agents-orchestrator to the merge commit `<ORCH_SHA>
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.<ORCH_SHA>`, agents-web chart `0.1.0-main.<WEB_SHA>`.
+- `values/agents-orchestrator/common.yaml`: `image.tag` `<ORCH_SHA>`; under `cache`, `quota: {bytes: 100000000000, objects: 100000}` (chart values from task orch-chart-cache-quota). `values/agents-web/common.yaml`: `image.tag` `<WEB_SHA>`. No other value changes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile main pins the orchestrator and web releases of this epic with the bucket quota set, ready for the apply in helmfile-cache-live-check.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, raw/workspace-cache-bucket.pre.yaml, tests/test_orchestrator_release.py, tests/test_web_release.py, tests/test_workspace_cache.py and tests/conftest.py (`layered_values`) in one pass; confirm `<ORCH_SHA>` and `<WEB_SHA>` were amended to real shas.
+- Red: change the pin assertions to the amended shas and add `test_orchestrator_cache_quota_matches_bucket_claim` (parse maxSize as a Kubernetes quantity: decimal suffixes k, M, G, T and binary Ki, Mi, Gi, Ti); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_web_release.py tests/test_workspace_cache.py`; expect the pin and quota tests to fail.
+- Green: change the pins and add the quota values; rerun the verify; expect passed and lint exit 0; `mise run check-pins`; expect every pin green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `<ORCH_SHA>` and `<WEB_SHA>` mean the 7-character short merge sha (the pin tests require `[0-9a-f]{7}`). If either still reads as a placeholder, stop and return it as a question. Never pin an epic-branch commit.
+- (my call) Rook reads `maxSize: 100G` as a Kubernetes quantity, so 100G is 100000000000 bytes (decimal), not 100 GiB; the test parses the claim rather than restating the number.
+- Retro (file-editor-with-tabs-and-hi, generic-any-mcp-with-git-and): Harbor prunes sha7 image tags; the live check verifies the pinned tags exist before the apply.
+- Chart-pull tests blocked by a container network policy may be deselected locally (precedent); they run unblocked before the apply.
+- Never run an apply in this task. `gh` must be authenticated for check-pins.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
