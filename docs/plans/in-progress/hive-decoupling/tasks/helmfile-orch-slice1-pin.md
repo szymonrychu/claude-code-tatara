@@ -1,6 +1,6 @@
 ---
 title: helmfile orch slice1 pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the orchestrator without the member feed and with the activity route is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-drop-feed-cursor]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 0db3588ac99980f84c4366c75c3cc54dbd3418c3
 points: 1
 expected_minutes: 4
 expected_tokens: 634927
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 41
+actual_tokens: 749152
+actual_roles: "impl 40, review 2"
+actual_role_tokens: "impl 687076, review 62076"
 ---
 
 # helmfile orch slice1 pin
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
