@@ -86,17 +86,32 @@ This task delivers D5, the read side of D4 and the settings of D7 in agents-orch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/api/cache.py` (new): `router = APIRouter(prefix="/api/v1/cache")`; errors through `ApiError(status, code, message)`.
+- `api/schemas.py`: `CacheQuota`, `CacheTotals`, `CacheListing`, `CacheSummary`, `CacheObjectView` (the JSON field `class`, a Python alias), `CacheObjectsPage`, `DeleteCacheObject`, `CacheRequestView`. These schema names are what agents-web imports after `sync:api` (task web-cache-client).
+- `db/cache.py` gains `enqueue_delete(conn, object, etag, size) -> CacheRequest`, `enqueue_refresh(conn) -> CacheRequest` (returns the open one when present), `get_request(conn, id) -> CacheRequest | None`, `listed_object(conn, key) -> ListedObject | None` (current generation), `list_objects(conn, ...)` and `totals(conn)`; inserts notify `cache_requested` with `{request_id}` through `db.pool.notify` in the same transaction.
+- `settings.py`: `cache_quota_bytes: int | None = Field(default=None, ge=1)`, `cache_quota_objects: int | None = Field(default=None, ge=1)`.
+- Reads session rows with `sessions.list_sessions` and presets with `presets.list_presets`, classifies with `cache.pins` (`pins_by_object`, `preset_objects`, `legacy_copies`, `classify`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The web port serves a classified, paged, searchable view of the inventory, the quota and listing state, and accepts delete and refresh requests the reconciler executes; nothing new is reachable from agent or service tokens and the api still holds no S3 credential.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `api/app.py`, `api/messages.py` (the checks routes: insert plus notify, 202), `api/streams.py` (`EventsPage` paging), `api/schemas.py`, `api/errors.py`, `api/service_auth.py`, `api/allowlist.py` (`PortGate`), `db/cache.py`, `db/sessions.py`, `db/presets.py`, `cache/pins.py`, `settings.py`, README `## API` and `## Workspace cache`, `tests/test_api_sessions.py` (`client_for`, `make_settings`, `assert_error`), `tests/test_service_port.py` and `tests/test_agent_port.py` in one pass.
+- Red: write `tests/test_api_cache_section.py` with every test named in the acceptance conditions (rows inserted into `cache_listings`/`cache_objects` directly, as the reconciler writes them); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_api_cache_section.py tests/test_readme_api.py`; expect failures on the missing routes (DB tests: on CI or a local Postgres; the route-gate, settings, README and openapi tests run locally).
+- Green: write the router, schemas, `db/cache.py` functions and settings; add the README route entries and settings rows; regenerate `openapi.json`; rerun the verify; expect passed.
+- `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Keep a page bounded: filter by class and name in SQL over the current generation (the `in_use` and `preset` names are small arrays from `cache.pins`; `legacy`, `saved` and `other` are key patterns), reading at most `limit + 1` rows per request; never load the whole table for one page (the bucket allows 100000 objects).
+- `test_api_cache.py` belongs to decouple-s3-session-cache-fr; this task's tests live in `tests/test_api_cache_section.py`.
+- The 409 `in_use` check is advisory: the reconciler re-checks at execution (task orch-cache-requests).
+- Per-task security check (retro, recurring): bound every user input (object 1024, etag 256, q 256, limit 500); the object is never a path; error messages name slugs but never a credential or URL; confirm the gate test hits the service port with a valid token.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
