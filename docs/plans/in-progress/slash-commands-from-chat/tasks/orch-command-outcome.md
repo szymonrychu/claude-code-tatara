@@ -1,6 +1,6 @@
 ---
 title: orch command outcome
-status: todo
+status: done
 repo: agents-orchestrator
 value: "a caller reading a command message sees whether the command completed, failed or was cancelled, so no client waits for a turn that never comes"
 files: [src/agents_orchestrator/db/migrations/0012_command_outcome_index.sql, src/agents_orchestrator/db/views.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/messages.py, openapi.json, README.md, tests/test_api_messages.py, tests/test_migrations.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && 
 depends_on: [orch-slash-js-whitespace, orch-command-turn-link]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 2c018ffc4217459f5af9cf749700b272ffc8dd1c
 points: 5
 expected_minutes: 11
 expected_tokens: 1975864
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 20
+actual_tokens: 2366272
+actual_roles: "impl 19, review 2"
+actual_role_tokens: "impl 2145495, review 220777"
 ---
 
 # orch command outcome
@@ -86,3 +86,5 @@ Scope (agents-orchestrator): `src/agents_orchestrator/db/migrations/0012_command
 - A cancelled command arrives as `command_failed` with record `state = 'cancelled'`.
 - Migration 0012 is the next free number on the rebased epic branch (main's 0011_drop_feed_cursor). The todo epic immediate-message-delivery-w planned `0012_message_priority.sql`; it renumbers when claimed.
 - Builds on orch-slash-js-whitespace (README touched by both).
+
+- 2026-10-29 done: 1 fix round: added promoted-command turn_id test
