@@ -1,6 +1,6 @@
 ---
 title: orch flaky push after decision
-status: todo
+status: done
 repo: agents-orchestrator
 value: "orchestrator main stays reliably green for every hive's merges"
 files: [tests/test_hive_push.py, src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/dispatcher/loop.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_hive_push.py && mise run lint"
 depends_on: [orch-e2e-hive-activity]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fe2c623a49ffe556325d06f236cbe8668a0a6238
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 88
+actual_tokens: 3907799
+actual_roles: "impl 77, review 4"
+actual_role_tokens: "impl 3480150, review 427649"
 ---
 
 # orch flaky push after decision
@@ -59,3 +59,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
