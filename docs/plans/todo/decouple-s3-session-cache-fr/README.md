@@ -1,6 +1,6 @@
 ---
 title: Decouple S3 session cache from presets
-blockers: [hive decoupling, slash commands from chat]
+blockers: [hive decoupling, slash commands from chat, session orchestration mcp, Immediate message delivery with per-message priority]
 stage: build
 owner: ""
 repos: [agents-orchestrator, agents-web]
