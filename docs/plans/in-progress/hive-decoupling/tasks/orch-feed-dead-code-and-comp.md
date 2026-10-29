@@ -1,6 +1,6 @@
 ---
 title: orch feed dead code and compact helper
-status: todo
+status: in-progress
 repo: agents-orchestrator
 value: "no dead feed code and one effective-compaction helper, as the design says"
 files: [src/agents_orchestrator/dispatcher/feed.py, src/agents_orchestrator/api/agent.py, src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/k8s/on_start.py, src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/db/views.py, tests/test_hive_feed.py]
@@ -63,3 +63,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 in-progress
