@@ -66,3 +66,4 @@ The Chats page lists a picture the agent sent as "picture: <name>" instead of a 
 
 - `npm run sync:api -- matrix [--from <checkout>]` reads the sibling `../agents-matrix-connector`; check out the pinned commit there first.
 - No bytes and no mxc URL reach the browser (non-goal: image bytes on the Chats page).
+- (my call, builder-check Q1) The connector tasks merge to connector `main` first; this task starts after that and pins the connector `main` sha, so the epic-branch fallback in Scope is not used.

@@ -77,6 +77,7 @@ tool input (blows the 256 KiB cap; tool input is stored untruncated in events an
   over `resolve_agent` and `WrapperClient.open_download`; reads at most max+1 bytes (413 `image_too_large`)
   inside `asyncio.timeout(10)`, maps errors with `_wrapper_errors` (404 `not_found` etc.). chat.py imports
   workspace, not wrapper, so the layering test stays unchanged.
+- (review fix) The seam takes the pool, not a connection: it resolves the agent under `pool.connection()` and releases it before the read, and no connection is held during the upstream POST (interrogate Act on 4; orch-chat-images-route).
 - Then POST JSON `{data: base64, path, caption?, room?, reply_to?}` to `{ORCH_CHAT_URL}/chat/v1/images`;
   status and body pass through unchanged (D2 of the merged epic). Worst case 10 s + 10 s, under 30 s.
 - Alternatives rejected: agent-side handler reading the file (first non-declarative tool, re-implements
@@ -116,6 +117,7 @@ tool input (blows the 256 KiB cap; tool input is stored untruncated in events an
 - A crash between upload and claim re-uploads next tick; the orphan media on our own Synapse is accepted.
 - One writer holds: the api inserts sends; the bot transitions them, clears bytes and prunes; outbound stays
   bot-only.
+- (review fix) An image is placed only with its `mxc_uri`: a pre-check refusal (None in `ready`) ends refused with that reason, bytes cleared, never placed; the pre-check and the claim share one pure room/binding decision; the upload pass stops at the first MatrixUnavailable so text and reaction claims of the tick still run (interrogate Act on 1, 3 and Consider; mxc-send-images-schema, mxc-bot-image-upload).
 
 ### D5: Matrix content
 
@@ -134,6 +136,8 @@ bridge-bot `m.notice` whose `m.relates_to.m.in_reply_to.event_id` equals a sent 
 send. On a match the outbound row goes sent->failed and the send sent->failed with reason
 `bridge: <notice body>`, both guarded; orchestrator_chat_status shows it. Applies to all agent sends, not
 only images. parse_message stays unchanged. User Q6.
+
+(review fix) A row failed by a bridge notice counts as reached the room (it has an `event_id`): settle releases the initiation only when no row reached the room, so the binding is the same whichever lands first, notice or settle (interrogate Act on 2; mxc-bridge-error-notices).
 
 ### D7: Limits
 
@@ -247,6 +251,11 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 - Module layout inside each repo (e.g. a connector `images.py` for sniffing), helper names, test file split,
   within the D-decisions above.
 - How the media config cache is held (in-process, 1 h).
+- Q1 (my call, builder-check): the connector tasks merge to connector `main` first; orch-chat-contract-refresh and web-room-messages-picture pin the connector `main` sha, not an epic-branch commit.
+- Q3 (my call, builder-check): caption rows keep outbound kind `agent`, a second `add_outbound` call in the same claim transaction, the picture row first by id (mxc-bot-image-upload Notes).
+- Q4 (my call, builder-check): superseded by interrogate Act on 1 (D4 review fix; mxc-send-images-schema ac5, mxc-bot-image-upload ac5 and ac14).
+- Q5 (my call, builder-check): orch-plugins-pin-and-tool may edit `tests/test_images.py` only for the pin literals; it is in that task's files.
+- Q6 (my call, builder-check): the builder builds the code tasks only; the `ticket.py amend` calls (placeholders, sha7s), the `<TAG>` push, the Harbor checks, the helmfile apply and the smoke (plugins-release-images ac3-ac5, helmfile-pictures-pin ac5-ac7, pictures-live-smoke) are orchestrator-session work, as those tasks already mark.
 
 ## Assumptions and unknown facts
 
@@ -254,6 +263,8 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
   and the smoke confirms it.
 - mautrix-meta limits were read from main, not the deployed tag; the smoke and D6 cover a mismatch.
 - RGW/Synapse orphan media after a crash: accepted.
+- Q2 (my call, builder-check): the build starts only after slash-commands-from-chat, hive-decoupling and immediate-message-delivery-w are merged, with plugins v0.5.0 tagged and connector migration 0003 on main, so `<MIGRATION>`, `<TAG>` and `<VERSION>` are read from main; otherwise the orchestrator session stops and reports.
+- Q7 (my call, builder-check): pod memory limits are out of scope; the connector limit is 384Mi (agents-helmfile chart values.yaml:88,94), above the 30-40 MB per-request peak under the 5/min image rate.
 
 ## Open questions
 

@@ -111,3 +111,5 @@ The bot turns a queued picture into one uploaded file and one m.image (plus its 
 - Shared file with immediate-message-delivery-w (`tracker.py`): read it as merged on main first.
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 1 and 3 (and Consider folded into 1)
+- (my call, builder-check Q3) Caption rows keep outbound kind `agent`, as text sends have today (`mxa-<send>-1..n`), stored by a second `add_outbound` call in the same claim transaction after the picture row, so the picture row is first by id; only `image` is added to the outbound kind CHECK.
+- (review fix) Red also covers ac14-ac16; ac17 is the reviewer's read of the shared decision function.

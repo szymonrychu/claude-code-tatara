@@ -3,7 +3,7 @@ title: mxc bridge error notices
 status: todo
 repo: agents-matrix-connector
 value: "a send the bridge could not deliver to Messenger shows failed with the bridge's reason instead of a silent sent"
-files: [src/agents_matrix_connector/discovery.py, src/agents_matrix_connector/sync.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, README.md, MEMORY.md, tests/test_discovery.py, tests/test_sync.py]
+files: [src/agents_matrix_connector/discovery.py, src/agents_matrix_connector/sync.py, src/agents_matrix_connector/sender.py, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/db/sends.py, README.md, MEMORY.md, tests/test_discovery.py, tests/test_sync.py]
 verify: "uv run --frozen pytest tests/test_discovery.py tests/test_sync.py tests/test_readme_api.py && mise run lint"
 depends_on: [mxc-bot-image-upload]
 model: opus
@@ -56,6 +56,7 @@ Review fix, interrogate 2026-10-29 Act on 2 (bridge notice vs settle binding rel
 
 - `src/agents_matrix_connector/discovery.py`
 - `src/agents_matrix_connector/sync.py`
+- `src/agents_matrix_connector/sender.py`
 - `src/agents_matrix_connector/db/runs.py`
 - `src/agents_matrix_connector/db/sends.py`
 - `README.md`
@@ -86,3 +87,4 @@ A picture or message the bridge could not deliver to Messenger shows as failed w
 - Shared files with mxc-send-images-schema and mxc-bot-image-upload (`db/runs.py`, `db/sends.py`, README, MEMORY.md): build on their commits.
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 2
+- (review fix) `sender.py` joins the files for the settle, `refuse_sending` and `release_initiation` reached rule (interrogate Act on 2); nine files, one over the sizing guide, kept in one task because the both-orders test drives sync and settle together. Shared file with mxc-bot-image-upload (`sender.py`): build on its commit.

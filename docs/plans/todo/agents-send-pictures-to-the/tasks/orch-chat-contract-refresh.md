@@ -67,3 +67,4 @@ The orchestrator's contract fake of the chat upstream matches the connector that
 
 - The vendored document has been stale since 0380120 (connector openapi-agent.json gained 400 responses); the refresh may surface such differences in `test_fake_chat_matches_vendored_schema` and the fake's refusals: fix the fake, never the document.
 - In the integration worktree layout the connector tree is the sibling `../agents-matrix-connector`; fetch the pinned commit there first.
+- (my call, builder-check Q1) The connector tasks merge to connector `main` first; this task starts after that and pins the connector `main` sha, so the epic-branch fallback in Scope is not used.

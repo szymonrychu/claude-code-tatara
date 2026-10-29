@@ -79,7 +79,7 @@ Review fix, interrogate 2026-10-29 Act on 4 (seam holds a pool connection across
 ## Interfaces
 
 - `POST /agent/v1/chat/images` (agent port): body `{path, caption?, room?, reply_to?}`; 202 and refusals passed through from `{ORCH_CHAT_URL}/chat/v1/images`; own refusals 400 `invalid_path`, 401, 403 `forbidden`/`trigger_session`/`not_leader`, 404 `not_found`, 409 `agent_not_ready`, 413 `payload_too_large`/`image_too_large`, 422 `invalid_request`, 502 `wrapper_error`/`wrapper_unreachable`, 503 `chat_unconfigured`/`chat_unavailable`.
-- `api/workspace.read_file_bytes(conn, settings, http, session_id: uuid.UUID, agent_id: uuid.UUID, path: str, max_bytes: int) -> bytes`.
+- `api/workspace.read_file_bytes(pool, settings, http, session_id: uuid.UUID, agent_id: uuid.UUID, path: str, max_bytes: int) -> bytes`.
 - Upstream body (contract, orch-chat-contract-refresh): `{data: str (base64), path: str, caption?: str, room?: str, reply_to?: str}`.
 
 ## Expected outcome
@@ -100,3 +100,4 @@ An agent's picture path becomes one connector call carrying the picture's bytes,
 - Shared files with the epics before (`api/chat.py`, `openapi.json`, README): read them as merged on main.
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 4
+- (review fix) The design D2 quote above still reads `read_file_bytes(conn, ...)`; the review fix for interrogate Act on 4 replaces it by the pool (Interfaces and Scope follow it).

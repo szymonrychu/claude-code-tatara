@@ -3,7 +3,7 @@ title: orch plugins pin and tool
 status: todo
 repo: agents-orchestrator
 value: agent pods install the plugins release with the picture tool and may call it
-files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, src/agents_orchestrator/k8s/on_start.py, tests/test_settings.py, tests/test_on_start.py, tests/test_agent_chat.py]
+files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, src/agents_orchestrator/k8s/on_start.py, tests/test_settings.py, tests/test_images.py, tests/test_on_start.py, tests/test_agent_chat.py]
 verify: "uv run --frozen pytest tests/test_settings.py tests/test_images.py tests/test_on_start.py tests/test_agent_chat.py && mise run lint"
 depends_on: [plugins-release-images, orch-chat-images-route]
 model: opus
@@ -61,6 +61,7 @@ Scope (agents-orchestrator):
 - `README.md`
 - `src/agents_orchestrator/k8s/on_start.py`
 - `tests/test_settings.py`
+- `tests/test_images.py`
 - `tests/test_on_start.py`
 - `tests/test_agent_chat.py`
 
@@ -83,3 +84,4 @@ Agent pods rendered by this orchestrator install the plugins release with the pi
 - Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties the three to one tag.
 - The pin and the allow list land in one change: `test_allowed_tools_exist_in_plugin` fails when the allow list names a tool the pinned plugin lacks (D13 probe).
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is pictures-live-smoke.
+- (my call, builder-check Q5) `tests/test_images.py` may be edited only for the plugins pin literals the tag bump changes; no other edit to it.
