@@ -1,6 +1,6 @@
 ---
 title: wrapper slash turn guard
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "a slash line can never be typed as a turn again, so /reload-plugins cannot hang a session"
 files: [src/claude_code_wrapper/session.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/turns.py, src/claude_code_wrapper/manager.py, README.md, tests/test_session_turns.py, tests/test_api_turns.py, tests/test_manager.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_session_turns.py tests/test_api_turns.py tests
 depends_on: [wrapper-command-args]
 model: opus
 review: ""
-verified_head: ""
+verified_head: fc58ec9defd4fa1b68d9478797fdca5385f5c3ed
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 28
+actual_tokens: 4398302
+actual_roles: "impl 25, review 4"
+actual_role_tokens: "impl 4215176, review 183126"
 ---
 
 # wrapper slash turn guard
@@ -81,3 +81,5 @@ No origin can type a slash line with a turn marker any more: the reported `/relo
 - Depends on wrapper-command-args (`request_command(name, args, origin=...)`).
 
 - 2026-10-27 amended: interrogate item 2 (guard mirrors claude's parser; ac3 fixed: /, / is root, /_x, long names are refused, paths stay turns), builder check (/tmp), design D2 revised
+
+- 2026-10-29 done
