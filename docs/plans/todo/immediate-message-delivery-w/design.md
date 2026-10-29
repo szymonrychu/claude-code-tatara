@@ -575,7 +575,7 @@ Findings:
   move to the next free ones.
 
 ## Open questions
-- Q1: Should a message sent while the leader is busy join the running turn and share that turn's final answer, instead of getting a turn record of its own? [recommended: yes, it joins the running turn and shares its answer (D3)]
+- Q1: Should a message sent while the leader is busy join the running turn and share that turn's final answer, instead of getting a turn record of its own? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q2: Name the field priority with values immediate (the default) and idle, the same in the orchestrator API, session_send, the ccw send_message, the wrapper POST /turns, with a web composer toggle labelled Send when idle? [recommended: yes, priority = immediate | idle everywhere (D1)]
 - Q3: Should webhook, schedule and Matrix messages, which post text only, become immediate through the server default? [recommended: yes, they take the immediate default with no code change (D1)]
 - Q4: Should slash commands keep running only at the turn's Stop, with any priority they carry stored and ignored? [recommended: yes, commands ignore priority (D8)]
