@@ -51,17 +51,25 @@ Scope (claude-code-wrapper): `tests/fake_claude/fake_claude.py` (the queue mode 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Scenario JSON, top level: `"midturn_input": "drop" | "queue"` (absent = `"drop"`). `queue` changes only what happens to a paste plus CR that arrives while a turn's steps run (between steps, during `sleep` and tool steps); command handling, ESC interrupts and the idle path are unchanged.
+- Queue mode output follows `docs/claude-midturn-input.md` (task wrapper-midturn-probe): the injected line's JSON shape (copy the captured fixture's keys, for example `{"type": "attachment", "attachment": {"type": "queued_command", "prompt": ..., "commandMode": "prompt", ...}}`), its position (after the running tool's result), the turn-end behaviour (one Stop or two), the hook behaviour, the ESC behaviour.
+- `fake-inputs.jsonl` row for queued input: `{"text", "state": "busy", "ts"}` as today.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Wrapper tests can opt into a fake claude that behaves like Claude Code 2.1.304 when text is pasted mid-turn, so the merge tasks can be tested end to end; every existing test keeps today's drop behaviour.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `tests/fake_claude/fake_claude.py` (run loop, `interrupted`, `run_steps`, `run_turn`, `stop_cycle`), `tests/test_fake_claude.py`, `tests/test_fake_claude_commands.py`, `tests/conftest.py`, `docs/claude-midturn-input.md` and `tests/fixtures/transcripts/midturn-probe.jsonl` in one pass.
+- Red: write `tests/test_fake_claude_queue.py` with every test named in the acceptance conditions; run `uv run pytest tests/test_fake_claude_queue.py`; expect them to fail (input dropped).
+- Green: add the queue mode to the fake (parse the paste and CR inside `interrupted()` instead of dropping, keep a queue, flush it at the next tool boundary and at the turn end per the probe), document the key in the docstring; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Ruling (D10): opt-in only. The existing pins (`test_input_while_busy_recorded`, `test_esc_not_recorded_as_busy`, `tests/test_command_turn_resume.py` "typed while idle") prove the wrapper never types into a running turn for commands; they stay accurate and unchanged.
+- Where the probe record says `unsettled` for a case, model the docs brief's documented behaviour (A2: injected at the tool boundary within the turn, still-queued input sent after the turn) and name the case in the report.
+- The fake is stdlib only and must keep working for every existing scenario.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
