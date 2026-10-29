@@ -1,6 +1,6 @@
 ---
 title: web env paste fix
-status: todo
+status: in-progress
 repo: agents-web
 value: "Pasted .env values, secret-named keys included, are kept when a preset is created or saved"
 files: [src/presets/PresetForm.tsx, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.test.tsx]

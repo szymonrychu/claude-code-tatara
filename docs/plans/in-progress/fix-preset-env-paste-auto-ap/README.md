@@ -2,7 +2,7 @@
 title: "Fix preset .env paste: auto-apply on save, accept secret-named keys"
 blockers: []
 stage: build
-owner: ""
+owner: Szymon Richert
 repos: [agents-web, agents-helmfile]
 created: 2026-10-29
 ---
