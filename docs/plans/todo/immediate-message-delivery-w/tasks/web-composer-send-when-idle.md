@@ -47,17 +47,23 @@ Scope (agents-web): `src/chat/Composer.tsx`, `src/chat/QueueStrip.tsx`, `src/cha
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Composer`: a MUI toggle (Switch or Checkbox with label "Send when idle", `aria-label` "Send when idle") beside the target `Select`; state resets to off on session change; body `chosen === ANY ? { text } : { text, target_agent_id }` plus `priority: 'idle'` only when on.
+- `QueueStrip.detail(m)`: for `m.status === 'queued' && m.priority === 'idle'` the detail includes "waits until idle" (combined with the attempt text when both apply).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A user can send a message that waits for the agent to finish its turn; by default messages reach a busy agent at once, and the queue shows which messages are waiting on purpose.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/chat/Composer.tsx`, `src/chat/QueueStrip.tsx`, `src/chat/Composer.test.tsx`, `src/api/client.ts` (`postMessage`, `PostMessage`), `src/layout/designRules.ts` and `src/theme.ts` in one pass.
+- Red: add the tests named in ac1 to ac3; run `npx vitest run src/chat/Composer.test.tsx`; expect them to fail.
+- Green: add the toggle and the queue strip detail; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Design rules: no colour literals outside `theme.ts`, no arrows or decorative Unicode, fontWeight 400/500.
+- The full web suite has load-dependent timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor); run only the files in the verify.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun; a named load-dependent flake becomes a reported finding, not a silent rerun (retro).
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
