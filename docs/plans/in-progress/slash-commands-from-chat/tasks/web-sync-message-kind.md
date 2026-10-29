@@ -1,6 +1,6 @@
 ---
 title: web sync message kind
-status: in-progress
+status: done
 repo: agents-web
 value: "agents-web's vendored orchestrator API matches the orchestrator that classifies slash messages"
 files: [openapi/orchestrator.json, openapi/orchestrator.source, src/api/schema.d.ts]
@@ -8,15 +8,15 @@ verify: "npm run check:api && npx tsc -b && npm run lint"
 depends_on: [orch-message-kind, orch-render-client-commands]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e533228523871c9b393e48a177f892989b9b64f6
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 11
+actual_tokens: 269242
+actual_roles: "impl 7, review 4"
+actual_role_tokens: "impl 151364, review 117878"
 ---
 
 # web sync message kind
@@ -62,3 +62,5 @@ agents-web's vendored orchestrator API matches the orchestrator of this epic.
 - Depends on orch-message-kind and orch-render-client-commands.
 
 - 2026-10-27 amended: interrogate item 13 (ac3 evidence replaced: the pinned orchestrator commit's openapi.json must carry wrapper_command_id)
+
+- 2026-10-29 done
