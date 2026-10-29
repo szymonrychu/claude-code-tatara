@@ -1,6 +1,6 @@
 ---
 title: helmfile apply live proof
-status: in-progress
+status: done
 repo: agents-helmfile
 value: members run unstreamed live and a real leader hands over after briefing its successor
 files: [MEMORY.md]
@@ -8,11 +8,11 @@ verify: "mise run lint && grep -q 'hive-decoupling live handoff' MEMORY.md"
 depends_on: [helmfile-deploy-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 054d0517fc7de4859e4c02b67e42fed044a25e5a
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -76,3 +76,7 @@ The decoupled hive runs live: members get no feed note, the activity route answe
 - The apply rolls the agent pods of every running session (mx-5 and claude-code-tatara included; orchestrator README Images, design.md D9, gate question Q7). If the session running this task lives in one of those pods, it restarts at step 3: write the Notes and the handoff checkpoint (settlement 2) before the apply, and resume from the checkpoint.
 
 - 2026-10-27 amended: builder check settlements 2 and 3: handoff checkpoint around the pod-rolling apply; ac6 counts dispatcher-posted notes only
+
+- 2026-10-29 done: PR #53 review pass (ac1-ac8 against live-proof.md and logs), merged
+
+- 2026-10-29 actuals: no agent records
