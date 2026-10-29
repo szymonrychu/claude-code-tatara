@@ -44,9 +44,11 @@ Anti-goal, verbatim: "A tool reads an arbitrary file outside the session workdir
 
 Scope (agents-orchestrator):
 - `api/chat.py`: the checks of `_relay` move into one helper that `_relay` and the new route share; `POST /agent/v1/chat/images` (202 pass-through, OpenAPI body `{path, caption?, room?, reply_to?}`): the capped body (256 KiB) must be a JSON object (else 422 `invalid_request`, my call: the api's existing code), `path` a string that `_normalise` accepts against the caller's session workdir (else 400 `invalid_path`); `read_file_bytes` for the caller's own agent; then the upstream body `{data: <base64>, path: <the normalised workdir-relative path>, ...}` with `caption`, `room` and `reply_to` passed through as the agent sent them (my call: the relative path is what the wrapper download route and the web renderer resolve); forwarded with the same `forward` (10 s, same headers, pass-through, 503 `chat_unavailable`).
-- `api/workspace.py`: `read_file_bytes(conn, settings, http, session_id, agent_id, path, max_bytes) -> bytes`: `resolve_agent(session_id=..., agent_id=...)`, `WrapperClient.open_download`, reads raw chunks until more than `max_bytes` (413 `image_too_large`) inside `asyncio.timeout(10)`; wrapper errors through `_wrapper_errors`; the deadline is 502 `wrapper_unreachable` (my call: an existing code); the stream is always closed.
+- `api/workspace.py`: `read_file_bytes(pool, settings, http, session_id, agent_id, path, max_bytes) -> bytes` (signature per the review fix below): `resolve_agent(session_id=..., agent_id=...)` under `pool.connection()`, released before the read, `WrapperClient.open_download`, reads raw chunks until more than `max_bytes` (413 `image_too_large`) inside `asyncio.timeout(10)`; wrapper errors through `_wrapper_errors`; the deadline is 502 `wrapper_unreachable` (my call: an existing code); the stream is always closed.
 - Tests no longer accurate (named): `tests/test_agent_chat.py::test_readme_documents_chat_routes` (its served-route set gains `POST /agent/v1/chat/images`) and `tests/test_chat_contract.py::test_relay_routes_exist_upstream` (four relayed routes become five).
 - `openapi.json` regenerated; README `### Chat` documents five routes and the image route's checks, read cap and codes; MEMORY.md: the image route parses `path` and is the only chat route that reads a body; it reads the caller's own pod.
+
+Review fix, interrogate 2026-10-29 Act on 4 (seam holds a pool connection across the read), verbatim: "orch-chat-images-route's `read_file_bytes(conn, ...)` contradicts its own note "Hold no pool connection across the wrapper read or the upstream call"; `download_file` resolves under `pool.connection()` then releases (workspace.py:496-503). Fix: the seam takes the pool (or a resolved target) and releases the connection before the read and the upstream POST; AC." For this task: the seam takes the pool (my call between the two options: it keeps `resolve_agent` inside workspace.py exactly as `download_file` does), resolves the caller's agent inside `async with pool.connection()` and leaves that block before `open_download`; the shared checks (`_session`, `_leads`, under `pool.connection()` as in `_relay`, api/chat.py:153) release their connection before the seam is called, and no connection is checked out during the upstream POST.
 
 ## Acceptance conditions
 
@@ -62,6 +64,7 @@ Scope (agents-orchestrator):
 - ac10: the committed openapi.json matches the app [evidence: test:tests/test_readme_api.py::test_openapi_json_matches_app]
 - ac11: MEMORY.md records the image route ruling [evidence: command:grep -q 'chat/images' MEMORY.md]
 - ac12: the targeted tests and lint pass (no database) [evidence: command:uv run --frozen pytest tests/test_agent_chat.py tests/test_chat_contract.py tests/test_readme_api.py tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper && mise run lint]
+- ac13: no pool connection is checked out while the wrapper download is read or while the upstream POST runs; read_file_bytes takes the pool, not a connection [evidence: test:tests/test_agent_chat.py::test_image_route_holds_no_connection_during_io]
 
 ## Files
 
@@ -95,3 +98,5 @@ An agent's picture path becomes one connector call carrying the picture's bytes,
 - Hold no pool connection across the wrapper read or the upstream call.
 - The 8,000,000 literal mirrors the connector's `MATRIX_IMAGE_MAX_BYTES` maximum; ac4 pins it (retro file-editor-with-tabs-and-hi).
 - Shared files with the epics before (`api/chat.py`, `openapi.json`, README): read them as merged on main.
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 4
