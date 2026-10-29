@@ -1,6 +1,6 @@
 ---
 title: helmfile orch flaky fix pin
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the orchestrator with the push-after-decision flaky-test fix is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -61,3 +61,5 @@ Context the implementer needs: pitfalls, existing code to reuse, decisions alrea
 - 2026-10-29 in-progress
 
 - 2026-10-29 todo: handed to cct2 (tatara decommissioned, mx-34 #437); implementer stopped before any change; be554bb main CI was in progress
+
+- 2026-10-29 in-progress: resumed per mx-34 #440 (user: let it finish)
