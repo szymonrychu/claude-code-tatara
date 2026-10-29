@@ -1,6 +1,6 @@
 ---
 title: orch command turn link
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a superleader's command that becomes a turn keeps its hop count, so the session-message hop limit still holds"
 files: [src/agents_orchestrator/db/queue.py, src/agents_orchestrator/ingester/loop.py, tests/test_ingester.py, tests/test_agent_session_messaging.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && 
 depends_on: [orch-dispatch-commands]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fa476aad89cfb94ec93f2917ac5b88e06b85b3f7
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 5
+actual_tokens: 836857
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 702021, review 134836"
 ---
 
 # orch command turn link
@@ -71,3 +71,5 @@ A command message whose prompt command became a turn carries that turn id, so a 
 - If a layering test forbids the ingester importing `db.queue`, return that as a question instead of moving the write elsewhere.
 - The ingester stores every envelope first (`insert_events`); the link runs in the same projection transaction.
 - Depends on orch-dispatch-commands (`kind`, `wrapper_command_id`, `mark_sent_command`).
+
+- 2026-10-29 done
