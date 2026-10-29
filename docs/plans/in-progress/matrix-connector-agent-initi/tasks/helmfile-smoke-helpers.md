@@ -1,6 +1,6 @@
 ---
 title: helmfile-smoke-helpers
-status: todo
+status: done
 repo: agents-helmfile
 value: one copy of the smoke helpers and a quiet chat-smoke
 files: [scripts/chat-smoke.sh, scripts/smoke.sh, scripts/lib/smoke-common.sh, tests/test_chat_smoke_script.py, tests/test_smoke_script.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.p
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 9233d08a0a5dfd2d7f98469d28347a98b1ff4bbd
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 28
+actual_tokens: 1911970
+actual_roles: "impl 20, review 8"
+actual_role_tokens: "impl 1662958, review 249012"
 ---
 
 # helmfile-smoke-helpers
@@ -62,3 +62,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
