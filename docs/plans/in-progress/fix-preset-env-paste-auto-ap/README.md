@@ -41,3 +41,13 @@ User decisions (relayed by mx-34 #386, 2026-10-29): auto-apply a pending paste o
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-29)
+
+fix-preset-env-paste-auto-ap review notes (2026-10-29, cct2-1)
+- web-env-paste-fix: implementer 7027bb1 (red 7 failed/44 passed, green 51/51), reviewer clean round 0, pointsActual 3; mise run test 648 passed, lint ok.
+- Scope audit: goals 1-3 and AC1-AC7 delivered, no duplicates; goal 4 deploy done below.
+- agents-web PR #22 merged ab78d97, main CI passed. agents-helmfile PR #51 (pin ab78d97, commit 1906b61) merged 082bedc.
+- Deploy: lease taken, mise run apply -- --selector name=agents-web from 1906b61: lint ok, 290 passed, check-pins ok, agents-web upgraded; rollout ok, image agents-web:ab78d97, live bundle has no secret-key rule; lease deleted, temp kubeconfig/GNUPGHOME/registry login removed.
+- Helmfile pin done outside a ticket task: new-task refused the file overlap with hive-decoupling helmfile-deploy-pin; selector-scoped apply left the orchestrator pin untouched.
+- noted, not doing now: web RESERVED_KEY lacks ORCH_* that the orchestrator rejects.
