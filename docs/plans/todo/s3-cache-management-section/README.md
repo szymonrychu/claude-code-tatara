@@ -1,6 +1,6 @@
 ---
 title: S3 cache management section
-blockers: [Decouple S3 session cache from presets, Live session transcript backup]
+blockers: [Decouple S3 session cache from presets, Live session transcript backup, hive decoupling]
 stage: build
 owner: ""
 repos: [agents-orchestrator, agents-web, agents-helmfile]
