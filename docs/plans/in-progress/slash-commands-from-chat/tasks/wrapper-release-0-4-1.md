@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.4.1
-status: todo
+status: done
 repo: claude-code-wrapper
 value: "the orchestrator and the agents can run a wrapper whose slash rule matches claude's and whose deny list holds the extension"
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_packaging.py && uv run ruff check . && uv run 
 depends_on: [wrapper-slash-js-whitespace, wrapper-deny-list-extend]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 85ba295731c56baf492b3629843333609aef03e7
 points: 1
 expected_minutes: 4
 expected_tokens: 629191
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 157873
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 113293, review 44580"
 ---
 
 # wrapper release 0.4.1
@@ -68,3 +68,5 @@ The orchestrator and, after the deploy decision, the live agents can run a wrapp
 - README `### Release`: `release.yaml` fails when the `:<shortsha>` image is missing, so tag only after the main build is green.
 - The tag is approved by the user and mx-34 #432; tags are never re-pointed.
 - Depends on every wrapper task of the fix round.
+
+- 2026-10-29 done: merged PR #11 as eed2c3c (main build green), tag v0.4.1 pushed on it
