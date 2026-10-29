@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.5.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] the connector pins agents-common v0.5.0."
+Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.7.0 and agents-common 0.5.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] the connector pins agents-common v0.5.0."
 
 Scope (agents-common): `pyproject.toml` (0.4.0 to 0.5.0), `uv.lock`, `tests/test_release.py` (the version and install pins), `README.md` (install line).
 
@@ -63,3 +63,5 @@ A tagged agents-common release with `Message.turn_id` exists for the Matrix conn
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 - Renumbered 0.4.0 to 0.5.0 (2026-10-29): the slash-commands-from-chat fix round takes agents-common v0.4.0 (run tracker command outcomes; user and mx-34 confirmed, #446). Build on v0.4.0; propose the exact tag through mx-34 before tagging (rule #396).
+
+- 2026-10-29 amended: D19 quote follows the design: plugins 0.7.0 (mx-34 #469/#470)
