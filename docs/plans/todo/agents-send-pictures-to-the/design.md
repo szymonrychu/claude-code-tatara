@@ -269,7 +269,7 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 ## Open questions
 
 - Q1: Show pictures in the session web chat too? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q2: Workspace paths only, no URL argument? [recommended: yes]
+- Q2: Workspace paths only, no URL argument? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
 - Q3: The Chats page shows a "picture: <name>" line, not the image? [recommended: yes]
 - Q4: Send the caption as its own message after the picture? [recommended: yes]
 - Q5: Limit pictures to 5 a minute per session (inside the 20 sends a minute)? [recommended: yes]
