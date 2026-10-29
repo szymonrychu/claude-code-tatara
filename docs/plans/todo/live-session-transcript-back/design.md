@@ -81,6 +81,15 @@ or adopt a live Job. The run reuses the crash-safe `_begin/_start/_observe/_fini
 `render_cache_job(..., "save", url, "sessions")`; each new run replaces the previous record once the
 previous Job is deleted. A failed run records `failed` with its reason and retries after the interval.
 
+Amended 2026-10-29 by the planner (my call): a replaced record would hide the latest successful backup
+after a failed run (against G4) and a failed or skipped run would reset the change signal, so idle
+unbacked changes would never be retried. So `sessions_backup` also carries `last_saved {started_at,
+finished_at, bytes}`, set from a run that ends `saved` and carried forward unchanged by every later run
+until the next `saved`. The interval counts from the latest run's `started_at` (any outcome, so a
+failure or a `shared_name` skip retries after the interval); the change signal is a turn of the
+session's agents completed after `last_saved.started_at` (with no `last_saved`, any completed turn).
+Acts: orch-sessions-live-backup, orch-backup-view-latest.
+
 ### D3: Discard removes a running backup first
 
 In `_discard`, before the sessions save step, a running backup Job is deleted (foreground) and its record
@@ -88,6 +97,15 @@ marked `failed` with reason `superseded_by_discard`; the final save then runs as
 already stops the pods, so the final save carries the latest state. Alternative: wait for the backup
 (bounded by `cache_timeout_seconds`, delays every discard). Direct PUT means a killed backup leaves the
 previous object intact (`transfer.py:208`).
+
+Amended 2026-10-29 by the planner (my call): `KubeApi.delete` deletes a Job with background
+propagation (`k8s/kube.py:182-190`), so "foreground" is enforced by the discard itself: the record is
+written `failed`/`superseded_by_discard` first, then the Job is deleted, and the final sessions save
+starts only when neither the backup Job nor a pod carrying its cache label exists, so a killed backup's
+PUT can never land after the final one. A crash between the record and the delete is redone by the next
+tick (a non-running record whose Job still exists). The wait is bounded by
+`discard_quiesce_timeout_seconds` from the supersede (the record's `finished_at`), after which the final
+save runs and a warning is logged (anti-goal: no unbounded delay). Acts: orch-discard-stops-backup.
 
 ### D4: Object name and the decouple migration
 
@@ -113,12 +131,25 @@ of data`, archive.py:116, `upload_failed: archive`). A `*.jsonl` member is cut a
 in-progress append never leaves a torn final line (Claude Code's tolerance on `--resume` is unknown). This
 applies to every save, discard included (my call: identical semantics for quiescent files).
 
+Amended 2026-10-29 by the planner, pending open question Q6 (the plan follows its recommended answer):
+"identical semantics for quiescent files" does not hold for a quiescent workspace `*.jsonl` file whose
+last line has no trailing newline: the cut would silently drop that line from the user's workspace. So
+the descriptor-based header (fstat, opened with `O_NOFOLLOW`, regular files only) applies to every save,
+and the JSONL cut only to the transcripts archive: the sessions Job carries `CACHE_TRIM_JSONL=true`,
+the workdir Job `CACHE_TRIM_JSONL=false`, and `transfer.save` passes it to `archive.pack(...,
+trim_jsonl=...)`. A "no" to Q6 drops the env variable and applies the cut to every save as first
+written. Acts: orch-archive-live-files.
+
 ### D7: Visibility
 
 `SessionView.backup.last_transcripts_backup` (`api/sessions.py:64-90`) becomes the newer saved record of
 `sessions_save` and `sessions_backup`, with a field naming which (`final` or `live`). The discard dialog
 (`agents-web/src/sessions/DiscardSessionDialog.tsx:105,136-139`) says the transcripts were last backed up at
 that time and that the discard writes a final backup. openapi.json and the web's vendored schema follow.
+
+Planner detail 2026-10-29 (my call): the naming field is `BackupRun.kind`, `"final"` (from
+`sessions_save` in state `saved`) or `"live"` (from `sessions_backup.last_saved`); the newer by
+`finished_at` wins, a tie goes to `final`. Acts: orch-backup-view-latest, web-discard-latest-backup.
 
 ### D8: Settings and deploy
 
@@ -127,6 +158,14 @@ the chart passes it through `.Values.env`. agents-helmfile pins the new orchestr
 value change needed for the default. Live check: after the apply, a running session gets a
 `sessions_backup` record `saved` and the object's LastModified in S3 is recent (HEAD with the reconciler's
 credentials is not available to agents; the check reads `status.cache` and the API field) (my call).
+
+Planner detail 2026-10-29: decouple-s3-session-cache-fr has no agents-helmfile task (its Non-goals), so
+this epic's orchestrator and web pins are the first to deploy its changes too, including its copy
+migration of every pre-epic session at the first converge (open question Q7; the plan follows its
+recommended answer). The live check therefore also reads each live session's `status.cache.migration`.
+Apply order: orchestrator first, then web (the web reads the new required `BackupRun.kind`). The apply
+runs under the deploy Lease `agents/agents-helmfile-apply` (user decision). Acts: helmfile-backup-pins,
+helmfile-backup-live-check.
 
 ## Research
 
@@ -141,15 +180,70 @@ credentials is not available to agents; the check reads `status.cache` and the A
 
 ## Research inputs
 
+Retro proposals of the most recently done epics that bear on this epic (`ticket.py retro --history`),
+recurring workflow ones first:
+
+- Recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, parked-epic-stage): task files
+  created with empty Steps. Every task here carries written Interfaces, Expected outcome, Steps and Notes
+  before the gate. Acts: all tasks.
+- Recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, file-editor-with-tabs-and-hi):
+  defects passing per-task review, found only at the epic review; check the headline promise end to end
+  and run the security checklist per task. Acts: orch-discard-stops-backup AC5 (live backup, discard,
+  final save and restore in one test); every orchestrator task's Notes carry the per-task security check
+  (no credential or presigned query in a log, reason or status; S3 only from the reconciler).
+- Recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, file-editor-with-tabs-and-hi,
+  file-download-in-file-browse): no Docker in the pod makes DB-backed tests CI-only. Acts:
+  orch-archive-live-files runs fully locally; the DB-backed verifies of orch-sessions-live-backup,
+  orch-discard-stops-backup and orch-backup-view-latest say so, and their reviewers read CI.
+- Recurring (deploy-safe-agent-sessions, matrix-connector-agent-initi): a live apply surfaced defects
+  tests did not; read `mise run diff` and render before the apply. Acts: helmfile-backup-live-check
+  step 3.
+- Recurring (deploy-safe-agent-sessions, file-editor-with-tabs-and-hi, matrix-connector-agent-initi):
+  live apply and proof tasks run far over their seed. Acts: helmfile-backup-live-check points (5) and
+  Notes.
+- Recurring (file-editor-with-tabs-and-hi, markdown-rendering-in-chat): save the failing test name and
+  the output tail before any rerun. Acts: all tasks' Notes.
+- file-editor-with-tabs-and-hi: Harbor prunes image tags; check the pinned tags exist before the
+  apply. Acts: helmfile-backup-live-check step 2.
+- deploy-safe-agent-sessions: deploy-order coupling, the web must deploy after the orchestrator when it
+  reads a new required field. Acts: helmfile-backup-live-check (orchestrator first, then web).
+- matrix-connector-agent-initi: web `openapi/orchestrator.source` pinned an epic-branch commit, so the
+  orchestrator PR needed a merge commit. Acts: web-discard-latest-backup Notes.
+- deploy-safe-agent-sessions: `test_lightkube_default_client_uses_env_config` fails in-cluster,
+  unrelated. Acts: orchestrator tasks' Notes, so it is not read as a regression.
+- matrix-connector-agent-initi: render each container's env against the Settings pair checks. Not
+  needed: the one new setting has a default and no pair; noted in orch-sessions-live-backup Notes.
+
+Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
+
 - One-shot `sessions_save` and Job adoption (cache.py:330-341, :377) - own record and Job name (D2).
-- Discard must handle a running live Job - D3.
-- `last_transcripts_backup` reads only `sessions_save` (api/sessions.py:64-90) - D7.
+  fix-as-ac: orch-sessions-live-backup AC2.
+- Discard must handle a running live Job - D3. fix-as-ac: orch-discard-stops-backup AC1, AC3.
+- `last_transcripts_backup` reads only `sessions_save` (api/sessions.py:64-90) - D7. fix-as-ac:
+  orch-backup-view-latest AC1, AC2.
 - Decouple migration guard must include the live run; live run waits while migration pending - D4.
-- Archive fails on a file shrunk/replaced mid-read (archive.py:116) - D6.
+  fix-as-ac: orch-sessions-live-backup AC8 (waits while pending), AC9 (guard counts the live run).
+- Archive fails on a file shrunk/replaced mid-read (archive.py:116) - D6. fix-as-ac:
+  orch-archive-live-files AC1, AC2.
+- reuse: `CacheRunner` `_begin/_start/_observe/_finish`, `render_cache_job(..., "save", url,
+  "sessions")`, `save_skip(..., "sessions")`, the `pre_discard` DB-clock pattern, chart `.Values.env`
+  (no chart change). Acts: orch-sessions-live-backup.
+- do-not-build: S3 credentials outside the reconciler, a new archive format or temp object, wrapper
+  changes, pre-roll gating. Placed in Non-goals, Anti-goals and task Notes.
+- ideas rejected: "back up now" button and MCP tool (Non-goal, Q3); turn-end trigger (D1).
 
 ## Decision coverage
 
-Filled by the planner from the task slugs.
+| Decision | Tasks |
+|---|---|
+| D1 periodic, change-driven trigger | orch-sessions-live-backup |
+| D2 own status record and Job name | orch-sessions-live-backup, orch-backup-view-latest |
+| D3 discard removes a running backup first | orch-discard-stops-backup |
+| D4 object name and the decouple migration | orch-sessions-live-backup |
+| D5 shared names | orch-sessions-live-backup |
+| D6 archive reads safe for live files | orch-archive-live-files |
+| D7 visibility | orch-backup-view-latest, web-discard-latest-backup |
+| D8 settings and deploy | orch-sessions-live-backup, helmfile-backup-pins, helmfile-backup-live-check |
 
 ## Review focus
 
@@ -178,6 +272,7 @@ Filled by the planner from the task slugs.
 - Q3: No "back up now" button or tool in this epic? [recommended: yes]
 - Q4: Skip the live backup while another live session shares the same cache name? [recommended: yes]
 - Q5: Close the "row stays sent after its turn failed" item as by design (sent is final, the turn shows the outcome, the cause was the wrapper wedge fixed in 0.3.3)? [recommended: yes]
+- Q6: Cut a torn last JSONL line only in the Claude transcripts archive, never in the workspace archive, so a workspace .jsonl file without a trailing newline is never truncated? (D6 amendment) [recommended: yes]
 
 ## Irreversible operations in scope
 
