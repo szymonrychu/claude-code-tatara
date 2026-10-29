@@ -57,17 +57,28 @@ Tests no longer accurate, rewritten in src/presets/PresetForm.test.tsx because t
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/sessions/sessionSpecForm.ts`: `FormValues.cacheKey` keeps its name (it now holds a template); `cacheKeyError(key: string): string | undefined` checks only the 256-character cap (`MAX_CACHE_NAME_TEMPLATE_CHARS = 256`); `validate(v, meta)` loses `storedCacheKey`; `CACHE_KEY` and `CACHE_KEY_RESERVED_PREFIX` removed; `toPresetSpec` still sends `cache: {}` for an empty field.
+- `src/presets/PresetForm.tsx`: field label `Cache name template`, placeholder `meta.cache.default_name_template`, helper text naming the variables; the copy keeps `spec.cache` unchanged.
+- `src/api/schema.d.ts`, `openapi/orchestrator.json`, `openapi/orchestrator.source`: synced by `npm run sync:api -- orchestrator` (`--from <agents-orchestrator checkout>` when the commit is only on the epic branch).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Opening a preset with the cache on shows a `Cache name template` field whose placeholder is the orchestrator default; typing `{{ preset }}-shared` saves it verbatim; a template the orchestrator refuses shows its 422 message under the field; copying a preset keeps its cache settings.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read src/sessions/sessionSpecForm.ts (cache parts, `validate`, `toPresetSpec`, `stateFromPreset`), src/presets/PresetForm.tsx, src/presets/PresetForm.test.tsx (helpers `field`, `paste`, `replace`, `meta`, `preset`), scripts/sync-api.mjs and openapi/orchestrator.source in one pass.
+- `npm ci --no-audit --no-fund`; then `npm run sync:api -- orchestrator --from <agents-orchestrator tree at the commit of orch-cache-name-on-create>`; expect the three vendored files to change and `npm run check:api` to exit 0.
+- Red: rewrite the seven tests named in the Requirement and add the tests named in the acceptance conditions; run `npx vitest run src/presets/PresetForm.test.tsx`; expect the new tests to fail.
+- Green: change sessionSpecForm.ts and PresetForm.tsx; rerun; expect all passed.
+- `npm run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The client cannot render Jinja2; it checks only the length. The orchestrator validates and answers 422 `invalid_request` with the reason; the form already shows server messages under the field (see the existing reserved-key server test being rewritten).
+- `openapi/orchestrator.source` pins `<repo> <sha40>`; the pinned commit must stay reachable after the orchestrator PR merges (retro, matrix-connector-agent-initi: merge that PR with a merge commit, or re-sync to the merged main commit before the web PR merges).
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; `npm test` had 6 test files failing to import `@codemirror/*` because node_modules was stale, so the verify runs `npm ci --no-audit --no-fund` first.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring vitest load flake in PresetForm).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
