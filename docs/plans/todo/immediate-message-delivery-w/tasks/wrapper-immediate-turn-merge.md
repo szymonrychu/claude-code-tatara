@@ -3,7 +3,7 @@ title: wrapper immediate turn merge
 status: todo
 repo: claude-code-wrapper
 value: a message sent to a busy agent reaches it mid-turn at once instead of waiting for the turn to end
-files: [src/claude_code_wrapper/api/turns.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/turns.py, src/claude_code_wrapper/config.py, README.md, MEMORY.md, tests/test_turn_merge.py, tests/test_api_turns.py]
+files: [src/claude_code_wrapper/api/turns.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/turns.py, src/claude_code_wrapper/config.py, README.md, tests/test_turn_merge.py, tests/test_api_turns.py]
 verify: "uv run pytest tests/test_turn_merge.py tests/test_api_turns.py tests/test_submit_busy_first.py tests/test_stop_gate.py tests/test_session_turns.py tests/test_user_message_event.py tests/test_command_turn_resume.py tests/test_readme_config.py tests/test_readme_api.py tests/test_config.py && uv run ruff check . && uv run ruff format --check ."
 depends_on: [wrapper-merge-marker-parse, wrapper-fake-claude-queue]
 model: opus
@@ -39,7 +39,7 @@ Design D5 (record and router part), verbatim: "`TurnRecord.merged: list[MergedPr
 
 Design D8 (wrapper part), verbatim: "Immediate prose is never pasted while a command runs or waits for the Stop (D4 `command_active`), and the slash epic's slot handover at Stop keeps queued client commands ahead of prose."
 
-Scope (claude-code-wrapper): `api/turns.py` (`TurnRequest.priority`, response `merged`, `merge_id`, the new refusal codes), `router.py` (`submit_turn(priority=...)`, the merge leg, onTurn `merge_into`, events, `merge_marker` handling in `_on_transcript_events`, callback delivery to merge entries), `session.py` (`Session.merge`: refusal checks, marker text, paste under the existing lock, record update), `turns.py` (`MergedPrompt`, `TurnRecord.merged`), `config.py` (`sessions.merge.max_unconfirmed`, `sessions.merge.max_per_turn`), `README.md` (API, events, configuration), `MEMORY.md`, `tests/test_turn_merge.py` (new). Tests no longer accurate (named): `tests/test_api_turns.py::test_submit_busy_409_and_booting_503` keeps its 409 for a body with `priority: "idle"`; its stub router's `submit_turn` gains the `priority` parameter; this file is changed only for that.
+Scope (claude-code-wrapper): `api/turns.py` (`TurnRequest.priority`, response `merged`, `merge_id`, the new refusal codes), `router.py` (`submit_turn(priority=...)`, the merge leg, onTurn `merge_into`, events, `merge_marker` handling in `_on_transcript_events`, callback delivery to merge entries), `session.py` (`Session.merge`: refusal checks, marker text, paste under the existing lock, record update), `turns.py` (`MergedPrompt`, `TurnRecord.merged`), `config.py` (`sessions.merge.max_unconfirmed`, `sessions.merge.max_per_turn`), `README.md` (API, events, configuration), `tests/test_turn_merge.py` (new); the MEMORY.md entry on the merge model is written by task wrapper-merge-stop-gate. Tests no longer accurate (named): `tests/test_api_turns.py::test_submit_busy_409_and_booting_503` keeps its 409 for a body with `priority: "idle"`; its stub router's `submit_turn` gains the `priority` parameter; this file is changed only for that.
 
 ## Acceptance conditions
 
@@ -56,8 +56,7 @@ Scope (claude-code-wrapper): `api/turns.py` (`TurnRequest.priority`, response `m
 - ac11: limits.max_prompt_bytes and the 16 KiB metadata cap apply to a merge (413 too_large) (new) [evidence: test:tests/test_turn_merge.py::test_merge_size_limits]
 - ac12: the stub-based API test keeps 409 busy for an idle body (renamed body only, named) [evidence: test:tests/test_api_turns.py::test_submit_busy_409_and_booting_503]
 - ac13: README documents priority, merged, merge_id, the refusal codes, the merge events and sessions.merge.*, and the config and API README guards stay green [evidence: command:uv run pytest tests/test_readme_config.py tests/test_readme_api.py tests/test_config.py]
-- ac14: MEMORY.md has a dated entry on the merge marker rule and why [evidence: command:grep -q 'ccw merge' MEMORY.md]
-- ac15: targeted suites and lint pass [evidence: command:uv run pytest tests/test_turn_merge.py tests/test_api_turns.py tests/test_submit_busy_first.py tests/test_stop_gate.py tests/test_session_turns.py tests/test_user_message_event.py tests/test_command_turn_resume.py tests/test_readme_config.py tests/test_readme_api.py tests/test_config.py && uv run ruff check . && uv run ruff format --check .]
+- ac14: targeted suites and lint pass [evidence: command:uv run pytest tests/test_turn_merge.py tests/test_api_turns.py tests/test_submit_busy_first.py tests/test_stop_gate.py tests/test_session_turns.py tests/test_user_message_event.py tests/test_command_turn_resume.py tests/test_readme_config.py tests/test_readme_api.py tests/test_config.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
 
@@ -67,7 +66,6 @@ Scope (claude-code-wrapper): `api/turns.py` (`TurnRequest.priority`, response `m
 - `src/claude_code_wrapper/turns.py`
 - `src/claude_code_wrapper/config.py`
 - `README.md`
-- `MEMORY.md`
 - `tests/test_turn_merge.py`
 - `tests/test_api_turns.py`
 
@@ -88,7 +86,7 @@ A message posted to a busy session is pasted into the running turn at once, join
 
 - Read `api/turns.py`, `router.py` (`submit_turn`, `_submit_turn`, `_on_transcript_events`, `_after_turn`, `_deliver`), `session.py` (`check_submittable`, `submit`, `continue_turn`, `_with_marker`, `command_active`, `_commands_turn`, `_interrupting`), `turns.py`, `config.py`, the slash epic's `DialogScanner` and command queue in `commands.py` / `router.py`, `tests/test_api_turns.py`, `tests/test_submit_busy_first.py`, `tests/test_stop_gate.py`, `tests/conftest.py`, the fake's queue mode and `docs/claude-midturn-input.md` in one pass.
 - Red: write `tests/test_turn_merge.py` with every test named ac1 to ac11 (fake claude in `"midturn_input": "queue"` where absorption is needed) and change the stub signature in `tests/test_api_turns.py`; run `uv run pytest tests/test_turn_merge.py tests/test_api_turns.py`; expect the new tests to fail.
-- Green: implement the field, the merge leg, the refusals, the record, the events, the absorption handling, README and MEMORY; run the task's verify; expect all passed. Quote the summary line.
+- Green: implement the field, the merge leg, the refusals, the record, the events, the absorption handling and README; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
@@ -100,3 +98,5 @@ A message posted to a busy session is pasted into the running turn at once, join
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: files capped at 8: the MEMORY.md entry moves to wrapper-merge-stop-gate
