@@ -1,6 +1,6 @@
 ---
 title: orch render client commands
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "every agent's wrapper accepts the orchestrator's commands, the compact button included"
 files: [src/agents_orchestrator/k8s/render.py, src/agents_orchestrator/spec.py, README.md, openapi.json, tests/test_render.py, tests/golden/session_single.yaml, tests/golden/session_two_peers.yaml, tests/test_spec_config.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_render.py tests/test_spec_config.py t
 depends_on: [orch-wrapper-pin-0-4-0]
 model: opus
 review: ""
-verified_head: ""
+verified_head: b51399a1f45e3ded1607929c9834e3a3dd0ead1f
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 849686
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 771152, review 78534"
 ---
 
 # orch render client commands
@@ -77,3 +77,5 @@ Every agent pod's wrapper accepts client commands from the orchestrator, so chat
 - Depends on orch-wrapper-pin-0-4-0 (the pinned wrapper must accept `"*"`).
 
 - 2026-10-27 amended: interrogate item 2 (agent_commands names follow claude's name regex) and item 12 (the kind e2e case builds on this task, as task orch-e2e-slash-command)
+
+- 2026-10-29 done
