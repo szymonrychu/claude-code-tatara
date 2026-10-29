@@ -1,6 +1,6 @@
 ---
 title: orch activity route
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "any hive agent can pull what its peers did, on demand, instead of having it streamed"
 files: [src/agents_orchestrator/api/agent.py, src/agents_orchestrator/db/events.py, openapi.json, README.md, tests/test_api_activity.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_api_activity.py tests/test_readme_api
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 1e3db5cd71272e39eabe812f90468d947c229a86
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 26
+actual_tokens: 1392753
+actual_roles: "impl 5, review 21"
+actual_role_tokens: "impl 1137648, review 255105"
 ---
 
 # orch activity route
@@ -88,3 +88,5 @@ An agent calling the route sees the newest digest lines of its session (commands
 - The newest-rows bound: `ORDER BY e.id DESC LIMIT 1000`, then reverse; filter by type in SQL.
 
 - 2026-10-27 amended: builder check settlement 1: first task reads the real next migration number and plugins tag from main and amends the dependent tasks
+
+- 2026-10-29 done
