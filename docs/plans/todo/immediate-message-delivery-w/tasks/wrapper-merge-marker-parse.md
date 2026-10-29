@@ -48,17 +48,23 @@ Scope (claude-code-wrapper): `src/claude_code_wrapper/transcript.py` (`_MERGE_MA
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `transcript.py`: `_MERGE_MARKER = re.compile(r"<!--\s*ccw merge:\s*(\S+?)\s*-->")`; `UserPrompt.merge_marker: str | None = None`, filled wherever `turn_marker` is filled today (`_prompt_events`), so user lines, `queued_command` attachments and queued user lines all carry it.
+- Consumer (task wrapper-immediate-turn-merge): `Router._on_transcript_events` reads `ev.merge_marker`; this task does not touch the router.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The wrapper can tell which merged paste Claude Code took, from any line shape 2.1.304 writes for it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/claude_code_wrapper/transcript.py`, `tests/test_transcript.py`, `tests/test_transcript_midturn.py`, `tests/fixtures/transcripts/midturn-probe.jsonl` and `docs/claude-midturn-input.md` (P1, P2, P4) in one pass.
+- Red: add the tests named in the acceptance conditions; run `uv run pytest tests/test_transcript.py tests/test_transcript_midturn.py`; expect ac1, ac2, ac3 and ac5 to fail.
+- Green: add the regex and the field; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The `promptSource: "queued"` user line already reaches `_user_events`; check that its prompt text path reaches `_prompt_events` (issue 92478 shape: `{"type": "user", "promptSource": "queued", "message": {"content": ...}}`), and use the probe's captured shape where it differs.
+- Redaction keeps applying to the text as today; markers are read from the unredacted text as `turn_marker` is.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
