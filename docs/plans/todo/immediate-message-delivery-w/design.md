@@ -522,6 +522,7 @@ Findings:
   move to the next free ones.
 
 ## Open questions
+- Q1: Should a message sent while the leader is busy join the running turn and share that turn's final answer, instead of getting a turn record of its own? [recommended: yes, it joins the running turn and shares its answer (D3)]
 
 ## Irreversible operations in scope
 
