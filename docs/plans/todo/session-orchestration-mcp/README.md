@@ -1,6 +1,6 @@
 ---
 title: session orchestration mcp
-blockers: [hive-decoupling, matrix-connector-agent-initi, slash-commands-from-chat]
+blockers: [slash-commands-from-chat]
 stage: build
 owner: ""
 repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-schedule, agents-web, agents-helmfile]
@@ -23,7 +23,7 @@ User request (2026-10-27, relayed by the mx-5 leader, msg 124), verbatim:
 
 Relayer's reading: MCP tools that let a session (for example mx-5, the Matrix-connected one) manage other sessions on the user's request: create and edit presets, create and delete sessions, set up cron jobs and so on, scoped by permissions (who may do this, and to which sessions).
 
-Queued after hive-decoupling.
+Queued right after slash-commands-from-chat, its only blocker (accepted queue, 2026-10-29); hive-decoupling and matrix-connector-agent-initi are done. immediate-message-delivery-w builds on this epic. Numbers (negotiated 2026-10-29, mx-34 #469/#470): orchestrator migration 0013, agents-schedule migration 0002, any-mcp-tatara-plugins v0.6.0, agents-schedule release v0.2.0 (negotiated, user answer pending). Every release tag is proposed via mx-34 and confirmed before tagging. Refreshed 2026-10-29 after a staleness audit (design.md, "Staleness refresh").
 
 ## Goals
 

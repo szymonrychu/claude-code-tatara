@@ -3,7 +3,7 @@ title: orch message origin
 status: todo
 repo: agents-orchestrator
 value: "every message records whether the user, a service or a session sent it, and the epic's schema exists"
-files: [src/agents_orchestrator/db/migrations/NNNN_session_orchestration.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/api/messages.py, src/agents_orchestrator/api/service_auth.py, README.md, tests/test_migrations.py, tests/test_message_origin.py, tests/test_service_port.py]
+files: [src/agents_orchestrator/db/migrations/0013_session_orchestration.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/api/messages.py, src/agents_orchestrator/api/agent.py, README.md, tests/test_migrations.py, tests/test_message_origin.py, tests/test_service_port.py]
 verify: "uv run --frozen pytest tests/test_migrations.py tests/test_message_origin.py tests/test_service_port.py && mise run lint"
 depends_on: [baseline-facts]
 model: opus
@@ -61,10 +61,10 @@ Tests no longer accurate (named): `tests/test_migrations.py::test_fresh_database
 
 ## Files
 
-- `src/agents_orchestrator/db/migrations/NNNN_session_orchestration.sql`
+- `src/agents_orchestrator/db/migrations/0013_session_orchestration.sql`
 - `src/agents_orchestrator/db/queue.py`
 - `src/agents_orchestrator/api/messages.py`
-- `src/agents_orchestrator/api/service_auth.py`
+- `src/agents_orchestrator/api/agent.py`
 - `README.md`
 - `tests/test_migrations.py`
 - `tests/test_message_origin.py`
@@ -72,25 +72,29 @@ Tests no longer accurate (named): `tests/test_migrations.py::test_fresh_database
 
 ## Interfaces
 
-- Migration `NNNN_session_orchestration.sql`: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS origin text`; `ALTER TABLE sessions ADD COLUMN IF NOT EXISTS created_by_session_id uuid`, `created_by_slug text`; same pair on `presets`; `CREATE TABLE IF NOT EXISTS orchestration_actions (id bigserial PRIMARY KEY, caller_session_id uuid NOT NULL, caller_slug text NOT NULL, message_id bigint, action text NOT NULL, target_kind text NOT NULL, target_id text, target_name text, outcome text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())` plus an index on `(caller_session_id, created_at)`. No FK anywhere.
-- `db/queue.py:enqueue_message(conn, session_id, text, target_agent_id=None, *, sender_session_id=None, sender_slug=None, hop=0, origin: str)`; origin `session` when a sender is present.
-- `db/queue.py:turn_origin(conn, agent_id) -> TurnOrigin | None` with `TurnOrigin(message_id: int, origin: str | None)`, same join as `turn_hop` without the sender filter.
-- `ServiceGate`: `scope.setdefault("state", {})["service"] = <name>` before calling the app; `api/messages.py:post_message` reads `request.state.service` (absent on the main port).
+- Migration `0013_session_orchestration.sql`: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS origin text`; `ALTER TABLE sessions ADD COLUMN IF NOT EXISTS created_by_session_id uuid`, `created_by_slug text`; same pair on `presets`; `CREATE TABLE IF NOT EXISTS orchestration_actions (id bigserial PRIMARY KEY, caller_session_id uuid NOT NULL, caller_slug text NOT NULL, message_id bigint, action text NOT NULL, target_kind text NOT NULL, target_id text, target_name text, outcome text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())` plus an index on `(caller_session_id, created_at)`. No FK anywhere.
+- `db/queue.py:enqueue_message(conn, session_id, text, target_agent_id=None, *, origin: str | None, kind: str = "turn", sender_session_id=None, sender_slug=None, hop=0) -> int` (slash-commands-from-chat's signature plus the required keyword `origin`, no default).
+- `db/queue.py:turn_origin(conn, agent_id) -> TurnOrigin | None` with `TurnOrigin(message_id: int, origins: tuple[str | None, ...])`: `message_id` is the lowest id among the messages whose `turn_id` is the agent's `agent_status.current_turn_id` (the triggering message, D8), `origins` the origin of every one of them; same join as `turn_hop` (`db/queue.py`) without the sender filter and without `ORDER BY m.id DESC LIMIT 1`.
+- `api/messages.py:post_message(session_id, body, pool, request: Request)`: origin `None` when `slash.parse(body.text)` makes it a command, else `f"service:{name}"` when `api/service_auth.py:calling_service(request)` returns a name, else `user`.
+- `api/agent.py:session_send`: origin `None` when `kind == "command"` (a superleader's slash text), else `session`.
+- `api/service_auth.py` is read, not edited: `STATE_KEY = "service"`, `calling_service(request)`.
 
 ## Expected outcome
 
-Every message row records where it came from, and the schema of the whole epic exists.
+Every message row records where it came from, the turn lookup sees every message of a turn, and the schema of the whole epic exists.
 
 ## Steps
 
-- Read `ls src/agents_orchestrator/db/migrations/` and pick the next free number; stop and report if another epic's migration with that number is in flight on another branch.
-- Red: add the migration and origin tests; run `uv run --frozen pytest tests/test_message_origin.py tests/test_migrations.py`: the new tests fail (DB tests run in CI; see Notes).
-- Green: migration, queue, messages, ServiceGate, README; run the task's verify. Quote the summary line.
+- Confirm the number: `ls src/agents_orchestrator/db/migrations/` shows 0012 as the highest file (0010 and 0012 from slash-commands-from-chat, 0011 from hive-decoupling); stop and report if it does not.
+- Red: add the migration and origin tests and update the four named migration-list tests to end at 0013 and count 13; run `uv run --frozen pytest tests/test_message_origin.py tests/test_migrations.py`: the new non-DB tests fail (DB tests run in CI; see Notes).
+- Green: migration, queue, messages, agent, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-- No Docker in agent pods: the DB tests (ac1-ac6) run in CI; keep the ServiceGate state assertion (ac4's scope part) non-DB with a stub app so the local verify has signal.
-- Confirm the connector's service token name from `ORCH_SERVICE_TOKENS` handling and the helmfile file `service-token-agents-matrix-connector.secrets.yaml` (design Assumptions); the default origins setting lands in orch-orchestration-gate.
+- No Docker in agent pods: the DB tests (ac1-ac6, ac10) run in CI; keep ac9 (the signature check with `inspect.signature` and the two call sites) and the origin choice of post_message and session_send non-DB (a stubbed `enqueue_message`) so the local verify has signal.
+- The connector's service token name `agents-matrix-connector` is confirmed (agents-helmfile `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`); the default origins setting lands in orch-orchestration-gate.
+- `ServiceGate` already hands the service name to the routes (`calling_service`, landed with migration 0009, used by `api/sessions.py` for `created_by_service`); do not edit `api/service_auth.py`.
+- `turn_hop` keeps its own query and semantics (session-message hops); `turn_origin` is a separate query. immediate-message-delivery-w (built after this epic) merges several messages into one turn, which is why every origin is returned.
 - Do not touch `tests/test_service_port.py` assertions unless one is no longer accurate; name it if so.
 
 - 2026-10-27 amended: builder check B4 and B6 settlements: explicit origin on every enqueue path, NULL for command and internal messages, migration number from baseline-facts

@@ -56,22 +56,33 @@ README Non-goals, verbatim there (architect's do-not-build list plus the noted i
 - Spec is immutable on a running session except `replicas` and `init_scripts`; tool lists are
   fixed at render time.
 - No backward-compatibility shims. Python only, except agents-web (TypeScript).
-- Ordering: blocked on hive-decoupling, which follows matrix-connector-agent-initi; slash-commands-from-chat
-  is also a blocker, and nothing is dispatched until all three have merged (B6; the first task is
-  baseline-facts, which reads the real numbers and amends the dependents). Shared files
-  with Matrix and hive-decoupling: orchestrator `settings.py`, the plugin `__init__.py`,
-  `k8s/on_start.py`, the helmfile values. Every version and migration number that depends on
-  those epics follows a rule, never a guessed number:
-  - orchestrator migration: the next free number in `src/agents_orchestrator/db/migrations/`
-    at build time (after slash-commands' 0008 and whatever hive-decoupling adds); written
-    `NNNN` in the task files;
-  - plugins release: the next minor after the plugins version hive-decoupling leaves pinned in
-    the orchestrator (`ORCH_ANY_MCP_PLUGINS_REF`) at build time;
-  - agents-schedule migration: the next free number at build time (0002 today; no other epic
-    adds one).
-- Negotiated 2026-10-29 (mx-34 #469): orchestrator migration 0013, plugins v0.6.0, agents-schedule v0.2.0.
+- Ordering (accepted queue, 2026-10-29): this epic runs right after slash-commands-from-chat, its
+  only README blocker; nothing is dispatched until slash-commands-from-chat has merged on every
+  repo it touches (B6; the first task is baseline-facts). hive-decoupling and
+  matrix-connector-agent-initi are done (docs/plans/done). immediate-message-delivery-w lists this
+  epic as its blocker and takes the numbers after it (migration 0014, plugins v0.7.0). Shared
+  files with slash-commands-from-chat: orchestrator `settings.py`, `db/queue.py`,
+  `api/messages.py`, `api/agent.py`, `k8s/on_start.py`, `tests/test_migrations.py`, the helmfile
+  values.
+- Numbers, negotiated 2026-10-29 (mx-34 #469/#470), never guessed:
+  - orchestrator migration `0013_session_orchestration.sql`: main ends at 0011 (2d6d722,
+    `0011_drop_feed_cursor.sql`); slash-commands-from-chat ships `0010_slash_messages.sql` and
+    `0012_command_outcome_index.sql`; the migrator applies by set;
+  - any-mcp-tatara-plugins v0.6.0: the latest tag is v0.5.1 (ef17204, hive-decoupling's advice
+    floor on top of slash's v0.5.0), which slash-commands-from-chat pins
+    (`ORCH_ANY_MCP_PLUGINS_REF` default v0.5.1); the plugin lists 16 tools (`ALL_TOOLS`), 32
+    after this epic;
+  - agents-schedule migration 0002 (only `0001_schedules.sql` exists; slash-commands-from-chat
+    adds none, no other epic claims one);
+  - agents-schedule release v0.2.0 from v0.1.0 (negotiated, user answer pending; tatara agreed).
+  baseline-facts confirms each on main; on a mismatch the orchestrator session proposes the new
+  number on mx-34, waits for the confirmation and amends the dependent tasks.
+- Live today (handover note 2026-10-29): orchestrator 2d6d722, plugins ref v0.4.0, agent image
+  0.3.3; the slash-commands-from-chat deploy moves the plugins ref to v0.5.1 and the agent image
+  to wrapper 0.4.1 or 0.4.2 before this epic deploys.
 - Standing user rules: deploy whenever possible (live applies need no approval); tags are
-  irreversible and listed below; send mx-5 one line before an apply restarts agent pods.
+  irreversible and listed below; send mx-5 one line before an apply restarts agent pods;
+  every release tag is proposed via mx-34 and confirmed before tagging.
 - No Docker in agent pods: orchestrator and schedule DB tests run in CI; each task keeps
   non-DB cases where the behaviour allows, so the local verify has signal.
 
@@ -97,17 +108,14 @@ the user-turn gate (D3). Alternatives: per-route ad-hoc checks (drift between ro
 FastAPI dependency carries the chain (my call).
 
 ### D3: what "on user request" means
-- A write is allowed only while the caller's current turn (`agent_status.current_turn_id`,
-  same join as `db/queue.py:turn_hop`) was delivered by a message whose origin is in
-  `ORCH_ORCHESTRATION_ORIGINS`, default `user,service:agents-matrix-connector`; else 403
-  `not_user_turn`.
+- A write is allowed only while every message that delivered the caller's current turn (`agent_status.current_turn_id`, same join as `db/queue.py:turn_hop`) has an origin in `ORCH_ORCHESTRATION_ORIGINS`, default `user,service:agents-matrix-connector`; else 403 `not_user_turn`.
 - Rejected by default: session messages, `service:agents-webhook`, `service:agents-schedule`,
   and turns with no message (background completions, peer sends).
-- New column `messages.origin text`, written at insert: `user` on the main port;
-  `service:<name>` on the service port (ServiceGate puts the service name in
-  `scope["state"]`); `session` in `enqueue_message` when a sender is present; NULL for command-kind
-  messages and orchestrator-internal enqueues (builder check B4, below). Rows from before
-  the migration stay NULL and never pass the gate (my call).
+- New column `messages.origin text`, written at insert: `user` on the main port; `service:<name>` on the service port (the name `ServiceGate` already hands to the routes, `api/service_auth.py:calling_service`, landed with migration 0009); `session` in `enqueue_message` when a sender is present; NULL for command-kind messages (builder check B4, below). Rows from before the migration stay NULL and never pass the gate (my call).
+- Every message that delivered the turn counts, not only the newest (my call, staleness refresh 2026-10-29): immediate-message-delivery-w, which builds on this epic, lets several messages share one turn_id, and one disallowed message in the turn refuses the write.
+- Main has two enqueue call sites after slash-commands-from-chat: `api/messages.py:post_message`
+  (main and service port; it gains `request: Request`) and `api/agent.py:session_send`. No
+  orchestrator-internal enqueue exists (staleness audit 2026-10-29).
 - Reads skip the gate. No two-step confirmation token: an injected model would call both steps.
 - Tool descriptions require the agent to name the target to the user before deleting.
 
@@ -152,6 +160,7 @@ apply. Owned-session scale goes through `set_replicas`.
   `X-Orch-Session` and `X-Orch-Slug`, never the agent token. Settings both set or both empty;
   both empty gives 503 `schedules_unconfigured`; a connection error, timeout or non-JSON answer
   gives 503 `schedules_unavailable` (my call, mirrors Matrix D2 `chat_unavailable`).
+- Staleness refresh 2026-10-29 (my call): agents-schedule answers DELETE with an empty 204 and run-now with 202: the relay passes an empty 204 through unchanged; any other non-JSON answer is 503 `schedules_unavailable`. The relay reuses the forward and body-cap code of `api/chat.py` (`forward`, `_capped_body`, `new_client`, `close_client`), generalised to take the upstream URL, token and unavailable code, instead of a second copy; the schedule client is closed in the app lifespan like the chat client.
 - agents-schedule: a second listener `SCHED_RELAY_PORT` with a bearer gate on
   `SCHED_RELAY_TOKEN_SHA256`, mirroring the connector's agent listener and `ServiceGate`, not
   bound when the hash is empty. Migration (next free number, 0002 today) adds
@@ -193,9 +202,14 @@ apply. Owned-session scale goes through `set_replicas`.
   `sessions_overview`, `session_create`, `session_scale`, `session_delete`; schedules
   `schedules_list`, `schedule_create`, `schedule_update`, `schedule_delete`, `schedule_run`,
   `schedule_runs`; audit `orchestration_actions`.
-- The release is the next minor after the version hive-decoupling leaves pinned. The allow-list
-  change lands with the pin in one task, per Matrix D13 (`test_allowed_tools_exist_in_plugin`
-  needs both).
+- The release is any-mcp-tatara-plugins v0.6.0, the next minor after the latest tag v0.5.1 that slash-commands-from-chat leaves pinned (negotiated 2026-10-29, mx-34 #469/#470). The allow-list change lands with the pin in one task, per Matrix D13 (`test_allowed_tools_exist_in_plugin` needs both).
+- The plugin lists 16 tools on main (`ALL_TOOLS`, asserted by `test_lists_all_tools`), 32
+  after this epic. `orchestrator_activity` (hive-decoupling's digest) and
+  `orchestrator_orchestration_actions` (the caller's audit rows) are different tools; their
+  descriptions say which is which. The plugin files avoid the words `tests/test_nomenclature.py`
+  bans.
+- The tag is proposed on mx-34 and confirmed before it is pushed (standing rule), although the
+  number itself was negotiated.
 
 ### D12: Matrix compatibility
 No connector change; the tools are leader-only like the chat tools; a session cannot delete
@@ -204,11 +218,12 @@ releases that binding through the existing Matrix Q10 sweep (intended). The rela
 mirrors `api/chat.py`; `settings.py` gains `ORCH_SCHEDULE_*` next to `ORCH_CHAT_*`.
 
 ### D13: one orchestrator migration for the whole epic (my call)
-`NNNN_session_orchestration.sql` (next free number at build time) adds `messages.origin`, the
-two `created_by_*` pairs and `orchestration_actions` in the first task, so later tasks consume
-no migration numbers and cannot collide with another epic's. Alternative: one migration per
-task (several numbers, more collision risk with hive-decoupling). Idempotent like 0003-0007,
-no down step.
+`0013_session_orchestration.sql` (negotiated 2026-10-29, mx-34 #469/#470; slash-commands-from-chat ships 0010 and 0012, main ends at 0011) adds `messages.origin`, the two `created_by_*` pairs and `orchestration_actions` in the first task, so later tasks consume no migration numbers and cannot collide with another epic's. Alternative: one migration per
+task (several numbers, more collision risk with the epics queued behind). Idempotent like 0003-0007,
+no down step. Four tests in `tests/test_migrations.py` hard-code the migration list and count
+(`test_fresh_database_gets_all_tables`, `test_presets_migration_on_existing_sessions`,
+`test_concurrent_migrate_serialises`, `test_0005_renames_clusters_to_sessions`): they become
+no longer accurate and gain 0013, nothing else.
 
 ### D14: body cap on every orchestration write (my call)
 Every orchestration write route and the schedule relay cap the request body at 256 KiB (413
@@ -235,17 +250,23 @@ file `values/agents-schedule/relay-token.secrets.yaml` (`relay.tokenSha256`, its
 SOPS-encrypted, both or neither, never rotated. The orchestrator chart takes `schedule.url`,
 `schedule.token` or `schedule.existingSecret`; the schedule chart takes `relay.tokenSha256` or
 `relay.tokenSecret`.
+Staleness refresh 2026-10-29 (my call, the orchestrator chart's own rule since the incident): `ORCH_SCHEDULE_URL` and `ORCH_SCHEDULE_TOKEN` are env of the api main container only, always together, rendered by one `agents-orchestrator.scheduleEnv` helper next to `agents-orchestrator.chatEnv`, never in the shared settings ConfigMap, the migrate init containers or the other components (orchestrator MEMORY 2026-10-28, orch-chat-env-scope: the chart once put `ORCH_CHAT_URL` in the shared ConfigMap with the token on the api only, and every migrate init container crash-looped on a URL without its token).
+A `checksum/schedule-secret` pod annotation rolls the api pod when the chart-made token changes,
+and agents-helmfile renders the release in a test that asserts the pair lands only on the api
+main container (helmfile-orchestration-pins).
 
 ### D17: pins and deploy order
-- agents-schedule is pinned by its main build: chart `0.1.0-main.<sha7>`
-  (`scripts/chart-version.sh`) and image `<sha7>`, no schedule tag (my call; the 0.1.0 release
-  pin is replaced). The orchestrator and agents-web are pinned by main sha7 as today; the agent
-  image stays on its release tag (Harbor prunes wrapper sha7 tags).
+- agents-schedule is pinned by its release tag v0.2.0 (negotiated, user answer pending): chart `0.2.0`, published by the tag's `chart-publish-tag` job, and image `<sha7>` of the tagged commit, published by its main build, the way v0.1.0 is pinned today (chart `0.1.0`, image `6cfa955`). The orchestrator and agents-web are pinned by main sha7 as today; the agent image stays on its release tag. `mise run check-pins` resolves `0.2.0` through tag `v0.2.0` and must pass before any apply.
+- Why the change (staleness refresh 2026-10-29; replaces the earlier main-build pin
+  `0.1.0-main.<sha7>`, my call then): Harbor retention pruned the sha7 image tags of every
+  main-built release within hours (incident 2026-10-28) while chart versions survive, and the
+  user's standing rule is "latest stable always deployed". The release is task
+  sched-release-0-2-0, tagged by the orchestrator session after the mx-34 confirmation.
+  The image is still a sha7 tag (agents-schedule CI pushes images only on main), so it stays
+  exposed to retention until semver-image-tags-at-the-end (queued at the end of the chain; it
+  removes `chart-publish-tag`, so sched-release-0-2-0 lands before it).
 - Every image tag and chart version is checked in Harbor before any apply (retro proposal).
-- Apply order, `--selector` per release, `mise run diff` reviewed before each: agents-schedule
-  (its migration runs in the init container; the relay listener comes up), agents-orchestrator
-  (its migration; the new plugins ref changes the rendered config hash and rolls every running
-  agent pod, including mx-5: one line to mx-5 first), agents-web.
+- Apply order, `--selector` per release, `mise run diff` reviewed before each (`mise run apply` runs lint, test and check-pins first): agents-schedule (its migration 0002 runs in the init container; the relay listener comes up), agents-orchestrator (its migration 0013; the new plugins ref changes the rendered config hash, and the OnDelete rollout reconciler replaces each agent pod once it is idle, one per session, leaders last, mx-5 included: one line to mx-5 first), agents-web.
 - helmfile MEMORY gotcha: a changed service Secret does not restart the orchestrator api pods;
   when the relay answers `schedules_unconfigured` or upstream 401 after the apply, run
   `kubectl rollout restart deploy/agents-orchestrator-api` (least destructive first).
@@ -316,6 +337,48 @@ differ, this section wins.
   state it. Not added to the live smoke (a not_owner probe would need a throwaway UI-made
   preset): noted, not doing now.
 
+## Staleness refresh (2026-10-29)
+
+The plan was re-checked against origin/main before the build (audit
+`.scratchpad/orch-mcp/staleness.md`; handover note `docs/plans/2026-10-29-tatara-handover-to-cct2.md`;
+heads read: agents-orchestrator 2d6d722, any-mcp-tatara-plugins ef17204 (v0.5.1), agents-schedule
+7651e29 (v0.1.0), agents-helmfile c2855fc, agents-web ab78d97, and the slash-commands-from-chat
+branches). Where this section and an earlier decision or settlement differ, this section wins.
+Tasks changed through `ticket.py amend`, each with its reason in Notes.
+
+- Blockers: slash-commands-from-chat only (B6's three-blocker rule is now one blocker);
+  numbers negotiated (Constraints). baseline-facts confirms them instead of deriving them.
+- D3: `ServiceGate` already hands the service name to the routes (`calling_service`), so
+  orch-message-origin edits `api/agent.py` instead of `api/service_auth.py`; the two real call
+  sites are named; `turn_origin` returns every message of the turn and the gate needs all of them
+  allowed (orch-message-origin, orch-orchestration-gate). B4's "orchestrator-internal enqueues"
+  has no instance on main.
+- D7: empty 204 and 202 pass through; the chat forward helper is shared (orch-schedule-relay).
+- D11: v0.6.0 from v0.5.1, 16 to 32 tools, `test_lists_all_tools`, the nomenclature test, the
+  mx-34 tag proposal (plugin-orchestration-tools, plugins-release-orch-tools,
+  orch-orchestration-tools-pin; the allow list covers both `orchestrator_allow` branches and
+  `chat=False`).
+- D13: 0013 and the four migration-list tests named (orch-message-origin); agents-schedule 0002
+  and its two migration tests named (sched-schedule-owner).
+- D16: the schedule pair is api-main-only, never the ConfigMap (orch-chart-schedule-relay,
+  helmfile-orchestration-pins); the earlier ac `test_schedule_url_in_configmap` would have
+  repeated the 2026-10-28 crash loop.
+- D17: agents-schedule pinned by release v0.2.0 (negotiated, user answer pending), new task
+  sched-release-0-2-0 (the only added task; the release needs its own version bump and tag);
+  check-pins in helmfile-orchestration-pins; idle-only rollout and the apply-from-pod procedure
+  in orchestration-live-smoke.
+- Smoke: the script sources `scripts/lib/smoke-common.sh` (orchestration-smoke-script, Notes
+  and Files only).
+- Reuse notes added to orch-orchestration-sessions (`_insert(**provenance)`),
+  orch-creator-messaging (`kind`), sched-relay-listener (not behind `SourceAllowlist`),
+  orch-schedule-relay-contract (the chat contract files), orch-orchestration-presets
+  (kubernetes-secret-backed-pre).
+- Not adopted from the audit: adding immediate-message-delivery-w and decouple-s3-session-cache-fr
+  as blockers (the accepted queue runs this epic right after slash-commands-from-chat, and
+  immediate-message-delivery-w already blocks on it); refusing trigger-created sessions in the
+  orchestration gate (no requirement asks for it; the user-turn gate already refuses
+  webhook and schedule turns).
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -324,6 +387,7 @@ differ, this section wins.
 | codebase probe (planner) | ran | Service and port facts (D15: `chart/agents-schedule/templates/service.yaml`, `values.yaml:36,52`); schedule pin by main build (`scripts/chart-version.sh`); `ScheduleIn.prompt` max 16384 (`api/schemas.py:18`) for D14; no NetworkPolicy in any chart | a schedule release tag (main builds are published) |
 | retro history | ran (`ticket.py retro --history`) | see Research inputs | calibration-seed proposals (the tool fills minutes and tokens) |
 | security review | skipped at plan time: the epic review runs it (authz surface); `workbench:interrogate` is recommended before the gate (authz, secrets) | | |
+| staleness audit (2026-10-29) | ran: `.scratchpad/orch-mcp/staleness.md` against origin/main and the slash branches | section Staleness refresh | new blockers beyond slash-commands-from-chat; a trigger-session refusal |
 
 ## Research inputs
 
@@ -334,7 +398,7 @@ Architect Plan inputs, every entry:
 - reuse `api/sessions.py:check_spec`, `_create_from_preset`, `_CREATE_LOCK` (arch): orch-orchestration-sessions.
 - reuse `db/sessions.py:request_delete`, `set_replicas` (arch): orch-orchestration-sessions.
 - reuse `api/presets.py:_validated` (arch): orch-orchestration-presets.
-- reuse `api/service_auth.py:ServiceGate` gate pattern carrying the service name (arch): orch-message-origin, sched-relay-listener.
+- reuse `api/service_auth.py:ServiceGate` gate pattern carrying the service name (arch): already on main as `calling_service` (migration 0009), read by orch-message-origin; the gate pattern itself by sched-relay-listener.
 - reuse Matrix D1/D2/D12/D13/D16 relay, settings pair, contract vendoring, pin with allow list (arch): orch-schedule-relay, orch-schedule-relay-contract, orch-orchestration-tools-pin.
 - reuse `OrchestratorPlugin.on_error` (arch): plugin-orchestration-tools.
 - reuse agents-web Superleader switch pattern (arch): web-orchestration-switch.
@@ -348,7 +412,7 @@ Architect Plan inputs, every entry:
 - do-not-build: orchestrator-side schedule storage (arch): orch-schedule-relay (stores nothing).
 - do-not-build: making the flag editable in place on a running session (arch): orch-orchestration-flag (spec stays immutable).
 - fix-as-ac: `messages.origin` on every insert path (arch): orch-message-origin.
-- fix-as-ac: service name passed from ServiceGate to the app (arch): orch-message-origin.
+- fix-as-ac: service name passed from ServiceGate to the app (arch): already on main (`calling_service`); orch-message-origin ac4 asserts it is used and `ServiceGate` unchanged.
 - fix-as-ac: writes refused in non-user turns, tested per origin (arch): orch-orchestration-gate.
 - fix-as-ac: no escalation through presets, specs or schedule presets (arch): orch-orchestration-gate, orch-orchestration-presets, orch-orchestration-sessions, orch-schedule-relay.
 - fix-as-ac: `self_delete`, `not_owner`, `protected_target` (arch): orch-orchestration-sessions.
@@ -356,8 +420,8 @@ Architect Plan inputs, every entry:
 - fix-as-ac: an audit row for every write, refusals included (arch): orch-orchestration-gate, orch-orchestration-presets, orch-orchestration-sessions, orch-schedule-relay.
 - fix-as-ac: the agent token never forwarded to agents-schedule (arch): orch-schedule-relay.
 - idea, noted not doing now: UI page for `orchestration_actions`, bearer gate in agents-common, owner-sender marking on connector messages, schedule owner provenance on fired sessions (arch): README Non-goals.
-- fact not settled: next orchestrator migration number (arch): rule in Constraints and D13; orch-message-origin.
-- fact not settled: plugin version after hive-decoupling's pin (arch): rule in Constraints and D11; plugins-release-orch-tools.
+- fact not settled: next orchestrator migration number (arch): negotiated 0013 (Constraints, D13); baseline-facts, orch-message-origin.
+- fact not settled: plugin version after hive-decoupling's pin (arch): negotiated v0.6.0 from v0.5.1 (Constraints, D11); baseline-facts, plugins-release-orch-tools.
 - fact not settled: agents-schedule Service name and relay port (arch): probed, D15; sched-chart-relay-port, helmfile-orchestration-pins.
 - fact not settled: connector group-chat messages share the connector service token, sender not recorded (arch): accepted risk, Q3; no task.
 - fact not settled: mx-5's preset name and whether its room is the owner DM (arch): not in any repo; probed live in orchestration-live-smoke (D19).
@@ -376,6 +440,17 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 - one-off (generic-any-mcp-with-git-and): GitGuardian false positives on fake tokens: Notes of the relay, listener and secrets tasks (build fake tokens at runtime).
 - code (leader-auto-handover): agents-helmfile has no CI: helmfile tasks rest on the local verify; noted in their Notes.
 - helmfile MEMORY 2026-10-26: a new service Secret does not restart the orchestrator api pods: D17, orchestration-live-smoke Notes.
+
+Retro proposals of the epics done since the plan (`ticket.py retro --history`, 2026-10-29), recurring workflow ones first:
+
+- recurring (hive-decoupling, matrix-connector-agent-initi, deploy-safe-agent-sessions, file-editor-with-tabs-and-hi, leader-auto-handover, generic-any-mcp-with-git-and): defects found only in the epic review; a finding that breaches a design anti-goal is never rated Consider, and a value derived from a config field is checked against that field's bounds: Review focus.
+- recurring (hive-decoupling and four more): no Docker in the pod makes DB tests CI-only: unchanged, Notes of every DB task.
+- one-off (hive-decoupling): plugins v0.5.1 was tagged without the mx-34 proposal: the tag step of plugins-release-orch-tools and sched-release-0-2-0 (ac on the proposal and confirmation).
+- one-off (hive-decoupling): the live apply waited because a plugins ref change rolls agent pods and an idle leader with a running subagent would lose it: orchestration-live-smoke Notes.
+- tech debt (hive-decoupling): migration 0010 merging after 0011 rests on the migrator applying by set: 0013 lands after both, no reorder (D13).
+- one-off (fix-preset-env-paste-auto-ap): deploy from a pod needs a short GNUPGHOME and a built kubeconfig: orchestration-live-smoke Notes.
+- 2026-10-28 incident (orchestrator MEMORY orch-chat-env-scope): a relay URL in the shared ConfigMap crash-looped every migrate init container: D16, orch-chart-schedule-relay, helmfile-orchestration-pins ac9.
+- 2026-10-28 incident (semver-image-tags-at-the-end README): Harbor retention pruned sha7 image tags within hours: D17, sched-release-0-2-0, orchestration-live-smoke.
 
 ## Decision coverage
 
@@ -396,8 +471,8 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 | D13 one migration | baseline-facts, orch-message-origin |
 | D14 body cap | orch-orchestration-gate, orch-schedule-relay |
 | D15 relay Service and port | sched-chart-relay-port, helmfile-orchestration-pins |
-| D16 relay token secrets | orch-chart-schedule-relay, sched-chart-relay-port, helmfile-relay-secrets |
-| D17 pins and deploy | helmfile-orchestration-pins, orchestration-live-smoke |
+| D16 relay token secrets | orch-chart-schedule-relay, sched-chart-relay-port, helmfile-relay-secrets, helmfile-orchestration-pins |
+| D17 pins and deploy | sched-release-0-2-0, helmfile-orchestration-pins, orchestration-live-smoke |
 | D18 live smoke | orchestration-smoke-script, orchestration-live-smoke |
 | D19 mx-5 grant | orchestration-live-smoke |
 
@@ -415,6 +490,9 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 - The relay never forwards the agent token or any inbound header; the schedule relay listener
   token never reaches a log or an error body.
 - The smoke's cleanup trap and per-wait deadlines.
+- The schedule URL and token never in the settings ConfigMap or on any container but the api main one (D16; the 2026-10-28 crash loop).
+- The user-turn gate over every message of the turn, not the newest one (D3).
+- Anti-goal breaches are findings to fix, never Consider; values derived from a config field are checked against its bounds (hive-decoupling retro).
 
 ## Left to the builder
 
@@ -429,14 +507,9 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 
 - mx-5's preset name and whether the owner DM is bound to mx-5: not in any repo; probed live by
   orchestration-live-smoke (GET `/api/v1/sessions`, the connector room binding) and recorded.
-- The plugins version and the orchestrator migration number: rules in Constraints, resolved at
-  build time by reading the orchestrator settings and the migrations directory.
-- hive-decoupling has no design yet: if it adds tools, the plugin tool count test follows its
-  count plus the sixteen of this epic; if it touches `orchestrator_allow`, this epic builds on
-  its version.
-- The Matrix connector's service token name is `agents-matrix-connector` (helmfile
-  `service-token-agents-matrix-connector.secrets.yaml`); orch-message-origin confirms it from the
-  rendered `ORCH_SERVICE_TOKENS` key names before fixing the default origins.
+- The plugins version and the migration numbers: negotiated (Constraints), confirmed on main by baseline-facts.
+- hive-decoupling landed (done 2026-10-29): it added `orchestrator_activity`, so the plugin lists 16 tools on main and 32 after this epic; `orchestrator_allow(spec, *, chat=True)` is its version as slash-commands-from-chat leaves it.
+- The Matrix connector's service token name is `agents-matrix-connector`: confirmed (agents-helmfile `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`).
 
 ## Open questions
 - Q1: A flagged session may change only the sessions, presets and schedules it created, and may read everything with secrets masked? [recommended: yes]
@@ -451,25 +524,32 @@ Retro proposals (`ticket.py retro --history`), recurring workflow ones first:
 
 ## Irreversible operations in scope
 
-Standing user rule (2026-10-27, msg 105): deploy whenever possible, live applies need no
-approval; tags are report-first and listed here for the gate.
+Standing user rules: deploy whenever possible, live applies need no approval (2026-10-27, msg
+105); every release tag is proposed via mx-34 and confirmed before tagging (2026-10-29). Tags are
+listed here for the gate.
 
-- Tag: any-mcp-tatara-plugins release tag (the next minor after hive-decoupling's pin), pushed
-  to origin on the merge commit of plugins-release-orch-tools by the orchestrator session after
-  green CI. Safeguard: approval at this gate; ac on the tag checked after the push.
-- Live orchestrator migration `NNNN_session_orchestration.sql` (next free number) on the
-  agents-orchestrator database, applied on the orchestrator apply: additive (one column on
-  `messages`, two pairs of columns, one table), no down step. Safeguard: idempotence and schema
-  tests in orch-message-origin.
-- Live agents-schedule migration (next free number, 0002 today) on the agents-schedule database
-  in its init container: two nullable columns, no down step. Safeguard: idempotence test in
+- Tag: any-mcp-tatara-plugins v0.6.0 (negotiated, mx-34 #469/#470), pushed to origin on the
+  merge commit of plugins-release-orch-tools by the orchestrator session after green CI and the
+  mx-34 confirmation of the tag. Safeguard: the mx-34 proposal and confirmation (ac5), the ac on
+  the tag checked after the push.
+- Tag: agents-schedule v0.2.0 (negotiated, user answer pending), annotated, pushed on the merge
+  commit of sched-release-0-2-0 by the orchestrator session after green CI and the mx-34
+  confirmation; its `chart-publish-tag` job publishes the immutable chart 0.2.0. Safeguard: the
+  mx-34 proposal and confirmation (ac5), the tag, chart and image checks after the push.
+- Live orchestrator migration `0013_session_orchestration.sql` on the agents-orchestrator
+  database, applied on the orchestrator apply: additive (one column on `messages`, two pairs of
+  columns, one table), no down step. Safeguard: idempotence and schema tests in
+  orch-message-origin.
+- Live agents-schedule migration `0002_schedule_owner.sql` on the agents-schedule database in its
+  init container: two nullable columns, no down step. Safeguard: idempotence test in
   sched-schedule-owner.
 - New credential: the relay token generated by `bootstrap-secrets.sh` and committed
   SOPS-encrypted; never rotates, both files or neither.
 - Live applies (orchestration-live-smoke): agents-schedule, agents-orchestrator (the new plugins
-  ref rolls every running agent pod, including the mx-5 hive; one line to mx-5 first),
-  agents-web. Safeguard: standing deploy rule, `mise run diff` before each, `--selector` per
-  release.
+  ref changes the agent config hash; the OnDelete rollout reconciler replaces each agent pod once
+  idle, the mx-5 hive included; one line to mx-5 first), agents-web. Safeguard: standing deploy
+  rule, `mise run apply` gated by lint, test and check-pins, `mise run diff` before each,
+  `--selector` per release.
 - Live smoke objects: a throwaway preset, session and disabled schedule created and deleted
   through the public API and the orchestration routes, plus audit rows in
   `orchestration_actions` that stay by design (no delete path). Safeguard: the trap deletes every

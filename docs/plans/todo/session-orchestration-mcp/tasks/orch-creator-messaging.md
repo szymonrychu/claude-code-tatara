@@ -59,5 +59,6 @@ An orchestrating session and the sessions it created can talk to each other with
 
 ## Notes
 
+- Re-read `api/agent.py:session_send` on main at build time (slash-commands-from-chat added `kind`; the rule is `if not (own.spec.session_messaging or target.spec.session_messaging)`). The creator rule widens who may send a turn only: `kind` stays `command` only for a superleader's slash text, so a non-superleader creator still sends a framed turn.
 - `sessions_list` peer listing is unchanged (D10 changes the send rule only; `sessions_overview` lists every session for a flagged caller).
 - DB test runs in CI (no Docker in agent pods).

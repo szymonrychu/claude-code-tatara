@@ -3,7 +3,7 @@ title: orchestration smoke script
 status: todo
 repo: agents-helmfile
 value: one command proves the orchestration tools live end to end and leaves nothing behind
-files: [scripts/orchestration-smoke.sh, mise.toml, README.md, tests/test_orchestration_smoke_script.py, tests/test_mise_tasks.py]
+files: [scripts/orchestration-smoke.sh, scripts/lib/smoke-common.sh, mise.toml, README.md, tests/test_orchestration_smoke_script.py, tests/test_mise_tasks.py]
 verify: "uv run pytest tests/test_orchestration_smoke_script.py tests/test_mise_tasks.py && mise run lint"
 depends_on: [orch-schedule-relay, sched-relay-routes, helmfile-relay-secrets]
 model: opus
@@ -46,6 +46,7 @@ Scope (agents-helmfile): new `scripts/orchestration-smoke.sh` (env `RELEASE`, `N
 ## Files
 
 - `scripts/orchestration-smoke.sh`
+- `scripts/lib/smoke-common.sh`
 - `mise.toml`
 - `README.md`
 - `tests/test_orchestration_smoke_script.py`
@@ -67,7 +68,8 @@ One command proves the orchestration tools live end to end and leaves nothing be
 
 ## Notes
 
-- Model on `scripts/smoke.sh` and Matrix's `scripts/chat-smoke.sh` (port-forward ownership, pod exec with the pod's own env, per-wait deadlines).
+- Source `scripts/lib/smoke-common.sh` like `scripts/smoke.sh` and `scripts/chat-smoke.sh` do (`SMOKE_LOG_PREFIX`, `log`, `fail`, `now`, `agent_call` for the pod exec with the pod's own `ORCH_AGENT_*` env, `stale_pids`, `kill_stale_port_forward`); extend the lib only for a helper both other scripts could use, and keep `tests/test_smoke_script.py` and `tests/test_chat_smoke_script.py` green.
+- `tests/test_smoke_script.py` and `tests/test_chat_smoke_script.py` are the fakebin patterns for the new test.
 - The held turn: the user message asks the agent to run `sleep $ORCH_SMOKE_HOLD_S` and then reply ok; the script waits until the message's turn is the agent's current turn before the first write, and until it ends before the not_user_turn check.
 - The owned session is created from the owned preset (alone, 1 replica) and deleted before the owned preset.
 - Never print `ORCH_AGENT_TOKEN`; read it inside the pod exec only.

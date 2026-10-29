@@ -72,4 +72,5 @@ agents-schedule can be reached by the orchestrator on its own token-protected po
 
 - Mirror the orchestrator's `api/service_auth.py:ServiceGate` (constant-time compare, no early exit, no token in logs) and the connector's agent listener (Matrix mxc-agent-listener).
 - `proxy_headers=False` on the relay server too.
+- The relay app is a separate ASGI app on its own listener; it is not wrapped by `api/app.py:SourceAllowlist` (the UI listener's CIDR allowlist), its only gate is the bearer hash.
 - Build fake tokens at runtime in tests (GitGuardian). The entrypoint test needs a DB and runs in CI.

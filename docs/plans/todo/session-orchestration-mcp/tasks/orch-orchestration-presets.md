@@ -80,6 +80,7 @@ A flagged leader can list and read every preset safely and create, edit and dele
 ## Notes
 
 - Reuse `api/presets.py:_validated` and the default and last-preset refusal mapping; do not copy the validation.
+- kubernetes-secret-backed-pre (todo, unplanned) may later move preset env storage; this task masks the spec fields as they are on main.
 - `check_no_escalation` and the audit helper come from `api/orchestration.py` (orch-orchestration-gate).
 - `tests/test_api_presets.py` must stay green; if an assertion on the exact `PresetView` keys is no longer accurate because of `created_by_slug`, name it and why.
 - DB cases run in CI (no Docker in agent pods); `mask_spec` cases are non-DB.

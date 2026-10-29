@@ -60,8 +60,9 @@ User settlement B6 (2026-10-27), verbatim: "the build starts only after all thre
 
 ## Interfaces
 
-- `k8s/on_start.py:ORCHESTRATION_TOOLS = ["presets_list", "preset_get", "preset_create", "preset_update", "preset_delete", "sessions_overview", "session_create", "session_scale", "session_delete", "schedules_list", "schedule_create", "schedule_update", "schedule_delete", "schedule_run", "schedule_runs", "orchestration_actions"]`; `orchestrator_allow(spec)` appends it when `spec.session_orchestration`.
-- `Settings.any_mcp_plugins_ref` default: the new tag (`ORCH_ANY_MCP_PLUGINS_REF`).
+- `k8s/on_start.py:ORCHESTRATION_TOOLS = ["presets_list", "preset_get", "preset_create", "preset_update", "preset_delete", "sessions_overview", "session_create", "session_scale", "session_delete", "schedules_list", "schedule_create", "schedule_update", "schedule_delete", "schedule_run", "schedule_runs", "orchestration_actions"]`; `orchestrator_allow(spec, *, chat=True)` appends it when `spec.session_orchestration`, in the early return for non-hive sessions (`shared`) and in the hive return alike, whatever `chat` is.
+- `Settings.any_mcp_plugins_ref` default: `v0.6.0` (`ORCH_ANY_MCP_PLUGINS_REF`, `v0.5.1` after slash-commands-from-chat).
+- `pyproject.toml` dev group: `any-mcp-tatara-orchestrator @ git+https://github.com/szymonrychu/any-mcp-tatara-plugins@v0.6.0#subdirectory=orchestration/orchestrator`; `tests/test_images.py::test_plugins_dev_pin_matches_settings_ref` ties it to the settings default and `uv.lock`.
 
 ## Expected outcome
 
@@ -69,16 +70,16 @@ Agent pods of flagged sessions install the plugins release with the orchestratio
 
 ## Steps
 
-- Confirm the new tag on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins <tag>`); stop and report if absent.
+- Confirm the tag on any-mcp-tatara-plugins origin: `git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins v0.6.0` prints one line; stop and report if absent.
 - Red: update `test_defaults`, add `test_orchestration_tools_only_when_flagged` and the parity test; run them: fail.
 - Green: settings default, pyproject pin, `uv lock`, `on_start.py`, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
 - Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties them to one tag.
-- Builds on hive-decoupling's and Matrix's versions of `on_start.py` and `settings.py` (shared files); read them first.
+- Builds on the merged slash-commands-from-chat versions of `on_start.py` and `settings.py` (hive-decoupling and Matrix already landed); read them first.
 - The flag does not change for a running session, so the render stays fixed (D1).
-- Changing the default changes the rendered config hash and rolls agent pods on deploy (orchestration-live-smoke).
+- Changing the default changes the rendered config hash; on deploy the OnDelete rollout reconciler replaces each agent pod once it is idle (orchestration-live-smoke).
 - The parity test's DB cases run in CI.
 
 - 2026-10-27 amended: builder check B6: tag from baseline-facts

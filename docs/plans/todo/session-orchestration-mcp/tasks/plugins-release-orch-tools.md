@@ -57,7 +57,7 @@ User settlement B6 (2026-10-27), verbatim: "the build starts only after all thre
 
 ## Interfaces
 
-- Distribution `any-mcp-tatara-orchestrator` version X.(Y+1).0; git tag `vX.(Y+1).0` on the `main` merge commit.
+- Distribution `any-mcp-tatara-orchestrator` version 0.6.0 (was 0.5.1); git tag `v0.6.0` on the `main` merge commit, pushed only after its mx-34 confirmation.
 
 ## Expected outcome
 
@@ -65,14 +65,16 @@ The plugin with the orchestration tools is released as a tag the orchestrator ca
 
 ## Steps
 
-- Read the orchestrator's pinned plugins ref and the latest tag on origin (`git ls-remote --tags origin`); compute the next minor; stop and report on a mismatch.
+- Confirm the baseline: `git ls-remote --tags origin` lists v0.5.1 as the highest tag and `orchestration/orchestrator/pyproject.toml` says 0.5.1; stop and report on a mismatch.
 - Red: change `test_orchestrator_distribution_metadata` to the new version; run it: fails.
 - Green: bump pyproject, `uv lock`, README example; run the task's verify. Quote the summary line.
-- After the merge (orchestrator session): wait for CI green on the merge commit, push the tag, check ac3.
+- After the merge (orchestrator session): wait for CI green on the merge commit, propose `v0.6.0 on <merge sha7>` on mx-34 and wait for the confirmation, push the tag, check ac3 and record ac5's message ids in Notes.
 
 ## Notes
 
 - Dependency-bump TDD exception for the version values; the metadata test is the guard.
+- Standing rule since 2026-10-29 14:27Z: every tag is proposed on mx-34 and confirmed before it is pushed; v0.5.1 was once tagged without it and mx-34 reported it to the user (handover note 2026-10-29). The number negotiation (mx-34 #469/#470) does not replace the per-tag proposal.
+- immediate-message-delivery-w takes v0.7.0 on top of this v0.6.0.
 - `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in this pod with git 2.39 (`--end-of-options`, environmental per Matrix); CI is its gate.
 
 - 2026-10-27 amended: builder check B6: version from baseline-facts

@@ -96,7 +96,7 @@ One dependency proves who may orchestrate, in which turn, records every write an
 
 ## Notes
 
-- Import `require_agent`, `_leads` from `api/agent.py`; do not copy them. The current-turn lookup is `db/queue.py:turn_origin` (orch-message-origin).
+- Import `require_agent`, `_leads` from `api/agent.py`; do not copy them. The current-turn lookup is `db/queue.py:turn_origin` (orch-message-origin): the write passes only when `origins` is non-empty and every entry is in `ORCH_ORCHESTRATION_ORIGINS`; `TurnOrigin.message_id` is the audit row's `message_id`.
 - The refusal order is part of the contract: a non-leader of a flagged session gets not_leader, never not_user_turn.
 - 401 answers write no audit row (no proven caller); every later refusal does.
 - No Docker in agent pods: DB cases run in CI; keep the order and escalation cases non-DB.

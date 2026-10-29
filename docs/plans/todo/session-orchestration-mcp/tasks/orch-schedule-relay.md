@@ -3,8 +3,8 @@ title: orch schedule relay
 status: todo
 repo: agents-orchestrator
 value: "a flagged leader manages its schedules through the orchestrator, which keeps the agent token to itself"
-files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/api/orchestration_relay.py, src/agents_orchestrator/api/app.py, README.md, openapi.json, tests/test_orchestration_relay.py, tests/test_settings.py]
-verify: "uv run --frozen pytest tests/test_orchestration_relay.py tests/test_settings.py tests/test_readme_api.py && mise run lint"
+files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/api/orchestration_relay.py, src/agents_orchestrator/api/chat.py, src/agents_orchestrator/api/app.py, README.md, openapi.json, tests/test_orchestration_relay.py, tests/test_settings.py]
+verify: "uv run --frozen pytest tests/test_orchestration_relay.py tests/test_agent_chat.py tests/test_settings.py tests/test_readme_api.py && mise run lint"
 depends_on: [orch-creator-messaging]
 model: opus
 review: ""
@@ -70,6 +70,7 @@ Open question Q9 (pending; the plan follows the recommended answer), verbatim: "
 
 - `src/agents_orchestrator/settings.py`
 - `src/agents_orchestrator/api/orchestration_relay.py`
+- `src/agents_orchestrator/api/chat.py`
 - `src/agents_orchestrator/api/app.py`
 - `README.md`
 - `openapi.json`
@@ -79,7 +80,8 @@ Open question Q9 (pending; the plan follows the recommended answer), verbatim: "
 ## Interfaces
 
 - `settings.py:Settings.schedule_url: str = ""`, `schedule_token: str = Field(default="", repr=False)`; validator for both-or-neither and the scheme, next to the chat pair.
-- `api/orchestration_relay.py`: `router = APIRouter(prefix="/agent/v1/orchestration/schedules", tags=["agent"])`; one `httpx.AsyncClient` (timeout 10 s); `forward(method, path, body, session, slug)`.
+- `api/orchestration_relay.py`: `router = APIRouter(prefix="/agent/v1/orchestration/schedules", tags=["agent"])`; its own `httpx.AsyncClient` on `app.state` (timeout 10 s), closed in the `api/app.py` lifespan next to `chat.close_client`.
+- `api/chat.py`: today `forward(request, method, path, body, session, slug)` reads `settings.chat_url`, `chat_token`, `UPSTREAM_PREFIX` and raises `chat_unavailable`, and `_capped_body(request)` caps at `MAX_BODY_BYTES` (256 KiB); generalise them to take the upstream base URL, prefix, token, client, unavailable code and whether an empty 204 passes (yes for schedules, no for chat), so both relays call one helper; the chat routes keep their answers.
 - Agent-facing errors added: 503 `schedules_unconfigured`, 503 `schedules_unavailable`; everything else is the upstream's or the gate's.
 
 ## Expected outcome
@@ -89,11 +91,11 @@ A flagged leader can manage its schedules through the orchestrator, which proves
 ## Steps
 
 - Red: write `tests/test_orchestration_relay.py` (an `httpx.MockTransport` upstream; non-DB cases for ac3-ac6 and ac9; DB cases for ac7 and ac8), add `test_schedule_relay_settings`; run them: fail.
-- Green: settings, module, app wiring, README, `openapi.json`; run the task's verify. Quote the summary line.
+- Green: settings, module, the shared helper in `api/chat.py`, app wiring and lifespan close, README, `openapi.json`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-- Mirror `api/chat.py` (Matrix orch-chat-relay) for the forward helper and error mapping; if Matrix extracted a shared forward helper, reuse it.
+- Matrix did not extract a shared helper: `forward`, `_capped_body`, `new_client`, `client`, `close_client` live in `api/chat.py` (Matrix orch-chat-relay). Share them (boy scout, `api/chat.py` is in Files) rather than copying; `tests/test_agent_chat.py` and `tests/test_chat_contract.py` stay green unchanged.
 - The relay reads the preset by id through `db/presets.py` before forwarding create and update (D5) and applies `check_no_escalation`.
 - Never log the relay token, the agent token or a body; log method, path, status only.
 - `X-Orch-Slug` is the caller session's slug from the sessions repo, never from the request.

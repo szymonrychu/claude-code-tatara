@@ -2,7 +2,7 @@
 title: sched release 0.2.0
 status: todo
 repo: agents-schedule
-value: "the schedule relay ships as release v0.2.0, a chart pin that survives Harbor retention"
+value: "the schedule relay ships as release v0.2.0, so agents-helmfile pins a published release chart instead of a main build"
 files: [chart/agents-schedule/Chart.yaml, pyproject.toml, uv.lock, src/agents_schedule/__init__.py, README.md, tests/test_chart.py]
 verify: "uv run pytest tests/test_chart.py tests/test_cli.py tests/test_ci_workflow.py && mise run lint"
 depends_on: [sched-chart-relay-port]
@@ -60,17 +60,25 @@ Scope (agents-schedule), after every other agents-schedule task of this epic has
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `chart/agents-schedule/Chart.yaml`: `version: 0.2.0`, `appVersion: "0.2.0"`.
+- `pyproject.toml:version = "0.2.0"`, `src/agents_schedule/__init__.py:__version__ = "0.2.0"` (printed by `sched --version`, `tests/test_cli.py`).
+- `scripts/chart-version.sh tag v0.2.0 <sha>` prints `0.2.0` (unchanged script; it refuses a tag that differs from Chart.yaml).
+- Git tag `v0.2.0` (annotated, like v0.1.0) on the merge commit; chart `oci://harbor.szymonrichert.pl/charts/agents-schedule` 0.2.0 (appVersion the sha7) from `chart-publish-tag`; image `harbor.szymonrichert.pl/containers/agents-schedule:<sha7>` from the merge commit's main `images` job.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-schedule v0.2.0 exists as a tag, a published chart 0.2.0 and an image, carrying the owner columns, the relay listener and routes and the relay Service of this epic, for helmfile-orchestration-pins to pin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the baseline: `git fetch --tags origin && git tag --sort=-v:refname | head -1` prints `v0.1.0`; `grep -n "^version" chart/agents-schedule/Chart.yaml` prints `0.1.0`; stop and report otherwise.
+- Red: change `tests/test_chart.py::test_image_tag_defaults_to_app_version` to `:0.2.0`; run `uv run pytest tests/test_chart.py::test_image_tag_defaults_to_app_version`: fails on `:0.1.0`.
+- Green: bump Chart.yaml, pyproject, `__version__`, `uv lock`, README `## Releases`; run the task's verify. Quote the summary line.
+- After the merge (orchestrator session): wait for the main run green (images and chart-publish jobs), propose v0.2.0 on mx-34 and wait for the confirmation, push the annotated tag, wait for `chart-publish-tag` green, check ac5 to ac7.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values beyond the named test.
+- Runs last among the agents-schedule tasks (depends on sched-chart-relay-port, which depends on the routes, listener and owner tasks), so the tag carries all of them.
+- The image stays a sha7 tag (CI pushes images only on main pushes); Harbor retention pruned sha7 image tags within hours in the 2026-10-28 incident while chart versions survive. orchestration-live-smoke checks the image in Harbor right before the apply; semver image tags are semver-image-tags-at-the-end's scope (it later removes `chart-publish-tag` and the tag mode of `chart-version.sh`, so this task must land before it).
+- The README Releases line names the image rule, not the sha (unknown before the merge); the supervisor never edits repo files after the merge.

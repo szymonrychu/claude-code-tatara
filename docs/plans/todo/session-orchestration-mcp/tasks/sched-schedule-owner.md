@@ -70,8 +70,8 @@ Each schedule records which session created it, and the UI can show it.
 
 ## Steps
 
-- Read `ls src/agents_schedule/migrations/` and take the next free number.
-- Red: add the three tests; run `uv run pytest tests/test_migrations.py tests/test_schedules_repo.py tests/test_api_schedules.py`: fail.
+- Confirm the number: `ls src/agents_schedule/migrations/` shows only `0001_schedules.sql`; stop and report otherwise.
+- Red: add the three tests and update the two named migration tests; run `uv run pytest tests/test_migrations.py tests/test_schedules_repo.py tests/test_api_schedules.py`: fail.
 - Green: migration, repo, view, `openapi.json` (the repo's generator, as in README); run the task's verify. Quote the summary line.
 
 ## Notes

@@ -60,12 +60,16 @@ The orchestration tools are live, proven by the smoke, and mx-5 knows how to get
 ## Steps
 
 - Check every tag in Harbor (`crane digest` or `helm show chart`); stop and report a missing one.
-- `mise run diff -- --selector name=agents-schedule`, review, `mise run apply -- --selector name=agents-schedule`; wait for the api and worker Ready (the init container ran the migration).
+- `mise run diff -- --selector name=agents-schedule`, review, `mise run apply -- --selector name=agents-schedule` (apply runs lint, test and check-pins first); wait for the api and worker Ready (the init container ran migration 0002).
 - Send mx-5 one line, then the same for agents-orchestrator; then agents-web.
 - `mise run diff` (expect no change), `mise run smoke`, `mise run orchestration-smoke`; probe mx-5's preset and the owner DM binding; message mx-5 the grant line; write MEMORY.md.
 
 ## Notes
 
+- Apply from the pod per the deploy procedure (kubeconfig from the service account, a short GNUPGHOME under /tmp for SOPS, the regcred Harbor helm login, the `agents-helmfile-apply` lease held only during the apply, a `--selector` per release).
+- The orchestrator apply (migration 0013, plugins ref v0.6.0) changes the agent config hash; the OnDelete rollout reconciler replaces each agent pod once it is idle, one per session, leaders last. An idle leader with a running subagent loses it on replacement (hive-decoupling retro): check the busy and subagent state of the live leaders before the orchestrator apply.
+- Live before this epic: whatever the slash-commands-from-chat deploy leaves (plugins v0.5.1, wrapper agent image 0.4.1 or 0.4.2); today orchestrator 2d6d722, plugins v0.4.0, agent image 0.3.3. The agent image does not change in this epic.
+- The agents-schedule image is a sha7 tag (pruned by Harbor retention within hours on 2026-10-28; chart versions survive): check it right before the schedule apply, not only at the start.
 - helmfile MEMORY gotcha: a new or changed service Secret does not restart the orchestrator api pods; when the relay answers schedules_unconfigured or an upstream 401, run `kubectl rollout restart deploy/agents-orchestrator-api` (least destructive first), then rerun the smoke.
 - Live and irreversible operations are listed in design.md (applies, both migrations, the relay token, the smoke objects). Standing rule: deploy whenever possible; live applies need no approval.
 - Live apply and smoke tasks have run 3-4x over the minutes seed in past epics (retro); several runs are likely.

@@ -91,6 +91,8 @@ A flagged leader can see every session and create, scale and delete only the one
 ## Notes
 
 - Reuse `check_spec`, `_create_from_preset`, `_CREATE_LOCK`, `request_delete`, `set_replicas`; import, never copy.
+- `api/sessions.py:_insert(conn, slug, spec, **provenance)` already carries `created_by_service` (migration 0009); pass `created_by_session_id` and `created_by_slug` the same way, no second insert path. The prompt enqueue passes `origin="session"` and `kind="turn"` explicitly.
+- decouple-s3-session-cache-fr (todo, not blocked on this epic) also edits `_create_from_preset`; re-read it at build time if it merged first.
 - The live-owned count is `db/orchestration.py:count_live_owned_sessions` (one predicate; retro: duplicate predicates were found late). The owned check is one predicate too.
 - Prompt hop: `db/queue.py:turn_hop` of the caller plus 1 (1 in a user turn); origin `session`.
 - `tests/test_api_sessions.py` and `tests/test_api_create_from_preset.py` must stay green; name any assertion on exact view keys that `created_by_slug` makes no longer accurate.

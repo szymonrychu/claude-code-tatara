@@ -4,7 +4,7 @@ status: todo
 repo: any-mcp-tatara-plugins
 value: "flagged sessions get sixteen tools for presets, sessions, schedules and the audit"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md]
-verify: "uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py tests/test_repo.py && mise run lint"
+verify: "uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py tests/test_repo.py tests/test_nomenclature.py && mise run lint"
 depends_on: [orch-schedule-relay]
 model: sonnet
 review: ""
@@ -66,12 +66,14 @@ Agents of flagged sessions get sixteen tools that drive the orchestration routes
 
 ## Steps
 
-- Red: rename and extend the count test, add the three new tests; run `uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: fails.
+- Red: add the sixteen names to `ALL_TOOLS` (32 in all) so `test_lists_all_tools` fails, add the three new tests; run `uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: fails.
 - Green: tool specs, descriptions, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-- Builds on hive-decoupling's and Matrix's `__init__.py` (shared file); read it first.
+- Builds on main's `__init__.py` at v0.5.1 (hive-decoupling, Matrix and slash-commands-from-chat landed: 16 tools, `orchestrator_activity` the last); read it first.
+- `tests/test_nomenclature.py` (repo root) bans `cluster` and `agent-orchestrator`/`agent_orchestrator` in the three plugin files; say "session" and "orchestrator", never the banned words, in names, descriptions and the README.
+- Rewrite the README sentence "The plugin always lists all sixteen tools" to thirty-two and extend its tool table.
 - The plugin does no I/O at load (`test_no_io_at_load` stays green).
 
 - 2026-10-27 amended: builder check B6 and Q9: counts from baseline-facts, own-preset rule in descriptions

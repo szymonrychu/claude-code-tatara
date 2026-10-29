@@ -66,4 +66,4 @@ The orchestrator's relay and its fake are pinned to the contract agents-schedule
 
 ## Notes
 
-- Follow Matrix orch-chat-contract for the vendoring and schema validation helpers; reuse them if they exist.
+- Follow the chat contract pattern on main: `tests/fakes/chat_openapi.json`, `tests/fakes/chat_openapi.source`, `tests/fakes/fake_chat.py`, `tests/test_chat_contract.py`; reuse its validation helpers rather than copying them.

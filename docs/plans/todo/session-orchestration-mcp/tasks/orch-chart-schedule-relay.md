@@ -3,7 +3,7 @@ title: orch chart schedule relay
 status: todo
 repo: agents-orchestrator
 value: the orchestrator chart turns the schedule relay on with its token kept in a Secret
-files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/secret.yaml, chart/agents-orchestrator/templates/_config.tpl, chart/agents-orchestrator/templates/configmap.yaml, chart/agents-orchestrator/templates/deployment.yaml, README.md, tests/test_chart_config.py]
+files: [chart/agents-orchestrator/values.yaml, chart/agents-orchestrator/templates/secret.yaml, chart/agents-orchestrator/templates/_config.tpl, chart/agents-orchestrator/templates/deployment.yaml, README.md, tests/test_chart_config.py]
 verify: "uv run --frozen pytest tests/test_chart_config.py tests/test_chart_deployments.py && mise run lint"
 depends_on: [orch-schedule-relay-contract]
 model: opus
@@ -48,26 +48,30 @@ Scope (agents-orchestrator chart): `chart/agents-orchestrator/values.yaml` (`sch
 - `chart/agents-orchestrator/values.yaml`
 - `chart/agents-orchestrator/templates/secret.yaml`
 - `chart/agents-orchestrator/templates/_config.tpl`
-- `chart/agents-orchestrator/templates/configmap.yaml`
 - `chart/agents-orchestrator/templates/deployment.yaml`
 - `README.md`
 - `tests/test_chart_config.py`
 
 ## Interfaces
 
-- Values: `schedule: {url: "", token: "", existingSecret: ""}`; the chart Secret key `schedule-token` (or the existing Secret's key named in values, as the chat block does).
+- Values: `schedule: {url: "", token: "", existingSecret: "", existingSecretKey: schedule-token}`, documented like the `chat` block (`values.yaml`).
+- `_config.tpl`: `agents-orchestrator.scheduleEnabled` (fails the render on half a pair, naming schedule.url, schedule.token and schedule.existingSecret), `agents-orchestrator.scheduleSecretName` (existingSecret wins over `<fullname>-schedule`), `agents-orchestrator.scheduleEnv` (the `ORCH_SCHEDULE_URL` value and the `ORCH_SCHEDULE_TOKEN` secretKeyRef, empty when off), next to `chatEnabled`, `chatSecretName`, `chatEnv`.
+- `deployment.yaml`: `scheduleEnv` included only under `{{- if eq $component "api" }}` in the main container, right after `chatEnv`; pod annotation `checksum/schedule-secret` next to `checksum/chat-secret`.
+- Tests in `tests/test_chart_config.py` reuse `_containers` (init containers included), `_env_names`, `_is_api_main` and the `CHAT_VALUES` parametrize pattern.
 
 ## Expected outcome
 
-The orchestrator chart can turn the schedule relay on with its token kept in a Secret.
+The orchestrator chart can turn the schedule relay on with its token kept in a Secret, and no container other than the api main one ever sees half of the pair.
 
 ## Steps
 
-- Red: add the five chart tests; run `uv run --frozen pytest tests/test_chart_config.py`: fail.
-- Green: values, templates, README; run the task's verify and `mise run lint:chart`. Quote the summary line.
+- Red: add the six schedule chart tests; run `uv run --frozen pytest tests/test_chart_config.py -k schedule`: they fail.
+- Green: values, helpers, Secret, deployment, README; run the task's verify and `mise run lint:chart`. Quote the summary line.
 
 ## Notes
 
-- Copy the shape of the Matrix chat block (orch-chart-chat) next to it; if both blocks repeat the same helper logic, factor one named template both use (boy scout, same files).
+- Copy the shape of the chat block next to it; if both blocks repeat the same helper logic, factor one named template both use (boy scout, same files).
+- Never touch `templates/configmap.yaml` or the `agents-orchestrator.settings` data: the 2026-10-28 incident (orchestrator MEMORY, orch-chat-env-scope) came from a relay URL in the shared ConfigMap, which every migrate init container loads; `Settings` refuses a URL without its token, so they crash-looped.
+- helmfile MEMORY gotcha (a changed service Secret does not restart the api pods) is why the `checksum/schedule-secret` annotation is in scope.
 
 - 2026-10-29 amended: staleness refresh: schedule pair api-main-only via scheduleEnv, never the ConfigMap (2026-10-28 chat env incident)

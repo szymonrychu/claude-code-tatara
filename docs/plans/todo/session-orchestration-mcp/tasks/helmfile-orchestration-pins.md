@@ -4,8 +4,8 @@ status: todo
 repo: agents-helmfile
 value: "agents-helmfile pins the orchestrator, schedule and web builds of this epic and wires the relay"
 files: [values/agents-orchestrator/common.yaml, values/agents-schedule/common.yaml, values/agents-web/common.yaml, helmfile.yaml.gotmpl, tests/test_orchestrator_release.py, tests/test_schedule_release.py, tests/test_web_release.py]
-verify: "uv run pytest tests/test_orchestrator_release.py tests/test_schedule_release.py tests/test_web_release.py && mise run lint"
-depends_on: [helmfile-relay-secrets, orch-orchestration-tools-pin, sched-chart-relay-port, web-created-by, web-schedule-owner, plugins-release-orch-tools]
+verify: "uv run pytest tests/test_orchestrator_release.py tests/test_schedule_release.py tests/test_web_release.py && mise run check-pins && mise run lint"
+depends_on: [helmfile-relay-secrets, orch-orchestration-tools-pin, sched-chart-relay-port, sched-release-0-2-0, web-created-by, web-schedule-owner, plugins-release-orch-tools]
 model: opus
 review: ""
 verified_head: ""
@@ -63,23 +63,26 @@ Tests no longer accurate (named): `tests/test_orchestrator_release.py::test_orch
 
 ## Interfaces
 
-- `values/agents-orchestrator/common.yaml`: `schedule.url: http://agents-schedule-api-relay:8001`; token from `schedule-token.secrets.yaml`.
-- `values/agents-schedule/common.yaml`: relay on (`relay.port: 8001`), hash from `relay-token.secrets.yaml`.
+- `values/agents-orchestrator/common.yaml`: `image.tag` the orchestrator main sha7, `schedule.url: http://agents-schedule-api-relay:8001`, `env.ORCH_ANY_MCP_PLUGINS_REF: v0.6.0`; the token from `schedule-token.secrets.yaml` (helmfile-relay-secrets lists it in the release).
+- `helmfile.yaml.gotmpl`: agents-orchestrator `version: 0.1.0-main.<sha7>`, agents-web `version: 0.1.0-main.<sha7>`, agents-schedule `version: 0.2.0`.
+- `values/agents-schedule/common.yaml`: `image.tag` the sha7 of the commit tagged v0.2.0, relay on (`relay.port: 8001`), hash from `relay-token.secrets.yaml`.
+- `tests/test_orchestrator_release.py::test_schedule_url_and_token_render_together` mirrors `::test_chat_url_and_token_render_together` (helmfile template of the release, no ConfigMap carrier, the pair together on `agents-orchestrator-api/api` only, one `-schedule` Secret).
 
 ## Expected outcome
 
-agents-helmfile pins the orchestrator, schedule and web builds of this epic and wires the relay.
+agents-helmfile pins the orchestrator and web main builds and the agents-schedule v0.2.0 release of this epic, the plugins v0.6.0 ref, and wires the relay with the URL and token on the orchestrator api main container only.
 
 ## Steps
 
-- Read each repo's main sha7 carrying the tasks named in ac8 and confirm CI green on it; stop and report if not.
-- Red: update the named tests and add the two new ones; run them: fail.
-- Green: values and chart versions; run the task's verify. Quote the summary line.
+- Read each repo's main sha7 carrying the tasks named in ac8 and the commit tagged v0.2.0 (`git rev-parse --short=7 v0.2.0^{commit}` in agents-schedule); confirm CI green on each; stop and report if not.
+- Red: update the named tests and add `test_schedule_relay_wired`, `test_relay_listener_enabled` and `test_schedule_url_and_token_render_together`; run `uv run pytest tests/test_orchestrator_release.py tests/test_schedule_release.py tests/test_web_release.py`: they fail.
+- Green: values and chart versions; run the task's verify (including `mise run check-pins`, which needs `gh` auth). Quote the summary lines.
 
 ## Notes
 
 - The images and charts are checked in Harbor by orchestration-live-smoke before any apply; this task does not apply.
-- Builds on Matrix's and hive-decoupling's orchestrator values (shared file): keep their chat and other settings.
-- agents-helmfile has no CI (retro): the local verify is the evidence.
+- Builds on the orchestrator values the slash-commands-from-chat deploy leaves (plugins ref v0.5.1, wrapper agent image 0.4.1 or 0.4.2; live today before it: orchestrator 2d6d722, plugins v0.4.0, agent image 0.3.3): keep the chat and other settings, change only what this task names.
+- The schedule image stays a sha7 tag (agents-schedule CI pushes images only on main); Harbor retention pruned sha7 image tags within hours on 2026-10-28, chart versions survive. orchestration-live-smoke checks the image in Harbor right before the apply.
+- agents-helmfile has no CI on main (agents-helmfile-ci-test-job is in progress): the local verify, check-pins included, is the evidence.
 
 - 2026-10-29 amended: staleness refresh: schedule pinned by release v0.2.0 (negotiated, user answer pending); plugins v0.6.0; check-pins; schedule pair render test
