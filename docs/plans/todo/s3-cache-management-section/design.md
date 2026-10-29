@@ -137,15 +137,38 @@ object, never a session's cache) (my call).
 
 ## Research inputs
 
-- `registry.test.ts` exact orchestrator list - web task AC.
-- README route table and `openapi.json` drift tests (`tests/test_readme_api.py`) - api task AC.
-- `ALLOWED_ROUTES` stays without cache routes - api task AC.
-- Delete refused for pinned or saving objects at execution time - requests task AC.
-- No versioning: deletes permanent - Q1, confirm text.
+- `registry.test.ts` exact orchestrator list (cartographer Plan inputs, fix-as-ac) - web-cache-section AC1.
+- README route table and `openapi.json` drift tests (`tests/test_readme_api.py`) (cartographer, fix-as-ac) - orch-cache-api AC13-AC15.
+- `ALLOWED_ROUTES` stays without cache routes (cartographer, fix-as-ac) - orch-cache-api AC10.
+- Delete refused for an object pinned by a live session (`status.cache.key/object/sessions_object`) or mid-save (`save`/`sessions_save`/`sessions_backup` running) at execution time (cartographer, fix-as-ac) - orch-cache-requests AC1.
+- No versioning: deletes permanent (`agents-helmfile/raw/workspace-cache-bucket.pre.yaml`) - Q1, web-cache-section AC9, orch-cache-requests Notes.
+- Applied-migration list pinned by four tests (`tests/test_migrations.py:45-118`) - orch-cache-tables Requirement.
+- Settings must be in the README (`tests/test_settings.py::test_env_names_documented_in_readme`) - orch-cache-inventory AC9, orch-cache-api AC17.
+- Every documented chart cache value listed in `tests/test_chart_cache.py::test_readme_documents_cache_values` - orch-chart-cache-quota AC5.
+- `.tsx` test refs have no builtin runner (`workbench.py runner`): component ACs use `command:npx vitest run ... -t` - web-cache-section.
+- A transitive blocker in progress (hive-decoupling, `settings.py` in orch-plugins-pin-0-4-0) tripped the cross-epic overlap check; added `hive decoupling` to the README blockers, which the two direct blockers already wait on (my call) - all orchestrator tasks.
+- Retro, recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, parked-epic-stage): task files created with empty Steps - every task has Steps, Interfaces, Expected outcome and Notes before the gate (all tasks).
+- Retro, recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, file-editor-with-tabs-and-hi): no Docker in the pod, DB tests CI-only - each orchestrator verify says so and names the locally runnable tests; the reviewer quotes the CI summary (orch-cache-tables, orch-cache-inventory, orch-cache-requests, orch-cache-api).
+- Retro, recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions, file-editor-with-tabs-and-hi): defects found only at the epic review; run the security checklist per task - size bounds, refusal paths, no credential in reasons (orch-cache-inventory, orch-cache-requests, orch-cache-api).
+- Retro, recurring (matrix-connector-agent-initi, deploy-safe-agent-sessions): a live apply surfaced defects tests missed; render every release and read the full diff before the apply; a live defect becomes a new task (helmfile-cache-live-check).
+- Retro, recurring (file-editor-with-tabs-and-hi, deploy-safe-agent-sessions): Harbor prunes sha7 tags and stalls pulls; check the pinned tags exist before the apply (helmfile-cache-live-check, helmfile-cache-pins Notes).
+- Retro, recurring (file-editor-with-tabs-and-hi, markdown-rendering-in-chat): save the failing test name and output tail before any rerun (all tasks, Notes).
+- Retro (matrix-connector-agent-initi, deploy-safe-agent-sessions, delivered differently): web `openapi/orchestrator.source` pinned an epic-branch commit and forced a merge commit (web-cache-client Notes).
+- Retro (matrix-connector-agent-initi, code): a chart env value reached only some containers; assert the api Deployment reads the quota (orch-chart-cache-quota AC1).
 
 ## Decision coverage
 
-Filled by the planner from the task slugs.
+| Decision | Tasks |
+|---|---|
+| D1 Reconciler-owned inventory table | orch-cache-tables, orch-cache-inventory |
+| D2 Delete and refresh requests through a guarded queue | orch-cache-tables, orch-cache-requests, orch-cache-api |
+| D3 One pin rule, `cache.pins` | orch-cache-pins, orch-cache-requests, orch-cache-api |
+| D4 Classes computed at read time | orch-cache-pins, orch-cache-api, web-cache-section |
+| D5 API on the web port only | orch-cache-api, web-cache-client |
+| D6 Web Cache section | web-cache-section |
+| D7 Quota settings | orch-cache-api, orch-chart-cache-quota, helmfile-cache-pins, web-cache-section |
+| D8 Relation to the cleanup epic | orch-cache-requests, web-cache-section |
+| D9 Deploy and live check | helmfile-cache-pins, helmfile-cache-live-check |
 
 ## Review focus
 
@@ -174,6 +197,7 @@ within D1-D9.
 - Q4: Show a quota gauge by setting the 100G / 100000-object limits as orchestrator settings in agents-helmfile? [recommended: yes]
 - Q5: May an object named by a preset's fixed cache name be deleted, so the preset's next session starts empty (the bad-archive repair)? [recommended: yes]
 - Q6: One object at a time in this epic, no multi-select? [recommended: yes]
+- Q7: Smoke objects whose names fit the cache naming scheme (for example smoke-workspace-cache.tar.zst) are classed saved by the structural rule, and only keys outside the scheme read other? [recommended: yes]
 
 ## Irreversible operations in scope
 
