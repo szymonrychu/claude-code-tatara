@@ -51,17 +51,25 @@ Scope (agents-orchestrator): `wrapper/client.py` (`submit_turn(..., priority=Non
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `WrapperClient.submit_turn(session_id: str, text: str, metadata: dict | None = None, priority: str | None = None) -> SubmitOutcome`; body `{"text", "metadata"?, "priority"?}`.
+- `wrapper/models.py`: `TurnAccepted(turn_id: str, merged: bool = False)`; `MergedPrompt(_Model)` with `merge_id`, `origin`, `metadata`, `pasted_at`, `absorbed_at`; `TurnRecord.merged: list[MergedPrompt] = []`.
+- `tests/fakes/fake_wrapper.py`: the same request field, response and refusal codes as the wrapper's D4 (`merge_queue_full` cap 4 unconfirmed; the fake can mark merges absorbed on demand).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator can ask the wrapper for immediate or idle delivery and understands a merged answer and every refusal, and its fake wrapper behaves like the real one.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `wrapper/client.py` (`_send`, `submit_turn`, `_map_refusal`), `wrapper/models.py`, `tests/fakes/fake_wrapper.py`, `tests/test_wrapper_client.py`, `tests/test_fake_wrapper_contract.py` and the wrapper task wrapper-immediate-turn-merge's Interfaces in one pass.
+- Red: add the tests named ac1 to ac4 (the contract case parametrised like the others; mark its real leg skipped with a reason naming orch-wrapper-pin-0-5-0); run `uv run --frozen pytest tests/test_wrapper_client.py tests/test_fake_wrapper_contract.py -m "not integration"`; expect them to fail.
+- Green: implement the client, models and fake; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The real contract leg runs against the pinned wrapper image (0.4.0 until orch-wrapper-pin-0-5-0), which refuses an unknown `priority` field; the merge case's real leg is skipped until that task removes the skip.
+- `command()` keeps its own 429 mapping; only the turn send changes.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
