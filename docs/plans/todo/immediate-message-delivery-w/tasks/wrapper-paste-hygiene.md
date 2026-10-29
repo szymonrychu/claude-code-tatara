@@ -44,17 +44,23 @@ Scope (claude-code-wrapper): `src/claude_code_wrapper/pty_proc.py` (`paste_bytes
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `pty_proc.paste_bytes(text: str) -> bytes`: unchanged signature; the removed set is a module constant (for example `INVISIBLE = re.compile("[​﻿‪-‮⁦-⁩\U000e0000-\U000e007f]")`) applied with the ESC removal before encoding.
+- Every writer that pastes (`send_prompt`, `paste`, probes, continue prompts, merges) goes through `paste_bytes`, so no caller changes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A prompt or message carrying a stray invisible character is submitted by the first CR instead of being left in Claude Code's input box, where it would corrupt the next pasted message.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/claude_code_wrapper/pty_proc.py`, `tests/test_pty_proc.py`, the README section on turns and `docs/claude-midturn-input.md` (P10) in one pass.
+- Red: add the two tests named in the acceptance conditions; run `uv run pytest tests/test_pty_proc.py -k paste_bytes`; expect ac1 to fail.
+- Green: extend `paste_bytes` and add the README sentence; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- If the probe's P10 recorded that 2.1.304 does not swallow the CR, the stripping still stands (harmless, design D9); say so in the report.
+- Keep U+200C and U+200D: they are needed by Persian and Indic text and emoji sequences.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
