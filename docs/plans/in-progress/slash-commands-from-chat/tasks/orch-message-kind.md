@@ -1,6 +1,6 @@
 ---
 title: orch message kind
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a slash message from the chat is stored as a command message instead of a turn
 files: [src/agents_orchestrator/db/migrations/0008_slash_messages.sql, src/agents_orchestrator/db/queue.py, src/agents_orchestrator/db/views.py, src/agents_orchestrator/api/schemas.py, src/agents_orchestrator/api/messages.py, openapi.json, tests/test_api_messages.py, tests/test_migrations.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && 
 depends_on: [orch-slash-parser]
 model: opus
 review: ""
-verified_head: ""
+verified_head: f4c16fbdf6f84edb0659d79123a6df4abae58a14
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 21
+actual_tokens: 1617345
+actual_roles: "impl 21, review 1"
+actual_role_tokens: "impl 1538540, review 78805"
 ---
 
 # orch message kind
@@ -83,3 +83,5 @@ A chat message starting with a slash command is stored as a command message; the
 - Depends on orch-slash-parser.
 
 - 2026-10-29 amended: orchestrator main now has migrations 0008_wrapper_resume and 0009_created_by_service (matrix-connector-agent-initi merged first, user-approved order): migration renumbered 0010_slash_messages.sql, three migration version-list tests named, branch rebases onto main
+
+- 2026-10-29 done
