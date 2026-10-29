@@ -47,17 +47,23 @@ Scope (agents-orchestrator): `src/agents_orchestrator/settings.py` (`ORCH_ANY_MC
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.Settings.any_mcp_plugins_ref` default `"v0.5.0"`; dev dependency `any-mcp-tatara-orchestrator @ git+https://github.com/szymonrychu/any-mcp-tatara-plugins@v0.5.0#subdirectory=orchestration/orchestrator` (the existing form).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Superleaders get the session_send tool that offers immediate or idle delivery.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `settings.py`, `pyproject.toml`, the README settings table, `tests/test_settings.py`, `tests/test_images.py` and hive-decoupling's orch-plugins-pin-0-4-0 task in one pass.
+- Version pin bump with no behaviour change (TDD exception): update `tests/test_settings.py::test_defaults` (no longer accurate), the default, `uv lock`, README.
+- Run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Depends on the plugins v0.5.0 tag on origin (plugins-release-0-5-0 ac3, pushed by the orchestrator session).
+- The helmfile value of `ORCH_ANY_MCP_PLUGINS_REF` stays with the gate's deploy decision (Q9).
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
