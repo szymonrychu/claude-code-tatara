@@ -216,6 +216,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q7: Render templates in-process in agents-orchestrator with a restricted Jinja2 sandbox: output expressions only, no loops or calls, filters lower, upper, replace, trim, truncate, 256 characters at most, instead of agents-webhook's child-process renderer or a shared library? D3 [recommended: yes, restricted in-process sandbox]
 - Q8: Is the template set per preset only, with no per-session override field on session create or in the new session dialog? D14 [recommended: yes, per preset only]
 - Q9: Remove cache.key from presets that stored their own preset-derived key, so they get the per-session default instead of staying on one shared preset-wide name? D10 [recommended: yes, strip only a preset's own derived key]
+- Q10: The default <preset>-<session> is ambiguous across presets (preset a-b with session c equals preset a with session b-c, and truncation adds more collisions), and a shared name now shares the workspace archive (which may hold .env files and git credentials) and the transcripts (Q1). Should the default carry a short preset_id hash, for example <preset>-<session>-<first 6 hex of preset_id>, so two presets never share a cache by accident while a template can still share on purpose? D2 (interrogate Consider) [recommended: yes, add a short preset_id hash to the default]
 
 ## Irreversible operations in scope
 
