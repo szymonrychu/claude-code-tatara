@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin 0.4.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "CI's contract leg and kind e2e prove slash commands from chat against the wrapper agents will run"
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, e2e/agent-test.config.yaml, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_images.py tests/test_render.py tests/
 depends_on: [wrapper-release-0-4-0, orch-dispatch-commands]
 model: opus
 review: ""
-verified_head: ""
+verified_head: a406c59987888f499eb98c4f11538673fc24baff
 points: 3
 expected_minutes: 6
 expected_tokens: 963314
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 4
+actual_tokens: 395555
+actual_roles: "impl 3, review 2"
+actual_role_tokens: "impl 321151, review 74404"
 ---
 
 # orch wrapper pin 0.4.0
@@ -77,3 +77,5 @@ CI's contract leg and kind e2e run the wrapper that takes any slash command; the
 - 2026-10-27 amended: interrogate item 12 (the kind e2e case moved out of the pin task to orch-e2e-slash-command after orch-render-client-commands, so the pin PR is not red with 403), design D14 revised
 
 - 2026-10-29 amended: wrapper v0.4.0 merged and tagged: merge sha e946288
+
+- 2026-10-29 done: ac4 (real-wrapper integration leg) verified in CI run 40886319362 on a406c59 (rebased 325d842): e2e and test green
