@@ -49,17 +49,25 @@ Scope (agents-orchestrator): `pyproject.toml` and `uv.lock` (the claude-code-wra
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Pin form as the slash epic's orch-wrapper-pin-0-4-0: the `claude-code-wrapper` dev dependency `@ git+https://github.com/szymonrychu/claude-code-wrapper@<v0.5.0 merge sha>`, the Dockerfile's `ARG`/image reference, README Images row.
+- e2e case in `tests/e2e/test_e2e_kind.py`: post a message whose scenario keeps the agent busy (the e2e fake claude's slow prompt), then post a second message; assert the second is `sent` with the first's `turn_id` and that turn completes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator runs against a wrapper that merges mid-turn messages, and the real wrapper and a kind cluster prove a message to a busy agent is delivered into its running turn.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `pyproject.toml`, `uv.lock`, `e2e/agent-test.Dockerfile`, `e2e/agent-test.config.yaml`, the README Images section, `tests/test_images.py`, `tests/test_fake_wrapper_contract.py`, `tests/fakes/real_wrapper.py`, `tests/e2e/test_e2e_kind.py` and the slash epic's orch-wrapper-pin-0-4-0 task in one pass.
+- Red: remove the real-leg skip and add the e2e case; run `uv run --frozen python -c` of ac3; expect it to fail on the 0.4.0 pin.
+- Green: move the pin (`uv lock`), Dockerfile and README; run the task's verify; expect all passed. Quote the summary line; the reviewer quotes the CI integration and e2e job summaries.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Depends on the v0.5.0 tag on origin (wrapper-release-0-5-0 ac3, pushed by the orchestrator session); pin the release, never a branch sha (Harbor prunes sha7 tags).
+- Headline promise (retro, recurring): the e2e case is the end-to-end proof of G1; it must post to a really busy agent, not to an idle one.
+- The fake claude in the agent-test image drops mid-turn input by default; the merge is still accepted and the turn completes by the settle bound, which is what the contract case asserts on the real leg.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
