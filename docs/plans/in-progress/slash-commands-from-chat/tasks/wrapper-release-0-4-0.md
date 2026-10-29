@@ -1,6 +1,6 @@
 ---
 title: wrapper release 0.4.0
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: the orchestrator and the agents can run a wrapper that takes any slash command
 files: [pyproject.toml, uv.lock, src/claude_code_wrapper/__init__.py, tests/test_packaging.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_packaging.py && uv run ruff check . && uv run 
 depends_on: [wrapper-command-docs]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4d84a4d86a34ce6f4c5d98d626533124682a5a4a
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 124584
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 78692, review 45892"
 ---
 
 # wrapper release 0.4.0
@@ -70,3 +70,5 @@ The orchestrator and, after the gate's deploy decision, the live agents can run 
 - Depends on every wrapper task of this epic.
 
 - 2026-10-27 amended: builder check settlement: the wrapper PR merges mid-epic through the normal PR flow, the orchestrator session pushes v0.4.0 and checks ac3 after the push, design D14 revised
+
+- 2026-10-29 done
