@@ -1,6 +1,6 @@
 ---
 title: wrapper deny list extend 0.4.2
-status: todo
+status: done
 repo: claude-code-wrapper
 value: "chat users can no longer reach the agent account's cloud features or rewrite the session's tool and permission settings"
 files: [src/claude_code_wrapper/config.py, README.md, config.example.yaml, tests/test_command_registry.py]
@@ -8,11 +8,11 @@ verify: "uv run pytest tests/test_command_registry.py tests/test_slash_commands_
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 24c2ce95dd865251a3200ece14c47416bc7872a0
 points: 2
 expected_minutes: 5
 expected_tokens: 545296
-points_actual: ""
+points_actual: 2
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -66,3 +66,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
+
+- 2026-10-29 actuals: no agent records
