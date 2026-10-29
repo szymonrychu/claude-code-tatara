@@ -1,6 +1,6 @@
 ---
 title: mxc-outbound-limits
-status: todo
+status: done
 repo: agents-matrix-connector
 value: "an agent can never flood the owner's Messenger"
 files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/settings.py, tests/test_api_agent.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_api_agent.py -q
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5c8583de1edb10a25375225ef45f935f1234da73
 points: 3
 expected_minutes: 7
 expected_tokens: 965826
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 12
+actual_tokens: 2352278
+actual_roles: "impl 11, review 1"
+actual_role_tokens: "impl 2164340, review 187938"
 ---
 
 # mxc-outbound-limits
@@ -64,3 +64,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
