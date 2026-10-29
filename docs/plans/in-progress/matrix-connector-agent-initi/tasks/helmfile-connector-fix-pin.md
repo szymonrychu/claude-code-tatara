@@ -1,6 +1,6 @@
 ---
 title: helmfile-connector-fix-pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the connector with outbound limits and the pool fix is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-matrix-connector/common.yaml, tests/test_matrix_connector_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_matrix_connect
 depends_on: [mxc-pool-and-binding]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 051affd5f34b28eb547a765eebee66e45b978c81
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 2
+actual_tokens: 309929
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 265212, review 44717"
 ---
 
 # helmfile-connector-fix-pin
@@ -53,3 +53,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
