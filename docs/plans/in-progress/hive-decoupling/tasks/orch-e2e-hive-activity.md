@@ -1,6 +1,6 @@
 ---
 title: orch e2e hive activity
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the kind e2e proves members pull activity and get no feed note
 files: [tests/e2e/test_e2e_kind.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen python -m py_compile tests/e2e/test_e2e_kind.py && mise
 depends_on: [orch-hive-tools-activity]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f7e44f6c4fd50c94deacbf5d54780ca262bcb4fa
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 35
+actual_tokens: 754219
+actual_roles: "impl 34, review 1"
+actual_role_tokens: "impl 617762, review 136457"
 ---
 
 # orch e2e hive activity
@@ -63,3 +63,5 @@ The kind e2e proves the pull path and the absence of the feed note end to end.
 
 - No kind in agent pods: the reviewer judges ac1, ac2 and ac4 from the CI e2e job of the PR head.
 - slash-commands-from-chat and matrix-connector-agent-initi also edit this file; build on their merged cases.
+
+- 2026-10-29 done
