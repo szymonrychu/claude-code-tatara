@@ -582,7 +582,7 @@ Findings:
 - Q5: Should an immediate message overtake older idle messages still queued for the same session? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q6: Add agents-matrix-connector and agents-common to the epic, so new chat messages in a room with a run in progress are delivered at once and a shared answer is relayed once? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q7: Should the ccw peer send_message (hive peers) get the same priority option and mid-turn delivery? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [recommended: yes, the wrapper default is immediate too (D1)]
+- Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
 - Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [recommended: yes, deploy is decided at the gate (D19)]
 - Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 65 points? [recommended: yes, keep it in scope]
 - Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [recommended: yes, existing queued rows stay idle (D12)]
