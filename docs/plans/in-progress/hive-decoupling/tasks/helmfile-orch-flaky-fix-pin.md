@@ -1,6 +1,6 @@
 ---
 title: helmfile orch flaky fix pin
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: the orchestrator with the push-after-decision flaky-test fix is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 in-progress
