@@ -1,6 +1,6 @@
 ---
 title: plugin advice threshold floor
-status: todo
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: "the plugin's handover advice never says 0% or a negative percent"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py]
@@ -56,3 +56,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 in-progress
