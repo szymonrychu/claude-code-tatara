@@ -1,6 +1,6 @@
 ---
 title: orch drop feed cursor
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: the dead feed bookkeeping column is gone from the schema
 files: [src/agents_orchestrator/db/migrations/0011_drop_feed_cursor.sql, src/agents_orchestrator/db/leadership.py, tests/test_migrations.py, tests/test_leadership_pass.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_migrations.py tests/test_leadership_p
 depends_on: [orch-hive-feed-removal]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 88ed965f3db0692ab704e116f675a47d2af7ac2f
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 57
+actual_tokens: 1492783
+actual_roles: "impl 55, review 3"
+actual_role_tokens: "impl 1386551, review 106232"
 ---
 
 # orch drop feed cursor
@@ -80,3 +80,5 @@ The live schema has no `feed_cursor`; elections write no cursor; the 0003 tests 
 - DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.
 
 - 2026-10-27 amended: builder check settlement 1: migration number and plugins tag are placeholders until orch-activity-route amends them from main
+
+- 2026-10-29 done
