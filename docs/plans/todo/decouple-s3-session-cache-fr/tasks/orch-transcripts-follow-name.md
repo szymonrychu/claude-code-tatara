@@ -55,17 +55,29 @@ Tests no longer accurate and rewritten, because the transcripts object now follo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `cache/presign.py`: `sessions_object_name(settings, name: str) -> str` returns `<prefix>sessions/<name>.tar.zst`; `target_object_name(settings, target, name)` and `presign(settings, method, name, target)` take the cache name for both targets.
+- `reconciler/cache.py:CacheRunner._begin` pins `status.cache.key`, `object` and `sessions_object` for every run when `key` is absent; `_start` presigns the sessions target from `cache["key"]`; a run without a key fails `no_cache_key` for both targets.
+- Contract change (docs/plans/contracts.json, updated by the orchestrator): `orch-session-status-cache` gains `sessions_object`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A new cache-enabled session with cache name `my-repo-alpha` restores and saves its transcripts at `workspace-cache/sessions/my-repo-alpha.tar.zst`, and `status.cache` carries `key`, `object` and `sessions_object` from its first restore on.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read cache/presign.py, reconciler/cache.py (`_begin`, `_start`, `sessions_restore_step`, `save_step`), cache/save_rule.py, tests/test_sessions_restore.py, tests/test_sessions_backup.py and the MEMORY.md 2026-10-28 transcript entries in one pass.
+- Red: add the tests named in the acceptance conditions and rewrite the tests named in the Requirement to expect `sessions/<cache name>`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_restore.py tests/test_sessions_backup.py`; expect the new assertions to fail (DB tests: on CI or a local Postgres).
+- Green: change presign.py and reconciler/cache.py; rerun the verify; expect passed.
+- Add the MEMORY.md entry (dated, why: one name per session covers its whole backup, user Q1); `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The test fixtures use slug `alpha` and a cache key different from the slug, so a test that still passes with the slug proves nothing; assert the key path.
+- `SESSIONS_EXCLUDE`, the save rule and the Job rendering do not change; only the object name and the pinned fields do.
+- Sessions sharing a cache name now share their transcripts too (design D5, open question Q1); the bootstrapper resumes a stopped session with a transcript, so a recreated session resumes the last conversation saved under that name.
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
+- Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
