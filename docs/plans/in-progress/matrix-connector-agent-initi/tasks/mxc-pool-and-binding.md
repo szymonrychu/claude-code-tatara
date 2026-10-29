@@ -1,6 +1,6 @@
 ---
 title: mxc-pool-and-binding
-status: todo
+status: done
 repo: agents-matrix-connector
 value: concurrent agent calls never stall the connector and replies reach the right session
 files: [src/agents_matrix_connector/api/agent.py, src/agents_matrix_connector/sender.py, tests/test_api_agent.py, tests/test_sender.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_api_agent.py tests/test_sender.py -q
 depends_on: [mxc-outbound-limits]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: aaa9aa49cea92f56039750cb76e1dc41d48df093
 points: 3
 expected_minutes: 7
 expected_tokens: 965826
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 9
+actual_tokens: 1993675
+actual_roles: "impl 7, review 2"
+actual_role_tokens: "impl 1735812, review 257863"
 ---
 
 # mxc-pool-and-binding
@@ -63,3 +63,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
