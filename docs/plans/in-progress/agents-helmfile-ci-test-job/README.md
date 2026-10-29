@@ -1,7 +1,7 @@
 ---
 title: agents-helmfile CI test job
 blockers: []
-stage: review
+stage: build
 owner: Szymon Richert
 repos: [agents-helmfile]
 created: 2026-10-29
