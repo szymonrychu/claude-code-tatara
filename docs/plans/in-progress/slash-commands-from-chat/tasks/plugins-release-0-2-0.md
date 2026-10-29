@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.2.0
-status: done
+status: in-progress
 repo: any-mcp-tatara-plugins
 value: superleaders can install the orchestrator plugin whose session_send says what slash text does
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
@@ -78,3 +78,5 @@ The orchestrator plugin with the new session_send description is released as tag
 - 2026-10-29 amended: release order changed (user-approved, agreed between hives 2026-10-28): matrix-connector-agent-initi released plugins v0.2.0 first, so this task releases v0.3.0 on top of v0.2.0 after rebasing onto plugins main; slug stays plugins-release-0-2-0
 
 - 2026-10-29 done
+
+- 2026-10-29 in-progress: reopened: rebase onto plugins main v0.4.0 and release 0.5.0 (Amendment 2, mx-34 #406)
