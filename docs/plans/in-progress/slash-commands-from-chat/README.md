@@ -1,7 +1,7 @@
 ---
 title: slash commands from chat
 blockers: []
-stage: parked
+stage: build
 owner: Szymon Richert
 repos: [claude-code-wrapper, agents-orchestrator, agents-web, any-mcp-tatara-plugins]
 created: 2026-10-27
