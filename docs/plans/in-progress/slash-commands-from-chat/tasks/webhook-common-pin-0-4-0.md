@@ -1,6 +1,6 @@
 ---
 title: webhook common pin 0.4.0
-status: todo
+status: done
 repo: agents-webhook
 value: "a webhook preset whose prompt is a slash command finishes by the command's outcome instead of timing out"
 files: [pyproject.toml, uv.lock, README.md, tests/test_worker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_worker.py && mise run lint"
 depends_on: [common-release-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4b0185421bd6a0462ef754dd4c659fe6de7ada69
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 31
+actual_tokens: 787670
+actual_roles: "impl 26, review 6"
+actual_role_tokens: "impl 651119, review 136551"
 ---
 
 # webhook common pin 0.4.0
@@ -69,3 +69,5 @@ A agents-webhook run whose prompt is slash text finishes `handled` when its comm
 
 - The run tracking itself is agents-common's `runs.track` (common-command-outcome); this task only pins it and proves it end to end in the service.
 - Dependency bump: the TDD exception covers the pin values; the new tests are the behaviour guard.
+
+- 2026-10-29 done
