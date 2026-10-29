@@ -53,3 +53,11 @@ Discovery (2026-10-27): .scratchpad/discovery/matrix-outbound.md. Architecture d
 ## Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-29)
+
+# Matrix phase 5 judgement (tatara-0, 2026-10-28)
+Fix tasks: mxc-outbound-limits (sec M2, L slug, L m<n> probing), mxc-pool-and-binding (connector Consider 1, 2), orch-chat-untrusted-sessions (sec M1 + orch Consider e2e literal list), helmfile-smoke-helpers (web-helmfile Act on redirect + scope audit duplicate).
+Noted, not fixed: sec L NetworkPolicy (cluster-level, 256-bit token, api-only); sec L plugin pinned by tag (pre-existing pattern, tag = 4506e70 = uv.lock); connector Consider 3 PREAMBLE after failed first prompt (not a regression); orch Noted items (upstream 401 passthrough, env override can recreate crash, stale wording, query forwarding); web MEMORY.md entry (Consider).
+Scope audit: helmfile-orch-chat-pin ac1 superseded by helmfile-orch-chat-fix-pin; orch-chart-chat ac1 superseded by orch-chat-env-scope (intended).
+- mxc-pool-and-binding review medium dropped as not-this-task: Sender._claim holds a connection while RoomPolicy.refusal takes more (sender.py:88-106,150-165); pre-existing, bounded (single sequential bot loop, no cycle). Noted, not doing now.
