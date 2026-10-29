@@ -1,6 +1,6 @@
 ---
 title: plugin activity tool
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: agents get the orchestrator_activity tool and handover texts that describe the brief-then-handover protocol
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py, orchestration/orchestrator/README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest orchestration/orchestrator/tests/test_orchestrat
 depends_on: [orch-activity-route, orch-handover-outcome-note]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 825e97cbac127a69eff74264cbad451cf387cd63
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 12
+actual_tokens: 1786852
+actual_roles: "impl 8, review 1"
+actual_role_tokens: "impl 1645864, review 140988"
 ---
 
 # plugin activity tool
@@ -73,3 +73,5 @@ The plugin offers the activity tool and describes the brief-then-handover protoc
 
 - Shared file with slash-commands-from-chat and matrix-connector-agent-initi: build on their merged tools.
 - No release here (plugins-release-0-4-0).
+
+- 2026-10-29 done
