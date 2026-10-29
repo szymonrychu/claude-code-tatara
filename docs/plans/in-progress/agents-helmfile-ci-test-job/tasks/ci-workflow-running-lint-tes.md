@@ -1,6 +1,6 @@
 ---
 title: "CI workflow running lint, tests and check-pins"
-status: todo
+status: in-progress
 repo: agents-helmfile
 value: "A red pin or test can no longer merge unnoticed; main stays green"
 files: [.github/workflows/ci.yaml, README.md, MEMORY.md]
