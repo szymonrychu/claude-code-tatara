@@ -21,10 +21,13 @@ Why: Main went red after pin PR #40 because no CI ran the tests; user approved t
 
 ## Goals
 
-
+- A GitHub Actions job in agents-helmfile runs `mise run lint`, the whole `mise run test` suite (incl. tests/test_orchestrator_release.py) and `mise run check-pins` on every pull request and on push to main (user, 2026-10-28 21:07Z via mx-34 #270: "Yes").
+- Missing repository secrets fail the job loudly by name; no test is skipped or xfailed to get green.
 
 ## Non-goals
 
+- Branch protection or required checks (repository settings stay with the user).
+- Deciding where the SOPS key lives: open user decision (mx-34 #349); the PR merges only after it and the Harbor secrets are settled, so main never goes red.
 
 
 ## Review
