@@ -63,17 +63,28 @@ Scope (claude-code-wrapper): `docs/claude-midturn-input.md` (new: the probe reco
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `docs/claude-midturn-input.md`: `# Claude Code mid-turn input (probed on 2.1.304, <date>)`, one `### P1` .. `### P12` section each with `Observed:` (what the screen, transcript and hooks showed, with the captured line ids) and `Consequence:` (what the wrapper must do), then `## Design consequences`: a table `| D<n> | confirmed or contradicted | evidence | task to amend |` for D2, D3, D4, D5, D6, D7, D9, D10 of design.md.
+- Every probe paste uses the design D3 format exactly: `<text>\n\n<!-- ccw turn: <turn id> -->\n<!-- ccw merge: <merge id> -->` (ids such as `turn-probe1`, `m-probe1`), written as one bracketed paste, then CR after the wrapper's `boot.submit_delay_seconds` default, so the fixture carries both markers for task wrapper-merge-marker-parse.
+- `tests/fixtures/transcripts/midturn-probe.jsonl`: raw transcript lines copied verbatim from the probe session's JSONL (only redaction of credentials and absolute home paths), at least the prompt-bearing lines of P1, P2, P4 and P5 plus the neighbouring tool_result and assistant lines that show the position.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The facts the docs cannot settle (Stop count at a turn end with queued input, injection line shape, UserPromptSubmit, Esc with queued input, dialogs, compaction, collapsed pastes, invisible characters, Enter interrupting) are written down from the real binary, with real transcript lines pinned by tests; the orchestrator can amend wrapper-merge-marker-parse, wrapper-fake-claude-queue, wrapper-paste-hygiene, wrapper-immediate-turn-merge and wrapper-merge-stop-gate from the consequences table before they start.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/claude_code_wrapper/pty_proc.py` (`paste_bytes`, `send_prompt`), `src/claude_code_wrapper/transcript.py` (`parse_line`, `_attachment_events`), `tests/test_transcript.py`, the docs brief and the slash epic's probe layout (`/workdir/workdir/.scratchpad/probe-slash`) in one pass.
+- Set up a throwaway session under `/workdir/workdir/.scratchpad/probe-midturn` (own `CLAUDE_CONFIG_DIR` copy with the existing login, a work dir, a hooks log for UserPromptSubmit and Stop payloads); drive `claude` 2.1.304 through a PTY with the wrapper's paste format. Run P1 to P12; save raw screens and the transcript per probe there.
+- Red: write `tests/test_transcript_midturn.py` (both tests named in the acceptance conditions) and run `uv run pytest tests/test_transcript_midturn.py`; expect a failure on the missing fixture.
+- Copy the captured lines into the fixture, write the record and the MEMORY entry; rerun the task's verify; expect all passed. Quote the summary line.
+- A probe the environment cannot run (for example no MCP elicitation available) is recorded as `Observed: not run (<reason>)` with the consequence `unsettled`, never guessed; report it back as a question.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never copy a credential, token or `/home/...` path into the repo; redact them in the fixture.
+- The tests are characterisation pins over real data: the red step is the missing fixture, the green step is the captured lines; the parser itself is not changed here (0.3.3 already reads `queued_command`).
+- A contradiction of the design goes into the consequences table and the report; do not change other tasks' code here.
+- `docs/claude-midturn-input.md` is new; the wrapper's `docs/` holds `source-analysis.md` for style.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
