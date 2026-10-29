@@ -1,6 +1,6 @@
 ---
 title: orch dispatch commands
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a slash message reaches the wrapper command queue at once, even mid-turn, never as a turn, with a visible outcome"
 files: [src/agents_orchestrator/db/queue.py, src/agents_orchestrator/dispatcher/loop.py, src/agents_orchestrator/dispatcher/verify.py, tests/test_dispatcher.py, tests/test_queue_leader_routing.py, tests/test_ambiguous_verify.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_wrapper_clie
 depends_on: [orch-session-send-command, orch-wrapper-command-client]
 model: opus
 review: ""
-verified_head: ""
+verified_head: d5a0044b2161c6d2c913db6ae3aadd3ef92ccdd0
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 24
+actual_tokens: 5851628
+actual_roles: "impl 21, review 2"
+actual_role_tokens: "impl 5591078, review 260550"
 ---
 
 # orch dispatch commands
@@ -85,3 +85,5 @@ A slash message from the chat or a superleader is delivered to the target's wrap
 - Depends on orch-message-kind (the `kind` column) and orch-wrapper-command-client (`command()` outcomes, the fake's command route).
 
 - 2026-10-27 amended: interrogate items 3 (hold a session's later messages while its command row is dispatching), 8 (run marker never sent as args) and 13 (ac10 evidence replaced by an epic-tagged MEMORY.md entry naming last_dispatched_at), design D10 revised
+
+- 2026-10-29 done
