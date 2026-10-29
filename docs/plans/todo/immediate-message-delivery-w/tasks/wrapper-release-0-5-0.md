@@ -23,9 +23,9 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.5.0 and agents-common 0.4.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] The wrapper is pinned by its release tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags)."
+Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.4.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] The wrapper is pinned by its release tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags)."
 
-Design Constraints, verbatim: "This epic therefore takes migration 0012, wrapper 0.5.0, plugins 0.5.0; when a number is taken at build time the task takes the next free one and the orchestrator amends its `files`."
+Design Constraints, verbatim: "This epic therefore takes migration 0012, wrapper 0.5.0, plugins 0.6.0; when a number is taken at build time the task takes the next free one and the orchestrator amends its `files`."
 
 Scope (claude-code-wrapper): `pyproject.toml` and `src/claude_code_wrapper/__init__.py` (0.4.0 from the slash epic to 0.5.0), `uv.lock`, `tests/test_packaging.py` (the version pin, if it names the version).
 

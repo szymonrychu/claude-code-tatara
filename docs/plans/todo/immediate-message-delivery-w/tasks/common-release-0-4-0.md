@@ -23,7 +23,7 @@ actual_role_tokens: ""
 
 ## Requirement
 
-Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.5.0 and agents-common 0.4.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] the connector pins agents-common v0.4.0."
+Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.4.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). [...] the connector pins agents-common v0.4.0."
 
 Scope (agents-common): `pyproject.toml` (0.3.0 to 0.4.0), `uv.lock`, `tests/test_release.py` (the version and install pins), `README.md` (install line).
 

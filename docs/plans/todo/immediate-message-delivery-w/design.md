@@ -12,7 +12,7 @@ a paste still unconfirmed waits a bounded time for it (D6). Every message carrie
 superleader's `session_send`, the ccw peer `send_message`, the wrapper `POST /turns` and a web
 composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector stops holding a
 room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
-comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.5.0, agents-common
+comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.6.0, agents-common
 0.4.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
 the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
 orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
@@ -91,9 +91,9 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
   a guarded UPDATE in `db/queue.py`; the connector's `inbound` and `runs` likewise.
 - Built on the merged slash-commands-from-chat epic (README blocker): its command queue held until
   Stop (D9), `_PICK_COMMAND` and the per-session order rule (D10), `DialogScanner` (D7), migration
-  0010 and wrapper 0.4.0, plugins 0.3.0. Built on hive-decoupling (README blocker): migration 0011,
+  0010 and wrapper 0.4.0, plugins 0.5.0. Built on hive-decoupling (README blocker): migration 0011,
   plugins 0.4.0 and its orchestrator plugin pin. This epic therefore takes migration 0012, wrapper
-  0.5.0, plugins 0.5.0; when a number is taken at build time the task takes the next free one and
+  0.5.0, plugins 0.6.0; when a number is taken at build time the task takes the next free one and
   the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
   repo's main and the submodules are advanced, never against their branches (my call, builder Q1);
   the connector's own migration is the next free one after `0002_agent_sends.sql`.
@@ -364,8 +364,8 @@ Why: the brief's fix-as-AC list (cartographer Plan inputs) names exactly these t
 any-mcp-tatara-plugins `session_send` gains `priority` (enum `immediate`, `idle`, default
 `immediate`) and its description says: a message to a busy leader joins its running turn at once
 and shares that turn's answer; `idle` waits until the leader is idle. The `chat_send` description's
-"chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.5.0 on top
-of hive-decoupling's 0.4.0; the orchestrator pins it.
+"chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.6.0 on top
+of slash's 0.5.0; the orchestrator pins it.
 Alternatives: no plugin change (superleaders could not ask for `idle`).
 Why: G2 names the superleader's tool, and a merged `<chat>` message breaks the old wording.
 
@@ -411,11 +411,11 @@ Why: G4; Q6 confirms adding the two repos.
 
 ### D19: release and pin like the slash epic; no deploy task
 
-claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.5.0 and agents-common 0.4.0 are version bumps
+claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.4.0 are version bumps
 whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). The
 orchestrator pins the wrapper merge commit of v0.5.0 (pyproject, uv.lock, `e2e/agent-test.Dockerfile`,
 README Images) with a real-wrapper contract case and a kind e2e case for a merged message, then the
-plugins ref v0.5.0; the connector pins agents-common v0.4.0. The wrapper is pinned by its release
+plugins ref v0.6.0; the connector pins agents-common v0.4.0. The wrapper is pinned by its release
 tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags).
 The agent-test scenario (`e2e/agent-test.scenario.json`) sets `"midturn_input": "queue"`, so the
 real contract case and the kind e2e prove real delivery (the merge's `absorbed_at` set, the turn
