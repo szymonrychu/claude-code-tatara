@@ -45,17 +45,26 @@ Test no longer accurate, rewritten: src/sessions/DiscardSessionDialog.test.tsx `
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/sessions/DiscardSessionDialog.tsx`: the effective name is `session.status.cache?.key` when it is a non-empty string, else `session.spec.cache?.key`; `status` is `Record<string, unknown>` in the schema, so narrow the type before use.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Discarding a migrated session whose spec still says `preset-0123456789abcdef` and whose `status.cache.key` is `my-repo-alpha` shows that both the workspace files and the Claude transcripts are saved under `my-repo-alpha` and restored by the next session with the same cache name (by default the same preset and slug).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read src/sessions/DiscardSessionDialog.tsx and src/sessions/DiscardSessionDialog.test.tsx (`existing`, `wrap`) in one pass.
+- `npm ci --no-audit --no-fund`.
+- Red: rewrite `states what is backed up when the session cache is configured` for the new wording and add the two tests named in the acceptance conditions; run `npx vitest run src/sessions/DiscardSessionDialog.test.tsx`; expect them to fail.
+- Green: change DiscardSessionDialog.tsx; rerun; expect all passed.
+- `npm run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The orchestrator pins `status.cache.key` at the first restore and the migration repoints it for pre-epic sessions (tasks orch-transcripts-follow-name, orch-cache-name-migration); the spec key of a pre-epic session stays the old `preset-*` literal because the api owns `spec`.
+- No schema sync is needed: `status` is free-form.
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; `npm test` had 6 test files failing to import `@codemirror/*` because node_modules was stale, so the verify runs `npm ci --no-audit --no-fund` first.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring vitest load flake in PresetForm).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
