@@ -1,6 +1,6 @@
 ---
 title: wrapper command signals
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: "local and unknown commands complete on the real echo shapes, so /reload-plugins from a client completes and frees the slot"
 files: [src/claude_code_wrapper/transcript.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, tests/test_transcript_commands.py, tests/test_command_signals.py, tests/test_fake_claude_commands.py, tests/test_command_runner.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_transcript_commands.py tests/test_transcript.p
 depends_on: [wrapper-slash-turn-guard]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 606f1676e3de47c84466df7a8d69092086a945c8
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 64
+actual_tokens: 3517751
+actual_roles: "impl 16, review 4"
+actual_role_tokens: "impl 3131408, review 386343"
 ---
 
 # wrapper command signals
@@ -105,3 +105,5 @@ Every local command on the real echo shapes completes with its stdout, an unknow
 - 2026-10-29 amended: wrapper main is at v0.3.3 with a queued_command attachment fix in transcript.py, which this task also edits: the wrapper branch rebases onto main and keeps that fix (ac15); release stays 0.4.0
 
 - 2026-10-29 amended: fable ruling 2026-10-29 on the wrapper-command-signals probe: claude sends a bare name that exists on disk (/tmp) to the model; D2 rule unchanged, ac8 uses nonexistent, D8 promotion pins the prose case
+
+- 2026-10-29 done
