@@ -79,17 +79,29 @@ Tests no longer accurate because each pins the exact orchestrator menu list, whi
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/backends/registry.ts`: orchestrator entry `{ id: 'cache', label: 'Cache', order: 50, backend: 'orchestrator', render: (onBack) => createElement(CachePage, { onBack }) }`.
+- `src/cache/CachePage.tsx` (new): `export function CachePage({ onBack }: { onBack: () => void })`.
+- `src/cache/DeleteCacheObjectDialog.tsx` (new): props `open`, `object: CacheObjectView`, `onClose`, `onDone`.
+- `src/layout/formatBytes.ts` (new): `export function formatBytes(bytes: number): string` (the body moved unchanged from `DiscardSessionDialog.tsx`).
+- Uses `getCache`, `listCacheObjects`, `requestCacheDeletion`, `refreshCache`, `getCacheRequest` from `src/api/client.ts` (task web-cache-client), `usePoll`, `ConfirmDialog`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Users with the orchestrator backend see a Cache entry after Presets; it lists every cache object with kind, class, size and age, filters and searches, shows the quota gauge and listing age, refreshes on demand and deletes one object after a typed-name confirm, showing the reconciler's outcome.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/backends/registry.ts`, `src/backends/registry.test.ts`, `src/App.tsx` (how a menu view renders), `src/presets/PresetsPage.tsx` and its test (page shape, `vi.mock('../api/client')`), `src/webhooks/WebhooksPage.tsx` and `EventsTable.tsx` (usePoll, table, paging), `src/layout/ConfirmDialog.tsx`, `src/sessions/DiscardSessionDialog.tsx` and its test (typed confirmation, formatBytes), `src/triggers/usePoll.ts`, `src/layout/designRules.ts` and `src/api/client.ts` in one pass.
+- Red: update the registry tests named in the Requirement and add `cache_entry_renders_cache_page`; write `src/cache/CachePage.test.tsx` (`// @vitest-environment jsdom`, mocked client, fake timers for the 5 s poll) with every test named in the acceptance conditions and `src/layout/formatBytes.test.ts`; run `npx vitest run src/cache src/backends/registry.test.ts src/layout/formatBytes.test.ts`; expect failures on the missing modules and entry.
+- Green: write formatBytes.ts (and switch DiscardSessionDialog.tsx to it), CachePage.tsx, DeleteCacheObjectDialog.tsx and the registry entry; rerun the verify; expect passed; `npm run build && npm run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The gauge is MUI `LinearProgress` per quota dimension (architecture section 5); colours come from the theme, never literals.
+- "listed <age>": a relative age from `listed_at`; show "never listed" when null.
+- The request poll stops at a terminal status; a refused outcome shows the reason the reconciler wrote (`in_use: <slugs>`, `changed`), a failed one its S3 reason.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main; both edit `src/sessions/DiscardSessionDialog.tsx`, the openapi files and `src/api/schema.d.ts` before this epic. Read the landed files first.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring; agents-web has a known load-dependent vitest timeout in PresetForm `name_rules_default_name_and_pvc`).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes, no colour literals, decorative Unicode or off-grid spacing (`layout/designRules.ts`), never the word "cluster" (`nomenclature.test.ts`). No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
