@@ -1,6 +1,6 @@
 ---
 title: wrapper slash js whitespace
-status: todo
+status: done
 repo: claude-code-wrapper
 value: "slash text claude would run as a command (JS whitespace, invisible characters, ESC, probe) can never be typed into the session as a turn or probe"
 files: [src/claude_code_wrapper/session.py, README.md, MEMORY.md, tests/test_session_turns.py, tests/test_api_turns.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_session_turns.py tests/test_api_turns.py tests
 depends_on: [wrapper-release-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 7b3953a26182e7d7c228a739d9d65da9c0efa866
 points: 3
 expected_minutes: 8
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 11
+actual_tokens: 1351895
+actual_roles: "impl 9, review 3"
+actual_role_tokens: "impl 1142827, review 209068"
 ---
 
 # wrapper slash js whitespace
@@ -101,3 +101,5 @@ No text that claude 2.1.304 would run as a slash command (JS whitespace separato
 - `router.py` (`submit_turn`) and `manager.py` (`_initial_turn`) call `slash_command` already; no change there.
 - Do not run `tests/test_manager.py` (`test_shutdown_stops_all` fails locally, a known pre-existing failure).
 - Claude's parser evidence: `.scratchpad/slash-fix-design.md` sources (binary offsets 254536412, 267231000, 243756307).
+
+- 2026-10-29 done
