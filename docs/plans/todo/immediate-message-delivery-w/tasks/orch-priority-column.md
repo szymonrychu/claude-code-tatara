@@ -40,7 +40,7 @@ Scope (agents-orchestrator): `src/agents_orchestrator/db/migrations/0012_message
 - ac1: (CI or a Docker host) migration 0012 adds messages.priority: rows that existed before it read idle, a new row without priority reads immediate, any other value violates the CHECK, and a rerun is a no-op (new) [evidence: test:tests/test_migrations.py::test_message_priority_column]
 - ac2: (CI or a Docker host) the migration lists of the fresh and existing-database tests include 0012 (updated, named) [evidence: test:tests/test_migrations.py::test_fresh_database_gets_all_tables]
 - ac3: (CI or a Docker host) POST /api/v1/sessions/{id}/messages stores priority (immediate by default, idle when sent), GET of the message and the session list return it, and an unknown value answers 422 (new) [evidence: test:tests/test_api_messages.py::test_post_message_priority]
-- ac4: PostMessage defaults to immediate, accepts idle, refuses other values, and MessageView carries priority [evidence: command:uv run --frozen python -c "import pydantic; from agents_orchestrator.api.schemas import PostMessage, MessageView; assert PostMessage(text='x').priority == 'immediate'; assert PostMessage(text='x', priority='idle').priority == 'idle'; assert 'priority' in MessageView.model_fields; exec('try:\n PostMessage(text=\'x\', priority=\'soon\')\n raise SystemExit(1)\nexcept pydantic.ValidationError:\n pass')"]
+- ac4: PostMessage defaults to immediate, accepts idle, refuses other values, and MessageView carries priority [evidence: command:uv run --frozen python -c "from agents_orchestrator.api.schemas import PostMessage, MessageView; assert PostMessage(text='x').priority == 'immediate'; assert PostMessage(text='x', priority='idle').priority == 'idle'; assert 'priority' in MessageView.model_fields" && ! uv run --frozen python -c "from agents_orchestrator.api.schemas import PostMessage; PostMessage(text='x', priority='soon')" 2>/dev/null]
 - ac5: openapi.json is regenerated from the app and carries the field [evidence: test:tests/test_readme_api.py::test_openapi_json_matches_app]
 - ac6: Docker-free suites and lint pass [evidence: command:uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && mise run lint]
 
@@ -80,3 +80,5 @@ Every stored message carries a priority the dispatcher can act on; messages queu
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: ac4 command simplified (two python -c calls instead of exec)
