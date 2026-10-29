@@ -1,6 +1,6 @@
 ---
 title: orch handover due note
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a leader near its limit is told to hand over, to whom and how, before its details are compacted away"
 files: [src/agents_orchestrator/dispatcher/hive.py, tests/test_hive_push.py, tests/test_eligibility_fragments.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_hive_push.py tests/test_eligibility_f
 depends_on: [orch-hive-feed-removal]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e0e2f3c599f20a7aa508912a8377302395f45ec7
 points: 5
 expected_minutes: 8
 expected_tokens: 1828146
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 50
+actual_tokens: 3225989
+actual_roles: "impl 49, review 2"
+actual_role_tokens: "impl 3088702, review 137287"
 ---
 
 # orch handover due note
@@ -91,3 +91,5 @@ A leader at or above the threshold sees, within one push tick plus wrapper deliv
 - DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.
 
 - 2026-10-27 amended: builder check settlement 7: handover_due and outcome pass run every tick outside the _claim/_release hash path
+
+- 2026-10-29 done
