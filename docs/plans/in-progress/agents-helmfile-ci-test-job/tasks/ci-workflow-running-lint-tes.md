@@ -1,6 +1,6 @@
 ---
 title: "CI workflow running lint, tests and check-pins"
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "A red pin or test can no longer merge unnoticed; main stays green"
 files: [.github/workflows/ci.yaml, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: mise run lint
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 08fa9f3bfb99b080912299146932d8d0937b1c87
 points: 3
 expected_minutes: 7
 expected_tokens: 981792
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 15
+actual_tokens: 537451
+actual_roles: "impl 14, review 1"
+actual_role_tokens: "impl 459404, review 78047"
 ---
 
 # CI workflow running lint, tests and check-pins
@@ -61,3 +61,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
