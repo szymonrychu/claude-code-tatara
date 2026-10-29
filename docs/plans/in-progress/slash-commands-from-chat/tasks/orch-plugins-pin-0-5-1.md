@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.5.1
-status: todo
+status: done
 repo: agents-orchestrator
 value: "the slash deploy carries the latest stable orchestrator plugin, including tatara's handover advice floor"
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_settings.py tests/test_images.py test
 depends_on: [orch-wrapper-pin-0-4-1]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 3ae80e25b85c1768b10bb7cc9700b20cb642785d
 points: 1
 expected_minutes: 4
 expected_tokens: 625210
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 166330
+actual_roles: impl 1
+actual_role_tokens: impl 166330
 ---
 
 # orch plugins pin 0.5.1
@@ -63,3 +63,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
