@@ -57,8 +57,8 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: change `tests/test_settings.py::test_defaults` to `v0.5.1`; run `uv run --frozen pytest tests/test_settings.py`: fails on the `v0.5.0` default.
+- Green: settings default, pyproject dev dependency (`uv lock`), README rows; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 

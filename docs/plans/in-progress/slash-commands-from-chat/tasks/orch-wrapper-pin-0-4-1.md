@@ -71,8 +71,8 @@ What is true and observable when the task is done.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add `test_fake_deny_mirrors_wrapper_default` and the new names in `test_commands_any_name_and_denied`, move the pyproject pin to the merge sha and run `uv lock`; run `uv run --frozen pytest tests/test_images.py tests/test_fake_wrapper_contract.py`: the Dockerfile/README image checks and the mirror test fail.
+- Green: update `e2e/agent-test.Dockerfile` (`BASE_IMAGE` sha7, `WRAPPER_SHA`), README `## Images` and `COMMAND_DENY` to the pinned wrapper's list; run the task's verify: passes. Quote the summary line. The real contract leg (ac7) runs in CI on the PR.
 
 ## Notes
 
