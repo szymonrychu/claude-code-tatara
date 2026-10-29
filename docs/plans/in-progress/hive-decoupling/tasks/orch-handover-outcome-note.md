@@ -1,6 +1,6 @@
 ---
 title: orch handover outcome note
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: a leader learns whether its handover request was applied or why it was rejected
 files: [src/agents_orchestrator/dispatcher/hive.py, src/agents_orchestrator/dispatcher/loop.py, tests/test_hive_push.py, README.md, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_hive_push.py tests/test_leadership_pa
 depends_on: [orch-handover-due-note]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 97bd7000e9418969bdeb0cc3e6f6e6c0d26752d6
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 50
+actual_tokens: 2104782
+actual_roles: "impl 49, review 2"
+actual_role_tokens: "impl 1991085, review 113697"
 ---
 
 # orch handover outcome note
@@ -73,3 +73,5 @@ A leader that asked for a handover always learns the outcome, within the push th
 - `leadership_pass` keeps its signature; `_decide` already stamps `decided_at` and `reject_reason`.
 - For ac4, follow `test_dispatcher_run_pushes_on_leader_changed`; force a dispatcher-side rejection with a `to_agent_id` target that goes unready after the API accepted the request.
 - DB tests are CI-only in agent pods (no Docker); CI on the PR is the gate.
+
+- 2026-10-29 done
