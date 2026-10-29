@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.4.0
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: the activity tool and new handover texts ship as a plugins release the orchestrator can pin
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_source_install.py::test_orchestrator_
 depends_on: [plugin-activity-tool]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b511c90951dbace68b60e01fbd1097ef20b0997f
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 227917
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 163390, review 64527"
 ---
 
 # plugins release 0.4.0
@@ -72,3 +72,5 @@ The orchestrator plugin with the activity tool is released as tag v0.4.0, so the
 - `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in agent pods with git 2.39 (`--end-of-options`); CI is the gate for it.
 
 - 2026-10-27 amended: builder check settlement 1: migration number and plugins tag are placeholders until orch-activity-route amends them from main
+
+- 2026-10-29 done
