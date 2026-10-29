@@ -1,6 +1,6 @@
 ---
 title: schedule common pin 0.4.0
-status: todo
+status: done
 repo: agents-schedule
 value: "a scheduled preset whose prompt is a slash command finishes by the command's outcome instead of timing out"
 files: [pyproject.toml, uv.lock, README.md, tests/test_tracker.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_tracker.py && mise run lint"
 depends_on: [common-release-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 25601bb3620d83fadd41772b883dd07af790755f
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 455183
+actual_roles: "impl 2, review 3"
+actual_role_tokens: "impl 322472, review 132711"
 ---
 
 # schedule common pin 0.4.0
@@ -69,3 +69,5 @@ A agents-schedule run whose prompt is slash text finishes `handled` when its com
 
 - The run tracking itself is agents-common's `runs.track` (common-command-outcome); this task only pins it and proves it end to end in the service.
 - Dependency bump: the TDD exception covers the pin values; the new tests are the behaviour guard.
+
+- 2026-10-29 done
