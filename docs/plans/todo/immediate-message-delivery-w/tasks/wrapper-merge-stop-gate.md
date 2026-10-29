@@ -60,17 +60,26 @@ Scope (claude-code-wrapper): `router.py` (`_stop_gate` merge-pending leg and ord
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `config.py`: `sessions.merge.settle_seconds: float = 15.0` (`ge=0`).
+- Event `turn_deferred` gains reason `merge_pending` and a `merge_ids: list[str]` field (other reasons unchanged).
+- `_stop_gate` order: onStop block -> hook or background defer -> `merge_pending` -> slash command hold -> complete.
+- Turn record: merges never seen keep `absorbed_at: null` after completion or interrupt; nothing else in the record changes shape.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A turn that absorbed messages still completes exactly once: on the Stop that follows the last merged prompt, or at the latest `merge.settle_seconds` after a Stop when a paste was never taken. An interrupt keeps its contract and never leaves the session busy.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `router.py` (`_on_stop`, `_stop_gate`, `_emit_deferred`, `_after_turn`), `session.py` (`stop_target`, `complete`, `_end_turn`, `interrupt`, `_run_interrupt`, `on_interrupted`, `_watch_turn`), `config.py`, `tests/test_stop_gate.py`, `tests/test_command_turn_resume.py`, `tests/test_turn_merge.py`, the fake's queue mode and `docs/claude-midturn-input.md` (P2, P5) in one pass.
+- Red: write `tests/test_turn_merge_stop.py` with every test named in the acceptance conditions; run `uv run pytest tests/test_turn_merge_stop.py`; expect them to fail.
+- Green: implement the merge-pending leg, the bounded wait, the completion from the stored payload, the interrupt rule, README and MEMORY; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Depends on probe P2 (one Stop or two at a turn end with queued input) and P5 (Esc with queued input). If the consequences table contradicts D6 or D7, the orchestrator amends this task before it starts.
+- The deferred Stop's payload and usage must be kept so the bound can complete the turn honestly; the usage accumulator keeps counting if the merged prompt runs.
+- `turn_max_seconds` and `turn_stall_seconds` keep their meaning; the settle timer is separate and cancelled with the turn.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
