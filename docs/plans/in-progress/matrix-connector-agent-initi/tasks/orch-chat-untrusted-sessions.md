@@ -1,6 +1,6 @@
 ---
 title: orch-chat-untrusted-sessions
-status: todo
+status: done
 repo: agents-orchestrator
 value: webhook and schedule sessions cannot be steered into messaging the user
 files: [src/agents_orchestrator/k8s/on_start.py, src/agents_orchestrator/api/chat.py, tests/test_on_start.py, tests/test_agent_chat.py, tests/e2e/test_e2e_kind.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: uv run pytest tests/test_on_start.py tests/test_agent_chat.py -q
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b21a292af86c28366f5288613ceb8eba2743acb2
 points: 3
 expected_minutes: 7
 expected_tokens: 965826
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 57
+actual_tokens: 5618720
+actual_roles: "impl 55, review 2"
+actual_role_tokens: "impl 5304277, review 314443"
 ---
 
 # orch-chat-untrusted-sessions
@@ -68,3 +68,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-28 amended: creator record decision: created_by_service column
+
+- 2026-10-29 done
