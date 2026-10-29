@@ -1,6 +1,6 @@
 ---
 title: wrapper dialog commands
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: dialog commands sent from the chat are dismissed by ESC inside a bound instead of wedging the session
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/session.py, src/claude_code_wrapper/router.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_dialogs.py, tests/test_fake_claude_commands.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_dialogs.py tests/test_fake_claude_comm
 depends_on: [wrapper-command-signals]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 24ccb08f4951172e55a940f320dde143ae2c5275
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 55
+actual_tokens: 11619840
+actual_roles: "impl 50, review 5"
+actual_role_tokens: "impl 11358635, review 261205"
 ---
 
 # wrapper dialog commands
@@ -88,3 +88,5 @@ A dialog command sent from the chat never leaves the session wedged: it is dismi
 - Depends on wrapper-command-signals (class-agnostic `_await_completion`, the key log).
 
 - 2026-10-27 amended: interrogate items 6 (restart claude with --resume before releasing the slot when a dialog stays open) and 7 (one deadline per command), design D7 and Bounds revised
+
+- 2026-10-29 done
