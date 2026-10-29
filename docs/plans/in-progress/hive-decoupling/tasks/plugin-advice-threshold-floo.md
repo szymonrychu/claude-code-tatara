@@ -1,6 +1,6 @@
 ---
 title: plugin advice threshold floor
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: "the plugin's handover advice never says 0% or a negative percent"
 files: [orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py, orchestration/orchestrator/tests/test_orchestrator_plugin.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest orchestration/orchestrator/tests/test_orchestrat
 depends_on: [plugins-release-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 76d7fb3407cd9955eb55be48ce9e9aadbf0b41f9
 points: 1
 expected_minutes: 4
 expected_tokens: 632059
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -58,3 +58,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-29 in-progress
+
+- 2026-10-29 done: PR #5 review pass, merged ef17204, main CI green, tag v0.5.1 pushed; ref pin rides with cct2's slash deploy
+
+- 2026-10-29 actuals: no agent records
