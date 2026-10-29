@@ -46,17 +46,22 @@ Scope (any-mcp-tatara-plugins): `orchestration/orchestrator/pyproject.toml` (0.4
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `orchestration/orchestrator/pyproject.toml` `[project].version = "0.5.0"`; README example `ref=v0.5.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A tagged plugins release with the priority parameter exists for the orchestrator to pin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `orchestration/orchestrator/pyproject.toml`, `orchestration/orchestrator/README.md`, `tests/test_source_install.py` and hive-decoupling's plugins-release-0-4-0 task in one pass.
+- Version bump with no behaviour change (TDD exception): bump, `uv lock`, update the metadata pin and the README ref.
+- Run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The tag is pushed by the orchestrator session after the PR merges green; ac3 is checked by it.
+- If 0.5.0 is taken at build time, take the next free minor and report it so the orchestrator amends this task and orch-plugins-pin-0-5-0.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
