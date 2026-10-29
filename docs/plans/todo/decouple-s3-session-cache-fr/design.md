@@ -189,6 +189,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q2: Is the template the preset's existing cache.key field read as a Jinja2 template, empty meaning the default and a literal key keeping today's shared-cache behaviour, rather than a new field or a global setting? D1 [recommended: yes, cache.key is the template]
 - Q3: Are the template variables preset (slugified preset name), preset_id, session (slug) and created_by, with the default rendering <preset>-<session> and shortening the preset part so it always fits the 63-character key rule, and a rendered name that breaks the rule refused with 422? D2 [recommended: yes, those four variables and that default]
 - Q4: Does rotation mean a session discarded and recreated with the same slug, so the migration copies each existing session's objects to its new name and repoints the session so its next save goes to the new name? D7 [recommended: yes, rotation is discard plus recreate with the same slug]
+- Q5: Does the per-session default apply to every preset, including webhook and schedule presets, so each trigger session gets its own cache that is never restored again and objects accumulate until the cache management section cleans them, while a preset that wants today's shared cache sets the template {{ preset }}? D11 [recommended: yes, one default for every preset]
 
 ## Irreversible operations in scope
 
