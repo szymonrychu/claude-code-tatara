@@ -50,6 +50,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Sync to origin/main; wait for the orchestrator main CI run on be554bb to be green including chart-publish (`gh run list -R szymonrychu/agents-orchestrator -b main`).
+- Change the orchestrator pin assertions in tests/test_orchestrator_release.py to be554bb and run the verify: the pin tests fail.
+- Set the chart version and image tag to be554bb, rerun: pass. `mise run check-pins` ok, `mise run lint` clean. Commit on branch orch-flaky-fix-pin (from origin/main; PR #53 holds branch hive-decoupling), push, open a PR to main.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
