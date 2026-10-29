@@ -366,6 +366,6 @@ Q8 (exclude candidates at or above the threshold) stays open for the gate.
 ## Build-time settlements (2026-10-29, tatara-0)
 
 - (my call) slash-commands-from-chat is dropped as a blocker: it is parked, owned by hive cct2 (split agreed 2026-10-28), and its branch is 46 commits behind orchestrator main. Waiting would stall this epic indefinitely; whichever epic merges second renumbers its migration and rebases onto the other. Matrix (the other blocker) is done.
-- Migration 0011: main ends at 0009_created_by_service.sql and slash-commands-from-chat claims 0010 (orch-message-kind, amended 2026-10-29). If this epic's migration merges before slash's, the rule above applies (second to merge renumbers).
-- Plugins release v0.4.0: the user pre-approved slash-commands = v0.3.0 (relayed by mx-34 msg 333). This epic pushes no plugins tag until mx-34 confirms the number, since a swap goes to the user.
+- Migration number assigned at merge (agreed with cct2 via mx-34 msg 337): planned 0011 because slash-commands-from-chat claims 0010; the first epic to merge to orchestrator main takes 0010, the second renumbers to the next free one in its rebase and amends its own tasks and migration test.
+- Plugins release v0.4.0 (agreed via mx-34 msg 337): the user pre-approved slash-commands = v0.3.0. If this epic is ready to release before slash, mx-34 decides then whether to wait or take it to the user; no plugins tag is pushed before that.
 - Task slugs keep their historical names (plugins-release-0-4-0, orch-plugins-pin-0-4-0).
