@@ -1,6 +1,6 @@
 ---
 title: helmfile smoke activity
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live smoke proves the activity route and tool on every deploy
 files: [scripts/smoke.sh, tests/test_smoke_script.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_smoke_script.p
 depends_on: [orch-hive-tools-activity]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 84197ef8c4ad52005afc24aa5c7093b731b4675a
 points: 3
 expected_minutes: 6
 expected_tokens: 936557
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 44
+actual_tokens: 2108178
+actual_roles: "impl 38, review 6"
+actual_role_tokens: "impl 2007682, review 100496"
 ---
 
 # helmfile smoke activity
@@ -62,3 +62,5 @@ Every `mise run smoke` proves the activity route from an agent pod and the tool 
 
 - Mirror the step 6 `/agent/v1/me` check (`smoke.sh:346-356`) and its tests `test_agent_me_check_*` (`tests/test_smoke_script.py:950-964`).
 - Recurring retro: fakes must answer the real output shapes; each wait gets its own deadline.
+
+- 2026-10-29 done
