@@ -143,6 +143,23 @@ prose): `/`, `/ is root`, `/_x` and long names were typed as turns, claude calle
 fired and the session hung (interrogate item 2); one-line args: a preset prompt starting with `/`
 plus its run marker (agents-common) would fail `invalid_command` where it ran before (interrogate
 item 8). Why: claude decides what is a command, so both sides must agree with it exactly.
+Amended 2026-10-29 (phase 5 fix round, finding F1, user decision; architect brief
+`.scratchpad/slash-fix-design.md`): "whitespace" above is exactly claude's JS `\s` (the same set as
+JS `trim`, checked under node v24): U+0009-000D, 0020, 00A0, 1680, 2000-200A, 2028, 2029, 202F, 205F,
+3000, FEFF. Python's `isspace` differs (it adds U+001C-001F and U+0085 and lacks U+FEFF), so neither
+parser uses `lstrip()`, `strip()` or `\s` any more. Every other character of Unicode category Cc or Cf
+(ESC, NUL, DEL, C1, U+001C-001F, U+0085, zero-width and bidi characters) is ignorable: skipped in the
+leading run and deleted from the name before classifying. Parse steps: remove the run marker; skip
+leading whitespace and ignorable characters; require `/`; the name runs to the first whitespace
+character, ignorable characters dropped from it; the args are the rest, stripped of whitespace only;
+the name regex applies unchanged. Why: claude 2.1.304 (`Kb`: `t.trim()` then a leading `/`; `hIe`:
+the name ends at the first `search(/\s/)`, args `.trim()`'d; exact case-sensitive lookup) ran
+`/exit` and `/login` texts our parsers classed as prose, and `pty_proc.paste_bytes` deletes ESC before
+typing, so `"/ex\x1bit"` and `"\x1b/exit"` reached claude as `/exit`. This leans toward calling more
+text a command, the safe direction; the orchestrator then sends the cleaned name. Normalising in the
+orchestrator alone is not enough: direct wrapper clients, the initial prompt and `Session.probe` (which
+pasted client text with no guard; it now refuses slash text 422 `slash_command`) bypass it. Tasks
+wrapper-slash-js-whitespace and orch-slash-js-whitespace share one case table.
 
 ### D3: the wrapper turns path refuses slash text for every origin
 
@@ -208,6 +225,17 @@ Why: these end, replace or move the claude process or session, hand it to anothe
 change account identity or credentials; everything else is recoverable by ESC and the bound.
 Alternative: no deny list ("any" literally): /clear blinds the wrapper (new claude session id,
 every later Stop dropped), /exit kills claude.
+Amended 2026-10-29 (phase 5 fix round, user decision, verbatim "all yes"): (1) `DEFAULT_COMMAND_DENY`
+gains heapdump, plugin, plugins, marketplace, install, import, daemon, schedule, routines, add-dir,
+export, install-github-app, install-slack-app, design-consent, design-revoke, desktop, remote-env,
+feedback, bug, extra-usage, usage-credits, terminal-setup, ide, memory. Each name was checked against
+the claude 2.1.304 binary during planning: all 24 exist (plugins and marketplace are aliases of
+plugin, routines an alias of schedule; bug is its own command); desktop's alias `app` is not in the
+list (Open questions Q3). (2) A `POST /v1/sessions` `commands.deny` override only extends the deny
+list (the effective list is the configured list plus the override's names), never replaces or empties
+it; `sessions.commands.deny` in the server config keeps its D5 meaning (it sets the list). (3) Clients
+keep `["*"]` (D11) with the extended list. The orchestrator's fake wrapper `COMMAND_DENY` mirror and the
+wrapper docs and example configs follow. Tasks wrapper-deny-list-extend, orch-wrapper-pin-0-4-1.
 
 ### D6: completion by runtime class detection, local and unknown classes
 
@@ -398,6 +426,15 @@ Kind e2e placement (my call, interrogate item 12): the e2e job runs on every PR 
 403. The case is its own task orch-e2e-slash-command, right after orch-render-client-commands (a
 separate task keeps orch-render-client-commands at 8 files); orch-wrapper-pin-0-4-0 no longer
 touches `tests/e2e/test_e2e_kind.py`.
+Amended 2026-10-29 (phase 5 fix round, user decisions): wrapper v0.4.0 is already tagged on origin
+(e946288), so the F1 parser fix and the D5 deny extension ship as wrapper 0.4.1 (task
+wrapper-release-0-4-1; tag approved by the user and mx-34 #432; the orchestrator session pushes it
+after merge), then orch-wrapper-pin-0-4-1 moves the orchestrator pin (same files as
+orch-wrapper-pin-0-4-0, plus the fake wrapper's deny mirror and the contract test). agents-common
+0.4.0 (minor: `Message.command`, D20) is released by common-release-0-4-0; its tag waits for mx-34's
+confirmation and the orchestrator session pushes it after that. agents-webhook, agents-schedule and
+agents-matrix-connector then pin v0.4.0. The epic's repos grow by agents-common, agents-webhook,
+agents-schedule and agents-matrix-connector.
 
 ### D15: the commands metric label stays bounded (my call)
 
@@ -427,6 +464,47 @@ removing `validate_params` and `params_schema` and changing `CommandRecord.args`
 every caller (router, API, MCP server) and the tests that pass params dicts in the same commit; there
 is no green intermediate without a compatibility shim (rule 4). The config and deny change (D5) is
 split off before it to keep this task as small as it can be. Opus.
+
+### D19: a command message's outcome is read from the events table (phase 5 fix round, F2)
+
+A command message stays `sent` and never gets a turn, so a caller polling the message cannot tell
+when it finished. `MessageView.command` (new `CommandOutcomeView {state, result, error, turn_id, at}`,
+null for turn messages and for a command with no outcome yet) is looked up at query time: the latest
+`command_completed` or `command_failed` event of the message's agent whose `data.record.id` equals the
+message's `wrapper_command_id` (as `mark_sent_command` already does); `state`, `result`, `error` and
+`turn_id` come from the event's record, `at` is the event's `ts`; a cancelled command is a
+`command_failed` event whose record state is `cancelled`. Migration `0012_command_outcome_index.sql`
+adds a partial index on the command record id over those two event types (my call: keyed by
+`agent_id` and the record id, the lookup's two equality predicates); its build briefly blocks event
+inserts. No new writer, no new message status.
+Alternatives: the ingester writes the outcome onto the message (a new writer transition, and the
+event-before-202 race handled a second time); fail the message when the command fails (mixes
+delivery with outcome; failed turns don't do this). Why: no new writer and no race between the event
+and the dispatcher's 202; the cost is one JSON lookup per message read, which the index bounds.
+Changes the decision: a production `events` table large enough that building the index blocks event
+inserts for too long; then a guarded `command_outcome` column written by the ingester. Task
+orch-command-outcome.
+
+### D20: run trackers judge a command message by its outcome (phase 5 fix round, F2)
+
+agents-common `runs.track` reads `Message.command` (new `CommandOutcome` model in
+`agents_common.orchestrator`), mapping, verbatim from the architect:
+
+| Command outcome | Run result |
+|---|---|
+| completed: ok, dismissed, skipped_cache | handled |
+| failed (e.g. unknown_command, dialog_stuck, timeout) | failed, reason `command_<error>` |
+| cancelled | failed, reason `command_cancelled` |
+| completed with result `turn` | decided by the existing turn checks |
+
+A command with no outcome yet keeps waiting and ends `timeout` as today; a failed outcome with no
+error code reads `command_failed` (my call). `fake_orchestrator` gains `complete_command` and
+`fail_command`. agents-webhook and agents-schedule move their pins to v0.4.0 and pin a slash preset
+prompt run that ends handled. agents-matrix-connector has its own tracker that decides by the turn
+(`tracker.py:_outcome`), so a Messenger "/compact" times out today: it applies the same mapping, a
+failed or cancelled command posts the usual notice, and a completed command finishes `handled` with
+reason `command` and posts nothing (my call, Open questions Q4). Tasks common-command-outcome,
+common-release-0-4-0, webhook-common-pin-0-4-0, schedule-common-pin-0-4-0, mxc-command-outcome.
 
 ## Bounds
 
@@ -567,15 +645,37 @@ Discovery plan inputs placed:
 - do-not-build: a second command channel, a second PTY writer, client-side routing of "/" (Composer
   unchanged), hand edits to `src/api/schema.d.ts` (web-sync-message-kind regenerates it).
 
+Phase 5 fix round (2026-10-29): findings, architect brief `.scratchpad/slash-fix-design.md` (followed
+as written) and the user's decisions:
+
+- F1 (security): both parsers split only at space, tab and newline, so claude ran `/exit` and
+  `/login` texts classed as prose; `paste_bytes` deletes ESC (`"/ex\x1bit"`); `Session.probe` pasted
+  slash text unguarded. Acts on it: wrapper-slash-js-whitespace, orch-slash-js-whitespace,
+  wrapper-release-0-4-1, orch-wrapper-pin-0-4-1 (D2 amended).
+- F2: a command message stays `sent` with no turn, so `runs.track` ends `timeout`. Acts on it:
+  orch-command-outcome (D19), common-command-outcome, common-release-0-4-0, webhook-common-pin-0-4-0,
+  schedule-common-pin-0-4-0, mxc-command-outcome (D20). The architect noted the Matrix tracker as
+  "not doing now"; the user asked for full scope, and the probe found the connector's own tracker
+  (`tracker.py:_outcome`) decides by the turn, so mxc-command-outcome is in scope.
+- Deny list extension, override extends only, client `["*"]` kept (user "all yes"): wrapper-deny-list-extend,
+  orch-wrapper-pin-0-4-1 (D5 amended).
+- Retro proposals since the plan (`ticket.py retro --history`), recurring workflow ones first:
+  recurring (fix-preset-env-paste-auto-ap): `ticket.py new-task` refuses a task on a file overlap
+  with another epic's task; this round shares files and version numbers with the todo epic
+  immediate-message-delivery-w (Assumptions), which is noted there rather than overridden. One-off
+  (deploy-safe-agent-sessions): `tests/test_manager.py::test_shutdown_stops_all` fails locally;
+  acts on it: wrapper-slash-js-whitespace and wrapper-deny-list-extend verifies do not run
+  test_manager.py. Not applicable: the gh credential helper (tag pushes are orchestrator-session steps).
+
 ## Decision coverage
 
 | Decision | Tasks |
 |---|---|
 | D1 orchestrator classifies at both routes | orch-slash-parser, orch-message-kind, orch-session-send-command |
-| D2 one slash-text rule | orch-slash-parser, wrapper-slash-turn-guard, wrapper-command-policy, wrapper-command-args |
+| D2 one slash-text rule | orch-slash-parser, wrapper-slash-turn-guard, wrapper-command-policy, wrapper-command-args, wrapper-slash-js-whitespace, orch-slash-js-whitespace |
 | D3 wrapper refuses slash turns | wrapper-slash-turn-guard |
 | D4 any name plus args | wrapper-command-args |
-| D5 deny list and wildcard | wrapper-command-policy, orch-wrapper-command-client |
+| D5 deny list and wildcard | wrapper-command-policy, orch-wrapper-command-client, wrapper-deny-list-extend |
 | D6 local and unknown classes | wrapper-command-signals |
 | D7 dialog commands | wrapper-dialog-commands |
 | D8 prompt command promoted | wrapper-prompt-command-turn |
@@ -584,11 +684,13 @@ Discovery plan inputs placed:
 | D11 render client allowlist | orch-render-client-commands |
 | D12 command row in the chat | web-command-rows, web-sync-message-kind |
 | D13 superleader tool description | plugin-session-send-slash, plugins-release-0-2-0, orch-plugins-pin-0-2-0 |
-| D14 release and pin | wrapper-release-0-4-0, orch-wrapper-pin-0-4-0, orch-e2e-slash-command |
+| D14 release and pin | wrapper-release-0-4-0, orch-wrapper-pin-0-4-0, orch-e2e-slash-command, wrapper-release-0-4-1, common-release-0-4-0 |
 | D15 bounded metric label | wrapper-command-policy |
 | D16 fake key log | wrapper-command-signals, wrapper-dialog-commands |
 | D17 wrapper docs and examples | wrapper-command-docs |
 | D18 atomic args task | wrapper-command-args |
+| D19 command outcome on MessageView | orch-command-outcome |
+| D20 run trackers judge command outcomes | common-command-outcome, webhook-common-pin-0-4-0, schedule-common-pin-0-4-0, mxc-command-outcome |
 
 ## Review focus
 
@@ -610,6 +712,15 @@ Discovery plan inputs placed:
 - A wrapper-initiated restart for an open dialog resumes the same claude session id and leaves
   `max_restarts` untouched.
 - The fake claude's echo shapes match the probe transcripts (retro proposal).
+
+## Review notes
+
+Phase 5 epic review (2026-10-29):
+
+- Acted on: F1 (parser whitespace and invisible characters, probe guard; D2), F2 (command outcome;
+  D19, D20), the deny list extension and override rule (D5).
+- Dismissed: interrupt cancels client commands queued during that turn. This is the ruling, pinned
+  by wrapper-commands-after-stop ac5; it stays as is (user decision).
 
 ## Lead settlements after the revision (2026-10-27)
 
@@ -652,11 +763,34 @@ Discovery plan inputs placed:
   order): any-mcp-tatara-plugins origin has tags v0.1.0 and v0.2.0 only.
 - agents-web `openapi/orchestrator.json` is also re-vendored by file-download-in-file-browse task
   web-sync-orchestrator-api; whichever lands second re-runs `npm run sync:api -- orchestrator`.
+- Fix round numbers (2026-10-29): wrapper 0.4.1 is free (origin tags end at v0.4.0); agents-common
+  0.4.0 is free (origin tags end at v0.3.0); orchestrator migration 0012 is free (the rebased epic
+  branch ends at main's 0011_drop_feed_cursor). The todo epic immediate-message-delivery-w (blocked by
+  this epic) planned the same numbers (common-release-0-4-0 for agents-common 0.4.0,
+  orch-priority-column for `0012_message_priority.sql`, mxc-relay-once-per-turn moving the connector
+  to agents-common v0.4.0) and touches the same files (agents-common `orchestrator.py` and
+  `fake_orchestrator.py`, the connector's `tracker.py`, `pyproject.toml` and `uv.lock`). This epic
+  lands first, so that epic's tasks are amended to agents-common 0.5.0 and migration 0013 when it is
+  claimed (reported to the lead; not edited here).
+- orch-wrapper-pin-0-4-1 is planned but not created yet (2026-10-29): `ticket.py new-task` refuses it
+  because `pyproject.toml` and `uv.lock` of agents-orchestrator are also in hive-decoupling's task
+  orch-plugins-pin-0-4-0, still `in-progress` although its pin landed on orchestrator `main` as
+  ff6c6de. Once that ticket reflects its state, the task is created from the prepared
+  inputs `.scratchpad/slash-fix-plan/t6-req.md` and `t6-ac.md` (files `pyproject.toml, uv.lock,
+  e2e/agent-test.Dockerfile, README.md, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py`,
+  depends on wrapper-release-0-4-1 and orch-command-outcome, opus, 3 points) and added to the D5 and
+  D14 coverage rows.
+- The ESC hole is closed in the parsers (the name drops ESC before classifying); `paste_bytes` keeps
+  deleting ESC (the todo epic's wrapper-paste-hygiene owns `pty_proc.py`).
+- agents-web keeps its vendored orchestrator spec pin; the chat already shows a command's outcome
+  from the `command_*` events (web-command-rows), so `MessageView.command` needs no web task.
 
 ## Open questions
 
 - Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision] (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the release is v0.3.0 on top of v0.2.0 and the pin moves v0.2.0 -> v0.3.0; the question text above is kept verbatim)
 - Q2: Claude Code's docs run some commands immediately even mid-turn (/status, /tasks, /usage; the 2.1.304 binary flags several commands 'immediate', .scratchpad/probe-slash/summaries/cmdtable.txt), so D9's 'run every mid-turn command at the turn's Stop' is only partly parity with the terminal. Keep D9 for every command, or run claude's immediate commands at once while a turn runs? [recommended: keep D9 for every command (the gate default: accepted at once, run at the turn's Stop); running immediate commands mid-turn would be an amend of task wrapper-commands-after-stop only]
+- Q3: desktop has the alias `app` in claude 2.1.304 (`name:"desktop",aliases:["app"]`), and D5 lists aliases by name so an alias cannot bypass the deny list; add `app` to `DEFAULT_COMMAND_DENY` with desktop (an amend of wrapper-deny-list-extend, its fake mirror and its pins)? [recommended: yes, add `app`]
+- Q4: a Messenger slash message whose command completes (ok, dismissed, skipped_cache) finishes handled; should the Matrix connector post a confirmation into the chat, or nothing? [recommended: post nothing; the run finishes `handled` with reason `command`, like `empty_reply` (task mxc-command-outcome as written)]
 
 ## Irreversible operations in scope
 
@@ -668,3 +802,11 @@ Discovery plan inputs placed:
   orchestrator session after the plugins PR merged and its CI is green (task plugins-release-0-2-0).
 - Migration `0010_slash_messages.sql` (amended 2026-10-29, was 0008; additive columns with defaults, idempotent `IF NOT EXISTS`):
   runs on the next orchestrator deploy, which is decided at the gate.
+- Tag `v0.4.1` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.1` and `:latest`):
+  approved by the user and mx-34 #432; run by the orchestrator session after the wrapper PR merged
+  and the `main` build is green (task wrapper-release-0-4-1).
+- Tag `v0.4.0` pushed to agents-common origin: pending mx-34's confirmation (version, epic, live,
+  replaces sent to the leader first); run by the orchestrator session only after that confirmation
+  and the merge (task common-release-0-4-0).
+- Migration `0012_command_outcome_index.sql` (a partial index; idempotent `IF NOT EXISTS`; briefly
+  blocks event inserts while it builds): runs on the next orchestrator deploy.

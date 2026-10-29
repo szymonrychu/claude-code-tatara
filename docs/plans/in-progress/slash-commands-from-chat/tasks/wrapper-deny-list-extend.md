@@ -53,17 +53,22 @@ Scope (claude-code-wrapper, on the same wrapper branch as wrapper-slash-js-white
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.config.DEFAULT_COMMAND_DENY: tuple[str, ...]`: 50 names (26 earlier plus the 24 of user decision 1, in that order).
+- `claude_code_wrapper.commands.effective_commands(base, override) -> CommandsConfig`: `deny` = base deny plus the override's names not already in it (case-insensitive); every other field as before (override replaces when set).
+- `POST /v1/sessions` `commands.deny`: extends only; `sessions.commands.deny` in the server config still sets the list.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`/plugin install ...`, `/memory`, `/export`, `/feedback` and the rest of the 24 are refused 403 `command_denied` for agent and client origins under `["*"]`, and no per-session override can remove a default name.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: update `test_deny_list_default_and_override` (named, no longer accurate: it pins replace semantics and 26 names), add `test_deny_list_covers_user_extension` and `test_create_override_only_extends_deny`; run `uv run pytest tests/test_command_registry.py`: they fail.
+- Green: extend `DEFAULT_COMMAND_DENY`, change `effective_commands`, update README (the `commands` row of `POST /v1/sessions`, the Slash commands prose, the `sessions.commands.deny` reference row) and `config.example.yaml`; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Name check done at planning (claude 2.1.304 binary): all 24 exist; `plugins` and `marketplace` are aliases of `plugin`, `routines` of `schedule`; `bug` is its own command; `desktop` has the alias `app`, which is not in the user's list (design Open questions Q3; an answer of yes amends this task). If the implementer finds a name missing from the binary, it is reported, not invented.
+- `test_config_example_documents_command_keys` compares `config.example.yaml`'s commented deny list with `DEFAULT_COMMAND_DENY`; keep the example line in the same order.
+- Builds on wrapper-slash-js-whitespace (same wrapper branch, README touched by both).
+- Do not run `tests/test_manager.py` (known local failure `test_shutdown_stops_all`).

@@ -52,17 +52,20 @@ Scope (agents-common, mirrors done task common-release-v0-3-0 of epic orchestrat
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Tag `v0.4.0` on the agents-common main merge commit; install string `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.4.0`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-common 0.4.0 is documented, versioned and, after mx-34's confirmation and the release step, tagged on origin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: set `INSTALL` and the expected version in `tests/test_release.py` to 0.4.0; `uv run pytest tests/test_release.py` fails.
+- Green: bump, `uv lock`, CHANGELOG, README; run the task's verify. End "ready for tag".
+- Orchestrator session, after merge: send version 0.4.0, epic slash-commands-from-chat, live (whether the tag changes anything running: no service image changes until the pins deploy) and replaces (v0.3.0) to the leader; push the tag only after mx-34 confirms; then check ac3 and run the install in a fresh venv.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Mirrors done task orchestrator-rename-sessions/common-release-v0-3-0.
+- The tag push is an orchestrator-session step (the permission classifier blocks subagent live actions; retro proposal). Tags are never re-pointed.
+- The todo epic immediate-message-delivery-w planned its own common-release-0-4-0; this epic lands first, so that one becomes 0.5.0 when claimed.

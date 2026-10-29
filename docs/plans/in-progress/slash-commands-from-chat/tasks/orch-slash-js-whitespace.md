@@ -67,17 +67,19 @@ Scope (agents-orchestrator, epic branch in `/workdir/workdir/.claude/worktrees/s
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_orchestrator.slash.parse(text: str) -> tuple[str, str] | None`: unchanged signature; the name cleaned of Cc/Cf characters, the args stripped of JS whitespace only. The dispatcher sends this name and these args to the wrapper.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator stores every text claude would run as a command as `kind = 'command'`, with the cleaned name, so none is dispatched as a turn.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: add the shared cases and the two new tests to `tests/test_slash.py`; run `uv run --frozen pytest tests/test_slash.py`: the new cases fail.
+- Green: rewrite `parse` per the parse steps (explicit JS whitespace set, `unicodedata.category` in Cc/Cf); update README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Same code shape and the same case table as wrapper-slash-js-whitespace, so the two parsers cannot drift (retro proposal: one shared parity table).
+- No `str.strip()`, `str.lstrip()`, `str.isspace` or regex `\s` in the parser, the `_RUN_MARKER` regex included.
+- Docker-free: runs in this container. Can run in parallel with the wrapper tasks.

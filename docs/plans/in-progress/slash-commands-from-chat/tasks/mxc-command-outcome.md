@@ -63,17 +63,22 @@ Scope (agents-matrix-connector, branch from origin `main`): `pyproject.toml` (ag
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tracker.py`: constants `COMMAND = "command"`, `COMMAND_CANCELLED = "command_cancelled"`; `_outcome` checks `message.command` (agents-common v0.4.0 `Message.command`) after the turn checks and before the timeout: completed (result not `turn`) -> `_Outcome("handled", COMMAND)` with no chunks; failed -> `_failed(f"command_{error}")` (`command_failed` with no error); cancelled -> `_failed(COMMAND_CANCELLED)`; completed with result `turn` -> the existing turn checks.
+- Uses `FakeOrchestrator.complete_command` and `fail_command` in `tests/test_tracker.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A Messenger message "/compact" finishes `handled` silently when the command completes, and with the usual notice when it fails or is cancelled, instead of timing out after `MATRIX_RUN_TIMEOUT_SECONDS`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the v0.4.0 tag on origin.
+- Red: write the three new tests in `tests/test_tracker.py` against the v0.3.0 pin; they fail.
+- Green: move both pins, `uv lock`, change `_outcome`, README reasons list, MEMORY.md entry; run the task's verify (Docker for the database tests). Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `_outcome` today decides only by `message.turn` and `message.status` (`tracker.py:111-142`); the `sent` command message with no turn falls through to `_timed_out`.
+- The silent completed outcome is the planner's recommendation pending design Open questions Q4; an answer that wants a confirmation message amends this task.
+- The todo epic immediate-message-delivery-w (mxc-relay-once-per-turn) also edits `tracker.py`, `pyproject.toml` and `uv.lock` and planned the same pin; it rebases on this when claimed.
+- A Messenger contact can send any non-denied slash command once this lands (architect note); the wrapper deny list (wrapper-deny-list-extend) bounds it.

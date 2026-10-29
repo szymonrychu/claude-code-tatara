@@ -52,17 +52,20 @@ Scope (agents-schedule, branch from origin `main`): `pyproject.toml` (agents-com
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents-common @ git+https://github.com/szymonrychu/agents-common@v0.4.0` in every line of `pyproject.toml` that pins it; `uv.lock` resolved to the v0.4.0 tag.
+- Uses `agents_common.fake_orchestrator.FakeOrchestrator.complete_command` and `fail_command` in `tests/test_tracker.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A agents-schedule run whose prompt is slash text finishes `handled` when its command completes and `failed` with `command_<error>` or `command_cancelled` when it does not, instead of `timeout`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm the v0.4.0 tag on origin (`git ls-remote --tags https://github.com/szymonrychu/agents-common v0.4.0`).
+- Red: write `test_command_prompt_run_handled` and `test_command_prompt_run_failed_reason` in `tests/test_tracker.py` against the v0.3.0 pin; they fail (no `complete_command`).
+- Green: move the pin, `uv lock`, README reason rows; run the task's verify (Docker for the database tests). Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The run tracking itself is agents-common's `runs.track` (common-command-outcome); this task only pins it and proves it end to end in the service.
+- Dependency bump: the TDD exception covers the pin values; the new tests are the behaviour guard.

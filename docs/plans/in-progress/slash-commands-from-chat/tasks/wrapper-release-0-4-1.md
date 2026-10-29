@@ -52,17 +52,19 @@ Scope (mirrors wrapper-release-0-4-0):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Package version `0.4.1`; image tags `:0.4.1` and `:latest` from `release.yaml`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator and, after the deploy decision, the live agents can run a wrapper with the claude-exact slash rule, the probe guard and the extended deny list.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Bump the version to 0.4.1 in `pyproject.toml` and `src/claude_code_wrapper/__init__.py`, run `uv lock` (dependency-bump exception; the packaging test is the guard); run the task's verify: passes. End "ready for tag".
+- After the merge (orchestrator session): wait for `build.yaml` green on the merge commit, `git tag v0.4.1 <merge sha> && git push origin v0.4.1`, watch `release.yaml` green, then amend orch-wrapper-pin-0-4-1 with the merge sha.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- README `### Release`: `release.yaml` fails when the `:<shortsha>` image is missing, so tag only after the main build is green.
+- The tag is approved by the user and mx-34 #432; tags are never re-pointed.
+- Depends on every wrapper task of the fix round.

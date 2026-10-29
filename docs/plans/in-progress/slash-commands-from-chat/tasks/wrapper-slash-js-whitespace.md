@@ -79,17 +79,25 @@ Scope (claude-code-wrapper, branch from origin `main` e946288, which carries v0.
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `claude_code_wrapper.session.slash_command(text: str) -> tuple[str, str] | None`: unchanged signature; `(name, args)` with the name cleaned of Cc/Cf characters and the args stripped of JS whitespace only.
+- `Session.probe(text)`: raises `TurnRejected("slash_command")` when `slash_command(text)` is not None, before anything is pasted; `POST /v1/sessions/{id}/probe` maps it to 422 `slash_command` (the existing `_REJECT_STATUS` entry) and counts the probe `rejected`.
+- One case table, identical to orch-slash-js-whitespace's `tests/test_slash.py`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+No text that claude 2.1.304 would run as a slash command (JS whitespace separators, a leading BOM, an ESC or zero-width character inside or before the name) can reach the PTY as a turn, an initial prompt or a probe.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Branch from origin `main` (e946288, v0.4.0) in the wrapper tree.
+- Red: extend `SLASH_COMMANDS`/`SLASH_PROSE` and add the three new tests in `tests/test_session_turns.py` and `test_probe_refuses_slash_text` in `tests/test_api_turns.py`; run `uv run pytest tests/test_session_turns.py tests/test_api_turns.py`: the new cases fail (for example "/exit x" returns None).
+- Green: rewrite `slash_command` per the parse steps with an explicit whitespace set (a frozenset of the JS code points) and `unicodedata.category(c) in ("Cc", "Cf")` for ignorable characters; guard `probe`; update README and MEMORY.md; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Parse steps, in order: remove the run marker; skip leading W and D; require `/`; name to the first W with D dropped; args = rest stripped of W only; `COMMAND_NAME.fullmatch` unchanged.
+- Do not use `str.isspace`, `str.strip()`, `str.lstrip()` or regex `\s` in the parser: Python's set differs from JS (`U+001C-001F`, `U+0085` added, `U+FEFF` missing). The `_RUN_MARKER` regex is part of the parser: spell its whitespace explicitly.
+- `pty_proc.paste_bytes` keeps deleting ESC (the todo epic immediate-message-delivery-w owns `pty_proc.py` in wrapper-paste-hygiene); the parser closes the hole by dropping ESC from the name.
+- `router.py` (`submit_turn`) and `manager.py` (`_initial_turn`) call `slash_command` already; no change there.
+- Do not run `tests/test_manager.py` (`test_shutdown_stops_all` fails locally, a known pre-existing failure).
+- Claude's parser evidence: `.scratchpad/slash-fix-design.md` sources (binary offsets 254536412, 267231000, 243756307).

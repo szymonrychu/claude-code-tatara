@@ -65,17 +65,24 @@ Scope (agents-orchestrator): `src/agents_orchestrator/db/migrations/0012_command
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/schemas.py`: `CommandOutcomeView(BaseModel)`: `state: Literal["completed", "failed", "cancelled"]`, `result: str | None`, `error: str | None`, `turn_id: str | None`, `at: datetime`; `MessageView.command: CommandOutcomeView | None`.
+- `db/views.py` `_MESSAGE_SELECT`: `LEFT JOIN LATERAL (SELECT e.ts, e.data -> 'record' AS record FROM events e WHERE e.agent_id = m.agent_id AND e.type IN ('command_completed', 'command_failed') AND e.data -> 'record' ->> 'id' = m.wrapper_command_id ORDER BY e.id DESC LIMIT 1) co ON m.kind = 'command'` (shape; the builder may name columns).
+- Migration `0012_command_outcome_index.sql`: `CREATE INDEX IF NOT EXISTS events_command_record_id ON events (agent_id, (data -> 'record' ->> 'id')) WHERE type IN ('command_completed', 'command_failed')`.
+- The wire shape agents-common's `Message.command` reads (task common-command-outcome).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`GET /api/v1/messages/{id}` and the session's message list show, for a command message, the command's outcome once it finished, with no new writer and no new message status.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the four tests in `tests/test_api_messages.py` (insert the `command_*` events rows directly, as the ingester would store them) and add 0012 to the migration lists in `tests/test_migrations.py`; in CI or on a Docker host they fail.
+- Green: migration, view, schema, `_message_view`, regenerate `openapi.json`, README; run the task's verify (Docker-free part) and quote the summary line; the Docker tests run in CI.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Read-side only (design D19): the ingester stays the only writer of `events`; no UPDATE of `messages`.
+- `mark_sent_command` (`db/queue.py`) already looks up a command's event by `data -> 'record' ->> 'id'` and agent: reuse that predicate.
+- A cancelled command arrives as `command_failed` with record `state = 'cancelled'`.
+- Migration 0012 is the next free number on the rebased epic branch (main's 0011_drop_feed_cursor). The todo epic immediate-message-delivery-w planned `0012_message_priority.sql`; it renumbers when claimed.
+- Builds on orch-slash-js-whitespace (README touched by both).

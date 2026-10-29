@@ -3,7 +3,7 @@ title: slash commands from chat
 blockers: []
 stage: build
 owner: Szymon Richert
-repos: [claude-code-wrapper, agents-orchestrator, agents-web, any-mcp-tatara-plugins]
+repos: [claude-code-wrapper, agents-orchestrator, agents-web, any-mcp-tatara-plugins, agents-common, agents-webhook, agents-schedule, agents-matrix-connector]
 created: 2026-10-27
 ---
 

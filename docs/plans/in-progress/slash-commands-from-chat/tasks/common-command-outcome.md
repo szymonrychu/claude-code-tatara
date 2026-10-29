@@ -67,17 +67,22 @@ Scope (agents-common, branch from origin `main`): `src/agents_common/orchestrato
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_common.orchestrator.CommandOutcome(_Model)`: `state: str`, `result: str | None = None`, `error: str | None = None`, `turn_id: str | None = None`, `at: datetime | None = None`; `Message.command: CommandOutcome | None = None`.
+- `agents_common.runs.track(...)`: same signature and return; order of checks: completed turn -> handled; message failed/cancelled -> `message_<status>`; failed turn -> `turn_failed`; command outcome (when `turn` is None and the outcome is not completed with result `turn`) -> handled / `command_<error>` / `command_failed` / `command_cancelled`; timeout.
+- `FakeOrchestrator.complete_command(message_id: int, result: str = "ok", turn_id: str | None = None) -> None`; `FakeOrchestrator.fail_command(message_id: int, error: str | None, state: str = "failed") -> None` (`state` `failed` or `cancelled`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A run whose prompt the orchestrator stored as a command finishes by the command's outcome instead of waiting for a turn until `timeout`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the five `test_track_command_*`/`test_track_promoted_command_waits_for_turn` tests and `test_message_command_outcome_roundtrip`; run `uv run pytest tests/test_runs.py tests/test_orchestrator_client.py`: they fail (no `complete_command`).
+- Green: model, fake methods, `track` mapping, README; run the task's verify. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `track_delivery` (reuse path) already finishes on `sent`; unchanged.
+- A promoted command (result `turn`) gets its `turn` from the orchestrator's turn link (orch-command-turn-link), so the existing turn checks decide it.
+- Wire shape from orch-command-outcome (design D19). The todo epic immediate-message-delivery-w also edits `orchestrator.py` and `fake_orchestrator.py` (`Message.turn_id`) and plans agents-common 0.4.0; it rebases on this and renumbers its release when claimed.
+- `model` is opus by the file-count rule (6 files).
