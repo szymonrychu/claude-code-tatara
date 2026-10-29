@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.2.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agent pods install the orchestrator plugin release that tells superleaders slash text runs as a command
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_settings.py tests/test_images.py test
 depends_on: [plugins-release-0-2-0, orch-wrapper-pin-0-4-0]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: b5997f7eda04bbf8acf9a9bf59a3076b0a7cf1ce
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 253096
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 171514, review 81582"
 ---
 
 # orch plugins pin 0.2.0
@@ -84,3 +84,5 @@ Agent pods rendered by this orchestrator install the plugins release whose sessi
 - 2026-10-29 amended: release order changed (user-approved, agreed between hives 2026-10-28): orchestrator main already pins plugins v0.2.0 (matrix-connector-agent-initi), so this pin moves v0.2.0 -> v0.3.0; slug stays orch-plugins-pin-0-2-0
 
 - 2026-10-29 amended: plugins renumbered: hive-decoupling took v0.4.0 first; slash ships v0.5.0 (user-approved mx-34 #406)
+
+- 2026-10-29 done
