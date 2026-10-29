@@ -532,6 +532,7 @@ Findings:
 - Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [recommended: yes, the wrapper default is immediate too (D1)]
 - Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [recommended: yes, deploy is decided at the gate (D19)]
 - Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 64 points? [recommended: yes, keep it in scope]
+- Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [recommended: yes, existing queued rows stay idle (D12)]
 
 ## Irreversible operations in scope
 
