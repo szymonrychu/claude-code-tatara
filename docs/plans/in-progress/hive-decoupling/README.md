@@ -1,7 +1,7 @@
 ---
 title: hive decoupling
 blockers: [matrix-connector-agent-initi]
-stage: build
+stage: review
 owner: Szymon Richert
 repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile]
 created: 2026-10-27
