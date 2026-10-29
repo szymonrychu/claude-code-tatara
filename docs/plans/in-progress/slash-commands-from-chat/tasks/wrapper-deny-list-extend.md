@@ -1,6 +1,6 @@
 ---
 title: wrapper deny list extend
-status: todo
+status: done
 repo: claude-code-wrapper
 value: "commands that install, export, reconfigure or report from the agent's account can no longer be run from chat, and no session override can lift the deny list"
 files: [src/claude_code_wrapper/config.py, src/claude_code_wrapper/commands.py, README.md, config.example.yaml, tests/test_command_registry.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_registry.py tests/test_slash_commands_
 depends_on: [wrapper-slash-js-whitespace]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ea7535f3cee9c180db34f16deb114e306007230c
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 464021
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 353679, review 110342"
 ---
 
 # wrapper deny list extend
@@ -72,3 +72,5 @@ Scope (claude-code-wrapper, on the same wrapper branch as wrapper-slash-js-white
 - `test_config_example_documents_command_keys` compares `config.example.yaml`'s commented deny list with `DEFAULT_COMMAND_DENY`; keep the example line in the same order.
 - Builds on wrapper-slash-js-whitespace (same wrapper branch, README touched by both).
 - Do not run `tests/test_manager.py` (known local failure `test_shutdown_stops_all`).
+
+- 2026-10-29 done: 51 names: alias app of desktop added, leader-approved under the user's Q1
