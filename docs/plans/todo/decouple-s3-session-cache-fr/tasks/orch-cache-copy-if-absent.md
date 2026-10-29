@@ -51,17 +51,29 @@ The module never calls `delete_object`, `delete_objects` or `put_object` (copy o
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/cache/copy.py` (new): `CopyOutcome = Literal["copied", "exists", "source_missing"]`, `class CopyError(Exception)`, `copy_if_absent(settings: Settings, source: str, dest: str) -> CopyOutcome` (synchronous; callers run it with `asyncio.to_thread`).
+- Uses `presign._client(settings.cache_s3_endpoint, settings.cache_s3_region, settings.cache_s3_path_style, settings.cache_s3_verify_tls, settings.cache_s3_access_key_id, settings.cache_s3_secret_access_key)`; no second client or credential path (MEMORY 2026-10-28, one `_client`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`copy_if_absent(s, "workspace-cache/preset-x.tar.zst", "workspace-cache/my-repo-alpha.tar.zst")` copies once and answers `copied`, answers `exists` on a second call without writing, answers `source_missing` when the source is absent, and raises `CopyError` on any other S3 answer.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read cache/presign.py, settings.py (cache fields) and tests/test_cache_presign.py (its ThreadedMotoServer fixture and `_no_ambient_aws`) in one pass.
+- Red: write tests/test_cache_copy.py with the tests named in the acceptance conditions (moto server for AC1-AC3, `botocore.stub.Stubber` on the client for the 403 and 412 cases); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_copy.py`; expect failure on the missing module.
+- Green: write cache/copy.py; rerun; expect all passed.
+- `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- brief-docs section 3 holds the recipe and citations: RGW does not read destination `If-None-Match` on CopyObject and moto 5.2.4 ignores it, so never-overwrite is HEAD-then-copy, safe because the reconciler is the single writer.
+- `head_object` raises `botocore.exceptions.ClientError`; read `error.response["Error"]["Code"]` and `ResponseMetadata.HTTPStatusCode`; 404 is `"404"`/`NoSuchKey`. HEAD answers 403 instead of 404 without `s3:ListBucket`; that must raise, never read as absent.
+- Pass `CopySource` as a dict so botocore URL-encodes the key; keep the default `MetadataDirective=COPY` (the stored Content-Type is the one the presigned PUT signed).
+- These tests need no Postgres, so they run locally.
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
+- Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
