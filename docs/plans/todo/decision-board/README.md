@@ -32,6 +32,10 @@ Shape proposed in msg 282, to be confirmed at planning: a new microservice with 
 
 Open at planning: the new component's name and repo (added with component-add), and how an answer reaches the asking session (orchestrator message or polled tool).
 
+User requirement (chat 2026-10-29 04:59Z, relayed by mx-34 msg 347), verbatim: "Decision board should belong to session". Relayer's reading: each session has its own board, the web UI shows it under that session, and the agent tools post to and read from the caller's session board.
+
+Planning note (tatara, 2026-10-29): session scoping weakens the case for a separate microservice. The orchestrator already owns sessions, caller identity on the agent port, the session pages in the web UI and delivery of messages into a session, so orchestrator tables keyed by session (with their single writer) look simpler than a new service that must resolve sessions over HTTP. Decide between the two at planning (architect-researcher).
+
 README-only shell; plan it when it is reached.
 
 ## Goals
@@ -41,6 +45,7 @@ README-only shell; plan it when it is reached.
 - G3: The user sees past decisions with their history.
 - G4: The user can ask to amend a past decision, and the request becomes a properly planned change.
 - G5: Agents post questions and read answers through an MCP tool; the workbench skills' gate questions post there too.
+- G6: The decision board belongs to a session: each session has its own board, shown under that session in the web UI, and the agent tools post to and read from the caller's session board.
 
 ## Non-goals
 
