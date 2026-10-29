@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Goal G2 (README), verbatim: "each message carries a priority, immediate (the default) or idle (wait until the leader is idle, today's behaviour), settable from the web composer, the orchestrator messages API, the superleader's session_send tool and the ccw peer send_message tool."
 
-Design D15, verbatim: "any-mcp-tatara-plugins `session_send` gains `priority` (enum `immediate`, `idle`, default `immediate`) and its description says: a message to a busy leader joins its running turn at once and shares that turn's answer; `idle` waits until the leader is idle. The `chat_send` description's "chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.5.0 on top of hive-decoupling's 0.4.0; the orchestrator pins it."
+Design D15, verbatim: "any-mcp-tatara-plugins `session_send` gains `priority` (enum `immediate`, `idle`, default `immediate`) and its description says: a message to a busy leader joins its running turn at once and shares that turn's answer; `idle` waits until the leader is idle. The `chat_send` description's "chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.7.0 on top of session-orchestration-mcp's 0.6.0; the orchestrator pins it."
 
 Scope (any-mcp-tatara-plugins): `orchestration/orchestrator/src/any_mcp_tatara_orchestrator/__init__.py` (`session_send` schema and description, `chat_send` description), `orchestration/orchestrator/tests/test_orchestrator_plugin.py`, `orchestration/orchestrator/README.md` (tool table).
 
@@ -66,3 +66,5 @@ A superleader sees that its messages reach a busy leader at once by default, can
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)
+
+- 2026-10-29 amended: D15 quote follows the design: plugins 0.7.0 on top of 0.6.0 (mx-34 #469/#470)
