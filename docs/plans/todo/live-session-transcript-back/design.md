@@ -273,6 +273,7 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 - Q4: Skip the live backup while another live session shares the same cache name? [recommended: yes]
 - Q5: Close the "row stays sent after its turn failed" item as by design (sent is final, the turn shows the outcome, the cause was the wrapper wedge fixed in 0.3.3)? [recommended: yes]
 - Q6: Cut a torn last JSONL line only in the Claude transcripts archive, never in the workspace archive, so a workspace .jsonl file without a trailing newline is never truncated? (D6 amendment) [recommended: yes]
+- Q7: The helmfile pins of this epic also deploy decouple-s3-session-cache-fr, which has no deploy task of its own, so its copy migration of every existing session runs at this apply; deploy both together and check the migration records in the live check? (D8) [recommended: yes]
 
 ## Irreversible operations in scope
 
