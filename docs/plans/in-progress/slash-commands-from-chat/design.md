@@ -123,9 +123,11 @@ leading whitespace the text starts with `/`. A trailing agents-common run marker
 to the first whitespace (space, tab or newline); the args are the rest, stripped, and may span
 lines. The text is a command when the name is empty (`/`, `/ is root`: claude answers "Commands are
 in the form `/command [args]`" and calls no model; the wrapper refuses an empty name 422
-`invalid_command`) or matches `^[a-zA-Z0-9_][a-zA-Z0-9:_-]*$`, with no length cap (`/tmp`, `/_x`, a
-100-character name: claude runs it or answers "Unknown command", again with no model call, so a bare
-`/tmp` fails `unknown_command`). A name with any other character is prose (`/workdir/foo is broken`,
+`invalid_command`) or matches `^[a-zA-Z0-9_][a-zA-Z0-9:_-]*$`, with no length cap (`/_x`, a 100-character name). Claude runs such a
+name, answers "Unknown command" (no model call), or, when the pattern matches but `/<name>` exists on the pod's
+filesystem (probe 2026-10-29: `/tmp`, `/etc`, `/workdir`), sends it to the model as a prompt. Neither side consults
+the filesystem: the rule over-classifies toward "command", which is the safe direction, and a command claude sends
+to the model is promoted to a turn (D8) (amended 2026-10-29, fable ruling on the wrapper-command-signals probe). A name with any other character is prose (`/workdir/foo is broken`,
 `/etc/hosts`, `//x`, `/notes.txt`): claude sends it to the model as a prompt. The orchestrator
 classifies with this rule and the wrapper's turn guard (D3) refuses with the same rule, both pinned
 by one shared case table, so a text that claude would parse as a command can never be typed as a
@@ -538,7 +540,7 @@ Noted items (real-binary probes, user decision): wrapper-command-signals (local 
 UserPromptSubmit, path-like prose), wrapper-prompt-command-turn (Stop after a promoted turn, plugin
 commands and UserPromptSubmit). Consider item (immediate commands mid-turn): Open questions Q2.
 Builder check: plugins release and pin (D13: plugins-release-0-2-0, orch-plugins-pin-0-2-0), the
-wrapper tag flow (D14: wrapper-release-0-4-0), `/tmp` as an unknown command (D2).
+wrapper tag flow (D14: wrapper-release-0-4-0), a bare name that exists on disk (`/tmp`) sent to the model (probe 2026-10-29, promoted by D8) (D2).
 
 Discovery plan inputs placed:
 
@@ -631,8 +633,8 @@ Discovery plan inputs placed:
   the same probe. If they do not, D8 promotes on the transcript echo plus isMeta pair instead (design
   section 8), an amend of wrapper-prompt-command-turn.
 - Local commands never fire UserPromptSubmit, and claude sends path-like prose (`/workdir/foo is
-  broken`, `/etc/hosts`) to the model while `/tmp` gets "Unknown command" (inferred from the binary's
-  regex; D2). Settled by the probe of task wrapper-command-signals; a contradiction amends the two
+  broken`, `/etc/hosts`) to the model while a bare name that exists on disk (`/tmp`) is sent to the model
+  (probe 2026-10-29, promoted by D8; D2). Settled by the probe of task wrapper-command-signals; a contradiction amends the two
   parser tasks.
 - Claude's own command table, aliases and descriptions (D5) are read from the 2.1.304 binary; a
   newer claude may add session-ending names, which is an amend of `DEFAULT_COMMAND_DENY`.
