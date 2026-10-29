@@ -41,6 +41,8 @@ Scope (agents-orchestrator):
 - `tests/fakes/fake_wrapper.py`: `COMMAND_DENY` mirrors the pinned wrapper's 51-name `DEFAULT_COMMAND_DENY` (50 plus `app`, the alias of `desktop`, leader-approved under the user's Q1) (comment names the source).
 - `tests/test_fake_wrapper_contract.py`: `test_commands_any_name_and_denied` (both legs) also refuses the added names; a Docker-free check pins the mirror to the pinned wrapper's constant.
 
+Merged upstream (2026-10-29): claude-code-wrapper PR #11 merged to `main` as `eed2c3c582827e297eb6d838cb00500db9a27333` (sha7 `eed2c3c`), tagged `v0.4.1`; `build.yaml` green on it (image `harbor.szymonrichert.pl/containers/claude-code-wrapper:eed2c3c`). `<merge sha>` above reads `eed2c3c582827e297eb6d838cb00500db9a27333` and `<sha7>` reads `eed2c3c`.
+
 ## Acceptance conditions
 
 - ac1: pyproject, uv.lock, README Images and the agent-test Dockerfile name the same wrapper commit [evidence: test:tests/test_images.py::test_agent_test_dockerfile_matches_dev_dependency]
@@ -77,3 +79,5 @@ What is true and observable when the task is done.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 amended: wrapper v0.4.1 merged and tagged: merge sha eed2c3c
