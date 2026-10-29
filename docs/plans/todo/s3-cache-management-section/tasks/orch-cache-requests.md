@@ -73,17 +73,32 @@ This task delivers the executor of D2 in agents-orchestrator, new module `src/ag
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/reconciler/cache_requests.py` (new): `class CacheRequestRunner(pool, settings)` with `async run_once() -> None`; reasons `in_use: <slugs>`, `changed`, `gone`, `<Error.Code> <HTTP status>`.
+- `db/cache.py` gains `CacheRequest` (id, kind, object, etag, size, status, reason, created_at, started_at, finished_at), `running_deletes(conn) -> list[CacheRequest]`, `claim_delete(conn) -> CacheRequest | None` (`UPDATE ... SET status='running', started_at=now() WHERE id = (SELECT id ... WHERE kind='delete' AND status='queued' ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED) AND status='queued' RETURNING ...`), `complete_request(conn, id, status, reason) -> bool` (guarded on `running`), `drop_object(conn, key) -> None` (every generation's row of that key).
+- `reconciler/loop.py`: `Reconciler.cache_requests` built when `settings.cache_available`; `reconcile_once` calls it after `self.checks.run_once()`.
+- Uses `cache.pins.pins_by_object(rows, settings.cache_s3_prefix)` and `presign._client(...)`; never imports from `api`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A queued delete request is executed by the reconciler within one pass: refused when any session row pins the object or it changed since listing, done when deleted or already gone, failed with the S3 reason otherwise; the cleanup epic can queue its deletes into the same table and get the same rules.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `reconciler/loop.py` (`reconcile_once`, wiring), `reconciler/checks.py` (`CheckRunner` claim and observe), `reconciler/cache_inventory.py`, `db/cache.py`, `db/sessions.py` (`list_sessions`), `cache/pins.py`, `cache/presign.py` (`_client`), `cache/copy.py` (ClientError handling of HEAD), `tests/test_cache_presign.py` and `tests/test_cache_inventory.py` (moto and pool fixtures) in one pass.
+- Red: write `tests/test_cache_requests.py` with every test named in the acceptance conditions (moto server for the bucket; `botocore.stub.Stubber` or a patched client for the 412 and 403 cases; rows inserted as the api will insert them); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_requests.py`; expect failure on the missing module (DB tests: on CI or a local Postgres).
+- Green: write the module, the `db/cache.py` functions and the loop wiring; rerun the verify; expect passed.
+- Write README `### Cache deletes` and the MEMORY.md entry; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The bucket keeps no versions: a delete is permanent (design Constraints, Q1). Under-refusing is the failure to avoid; when unsure, refuse.
+- `head_object` raises `botocore.exceptions.ClientError`; read `error.response["Error"]["Code"]` and `ResponseMetadata.HTTPStatusCode`; 404 is `"404"`/`NoSuchKey`. HEAD answers 403 instead of 404 without `s3:ListBucket`; that is `failed`, never `gone`.
+- moto 5.2.4 honours `IfMatch` on DeleteObject (architecture sources); the deployed RGW release may ignore it, which is why the HEAD comparison is the real guard.
+- Accepted race (architecture): a session the api creates between the check and the delete restores `miss` and starts empty.
+- Per-task security check (retro, recurring): the object name comes from a user; it is used only as `<prefix><object>` in a Key parameter (never a path or a shell), and no credential, signature or URL reaches a reason, a log line or an exception stored in the database.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
