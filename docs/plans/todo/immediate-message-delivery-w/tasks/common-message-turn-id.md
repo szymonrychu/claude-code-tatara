@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Goal G4 (README), verbatim: "Matrix chat messages in a room whose run is in progress are delivered at once, and an answer shared by merged messages is relayed to the room once."
 
-Design D18 (agents-common part), verbatim: "agents-common `Message.turn_id` (new, released 0.4.0, connector pin moved) carries the link; the fake orchestrator can complete one turn for several messages."
+Design D18 (agents-common part), verbatim: "agents-common `Message.turn_id` (new, released 0.5.0, connector pin moved) carries the link; the fake orchestrator can complete one turn for several messages."
 
 Design D14, verbatim: "`messages.status` stays `sent`; "answered" stays derived through `turn_id` (all messages merged into one turn read its `final_text`). agents-common's run tracker reads the linked turn as today."
 
@@ -66,3 +66,5 @@ Consumers of agents-common (the Matrix connector first) can tell when two messag
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)
+
+- 2026-10-29 amended: agents-common renumbered 0.4.0 -> 0.5.0: the slash fix round takes v0.4.0 (mx-34 #446, #453)
