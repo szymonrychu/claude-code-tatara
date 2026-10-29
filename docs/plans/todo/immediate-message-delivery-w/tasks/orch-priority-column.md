@@ -57,17 +57,26 @@ Scope (agents-orchestrator): `src/agents_orchestrator/db/migrations/0012_message
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `0012_message_priority.sql`: the two ALTER statements of D12, idempotent, with a header comment in the style of 0010.
+- `api/schemas.py`: `MessagePriority = Literal["immediate", "idle"]`; `PostMessage.priority: MessagePriority = "immediate"`; `MessageView.priority: MessagePriority`.
+- `db/queue.py:enqueue_message(conn, session_id, text, target_agent_id=None, *, kind="turn", sender_session_id=None, sender_slug=None, hop=0, priority: str = "immediate") -> int`.
+- No dispatch change here (task orch-dispatch-immediate).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Every stored message carries a priority the dispatcher can act on; messages queued before the deploy keep today's wait-until-idle meaning.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `db/migrations/0010_slash_messages.sql` and the hive-decoupling `0011_*.sql`, `db/migrate.py`, `db/queue.py:enqueue_message`, `db/views.py`, `api/schemas.py`, `api/messages.py`, `tests/test_migrations.py` and `tests/test_api_messages.py` in one pass.
+- Red: add `test_message_priority_column`, `test_post_message_priority`, the 0012 entries and run `uv run --frozen python -c` of ac4; expect ac4 to fail here (the DB tests fail in CI until green).
+- Green: write the migration, the schema fields, the insert and select; regenerate `openapi.json` with `uv run python -m agents_orchestrator.api.openapi > openapi.json`; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Take the next free migration number at build time: if 0012 is taken, use the next one and report it so the orchestrator amends `files`.
+- Commands keep `priority` as sent; nothing here interprets it.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
