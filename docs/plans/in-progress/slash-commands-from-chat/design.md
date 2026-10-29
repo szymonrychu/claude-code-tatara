@@ -374,7 +374,9 @@ actually see the description. The helmfile value of `ORCH_ANY_MCP_PLUGINS_REF` s
 deploy decision. (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the epic
 matrix-connector-agent-initi released plugins v0.2.0, tag at 4506e70 with its chat tools, and pinned
 orchestrator `main` to it, merge a9f936f; this epic's release became v0.3.0 on top of v0.2.0. The
-task slugs keep their 0-2-0 names.)
+task slugs keep their 0-2-0 names.) (amended again 2026-10-29, user-approved mx-34 #406: tatara's
+hive-decoupling released plugins v0.4.0 first, merge 6d5cc19, and pinned orchestrator `main` to it,
+df2b80e; v0.3.0 stays unused and this epic releases v0.5.0 on top of v0.4.0, pin v0.4.0 -> v0.5.0.)
 
 ### D14: release and pin like leader-auto-handover; no deploy task
 
