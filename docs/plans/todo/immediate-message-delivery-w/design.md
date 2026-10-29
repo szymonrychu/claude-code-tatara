@@ -534,6 +534,7 @@ Findings:
 - Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [recommended: yes, deploy is decided at the gate (D19)]
 - Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 65 points? [recommended: yes, keep it in scope]
 - Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [recommended: yes, existing queued rows stay idle (D12)]
+- Q12: Builder Q3: may the probe (wrapper-midturn-probe) run the real claude 2.1.304 in this container with the existing login, spending real tokens on P1 to P12 (permission dialog, AskUserQuestion, /compact, MCP elicitation), and may the epic continue when P6 or another probe the container cannot run is recorded unsettled, the orchestrator then amending wrapper-merge-guards to the dialog footers it can prove? [recommended: yes, run every probe possible, record the rest unsettled, and continue; P1, P2, P4 and P5 must be observed]
 
 ## Irreversible operations in scope
 
