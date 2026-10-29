@@ -56,6 +56,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Branch `orch-feed-cleanup` from fresh origin/main (be554bb).
+- Red: add test_digest_lines_has_no_leadership_row_kind (a `leadership` row yields no line, and digest_lines returns a list, not a tuple); retire the leadership-row tests; run the verify: red.
+- Green: remove the branch, docstring lines and `pending` return; update callers. Reuse hive.compact_pct in on_start.py, render.py and views.py. Rerun the verify plus the unit tests of the touched callers (DB-free ones): green. Commit, push, open a PR to main; DB tests and e2e are CI-only, so wait for `gh pr checks` green with `gh pr checks --watch`.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
