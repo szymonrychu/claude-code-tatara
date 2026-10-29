@@ -70,6 +70,6 @@ A tagged plugins release with the priority parameter exists for the orchestrator
 
 - 2026-10-29 amended: agents-common renumbered 0.4.0 -> 0.5.0: the slash fix round takes v0.4.0 (mx-34 #446, #453)
 
-- 2026-10-29 amended: plugins release renumbered v0.6.0 -> v0.7.0 (mx-34 #469/#470): built on session-orchestration-mcp's v0.6.0
+- 2026-10-29 amended: plugins release renumbered v0.6.0 to v0.7.0 (mx-34 #469/#470): built on session-orchestration-mcp's v0.6.0
 
 - 2026-10-29 amended: fix: baseline is v0.6.0 (session-orchestration-mcp), the release is v0.7.0

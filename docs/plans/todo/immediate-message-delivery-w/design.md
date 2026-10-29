@@ -12,7 +12,7 @@ a paste still unconfirmed waits a bounded time for it (D6). Every message carrie
 superleader's `session_send`, the ccw peer `send_message`, the wrapper `POST /turns` and a web
 composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector stops holding a
 room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
-comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.6.0, agents-common
+comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.7.0, agents-common
 0.5.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
 the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
 orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
@@ -91,9 +91,11 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
   a guarded UPDATE in `db/queue.py`; the connector's `inbound` and `runs` likewise.
 - Built on the merged slash-commands-from-chat epic (README blocker): its command queue held until
   Stop (D9), `_PICK_COMMAND` and the per-session order rule (D10), `DialogScanner` (D7), migration
-  0010 and wrapper 0.4.1 (fix round; 0.4.0 never deployed), plugins 0.5.0. Built on hive-decoupling (README blocker): migration 0011,
-  plugins 0.4.0 and its orchestrator plugin pin. This epic therefore takes migration 0012, wrapper
-  0.5.0, plugins 0.6.0; when a number is taken at build time the task takes the next free one and
+  0010 and 0012_command_outcome_index and wrapper 0.4.1 (fix round; 0.4.0 never deployed), plugins 0.5.0
+  (tatara tagged v0.5.1 on top, the latest tag). Built on hive-decoupling (README blocker): migration 0011,
+  plugins 0.4.0 and its orchestrator plugin pin. It lands after session-orchestration-mcp too: migration
+  0013 (on top of slash's 0012) and plugins v0.6.0, the live baseline before this epic. This epic therefore
+  takes migration 0014, wrapper 0.5.0, plugins 0.7.0 (negotiated 2026-10-29, mx-34 #469/#470); when a number is taken at build time the task takes the next free one and
   the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
   repo's main and the submodules are advanced, never against their branches (my call, builder Q1);
   the connector's own migration is the next free one after `0002_agent_sends.sql`.
@@ -310,7 +312,7 @@ probe, never a guess.
 
 ### D12: the orchestrator stores `messages.priority`; rows queued at deploy keep idle
 
-Migration `0012_message_priority.sql` (the next free number after hive-decoupling's 0011):
+Migration `0014_message_priority.sql` (the next free number after session-orchestration-mcp's 0013, which follows slash's 0012 and hive-decoupling's 0011):
 `ALTER TABLE messages ADD COLUMN IF NOT EXISTS priority text NOT NULL DEFAULT 'idle' CHECK
 (priority IN ('immediate', 'idle'))`, then `ALTER TABLE messages ALTER COLUMN priority SET DEFAULT
 'immediate'`. Existing rows take `idle`, new rows default to `immediate` (my call, Q11). The api
@@ -364,8 +366,8 @@ Why: the brief's fix-as-AC list (cartographer Plan inputs) names exactly these t
 any-mcp-tatara-plugins `session_send` gains `priority` (enum `immediate`, `idle`, default
 `immediate`) and its description says: a message to a busy leader joins its running turn at once
 and shares that turn's answer; `idle` waits until the leader is idle. The `chat_send` description's
-"chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.6.0 on top
-of slash's 0.5.0; the orchestrator pins it.
+"chat-started turn" rule extends to a turn a chat message joined. Released as plugins 0.7.0 on top
+of session-orchestration-mcp's 0.6.0; the orchestrator pins it.
 Alternatives: no plugin change (superleaders could not ask for `idle`).
 Why: G2 names the superleader's tool, and a merged `<chat>` message breaks the old wording.
 
@@ -411,11 +413,11 @@ Why: G4; Q6 confirms adding the two repos.
 
 ### D19: release and pin like the slash epic; no deploy task
 
-claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.5.0 are version bumps
+claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.7.0 and agents-common 0.5.0 are version bumps
 whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). The
 orchestrator pins the wrapper merge commit of v0.5.0 (pyproject, uv.lock, `e2e/agent-test.Dockerfile`,
 README Images) with a real-wrapper contract case and a kind e2e case for a merged message, then the
-plugins ref v0.6.0; the connector pins agents-common v0.5.0. The wrapper is pinned by its release
+plugins ref v0.7.0; the connector pins agents-common v0.5.0. The wrapper is pinned by its release
 tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags).
 The agent-test scenario (`e2e/agent-test.scenario.json`) sets `"midturn_input": "queue"`, so the
 real contract case and the kind e2e prove real delivery (the merge's `absorbed_at` set, the turn
@@ -571,7 +573,7 @@ Findings:
 - P12: any state where plain Enter interrupts instead of queueing: probe; a hit amends D2.
 - The slash epic merges with D7, D9 and D10 as designed (README blocker); a change there is
   re-checked against D4, D8 and D13 before this epic starts.
-- hive-decoupling takes migration 0011 and plugins 0.4.0; if it lands differently, the numbers here
+- hive-decoupling takes migration 0011 and plugins 0.4.0, slash migration 0012 and session-orchestration-mcp migration 0013 and plugins v0.6.0 (mx-34 #469); if any lands differently, the numbers here
   move to the next free ones.
 
 ## Open questions
@@ -593,7 +595,7 @@ Findings:
 
 ## Irreversible operations in scope
 
-- Migration 0012 (additive, idempotent, no data rewrite beyond the default on existing rows): runs
+- Migration 0014 (additive, idempotent, no data rewrite beyond the default on existing rows): runs
   only when the orchestrator deploys, which is decided at the gate.
-- Tags v0.5.0 (wrapper), v0.6.0 (plugins), v0.5.0 (agents-common): pushed by the orchestrator
+- Tags v0.5.0 (wrapper), v0.7.0 (plugins), v0.5.0 (agents-common): pushed by the orchestrator
   session after each release PR merges green; a wrong tag is never moved, a new patch is cut.

@@ -69,6 +69,7 @@ README Non-goals, verbatim there (architect's do-not-build list plus the noted i
     the orchestrator (`ORCH_ANY_MCP_PLUGINS_REF`) at build time;
   - agents-schedule migration: the next free number at build time (0002 today; no other epic
     adds one).
+- Negotiated 2026-10-29 (mx-34 #469): orchestrator migration 0013, plugins v0.6.0, agents-schedule v0.2.0.
 - Standing user rules: deploy whenever possible (live applies need no approval); tags are
   irreversible and listed below; send mx-5 one line before an apply restarts agent pods.
 - No Docker in agent pods: orchestrator and schedule DB tests run in CI; each task keeps

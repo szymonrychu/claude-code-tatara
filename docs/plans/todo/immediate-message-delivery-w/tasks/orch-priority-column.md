@@ -85,4 +85,4 @@ Every stored message carries a priority the dispatcher can act on; messages queu
 
 - 2026-10-29 amended: depends_on wrapper-midturn-probe so the probe gates every root task (interrogate 6; frontmatter edited directly, amend cannot change it)
 
-- 2026-10-29 amended: migration renumbered 0012 -> 0014 (mx-34 #469/#470): it lands after session-orchestration-mcp's 0013 on top of slash's 0012
+- 2026-10-29 amended: migration renumbered 0012 to 0014 (mx-34 #469/#470): it lands after session-orchestration-mcp's 0013 on top of slash's 0012

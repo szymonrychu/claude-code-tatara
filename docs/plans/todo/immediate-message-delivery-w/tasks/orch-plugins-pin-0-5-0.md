@@ -69,6 +69,6 @@ Superleaders get the session_send tool that offers immediate or idle delivery.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
-- 2026-10-29 amended: plugins pin renumbered v0.6.0 -> v0.7.0 (mx-34 #469/#470): the baseline pin is session-orchestration-mcp's v0.6.0
+- 2026-10-29 amended: plugins pin renumbered v0.6.0 to v0.7.0 (mx-34 #469/#470): the baseline pin is session-orchestration-mcp's v0.6.0
 
 - 2026-10-29 amended: fix: baseline pin is v0.6.0 (session-orchestration-mcp), the bump goes to v0.7.0

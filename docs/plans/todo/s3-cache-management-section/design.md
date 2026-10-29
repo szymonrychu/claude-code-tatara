@@ -51,7 +51,7 @@ bucket configuration change, no wrapper/plugins/common change.
   permanent.
 - Blockers: decouple-s3-session-cache-fr (names, `sessions_object`, migration records) and
   live-session-transcript-back (`sessions_backup` runs, same cache files). One SQL migration, numbered
-  `<MIGRATION>` = next free at build time (0010, 0012 and decouple's are claimed).
+  `<MIGRATION>` = next free at build time (expected 0016, after 0015 of decouple-s3-session-cache-fr; 0010 and 0012 are slash's, 0013 session-orchestration-mcp's, 0014 immediate-message-delivery-w's).
 - Web: no router; menu from `backends/registry.ts:26 BACKEND_MENUS`; `layout/ConfirmDialog.tsx` is the one
   confirm pattern; design rules in `layout/designRules.ts`; `nomenclature.test.ts`.
 
