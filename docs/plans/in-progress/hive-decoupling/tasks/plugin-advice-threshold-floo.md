@@ -49,6 +49,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Branch `plugin-advice-floor` from fresh origin/main (dfa0355, v0.5.0).
+- Add test_handover_advice_uses_the_floored_threshold (auto_compact_pct 10 -> "passes 1%", 80 -> "passes 65%"); run the verify: red on the 10 case.
+- Floor the advice with a named margin constant; rerun: green. Bump the orchestrator plugin version to 0.5.1 as 3dfd403 did. Commit, push, open a PR to main. Known pod-only failure: tests/test_source_install (git 2.39 --end-of-options), also red on origin/main; quote it, do not fix it.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
