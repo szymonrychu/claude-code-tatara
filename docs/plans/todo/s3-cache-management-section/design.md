@@ -64,6 +64,7 @@ bucket configuration change, no wrapper/plugins/common change.
 request, in its own asyncio task off the session pass (`asyncio.to_thread`, botocore paginator); a pass
 writes a new generation and drops the old one in one transaction. Alternatives: on-demand listing per view
 (up to 100 S3 calls per page view, no history); a credentialed component (forbidden). User Q3.
+(review fix) A pass also re-runs and completes every refresh request left `running` by a previous process, any listing exception fails the listing with the exception class (previous generation kept), and the one S3 client (`presign._client`) has bounded connect/read timeouts and retries (interrogate act on 1, 2).
 
 ### D2: Delete and refresh requests through a guarded queue
 
@@ -76,6 +77,7 @@ so no restore, save, backup or migration Job it starts can begin between check a
 inventory row, then `done`. An S3 403 or other error -> `failed` with the reason. The api's own 409 `in_use`
 check is advisory. If-Match is a backup guard (RGW release unknown; HEAD plus ETag under the single-writer
 reconciler is the real one). User Q1, Q6.
+(review fix) Every request is wrapped: any exception ends it `failed` with the exception class as reason and never raises out of the runner, so a down or hung RGW cannot stop the session loop of the same pass (interrogate act on 2).
 
 ### D3: One pin rule, `cache.pins`
 
@@ -90,7 +92,8 @@ up, restoring or migrating pins its object. Rows of every `desired` state count 
 session variables; preset name; deletable: the D11 repair, user Q5), `legacy` (`preset-[0-9a-f]{16}.tar.zst`;
 "copied by N live sessions" from `migration` records in state `done`; deletable, user Q2), `saved` (other
 names in the scheme, usually a discarded session restorable on recreate; deletable), `other` (outside the
-scheme: smoke objects, strays; deletable).
+scheme: strays, and smoke objects whose names do not fit it; deletable). Classification is by name only, so a smoke object whose name fits the scheme reads `saved`.
+(review fix) The api's SQL class filter takes its key patterns from `cache.pins` constants (`LEGACY_RE`, `SAVED_RE`), and a test pins its agreement with `classify` for every class (interrogate act on 3).
 
 ### D5: API on the web port only
 
@@ -188,6 +191,19 @@ within D1-D9.
   live check confirms.
 - Deployed RGW release and If-Match support: unknown; not relied on.
 - Inventory size well under 100000 rows; a pass under 60 s (architect "changes my mind").
+- (my call) Former Q7: classification is by name only; scheme-shaped smoke objects (for example
+  `smoke-workspace-cache.tar.zst`) read `saved`, and only keys outside the scheme read `other` (interrogate
+  Consider; D4 corrected).
+- (my call) Builder check Q1: the epic starts only after both blockers land on main; where a landed field name
+  differs, the builder adapts the task text and AC test names to it and notes the change in the task Notes.
+- (my call) Builder check Q2: the orchestrator session amends `<MIGRATION>` through `ticket.py amend` before
+  orch-cache-tables is dispatched.
+- (my call) Builder check Q3 is settled by former Q7, Q7 by interrogate act on 3; Q4 (orchestrator PR merges
+  first, web syncs from the main sha), Q5 (PRs merged and shas amended before helmfile-cache-pins), Q6
+  (builders stop after helmfile-cache-pins), Q8 (one active reconciler, `advisory_singleton`, orchestrator
+  README.md:105) and Q9 (keep 60-86400) are recorded in the Notes of web-cache-client, helmfile-cache-pins,
+  helmfile-cache-live-check, orch-cache-requests and orch-cache-inventory.
+- (my call) S3 client bounds: connect 5 s, read 30 s, 2 total attempts (orch-cache-inventory, review fix).
 
 ## Open questions
 
@@ -197,7 +213,6 @@ within D1-D9.
 - Q4: Show a quota gauge by setting the 100G / 100000-object limits as orchestrator settings in agents-helmfile? [recommended: yes]
 - Q5: May an object named by a preset's fixed cache name be deleted, so the preset's next session starts empty (the bad-archive repair)? [recommended: yes]
 - Q6: One object at a time in this epic, no multi-select? [recommended: yes]
-- Q7: Smoke objects whose names fit the cache naming scheme (for example smoke-workspace-cache.tar.zst) are classed saved by the structural rule, and only keys outside the scheme read other? [recommended: yes]
 
 ## Irreversible operations in scope
 

@@ -62,7 +62,7 @@ This task delivers D3 and the class rule of D4 in agents-orchestrator as the new
 ## Interfaces
 
 - `src/agents_orchestrator/cache/pins.py` (new, pure, synchronous):
-  - `ObjectKind = Literal["workspace", "transcripts"]`, `CacheClass = Literal["in_use", "preset", "legacy", "saved", "other"]`, `LEGACY_RE` (fullmatch `preset-[0-9a-f]{16}\.tar\.zst`).
+  - `ObjectKind = Literal["workspace", "transcripts"]`, `CacheClass = Literal["in_use", "preset", "legacy", "saved", "other"]`, `LEGACY_RE` (fullmatch `preset-[0-9a-f]{16}\.tar\.zst`) and `SAVED_RE` (fullmatch `(sessions/)?<k>\.tar\.zst` with `<k>` the body of `spec.CACHE_KEY_RE`), both written in the regex subset Python `re` and Postgres share, used by `classify` and by the api's SQL filter (review fix, interrogate act on 3; task orch-cache-api AC19).
   - `class PinRow(Protocol)`: `slug: str`, `spec` (a `SessionSpec`: `spec.cache` is None or has `.key`), `status: Mapping[str, Any]`; `db.sessions.Session` satisfies it, so callers pass rows from `sessions.list_sessions` unchanged.
   - `object_kind(name: str) -> ObjectKind`.
   - `session_pins(row: PinRow, prefix: str) -> frozenset[str]`.
@@ -85,7 +85,7 @@ One importable rule decides which objects session rows pin and which class every
 
 ## Notes
 
-- (my call) The class rule is structural: smoke objects whose names fit the scheme (for example `smoke-workspace-cache.tar.zst`, `sessions/smoke-123.tar.zst`) read `saved`; only keys outside the scheme read `other` (open question Q7, planned on its recommended answer).
+- (my call) The class rule is structural: smoke objects whose names fit the scheme (for example `smoke-workspace-cache.tar.zst`, `sessions/smoke-123.tar.zst`) read `saved`; only keys outside the scheme read `other` (former open question Q7, settled as my call after the interrogate review; design Assumptions).
 - Over-pinning is safe (a refusal), under-pinning loses data: when a field's shape is ambiguous, pin.
 - No database read, no S3 call, no clock: everything comes in as arguments.
 - These tests need no Postgres, so they run locally.

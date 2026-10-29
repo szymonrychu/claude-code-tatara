@@ -77,7 +77,7 @@ Review fix (interrogate 2026-10-29, act on 2: S3 errors and hangs block the whol
 
 ## Interfaces
 
-- `src/agents_orchestrator/reconciler/cache_requests.py` (new): `class CacheRequestRunner(pool, settings)` with `async run_once() -> None`; reasons `in_use: <slugs>`, `changed`, `gone`, `<Error.Code> <HTTP status>`.
+- `src/agents_orchestrator/reconciler/cache_requests.py` (new): `class CacheRequestRunner(pool, settings)` with `async run_once() -> None`; reasons `in_use: <slugs>`, `changed`, `gone`, `<Error.Code> <HTTP status>`, and the exception class name for any other exception (review fix, interrogate act on 2); `run_once` never raises except `asyncio.CancelledError`.
 - `db/cache.py` gains `CacheRequest` (id, kind, object, etag, size, status, reason, created_at, started_at, finished_at), `running_deletes(conn) -> list[CacheRequest]`, `claim_delete(conn) -> CacheRequest | None` (`UPDATE ... SET status='running', started_at=now() WHERE id = (SELECT id ... WHERE kind='delete' AND status='queued' ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED) AND status='queued' RETURNING ...`), `complete_request(conn, id, status, reason) -> bool` (guarded on `running`), `drop_object(conn, key) -> None` (every generation's row of that key).
 - `reconciler/loop.py`: `Reconciler.cache_requests` built when `settings.cache_available`; `reconcile_once` calls it after `self.checks.run_once()`.
 - Uses `cache.pins.pins_by_object(rows, settings.cache_s3_prefix)` and `presign._client(...)`; never imports from `api`.
@@ -108,3 +108,4 @@ A queued delete request is executed by the reconciler within one pass: refused w
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 2
+- (my call) Builder check Q8: treat the reconciler as one active process: `orch reconciler` runs inside `advisory_singleton(dsn, "reconciler")` with extra replicas as hot standbys (agents-orchestrator README.md:105), so a `running` delete at pass start was left by a previous process; the guarded completion keeps a double run safe anyway (HEAD 404 -> `done/gone`).

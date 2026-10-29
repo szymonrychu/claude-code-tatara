@@ -108,7 +108,7 @@ The web port serves a classified, paged, searchable view of the inventory, the q
 
 ## Notes
 
-- Keep a page bounded: filter by class and name in SQL over the current generation (the `in_use` and `preset` names are small arrays from `cache.pins`; `legacy`, `saved` and `other` are key patterns), reading at most `limit + 1` rows per request; never load the whole table for one page (the bucket allows 100000 objects).
+- Keep a page bounded: filter by class and name in SQL over the current generation (the `in_use` and `preset` names are small arrays from `cache.pins`; `legacy`, `saved` and `other` are key patterns taken from the `cache.pins` constants `LEGACY_RE` and `SAVED_RE`, never written in `api/cache.py`; review fix, interrogate act on 3), reading at most `limit + 1` rows per request; never load the whole table for one page (the bucket allows 100000 objects).
 - `test_api_cache.py` belongs to decouple-s3-session-cache-fr; this task's tests live in `tests/test_api_cache_section.py`.
 - The 409 `in_use` check is advisory: the reconciler re-checks at execution (task orch-cache-requests).
 - Per-task security check (retro, recurring): bound every user input (object 1024, etag 256, q 256, limit 500); the object is never a path; error messages name slugs but never a credential or URL; confirm the gate test hits the service port with a valid token.
@@ -120,3 +120,4 @@ The web port serves a classified, paged, searchable view of the inventory, the q
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 3
+- (my call) Builder check Q7 is superseded by interrogate act on 3: the SQL filter uses the `cache.pins` patterns as Postgres `~` parameters, and AC19 pins its agreement with `classify`; there is no second Python-only path.

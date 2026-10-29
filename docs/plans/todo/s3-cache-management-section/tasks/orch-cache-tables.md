@@ -87,3 +87,4 @@ Tests no longer accurate because they pin the applied migration list and a new m
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+- (my call) Builder check Q2: the orchestrator session amends `<MIGRATION>` to the next free number on agents-orchestrator main through `ticket.py amend`, after both blockers landed and before this task is dispatched.

@@ -79,3 +79,4 @@ agents-helmfile main pins the orchestrator and web releases of this epic with th
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+- (my call) Builder check Q5: this task starts only after the orchestrator and web PRs are merged with main CI, chart and image publish green, and after the orchestrator session amended `<ORCH_SHA>` and `<WEB_SHA>` to their merge shas.

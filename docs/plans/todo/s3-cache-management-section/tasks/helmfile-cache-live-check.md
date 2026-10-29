@@ -87,3 +87,4 @@ The orchestrator and web releases of this epic run live with the quota set; the 
 - `gh` must be authenticated in the deploying pod for check-pins.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+- (my call) Builder check Q6: confirmed orchestrator-session only; a builder stops after helmfile-cache-pins and never takes this task.

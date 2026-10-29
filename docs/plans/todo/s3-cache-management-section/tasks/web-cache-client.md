@@ -68,3 +68,4 @@ agents-web has a typed client for the cache routes, generated from the orchestra
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes, no colour literals, decorative Unicode or off-grid spacing (`layout/designRules.ts`), never the word "cluster" (`nomenclature.test.ts`). No backward-compatibility shims.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+- (my call) Builder check Q4: the agents-orchestrator epic PR merges to main first; `sync:api` runs from that main sha, never from the epic integration branch, so no merge-commit requirement arises.

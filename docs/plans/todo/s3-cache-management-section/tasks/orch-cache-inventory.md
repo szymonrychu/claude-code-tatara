@@ -3,8 +3,8 @@ title: orch cache inventory
 status: todo
 repo: agents-orchestrator
 value: "The reconciler keeps a fresh listing of every S3 cache object, so the Cache section shows the bucket without holding credentials"
-files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/db/cache.py, src/agents_orchestrator/reconciler/cache_inventory.py, src/agents_orchestrator/reconciler/loop.py, README.md, MEMORY.md, tests/test_cache_inventory.py]
-verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_inventory.py tests/test_settings.py && mise run lint  # DB-backed tests need Docker: CI only here; the list_bucket and settings tests run locally"
+files: [src/agents_orchestrator/settings.py, src/agents_orchestrator/cache/presign.py, src/agents_orchestrator/db/cache.py, src/agents_orchestrator/reconciler/cache_inventory.py, src/agents_orchestrator/reconciler/loop.py, README.md, MEMORY.md, tests/test_cache_inventory.py]
+verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_inventory.py tests/test_cache_presign.py tests/test_settings.py && mise run lint  # DB-backed tests need Docker: CI only here; the list_bucket, presign and settings tests run locally"
 depends_on: [orch-cache-tables, orch-cache-pins]
 model: opus
 review: ""
@@ -71,6 +71,7 @@ Review fix (interrogate 2026-10-29, act on 2: S3 errors and hangs): the S3 clien
 ## Files
 
 - `src/agents_orchestrator/settings.py`
+- `src/agents_orchestrator/cache/presign.py`
 - `src/agents_orchestrator/db/cache.py`
 - `src/agents_orchestrator/reconciler/cache_inventory.py`
 - `src/agents_orchestrator/reconciler/loop.py`
@@ -81,9 +82,10 @@ Review fix (interrogate 2026-10-29, act on 2: S3 errors and hangs): the S3 clien
 ## Interfaces
 
 - `settings.py`: `cache_inventory_interval_seconds: int = Field(default=900, ge=60, le=86400)`.
-- `src/agents_orchestrator/db/cache.py` (new): `Listing` (generation, state, reason, objects, bytes, started_at, finished_at), `ListedObject` (key, kind, size, etag, last_modified); `begin_listing(conn) -> int`, `finish_listing(conn, generation, objects: Sequence[ListedObject]) -> None` (one transaction: insert, mark done with totals, drop older generations, drop keys deleted since `started_at`), `fail_listing(conn, generation, reason) -> None`, `current_listing(conn) -> Listing | None` (newest `done`), `latest_listing(conn) -> Listing | None` (newest of any state), `claim_refreshes(conn) -> list[int]`, `complete_refreshes(conn, ids, status, reason) -> None`. Later tasks add the delete and api functions here.
+- `src/agents_orchestrator/db/cache.py` (new): `Listing` (generation, state, reason, objects, bytes, started_at, finished_at), `ListedObject` (key, kind, size, etag, last_modified); `begin_listing(conn) -> int`, `finish_listing(conn, generation, objects: Sequence[ListedObject]) -> None` (one transaction: insert, mark done with totals, drop older generations, drop keys deleted since `started_at`), `fail_listing(conn, generation, reason) -> None`, `current_listing(conn) -> Listing | None` (newest `done`), `latest_listing(conn) -> Listing | None` (newest of any state), `claim_refreshes(conn) -> list[int]` (claims every `queued` refresh `queued->running` and returns those ids plus every refresh already `running`, left by a previous process; review fix, interrogate act on 1), `complete_refreshes(conn, ids, status, reason) -> None`. Later tasks add the delete and api functions here.
 - `src/agents_orchestrator/reconciler/cache_inventory.py` (new): `list_bucket(settings: Settings) -> list[ListedObject]` (synchronous), `class CacheInventory(pool, settings, clock=time.monotonic)` with `async run_once() -> None` and `async run(stop: asyncio.Event, wake: asyncio.Event) -> None`.
 - `reconciler/loop.py`: `CHANNELS = ("session_changed", "cache_requested")`; `Reconciler.inventory` built when `settings.cache_available`.
+- `cache/presign.py`: `S3_CONNECT_TIMEOUT_SECONDS = 5`, `S3_READ_TIMEOUT_SECONDS = 30`, `S3_MAX_ATTEMPTS = 2`, used in the `_client` `Config` (review fix, interrogate act on 2); tests lower them and call `_client.cache_clear()`.
 - The ETag is stored exactly as S3 returns it (HEAD returns the same form), so the delete executor compares like with like.
 
 ## Expected outcome
@@ -111,3 +113,4 @@ With the cache configured, the reconciler keeps `cache_objects` at most `ORCH_CA
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
 
 - 2026-10-29 amended: interrogate 2026-10-29 act on 1, 2
+- (my call) Builder check Q9: keep the `ORCH_CACHE_INVENTORY_INTERVAL_SECONDS` bounds at 60 to 86400.
