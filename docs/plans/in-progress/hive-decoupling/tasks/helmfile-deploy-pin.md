@@ -1,6 +1,6 @@
 ---
 title: helmfile deploy pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the live namespace is pinned to the hive-decoupling orchestrator and plugins release
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-e2e-hive-activity, plugins-release-0-4-0, helmfile-smoke-activity]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 9d78895b088339e9354e296fb7fedb4a42d472b2
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 34
+actual_tokens: 705757
+actual_roles: "impl 30, review 4"
+actual_role_tokens: "impl 574913, review 130844"
 ---
 
 # helmfile deploy pin
@@ -71,3 +71,5 @@ agents-helmfile pins the hive-decoupling orchestrator and the v0.4.0 plugins rel
 - The Matrix epic also edits these values; build on its merged pins (agent image untouched here).
 
 - 2026-10-27 amended: builder check settlement 1: migration number and plugins tag are placeholders until orch-activity-route amends them from main
+
+- 2026-10-29 done
