@@ -14,7 +14,7 @@ composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector s
 room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
 comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.5.0, agents-common
 0.4.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
-the priority option alone (the user's "maybe"): about 13 of the epic's 64 points (tasks
+the priority option alone (the user's "maybe"): about 13 of the epic's 65 points (tasks
 orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
 web-sync-message-priority, web-composer-send-when-idle and the `priority` legs of the wrapper and
 peer tasks); flagged at the gate as Q10.
@@ -410,7 +410,7 @@ ones first:
   wrapper-merge-stop-gate (5).
 - recurring (deploy-safe-agent-sessions, file-download-in-file-browse): no Docker in the pod; DB
   tests are CI-only: verifies stay Docker-free where a Docker-free test exists (orch-*,
-  mxc-deliver-during-run Notes).
+  mxc-relay-once-per-turn and mxc-deliver-during-run Notes).
 - recurring (file-editor-with-tabs-and-hi, markdown-rendering-in-chat): save the failing test name
   and output tail before any rerun; a named flake becomes a task: web-composer-send-when-idle Notes.
 - recurring (file-editor-with-tabs-and-hi): pin the wrapper by release tag and cut it before the
@@ -438,7 +438,8 @@ Findings:
 - `target_queue_full` counts queued rows only, so a flood needs a wrapper cap (cartographer section 5):
   wrapper-immediate-turn-merge.
 - The connector never claims a room's new rows during a run (`db/inbound.py:rooms_ready`):
-  mxc-deliver-during-run; agents-common `Message` has no `turn_id`: common-message-turn-id.
+  mxc-deliver-during-run; agents-common `Message` has no `turn_id`: common-message-turn-id,
+  mxc-relay-once-per-turn.
 - agents-common posts `{text}` only, so webhook, schedule and matrix take the server default
   (cartographer section 4): orch-priority-column.
 - `session_send` description edited on the slash branch, plugins 0.4.0 taken by hive-decoupling:
@@ -467,8 +468,8 @@ Findings:
 | D15 plugin descriptions and release | plugin-session-send-priority, plugins-release-0-5-0, orch-plugins-pin-0-5-0 |
 | D16 web composer and queue strip | web-sync-message-priority, web-composer-send-when-idle |
 | D17 ccw peer priority | wrapper-peer-priority |
-| D18 Matrix connector delivery | common-message-turn-id, common-release-0-4-0, mxc-deliver-during-run |
-| D19 release and pin | wrapper-release-0-5-0, orch-wrapper-pin-0-5-0, orch-plugins-pin-0-5-0, plugins-release-0-5-0, common-release-0-4-0, mxc-deliver-during-run |
+| D18 Matrix connector delivery | common-message-turn-id, common-release-0-4-0, mxc-relay-once-per-turn, mxc-deliver-during-run |
+| D19 release and pin | wrapper-release-0-5-0, orch-wrapper-pin-0-5-0, orch-plugins-pin-0-5-0, plugins-release-0-5-0, common-release-0-4-0, mxc-relay-once-per-turn |
 
 ## Review focus
 
@@ -531,7 +532,7 @@ Findings:
 - Q7: Should the ccw peer send_message (hive peers) get the same priority option and mid-turn delivery? [recommended: yes, same option for hive peers (D17)]
 - Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [recommended: yes, the wrapper default is immediate too (D1)]
 - Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [recommended: yes, deploy is decided at the gate (D19)]
-- Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 64 points? [recommended: yes, keep it in scope]
+- Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 65 points? [recommended: yes, keep it in scope]
 - Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [recommended: yes, existing queued rows stay idle (D12)]
 
 ## Irreversible operations in scope
