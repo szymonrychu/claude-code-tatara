@@ -58,17 +58,26 @@ Scope (agents-orchestrator): `db/queue.py` (`Claim.priority`, `_PICK_IMMEDIATE`,
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `db/queue.py`: `Claim.priority: str`; `_PICK_IMMEDIATE` (as `_PICK` without `s.state = 'idle'` and the `free_since` predicate, `FOR UPDATE OF a SKIP LOCKED`); the claim of an immediate message sets `status = 'dispatching'`, `agent_id`, `dispatched_at`, `heartbeat_at` and leaves `agents.last_dispatched_at` alone; one guarded update for "dispatching -> queued with not_before, attempts unchanged" (reuse or extend `requeue`, `WHERE status = 'dispatching'`).
+- `dispatcher/loop.py:_send`: `client.submit_turn(wsid, text, metadata, priority=claim.priority)`; for an immediate claim no `release_agent` call (nothing reserved).
+- Kind `command` claims: unchanged (slash D10).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A message to a busy agent is dispatched at once and lands in its running turn; idle messages, commands, handovers and backoff behave exactly as before.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `db/queue.py` (`_CANDIDATES`, `_PICK`, `_PICK_COMMAND`, `_claim_in_session`, `_dispatch`, `requeue`, `record_failure`, `release_agent`), `dispatcher/loop.py` (`_send`), `tests/test_queue_leader_routing.py`, `tests/test_dispatcher.py`, `tests/test_dispatch_queue.py`, the README dispatch section and MEMORY.md in one pass.
+- Red: add every test named ac1 to ac8; they need Postgres, so they fail in CI (and error locally without Docker); run the Docker-free verify to confirm nothing else broke.
+- Green: implement the pick, the claim leg, the order rule, the send and the outcome mapping; README and MEMORY; run the task's verify; expect all passed. Quote the summary line; the reviewer quotes the CI summary for the Postgres tests.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Headline promise check (retro, recurring): every place that reads or writes the reservation (`_PICK`, `release_agent`, `retry_message`, the rollout replacer's sent-not-busy rule) must stay correct for an immediate message that holds none; name each in the report.
+- Per-task security check (retro): `target_queue_full` counts queued rows only, so the wrapper's 429 cap is the flood bound for immediate messages; do not add a second cap here.
+- The busy-leader hold still applies to idle messages behind an immediate one; the handover hold applies to both.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR; the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
