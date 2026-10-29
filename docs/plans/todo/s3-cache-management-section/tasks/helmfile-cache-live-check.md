@@ -64,17 +64,26 @@ Live applies are run by the orchestrator session only, never by a subagent. Step
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new; uses `kubectl --context in-cluster-sa` (kubeconfig from the pod service account), `helmfile template`, `mise run diff`, `mise run apply`, `mise run smoke`, and the orchestrator API on the web port (port-forward as `scripts/smoke.sh` does).
+- Lease manifest: `apiVersion: coordination.k8s.io/v1`, `kind: Lease`, `metadata: {name: agents-helmfile-apply, namespace: agents}`, `spec: {holderIdentity: <own ccw address>, acquireTime: <now, RFC 3339 micro>, leaseDurationSeconds: 3600}`, written under the workbench `.scratchpad`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator and web releases of this epic run live with the quota set; the Cache section lists the bucket, refuses an in-use object and deleted exactly one disposable object created for the check; the deploy Lease is released.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session only: steps 1-9 of the Requirement, in order; stop at step 3 if the diff shows more than allowed (release the Lease first).
+- Write the handoff checkpoint (step 4) before the apply; after a roll, resume from it.
+- Record each result in the task Notes as it happens (Lease holder and times, Harbor check, diff summary, smoke tail, the step 7 bodies), then the MEMORY.md entry; commit it through the agents-helmfile PR flow; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never put `mise run apply` in AC evidence (agents-helmfile MEMORY 2026-10-25). Subagent `kubectl exec` is denied by the permission classifier; the whole task is orchestrator-run, and a builder subagent stops after helmfile-cache-pins.
+- (my call) The disposable object comes through the product path (a session with a unique literal cache key, discarded so its save writes the object and its row is purged), because agents hold no S3 credential. Its discard also writes `sessions/smoke-cache-del-<ts>.tar.zst`; that transcripts object stays, like the existing `sessions/smoke-*` objects, because the user decision allows deleting only one object.
+- Never delete a session's cache, and never send a deletion for any object other than the disposable one; the step 7c request must be refused, so pick an object `GET /api/v1/cache/objects` reports `in_use`.
+- Assumption to confirm (design): the OBC key has DeleteObject. If the disposable delete ends `failed` with a 403, stop: that is a defect for a new task (bucket policy in agents-helmfile), never a hand fix.
+- Retro (matrix-connector-agent-initi, recurring): a live apply surfaced defects tests missed; render every release with `helmfile template` and read the full diff before the apply. Live apply and proof tasks run several times their seed; a defect found live becomes a new task.
+- `gh` must be authenticated in the deploying pod for check-pins.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
