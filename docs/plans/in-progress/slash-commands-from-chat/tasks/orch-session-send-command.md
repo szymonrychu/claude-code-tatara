@@ -1,6 +1,6 @@
 ---
 title: orch session send command
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "a superleader's slash text to another session becomes a command for that session's leader"
 files: [src/agents_orchestrator/api/agent.py, tests/test_agent_session_messaging.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_readme_api.py tests/test_slash.py && 
 depends_on: [orch-message-kind]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 58eeeba799ec0a657e6317e3900e9e71922dfb3a
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 2
+actual_tokens: 418923
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 278625, review 140298"
 ---
 
 # orch session send command
@@ -65,3 +65,5 @@ A superleader's `orchestrator_session_send` with "/x ..." becomes a command mess
 - Depends on orch-message-kind (`enqueue_message(kind=...)`).
 
 - 2026-10-27 amended: interrogate item 1 (only a superleader's slash text becomes a command; a worker-to-superleader slash text stays a framed turn), design D1 revised
+
+- 2026-10-29 done
