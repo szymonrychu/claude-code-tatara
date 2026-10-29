@@ -27,7 +27,7 @@ README Goal G7, verbatim: "The plugin release, orchestrator pin, agents-helmfile
 
 Standing user rule (2026-10-27), verbatim from the lead: "Deploy whenever possible: live applies need no approval, so include the agents-helmfile values, apply and live smoke tasks in this epic."
 
-Design D17, verbatim: "Every image tag and chart version is checked in Harbor before any apply (retro proposal). Apply order, `--selector` per release, `mise run diff` reviewed before each: agents-schedule (its migration runs in the init container; the relay listener comes up), agents-orchestrator (its migration; the new plugins ref changes the rendered config hash and rolls every running agent pod, including mx-5: one line to mx-5 first), agents-web."
+Design D17, verbatim: "Every image tag and chart version is checked in Harbor before any apply (retro proposal). Apply order, `--selector` per release, `mise run diff` reviewed before each (`mise run apply` runs lint, test and check-pins first): agents-schedule (its migration 0002 runs in the init container; the relay listener comes up), agents-orchestrator (its migration 0013; the new plugins ref changes the rendered config hash, and the OnDelete rollout reconciler replaces each agent pod once it is idle, one per session, leaders last, mx-5 included: one line to mx-5 first), agents-web."
 
 Design D19, verbatim: "After the deploy the orchestrator session sends mx-5 one line: flag mx-5's preset in the UI and recreate mx-5 to get the tools; it does not edit mx-5's preset or recreate mx-5 itself (recreating drops mx-5's context). The live smoke probes and records mx-5's preset name and whether the owner DM is bound to mx-5 (facts the repos do not hold)."
 
@@ -70,3 +70,5 @@ The orchestration tools are live, proven by the smoke, and mx-5 knows how to get
 - Live and irreversible operations are listed in design.md (applies, both migrations, the relay token, the smoke objects). Standing rule: deploy whenever possible; live applies need no approval.
 - Live apply and smoke tasks have run 3-4x over the minutes seed in past epics (retro); several runs are likely.
 - Never edit mx-5's preset or recreate mx-5 (D19).
+
+- 2026-10-29 amended: staleness refresh: D17 apply order cites check-pins, migrations 0002 and 0013 and the idle-only OnDelete rollout
