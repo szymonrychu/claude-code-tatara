@@ -1,6 +1,6 @@
 ---
 title: orch wrapper pin 0.4.1
-status: todo
+status: done
 repo: agents-orchestrator
 value: the orchestrator runs and tests against the wrapper that closes the whitespace bypass and denies the extended list
 files: [pyproject.toml, uv.lock, e2e/agent-test.Dockerfile, README.md, tests/fakes/fake_wrapper.py, tests/test_fake_wrapper_contract.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_images.py tests/test_render.py tests/
 depends_on: [wrapper-release-0-4-1, orch-command-outcome]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 44416f0dff8b98df22bb7cd00cce2de3b1b723ea
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 5
+actual_tokens: 477684
+actual_roles: "impl 4, review 2"
+actual_role_tokens: "impl 400151, review 77533"
 ---
 
 # orch wrapper pin 0.4.1
@@ -81,3 +81,5 @@ What is true and observable when the task is done.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-29 amended: wrapper v0.4.1 merged and tagged: merge sha eed2c3c
+
+- 2026-10-29 done
