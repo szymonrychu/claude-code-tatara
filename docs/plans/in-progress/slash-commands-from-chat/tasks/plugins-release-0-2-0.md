@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.2.0
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: superleaders can install the orchestrator plugin whose session_send says what slash text does
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_source_install.py::test_orchestrator_distribut
 depends_on: [plugin-session-send-slash]
 model: sonnet
 review: ""
-verified_head: 4ee917ceb2c77a824cf112c8757764b4f7d78a22
+verified_head: 3dfd403cc5e372b32307d32cd74474c1fad4a9a4
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
 points_actual: 1
-actual_minutes: 1
-actual_tokens: 212230
-actual_roles: "impl 1, review 1"
-actual_role_tokens: "impl 143010, review 69220"
+actual_minutes: 524
+actual_tokens: 530165
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 360915, review 169250"
 ---
 
 # plugins release 0.2.0
@@ -86,3 +86,5 @@ The orchestrator plugin with the new session_send description is released as tag
 - 2026-10-29 in-progress: reopened: rebase onto plugins main v0.4.0 and release 0.5.0 (Amendment 2, mx-34 #406)
 
 - 2026-10-29 amended: plugins renumbered: hive-decoupling took v0.4.0 first; slash ships v0.5.0 (user-approved mx-34 #406)
+
+- 2026-10-29 done: merged PR #4 as dfa0355 (main CI green), tag v0.5.0 pushed on it; ac3 ok
