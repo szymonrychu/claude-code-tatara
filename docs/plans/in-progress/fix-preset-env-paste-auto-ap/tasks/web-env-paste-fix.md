@@ -1,6 +1,6 @@
 ---
 title: web env paste fix
-status: in-progress
+status: done
 repo: agents-web
 value: "Pasted .env values, secret-named keys included, are kept when a preset is created or saved"
 files: [src/presets/PresetForm.tsx, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.test.tsx]
@@ -8,15 +8,15 @@ verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run lint"
 depends_on: []
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 7027bb150cec147e0fdb63ce0364d29cad07df7b
 points: 3
 expected_minutes: 8
 expected_tokens: 1003544
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 12
+actual_tokens: 657541
+actual_roles: "impl 8, review 4"
+actual_role_tokens: "impl 564374, review 93167"
 ---
 
 # web env paste fix
@@ -70,3 +70,5 @@ Creating or saving a preset with text still in the Paste .env box keeps every pa
 - setState is async: submit must build the request body from the merged rows it computed, not from `values.env` read after `set()`.
 - The orchestrator accepts secret-named keys (agents-orchestrator spec.py `_env`); no backend change.
 - noted, not doing now: the web RESERVED_KEY lacks ORCH_* which the orchestrator rejects.
+
+- 2026-10-29 done
