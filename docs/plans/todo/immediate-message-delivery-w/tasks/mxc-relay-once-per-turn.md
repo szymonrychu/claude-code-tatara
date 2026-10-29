@@ -5,7 +5,7 @@ repo: agents-matrix-connector
 value: a Matrix room gets one reply when several of its messages were answered by one agent turn
 files: [pyproject.toml, uv.lock, src/agents_matrix_connector/migrations/0003_run_relayed_turn.sql, src/agents_matrix_connector/db/runs.py, src/agents_matrix_connector/tracker.py, tests/test_tracker.py, tests/test_schema.py, MEMORY.md]
 verify: "uv run ruff check . && uv run ruff format --check . && uv run pytest tests/test_tracker.py tests/test_schema.py"
-depends_on: [common-release-0-4-0]
+depends_on: [common-release-0-5-0]
 model: opus
 review: ""
 verified_head: ""
@@ -72,7 +72,7 @@ When several chat messages were answered by one merged agent turn, the room gets
 
 ## Notes
 
-- Depends on the agents-common v0.4.0 tag on origin (common-release-0-4-0 ac3, pushed by the orchestrator session).
+- Depends on the agents-common v0.5.0 tag on origin (common-release-0-5-0 ac3, pushed by the orchestrator session).
 - Runs finish through the existing guarded transition in `db/runs.py`; `relayed_turn_id` gets no other writer.
 - Tree state: the connector's repo tests (`pool`, `conn`, `url` fixtures from `agents_common.testing.migrated_db`) need Postgres through Docker, absent in agent pods; they run in CI on the PR and the reviewer quotes the CI summary line.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.

@@ -43,17 +43,23 @@ Scope (agents-common): `pyproject.toml` (0.4.0 to 0.5.0), `uv.lock`, `tests/test
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `[project].version = "0.5.0"`; `tests/test_release.py` `INSTALL` and the asserted version move to 0.5.0.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A tagged agents-common release with `Message.turn_id` exists for the Matrix connector to pin.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `pyproject.toml`, `README.md`, `tests/test_release.py` and `tests/test_package.py` in one pass.
+- Bump the version, run `uv lock`, update the two pins in `tests/test_release.py` (no longer accurate after the bump) and the README install line; version bump with no behaviour change (TDD exception), so no red step.
+- Run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The tag is pushed by the orchestrator session after the PR merges green; ac3 is checked by it.
+- If the README has no install line with the tag, add one next to the existing usage section rather than inventing a new section.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+- Renumbered 0.4.0 to 0.5.0 (2026-10-29): the slash-commands-from-chat fix round takes agents-common v0.4.0 (run tracker command outcomes; user and mx-34 confirmed, #446). Build on v0.4.0; propose the exact tag through mx-34 before tagging (rule #396).

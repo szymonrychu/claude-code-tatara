@@ -13,7 +13,7 @@ superleader's `session_send`, the ccw peer `send_message`, the wrapper `POST /tu
 composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector stops holding a
 room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
 comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.6.0, agents-common
-0.4.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
+0.5.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
 the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
 orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
 web-sync-message-priority, web-composer-send-when-idle and the `priority` legs of the wrapper and
@@ -99,7 +99,7 @@ same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
   the connector's own migration is the next free one after `0002_agent_sends.sql`.
 - Pull requests (my call, builder Q5): one PR per repo for the epic. The wrapper, plugins and
   agents-common PRs merge when their release task is green (the tag needs the merge commit); the
-  connector PR after common-release-0-4-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
+  connector PR after common-release-0-5-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
   and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.0 wrapper in
   CI; it merges with a merge commit, so the epic-branch commit that agents-web's
   `openapi/orchestrator.source` names stays reachable (builder Q6); the web PR merges after it.
@@ -402,7 +402,7 @@ in-progress runs relays twice): a run that finishes from a completed turn record
 `runs.relayed_turn_id` (new nullable column, migration `0003_run_relayed_turn.sql`, written only by
 the tracker inside the same guarded `runs.finish`); a run whose message links to a turn already
 recorded on another run of its room finishes `handled` with reason `merged` and no reply. agents-common
-`Message.turn_id` (new, released 0.4.0, connector pin moved) carries the link; the fake orchestrator
+`Message.turn_id` (new, released 0.5.0, connector pin moved) carries the link; the fake orchestrator
 can complete one turn for several messages.
 Alternatives: leave the connector (Matrix chat, the user's own channel, would still wait for the
 turn, cartographer section 1 item 8); dedupe by `completed_at` and text (a heuristic); the lowest
@@ -411,11 +411,11 @@ Why: G4; Q6 confirms adding the two repos.
 
 ### D19: release and pin like the slash epic; no deploy task
 
-claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.4.0 are version bumps
+claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.5.0 are version bumps
 whose tags the orchestrator session pushes after merge (checked by it, not by the implementer). The
 orchestrator pins the wrapper merge commit of v0.5.0 (pyproject, uv.lock, `e2e/agent-test.Dockerfile`,
 README Images) with a real-wrapper contract case and a kind e2e case for a merged message, then the
-plugins ref v0.6.0; the connector pins agents-common v0.4.0. The wrapper is pinned by its release
+plugins ref v0.6.0; the connector pins agents-common v0.5.0. The wrapper is pinned by its release
 tag, cut before the orchestrator task (retro file-editor-with-tabs-and-hi: Harbor prunes sha7 tags).
 The agent-test scenario (`e2e/agent-test.scenario.json`) sets `"midturn_input": "queue"`, so the
 real contract case and the kind e2e prove real delivery (the merge's `absorbed_at` set, the turn
@@ -514,8 +514,8 @@ Findings:
 | D15 plugin descriptions and release | plugin-session-send-priority, plugins-release-0-5-0, orch-plugins-pin-0-5-0 |
 | D16 web composer and queue strip | web-sync-message-priority, web-composer-send-when-idle |
 | D17 ccw peer priority | wrapper-peer-priority |
-| D18 Matrix connector delivery | common-message-turn-id, common-release-0-4-0, mxc-relay-once-per-turn, mxc-deliver-during-run |
-| D19 release and pin | wrapper-release-0-5-0, orch-wrapper-pin-0-5-0, orch-plugins-pin-0-5-0, plugins-release-0-5-0, common-release-0-4-0, mxc-relay-once-per-turn |
+| D18 Matrix connector delivery | common-message-turn-id, common-release-0-5-0, mxc-relay-once-per-turn, mxc-deliver-during-run |
+| D19 release and pin | wrapper-release-0-5-0, orch-wrapper-pin-0-5-0, orch-plugins-pin-0-5-0, plugins-release-0-5-0, common-release-0-5-0, mxc-relay-once-per-turn |
 
 ## Review focus
 
@@ -595,5 +595,5 @@ Findings:
 
 - Migration 0012 (additive, idempotent, no data rewrite beyond the default on existing rows): runs
   only when the orchestrator deploys, which is decided at the gate.
-- Tags v0.5.0 (wrapper), v0.5.0 (plugins), v0.4.0 (agents-common): pushed by the orchestrator
+- Tags v0.5.0 (wrapper), v0.6.0 (plugins), v0.5.0 (agents-common): pushed by the orchestrator
   session after each release PR merges green; a wrong tag is never moved, a new patch is cut.
