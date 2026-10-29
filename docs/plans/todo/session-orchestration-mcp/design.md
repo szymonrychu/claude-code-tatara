@@ -521,6 +521,7 @@ Retro proposals of the epics done since the plan (`ticket.py retro --history`, 2
 - Q7: agents-web shows 'created by <slug>' on sessions, presets and schedules? [recommended: yes]
 - Q8: After the deploy you flag mx-5's preset in the UI and recreate mx-5 yourself (the orchestrator sends mx-5 one line and never edits mx-5's preset or recreates it, since that drops mx-5's context), and the epic closes on the throwaway-session live smoke without waiting for the grant? [recommended: yes]
 - Q9: A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls? [recommended: yes]
+- Q10: Pin agents-schedule by release tag v0.2.0 (chart 0.2.0 from the tag, image the tagged commit's sha7) instead of a main build, as negotiated with tatara (mx-34 #469/#470)? [recommended: yes; the image stays a sha7 tag until semver-image-tags-at-the-end]
 
 ## Irreversible operations in scope
 
