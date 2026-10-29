@@ -1,6 +1,6 @@
 ---
 title: chat live smoke
-status: in-progress
+status: done
 repo: agents-helmfile
 value: "the chat tools are live and the user saw an agent post, reply and react in Messenger"
 files: [MEMORY.md]
@@ -8,11 +8,11 @@ verify: "mise run lint && grep -q chat-smoke MEMORY.md"
 depends_on: [helmfile-chat-values, helmfile-web-toggle-pin, helmfile-chat-secrets, chat-smoke-script, helmfile-orch-chat-fix-pin]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: fd1a382
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -83,3 +83,7 @@ The chat tools work live: an agent posted, replied and reacted in the owner DM w
 - 2026-10-27 amended: final gate 2026-10-27: hard 1:1 room-session binding replaces last-speaker routing (D9): binding quoted before and after; Q7 approved
 
 - 2026-10-28 amended: plugins release number swap (design B2): this epic releases v0.2.0 on top of v0.1.0; slash-commands releases v0.3.0
+
+- 2026-10-29 done: ac1-ac6 evidence: .scratchpad/matrix/run-notes.md 'chat-live-smoke evidence' (Harbor tags, diff rc=0, smoke OK, only owner DM agents_may_initiate, binding mx-34 before/after, chat-smoke rc=0 S1-S4 sent). ac7: user via mx-34 msg 325 'Lovely 😊' / 'all recommended, go': reply/react kept, send kept, no removal tasks; S4 unverified. ac8: agents-helmfile PR #47 fd1a382 merged 52b6893; reviewer extra-facts finding dismissed (all sourced from run-notes and msg 325). pointsActual 1 is the reviewer's score of the ac8 doc step only.
+
+- 2026-10-29 actuals: no agent records
