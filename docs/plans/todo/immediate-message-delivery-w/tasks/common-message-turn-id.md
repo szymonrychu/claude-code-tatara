@@ -45,17 +45,22 @@ Scope (agents-common): `src/agents_common/orchestrator.py` (`Message.turn_id`), 
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `agents_common.orchestrator.Message.turn_id: str | None = None` (the orchestrator's `MessageView.turn_id`, already served).
+- `FakeOrchestrator.complete_turn(message_id: int, final_text: str, turn_id: str | None = None) -> None`: without `turn_id` it allocates one per call as today; the fake's message view includes `turn_id`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Consumers of agents-common (the Matrix connector first) can tell when two messages were answered by one merged turn.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/agents_common/orchestrator.py`, `src/agents_common/fake_orchestrator.py`, `tests/test_orchestrator_client.py` and `tests/test_runs.py` in one pass.
+- Red: add the two tests; run `uv run pytest tests/test_orchestrator_client.py`; expect them to fail.
+- Green: add the field and the fake parameter; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `_Model` ignores extra keys, so the field is purely additive for consumers.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
