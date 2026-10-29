@@ -1,6 +1,6 @@
 ---
 title: orch plugins pin 0.4.0
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: agent pods install the plugins release that offers the activity tool
 files: [src/agents_orchestrator/settings.py, pyproject.toml, uv.lock, README.md, tests/test_settings.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_settings.py tests/test_images.py test
 depends_on: [plugins-release-0-4-0, orch-handover-outcome-note, orch-drop-feed-cursor]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: ff6c6dece6aa1ee7082aad45b54f9e07cb3a1893
 points: 2
 expected_minutes: 5
 expected_tokens: 544297
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 34
+actual_tokens: 502616
+actual_roles: "impl 33, review 1"
+actual_role_tokens: "impl 404283, review 98333"
 ---
 
 # orch plugins pin 0.4.0
@@ -75,3 +75,5 @@ Agent pods rendered by this orchestrator install the plugins release that offers
 - Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is helmfile-apply-live-proof.
 
 - 2026-10-27 amended: builder check settlement 1: migration number and plugins tag are placeholders until orch-activity-route amends them from main
+
+- 2026-10-29 done
