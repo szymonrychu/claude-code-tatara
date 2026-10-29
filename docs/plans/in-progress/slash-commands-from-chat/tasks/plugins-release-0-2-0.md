@@ -1,6 +1,6 @@
 ---
 title: plugins release 0.2.0
-status: in-progress
+status: done
 repo: any-mcp-tatara-plugins
 value: superleaders can install the orchestrator plugin whose session_send says what slash text does
 files: [orchestration/orchestrator/pyproject.toml, uv.lock, orchestration/orchestrator/README.md, tests/test_source_install.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_source_install.py::test_orchestrator_distribut
 depends_on: [plugin-session-send-slash]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 4ee917ceb2c77a824cf112c8757764b4f7d78a22
 points: 1
 expected_minutes: 4
 expected_tokens: 656326
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 212230
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 143010, review 69220"
 ---
 
 # plugins release 0.2.0
@@ -76,3 +76,5 @@ The orchestrator plugin with the new session_send description is released as tag
 - Depends on plugin-session-send-slash.
 
 - 2026-10-29 amended: release order changed (user-approved, agreed between hives 2026-10-28): matrix-connector-agent-initi released plugins v0.2.0 first, so this task releases v0.3.0 on top of v0.2.0 after rebasing onto plugins main; slug stays plugins-release-0-2-0
+
+- 2026-10-29 done
