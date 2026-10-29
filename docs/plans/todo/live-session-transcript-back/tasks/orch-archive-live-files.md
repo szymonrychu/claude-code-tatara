@@ -33,13 +33,15 @@ Design D6 amendment (planner, 2026-10-29, open question Q6, planned on its recom
 
 Test no longer accurate and changed: tests/test_sessions_backup.py::test_sessions_save_job_render asserts that the sessions Job env equals the workdir Job env except `CACHE_DIR` and `CACHE_EXCLUDE`; `CACHE_TRIM_JSONL` now differs by target by design (D6 amendment), so it joins the compared-out keys and the test asserts `true` for the sessions Job and its absence from the workdir Job.
 
+Review fix (interrogate 2026-10-29, Act on 6, FIFO swap hangs the pack): `os.open(..., O_RDONLY | O_NOFOLLOW)` blocks on a FIFO swapped in after the lstat, before the fstat type check. The open adds `O_NONBLOCK` (`os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK`), so a FIFO or other non-regular entry swapped in is opened without blocking, fails the fstat regular-file check and is skipped; the pack completes.
+
 ## Acceptance conditions
 
 - AC1: a regular file atomically replaced (os.replace) after the walk listed it and before its content is read is archived with the content of the inode that was opened, and the pack succeeds [evidence: test:tests/test_cache_archive.py::test_replaced_file_archives_opened_inode]
 - AC2: a file that grows while it is packed is archived with exactly the size its open descriptor reported at open, and the pack succeeds [evidence: test:tests/test_cache_archive.py::test_growing_file_archived_at_open_size]
 - AC3: with trim_jsonl=True a member whose name ends in `.jsonl` and whose content does not end in a newline is cut after its last newline (a file with no newline gives an empty member), a `.jsonl` file ending in a newline and every other file are archived byte for byte [evidence: test:tests/test_cache_archive.py::test_trim_jsonl_cuts_torn_last_line]
 - AC4: with trim_jsonl=False a `.jsonl` file without a trailing newline is archived byte for byte [evidence: test:tests/test_cache_archive.py::test_workspace_jsonl_never_trimmed]
-- AC5: a path that is a symlink or not a regular file at open time (swapped in after the lstat) is never followed or read, and a file removed before its open is skipped as before [evidence: test:tests/test_cache_archive.py::test_open_never_follows_swapped_in_symlink]
+- AC5: a path that is a symlink, a FIFO or otherwise not a regular file at open time (swapped in after the lstat) is never followed or read, the open of a FIFO swapped in never blocks (O_NONBLOCK) and the pack completes, and a file removed before its open is skipped as before (interrogate Act on 6) [evidence: test:tests/test_cache_archive.py::test_open_never_follows_or_blocks_on_swapped_in_entry]
 - AC6: the sessions save Job carries CACHE_TRIM_JSONL `true`, the workdir save Job has no CACHE_TRIM_JSONL, every other env entry unchanged [evidence: test:tests/test_sessions_backup.py::test_sessions_save_job_render]
 - AC7: `orch cache save` passes CACHE_TRIM_JSONL `true` to archive.pack as trim_jsonl=True, an absent CACHE_TRIM_JSONL as trim_jsonl=False, and any other value fails before any request [evidence: test:tests/test_cache_cli.py::test_save_trim_jsonl_env]
 - AC8: every archive and CLI test passes, MEMORY.md records the descriptor-based pack and the transcripts-only cut, and lint passes [evidence: command:uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_archive.py tests/test_cache_cli.py && grep -q "CACHE_TRIM_JSONL" MEMORY.md && mise run lint]
@@ -86,3 +88,5 @@ A transcripts save that runs while the wrapper compacts `events.jsonl` with `os.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
 
 - 2026-10-29 amended: planner: CACHE_TRIM_JSONL only on the sessions save Job, absent means no cut, so the exact workdir env test stays accurate
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 6
