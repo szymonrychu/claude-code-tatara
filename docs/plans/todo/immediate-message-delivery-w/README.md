@@ -1,6 +1,6 @@
 ---
 title: Immediate message delivery with per-message priority
-blockers: [slash commands from chat, hive decoupling]
+blockers: [slash commands from chat, hive decoupling, session orchestration mcp]
 stage: build
 owner: ""
 repos: [claude-code-wrapper, agents-orchestrator, any-mcp-tatara-plugins, agents-web, agents-common, agents-matrix-connector]
