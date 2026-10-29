@@ -1,6 +1,6 @@
 ---
 title: orch e2e slash command
-status: in-progress
+status: done
 repo: agents-orchestrator
 value: "CI proves end to end, on the real agent image, that /reload-plugins from chat keeps the session responsive"
 files: [tests/e2e/test_e2e_kind.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen python -m py_compile tests/e2e/test_e2e_kind.py && mise
 depends_on: [orch-render-client-commands]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 226d95d1be941a52df61e441a8987324475e8aa5
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 11
+actual_tokens: 1471724
+actual_roles: "impl 2, review 10"
+actual_role_tokens: "impl 846715, review 625009"
 ---
 
 # orch e2e slash command
@@ -63,3 +63,5 @@ CI's kind e2e proves the reported case end to end against the real agent image: 
 - Reuse the fixtures and helpers of `tests/e2e/test_e2e_kind.py` (for example the ones `test_agent_api_identity` and `test_hive_notes_delivered` use).
 - Assert on the wrapper error code `command_denied`, never on a list of names (retro proposal).
 - Depends on orch-render-client-commands.
+
+- 2026-10-29 done: kind e2e PASSED in CI run 40887222737 (tests/e2e/test_e2e_kind.py::test_slash_command_from_chat_keeps_session_responsive)
