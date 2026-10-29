@@ -51,17 +51,19 @@ Scope (agents-orchestrator, tests only):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `tests/fakes/fake_chat.FakeChat`: route `("POST", "/chat/v1/images")`, answers `{id: "s<n>", status: "queued", path}`; `refuse("/images", status, code)` as for the other routes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator's contract fake of the chat upstream matches the connector that serves pictures, so the relay tests of orch-chat-images-route test against the real contract (design D16 of the matrix epic).
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `tests/fakes/fake_chat.py`, `tests/test_chat_contract.py` and the connector's `openapi-agent.json` at the commit carrying mxc-images-route.
+- Red: `test_fake_chat_images_route`; run `uv run --frozen pytest tests/test_chat_contract.py`: fails (no route in the document or fake).
+- Green: copy the document, update the source line, teach FakeChat the route; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The vendored document has been stale since 0380120 (connector openapi-agent.json gained 400 responses); the refresh may surface such differences in `test_fake_chat_matches_vendored_schema` and the fake's refusals: fix the fake, never the document.
+- In the integration worktree layout the connector tree is the sibling `../agents-matrix-connector`; fetch the pinned commit there first.

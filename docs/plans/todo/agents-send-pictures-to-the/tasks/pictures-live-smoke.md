@@ -59,17 +59,20 @@ Notes: never put `mise run apply` in AC evidence (agents-helmfile MEMORY 2026-10
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new; uses `mise run diff`, `mise run apply`, `mise run smoke`, the orchestrator plugin tools of the running session, the web UI and the Lease `agents/agents-helmfile-apply`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The deployed system sends a real picture with a caption from an agent session to the owner's Messenger DM, and the session web chat shows it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session only: steps 1-6 of the Requirement, in order; stop at step 3 if a diff shows more than the pins, and at step 5 on a binding refusal.
+- Record each result in the task Notes as it happens (lease, registry checks, diffs, smoke tail, send id and status, web check, user confirmation), then the MEMORY.md entry; commit it through the agents-helmfile PR flow.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Retro (recurring): live apply tasks run several times their seed and a live apply has surfaced defects tests missed; read every diff before its apply and keep helm's rollback as the last guard only.
+- The orchestrator apply rolls the agent pods of every running session (new plugins ref, README `## Images`); write the Notes and the handoff checkpoint first.
+- Captions are dropped by Messenger in E2EE chats only when inline; this epic sends the caption as its own m.text (D5), so the user should see both messages.
+- Irreversible: one real Messenger message to the owner's DM (design.md Irreversible operations, Q7).

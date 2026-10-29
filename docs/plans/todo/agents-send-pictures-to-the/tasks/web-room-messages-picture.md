@@ -51,17 +51,18 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `MessageView.msgtype: string | null` (connector UI API, `src/api/matrix-schema.d.ts`, re-exported by `src/matrix/api.ts`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Chats page lists a picture the agent sent as "picture: <name>" instead of a bare file name.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `src/matrix/RoomMessages.test.tsx` (mock `listRoomMessages` as `ChatsPage.test.tsx` does); run `npx vitest run src/matrix/RoomMessages.test.tsx`: fails.
+- Green: sync the matrix API from the connector commit, regenerate the types, the Body cell; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `npm run sync:api -- matrix [--from <checkout>]` reads the sibling `../agents-matrix-connector`; check out the pinned commit there first.
+- No bytes and no mxc URL reach the browser (non-goal: image bytes on the Chats page).

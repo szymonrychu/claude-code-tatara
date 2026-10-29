@@ -79,17 +79,23 @@ Scope (agents-matrix-connector):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Sender(matrix: MatrixClient, pool, settings, *, now=utcnow)`; `Sender.tick()` = upload step, claim, settle.
+- Outbound image row: kind `image`, `event_type` `m.room.message`, body the picture name, `content` the full m.image content (relation merged in), txn `mxa-<send>-i`.
+- Reasons: `upload_rejected:<errcode>`, `upload_failed` (constants in `sender.py`).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The bot turns a queued picture into one uploaded file and one m.image (plus its caption), with the bytes gone from Postgres at claim, and every upload failure ends as a named failed status.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: the sender tests (ac1, ac2, ac4-ac10) with the fake homeserver from mxc-matrix-media-upload, the tracker test (ac3), the reason constants in `test_readme_lists_every_reason`; run `uv run --frozen pytest tests/test_readme_api.py`: fails (reasons missing); the DB tests error locally.
+- Green: the upload step, the claim with `ready`, `_place` for images, the tracker content path, `bot.py`, README and MEMORY.md; run the task's verify; quote the local summary line and the CI run.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- Keep the m.image content builder a pure function with a non-DB test in `tests/test_sender.py` so the local run has signal.
+- The upload happens outside the claim transaction and holds no pool connection while it waits on Synapse (retro: `Sender._claim` connection hold).
+- Settle is unchanged: the first row by id is the picture, so the send's `event_id` is the picture's and `reply_to: s<n>` quotes it.
+- Shared file with immediate-message-delivery-w (`tracker.py`): read it as merged on main first.

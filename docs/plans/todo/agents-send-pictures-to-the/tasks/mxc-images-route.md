@@ -79,17 +79,24 @@ Scope (agents-matrix-connector):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `images.sniff(data: bytes) -> str | None`.
+- `POST /chat/v1/images` (agent listener): request `{data: str, path: str, caption?: str, room?: str, reply_to?: str}`; 202 `{id: "s<n>", status: "queued"|"sending"|"sent", path: str}`; errors 400, 401, 403, 409, 413, 422, 429, 503 in the existing `{error: {code, message}}` body.
+- `ConnectorSettings.image_max_bytes`, `ConnectorSettings.agent_image_rate_per_minute`.
+- `SendStatus.kind: Literal["message", "reaction", "image"]`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The connector accepts a picture from the orchestrator, refuses what the bridge would refuse (type, size) and what would flood a room (rate, room cap), and queues it for the bot.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `tests/test_images.py` (ac1), the image tests in `tests/test_api_agent.py` (ac2-ac9), `test_image_settings`; run `uv run --frozen pytest tests/test_images.py tests/test_settings.py`: fail (no module, no settings); the API tests error locally without Docker.
+- Green: `images.py`, settings, the route with its cap, the shared `queue` path extended for images, `_chunk_count`, `SendStatus`; regenerate `openapi-agent.json` (README Development names the command); README; run the task's verify. Quote the local summary line and the CI run.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- Reuse `queue` (advisory locks: session lock before room lock), `_resolve`, `may_post` and the masked refusal; do not copy them. The duplicate check runs before the rate checks inside the locks.
+- The body cap is new code for this route only (an ASGI-level or request-stream check); the message and reaction routes keep their behaviour.
+- Never log the bytes or the base64; log the send id, size and mime only.
+- Size checks count the decoded bytes, not the base64 length.

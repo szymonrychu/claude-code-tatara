@@ -54,17 +54,20 @@ Scope (agents-matrix-connector):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `MatrixClient.upload_media(data: bytes, mime: str, filename: str) -> str` (an `mxc://` URI); `MatrixClient.media_config() -> int | None`.
+- Fake homeserver: `POST /_matrix/media/v3/upload`, `GET /_matrix/client/v1/media/config`; an accessor returning the recorded uploads; a setter for the upload limit.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The bot can upload a picture to Synapse and read its upload limit through the one thin client, and tests run both against the fake homeserver.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: write the five tests (ac1-ac5); run `uv run --frozen pytest tests/test_matrix_client.py`: they fail (no such methods or routes).
+- Green: generalise the request core to a raw body with headers on any prefix, add the two calls and the two fake routes; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Reuse `_request`'s 429 retry, `_error` mapping and `_redact`; the module docstring counts the client's calls, update the count.
+- `tests/test_matrix_client.py` needs no database, so this task's verify runs fully in agent pods.
+- The token goes in the `Authorization` header only, never a query parameter (authenticated media).

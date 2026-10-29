@@ -47,17 +47,18 @@ Scope (agents-matrix-connector): end-to-end tests through the real console scrip
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new: the agent listener `POST /chat/v1/images`, `GET /chat/v1/messages/{id}` and the fake homeserver's recorded uploads and sent events.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The whole connector path for pictures (api, queue, upload, send, bridge notice) is proven together, not only per unit.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red/green: these are integration tests over code the dependencies built; write them, run `uv run --frozen pytest tests/e2e/test_e2e_agent.py`, and if one fails for a product reason, report it as a discovered gap rather than editing product code here.
+- Quote the CI run of the pushed head (the e2e suite needs Postgres).
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- Reuse the fixtures in `tests/e2e/conftest.py` (the real console script and the fake homeserver); add an upload-limit or `fail_next` setter only through the fake's existing API from mxc-matrix-media-upload.

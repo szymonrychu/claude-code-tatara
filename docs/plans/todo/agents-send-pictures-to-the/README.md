@@ -1,6 +1,6 @@
 ---
 title: Agents send pictures to the chat
-blockers: [slash commands from chat, hive decoupling, immediate message delivery]
+blockers: [slash commands from chat, hive decoupling, Immediate message delivery with per-message priority]
 stage: build
 owner: ""
 repos: [any-mcp-tatara-plugins, agents-matrix-connector, agents-orchestrator, agents-web, agents-helmfile]

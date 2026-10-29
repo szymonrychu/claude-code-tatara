@@ -73,17 +73,23 @@ Scope (agents-matrix-connector):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `migrations/<MIGRATION>_send_images.sql` (additive).
+- `db/sends.py`: `SendRow` (+ `image_mime`, `image_size`, `image_sha256`, `image_name`, `image_path`, `mxc_uri`); the image insert; `image_bytes(conn, send_id) -> bytes | None`; `queued_images(conn) -> list[SendRow]`; `claim_queued(conn, now=None, ready: Mapping[int, str | None] = ...) -> list[SendRow]`; `fail_queued(conn, send_id, reason) -> bool`; `count_recent_kind(conn, session_id, kind, seconds) -> int`; `find_duplicate(...)` for images; `message_sends_since` with image captions.
+- `db/runs.py`: `_txn_ids("image", None, send_id, 1) == [f"mxa-{send_id}-i"]`; `OutboundRow.content: dict | None`; `add_outbound(..., content: dict | None = None)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The queue can hold an image send whose bytes live on the row only until the bot claims or fails it; every existing reader still gets a `SendRow` without bytes.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session, before dispatch: read the migrations on connector main and amend `<MIGRATION>` (ac12).
+- Red: write `test_send_images_migration`, the sends repo tests (ac3-ac9) and the runs repo tests (ac10, ac11); run `uv run --frozen pytest tests/test_sends_repo.py::test_send_row_never_loads_image_bytes tests/test_runs_repo.py::test_image_txn_ids`: fail locally (the DB tests error without Docker).
+- Green: migration, sends and runs repository changes; run the task's verify; quote the local summary line, then the CI run of the pushed head for the DB tests.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- Every status move goes through `agents_common.db.queue.transition` (status-guarded); the api inserts, the bot moves (one writer per table, design D4).
+- Shared files with immediate-message-delivery-w (`db/runs.py`, `runs.relayed_turn_id`): read them as merged on main first.
+- `claim_queued` keeps `FOR UPDATE SKIP LOCKED` and oldest-first order; the sender's use of `ready` is task mxc-bot-image-upload.

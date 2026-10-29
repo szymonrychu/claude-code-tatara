@@ -192,17 +192,46 @@ orchestrator_chat_status shows the send `sent`. User Q7.
 ## Research inputs
 
 - `_relay` now 403s trigger sessions; image route shares its checks (delta, chat.py:155) - orch-chat-images-route.
-- `claim_queued` claims every queued row (db/sends.py:116) - mxc-bot-image-upload.
+- `claim_queued` claims every queued row (db/sends.py:116) - mxc-send-images-schema, mxc-bot-image-upload.
 - `_place` fails empty text as `empty_text` (sender.py:167) - mxc-bot-image-upload.
 - No connector body cap exists - mxc-images-route.
 - Advisory-lock block and room cap in `queue` (api/agent.py:306, :257) - mxc-images-route.
-- Vendored chat contract stale (tests/fakes/chat_openapi.source pins 0380120) - orch-chat-images-route.
+- Vendored chat contract stale (tests/fakes/chat_openapi.source pins 0380120) - orch-chat-contract-refresh.
 - CHAT_TOOLS excludes trigger sessions (on_start.py:43) - orch-plugins-pin-and-tool.
-- Migration 0003 and plugins v0.3.0-v0.5.0 claimed - placeholder tasks (D9).
+- Migration 0003 and plugins v0.3.0-v0.5.0 claimed - mxc-send-images-schema (`<MIGRATION>`), plugins-release-images (`<TAG>`/`<VERSION>`), amending orch-plugins-pin-and-tool and helmfile-pictures-pin (D9).
+- Inbound `m.image` stays Unsupported and bridge-bot events stay skipped by `parse_message` (brief-cartographer fix-as-ac, discovery.py:141) - mxc-bridge-error-notices.
+- `outbound.body NOT NULL` (0001_init.sql:110): the image row's body is the picture name, its content in `outbound.content` (brief-cartographer fix-as-ac) - mxc-send-images-schema, mxc-room-messages-msgtype.
+
+Retro proposals (`ticket.py retro --history`, 2026-10-29), recurring workflow ones first:
+
+- recurring, matrix-connector-agent-initi (also deploy-safe-agent-sessions, parked-epic-stage): task files with empty Steps; the planner writes Steps before the gate - every task of this epic carries Steps.
+- recurring, matrix-connector-agent-initi (also deploy-safe-agent-sessions, file-editor-with-tabs-and-hi): defects that passed per-task review surfaced only in the epic review; check per task the security list for tools that send on a user's behalf (rate and size limits, session trust) and a size cap on every route that accepts a body - mxc-images-route, orch-chat-images-route, mxc-bot-image-upload (their acceptance conditions name each limit, cap and trust check).
+- recurring, matrix-connector-agent-initi (also deploy-safe-agent-sessions, file-editor-with-tabs-and-hi, file-download-in-file-browse): no Docker in agent pods makes DB tests CI-only - every agents-matrix-connector task names its DB-backed tests as CI-gated and keeps a pure test for local signal; orchestrator tasks use the non-DB fakes.
+- recurring, matrix-connector-agent-initi (also deploy-safe-agent-sessions): a live apply surfaced a defect tests did not; read `mise run diff` before every apply and render the releases first - pictures-live-smoke.
+- recurring, file-editor-with-tabs-and-hi: the deploy depends on Harbor holding the pinned tags; check each tag before pinning and before applying - helmfile-pictures-pin, pictures-live-smoke.
+- recurring, matrix-connector-agent-initi (also deploy-safe-agent-sessions, file-editor-with-tabs-and-hi): leadership handovers lose state; the pod-rolling apply is preceded by a handoff checkpoint and results go to the task Notes as they happen - pictures-live-smoke.
+- recurring, matrix-connector-agent-initi (seeds by task kind, epic-run writing actuals at every close): orchestrator tooling, no task in this epic.
+- deploy-safe-agent-sessions, Delivered differently: a release task was marked done before its artifact existed - plugins-release-images (the tag must exist on origin and carry the tool before done).
+- deploy-safe-agent-sessions, Tech debt: web must deploy after the orchestrator - pictures-live-smoke applies connector, orchestrator, web in that order.
+- matrix-connector-agent-initi, Delivered differently: web `openapi/matrix.source` pinned a connector epic-branch commit, kept reachable by a merge commit - orch-chat-contract-refresh, web-room-messages-picture.
+- file-editor-with-tabs-and-hi, Code: a byte cap literal that mirrors another component's limit should be pinned by a test - orch-chat-images-route (8,000,000 read cap) and mxc-images-route (`MATRIX_IMAGE_MAX_BYTES` maximum 8,000,000).
 
 ## Decision coverage
 
-Filled by the planner from the task slugs.
+Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by task slug.
+
+| Decision | Tasks |
+|---|---|
+| D1 Picture source is a workspace path | plugin-chat-send-image, orch-chat-images-route |
+| D2 The orchestrator reads the bytes from the caller's own pod | plugin-chat-send-image, orch-chat-contract-refresh, orch-chat-images-route |
+| D3 Connector image route and storage on the sends row | mxc-send-images-schema, mxc-images-route |
+| D4 Bot uploads before claiming | mxc-send-images-schema, mxc-bot-image-upload, mxc-e2e-image-send |
+| D5 Matrix content | mxc-matrix-media-upload, mxc-bot-image-upload, mxc-e2e-image-send |
+| D6 Bridge error notices fail agent sends | mxc-bridge-error-notices, mxc-e2e-image-send |
+| D7 Limits | mxc-send-images-schema, mxc-images-route, orch-chat-images-route, mxc-bot-image-upload |
+| D8 Web UI | web-chat-image-tool, mxc-room-messages-msgtype, web-room-messages-picture |
+| D9 Releases, pins and contracts with build-time numbers | mxc-send-images-schema, plugins-release-images, orch-chat-contract-refresh, orch-plugins-pin-and-tool, helmfile-pictures-pin |
+| D10 Live smoke | pictures-live-smoke |
 
 ## Review focus
 

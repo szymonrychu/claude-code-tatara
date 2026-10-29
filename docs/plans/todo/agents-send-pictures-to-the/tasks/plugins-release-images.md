@@ -57,17 +57,22 @@ Scope (any-mcp-tatara-plugins):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- Distribution `any-mcp-tatara-orchestrator` version `<VERSION>`; git tag `<TAG>` on the `main` merge commit.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator plugin with `orchestrator_chat_send_image` is released as tag `<TAG>`, so the orchestrator and agents-helmfile can pin it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session, before dispatch: read the tags (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins 'v*'`), take the next minor, amend the three tasks (ac5).
+- Confirm `<TAG>` does not exist on origin and that `main` carries the newest tag; stop and report otherwise.
+- Red: change `test_orchestrator_distribution_metadata` to `<VERSION>`; run `uv run --frozen pytest tests/test_source_install.py::test_orchestrator_distribution_metadata`: fails.
+- Green: bump the plugin pyproject, `uv lock`, the README example; run the task's verify: passes. Quote the summary line.
+- After the merge (orchestrator session): wait for CI green on the merge commit, `git tag <TAG> <merge sha> && git push origin <TAG>`, then check ac3 and ac4; only then mark done.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values; the metadata test is the guard.
+- `tests/test_source_install.py::test_orchestrator_plugin_installs_from_sources` fails in agent pods with git 2.39 (`--end-of-options`, baseline 2026-10-29); CI is the gate for it.
+- Retro (deploy-safe-agent-sessions): a release once was marked done before its artifact existed; ac3 and ac4 prevent that here.

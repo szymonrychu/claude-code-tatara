@@ -62,17 +62,22 @@ Scope (agents-matrix-connector):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `discovery.bridge_notice_reply(event: dict, bridge_bots: Sequence[str]) -> tuple[str, str] | None`.
+- `db/runs.py`: guarded outbound `sent -> failed` by event id for send rows; `db/sends.py`: guarded `sent -> failed`.
+- Reason text `bridge: <notice body>` (at most 500 characters of body).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A picture or message the bridge could not deliver to Messenger shows as failed with the bridge's words in `orchestrator_chat_status`, instead of a silent `sent`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `test_bridge_notice_reply` (pure) and the three sync tests (the fake homeserver's `post` injects the bridge notice into the timeline); run `uv run --frozen pytest tests/test_discovery.py`: fails (no function); the sync tests error locally.
+- Green: the helper, the sync-loop check, the two guarded transitions, README and MEMORY.md; run the task's verify; quote the local summary line and the CI run.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- The notice shape is mautrix/go bridgev2 `messagestatus.go` `ToNoticeEvent` (`SetReplyTo(SourceEventID)`), per brief-docs; the bridge bot ids come from `MATRIX_BRIDGE_BOTS`.
+- The check runs before the bridge-bot skip and does not change what `parse_message` returns (D6).
+- Shared files with mxc-send-images-schema and mxc-bot-image-upload (`db/runs.py`, `db/sends.py`, README, MEMORY.md): build on their commits.

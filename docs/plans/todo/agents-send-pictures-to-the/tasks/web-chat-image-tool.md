@@ -61,17 +61,22 @@ Scope (agents-web):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `ChatImage({ sessionId: string, item: ChatItem }): JSX.Element | null` (`src/chat/ChatImage.tsx`).
+- `ChatEntry({ item, sessionId })`; `ChatLog` gains a `sessionId` prop.
+- Tool result contract: the connector's 202 body `{id, status, path}` relayed unchanged by the orchestrator and the plugin (orch-chat-images-route, mxc-images-route); `path` is workdir-relative.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The session web chat shows a picture the agent sent, from the session's own download route, and nothing else in the chat can render an image.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `entries.tsx`, `ChatLog.tsx`, `ChatView.tsx`, `chatModel.ts` (`toolItem`), `src/api/files.ts` and their tests as merged on main (slash-commands-from-chat edits `entries.tsx` and `chatModel.ts`).
+- Red: `src/chat/ChatImage.test.tsx` (ac1-ac3) and the image tool row case in `ChatLog.test.tsx` (ac4); run `npx vitest run src/chat/ChatImage.test.tsx`: fails (no module).
+- Green: `ChatImage.tsx`, the row, the prop threading, MEMORY.md; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `ChatLog.test.tsx` imports `entries.tsx`, which imports `react-markdown`; in agent pods `node_modules` lacks it (baseline 2026-10-29). Run `npm ci` first; when the install is not possible here, say so and let the PR CI be the gate for `ChatLog.test.tsx`, quoting both.
+- `fileDownloadUrl` (`src/api/files.ts`) builds the relative URL from `base()`; no `agent_id` (session-level download, D8).
+- The download route answers `X-Content-Type-Options: nosniff` and `Cache-Control: no-store` (orchestrator `_DownloadRelay`).

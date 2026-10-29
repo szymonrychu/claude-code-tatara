@@ -62,17 +62,19 @@ Scope (agents-helmfile):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `values/agents-matrix-connector/common.yaml` `image.tag`; `values/agents-orchestrator/common.yaml` `image.tag`, `env.ORCH_ANY_MCP_PLUGINS_REF`; `values/agents-web/common.yaml` `image.tag`; the three chart `version`s in `helmfile.yaml.gotmpl`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile pins the picture-capable connector, orchestrator and web and the `<TAG>` plugins release, ready to apply in order.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: point `test_any_mcp_configured_for_new_sessions` at `<TAG>`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py`: fails.
+- Green: the three pins (the sha7s from the amendments, each checked in Harbor first) and the plugins ref; run the task's verify and `mise run check-pins`. Quote the summary lines.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception (pin changes); the release tests are the guard.
+- `test_release_chart_version_and_needs` and `test_db_secret_matches_rendered_cnpg_cluster_helmfile_build` run `helmfile build` and need network and a helm version in the mise shim (absent in agent pods, baseline 2026-10-29); run them before the apply in pictures-live-smoke.
+- The epics before (hive-decoupling, immediate-message-delivery-w) also edit these values: build on their merged pins.

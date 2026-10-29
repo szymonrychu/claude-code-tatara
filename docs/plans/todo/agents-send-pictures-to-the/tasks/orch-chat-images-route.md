@@ -75,17 +75,23 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `POST /agent/v1/chat/images` (agent port): body `{path, caption?, room?, reply_to?}`; 202 and refusals passed through from `{ORCH_CHAT_URL}/chat/v1/images`; own refusals 400 `invalid_path`, 401, 403 `forbidden`/`trigger_session`/`not_leader`, 404 `not_found`, 409 `agent_not_ready`, 413 `payload_too_large`/`image_too_large`, 422 `invalid_request`, 502 `wrapper_error`/`wrapper_unreachable`, 503 `chat_unconfigured`/`chat_unavailable`.
+- `api/workspace.read_file_bytes(conn, settings, http, session_id: uuid.UUID, agent_id: uuid.UUID, path: str, max_bytes: int) -> bytes`.
+- Upstream body (contract, orch-chat-contract-refresh): `{data: str (base64), path: str, caption?: str, room?: str, reply_to?: str}`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+An agent's picture path becomes one connector call carrying the picture's bytes, read only from the caller's own workspace and only by a leader allowed to use the chat.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `api/chat.py`, `api/workspace.py`, `api/agent.py:_normalise`, `tests/test_agent_chat.py`, `tests/fakes/fake_wrapper.py` (its download route) and `tests/test_chat_contract.py`.
+- Red: the image tests (ac1-ac6) using the in-memory rig, the fake wrapper download and `FakeChat`; update the two named tests; run `uv run --frozen pytest tests/test_agent_chat.py tests/test_chat_contract.py`: fail (404 route).
+- Green: the shared checks, the route, `read_file_bytes`; `uv run python -m agents_orchestrator.api.openapi > openapi.json`; README, MEMORY.md; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Non-DB tests fake the repository reads of `require_agent` and `_leads` (MEMORY 2026-10-28), so this verify runs in agent pods; keep any DB variant marked like `test_leader_only_and_identity_db`.
+- Hold no pool connection across the wrapper read or the upstream call.
+- The 8,000,000 literal mirrors the connector's `MATRIX_IMAGE_MAX_BYTES` maximum; ac4 pins it (retro file-editor-with-tabs-and-hi).
+- Shared files with the epics before (`api/chat.py`, `openapi.json`, README): read them as merged on main.

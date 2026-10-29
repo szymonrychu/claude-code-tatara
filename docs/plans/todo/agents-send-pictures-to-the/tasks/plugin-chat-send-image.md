@@ -57,17 +57,21 @@ Scope (any-mcp-tatara-plugins, orchestrator plugin):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `any_mcp_tatara_orchestrator.OrchestratorPlugin.load_tools`: `spec("chat_send_image", "POST", "/chat/images", _schema({"path": ..., "caption": ..., "room": ..., "reply_to": ...}, ["path"]), "*")`.
+- Contract with agents-orchestrator `POST /agent/v1/chat/images` (task orch-chat-images-route): body `{path, caption?, room?, reply_to?}`, 202 `{id: "s<n>", status, path}` passed through from the connector.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator plugin offers `orchestrator_chat_send_image`; an agent that sees it knows what it accepts and refuses before calling it.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `__init__.py`, the plugin README and `test_orchestrator_plugin.py` as merged on main (three epics touched them before this one).
+- Red: add `test_chat_send_image_listed`, `test_chat_send_image_calls_agent_route`, `test_chat_send_image_errors_surface_code`, `test_chat_send_image_description`, the image kind assertion in `test_chat_descriptions`, and the new name in the tool-count set; run `uv run --frozen pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`: the new tests fail (unknown tool).
+- Green: the tool spec, its description, the chat_status wording, the README row and count; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Copy the shape of `chat_send` (HttpBinding, `body="*"`, `_schema`); the tool stays declarative (design D2 rejected an agent-side handler).
+- The description text lives in `_descriptions()`; keep the hive prefix rule (`test_descriptions_from_config`, `test_handover_threshold_hint`) intact.
+- Shared file with slash-commands-from-chat, hive-decoupling and immediate-message-delivery-w: build on their merged tools.

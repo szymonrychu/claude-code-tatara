@@ -66,17 +66,20 @@ Scope (agents-orchestrator):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `Settings.any_mcp_plugins_ref` default `<TAG>` (`ORCH_ANY_MCP_PLUGINS_REF`); `k8s/on_start.CHAT_TOOLS == ["chat_rooms", "chat_send", "chat_react", "chat_status", "chat_send_image"]` (order within the list is the builder's).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Agent pods rendered by this orchestrator install the plugins release with the picture tool and may call it; trigger sessions still see no chat tool.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Confirm tag `<TAG>` on any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins <TAG>`); stop and report if absent.
+- Red: update `test_defaults` and the test `CHAT_TOOLS` constant, add `test_chat_send_image_parity`; run `uv run --frozen pytest tests/test_settings.py tests/test_on_start.py tests/test_agent_chat.py`: fail.
+- Green: settings default, pyproject pin, `uv lock`, `CHAT_TOOLS`, README; run the task's verify: passes. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Dependency-bump TDD exception for the version values; `test_plugins_dev_pin_matches_settings_ref` ties the three to one tag.
+- The pin and the allow list land in one change: `test_allowed_tools_exist_in_plugin` fails when the allow list names a tool the pinned plugin lacks (D13 probe).
+- Changing the default changes the rendered config hash and rolls agent pods on deploy (README `## Images`); the deploy is pictures-live-smoke.

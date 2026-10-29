@@ -52,17 +52,18 @@ Scope (agents-matrix-connector, UI API):
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `MessageView.msgtype: str | None` on `GET /matrix/api/v1/rooms/{room_id}/messages` (consumed by agents-web, task web-room-messages-picture).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The Chats page API tells a picture row apart from a text row without serving any image data.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Red: `test_room_messages_msgtype` (insert an outbound row with m.image content through `runs.add_outbound`); run `uv run --frozen pytest tests/test_api_rooms.py::test_room_messages_msgtype`: errors locally (no Docker), fails in CI.
+- Green: schema field, `_out_view`, regenerate `openapi.json`, README; run the task's verify; quote the local summary line and the CI run.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- DB-backed tests (testcontainers Postgres) need Docker; agent pods have none, so they error here (baseline 2026-10-29: 182 Docker errors) and CI on the PR is the gate for them (recurring retro). Run the verify, quote the local summary line and the CI run of the pushed head. Keep each pure helper covered by a non-DB test so the local run has signal.
+- `OutboundRow.content` and `list_outbound` returning it come from mxc-send-images-schema.
