@@ -1,6 +1,6 @@
 ---
 title: common release 0.4.0
-status: todo
+status: done
 repo: agents-common
 value: "webhook, schedule and the Matrix connector can pin the agents-common release whose run tracker judges command outcomes"
 files: [pyproject.toml, uv.lock, CHANGELOG.md, README.md, tests/test_release.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_release.py && uv run ruff check . && uv run ru
 depends_on: [common-command-outcome]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: e90008012264e46610b458465fca7468c00f57c4
 points: 1
 expected_minutes: 4
 expected_tokens: 629191
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 1
+actual_tokens: 186174
+actual_roles: "impl 1, review 1"
+actual_role_tokens: "impl 139445, review 46729"
 ---
 
 # common release 0.4.0
@@ -69,3 +69,5 @@ agents-common 0.4.0 is documented, versioned and, after mx-34's confirmation and
 - Mirrors done task orchestrator-rename-sessions/common-release-v0-3-0.
 - The tag push is an orchestrator-session step (the permission classifier blocks subagent live actions; retro proposal). Tags are never re-pointed.
 - The todo epic immediate-message-delivery-w planned its own common-release-0-4-0; this epic lands first, so that one becomes 0.5.0 when claimed.
+
+- 2026-10-29 done: merged PR #4 as 0809056 (main CI green), tag v0.4.0 pushed on it
