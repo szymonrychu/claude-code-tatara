@@ -1,6 +1,6 @@
 ---
 title: helmfile orch cleanup pin
-status: in-progress
+status: done
 repo: agents-helmfile
 value: the orchestrator without dead feed code and with one compaction helper is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-feed-dead-code-and-comp]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: eafa60b4027f81680c8e1204d9686eed90719b59
 points: 1
 expected_minutes: 4
 expected_tokens: 632059
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -59,3 +59,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-29 in-progress
+
+- 2026-10-29 done: PR #55 review pass, merged; orch CI 40915663717 green
+
+- 2026-10-29 actuals: no agent records
