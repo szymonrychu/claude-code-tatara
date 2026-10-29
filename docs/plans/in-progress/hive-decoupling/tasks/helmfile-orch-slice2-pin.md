@@ -1,6 +1,6 @@
 ---
 title: helmfile orch slice2 pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the orchestrator with the handover_due and leadership_request notes is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-handover-outcome-note]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 96b2e5e211be50d7bb2f12d5ce826619b52d5c91
 points: 1
 expected_minutes: 4
 expected_tokens: 634927
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 39
+actual_tokens: 340130
+actual_roles: "impl 38, review 2"
+actual_role_tokens: "impl 278372, review 61758"
 ---
 
 # helmfile orch slice2 pin
@@ -57,3 +57,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
