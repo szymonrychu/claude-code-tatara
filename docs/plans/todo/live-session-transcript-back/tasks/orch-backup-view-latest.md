@@ -55,17 +55,28 @@ Test no longer accurate and changed: tests/test_api_session_safety.py::test_back
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `api/schemas.py:BackupRun`: `finished_at: datetime`, `bytes: int`, `kind: Literal["final", "live"]` (required).
+- `api/sessions.py:_backup`: `last_transcripts_backup` is the newer by `finished_at` of `status.cache.sessions_save` in state `saved` (`kind="final"`) and `status.cache.sessions_backup.last_saved` (`kind="live"`); a tie gives `final`; neither gives null. Malformed or non-dict values read as absent, as `_last_backup` does today.
+- `openapi.json` regenerated with `uv run python -m agents_orchestrator.api.openapi > openapi.json`.
+- The api reads `status` only; it never imports `reconciler` or `k8s`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`GET /api/v1/sessions/<id>` for a live session that had a live backup shows `backup.last_transcripts_backup` `{finished_at, bytes, kind: "live"}` instead of null; after the discard's final save the view (while the row exists) shows the final one.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `api/sessions.py` (`_last_backup`, `_backup`), `api/schemas.py` (`BackupRun`, `SessionBackup`), `tests/test_api_session_safety.py` (`_backup`, `SAVED`, `RESTORED`, `CACHED`), `tests/test_readme_api.py::test_openapi_json_matches_app`, README (the `backup` paragraph of the session view and `## Workspace cache`) and MEMORY.md (the 2026-10-28 API session safety entry) in one pass.
+- Red: add the tests named in AC1 and AC2 and change `test_backup_view_last_transcripts_backup` as the Requirement names; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_api_session_safety.py`; expect them to fail (DB tests: on CI, `DockerException` locally).
+- Green: change `BackupRun` and `_backup`; regenerate openapi.json; rerun the verify; expect every test passed on CI, and `tests/test_readme_api.py` and the import guard passed locally.
+- Update README (the session view `backup` paragraph and the transcripts paragraph: `kind`, the live source `status.cache.sessions_backup.last_saved`) and the MEMORY.md entry (dated, `BackupRun.kind`, why the newer of the two); `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The MEMORY.md line of 2026-10-28 says `last_transcripts_backup` is `sessions_save` only; add a dated entry that supersedes it rather than rewriting history.
+- After the orchestrator PR merges, agents-web syncs the schema from the merge commit (task web-discard-latest-backup); pinning an epic-branch commit instead forced a merge commit in matrix-connector-agent-initi (retro).
+- Base: this epic builds after decouple-s3-session-cache-fr, hive decoupling and slash commands from chat have landed on main; rebase onto main first and use the decouple names as they landed (`presign.sessions_object_name`, `status.cache.sessions_object`, the `cache_migration` pending predicate, `CacheRunner._begin` pinning). No SQL migration is planned; if one proves necessary it takes the next free number on main at build time (`<MIGRATION>`), and the builder raises it as a question first.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST); it is not a regression.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Per-task security check (retro, recurring): S3 is reached only through one presigned URL per Job, signed by the reconciler; no credential or presigned query string in a log line, a status `reason` or an error message; the api imports neither `reconciler` nor `k8s`.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.

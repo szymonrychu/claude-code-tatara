@@ -135,9 +135,9 @@ Amended 2026-10-29 by the planner, pending open question Q6 (the plan follows it
 "identical semantics for quiescent files" does not hold for a quiescent workspace `*.jsonl` file whose
 last line has no trailing newline: the cut would silently drop that line from the user's workspace. So
 the descriptor-based header (fstat, opened with `O_NOFOLLOW`, regular files only) applies to every save,
-and the JSONL cut only to the transcripts archive: the sessions Job carries `CACHE_TRIM_JSONL=true`,
-the workdir Job `CACHE_TRIM_JSONL=false`, and `transfer.save` passes it to `archive.pack(...,
-trim_jsonl=...)`. A "no" to Q6 drops the env variable and applies the cut to every save as first
+and the JSONL cut only to the transcripts archive: only the sessions Job carries `CACHE_TRIM_JSONL=true`
+(absent means no cut, so the workdir Job env stays as it is), and `transfer.save` passes it to
+`archive.pack(..., trim_jsonl=...)`. A "no" to Q6 drops the env variable and applies the cut to every save as first
 written. Acts: orch-archive-live-files.
 
 ### D7: Visibility

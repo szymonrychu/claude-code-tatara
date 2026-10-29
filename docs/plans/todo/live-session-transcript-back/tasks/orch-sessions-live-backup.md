@@ -73,17 +73,35 @@ Brief fix-as-ac, verbatim: "Live run must not write `sessions_save` nor share Jo
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py:Settings.sessions_backup_interval_seconds: int` (env `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS`), default 1800, `ge=0`; 0 disables live backups.
+- `CacheRunner.sessions_backup_step(session) -> None` (in `reconciler/cache.py`, or in a new `reconciler/live_backup.py` the runner delegates to; the builder's choice, design "Left to the builder"), called by `Reconciler._converge` after `_bootstrap_wrapper_sessions` on every converge tick; never called from `_discard`.
+- Job: `agent-<slug>-sessions-backup`, labels `session_labels(slug)` plus `agents.szymonrichert.pl/cache: sessions-backup`, rendered from `render_cache_job(session, settings, "save", url, "sessions")` with only the name and cache label changed (command stays `orch cache save`); the presigned PUT names exactly the object the discard sessions save would presign at that moment (`status.cache.sessions_object`, pinned through the same `_begin` code path when unpinned and no migration is pending).
+- `status.cache.sessions_backup`: `{state: "running"|"saved"|"failed"|"skipped", started_at, finished_at, bytes, reason, job, last_saved: {started_at, finished_at, bytes} | null}`; written through the runner's `_write` (the reconciler is the only writer of `sessions.status`). Contract change for `orch-session-status-cache` recorded by the orchestrator.
+- Change signal: a row in `turns` of an agent of this session with `completed_at` later than `last_saved.started_at` (any `completed_at` when there is no `last_saved`); the SQL is the builder's (design "Left to the builder").
+- Shared name: another `sessions` row (any `desired`; a purged row no longer exists) whose `status.cache.sessions_object` equals this session's.
+- Decouple migration guard: `reconciler/cache_migration.py` treats `status.cache.sessions_backup.state == "running"` like a running `save` or `sessions_save` (returns without copying or repointing).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+After deploy, each converged live session whose agents completed a turn gets a `sessions_backup` Job within one reconcile tick when it has no backup yet, then at most once per interval and only after new turns; its transcripts object in S3 is overwritten with the current `/sessions` tree while its pods keep running. Idle sessions, sessions sharing a transcripts name and sessions whose decouple migration is pending get no backup Job.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `reconciler/cache.py` (all of `CacheRunner`, `CacheOp`, `render_cache_job`), `reconciler/loop.py` (`_converge`, `_discard`, `_db_now`, the `pre_discard` `next_at` pattern), `reconciler/cache_migration.py` (the running-save guard and the pending predicate), `cache/save_rule.py`, `cache/presign.py`, `settings.py`, `db/sessions.py`, `db/migrations/0001_init.sql` (`turns`, `agents`), `tests/test_cache_save.py` (`SaveEnv`), `tests/test_sessions_backup.py` and `tests/test_cache_migration.py` (helpers) and README `## Workspace cache` in one pass.
+- Red: write tests/test_sessions_live_backup.py with the tests named in AC1-AC11 (fake kube and the existing env helpers; the database clock moved by the same means `test_cache_save.py` uses for timeouts); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_live_backup.py`; expect failures on the missing step and setting (DB tests: on CI, `DockerException` locally; AC11 runs locally).
+- Green: add the setting, the `backup` operation, the step, the `last_saved` carry-forward, the shared-name and pending checks, the `_converge` call and the migration guard; rerun the verify; expect every test passed on CI and the existing save, migration and settings suites unchanged.
+- Document `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS` in the README settings table and `status.cache.sessions_backup` (with `last_saved`) in README `## Workspace cache`; add the MEMORY.md entry (dated, with the why: own record and Job name because `sessions_save` is final and its Job adopted; `last_saved` so G4 survives a failed run); `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `CacheAction` is `Literal["restore", "save"]` and `render_cache_job` puts the action in the command; the backup is a third operation that renders as a save. Keep `job_name`, the cache label, `status_key` and the pod listing in `_outcome` keyed by the backup operation, so the backup never lists, adopts or deletes the save Job or its pods (AC2).
+- `_begin` today writes a fresh run dict; for the backup it must carry `last_saved` forward from the previous record, and set it only when a run ends `saved` (`_finish_from_log`).
+- The previous run's Job must be gone before a new run starts (AC5): `_finish` keeps `job` in the record and `_outcome` deletes the Job after, so a crash in between leaves a finished record whose Job still exists; deterministic Job names mean `_start` would adopt that stale Job otherwise.
+- Interval and change signal use the database clock (`SELECT now()`), never the reconciler's wall clock.
+- No chart change: the chart passes any `ORCH_*` through `.Values.env` (`chart/.../templates/configmap.yaml:4-6`), and the setting has a default and no paired setting, so the per-container Settings pair check proposed by the matrix retro does not apply.
+- Job cost: one Job pod with a `cache_max_bytes` emptyDir per changed session per interval (design Assumptions).
+- Base: this epic builds after decouple-s3-session-cache-fr, hive decoupling and slash commands from chat have landed on main; rebase onto main first and use the decouple names as they landed (`presign.sessions_object_name`, `status.cache.sessions_object`, the `cache_migration` pending predicate, `CacheRunner._begin` pinning). No SQL migration is planned; if one proves necessary it takes the next free number on main at build time (`<MIGRATION>`), and the builder raises it as a question first.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST); it is not a regression.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Per-task security check (retro, recurring): S3 is reached only through one presigned URL per Job, signed by the reconciler; no credential or presigned query string in a log line, a status `reason` or an error message; the api imports neither `reconciler` nor `k8s`.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.

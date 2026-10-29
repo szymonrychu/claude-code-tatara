@@ -1,6 +1,6 @@
 ---
 title: Live session transcript backup
-blockers: [Decouple S3 session cache from presets]
+blockers: [Decouple S3 session cache from presets, hive decoupling, slash commands from chat]
 stage: build
 owner: ""
 repos: [agents-orchestrator, agents-web, agents-helmfile]

@@ -51,17 +51,23 @@ Scope (agents-helmfile): pin agents-orchestrator to the merge commit `<ORCH_SHA>
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `helmfile.yaml.gotmpl`: agents-orchestrator chart `0.1.0-main.<ORCH_SHA>`, agents-web chart `0.1.0-main.<WEB_SHA>`.
+- `values/agents-orchestrator/common.yaml`: `image.tag` `<ORCH_SHA>`; `values/agents-web/common.yaml`: `image.tag` `<WEB_SHA>`. No other value changes.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile main pins the orchestrator and web releases of this epic (which also carry decouple-s3-session-cache-fr, open question Q7), ready for the apply in helmfile-backup-live-check.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, values/agents-web/common.yaml, tests/test_orchestrator_release.py and tests/test_web_release.py in one pass.
+- Red: change the pin assertions in the two test files to `<ORCH_SHA>` and `<WEB_SHA>`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_release.py tests/test_web_release.py`; expect the pin tests to fail.
+- Green: change the pins; rerun the verify; expect passed and lint exit 0; `mise run check-pins`; expect every pin green.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `<ORCH_SHA>` and `<WEB_SHA>` are placeholders; the orchestrator replaces them with `ticket.py amend` once both epic PRs merged and their main CI runs (images and chart publish) are green. Never pin an epic-branch commit.
+- Chart-pull tests blocked by a container network policy may be deselected locally (precedent); they run unblocked before the apply.
+- Never run an apply in this task.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes.

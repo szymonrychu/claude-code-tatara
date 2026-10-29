@@ -53,17 +53,28 @@ Brief fix-as-ac, verbatim: "Discard must wait for or delete a running live Job b
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `reconciler/loop.py:_discard`: after the workdir save and `_reload`, before `self.cache.save_step(session, "sessions")`, a call (for example `CacheRunner.stop_live_backup(session) -> bool`, True when the final save may start) that: marks a `running` `sessions_backup` record `failed` with reason `superseded_by_discard` and `finished_at` (database clock), keeping `job` and `last_saved`; deletes the owned Job `agent-<slug>-sessions-backup`; returns False (the discard writes `phase: deleting`, message `stopping the live transcripts backup`) while that Job or an owned pod labelled `agents.szymonrichert.pl/cache: sessions-backup` of the session exists, until `discard_quiesce_timeout_seconds` after the record's `finished_at`, then logs a warning naming the session and returns True.
+- A non-running record whose Job still exists (crash between the record write and the delete) takes the same delete-and-wait path.
+- `CacheRunner.save_step(session, "sessions")` is unchanged: it never reads `sessions_backup`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Discarding a session while its live backup runs: the backup Job is killed, the discard waits a few seconds for its pod to go, then the final transcripts save runs as before and writes the last state; the S3 object ends with the final save's content. A discard with no live backup running behaves exactly as today.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `reconciler/loop.py` (`_discard`, `_quiesce`, `_reload`, `_db_now`), the live backup step from orch-sessions-live-backup (`reconciler/cache.py` or `reconciler/live_backup.py`), `reconciler/cache.py:_delete_job`, `k8s/kube.py:delete`, `tests/fakes/fake_kube.py` (`delete`, `list_pods`, `get_job`), `tests/test_sessions_backup.py` and `tests/test_sessions_live_backup.py` (helpers), and the README discard paragraph in one pass.
+- Red: add the tests named in AC1-AC6 to tests/test_sessions_backup.py; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_backup.py`; expect them to fail (DB tests: on CI, `DockerException` locally).
+- Green: add the stop step and wire it into `_discard`; rerun the verify; expect every test passed on CI and the existing sessions backup tests unchanged.
+- Add the README sentence (the discard stops a running live backup, `superseded_by_discard`, then saves); `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Order: write the `failed` record first, then delete. Either crash point is safe because the step acts on any `running` record (mark it, then delete; an absent Job is fine) and on any non-running record whose Job still exists (delete and wait); `_converge`, which would observe a running record, never runs for a deleting session.
+- AC5 is the headline promise end to end (retro, recurring): live backup, discard, final save and recreate in one test, asserting the order of the PUT Jobs and the restore's GET object, not separate pieces.
+- The quiesce already scales the StatefulSet to zero; backup Job pods are not agent pods (`rollout.agent_pods` matches only `agent-<slug>-<ordinal>`), so the quiesce never waits for them; this task's wait is the only one.
+- Base: this epic builds after decouple-s3-session-cache-fr, hive decoupling and slash commands from chat have landed on main; rebase onto main first and use the decouple names as they landed (`presign.sessions_object_name`, `status.cache.sessions_object`, the `cache_migration` pending predicate, `CacheRunner._begin` pinning). No SQL migration is planned; if one proves necessary it takes the next free number on main at build time (`<MIGRATION>`), and the builder raises it as a question first.
+- Tree state: tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST); it is not a regression.
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Per-task security check (retro, recurring): S3 is reached only through one presigned URL per Job, signed by the reconciler; no credential or presigned query string in a log line, a status `reason` or an error message; the api imports neither `reconciler` nor `k8s`.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.

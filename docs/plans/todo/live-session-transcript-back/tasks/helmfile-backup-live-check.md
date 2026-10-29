@@ -60,17 +60,23 @@ Live applies are run by the orchestrator session only, never by a subagent. Step
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- None new; uses `kubectl --context in-cluster-sa` (kubeconfig from the pod service account), `mise run diff`, `mise run apply`, `mise run smoke`, and the public orchestrator API (port-forward as the smoke does) for `status.cache` and `backup`.
+- Lease manifest: `apiVersion: coordination.k8s.io/v1`, `kind: Lease`, `metadata: {name: agents-helmfile-apply, namespace: agents}`, `spec: {holderIdentity: <own ccw address>, acquireTime: <now, RFC 3339 micro>, leaseDurationSeconds: 3600}`, written under the workbench `.scratchpad`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+The orchestrator and web releases of this epic run live; a running session's Claude transcripts have a fresh live backup in S3, visible as `kind: live` in the API; the decouple migration outcome of each live session is on record; the deploy Lease is released.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Orchestrator session only: steps 1-9 of the Requirement, in order; stop at step 3 if the diff shows more than the pins (release the Lease first).
+- Write the handoff checkpoint (step 4) before the apply; after a roll, resume from it.
+- Record each result in the task Notes as it happens (Lease holder and times, Harbor check, diff summary, smoke tail, the step 7 records and pod uids), then the MEMORY.md entry; commit it through the agents-helmfile PR flow; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Never put `mise run apply` in AC evidence (agents-helmfile MEMORY 2026-10-25). Subagent `kubectl exec` is denied by the permission classifier; the whole task is orchestrator-run.
+- The first live backup runs within a reconcile tick for a session with a completed turn and no backup record, so step 7 needs no 30-minute wait; if no running session has a completed turn, send one short read-only message to a session first and record it.
+- Q7 is open; the plan follows its recommended answer (the decouple changes deploy here). A "no" adds a decouple-only deploy before this one.
+- Recurring retro: live apply and proof tasks run several times their seed; budget for more than one attempt. A defect found live becomes a new task, never a hand fix.
+- `gh` must be authenticated in the deploying pod for check-pins.
