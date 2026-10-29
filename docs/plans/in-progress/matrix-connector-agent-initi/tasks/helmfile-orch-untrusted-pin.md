@@ -50,6 +50,9 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Sync to origin/main, change the orchestrator pin assertions in tests/test_orchestrator_release.py to a9f936f and run the verify: the pin tests fail.
+- Set the chart version and image tag to a9f936f, rerun: pass. `mise run check-pins` ok, `mise run lint` clean.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
