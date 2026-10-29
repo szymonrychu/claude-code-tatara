@@ -190,6 +190,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q3: Are the template variables preset (slugified preset name), preset_id, session (slug) and created_by, with the default rendering <preset>-<session> and shortening the preset part so it always fits the 63-character key rule, and a rendered name that breaks the rule refused with 422? D2 [recommended: yes, those four variables and that default]
 - Q4: Does rotation mean a session discarded and recreated with the same slug, so the migration copies each existing session's objects to its new name and repoints the session so its next save goes to the new name? D7 [recommended: yes, rotation is discard plus recreate with the same slug]
 - Q5: Does the per-session default apply to every preset, including webhook and schedule presets, so each trigger session gets its own cache that is never restored again and objects accumulate until the cache management section cleans them, while a preset that wants today's shared cache sets the template {{ preset }}? D11 [recommended: yes, one default for every preset]
+- Q6: Drop the reserved preset- prefix rule and the preset-id-derived key, since any API caller can already create a session from a preset with a free slug and so reach the same cache? D6 [recommended: yes, drop both]
 
 ## Irreversible operations in scope
 
