@@ -33,6 +33,12 @@ Design D3 amendment (planner, 2026-10-29, my call), verbatim: "`KubeApi.delete` 
 
 Brief fix-as-ac, verbatim: "Discard must wait for or delete a running live Job before its final save."
 
+Review fix (interrogate 2026-10-29, Act on 1, stale `status.cache` writes): `CacheRunner._write` merges from `session.status["cache"]` and replaces the whole key (reconciler/cache.py:541-544), so a final sessions save run on the session read before the stop step would revert the stop step's `superseded_by_discard` record. `_discard` reloads the session (`_reload`) between the stop step and the final sessions save, and the final save's writes leave `sessions_backup` `failed`/`superseded_by_discard`.
+
+Review decision (interrogate 2026-10-29, Consider 1, late PUT after the bounded discard wait; lead's call, no user question): the bounded wait stays. A backup pod stuck terminating past `discard_quiesce_timeout_seconds` keeps its presigned PUT valid and could land after the final save, so the live run's presign gets the shortest expiry that still covers its own `activeDeadlineSeconds` (`cache_timeout_seconds`): `cache_timeout_seconds + 60` seconds (my call: the 60 s cover the gap between the presign in `_start` and the Job's start, from which the deadline counts), instead of `cache_timeout_seconds + 600`. The discard sessions save, the workdir save and every restore keep `cache_timeout_seconds + 600`. The residual risk is recorded in design Assumptions.
+
+Builder question Q10 (my call: yes): with `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS` 0 the stop step still handles a leftover `running` `sessions_backup` record before the final save.
+
 ## Acceptance conditions
 
 - AC1: discarding a session whose sessions_backup is running records it failed with reason superseded_by_discard, deletes Job `agent-<slug>-sessions-backup`, and creates the final sessions save Job only once neither that Job nor a pod carrying the `sessions-backup` cache label of the session exists [evidence: test:tests/test_sessions_backup.py::test_discard_stops_running_backup_before_final_save]
@@ -42,6 +48,9 @@ Brief fix-as-ac, verbatim: "Discard must wait for or delete a running live Job b
 - AC5: end to end: a live backup saves and PUTs the session's transcripts object, a turn completes, a second backup is running when the discard starts, the discard stops it, the final save PUTs the same object last, and a session created again with the same cache name restores (GET) exactly that object [evidence: test:tests/test_sessions_backup.py::test_live_backup_then_discard_final_save_restores]
 - AC6: the discard never starts a live backup [evidence: test:tests/test_sessions_backup.py::test_discard_never_starts_a_live_backup]
 - AC7: README states that the discard stops a running live backup before the final save, the whole sessions backup suite passes and lint passes [evidence: command:grep -q "superseded_by_discard" README.md && uv run --frozen pytest -q -p no:cacheprovider tests/test_sessions_backup.py tests/test_sessions_live_backup.py && mise run lint]
+- AC8: after the stop step marks the backup failed with reason superseded_by_discard, the final sessions save's writes leave status.cache.sessions_backup failed with reason superseded_by_discard (the discard reloads the session between the two; interrogate Act on 1) [evidence: test:tests/test_sessions_backup.py::test_final_save_keeps_superseded_record]
+- AC9: the live backup Job's presigned PUT expires cache_timeout_seconds + 60 seconds after signing (X-Amz-Expires), covering its activeDeadlineSeconds, while the discard sessions save, the workdir save and the restores keep cache_timeout_seconds + 600 (interrogate Consider 1) [evidence: test:tests/test_sessions_backup.py::test_live_backup_presign_expiry_covers_deadline_only]
+- AC10: with ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS 0 a leftover running sessions_backup record is still marked superseded_by_discard and its Job removed before the final save (builder Q10) [evidence: test:tests/test_sessions_backup.py::test_discard_stops_leftover_backup_when_disabled]
 
 ## Files
 
@@ -78,3 +87,5 @@ Discarding a session while its live backup runs: the backup Job is killed, the d
 - If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
 - Per-task security check (retro, recurring): S3 is reached only through one presigned URL per Job, signed by the reconciler; no credential or presigned query string in a log line, a status `reason` or an error message; the api imports neither `reconciler` nor `k8s`.
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: interrogate 2026-10-29 act on 1; consider 1 (live presign expiry); builder Q10 yes
