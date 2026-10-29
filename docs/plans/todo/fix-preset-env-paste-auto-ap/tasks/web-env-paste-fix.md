@@ -55,13 +55,18 @@ Signatures, schemas and contracts this task builds or must keep, with file:symbo
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+Creating or saving a preset with text still in the Paste .env box keeps every pasted key and value; TOKEN/PASSWORD-style keys are accepted silently; a malformed pending paste blocks the submit with its line errors.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read src/presets/PresetForm.tsx, src/sessions/sessionSpecForm.ts and src/presets/PresetForm.test.tsx in one pass.
+- Red: add the AC1-AC4 tests and change the two secret-asserting tests (AC5 keeps the reserved part); run `npx vitest run src/presets/PresetForm.test.tsx`; expect the new and changed tests to fail.
+- Green: one parse+merge helper used by applyPaste and submit; submit applies a pending non-blank paste first and returns without sending on parse errors; remove SECRET_KEY from envKeyError; run the same vitest command; expect all pass.
+- Run `mise run test && mise run lint`; expect both green. Commit.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- The Create/Save button is disabled while `validate()` reports errors; keys from a pending paste are not in `values.env` until merged, so the auto-apply must run in submit, and when the merged rows carry an envKeyError (reserved, duplicate) set them into state and do not send (my call).
+- setState is async: submit must build the request body from the merged rows it computed, not from `values.env` read after `set()`.
+- The orchestrator accepts secret-named keys (agents-orchestrator spec.py `_env`); no backend change.
+- noted, not doing now: the web RESERVED_KEY lacks ORCH_* which the orchestrator rejects.
