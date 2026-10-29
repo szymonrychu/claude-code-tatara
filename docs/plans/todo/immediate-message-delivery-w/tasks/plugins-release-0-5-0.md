@@ -25,7 +25,7 @@ actual_role_tokens: ""
 
 Design D15, verbatim: "Released as plugins 0.6.0 on top of slash's 0.5.0; the orchestrator pins it."
 
-Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.4.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer)."
+Design D19, verbatim: "claude-code-wrapper 0.5.0, any-mcp-tatara-plugins 0.6.0 and agents-common 0.5.0 are version bumps whose tags the orchestrator session pushes after merge (checked by it, not by the implementer)."
 
 Scope (any-mcp-tatara-plugins): `orchestration/orchestrator/pyproject.toml` (0.5.0 to 0.6.0), `uv.lock`, `orchestration/orchestrator/README.md` (example ref), `tests/test_source_install.py` (the version pin, no longer accurate after the bump).
 
@@ -66,3 +66,5 @@ A tagged plugins release with the priority parameter exists for the orchestrator
 - Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
 
 - 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
+
+- 2026-10-29 amended: agents-common renumbered 0.4.0 -> 0.5.0: the slash fix round takes v0.4.0 (mx-34 #446, #453)
