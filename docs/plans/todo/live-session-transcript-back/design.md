@@ -292,7 +292,7 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 
 ## Open questions
 
-- Q1: Back up each live session's transcripts at most every 30 minutes, when it is working or finished work since the last backup (idle sessions are not backed up again)? [recommended: yes]
+- Q1: Back up each live session's transcripts at most every 30 minutes, when it is working or finished work since the last backup (idle sessions are not backed up again)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
 - Q2: Transcripts only, the workspace keeps its discard-time save? [recommended: yes]
 - Q3: No "back up now" button or tool in this epic? [recommended: yes]
 - Q4: Skip the live backup while another session (live, starting or being discarded) shares the same cache name? [recommended: yes]
