@@ -33,19 +33,23 @@ Amendment (2026-10-29, user-approved release order agreed between hives 2026-10-
 
 Repo README `## Releases`, verbatim: "Releases are `vX.Y.Z` tags on `main`; pin `?ref=` to a release tag. Nothing is published beyond the tag."
 
+
+Amendment 2 (2026-10-29, user-approved, mx-34 #406): tatara's epic hive-decoupling released any-mcp-tatara-plugins `v0.4.0` (merge 6d5cc19, plugin version 0.4.0) and pinned agents-orchestrator `main` to it (df2b80e) before this epic's `v0.3.0` was tagged; `v0.3.0` stays unused. This epic ships as plugins `v0.5.0` on top of `v0.4.0`. Where Amendment 1 and the sections below read `v0.3.0`/`0.3.0` they now read `v0.5.0`/`0.5.0`, and where they read `v0.2.0`/`0.2.0` as the current release on `main` they now read `v0.4.0`/`0.4.0`. The Scope below is restated with these numbers. Tagging `v0.5.0` is approved (standing release-tag rule mx-34 #396 satisfied by #406).
+
 Scope (any-mcp-tatara-plugins):
-- The epic branch `slash-commands-from-chat` (plugin-session-send-slash) is rebased onto plugins `main` (which carries `v0.2.0`) before this task's commit, keeping the v0.2.0 chat tools and this epic's session_send description.
-- `orchestration/orchestrator/pyproject.toml`: version `0.2.0` -> `0.3.0`; `uv lock` updates `uv.lock`.
-- `orchestration/orchestrator/README.md`: the example source pins `?ref=v0.3.0` (was `?ref=v0.2.0`).
-- `tests/test_source_install.py::test_orchestrator_distribution_metadata` is no longer accurate (named): on `main` it pins version `0.2.0` in the pyproject and the installed metadata; it asserts `0.3.0`.
-- Release step, run by the orchestrator session (never a subagent) once this repo's PR is merged to `main` with green CI: `git tag v0.3.0 <merge sha> && git push origin v0.3.0` (irreversible, listed in design.md). ac3 is checked by the orchestrator after that push, not by the implementer or reviewer.
+- The epic branch `slash-commands-from-chat` (plugin-session-send-slash) is rebased onto plugins `main` (which carries `v0.4.0`) before this task's commit, keeping the v0.4.0 chat tools and this epic's session_send description.
+- `orchestration/orchestrator/pyproject.toml`: version `0.4.0` -> `0.5.0`; `uv lock` updates `uv.lock`.
+- `orchestration/orchestrator/README.md`: the example source pins `?ref=v0.5.0` (was `?ref=v0.4.0`).
+- `tests/test_source_install.py::test_orchestrator_distribution_metadata` is no longer accurate (named): on `main` it pins version `0.4.0` in the pyproject and the installed metadata; it asserts `0.5.0`.
+- Release step, run by the orchestrator session (never a subagent) once this repo's PR is merged to `main` with green CI: `git tag v0.5.0 <merge sha> && git push origin v0.5.0` (irreversible, listed in design.md). ac3 is checked by the orchestrator after that push, not by the implementer or reviewer.
+- The branch's earlier `0.3.0` release commit (4ee917c, built on `v0.2.0`) is not kept: the branch is rebased onto plugins `main` (`v0.4.0`), and the release commit sets `0.5.0`.
 
 ## Acceptance conditions
 
-- ac1: the plugin's pyproject and installed metadata say 0.3.0 (updated) [evidence: test:tests/test_source_install.py::test_orchestrator_distribution_metadata]
-- ac2: the plugin README example pins the new release v0.3.0 and no older one [evidence: command:grep -q "ref=v0.3.0" orchestration/orchestrator/README.md && ! grep -q "ref=v0.2.0" orchestration/orchestrator/README.md && ! grep -q "ref=v0.1.0" orchestration/orchestrator/README.md]
-- ac3: (checked by the orchestrator session after it pushed the tag) tag v0.3.0 exists on origin at the merge commit, on top of v0.2.0 [evidence: command:test -n "$(git ls-remote --tags origin v0.3.0)" && git merge-base --is-ancestor v0.2.0 v0.3.0]
-- ac4: the release is built on v0.2.0 (the branch contains the v0.2.0 tag commit) [evidence: command:git merge-base --is-ancestor v0.2.0 HEAD]
+- ac1: the plugin's pyproject and installed metadata say 0.5.0 (updated) [evidence: test:tests/test_source_install.py::test_orchestrator_distribution_metadata]
+- ac2: the plugin README example pins the new release v0.5.0 and no older one [evidence: command:grep -q "ref=v0.5.0" orchestration/orchestrator/README.md && ! grep -q "ref=v0.4.0" orchestration/orchestrator/README.md && ! grep -q "ref=v0.1.0" orchestration/orchestrator/README.md]
+- ac3: (checked by the orchestrator session after it pushed the tag) tag v0.5.0 exists on origin at the merge commit, on top of v0.4.0 [evidence: command:test -n "$(git ls-remote --tags origin v0.5.0)" && git merge-base --is-ancestor v0.4.0 v0.5.0]
+- ac4: the release is built on v0.4.0 (the branch contains the v0.4.0 tag commit) [evidence: command:git merge-base --is-ancestor v0.4.0 HEAD]
 - ac5: targeted tests and lint pass [evidence: command:uv run pytest tests/test_source_install.py::test_orchestrator_distribution_metadata tests/test_repo.py && uv run ruff check . && uv run ruff format --check .]
 
 ## Files
@@ -80,3 +84,5 @@ The orchestrator plugin with the new session_send description is released as tag
 - 2026-10-29 done
 
 - 2026-10-29 in-progress: reopened: rebase onto plugins main v0.4.0 and release 0.5.0 (Amendment 2, mx-34 #406)
+
+- 2026-10-29 amended: plugins renumbered: hive-decoupling took v0.4.0 first; slash ships v0.5.0 (user-approved mx-34 #406)
