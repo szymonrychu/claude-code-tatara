@@ -1,6 +1,6 @@
 ---
 title: helmfile-orch-untrusted-pin
-status: todo
+status: done
 repo: agents-helmfile
 value: the orchestrator that keeps trigger sessions off the chat is the one applied
 files: [helmfile.yaml.gotmpl, values/agents-orchestrator/common.yaml, tests/test_orchestrator_release.py]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest -q -p no:cacheprovider tests/test_orchestrator_r
 depends_on: [orch-chat-untrusted-sessions]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: 5f0956b6214c710fc3d4bae47692a646c0bc99d4
 points: 1
 expected_minutes: 4
 expected_tokens: 637069
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 1
+actual_minutes: 3
+actual_tokens: 191085
+actual_roles: "impl 2, review 1"
+actual_role_tokens: "impl 146403, review 44682"
 ---
 
 # helmfile-orch-untrusted-pin
@@ -58,3 +58,5 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
 - 2026-10-29 amended: fill merged sha a9f936f
+
+- 2026-10-29 done
