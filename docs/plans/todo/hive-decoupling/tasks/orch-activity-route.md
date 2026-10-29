@@ -43,7 +43,7 @@ Scope (agents-orchestrator):
 Builder check settlement 1 (2026-10-27, my call): the build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged (this epic is blocked on them already). This is the first task, so it also fixes the numbers the later tasks need, run by the orchestrator session (not a subagent: `ticket.py amend` and `git ls-remote` are its tools) before the first implementer is dispatched:
 - the next free orchestrator migration number: the highest `NNNN_*.sql` in `src/agents_orchestrator/db/migrations/` on `main`, plus one;
 - the next free plugins release: the newest `vX.Y.Z` tag on the any-mcp-tatara-plugins origin (`git ls-remote --tags https://github.com/szymonrychu/any-mcp-tatara-plugins 'v*'`), next minor.
-It then replaces the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` by `ticket.py amend` in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin (Requirement and acceptance conditions), and edits the same placeholders in their frontmatter `files` and bodies. The task slugs keep their historical names.
+It then replaces the placeholders `0010`, `v0.3.0` and `0.3.0` by `ticket.py amend` in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin (Requirement and acceptance conditions), and edits the same placeholders in their frontmatter `files` and bodies. The task slugs keep their historical names.
 
 ## Acceptance conditions
 
@@ -56,7 +56,7 @@ It then replaces the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` by `tic
 - ac7: openapi.json matches the app [evidence: test:tests/test_readme_api.py::test_openapi_json_matches_app]
 - ac8: the route only reads events; no INSERT, UPDATE or DELETE is added [evidence: judgement:reviewer reads the diff of api/agent.py and db/events.py]
 - ac9: the targeted tests and lint pass [evidence: command:uv run --frozen pytest tests/test_api_activity.py tests/test_readme_api.py tests/test_hive_feed.py && mise run lint]
-- ac10: (orchestrator session, before dispatch) the real next migration number and plugins tag read from main replace the placeholders in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin [evidence: judgement:orchestrator quotes the numbers read and a grep of the epic's other task files showing no <MIGRATION>, <TAG> or <VERSION> left]
+- ac10: (orchestrator session, before dispatch) the real next migration number and plugins tag read from main replace the placeholders in orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0 and helmfile-deploy-pin [evidence: judgement:orchestrator quotes the numbers read and a grep of the epic's other task files showing no 0010, v0.3.0 or 0.3.0 left]
 
 ## Files
 

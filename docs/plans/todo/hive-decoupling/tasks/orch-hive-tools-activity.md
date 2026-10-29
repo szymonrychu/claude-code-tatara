@@ -66,5 +66,5 @@ Hive agents see `orchestrator_activity`; the plugin's threshold advice shows for
 
 ## Notes
 
-- `test_allowed_tools_exist_in_plugin` needs the <TAG> dev pin (orch-plugins-pin-0-4-0) to see `activity`.
+- `test_allowed_tools_exist_in_plugin` needs the v0.3.0 dev pin (orch-plugins-pin-0-4-0) to see `activity`.
 - Golden render files (`tests/golden/*.yaml`) may embed the on-start config; if `tests/test_render.py` fails on them, stop and report (they are not in this task's files) so the task is amended.

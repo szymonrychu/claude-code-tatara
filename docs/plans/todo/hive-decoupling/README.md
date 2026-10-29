@@ -1,6 +1,6 @@
 ---
 title: hive decoupling
-blockers: [slash-commands-from-chat, matrix-connector-agent-initi]
+blockers: [matrix-connector-agent-initi]
 stage: build
 owner: ""
 repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile]

@@ -330,7 +330,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 
 ## Builder check settlements (2026-10-27)
 
-1. The build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged; the epic is blocked on them already (my call). The first task, orch-activity-route, makes the orchestrator session read the real next migration number and plugins tag from main and amend the dependent tasks (orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0, helmfile-deploy-pin). Their acceptance conditions hold the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` until then; no number is assumed (`0009` and `v0.4.0` elsewhere in this document are only the expectation). The migration test is named `test_drop_feed_cursor_migration`, without the number.
+1. The build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged; the epic is blocked on them already (my call). The first task, orch-activity-route, makes the orchestrator session read the real next migration number and plugins tag from main and amend the dependent tasks (orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0, helmfile-deploy-pin). Their acceptance conditions hold the placeholders `0010`, `v0.3.0` and `0.3.0` until then; no number is assumed (`0009` and `v0.4.0` elsewhere in this document are only the expectation). The migration test is named `test_drop_feed_cursor_migration`, without the number.
 2. The live apply rolls the agent pods of the session that runs it (my call). Before the apply the orchestrator session writes a handoff checkpoint (`workbench:handoff`) naming the apply, smoke and proof steps; the helm apply runs to completion before the reconciler rolls pods; after the roll the resumed leader re-runs smoke and the live proof from the checkpoint. Placed in helmfile-apply-live-proof (step 3, ac8).
 3. ac6 of helmfile-apply-live-proof counts only notes posted by the dispatcher (orchestrator-originated), not ccw peer messages (my call).
 4. `not_leader` and `stale_epoch` stay as 409 texts; the `leadership_request` note path tests only `target_not_ready` and `no_peers` (my call, intended).
@@ -362,3 +362,8 @@ Q8 (exclude candidates at or above the threshold) stays open for the gate.
   diff` shows only the pins): the orchestrator pods roll, and the plugins ref and on-start change roll the agent pods
   of every running session (mx-5 and claude-code-tatara included). Standing user rule: live applies need no approval.
 - PR merges to `main` of agents-orchestrator, any-mcp-tatara-plugins and agents-helmfile (main stays green).
+
+## Build-time settlements (2026-10-29, tatara-0)
+
+- (my call) slash-commands-from-chat is dropped as a blocker: it is parked, owned by hive cct2 (split agreed 2026-10-28), and its branch is 46 commits behind orchestrator main. Waiting would stall this epic indefinitely; whichever epic merges second rebases onto the other. Matrix (the other blocker) is done.
+- Placeholders fixed from origin state: migration 0010 (main has 0009_created_by_service.sql), plugins release v0.3.0 (newest tag v0.2.0, taken by Matrix). Task slugs keep their historical names (plugins-release-0-4-0, orch-plugins-pin-0-4-0).
