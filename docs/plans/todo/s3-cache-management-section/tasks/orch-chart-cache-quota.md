@@ -53,17 +53,28 @@ tests/test_chart_cache.py::test_readme_documents_cache_values lists every docume
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `chart/agents-orchestrator/values.yaml`: under `cache`, `quota: {bytes: null, objects: null}` with comments (bucket total quota shown by the web Cache section gauge; null hides the gauge).
+- `chart/agents-orchestrator/templates/configmap.yaml`: inside the existing `cache.s3.bucket` block, `ORCH_CACHE_QUOTA_BYTES: {{ .quota.bytes | int64 | toString | quote }}` when set, same for objects.
+- Settings consumed: `cache_quota_bytes`, `cache_quota_objects` (task orch-cache-api).
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+agents-helmfile can set the quota through `cache.quota` values, and the api's `GET /api/v1/cache` reports it; an unset quota renders nothing and the gauge stays hidden.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `chart/agents-orchestrator/values.yaml` (cache block), `templates/configmap.yaml`, `templates/deployment.yaml` (envFrom per component), the chart README and `tests/test_chart_cache.py` (`render`, `_settings`, `_deployments`) in one pass.
+- Red: add `test_configmap_cache_quota_env`, `test_no_quota_no_env` and `test_quota_renders_large_integers`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_chart_cache.py`; expect the three to fail.
+- Green: add the values, the template lines and the README rows; rerun; expect passed; `mise run lint:chart && mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Retro (matrix-connector-agent-initi): a chart value that reaches only some containers passed every test and failed live; AC1 asserts the api Deployment actually reads the settings ConfigMap.
+- Helm reads large YAML integers as float64; `int64 | toString` is the existing pattern (`ORCH_CACHE_MAX_BYTES`).
+- These tests render with the local helm binary and need no Postgres, so they run locally.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
