@@ -4,7 +4,7 @@ status: todo
 repo: agents-orchestrator
 value: "the orchestrator's command-name rule lives in one place, so the spec and the parser cannot drift"
 files: [src/agents_orchestrator/slash.py, src/agents_orchestrator/spec.py, tests/test_slash.py]
-verify: "uv run --frozen pytest tests/test_slash.py tests/test_spec.py && mise run lint"
+verify: "uv run --frozen pytest tests/test_slash.py tests/test_spec_config.py && mise run lint"
 depends_on: [orch-plugins-pin-0-5-1]
 model: sonnet
 review: ""
@@ -31,7 +31,7 @@ Scope (agents-orchestrator, branch slash-commands-from-chat): `slash.py` exposes
 
 - ac1: the D2 name regex literal appears exactly once under src/ [evidence: command:test "$(grep -rn 'a-zA-Z0-9_\]\[a-zA-Z0-9:_-' src | wc -l)" -eq 1]
 - ac2: AgentCommand is built from slash.NAME_PATTERN and still accepts "*", "compact", "plugin:cmd", "_x" and rejects "/x", "a.b", "-x" (new) [evidence: test:tests/test_slash.py::test_agent_command_pattern_shares_slash_name]
-- ac3: slash and spec suites and lint pass [evidence: command:uv run --frozen pytest tests/test_slash.py tests/test_spec.py && mise run lint]
+- ac3: slash and spec suites and lint pass [evidence: command:uv run --frozen pytest tests/test_slash.py tests/test_spec_config.py && mise run lint]
 
 ## Files
 
