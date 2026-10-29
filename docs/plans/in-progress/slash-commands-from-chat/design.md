@@ -11,8 +11,12 @@ command runner takes any name plus free args (they may span lines), detects comp
 command class (local stdout, unknown, dialog dismissed by ESC, prompt command promoted to a real turn)
 under one deadline per command, and its turns path refuses slash text for every origin (422
 `slash_command`), which pins the reported `/reload-plugins` hang. The chat renders the wrapper's
-`command_*` events as one updating row. Wrapper 0.4.0 and any-mcp-tatara-plugins 0.2.0 are released
-and pinned by the orchestrator; deploy is decided at the gate. Revised after the interrogate pass
+`command_*` events as one updating row. Wrapper 0.4.0 and any-mcp-tatara-plugins 0.3.0 are released
+and pinned by the orchestrator (amended 2026-10-29: Matrix released v0.2.0 first, user-approved
+order; the epic matrix-connector-agent-initi released plugins v0.2.0 and pinned the orchestrator to
+it, so this epic releases v0.3.0 on top of it and moves the pin v0.2.0 -> v0.3.0; wrapper `main` is
+at v0.3.3, this epic's wrapper release stays 0.4.0 and each epic branch rebases onto its repo's
+`main`); deploy is decided at the gate. Revised after the interrogate pass
 (interrogate.md, items 1-13) and the builder check (2026-10-27).
 
 ## Intent and why
@@ -99,7 +103,8 @@ leader of any other session sending to a superleader (admitted by the D7 check o
 `api/agent.py:session_send`, `own.spec.session_messaging or target.spec.session_messaging`) keeps
 `kind = 'turn'`, so its slash text is delivered as framed prose (my call, interrogate item 1: the user
 asked for "user and superleader"). Migration
-`0008_slash_messages.sql` adds `messages.kind text NOT NULL DEFAULT 'turn' CHECK (kind IN ('turn',
+`0010_slash_messages.sql` (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order;
+orchestrator `main` now carries 0008_wrapper_resume and 0009_created_by_service, so this is 0010) adds `messages.kind text NOT NULL DEFAULT 'turn' CHECK (kind IN ('turn',
 'command'))` and `messages.wrapper_command_id text`. The stored text stays raw (agents-common adopts
 an existing message by `marker in m.text`, `runs.py:_post_once`); `MessageView` gains
 `kind`. The `commands` table and its CHECK are untouched (commands rows are per agent and lack leader
@@ -335,7 +340,7 @@ only client; this also repairs the compact button, refused 403 today because the
 never rendered) and `sessions.commands.agent = spec.wrapper.agent_commands` when set.
 `spec.wrapper.agent_commands` becomes `list[str]` of names (D2 pattern) or `"*"`, validated by the
 wrapper's config model through the existing render validation. Needs the 0.4.0 wrapper pin (the
-0.3.0 config model rejects `"*"`).
+0.3.x config model, up to v0.3.3 now on wrapper `main`, rejects `"*"`; amended 2026-10-29).
 
 ### D12: the chat shows one updating command row
 
@@ -358,12 +363,16 @@ Claude Code slash command on the target session's leader (not framed); commands 
 a session, such as /exit or /clear, are refused. From any other session it is delivered as a
 message." (my call, matching D1 after interrogate item 1). It names no full list (D5 keeps the list
 in one place).
-Release and pin (builder check, my call): any-mcp-tatara-plugins `v0.2.0` after the description
-change (task plugins-release-0-2-0: version bump; the tag is pushed by the orchestrator session after
-the merge), then the orchestrator pins it (task orch-plugins-pin-0-2-0: the `ORCH_ANY_MCP_PLUGINS_REF`
-default, the `any-mcp-tatara-orchestrator` dev dependency, README, tests), so superleaders actually
-see the description. The helmfile value of `ORCH_ANY_MCP_PLUGINS_REF` stays with the gate's deploy
-decision.
+Release and pin (builder check, my call): any-mcp-tatara-plugins `v0.3.0` after the description
+change (task plugins-release-0-2-0: version bump 0.2.0 -> 0.3.0 on the branch rebased onto plugins
+`main`; the tag is pushed by the orchestrator session after the merge), then the orchestrator pins it
+(task orch-plugins-pin-0-2-0: the `ORCH_ANY_MCP_PLUGINS_REF` default, the
+`any-mcp-tatara-orchestrator` dev dependency, README, tests; v0.2.0 -> v0.3.0), so superleaders
+actually see the description. The helmfile value of `ORCH_ANY_MCP_PLUGINS_REF` stays with the gate's
+deploy decision. (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the epic
+matrix-connector-agent-initi released plugins v0.2.0, tag at 4506e70 with its chat tools, and pinned
+orchestrator `main` to it, merge a9f936f; this epic's release became v0.3.0 on top of v0.2.0. The
+task slugs keep their 0-2-0 names.)
 
 ### D14: release and pin like leader-auto-handover; no deploy task
 
@@ -376,6 +385,10 @@ orch-wrapper-pin-0-3-0.
 Builder check settlements (my call): the wrapper PR merges mid-epic through the normal PR flow; the
 orchestrator session pushes tag `v0.4.0`, and wrapper-release-0-4-0's "tag exists on origin"
 condition is checked by the orchestrator after that push, not by the implementer or reviewer.
+Wrapper `main` moved to v0.3.3 (a patch: the `queued_command` attachment fix in
+`src/claude_code_wrapper/transcript.py`), so the release stays 0.4.0; the epic's wrapper branch
+rebases onto wrapper `main` and wrapper-command-signals keeps that fix next to its own transcript
+changes (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order).
 Kind e2e placement (my call, interrogate item 12): the e2e job runs on every PR and agents get
 `client: ["*"]` only from the render change (D11), so an e2e case in the pin PR would be red with
 403. The case is its own task orch-e2e-slash-command, right after orch-render-client-commands (a
@@ -625,17 +638,20 @@ Discovery plan inputs placed:
   newer claude may add session-ending names, which is an amend of `DEFAULT_COMMAND_DENY`.
 - The claude-code-wrapper repo has no `MEMORY.md` yet; task wrapper-command-signals creates it with
   its probe entry.
-- Migration number 0008 is free: no other todo or in-progress epic adds an orchestrator migration
-  (grep of docs/plans/todo and in-progress for 0008: none).
-- Wrapper version 0.4.0 is free: no other open epic releases the wrapper (file-download-in-file-browse
-  pins a sha, no release). If one releases first, wrapper-release-0-4-0 and orch-wrapper-pin-0-4-0 are
-  amended to the next minor.
+- Migration number 0010 is free (amended 2026-10-29: Matrix released v0.2.0 first, user-approved
+  order; was 0008): orchestrator `main` ends at 0009_created_by_service, and no other todo or
+  in-progress epic adds an orchestrator migration.
+- Wrapper version 0.4.0 is free: wrapper `main` is at v0.3.3 (patch releases since the plan), and no
+  other open epic releases a wrapper minor (file-download-in-file-browse pins a sha, no release). If
+  one releases first, wrapper-release-0-4-0 and orch-wrapper-pin-0-4-0 are amended to the next minor.
+- Plugins version 0.3.0 is free (amended 2026-10-29: Matrix released v0.2.0 first, user-approved
+  order): any-mcp-tatara-plugins origin has tags v0.1.0 and v0.2.0 only.
 - agents-web `openapi/orchestrator.json` is also re-vendored by file-download-in-file-browse task
   web-sync-orchestrator-api; whichever lands second re-runs `npm run sync:api -- orchestrator`.
 
 ## Open questions
 
-- Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision]
+- Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision] (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the release is v0.3.0 on top of v0.2.0 and the pin moves v0.2.0 -> v0.3.0; the question text above is kept verbatim)
 - Q2: Claude Code's docs run some commands immediately even mid-turn (/status, /tasks, /usage; the 2.1.304 binary flags several commands 'immediate', .scratchpad/probe-slash/summaries/cmdtable.txt), so D9's 'run every mid-turn command at the turn's Stop' is only partly parity with the terminal. Keep D9 for every command, or run claude's immediate commands at once while a turn runs? [recommended: keep D9 for every command (the gate default: accepted at once, run at the turn's Stop); running immediate commands mid-turn would be an amend of task wrapper-commands-after-stop only]
 
 ## Irreversible operations in scope
@@ -643,7 +659,8 @@ Discovery plan inputs placed:
 - Tag `v0.4.0` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.0` and `:latest`):
   covered by the gate approval of this plan; run by the orchestrator session after the `main` build of
   the merge commit is green (task wrapper-release-0-4-0).
-- Tag `v0.2.0` pushed to any-mcp-tatara-plugins origin: covered by the gate approval; run by the
+- Tag `v0.3.0` pushed to any-mcp-tatara-plugins origin (amended 2026-10-29: Matrix released v0.2.0
+  first, user-approved order; was v0.2.0): covered by the gate approval; run by the
   orchestrator session after the plugins PR merged and its CI is green (task plugins-release-0-2-0).
-- Migration `0008_slash_messages.sql` (additive columns with defaults, idempotent `IF NOT EXISTS`):
+- Migration `0010_slash_messages.sql` (amended 2026-10-29, was 0008; additive columns with defaults, idempotent `IF NOT EXISTS`):
   runs on the next orchestrator deploy, which is decided at the gate.
