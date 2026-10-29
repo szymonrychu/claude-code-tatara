@@ -1,6 +1,6 @@
 ---
 title: wrapper command args
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: any slash command with free one-line args can be queued through the API and the ccw tool
 files: [src/claude_code_wrapper/commands.py, src/claude_code_wrapper/router.py, src/claude_code_wrapper/api/commands.py, src/claude_code_wrapper/mcp_server.py, README.md, tests/test_command_registry.py, tests/test_slash_review_fixes.py, tests/test_mcp_server.py, tests/test_api_commands.py, tests/test_command_runner.py, tests/test_auto_compact.py, tests/test_mcp_injection.py]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_registry.py tests/test_slash_review_fi
 depends_on: [wrapper-command-policy]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 796437ff6850496f34d4b30a7e46f37915789235
 points: 8
 expected_minutes: 14
 expected_tokens: 3155191
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 38
+actual_tokens: 6317102
+actual_roles: "impl 35, review 3"
+actual_role_tokens: "impl 5978003, review 339099"
 ---
 
 # wrapper command args
@@ -104,3 +104,5 @@ Any allowed command name with free args (multi-line, up to 20000 characters) can
 - Sizing exception D18: 12 files, opus.
 
 - 2026-10-27 amended: interrogate items 8 and 2 (multi-line args up to MAX_COMMAND_ARGS 20000 typed as one paste, ESC still refused; empty name invalid_command; claude's name regex), design D2 and D4 revised
+
+- 2026-10-29 done
