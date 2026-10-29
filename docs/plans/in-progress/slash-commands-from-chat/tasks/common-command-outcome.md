@@ -1,6 +1,6 @@
 ---
 title: common command outcome
-status: todo
+status: done
 repo: agents-common
 value: "webhook and schedule runs whose prompt is a slash command finish handled or failed by the command's outcome instead of timing out"
 files: [src/agents_common/orchestrator.py, src/agents_common/runs.py, src/agents_common/fake_orchestrator.py, tests/test_runs.py, tests/test_orchestrator_client.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_runs.py tests/test_orchestrator_client.py && u
 depends_on: [orch-command-outcome]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 4d495171ff9cd299a132f7082909896995bb232c
 points: 3
 expected_minutes: 8
 expected_tokens: 996161
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 3
+actual_minutes: 3
+actual_tokens: 740467
+actual_roles: "impl 3, review 1"
+actual_role_tokens: "impl 635662, review 104805"
 ---
 
 # common command outcome
@@ -86,3 +86,5 @@ A run whose prompt the orchestrator stored as a command finishes by the command'
 - A promoted command (result `turn`) gets its `turn` from the orchestrator's turn link (orch-command-turn-link), so the existing turn checks decide it.
 - Wire shape from orch-command-outcome (design D19). The todo epic immediate-message-delivery-w also edits `orchestrator.py` and `fake_orchestrator.py` (`Message.turn_id`) and plans agents-common 0.4.0; it rebases on this and renumbers its release when claimed.
 - `model` is opus by the file-count rule (6 files).
+
+- 2026-10-29 done
