@@ -53,17 +53,26 @@ Scope (claude-code-wrapper): `mcp_server.py` (`send_message` schema, argument ch
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- MCP `send_message` input schema: `{"to", "message", "notify_when_idle": bool, "priority": {"type": "string", "enum": ["immediate", "idle"]}}`; absent = `immediate`; the description names both values.
+- `PeerTools.send(caller_session, to, message, notify_when_idle, priority="immediate")`; the wire body model in `peer_client.py` gains `priority: Literal["immediate", "idle"] = "immediate"`.
+- `peer_inbox.InboxItem.priority`; the inbox maps `turn_id -> list[InboxItem]` for outcomes.
+- Delivery: `router.submit_turn(frame(item), origin="peer", metadata={"peer": ...}, priority=item.priority)`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A hive peer's message reaches a busy session mid-turn at once by default, and a sender can still ask for wait-until-idle.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `mcp_server.py` (`_peer_tools`, `_call_peers`), `peer_service.py` (`send`, `_send`, the receive route), `peer_client.py`, `peer_inbox.py` (`put`, `_session_ready`, `_attempt`, `turn_finished`), `tests/test_peer_inbox.py`, `tests/test_peer_inbox_outcomes.py`, `tests/test_mcp_peers.py`, `tests/test_peers_readme.py` and the merge API from task wrapper-immediate-turn-merge in one pass.
+- Red: write `tests/test_peer_priority.py` with every test named ac1 to ac6; run `uv run pytest tests/test_peer_priority.py`; expect them to fail.
+- Green: implement the field end to end and the immediate delivery path, README; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- FIFO among items stays per priority: an immediate item may overtake a queued idle item (design D13 and Q5 apply to peers too); idle items keep their order.
+- Rate limits, inbox bounds and dedupe are unchanged (per-task security check, retro: this tool sends on a caller's behalf).
+- `notify_when_idle` is about reporting, `priority` about delivery; keep them independent.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
