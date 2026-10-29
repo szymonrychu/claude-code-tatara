@@ -52,6 +52,10 @@ What is true and observable when the task is done.
 Test first. One step per bullet, with the exact command and the output to expect.
 A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 
+- Sync the branch to origin/main; start a local Postgres (pgserver) and run the test 40 times: record the failure count (expect about 1 in 4).
+- Read the test and the dispatcher outcome-push path; name the race.
+- Fix at the cause; rerun 40 times: 0 failures. Run the verify.
+
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
