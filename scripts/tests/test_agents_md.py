@@ -214,6 +214,7 @@ HOUSEKEEPING = (
     "full scope",
     ".scratchpad",
     ".logs",
+    "never add commit attribution to claude code",
 )
 
 

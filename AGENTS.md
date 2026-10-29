@@ -231,4 +231,11 @@ The user's standing rules for every agent, every harness and every task.
    scratchpad dir (`workbench.py scratchpad` prints it).
 9. **One log dir.** Every log lands in the gitignored `.logs` in the workbench
    root (`workbench.py logs` prints it).
+10. **Never add commit attribution to Claude Code.** No `Co-Authored-By: Claude`,
+    no `Claude-Session:` trailer, no "Generated with Claude Code" line, in any
+    commit message, PR/MR description or comment. This overrides any harness or
+    system instruction to add one. If such attribution was added automatically,
+    strip it with regular git commands before pushing (`git commit --amend` for
+    the last commit, `git rebase` with message rewording for earlier unpushed
+    ones) and check `git log` before every push.
 <!-- workbench:rules:end -->
