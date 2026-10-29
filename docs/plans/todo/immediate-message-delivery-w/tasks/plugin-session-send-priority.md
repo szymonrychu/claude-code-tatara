@@ -45,17 +45,22 @@ Scope (any-mcp-tatara-plugins): `orchestration/orchestrator/src/any_mcp_tatara_o
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec("session_send", "POST", "/sessions/{slug}/messages", _schema({"slug": ..., "text": ..., "priority": {"type": "string", "enum": ["immediate", "idle"], "description": ...}}, ["slug", "text"]), "*")`.
+- `_descriptions()["session_send"]` and `["chat_send"]`: wording within D15; the existing slash-command sentence of the slash epic stays.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+A superleader sees that its messages reach a busy leader at once by default, can ask for idle delivery, and knows a chat message that joined a turn makes that turn's answer reach the chat.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read the plugin `__init__.py` (`_descriptions`, the tool specs), `tests/test_orchestrator_plugin.py` and the plugin README in one pass.
+- Red: add `test_session_send_priority` and extend the two description tests; run `uv run pytest orchestration/orchestrator/tests/test_orchestrator_plugin.py`; expect them to fail.
+- Green: change the schema and descriptions, README; run the task's verify; expect all passed. Quote the summary line.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- `test_lists_fifteen_tools` (or the count the hive-decoupling epic left) must stay accurate: no new tool here.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims. If a verify run fails, save the failing test name and the output tail before any rerun.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
