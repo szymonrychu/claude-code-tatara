@@ -192,6 +192,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q5: Does the per-session default apply to every preset, including webhook and schedule presets, so each trigger session gets its own cache that is never restored again and objects accumulate until the cache management section cleans them, while a preset that wants today's shared cache sets the template {{ preset }}? D11 [recommended: yes, one default for every preset]
 - Q6: Drop the reserved preset- prefix rule and the preset-id-derived key, since any API caller can already create a session from a preset with a free slug and so reach the same cache? D6 [recommended: yes, drop both]
 - Q7: Render templates in-process in agents-orchestrator with a restricted Jinja2 sandbox: output expressions only, no loops or calls, filters lower, upper, replace, trim, truncate, 256 characters at most, instead of agents-webhook's child-process renderer or a shared library? D3 [recommended: yes, restricted in-process sandbox]
+- Q8: Is the template set per preset only, with no per-session override field on session create or in the new session dialog? D14 [recommended: yes, per preset only]
 
 ## Irreversible operations in scope
 
