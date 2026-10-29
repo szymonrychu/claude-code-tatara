@@ -62,17 +62,28 @@ Tests no longer accurate because they pin the applied migration list and a new m
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/db/migrations/<MIGRATION>_cache_section.sql` (new; `<MIGRATION>` amended to the next free number on main before the task starts).
+- Tables and columns exactly as the Requirement; index choices are the builder's (a partial index on `cache_requests (kind, id) WHERE status IN ('queued', 'running')` suits the claims).
+- Writers (README Data model): `cache_listings` and `cache_objects` the reconciler only; `cache_requests` inserted by the api, status changed only by the reconciler through `WHERE status = ...` updates.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`orch migrate` on a database at the blockers' schema adds the three tables; a second run changes nothing; the following tasks have their schema.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `db/migrate.py`, the newest migrations on main (including the blockers'), `db/migrations/0001_init.sql` (the `checks` table, the queue pattern) and `tests/test_migrations.py` (`run_migrations`, `empty_dsn`, the tmp_path copy pattern of `test_drop_feed_cursor_migration`) in one pass; confirm `<MIGRATION>` was amended to a number and is still the next free one.
+- Red: add the three new tests named in the acceptance conditions and the new version (and tables) to the four list-pinning tests named in the Requirement; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_migrations.py`; expect failures on the missing migration (DB tests: on CI or a local Postgres).
+- Green: write the SQL file and the README Data model rows; rerun; expect passed.
+- `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- If `<MIGRATION>` still reads as a placeholder when the task starts, stop and return it as a question; never pick a number yourself.
+- The migration only creates tables: no data, no S3, nothing irreversible.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
