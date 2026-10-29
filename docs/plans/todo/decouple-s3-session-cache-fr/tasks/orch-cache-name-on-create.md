@@ -66,17 +66,33 @@ Tests no longer accurate, removed or rewritten in tests/test_api_cache.py, becau
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `spec.WorkspaceCache.key: str | None` validated by `naming.check_template` (was `CACHE_KEY_RE`); `spec.CACHE_KEY_RE` stays the rule for a rendered name.
+- `api/sessions.py:check_spec(spec, settings, stored=None)` (no `derived_cache_key`); `_create_from_preset` renders inside the slug loop; `create_session` renders a raw-spec key.
+- `api/presets.py:_validated` trial-renders; `copy_preset` copies `source.spec` unchanged.
+- `api/schemas.py:MetaCache` gains `default_name_template: str`; `openapi.json` regenerated.
+- Contract change (docs/plans/contracts.json, updated by the orchestrator, not this task): `orch-session-spec-cache` key is a template on presets and raw specs and the rendered name on stored sessions; `orch-meta-cache` gains `default_name_template`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`POST /api/v1/sessions {"preset_id": <My Repo>, "slug": "alpha"}` answers a session whose `spec.cache.key` is `my-repo-alpha`; a preset with an unsafe template is refused with 422; `/meta` shows the default template; nothing in `src` mentions the preset-derived key.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read spec.py (WorkspaceCache, default_cache_key, check_caller_cache_key), api/sessions.py, api/presets.py, api/schemas.py (MetaCache), README.md `## Workspace cache`, tests/test_api_cache.py and tests/test_api_sessions.py helpers (`client_for`, `make_settings`, `assert_error`) in one pass.
+- Red: rewrite tests/test_api_cache.py: drop the five tests named in the Requirement, add the tests named in the acceptance conditions, extend `test_meta_cache`; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_api_cache.py`; DB tests error locally without Docker, so confirm red on CI or with a local Postgres; the non-DB tests must fail on the missing behaviour.
+- Green: change spec.py, api/sessions.py, api/presets.py, api/schemas.py; regenerate `uv run python -m agents_orchestrator.api.openapi > openapi.json`; rerun the verify; expect the non-DB tests and `tests/test_readme_api.py::test_openapi_json_matches_app` passed.
+- Update README `### Spec and key` and add the MEMORY.md entry; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Render in `_create_from_preset` per slug attempt (`generated_slug` changes each retry, `api/sessions.py` around l.288-293); the session id is not available there and is not a variable.
+- `created_by` is `calling_service(request)` or `""`; `preset` is `slugify(preset.name)` (preset names allow uppercase, spaces, `.`, `_`, 40 characters, `db/presets.py:19-20`).
+- Trial render at preset save uses a 40-character sample slug (worst case) so a template that can break the key rule is caught at save, not at session create.
+- Security: dropping the reserved prefix is design D6 (open question Q6): any API caller can already create a session from any preset with any free slug and so reach that cache; the prefix protected nothing once names are `<preset>-<session>`.
+- Do not touch tests/test_api_create_from_preset.py or tests/test_api_presets.py unless a test there fails because of the removed derived key; then name it as no longer accurate in the report.
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
+- Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
