@@ -73,17 +73,32 @@ This task delivers D1 in agents-orchestrator:
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `settings.py`: `cache_inventory_interval_seconds: int = Field(default=900, ge=60, le=86400)`.
+- `src/agents_orchestrator/db/cache.py` (new): `Listing` (generation, state, reason, objects, bytes, started_at, finished_at), `ListedObject` (key, kind, size, etag, last_modified); `begin_listing(conn) -> int`, `finish_listing(conn, generation, objects: Sequence[ListedObject]) -> None` (one transaction: insert, mark done with totals, drop older generations, drop keys deleted since `started_at`), `fail_listing(conn, generation, reason) -> None`, `current_listing(conn) -> Listing | None` (newest `done`), `latest_listing(conn) -> Listing | None` (newest of any state), `claim_refreshes(conn) -> list[int]`, `complete_refreshes(conn, ids, status, reason) -> None`. Later tasks add the delete and api functions here.
+- `src/agents_orchestrator/reconciler/cache_inventory.py` (new): `list_bucket(settings: Settings) -> list[ListedObject]` (synchronous), `class CacheInventory(pool, settings, clock=time.monotonic)` with `async run_once() -> None` and `async run(stop: asyncio.Event, wake: asyncio.Event) -> None`.
+- `reconciler/loop.py`: `CHANNELS = ("session_changed", "cache_requested")`; `Reconciler.inventory` built when `settings.cache_available`.
+- The ETag is stored exactly as S3 returns it (HEAD returns the same form), so the delete executor compares like with like.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+With the cache configured, the reconciler keeps `cache_objects` at most `ORCH_CACHE_INVENTORY_INTERVAL_SECONDS` old, lists again at once on a refresh request, keeps the last good listing when S3 fails, and never lists from a page view or the session pass.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `cache/presign.py` (`_client`), `cache/pins.py` (`object_kind`), `reconciler/loop.py` (`CHANNELS`, `run`, `reconcile_once`), `reconciler/checks.py` (claim pattern), `db/queue.py` (`claim_check`, `complete_check`), `db/pool.py`, `settings.py` (cache fields), the new migration, `tests/test_cache_presign.py` (ThreadedMotoServer fixture, `_no_ambient_aws`) and `tests/test_checks.py` (pool env) in one pass.
+- Red: write `tests/test_cache_inventory.py` with every test named in the acceptance conditions (moto server for the bucket, `pool` for the tables, an injected clock for the schedule); run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_inventory.py`; expect failure on the missing modules (DB tests: on CI or a local Postgres; the list_bucket and settings tests run locally).
+- Green: write the setting, `db/cache.py`, `reconciler/cache_inventory.py` and the loop wiring; rerun the verify; expect passed.
+- Write the README rows and subsection and the MEMORY.md entry; `mise run lint`; expect exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Paging: set the paginator's page size small in the test (or create more than 1000 objects) so more than one page is proven.
+- Write the rows in batches (`executemany` or COPY) inside the one transaction; the bucket allows 100000 objects.
+- Inventory size well under 100000 rows and a pass under 60 s are assumptions (design "Assumptions"); log the pass duration and object count once per pass so the live check can confirm them.
+- Per-task security check (retro, recurring): no credential, signature or presigned URL in any log line, listing reason or exception message that reaches the database.
+- Builds after decouple-s3-session-cache-fr and live-session-transcript-back landed on main (README blockers). Use their names as landed: `cache/naming.py` (`render_cache_name`, `DEFAULT_CACHE_NAME_TEMPLATE`), `cache/copy.py`, `reconciler/cache_migration.py`, and `status.cache` `key`, `object`, `sessions_object`, `restore`, `save`, `sessions_restore`, `sessions_save`, `sessions_backup`, `migration`. Read the landed code first; where a landed name differs from this task's text, use the landed name and say so in the task Notes, never guess.
+- Tree state: `mise run lint` green. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers; agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. Pure and moto-only tests run locally. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, recurring).
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
