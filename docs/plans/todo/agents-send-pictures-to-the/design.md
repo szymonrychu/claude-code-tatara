@@ -274,7 +274,7 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 - Q4: Send the caption as its own message after the picture? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
 - Q5: Limit pictures to 5 a minute per session (inside the 20 sends a minute)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
 - Q6: A bridge error notice marks any agent send failed, text included? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q7: The live smoke posts one real picture with a caption to your Messenger DM? [recommended: yes]
+- Q7: The live smoke posts one real picture with a caption to your Messenger DM? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
 - Q8: No pictures inside chat-started final answers in this epic? [recommended: yes]
 
 ## Irreversible operations in scope
