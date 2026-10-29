@@ -1,6 +1,6 @@
 ---
 title: orch slash js whitespace
-status: todo
+status: done
 repo: agents-orchestrator
 value: "the orchestrator classifies every text claude would run as a command as a command, so none reaches an agent as a turn"
 files: [src/agents_orchestrator/slash.py, tests/test_slash.py, README.md]
@@ -8,15 +8,15 @@ verify: "uv run --frozen pytest tests/test_slash.py tests/test_readme_api.py && 
 depends_on: [orch-slash-parser]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: f681026b0629bfa12e2f80862d3669aba6059f34
 points: 2
 expected_minutes: 5
 expected_tokens: 546295
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 2
+actual_minutes: 3
+actual_tokens: 411765
+actual_roles: "impl 2, review 2"
+actual_role_tokens: "impl 302025, review 109740"
 ---
 
 # orch slash js whitespace
@@ -83,3 +83,5 @@ The orchestrator stores every text claude would run as a command as `kind = 'com
 - Same code shape and the same case table as wrapper-slash-js-whitespace, so the two parsers cannot drift (retro proposal: one shared parity table).
 - No `str.strip()`, `str.lstrip()`, `str.isspace` or regex `\s` in the parser, the `_RUN_MARKER` regex included.
 - Docker-free: runs in this container. Can run in parallel with the wrapper tasks.
+
+- 2026-10-29 done
