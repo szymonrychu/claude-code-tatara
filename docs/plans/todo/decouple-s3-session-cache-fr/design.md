@@ -217,6 +217,7 @@ The plan follows each recommended answer; a "no" changes the tasks named in the 
 - Q8: Is the template set per preset only, with no per-session override field on session create or in the new session dialog? D14 [recommended: yes, per preset only]
 - Q9: Remove cache.key from presets that stored their own preset-derived key, so they get the per-session default instead of staying on one shared preset-wide name? D10 [recommended: yes, strip only a preset's own derived key]
 - Q10: The default <preset>-<session> is ambiguous across presets (preset a-b with session c equals preset a with session b-c, and truncation adds more collisions), and a shared name now shares the workspace archive (which may hold .env files and git credentials) and the transcripts (Q1). Should the default carry a short preset_id hash, for example <preset>-<session>-<first 6 hex of preset_id>, so two presets never share a cache by accident while a template can still share on purpose? D2 (interrogate Consider) [recommended: yes, add a short preset_id hash to the default]
+- Q11: A pre-epic session migrated onto its preset's current template follows it exactly; when that template is a shared literal (mine, or {{ preset }}), the session's later discard saves overwrite the shared object other sessions restore from, and the HEAD-then-copy guard protects only the initial copy. Is that intended? D7 (builder-check Q3, interrogate Consider) [recommended: yes, a migrated session follows the preset's current template exactly as a new session would]
 
 ## Irreversible operations in scope
 
