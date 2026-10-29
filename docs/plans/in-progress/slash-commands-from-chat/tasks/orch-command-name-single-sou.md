@@ -1,6 +1,6 @@
 ---
 title: orch command name single source
-status: todo
+status: done
 repo: agents-orchestrator
 value: "the orchestrator's command-name rule lives in one place, so the spec and the parser cannot drift"
 files: [src/agents_orchestrator/slash.py, src/agents_orchestrator/spec.py, tests/test_slash.py]
@@ -8,11 +8,11 @@ verify: "uv run --frozen pytest tests/test_slash.py tests/test_spec_config.py &&
 depends_on: [orch-plugins-pin-0-5-1]
 model: sonnet
 review: ""
-verified_head: ""
+verified_head: c9bc1ebc2ece5040838799389a42fdcb465e873c
 points: 1
 expected_minutes: 4
 expected_tokens: 624640
-points_actual: ""
+points_actual: 1
 actual_minutes: ""
 actual_tokens: ""
 actual_roles: ""
@@ -55,3 +55,7 @@ A retirement test asserts on `git ls-files <path>`, never on the filesystem.
 ## Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+
+- 2026-10-29 done
+
+- 2026-10-29 actuals: no agent records
