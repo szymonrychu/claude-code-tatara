@@ -1,6 +1,6 @@
 ---
 title: wrapper prompt command turn
-status: in-progress
+status: done
 repo: claude-code-wrapper
 value: skill and plugin commands sent from the chat run as real turns that complete at their Stop
 files: [src/claude_code_wrapper/router.py, src/claude_code_wrapper/session.py, tests/fake_claude/fake_claude.py, README.md, tests/test_command_prompt_turn.py, tests/test_fake_claude_commands.py, MEMORY.md]
@@ -8,15 +8,15 @@ verify: "uv run pytest tests/test_command_prompt_turn.py tests/test_fake_claude_
 depends_on: [wrapper-dialog-commands]
 model: opus
 review: ""
-verified_head: ""
+verified_head: 2fe4eb72ad2f48d3196e5e0acaefd3ec428a3393
 points: 5
 expected_minutes: 11
 expected_tokens: 1858483
-points_actual: ""
-actual_minutes: ""
-actual_tokens: ""
-actual_roles: ""
-actual_role_tokens: ""
+points_actual: 5
+actual_minutes: 54
+actual_tokens: 13233007
+actual_roles: "impl 46, review 9"
+actual_role_tokens: "impl 12825518, review 407489"
 ---
 
 # wrapper prompt command turn
@@ -85,3 +85,5 @@ Real sample the fake must match: design Research, probed: "/hello world (.claude
 - 2026-10-27 amended: interrogate item 10 (release the held-turn hold through a session API so an interrupt sends ESC), user decision on the Noted items (real-binary probe of Stop after a promoted turn and of plugin commands and UserPromptSubmit, recorded in MEMORY.md, contradictions reported back), design D8 revised
 
 - 2026-10-29 amended: fable ruling 2026-10-29 on the wrapper-command-signals probe: claude sends a bare name that exists on disk (/tmp) to the model; D2 rule unchanged, ac8 uses nonexistent, D8 promotion pins the prose case
+
+- 2026-10-29 done
