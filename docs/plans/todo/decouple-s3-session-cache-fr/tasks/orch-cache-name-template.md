@@ -56,17 +56,32 @@ This task delivers design D2 and D3 in agents-orchestrator: a new module `src/ag
 
 ## Interfaces
 
-Signatures, schemas and contracts this task builds or must keep, with file:symbol.
+- `src/agents_orchestrator/cache/naming.py` (new): `DEFAULT_CACHE_NAME_TEMPLATE: str`, `CACHE_NAME_VARIABLES: tuple[str, ...] = ("preset", "preset_id", "session", "created_by")`, `TEMPLATE_MAX = 256`, `check_template(template: str) -> None` (raises `ValueError`), `render_cache_name(template: str, **variables: str) -> str` (raises `ValueError`).
+- Reuses `spec.CACHE_KEY_RE` and `spec.slugify`; callers (task orch-cache-name-on-create, orch-cache-name-migration) pass `preset=slugify(name)` themselves.
+- No import cycle: `spec.py` will call `naming.check_template` from the `WorkspaceCache.key` validator in the next task, so `naming` must import from `spec` only inside functions, or `spec` imports `naming` lazily; pick one and keep `python -c "import agents_orchestrator.spec, agents_orchestrator.cache.naming"` working.
+- `pyproject.toml` `[project].dependencies` gains `"jinja2>=3.1.6"`; `uv.lock` updated by `uv add`.
 
 ## Expected outcome
 
-What is true and observable when the task is done.
+`render_cache_name(DEFAULT_CACHE_NAME_TEMPLATE, preset="my-repo", preset_id="...", session="alpha", created_by="")` returns `my-repo-alpha`; any template beyond plain output expressions with the five allowed filters is refused with a `ValueError`; every rendered name matches `CACHE_KEY_RE`.
 
 ## Steps
 
-Test first. One step per bullet, with the exact command and the output to expect.
-A retirement test asserts on `git ls-files <path>`, never on the filesystem.
+- Read `src/agents_orchestrator/spec.py` (CACHE_KEY_RE, slugify, SLUG_MAX), `pyproject.toml`, and agents-webhook's `src/agents_webhook/prompt.py` (`_BoundedEnvironment`) for the sandbox shape, in one pass.
+- `uv add "jinja2>=3.1.6"`; expect pyproject.toml and uv.lock to change, `uv lock --locked` exits 0.
+- Red: write tests/test_cache_naming.py with every test named in the acceptance conditions; run `uv run --frozen pytest -q -p no:cacheprovider tests/test_cache_naming.py`; expect collection to fail on the missing module.
+- Green: write `cache/naming.py` (environment, AST allowlist walk over `env.parse(...)`, `meta.find_undeclared_variables`, render, strip, key rule); rerun; expect all passed.
+- `mise run lint`; expect `files already formatted` and exit 0.
 
 ## Notes
 
-Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
+- Sandbox recipe and citations: brief-docs section 1 (`/workdir/workdir/.scratchpad/s3-cache/brief-docs.md`). The sandbox alone does not bound output size; the AST allowlist (no loops, no calls, five filters), the 256-character cap and the post-render key rule do.
+- Default shape is the builder's within the boundary: it must render `<preset>-<session>` when both are short and always match CACHE_KEY_RE (a 40-character preset slug plus `-` plus a 40-character slug is 81 > 63, and a preset name such as `...` slugifies to an empty string). Slicing (`preset[:22]`) and a conditional expression are allowed node types if the default needs them; document the chosen text in the module docstring.
+- `meta.find_undeclared_variables` can raise `TemplateAssertionError`; map it to `ValueError`.
+- Rejected: rendering in a forkserver child with time and memory limits (agents-webhook `prompt.py`), because the allowlist already bounds the work and the api and reconciler would each need a child process (design D3).
+- Tree state (pictures baseline, 2026-10-28): `mise run lint` green; the full suite is red-env only. Tests that use the `pool`/`dsn` fixtures need Postgres through testcontainers, and agent pods have no Docker, so they error locally (`DockerException`) and run in CI on the PR: the reviewer reads the CI job for them and quotes its summary line. `tests/test_reconciler.py::test_lightkube_default_client_uses_env_config` fails in-cluster for an unrelated reason (KUBERNETES_SERVICE_HOST).
+- If a verify run fails, save the failing test name and the output tail before any rerun (retro, markdown-rendering-in-chat).
+- Per-task security check (retro, recurring): user input reaching S3 keys or a template engine is the high-risk surface here; check size bounds, refusal paths and that no credential or presigned query reaches a log, a status reason or an error message.
+- Before working read the repo's AGENTS.md, MEMORY.md and ROADMAP.md. No em dashes. No backward-compatibility shims.
+
+- 2026-10-29 amended: planner filled Interfaces, Expected outcome, Steps and Notes before the gate (retro: no empty Steps)
