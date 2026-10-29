@@ -527,6 +527,7 @@ Findings:
 - Q3: Should webhook, schedule and Matrix messages, which post text only, become immediate through the server default? [recommended: yes, they take the immediate default with no code change (D1)]
 - Q4: Should slash commands keep running only at the turn's Stop, with any priority they carry stored and ignored? [recommended: yes, commands ignore priority (D8)]
 - Q5: Should an immediate message overtake older idle messages still queued for the same session? [recommended: yes, immediate overtakes queued idle messages (D13)]
+- Q6: Add agents-matrix-connector and agents-common to the epic, so new chat messages in a room with a run in progress are delivered at once and a shared answer is relayed once? [recommended: yes, include both repos (D18); without it Matrix chat still waits for the turn]
 
 ## Irreversible operations in scope
 
