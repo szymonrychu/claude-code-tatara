@@ -1,61 +1,50 @@
-# Agents send pictures to the chat design
+---
+title: Agents send pictures to the chat
+repos: [any-mcp-tatara-plugins, agents-matrix-connector, agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-29
+owner: ""
+rung: ""
+---
 
-## Summary
+# Agents send pictures to the chat
 
-Agents send a picture from their session workspace to their chat room. A new plugin tool
-`orchestrator_chat_send_image {path, caption?, room?, reply_to?}` calls a new orchestrator route that
-reads the file from the calling agent's own wrapper (at most 8,000,000 bytes) and relays it as base64
-JSON to the connector. The connector checks the type from the file's first bytes and queues a `sends`
-row of kind `image`. The bot uploads the bytes to Synapse before claiming the send, clears them, and
-sends `m.image`; a caption follows as a separate `m.text`. The session web chat draws the picture in the
-tool-call box from the session download route; the Chats page shows "picture: <name>". A bridge error
-notice replying to one of our events marks that agent send failed. Source decision:
-`.scratchpad/pictures/architecture.md` (architect-researcher, opus, 2026-10-28), rechecked against main in
-`.scratchpad/pictures/delta-2026-10-29.md`.
+## What and why
 
-## Intent and why
+What: Agents send a picture file from their session workspace to their chat room (Matrix/Messenger) and see it in the session web chat.
+How: New plugin tool orchestrator_chat_send_image; the orchestrator reads the file from the caller's wrapper and relays base64 JSON to the connector, which queues an image send; the bot uploads to Synapse and sends m.image; the web chat renders the tool result from the session download route.
+Why: User, 2026-10-27 20:13Z: 'Allow agents to send pictures over the chat.' (cct2 queue item 5, last in the user's order).
 
-User, verbatim (chat 2026-10-27 20:13Z): "Another epic. Allow agents to send pictures over the chat. Eg
-skill would search for a meme, or a mtg card when someone would write something matching contextually
-(it's just an example, not a part of the epic)." 20:52Z: "Pictures at the end of the queue." Agents can
-only send text and reactions today (matrix-connector-agent-initi, merged). The picking skill is the
-user's example and not part of this epic; the epic provides the capability any skill would call.
+User brief, verbatim (chat 2026-10-27 20:13Z): "Another epic. Allow agents to send pictures over the chat. Eg skill would search for a meme, or a mtg card when someone would write something matching contextually (it's just an example, not a part of the epic)." And at 20:52Z: "Pictures at the end of the queue."
 
-## Goals
+Today agents can only send text and reactions to a chat (orchestrator_chat_send, orchestrator_chat_react from matrix-connector-agent-initi). This epic adds one tool, orchestrator_chat_send_image, that takes a picture file from the session workspace. The orchestrator reads the bytes from the calling agent's own wrapper and relays them to the connector, which validates and queues them; the bot (the only Matrix token holder) uploads them to Synapse and sends m.image, with an optional caption as a separate text message. The session web chat shows the picture inside the tool-call box from the session download route; the Chats page shows a "picture: <name>" line. A bridge error notice replying to one of our events marks that agent send failed. Discovery: .scratchpad/pictures/ (architecture.md, briefs, probes, baselines, delta-2026-10-29.md). Design: design.md.
 
-As in README.md G1-G5.
+It builds last in the cct2 queue, on top of slash-commands-from-chat (plugins v0.3.0), hive-decoupling (plugins v0.4.0) and immediate-message-delivery-w (plugins v0.5.0, possibly connector migration 0003); its release and migration numbers are placeholders resolved at build time.
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: an agent sends a picture (jpeg, png, gif or webp, judged by content, at most 8,000,000 bytes) from a file in its session workspace to its chat room through a new tool orchestrator_chat_send_image {path, caption?, room?, reply_to?}; the owner sees it in Messenger through the bridge.
+- 1.2: G2: the Matrix token stays in the bot pod: the bot uploads the bytes and sends m.image; the caption goes as its own text message after the picture; reply_to anchors the picture.
+- 1.3: G3: the session web chat shows the sent picture inside the tool-call box from the same-origin session download route; message text still never renders images; the Chats page shows "picture: <name>".
+- 1.4: G4: limits and failures are explicit: unsupported type, too large, missing file and rate (5 pictures a minute per session inside the 20 sends a minute) refuse synchronously with a named error; upload failures and bridge error notices mark the send failed, visible in orchestrator_chat_status.
+- 1.5: G5: released and deployed in order (plugins, connector, orchestrator, web, helmfile) and proven by a live smoke that posts one real picture with a caption to the owner's Messenger DM.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-As in README.md. In short: no URL fetching by our services, no picture-picking skill, no pictures in
-chat-started final answers or inbound, no image bytes on the Chats page, no wrapper/any-mcp/common change.
+- URL sources: no service of ours fetches a picture from the internet; agents fetch with their own tools and pass a workspace path.
+- Skills that pick pictures contextually (meme or MTG card search): the user's example, not part of the epic.
+- Pictures in chat-started final answers (the tracker's reply path) and inbound pictures from the chat to agents.
+- Image bytes on the Chats page, thumbnails, width/height, or keeping pictures after the session or file is deleted.
+- Changes to claude-code-wrapper, any-mcp or agents-common.
 
-## Anti-goals
+## Design
 
-- The Matrix token leaves the bot pod, or the api pod uploads media.
-- Any service of ours fetches remote content (SSRF surface), or the web renders an `<img>` from message
-  text or a remote URL.
-- A tool reads an arbitrary file outside the session workdir, or bytes of a non-image (a credentials file)
-  reach the chat.
-- Image bytes are loaded into every `SendRow` read, or stay in Postgres after the upload.
-- A text send or reaction behaves differently than before (regression in the merged outbound path).
-- A second chat-tool allow list, or trigger sessions gaining the image tool.
-
-## Constraints
-
-- AGENTS.md: services talk only over HTTP or a queue; one writer per table; queue rows change only through
-  status-guarded updates; Python, plus TypeScript for the web; no backward-compat shims.
-- The Matrix token lives only in the connector bot pod (connector AGENTS.md).
-- Orchestrator chat relay is JSON, 256 KiB body cap (`_capped_body`, api/chat.py:97), 10 s timeout, stores
-  nothing. Only api/workspace.py may import wrapper (tests/test_api_sessions.py:237).
-- any-mcp HTTP timeout 30 s (any-mcp http.py:31).
-- mautrix-meta v26.09: jpeg/png/gif/webp up to 8,000,000 bytes; captions dropped in Meta-E2EE chats; pre-send
-  checks need `info.mimetype` and `info.size` (probes.md, brief-docs.md).
-- Synapse v1.163.1, authenticated media: upload `POST /_matrix/media/v3/upload`, limit from
-  `GET /_matrix/client/v1/media/config`.
-- Release numbers are claimed by earlier epics: plugins v0.3.0 (slash-commands-from-chat), v0.4.0
-  (hive-decoupling), v0.5.0 (immediate-message-delivery-w); connector migration 0003
-  (immediate-message-delivery-w, `0003_run_relayed_turn.sql`). This epic builds last in the cct2 queue.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -182,6 +171,17 @@ After the helmfile apply (deploy lease taken), the session posts one real pictur
 owner's Messenger DM through the tool; the owner confirms in Messenger; the web chat shows the picture;
 orchestrator_chat_status shows the send `sent`. User Q7.
 
+## Open questions
+
+- Q1: Show pictures in the session web chat too? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q2: Workspace paths only, no URL argument? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q3: The Chats page shows a "picture: <name>" line, not the image? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q4: Send the caption as its own message after the picture? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q5: Limit pictures to 5 a minute per session (inside the 20 sends a minute)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q6: A bridge error notice marks any agent send failed, text included? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q7: The live smoke posts one real picture with a caption to your Messenger DM? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+- Q8: No pictures inside chat-started final answers in this epic? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
+
 ## Research
 
 | Lens | Ran / skipped | Adopted | Rejected |
@@ -193,7 +193,7 @@ orchestrator_chat_status shows the send `sent`. User Q7.
 | research-papers | skipped: no scientific core | - | - |
 | architect-researcher | ran (opus), `architecture.md` | D1-D9 | URL source, agent-side handler, connector fetch, blob table |
 
-## Research inputs
+### Research inputs
 
 - `_relay` now 403s trigger sessions; image route shares its checks (delta, chat.py:155) - orch-chat-images-route.
 - `claim_queued` claims every queued row (db/sends.py:116) - mxc-send-images-schema, mxc-bot-image-upload.
@@ -220,7 +220,78 @@ Retro proposals (`ticket.py retro --history`, 2026-10-29), recurring workflow on
 - matrix-connector-agent-initi, Delivered differently: web `openapi/matrix.source` pinned a connector epic-branch commit, kept reachable by a merge commit - orch-chat-contract-refresh, web-room-messages-picture.
 - file-editor-with-tabs-and-hi, Code: a byte cap literal that mirrors another component's limit should be pinned by a test - orch-chat-images-route (8,000,000 read cap) and mxc-images-route (`MATRIX_IMAGE_MAX_BYTES` maximum 8,000,000).
 
-## Decision coverage
+## Irreversible operations
+
+- Connector migration `<MIGRATION>_send_images.sql` (additive: columns, widened CHECKs) applied on deploy;
+  covered by the gate.
+- Releases: plugins tag `<TAG>`, connector, orchestrator and web image tags; covered by the gate.
+- helmfile apply under the deploy lease.
+- One real Messenger message (the smoke picture) to the owner's DM (Q7).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+Agents send a picture from their session workspace to their chat room. A new plugin tool
+`orchestrator_chat_send_image {path, caption?, room?, reply_to?}` calls a new orchestrator route that
+reads the file from the calling agent's own wrapper (at most 8,000,000 bytes) and relays it as base64
+JSON to the connector. The connector checks the type from the file's first bytes and queues a `sends`
+row of kind `image`. The bot uploads the bytes to Synapse before claiming the send, clears them, and
+sends `m.image`; a caption follows as a separate `m.text`. The session web chat draws the picture in the
+tool-call box from the session download route; the Chats page shows "picture: <name>". A bridge error
+notice replying to one of our events marks that agent send failed. Source decision:
+`.scratchpad/pictures/architecture.md` (architect-researcher, opus, 2026-10-28), rechecked against main in
+`.scratchpad/pictures/delta-2026-10-29.md`.
+
+### design.md: Intent and why
+
+User, verbatim (chat 2026-10-27 20:13Z): "Another epic. Allow agents to send pictures over the chat. Eg
+skill would search for a meme, or a mtg card when someone would write something matching contextually
+(it's just an example, not a part of the epic)." 20:52Z: "Pictures at the end of the queue." Agents can
+only send text and reactions today (matrix-connector-agent-initi, merged). The picking skill is the
+user's example and not part of this epic; the epic provides the capability any skill would call.
+
+### design.md: Goals
+
+As in README.md G1-G5.
+
+### design.md: Non-goals
+
+As in README.md. In short: no URL fetching by our services, no picture-picking skill, no pictures in
+chat-started final answers or inbound, no image bytes on the Chats page, no wrapper/any-mcp/common change.
+
+### design.md: Anti-goals
+
+- The Matrix token leaves the bot pod, or the api pod uploads media.
+- Any service of ours fetches remote content (SSRF surface), or the web renders an `<img>` from message
+  text or a remote URL.
+- A tool reads an arbitrary file outside the session workdir, or bytes of a non-image (a credentials file)
+  reach the chat.
+- Image bytes are loaded into every `SendRow` read, or stay in Postgres after the upload.
+- A text send or reaction behaves differently than before (regression in the merged outbound path).
+- A second chat-tool allow list, or trigger sessions gaining the image tool.
+
+### design.md: Constraints
+
+- AGENTS.md: services talk only over HTTP or a queue; one writer per table; queue rows change only through
+  status-guarded updates; Python, plus TypeScript for the web; no backward-compat shims.
+- The Matrix token lives only in the connector bot pod (connector AGENTS.md).
+- Orchestrator chat relay is JSON, 256 KiB body cap (`_capped_body`, api/chat.py:97), 10 s timeout, stores
+  nothing. Only api/workspace.py may import wrapper (tests/test_api_sessions.py:237).
+- any-mcp HTTP timeout 30 s (any-mcp http.py:31).
+- mautrix-meta v26.09: jpeg/png/gif/webp up to 8,000,000 bytes; captions dropped in Meta-E2EE chats; pre-send
+  checks need `info.mimetype` and `info.size` (probes.md, brief-docs.md).
+- Synapse v1.163.1, authenticated media: upload `POST /_matrix/media/v3/upload`, limit from
+  `GET /_matrix/client/v1/media/config`.
+- Release numbers are claimed by earlier epics: plugins v0.3.0 (slash-commands-from-chat), v0.4.0
+  (hive-decoupling), v0.5.0 (immediate-message-delivery-w); connector migration 0003
+  (immediate-message-delivery-w, `0003_run_relayed_turn.sql`). This epic builds last in the cct2 queue.
+
+### design.md: Decision coverage
 
 Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by task slug.
 
@@ -237,7 +308,7 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 | D9 Releases, pins and contracts with build-time numbers | mxc-send-images-schema, plugins-release-images, orch-chat-contract-refresh, orch-plugins-pin-and-tool, helmfile-pictures-pin |
 | D10 Live smoke | pictures-live-smoke |
 
-## Review focus
+### design.md: Review focus
 
 - Image bytes never loaded by `SendRow` reads; cleared on claim; never logged.
 - Status-guarded transitions for upload failures and bridge-notice failures; one writer per table.
@@ -246,7 +317,7 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 - Magic-byte sniffing is the only type authority; SVG refused.
 - No regression in text sends, reactions, D10 duplicate-final or the room cap.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Module layout inside each repo (e.g. a connector `images.py` for sniffing), helper names, test file split,
   within the D-decisions above.
@@ -257,7 +328,7 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 - Q5 (my call, builder-check): orch-plugins-pin-and-tool may edit `tests/test_images.py` only for the pin literals; it is in that task's files.
 - Q6 (my call, builder-check): the builder builds the code tasks only; the `ticket.py amend` calls (placeholders, sha7s), the `<TAG>` push, the Harbor checks, the helmfile apply and the smoke (plugins-release-images ac3-ac5, helmfile-pictures-pin ac5-ac7, pictures-live-smoke) are orchestrator-session work, as those tasks already mark.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Synapse `max_upload_size` is unknown (needs a user token); the bot reads it at runtime via media config
   and the smoke confirms it.
@@ -265,22 +336,3 @@ Every design decision (`### D<n>` above) maps to the task(s) that deliver it, by
 - RGW/Synapse orphan media after a crash: accepted.
 - Q2 (my call, builder-check): the build starts only after slash-commands-from-chat, hive-decoupling and immediate-message-delivery-w are merged, with plugins v0.5.0 tagged and connector migration 0003 on main, so `<MIGRATION>`, `<TAG>` and `<VERSION>` are read from main; otherwise the orchestrator session stops and reports.
 - Q7 (my call, builder-check): pod memory limits are out of scope; the connector limit is 384Mi (agents-helmfile chart values.yaml:88,94), above the 30-40 MB per-request peak under the 5/min image rate.
-
-## Open questions
-
-- Q1: Show pictures in the session web chat too? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q2: Workspace paths only, no URL argument? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q3: The Chats page shows a "picture: <name>" line, not the image? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q4: Send the caption as its own message after the picture? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q5: Limit pictures to 5 a minute per session (inside the 20 sends a minute)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q6: A bridge error notice marks any agent send failed, text included? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q7: The live smoke posts one real picture with a caption to your Messenger DM? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-- Q8: No pictures inside chat-started final answers in this epic? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Images: all yes")]
-
-## Irreversible operations in scope
-
-- Connector migration `<MIGRATION>_send_images.sql` (additive: columns, widened CHECKs) applied on deploy;
-  covered by the gate.
-- Releases: plugins tag `<TAG>`, connector, orchestrator and web image tags; covered by the gate.
-- helmfile apply under the deploy lease.
-- One real Messenger message (the smoke picture) to the owner's DM (Q7).
