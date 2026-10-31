@@ -1,5 +1,6 @@
 """Structure tests for the four research skills, paper-scout persona and reuse-hunter agent."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -79,3 +80,16 @@ def test_reuse_hunter_agent():
     assert "LSP" in fm["tools"]
     assert "Edit" not in fm["tools"] and "Write" not in fm["tools"]
     assert "jscpd" in body and "Plan inputs" in body
+
+
+def test_internal_hunt_runs_before_phase_two_with_no_lean_path():
+    text = " ".join((SKILLS / "research-code-internal" / "SKILL.md").read_text().split())
+    assert "before phase 2" in text
+    assert "lean path" not in text
+    assert "phase 3" not in text
+    assert "plan-writer" in text
+
+
+def test_research_skills_name_no_epic():
+    for name in NAMES + ["start-research"]:
+        assert not re.search(r"\bepics?\b", (SKILLS / name / "SKILL.md").read_text(), re.I), name

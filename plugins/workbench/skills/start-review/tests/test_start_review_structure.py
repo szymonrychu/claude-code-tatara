@@ -215,11 +215,16 @@ def test_reviewer_agents_read_only_and_read_checklist(name):
     path = ROOT / "agents" / f"{name}.md"
     fm = frontmatter(path)
     assert fm["name"] == name
-    assert fm["tools"] == "[Read, Grep, Glob, Bash]"
+    # the reviewer alone gains Write, for exactly one file: retro.md when the review passes
+    expected = "[Read, Grep, Glob, Bash]"
+    if name == "reviewer":
+        expected = "[Read, Write, Grep, Glob, Bash]"
+    assert fm["tools"] == expected
     assert "model" not in fm and "hooks" not in fm
     assert set(fm) <= {"name", "description", "tools"}
     text = path.read_text()
-    assert "Edit" not in fm["tools"] and "Write" not in fm["tools"]
+    assert "Edit" not in fm["tools"]
+    assert ("Write" in fm["tools"]) == (name == "reviewer")
     body = text.split("\n---\n", 1)[1]
     assert "review-checklist.md" in body
     assert body.index("review-checklist.md") < 400
@@ -255,3 +260,12 @@ def test_all_five_files_are_ascii():
 
 def test_start_review_skill_does_not_name_panel_reviewer():
     assert "panel-reviewer" not in (ROOT / "skills" / "start-review" / "SKILL.md").read_text()
+
+
+def test_start_review_is_standalone_and_plan_run_follows_it():
+    text = " ".join(SKILL.read_text().split())
+    assert "`plan-run`" in text
+    assert "`workbench:reviewer`" in text
+    assert "same checklist" in text
+    assert "Phase 5" not in text
+    assert not re.search(r"\bepics?\b", text, re.I)

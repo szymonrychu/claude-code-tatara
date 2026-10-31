@@ -43,20 +43,20 @@ submodule for a whole branch. This one makes a single tree for a single agent.
    branch was cut. A conflict during that merge leaves the worktree in place and
    fails loudly.
 
-   **Epic integration tree.** `--integration` makes the epic's own tree; the development flow
-   uses one integration tree per epic and the implementer works there:
+   **Plan tree.** `--integration` makes the plan's own tree; the development flow
+   uses one tree per plan and the implementer works there:
 
    ```sh
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-create/scripts/create.py" \
-     --integration --name <epic> [--base main] [--repo <code/ submodule>]
+     --integration --name <plan> [--base main] [--repo <code/ submodule>]
    ```
 
-   The tree and its branch are both named `<epic>`; it prints the path, branch,
-   base and verb (`created` or `reused`). An existing tree on branch `<epic>` is
+   The tree and its branch are both named `<plan>`; it prints the path, branch,
+   base and verb (`created` or `reused`). An existing tree on branch `<plan>` is
    reused unchanged; any other occupant of the path is refused, and an existing
-   `<epic>` branch is checked out rather than recreated. With `--repo` it forks
-   from `origin/<base>` when that ref exists. `ticket.py move <epic> in-progress`
-   calls it for you. Outside the task loop, this skill is a generic tool for an
+   `<plan>` branch is checked out rather than recreated. With `--repo` it forks
+   from `origin/<base>` when that ref exists. `ticket.py move <plan> in-progress`
+   calls it for you. Outside the plan loop, this skill is a generic tool for an
    isolated tree for one ad-hoc subagent.
 
 3. **Dispatch the subagent against that path.** Give it the path and tell it to

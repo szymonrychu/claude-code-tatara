@@ -1,7 +1,8 @@
-"""Tests for ticket.py core: layout, slugs, frontmatter, new-epic, new-task, path, guard, commit."""
+"""Tests for ticket.py core: layout, slugs, frontmatter, new, path, old-format refusal, guard,
+commit."""
 
+import datetime
 import importlib.util
-import json
 import re
 import subprocess
 import sys
@@ -12,6 +13,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 SD = ROOT / "skills" / "start-development"
 SCRIPT = SD / "scripts" / "ticket.py"
+OLD_FORMAT = "old epic format under {}; run ticket.py migrate --all"
 
 
 def _load():
@@ -47,34 +49,11 @@ def root(tmp_path):
     return r
 
 
-def new_epic(root, title="Cost and ticketing", *extra):
-    return cli("new-epic", "--root", root, "--title", title, "--force", *extra)
+def new(root, title="Cost and ticketing", *extra):
+    return cli("new", "--root", root, "--title", title, "--force", *extra)
 
 
-def new_task(root, epic="cost-and-ticketing", title="Ticket core", *extra, points="3"):
-    """new-task with `points` storypoints; points=None leaves the flag out."""
-    return cli(
-        "new-task",
-        "--root",
-        root,
-        "--epic",
-        epic,
-        "--title",
-        title,
-        "--repo",
-        "plugin",
-        "--value",
-        "One tool",
-        "--files",
-        "a.py,b.py",
-        "--verify",
-        'pytest -q -k "x y"',
-        *(["--points", points] if points else []),
-        *extra,
-    )
-
-
-# (2) slugs and worktree names
+# slugs
 def test_slug_cli_prints_capped_slug(root):
     r = cli("slug", "A Very Long Title That Goes Past The Twenty Eight Cap")
     assert r.returncode == 0
@@ -83,320 +62,63 @@ def test_slug_cli_prints_capped_slug(root):
     assert len(out) <= 28 and not out.endswith("-")
 
 
-def test_worktree_name_single_hyphen_cap_57(t):
-    assert t.worktree_name("epic", "task") == "epic-task"
-    a, b = "a" * 28, "b" * 28
-    assert len(t.worktree_name(a, b)) == 57 == t.WORKTREE_MAX
-    with pytest.raises(t.TicketError, match=r"58 characters, max 57"):
-        t.worktree_name(a + "c", b)
-
-
-# (1) layout
+# layout
 def test_phases_and_default_root(t):
     assert t.PHASES == ("todo", "in-progress", "done")
     assert t.default_root().parts[-2:] == ("docs", "plans")
 
 
-def test_new_epic_readme(t, root):
-    r = new_epic(
-        root,
-        "Cost and ticketing",
-        "--blockers",
-        "Other One,Other Two",
-        "--repos",
-        "a,b",
-        "--what",
-        "W",
-        "--how",
-        "H",
-        "--why",
-        "Y",
-    )
+# new
+def test_new_writes_plan_md_from_the_template(t, root):
+    r = new(root, "Cost and ticketing", "--repos", "a,b")
     assert r.returncode == 0, r.stderr
-    p = root / "todo" / "cost-and-ticketing" / "README.md"
+    p = root / "todo" / "cost-and-ticketing" / "plan.md"
+    assert r.stdout.strip().splitlines()[-1] == str(p)
+    assert sorted(x.name for x in p.parent.iterdir()) == ["plan.md"]
     text = p.read_text()
     doc = t.load(text, p)
-    m = doc.meta
-    assert m["title"] == "Cost and ticketing"
-    assert m["blockers"] == ["Other One", "Other Two"]
-    assert m["stage"] == "build" and m["owner"] == "" and m["repos"] == ["a", "b"]
-    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", m["created"])
-    assert re.findall(r"^## (.+)$", text, re.M) == [
-        "Project brief",
-        "Description",
-        "Goals",
-        "Non-goals",
-        "Review",
-    ]
-    for line in ("What: W", "How: H", "Why: Y"):
-        assert line in text
+    assert list(doc.meta) == ["title", "repos", "created", "owner", "rung"]
+    assert doc.meta == {
+        "title": "Cost and ticketing",
+        "repos": ["a", "b"],
+        "created": datetime.date.today().isoformat(),
+        "owner": "",
+        "rung": "",
+    }
+    assert re.findall(r"^# (.+)$", text, re.M) == ["Cost and ticketing"]
+    template = (SD / "templates" / "plan.md").read_text()
+    assert re.findall(r"^## (.+)$", text, re.M) == re.findall(r"^## (.+)$", template, re.M)
     assert t.dump(doc) == text
 
 
-def test_new_epic_files(root, tmp_path):
-    (tmp_path / "d.txt").write_text("Desc body")
-    (tmp_path / "g.txt").write_text("- goal one")
-    (tmp_path / "n.txt").write_text("- not this")
-    r = new_epic(
-        root,
-        "Files",
-        "--description-file",
-        tmp_path / "d.txt",
-        "--goals-file",
-        tmp_path / "g.txt",
-        "--non-goals-file",
-        tmp_path / "n.txt",
-    )
-    assert r.returncode == 0, r.stderr
-    text = (root / "todo" / "files" / "README.md").read_text()
-    assert "Desc body" in text and "- goal one" in text and "- not this" in text
+def test_new_without_repos_is_an_empty_list(t, root):
+    assert new(root, "Alpha").returncode == 0
+    p = root / "todo" / "alpha" / "plan.md"
+    assert t.load(p.read_text(), p).meta["repos"] == []
+
+
+def test_new_refuses_a_title_without_usable_characters(root):
+    r = new(root, "!!!")
+    assert r.returncode == 1 and "no usable characters" in r.stderr
+    assert not (root / "todo").exists()
 
 
 @pytest.mark.parametrize("phase", ["todo", "in-progress", "done"])
-def test_new_epic_refuses_existing_in_any_phase(root, phase):
+def test_new_refuses_existing_slug_in_any_phase(root, phase):
     (root / phase / "dup").mkdir(parents=True)
-    r = new_epic(root, "Dup")
+    (root / phase / "dup" / "plan.md").write_text("---\ntitle: Dup\n---\n")
+    r = new(root, "Dup")
     assert r.returncode == 1
-    assert phase in r.stderr
+    assert f"plan slug 'dup' already exists in {phase}" in r.stderr
 
 
-# (4) new-task
-BASE_KEYS = [
-    "title",
-    "status",
-    "repo",
-    "value",
-    "files",
-    "verify",
-    "depends_on",
-    "model",
-    "review",
-    "verified_head",
-]
-NUMBER_KEYS = [
-    "points",
-    "expected_minutes",
-    "expected_tokens",
-    "points_actual",
-    "actual_minutes",
-    "actual_tokens",
-    "actual_roles",
-    "actual_role_tokens",
-]
-LEAN_KEYS = BASE_KEYS + NUMBER_KEYS
+def test_new_has_no_task_or_epic_options(root):
+    for opt in ("--blockers", "--goals-file", "--what"):
+        r = cli("new", "--root", root, "--title", "X", opt, "y")
+        assert r.returncode == 2 and opt in r.stderr, opt
 
 
-def test_new_task(t, root):
-    new_epic(root)
-    r = new_task(
-        root,
-        "cost-and-ticketing",
-        "Ticket core",
-        "--depends-on",
-        "a,b",
-        "--model",
-        "sonnet",
-        "--review",
-        "full",
-    )
-    assert r.returncode == 0, r.stderr
-    p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
-    text = p.read_text()
-    doc = t.load(text, p)
-    m = doc.meta
-    assert list(m) == LEAN_KEYS
-    assert m["status"] == "todo" and m["files"] == ["a.py", "b.py"]
-    assert m["verify"] == 'pytest -q -k "x y"'
-    assert m["depends_on"] == ["a", "b"]
-    assert m["model"] == "sonnet" and m["review"] == "full"
-    assert m["verified_head"] == ""
-    assert re.findall(r"^## (.+)$", text, re.M) == [
-        "Requirement",
-        "Acceptance conditions",
-        "Files",
-        "Interfaces",
-        "Expected outcome",
-        "Steps",
-        "Notes",
-    ]
-    assert t.dump(doc) == text
-
-
-LEGACY_TASK = """---
-title: Old task
-status: done
-repo: plugin
-value: "Kept for history"
-files: [a.py]
-verify: "pytest -q"
-depends_on: [other]
-owns: [helper]
-uses: [shared]
-model: opus
-estimate: 6
-estimate_by: formula
-actual: ""
-review: full
-worktree: /tmp/wt
-branch: e-old-task
-verified_head: abc123
-run: run-1
-provides: [thing]
----
-
-# Old task
-
-## Requirement
-
-Old.
-"""
-
-
-def test_task_frontmatter_is_lean(t, root):
-    new_epic(root)
-    assert new_task(root).returncode == 0
-    p = root / "todo" / "cost-and-ticketing" / "tasks" / "ticket-core.md"
-    lean = t.load(p.read_text(), p).meta
-    assert list(lean) == LEAN_KEYS
-    filled = ("points", "expected_minutes", "expected_tokens")  # new-task requires points
-    assert all(lean[k] for k in filled)
-    assert all(lean[k] == "" for k in NUMBER_KEYS if k not in filled)
-    assert not [k for k in LEAN_KEYS if "estimate" in k]
-    for gone in ("--owns", "--uses"):
-        r = new_task(root, "cost-and-ticketing", "Other task", gone, "x")
-        assert r.returncode == 2 and gone in r.stderr
-    tmpl = (SD / "templates" / "task.md").read_text()
-    assert list(t.load(tmpl, "task.md").meta) == LEAN_KEYS
-    # a task file carrying legacy keys still loads and round-trips every lean field
-    legacy = p.parent / "old-task.md"
-    legacy.write_text(LEGACY_TASK)
-    doc = t.load(legacy.read_text(), legacy)
-    assert {k: doc.meta[k] for k in BASE_KEYS} == {
-        "title": "Old task",
-        "status": "done",
-        "repo": "plugin",
-        "value": "Kept for history",
-        "files": ["a.py"],
-        "verify": "pytest -q",
-        "depends_on": ["other"],
-        "model": "opus",
-        "review": "full",
-        "verified_head": "abc123",
-    }
-    assert t.load(t.dump(doc), legacy) == doc
-    # a writer keeps the legacy keys it does not know about
-    t._write_task(legacy, doc, status="escalated")
-    again = t.load(legacy.read_text(), legacy).meta
-    assert again["status"] == "escalated" and again["owns"] == ["helper"]
-    assert again["estimate"] == "6" and again["run"] == "run-1"
-
-
-def _calibration():
-    spec = importlib.util.spec_from_file_location(
-        "calibration", ROOT / "scripts" / "lib" / "calibration.py"
-    )
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def _task_meta(t, root, slug_="ticket-core", epic="cost-and-ticketing"):
-    p = root / "todo" / epic / "tasks" / f"{slug_}.md"
-    return t.load(p.read_text(), p).meta
-
-
-def _history_task(root, epic, name, status="done", **fields):
-    """A task file written by hand in `epic` (done phase), carrying the given number fields."""
-    d = root / "done" / epic / "tasks"
-    d.mkdir(parents=True, exist_ok=True)
-    lines = ["---", f"title: {name}", f"status: {status}"]
-    lines += [f"{k}: {v}" for k, v in fields.items()]
-    (d / f"{name}.md").write_text("\n".join(lines) + "\n---\n\n# " + name + "\n")
-
-
-def test_new_task_points_fill_expected(t, root):
-    new_epic(root)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", points="5")
-    assert r.returncode == 0, r.stderr
-    m = _task_meta(t, root)
-    minutes, tokens = _calibration().SEED[5]
-    assert m["points"] == "5"
-    assert m["expected_minutes"] == str(minutes) and m["expected_tokens"] == str(tokens)
-    for k in ("points_actual", "actual_minutes", "actual_tokens", "actual_roles"):
-        assert m[k] == "", k
-    assert m["actual_role_tokens"] == ""
-
-
-def test_new_task_expected_from_history(t, root):
-    new_epic(root)
-    for name, minutes, tokens in (("h1", 10, 100), ("h2", 20, 200), ("h3", 40, 900)):
-        _history_task(root, "old", name, points=3, actual_minutes=minutes, actual_tokens=tokens)
-    # rows that do not count: not done, missing an actual, a non-numeric actual
-    _history_task(
-        root, "old", "open", "in-progress", points=3, actual_minutes=999, actual_tokens=999
-    )
-    _history_task(root, "old", "half", points=3, actual_minutes=999)
-    _history_task(root, "old", "junk", points=3, actual_minutes="lots", actual_tokens=999)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", points="3")
-    assert r.returncode == 0, r.stderr
-    m = _task_meta(t, root)
-    assert (m["points"], m["expected_minutes"], m["expected_tokens"]) == ("3", "20", "200")
-    rows = t.calibration_rows(root)
-    assert sorted(r["actual_minutes"] for r in rows) == [10, 20, 40]
-    assert all(r["points"] == 3 for r in rows)
-
-
-def test_new_task_rejects_non_fibonacci_points(root):
-    new_epic(root)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", points="4")
-    assert r.returncode == 1
-    assert "1, 2, 3, 5, 8, 13" in r.stderr and "points" in r.stderr
-    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
-
-
-def test_new_task_requires_points(root):
-    new_epic(root)
-    r = new_task(root, "cost-and-ticketing", "Ticket core", points=None)
-    assert r.returncode == 2
-    assert "--points" in r.stderr
-    assert not (root / "todo" / "cost-and-ticketing" / "tasks").exists()
-
-
-def test_new_task_requirement_and_ac_files(root, tmp_path):
-    new_epic(root)
-    (tmp_path / "r.txt").write_text("Do the thing")
-    (tmp_path / "ac.txt").write_text("- AC-1: works [evidence: test:t.py::x]")
-    r = new_task(
-        root,
-        "cost-and-ticketing",
-        "T",
-        "--requirement-file",
-        tmp_path / "r.txt",
-        "--ac-file",
-        tmp_path / "ac.txt",
-    )
-    assert r.returncode == 0, r.stderr
-    text = (root / "todo" / "cost-and-ticketing" / "tasks" / "t.md").read_text()
-    assert "Do the thing" in text and "- AC-1: works [evidence: test:t.py::x]" in text
-
-
-def test_new_task_refusals(root):
-    assert new_task(root, "nope").returncode == 1
-    new_epic(root)
-    assert new_task(root).returncode == 0
-    dup = new_task(root)
-    assert dup.returncode == 1 and "ticket-core" in dup.stderr
-    (root / "done" / "closed").mkdir(parents=True)
-    r = new_task(root, "closed")
-    assert r.returncode == 1 and "done" in r.stderr
-
-
-def test_new_task_in_progress_epic_allowed(root):
-    (root / "in-progress" / "ip").mkdir(parents=True)
-    assert new_task(root, "ip").returncode == 0
-
-
-# (5) frontmatter
+# frontmatter
 def test_frontmatter_scalars_and_quotes(t):
     text = (
         "---\na: plain\nb: 'sin''gle'\nc: \"dou\\\"ble\"\nd: [x, 'y z', \"w\"]\ne: []\n---\nbody\n"
@@ -432,84 +154,121 @@ def test_frontmatter_roundtrip_awkward_values(t):
     assert again.meta == meta and t.dump(again) == out
 
 
-# (6) path
+def test_frontmatter_roundtrip_of_the_plan_template(t):
+    p = SD / "templates" / "plan.md"
+    text = p.read_text()
+    assert t.dump(t.load(text, p)) == text
+
+
+# path
 @pytest.mark.parametrize(
     "kind,rel",
     [
-        ("readme", "README.md"),
-        ("design", "design.md"),
-        ("record", "record.md"),
-        ("tasks", "tasks"),
+        ("plan", "plan.md"),
+        ("implementation", "implementation-plan.md"),
+        ("retro", "retro.md"),
+        ("close", "close.json"),
     ],
 )
 def test_path(root, kind, rel):
-    new_epic(root)
+    new(root)
     r = cli("path", "--root", root, "cost-and-ticketing", kind)
-    assert r.returncode == 0
+    assert r.returncode == 0, r.stderr
     assert r.stdout.strip() == str(root.resolve() / "todo" / "cost-and-ticketing" / rel)
 
 
-def test_path_has_no_approvals_kind(root):
-    new_epic(root)
-    r = cli("path", "--root", root, "cost-and-ticketing", "approvals")
-    assert r.returncode == 2 and "approvals" in r.stderr
+@pytest.mark.parametrize("kind", ["readme", "design", "record", "tasks", "approvals"])
+def test_path_has_no_epic_kinds(root, kind):
+    new(root)
+    r = cli("path", "--root", root, "cost-and-ticketing", kind)
+    assert r.returncode == 2 and kind in r.stderr
 
 
-def test_path_follows_phase_and_unknown_epic(root):
-    (root / "in-progress" / "e1").mkdir(parents=True)
-    r = cli("path", "--root", root, "e1", "readme")
-    assert "in-progress" in r.stdout
-    bad = cli("path", "--root", root, "ghost", "readme")
-    assert bad.returncode == 1
+def test_path_follows_phase_and_unknown_plan(root):
+    (root / "in-progress" / "p1").mkdir(parents=True)
+    (root / "in-progress" / "p1" / "plan.md").write_text("---\ntitle: P1\n---\n")
+    r = cli("path", "--root", root, "p1", "plan")
+    assert r.returncode == 0 and "in-progress" in r.stdout
+    bad = cli("path", "--root", root, "ghost", "plan")
+    assert bad.returncode == 1 and "unknown plan 'ghost'" in bad.stderr
 
 
-# (9) resolve_epic
-def test_resolve_epic_slug_or_dir(t, root):
-    new_epic(root)
+def test_resolve_plan_slug_or_dir(t, root, tmp_path):
+    new(root)
     d = root / "todo" / "cost-and-ticketing"
-    assert t.resolve_epic("cost-and-ticketing", root) == d
-    assert t.resolve_epic(str(d), root) == d
-    with pytest.raises(t.TicketError):
-        t.resolve_epic("ghost", root)
-    r = cli("path", "--root", root, str(d), "tasks")
-    assert r.returncode == 0 and r.stdout.strip().endswith("cost-and-ticketing/tasks")
+    assert t.resolve_plan("cost-and-ticketing", root) == d
+    assert t.resolve_plan(str(d), root) == d
+    with pytest.raises(t.TicketError, match="unknown plan"):
+        t.resolve_plan("ghost", root)
+    outside = tmp_path / "elsewhere" / "p"
+    outside.mkdir(parents=True)
+    with pytest.raises(t.TicketError, match="outside the plans root"):
+        t.resolve_plan(str(outside), root)
 
 
-# (7) templates
-def test_templates_have_no_parking_statuses():
-    for name in ("epic.md", "task.md"):
-        text = (SD / "templates" / name).read_text().lower()
-        for word in ("deferred", "later", "wontfix", "follow-up"):
-            assert word not in text, (name, word)
+# old-format refusal
+def _old_epic(root, phase="done", name="old-epic"):
+    d = root / phase / name
+    (d / "tasks").mkdir(parents=True)
+    (d / "README.md").write_text("---\ntitle: Old\n---\n\n# Old\n")
+    return d
 
 
-def test_task_statuses(t):
-    assert t.TASK_STATUSES == ("todo", "in-progress", "done", "blocked", "escalated")
-    assert t.EPIC_STAGES == ("build", "review", "parked")
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["new", "--title", "Fresh"],
+        ["check", "--title", "Fresh"],
+        ["rename", "good", "Better"],
+        ["path", "good", "plan"],
+        ["move", "good", "in-progress"],
+        ["move", "good", "done"],
+        ["worktrees", "good"],
+        ["close", "good", "--verify", "true"],
+        ["reap", "--dry-run"],
+    ],
+)
+def test_old_epic_format_is_refused_by_every_plan_command(root, args):
+    new(root, "Good")
+    old = _old_epic(root)
+    r = cli(*args, "--root", root)
+    assert r.returncode == 1, (args, r.stdout, r.stderr)
+    assert OLD_FORMAT.format(old.resolve()) in r.stderr, r.stderr
+    assert sorted(p.name for p in (root / "todo").iterdir()) == ["good"]
+
+
+def test_old_epic_format_refused_when_the_plan_itself_is_old(root):
+    old = _old_epic(root, "todo")
+    r = cli("path", "--root", root, "old-epic", "plan")
+    assert r.returncode == 1
+    assert OLD_FORMAT.format(old.resolve()) in r.stderr
+
+
+def test_dir_with_neither_plan_nor_readme_is_refused(root):
+    (root / "todo" / "empty").mkdir(parents=True)
+    r = cli("check", "--root", root, "--title", "Fresh")
+    assert r.returncode == 1 and "no plan.md under" in r.stderr
 
 
 # (8, 12) reference doc
 def test_tickets_reference():
     text = (SD / "references" / "tickets.md").read_text()
     for needle in (
-        "docs/plans/<phase>/<epic>/README.md",
+        "docs/plans/<phase>/<plan>/plan.md",
         "todo",
         "in-progress",
         "done",
-        "57",
         "Integration branch",
         "slug freeze",
         "main checkout",
         "discovered",
         "{what, where, why}",
-        "design.md",
-        "record.md",
-        "record-writer",
-        "escalated",
-        "blocked",
+        "implementation-plan.md",
+        "retro.md",
+        "plan-writer",
     ):
         assert needle.lower() in text.lower(), needle
-    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json"):
+    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json", "escalated"):
         assert gone not in text, gone
     assert text.isascii()
 
@@ -522,26 +281,28 @@ def test_tickets_doc_integration_naming_and_collision_rule():
     text = _doc("tickets.md")
     for needle in (
         "Integration branch",
-        "<configdir>/worktrees/<epic>",
+        "<configdir>/worktrees/<plan>",
         "Collision rule",
         "still on disk",
     ):
         assert needle in text, needle
-    for cmd in ("new-epic", "new-task", "rename"):
+    for cmd in ("`new`", "`rename`"):
         assert cmd in text, cmd
+    for gone in ("new-epic", "new-task"):
+        assert gone not in text, gone
     assert "MERGE <task>" not in text
 
 
 def test_worktrees_doc_integration_lifecycle():
     text = _doc("worktrees.md")
     for needle in (
-        "The integration tree",
-        "<configdir>/worktrees/<epic>",
-        "move <epic> in-progress",
+        "The plan tree",
+        "<configdir>/worktrees/<plan>",
+        "move <plan> in-progress",
         "worktree-merger",
-        "Every role on a task",
+        "Every role on the plan",
         "never calls the built-in `EnterWorktree`",
-        "move <epic> done",
+        "move <plan> done",
     ):
         assert needle in text, needle
     for gone in ("<epic>-<task>", "merge.py --base <epic> --keep", "fork_point", "forward merge"):
@@ -550,12 +311,12 @@ def test_worktrees_doc_integration_lifecycle():
 
 def test_tickets_doc_close():
     text = _doc("tickets.md")
-    for needle in ("close <epic> --verify <cmd>", "close.json", "exit 4"):
+    for needle in ("close <plan> --verify <cmd>", "close.json", "exit 4"):
         assert needle in text, needle
     assert "fork_point" not in text
 
 
-# (10) guard and (11) commit helper
+# guard and commit helper
 @pytest.fixture
 def repo(tmp_path):
     r = tmp_path / "repo"
@@ -583,7 +344,7 @@ def test_guard_linked_worktree_refuses(repo, tmp_path):
     git(repo, "worktree", "add", "-q", "-b", "side", str(wt))
     plans = wt / "docs" / "plans"
     plans.mkdir(parents=True)
-    r = cli("new-epic", "--root", plans, "--title", "X")
+    r = cli("new", "--root", plans, "--title", "X")
     assert r.returncode == 1
     assert "ticket.py: run in the main checkout, not a linked worktree" in r.stderr
     assert not (plans / "todo").exists()
@@ -592,17 +353,24 @@ def test_guard_linked_worktree_refuses(repo, tmp_path):
 def test_commit_helper_commits_only_given_paths(t, repo):
     plans = repo / "docs" / "plans"
     (plans / "todo" / "e").mkdir(parents=True)
-    f = plans / "todo" / "e" / "README.md"
+    f = plans / "todo" / "e" / "plan.md"
     f.write_text("hi")
     (repo / "dirty.txt").write_text("unrelated")
     (repo / "seed.txt").write_text("changed")
-    t.commit_ticket_change("e", "new-epic", [f], plans)
+    t.commit_ticket_change("e", "new", [f], plans)
     log = git(repo, "log", "-1", "--format=%s").stdout.strip()
-    assert log == "chore(ticket): e new-epic"
+    assert log == "chore(ticket): e new"
     files = git(repo, "show", "--name-only", "--format=").stdout.split()
-    assert files == ["docs/plans/todo/e/README.md"]
+    assert files == ["docs/plans/todo/e/plan.md"]
     status = git(repo, "status", "--porcelain").stdout
     assert "dirty.txt" in status and "seed.txt" in status
+
+
+def test_commit_helper_refuses_paths_outside_root(t, repo, tmp_path):
+    plans = repo / "docs" / "plans"
+    plans.mkdir(parents=True)
+    with pytest.raises(t.TicketError, match="outside"):
+        t.commit_ticket_change("e", "new", [repo / "seed.txt"], plans)
 
 
 def test_commit_helper_noop_outside_git(t, root):
@@ -611,78 +379,12 @@ def test_commit_helper_noop_outside_git(t, root):
     t.commit_ticket_change("e", "ev", [f], root)
 
 
-def test_cli_commits_in_git_repo(repo):
+def test_new_commits_exactly_plan_md(repo):
     plans = repo / "docs" / "plans"
     (repo / "dirty.txt").write_text("unrelated")
-    assert cli("new-epic", "--root", plans, "--title", "Alpha").returncode == 0
-    assert git(repo, "log", "-1", "--format=%s").stdout.strip() == "chore(ticket): alpha new-epic"
-    r = new_task(plans, "alpha", "First")
+    r = cli("new", "--root", plans, "--title", "Alpha")
     assert r.returncode == 0, r.stderr
-    subject = git(repo, "log", "-1", "--format=%s").stdout.strip()
-    assert subject == "chore(ticket): alpha new-task first"
+    assert git(repo, "log", "-1", "--format=%s").stdout.strip() == "chore(ticket): alpha new"
     files = git(repo, "show", "--name-only", "--format=").stdout.split()
-    assert files == ["docs/plans/todo/alpha/tasks/first.md"]
+    assert files == ["docs/plans/todo/alpha/plan.md"]
     assert "?? dirty.txt" in git(repo, "status", "--porcelain").stdout
-
-
-# (13) tasks: dependency order
-def _full_task(root, epic, title, deps="", *more, points="3"):
-    req, ac = root / "req.txt", root / "ac.txt"
-    req.write_text("Do it.")
-    ac.write_text("- AC1: works [evidence: test:t.py::test_works]")
-    extra = ["--requirement-file", req, "--ac-file", ac, *more]
-    if deps:
-        extra += ["--depends-on", deps]
-    r = new_task(root, epic, title, *extra, points=points)
-    assert r.returncode == 0, r.stderr
-    p = Path(r.stdout.strip().splitlines()[-1])
-    text = p.read_text()
-    start, end = text.index("## Steps"), text.index("## Notes")
-    p.write_text(text[:start] + "## Steps\n\n1. test first\n\n" + text[end:])
-    return p
-
-
-def test_tasks_are_in_dependency_order(root):
-    new_epic(root)
-    ep = "cost-and-ticketing"
-    _full_task(root, ep, "Alpha", "mid")
-    _full_task(root, ep, "Beta", "zeta")
-    _full_task(root, ep, "Mid", "zeta")
-    _full_task(root, ep, "Zeta")
-    r = cli("tasks", ep, "--root", root)
-    assert r.returncode == 0, r.stderr
-    out = json.loads(r.stdout)
-    order = [x["id"] for x in out]
-    assert order == ["zeta", "beta", "mid", "alpha"]
-    for i, x in enumerate(out):
-        assert set(x["dependsOn"]) <= set(order[:i]), x["id"]
-        assert not {"owns", "uses", "worktree", "branch", "acsForAudit", "forkPoint"} & set(x)
-        assert x["status"] == "todo" and x["verifiedHead"] == ""
-    only = cli("tasks", ep, "--root", root, "--only", "alpha,zeta")
-    assert [x["id"] for x in json.loads(only.stdout)] == ["zeta", "alpha"]
-    readme = root / "todo" / ep / "README.md"
-    assert "## Time" not in readme.read_text()
-    _full_task(root, ep, "Loop one", "loop-two")
-    _full_task(root, ep, "Loop two", "loop-one")
-    r = cli("tasks", ep, "--root", root)
-    assert r.returncode == 1 and "cycle" in r.stderr and "loop-one" in r.stderr
-
-
-def test_tasks_json_carries_estimates(root):
-    new_epic(root)
-    ep = "cost-and-ticketing"
-    _full_task(root, ep, "Alpha", "", points="2")
-    beta = _full_task(root, ep, "Beta")
-    # a task written before points were required carries no estimate fields
-    text = beta.read_text()
-    for key in ("points", "expected_minutes", "expected_tokens"):
-        text = re.sub(rf"^{key}: .*$", f'{key}: ""', text, count=1, flags=re.M)
-    beta.write_text(text)
-    r = cli("tasks", ep, "--root", root)
-    assert r.returncode == 0, r.stderr
-    by_id = {x["id"]: x for x in json.loads(r.stdout)}
-    minutes, tokens = _calibration().SEED[2]
-    alpha = {k: by_id["alpha"][k] for k in ("points", "expected_minutes", "expected_tokens")}
-    assert alpha == {"points": 2, "expected_minutes": minutes, "expected_tokens": tokens}
-    beta = {k: by_id["beta"][k] for k in ("points", "expected_minutes", "expected_tokens")}
-    assert beta == {"points": None, "expected_minutes": None, "expected_tokens": None}

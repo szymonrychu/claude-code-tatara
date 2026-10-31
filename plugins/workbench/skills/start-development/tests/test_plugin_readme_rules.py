@@ -8,7 +8,6 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[5]
 README = REPO / "plugins" / "workbench" / "README.md"
 AGENTS_MD = REPO / "scripts" / "harness" / "agents_md.py"
-TICKET = REPO / "plugins/workbench/skills/start-development/scripts/ticket.py"
 
 
 def rule_files():
@@ -24,34 +23,45 @@ def test_readme_lists_every_rules_block_file():
     assert not missing, f"README rules list lacks: {missing}"
 
 
-def spans(prefix):
-    return [s for s in re.findall(r"`([^`\n]+)`", README.read_text()) if prefix in s]
+RETIRED_SUBCOMMANDS = (
+    "new-epic",
+    "new-task",
+    "tasks",
+    "task",
+    "amend",
+    "questions",
+    "lint",
+    "stage",
+    "review",
+    "actuals",
+    "deltas",
+    "retro",
+    "roadmap",
+    "index",
+    "existing",
+)
 
 
-def required_flags(sub):
-    out = subprocess.run(
-        [sys.executable, str(TICKET), sub, "--help"], capture_output=True, text=True, check=True
-    ).stdout
-    usage = out.split("\n\n", 1)[0]
-    return re.findall(r"--[a-z-]+", re.sub(r"\[[^\]]*\]", "", usage))
-
-
-def test_readme_ticket_commands_match_tool():
-    done = [s for s in spans("ticket.py task ") if "--status done" in s]
-    new_task = spans("ticket.py new-task")
-    assert done and new_task
-    assert [s for s in done if "--points-actual" not in s] == []
-    required = required_flags("new-task")
-    assert "--points" in required and "--epic" in required
-    for span in new_task:
-        assert [f for f in required if f not in span] == [], span
-        after = span.split("new-task", 1)[1].split()
-        assert after and after[0].startswith("--"), f"positional after new-task: {span}"
-
-
-def test_readme_names_new_subcommands():
+def test_readme_names_every_ticket_subcommand_and_no_retired_one():
     readme = README.read_text()
-    missing = [
-        c for c in ("retro", "deltas", "actuals", "migrate") if f"`ticket.py {c}" not in readme
-    ]
+    ticket = REPO / "plugins/workbench/skills/start-development/scripts/ticket.py"
+    out = subprocess.run(
+        [sys.executable, str(ticket), "--help"], capture_output=True, text=True, check=True
+    ).stdout
+    real = re.search(r"\{([a-z,-]+)\}", out).group(1).split(",")
+    missing = [c for c in real if f"`ticket.py {c}" not in readme]
     assert not missing, f"README lacks ticket.py subcommands: {missing}"
+    named = [c for c in RETIRED_SUBCOMMANDS if f"`ticket.py {c}" in readme]
+    assert not named, f"README names retired subcommands: {named}"
+
+
+def test_housekeeping_rule_one_names_the_plan_writers():
+    rule = (REPO / "plugins/workbench/rules/housekeeping.md").read_text()
+    flat = " ".join(rule.split())
+    for needle in (
+        "plan.md and implementation-plan.md are written by the plan-writer",
+        "retro.md by the reviewer",
+        "dispatching",
+    ):
+        assert needle in flat, needle
+    assert "design.md" not in flat and "record.md" not in flat

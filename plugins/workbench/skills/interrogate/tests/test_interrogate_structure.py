@@ -4,6 +4,7 @@ Ported from pstack's interrogate. It replaces a review->fix loop for contested
 designs and high-risk diffs: one panel, one verdict, nothing auto-applied.
 """
 
+import re
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
@@ -65,15 +66,17 @@ def _sd_section(heading):
 
 
 def test_start_development_routes_to_interrogate():
-    phase4 = _sd_section("## Phase 4 - Execute")
-    assert "escalated" in phase4
-    assert "workbench:interrogate" in phase4, (
-        "an escalated task should get one panel verdict, not another fix round"
+    phase2 = _sd_section("## Phase 2 - Plan")
+    assert "workbench:interrogate" in phase2 and "high-risk" in phase2
+    plan_run = " ".join((ROOT / "skills" / "plan-run" / "SKILL.md").read_text().split())
+    assert "Open findings after the cap" in plan_run
+    assert "`workbench:interrogate` once" in plan_run, (
+        "findings open after the fix rounds should get one panel verdict, not another round"
     )
 
 
 def test_start_development_classifies_questions_before_asking():
-    phase2 = _sd_section("## Phase 2 - Design doc")
+    phase2 = _sd_section("## Phase 2 - Plan")
     assert "Ask the user only what no probe can answer" in phase2
     assert "probe" in phase2 and "preference" in phase2
 
@@ -82,3 +85,14 @@ def test_interrogate_runs_before_the_gate_when_contested():
     """With one gate, a contested design gets its panel before the human sees it."""
     for path in (SKILL, START_DEVELOPMENT):
         assert "before the gate" in path.read_text(), f"{path} does not say 'before the gate'"
+
+
+def test_interrogate_runs_after_plan_run_leaves_findings_open():
+    text = " ".join(SKILL.read_text().split())
+    assert "`plan-run`" in text
+    assert "two fix rounds" in text
+    assert "findings open" in text
+    assert "high-risk plan" in text
+    assert "before the gate" in text
+    assert "`panel` tier" not in text
+    assert not re.search(r"\bepics?\b|epic-run|escalated", text, re.I)

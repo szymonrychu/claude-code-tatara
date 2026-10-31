@@ -1,10 +1,10 @@
-"""Tests for the slug collision guard: <epic>-<task> cannot be split, so no two names may clash."""
+"""Tests for the slug collision guard and rename: a plan's slug is its branch and tree name."""
 
 import subprocess
 import sys
 
 import pytest
-from ticket_repo_helpers import SCRIPT, git, init_repo
+from ticket_repo_helpers import SCRIPT, git, init_repo, last_subject, meta
 
 sys.path.insert(0, str(SCRIPT.parent))
 sys.path.insert(0, str(SCRIPT.parents[3] / "scripts" / "lib"))
@@ -15,9 +15,6 @@ def cli(*args, cwd=None):
     return subprocess.run(
         [sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, text=True, cwd=cwd
     )
-
-
-MSG = "ticket.py: epic slug foo-bar collides with the branch of task bar in epic foo"
 
 
 @pytest.fixture
@@ -31,120 +28,110 @@ def plans(repo):
     return repo / "docs" / "plans"
 
 
-def new_epic(repo, title, *extra):
-    return cli("new-epic", "--root", plans(repo), "--title", title, *extra, cwd=repo)
+def new(repo, title, *extra):
+    return cli("new", "--root", plans(repo), "--title", title, *extra, cwd=repo)
 
 
-def mk_epic(repo, title):
-    r = new_epic(repo, title, "--force")
+def mk(repo, title):
+    r = new(repo, title, "--force")
     assert r.returncode == 0, r.stderr
 
 
-def new_task(repo, epic, title, *extra):
-    return cli(
-        "new-task", "--root", plans(repo), "--epic", epic, "--title", title,
-        "--repo", "p", "--value", "v", "--files", "a.py", "--verify", "true",
-        "--points", "3", *extra,
-        cwd=repo,
-    )  # fmt: skip
+def rename(repo, plan, title):
+    return cli("rename", "--root", plans(repo), plan, title, cwd=repo)
 
 
 def head(repo):
     return git(repo, "rev-parse", "HEAD").stdout.strip()
 
 
-def test_new_epic_refuses_slug_equal_to_task_branch(repo):
-    mk_epic(repo, "foo")
-    assert new_task(repo, "foo", "bar").returncode == 0
-    before = head(repo)
-    r = new_epic(repo, "foo bar")
-    assert r.returncode == 1
-    assert MSG in r.stderr
-    assert not (plans(repo) / "todo" / "foo-bar").exists()
-    assert head(repo) == before
-
-
-def test_new_task_refuses_name_equal_to_epic_slug(repo):
-    mk_epic(repo, "foo")
-    mk_epic(repo, "foo bar")
-    before = head(repo)
-    r = new_task(repo, "foo", "bar")
-    assert r.returncode == 1
-    assert "foo-bar" in r.stderr and "epic" in r.stderr
-    assert not (plans(repo) / "todo" / "foo" / "tasks" / "bar.md").exists()
-    assert head(repo) == before
-
-
-def test_new_task_refuses_name_equal_to_other_epic_task(repo):
-    mk_epic(repo, "foo")
-    mk_epic(repo, "foo bar")
-    assert new_task(repo, "foo-bar", "baz").returncode == 0
-    r = new_task(repo, "foo", "bar baz")
-    assert r.returncode == 1
-    assert "foo-bar-baz" in r.stderr and "task baz in epic foo-bar" in r.stderr
-    assert not (plans(repo) / "todo" / "foo" / "tasks" / "bar-baz.md").exists()
-
-
-def test_force_does_not_override_branch_collision(repo):
-    mk_epic(repo, "foo")
-    assert new_task(repo, "foo", "bar").returncode == 0
-    r = new_epic(repo, "foo bar", "--force")
-    assert r.returncode == 1
-    assert "collides" in r.stderr
-    assert not (plans(repo) / "todo" / "foo-bar").exists()
-
-
-def test_rename_refuses_colliding_slug(repo):
-    mk_epic(repo, "foo")
-    assert new_task(repo, "foo", "bar").returncode == 0
-    mk_epic(repo, "other")
-    r = cli("rename", "--root", plans(repo), "other", "foo bar", cwd=repo)
-    assert r.returncode == 1
-    assert "foo-bar" in r.stderr and "collides" in r.stderr
-    assert (plans(repo) / "todo" / "other").is_dir()
-    # a rename whose task branches would clash is refused too
-    mk_epic(repo, "zed")
-    assert new_task(repo, "foo", "bar baz").returncode == 0
-    assert new_task(repo, "zed", "baz").returncode == 0
-    r = cli("rename", "--root", plans(repo), "zed", "foo bar", cwd=repo)
-    assert r.returncode == 1 and "foo-bar-baz" in r.stderr
-    assert (plans(repo) / "todo" / "zed").is_dir()
-
-
-def test_check_title_reports_branch_collision(repo):
-    mk_epic(repo, "foo")
-    assert new_task(repo, "foo", "bar").returncode == 0
-    r = cli("check", "--root", plans(repo), "--title", "foo bar", cwd=repo)
-    assert r.returncode == 1
-    assert MSG in r.stderr
-
-
-def test_refuses_name_of_legacy_tree_or_branch_on_disk(repo, tmp_path):
-    mk_epic(repo, "foo")
-    before = head(repo)
-    # a leftover branch named like a new epic
+def test_new_refuses_slug_of_an_existing_branch_naming_it(repo):
     git(repo, "branch", "taken")
-    r = new_epic(repo, "taken", "--force")
-    assert r.returncode == 1 and "branch taken" in r.stderr
-    # a leftover tree directory named like a new task branch
-    ws = workbench.worktrees_dir(repo)
-    (ws / "foo-tree").mkdir(parents=True)
-    r = new_task(repo, "foo", "tree")
-    assert r.returncode == 1 and "foo-tree" in r.stderr
-    # a legacy double-hyphen tree and branch with no ticket
-    (ws / "foo--old").mkdir()
-    r = new_task(repo, "foo", "old")
-    assert r.returncode == 1 and "foo--old" in r.stderr
-    git(repo, "branch", "foo--gone")
-    r = new_task(repo, "foo", "gone")
-    assert r.returncode == 1 and "foo--gone" in r.stderr
-    assert not (plans(repo) / "todo" / "foo" / "tasks" / "old.md").exists()
-    assert not (plans(repo) / "todo" / "foo" / "tasks" / "gone.md").exists()
+    before = head(repo)
+    r = new(repo, "taken", "--force")
+    assert r.returncode == 1
+    assert "plan slug taken collides with existing branch taken" in r.stderr
     assert not (plans(repo) / "todo" / "taken").exists()
     assert head(repo) == before
 
 
+def test_new_refuses_slug_of_an_existing_tree_naming_it(repo):
+    (workbench.worktrees_dir(repo) / "leftover").mkdir(parents=True)
+    r = new(repo, "leftover", "--force")
+    assert r.returncode == 1
+    assert "plan slug leftover collides with existing tree leftover" in r.stderr
+    assert not (plans(repo) / "todo" / "leftover").exists()
+
+
+def test_new_refuses_slug_of_a_component_branch(tmp_path):
+    wb = init_repo(tmp_path / "wb")
+    (wb / ".gitmodules").write_text("")
+    comp = init_repo(wb / "code" / "svc")
+    git(comp, "branch", "busy")
+    (wb / "docs" / "plans").mkdir(parents=True)
+    r = cli("new", "--root", wb / "docs" / "plans", "--title", "busy", cwd=wb)
+    assert r.returncode == 1 and "existing branch busy" in r.stderr
+
+
+def test_check_title_reports_branch_collision(repo):
+    git(repo, "branch", "foo-bar")
+    r = cli("check", "--root", plans(repo), "--title", "foo bar", cwd=repo)
+    assert r.returncode == 1
+    assert "ticket.py: plan slug foo-bar collides with existing branch foo-bar" in r.stderr
+
+
 def test_unrelated_names_still_create(repo):
-    mk_epic(repo, "foo")
-    assert new_task(repo, "foo", "bar").returncode == 0
-    mk_epic(repo, "foo baz")
+    git(repo, "branch", "foo")
+    mk(repo, "foo bar")
+    assert (plans(repo) / "todo" / "foo-bar" / "plan.md").is_file()
+
+
+def test_rename_in_todo_moves_dir_title_and_heading(repo):
+    mk(repo, "Old name")
+    r = rename(repo, "old-name", "New name")
+    assert r.returncode == 0, r.stderr
+    d = plans(repo) / "todo" / "new-name"
+    assert r.stdout.strip() == str(d)
+    assert not (plans(repo) / "todo" / "old-name").exists()
+    p = d / "plan.md"
+    assert meta(p)["title"] == "New name"
+    assert "\n# New name\n" in p.read_text() and "# Old name" not in p.read_text()
+    assert last_subject(repo) == "chore(ticket): new-name rename"
+    assert git(repo, "status", "--porcelain").stdout == ""
+
+
+def test_rename_same_slug_new_title_keeps_the_dir(repo):
+    mk(repo, "Alpha")
+    r = rename(repo, "alpha", "ALPHA")
+    assert r.returncode == 0, r.stderr
+    assert meta(plans(repo) / "todo" / "alpha" / "plan.md")["title"] == "ALPHA"
+
+
+def test_rename_same_title_is_a_no_op(repo):
+    mk(repo, "Alpha")
+    before = head(repo)
+    r = rename(repo, "alpha", "Alpha")
+    assert r.returncode == 0 and head(repo) == before
+
+
+def test_rename_refuses_colliding_slug(repo):
+    mk(repo, "foo bar")
+    mk(repo, "other")
+    r = rename(repo, "other", "foo bar")
+    assert r.returncode == 1
+    assert "plan slug 'foo-bar' already exists in todo" in r.stderr
+    assert (plans(repo) / "todo" / "other").is_dir()
+    git(repo, "branch", "zed")
+    r = rename(repo, "other", "zed")
+    assert r.returncode == 1 and "collides with existing branch zed" in r.stderr
+    assert (plans(repo) / "todo" / "other").is_dir()
+
+
+@pytest.mark.parametrize("phase", ["in-progress", "done"])
+def test_rename_frozen_after_todo(repo, phase):
+    mk(repo, "Alpha")
+    (plans(repo) / phase).mkdir()
+    (plans(repo) / "todo" / "alpha").rename(plans(repo) / phase / "alpha")
+    r = rename(repo, "alpha", "Beta")
+    assert r.returncode == 1
+    assert f"plan 'alpha' is in {phase}; its slug froze when it left todo" in r.stderr

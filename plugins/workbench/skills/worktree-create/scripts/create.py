@@ -174,30 +174,30 @@ def _ref_resolves(repo: Path, ref: str) -> bool:
     )
 
 
-def integration(epic: str, base: str = "main", repo: str = None, start: Path = None) -> dict:
-    """Create (or reuse) the epic's integration worktree, named and branched <epic>."""
+def integration(plan: str, base: str = "main", repo: str = None, start: Path = None) -> dict:
+    """Create (or reuse) the plan's worktree, named and branched <plan>."""
     root = workbench_root(start)
     src = root / "code" / repo if repo else root
     if not (src / ".git").exists():
         raise WorktreeError(f"not a git checkout: {src}")
-    dest = worktrees_dir(root) / epic
+    dest = worktrees_dir(root) / plan
     if repo:
         dest = dest / repo
-    info = {"name": epic, "path": str(dest), "branch": epic, "base": base, "notes": []}
+    info = {"name": plan, "path": str(dest), "branch": plan, "base": base, "notes": []}
     if dest.exists() or dest.is_symlink():
-        if _linked(src).get(dest.resolve()) == epic:
+        if _linked(src).get(dest.resolve()) == plan:
             return {**info, "verb": "reused"}
         raise WorktreeError(
-            f"{dest} exists and is not a worktree of {src} on branch {epic!r}; "
+            f"{dest} exists and is not a worktree of {src} on branch {plan!r}; "
             "move it aside or remove it, then claim again."
         )
     dest.parent.mkdir(parents=True, exist_ok=True)
-    if branch_exists(src, epic):
-        cmd = ["git", "worktree", "add", str(dest), epic]
+    if branch_exists(src, plan):
+        cmd = ["git", "worktree", "add", str(dest), plan]
     else:
         origin = f"origin/{base}"
         fork = origin if repo and _ref_resolves(src, origin) else base
-        cmd = ["git", "worktree", "add", "-b", epic, str(dest), fork]
+        cmd = ["git", "worktree", "add", "-b", plan, str(dest), fork]
     r = run(cmd, cwd=src, check=False)
     if r.returncode != 0:
         raise WorktreeError(f"git worktree add failed: {r.stderr.strip()}")
@@ -212,7 +212,7 @@ def main(argv=None) -> int:
     ap.add_argument(
         "--integration",
         action="store_true",
-        help="create the epic integration tree: --name is the epic slug, branch <epic>",
+        help="create the plan tree: --name is the plan slug, branch <plan>",
     )
     ap.add_argument("--list", action="store_true", help="list names already in use and exit")
     args = ap.parse_args(argv)

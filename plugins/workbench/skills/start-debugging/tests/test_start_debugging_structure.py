@@ -44,7 +44,6 @@ PHRASES = [
     "watch it fail",
     "pristine",
     "revert the fix",
-    "lean path",
     "start-development",
     "grep",
     "doc_path.sh record",
@@ -141,3 +140,12 @@ def test_grafana_points_here():
 def test_files_are_plain_ascii():
     for f in (SKILL, LOOPS, *([GRAFANA] if GRAFANA.is_file() else [])):
         f.read_text().encode("ascii")
+
+
+def test_fix_goes_through_start_development_with_the_regression_test_as_mvp():
+    text = " ".join(SKILL.read_text().split())
+    assert "lean path" not in text
+    assert "`start-development`" in text
+    assert "MVP rung" in text
+    assert "regression test" in text
+    assert not re.search(r"\bepics?\b", text, re.I)

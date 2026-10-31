@@ -19,15 +19,16 @@ def section(path: Path, heading: str) -> str:
     return re.sub(r"\s+", " ", rest[: nxt.start()] if nxt else rest)
 
 
-def test_phase_five_runs_interrogate_for_a_high_risk_diff():
-    sec = section(SD_SKILL, "Phase 5 - Epic review")
+def test_phase_two_runs_interrogate_for_a_high_risk_plan():
+    sec = section(SD_SKILL, "Phase 2 - Plan")
     assert "workbench:interrogate" in sec and "high-risk" in sec
 
 
-def test_phase_five_says_a_fail_verdict_goes_back_to_build():
-    sec = section(SD_SKILL, "Phase 5 - Epic review")
-    assert "--verdict fail" in sec
-    assert "--verdict pass" in sec
+def test_phase_four_names_the_whole_diff_review_and_fix_rounds():
+    sec = section(SD_SKILL, "Phase 4 - Run")
+    for term in ("workbench:reviewer", "whole diff", "under-delivery", "over-delivery"):
+        assert term in sec, term
+    assert "at most two fix rounds" in sec
 
 
 def test_start_review_step_four_defaults_to_single():
@@ -44,19 +45,20 @@ def test_start_review_step_four_defaults_to_single():
     assert "opus when any reviewed task ran on opus" not in REVIEW_SKILL.read_text()
 
 
-def test_interrogate_when_to_use_names_panel_tier_and_epic_review():
+def test_interrogate_when_to_use_names_open_findings_after_plan_run():
     sec = section(INTERROGATE_SKILL, "When to use it")
-    assert "`panel` tier" in sec
-    assert "epic review" in sec
+    assert "`plan-run`" in sec
+    assert "findings open" in sec
 
 
 def test_scope_section_names_undelivered_as_a_finding():
     sec = section(NON_NEGOTIABLES, "Scope is not negotiable")
     for term in (
-        "acceptance condition",
+        "agreed rung",
         "`undelivered`",
         "is a finding",
-        "new task in the same epic",
+        "over-delivery",
+        "recommended, never built",
     ):
         assert term in sec, term
 
@@ -66,12 +68,12 @@ def test_start_development_never_says_deferred():
         assert "deferred" not in p.read_text().lower(), p.name
 
 
-def test_discovered_becomes_a_task_in_the_same_epic():
+def test_discovered_is_recommended_never_built():
     for p in (SD_SKILL, NON_NEGOTIABLES):
         text = " ".join(p.read_text().split())
-        assert "new task in the same epic" in text, p.name
+        assert "recommended, never built" in text, p.name
+        assert "new task" not in text
         assert "todo task" not in text
-        assert "which become tasks" not in text
 
 
 def test_skill_has_no_offer_or_parking_wording():
@@ -92,7 +94,7 @@ NEW_AGENTS = (
     "research-prior-art-scout",
     "research-paper-scout",
     "research-reviewer",
-    "planner",
+    "plan-writer",
 )
 
 
@@ -122,17 +124,19 @@ def test_readme_agents_table_matches_files():
 def test_readme_lists_ticket_tools():
     readme = (ROOT / "README.md").read_text()
     for cmd in (
-        "tasks",
-        "task",
-        "amend",
-        "questions",
-        "roadmap",
+        "new",
+        "check",
+        "path",
+        "rename",
+        "move",
         "close",
         "worktrees --refresh",
-        "reap --epic",
+        "reap --plan",
+        "migrate",
     ):
         assert f"`ticket.py {cmd}" in readme, cmd
-    for gone in ("rule", "args", "continue", "contract", "graph --todo", "facts", "decide"):
+    retired = ("rule", "args", "continue", "contract", "graph --todo", "facts", "decide", "tasks")
+    for gone in retired:
         assert f"`ticket.py {gone}" not in readme, gone
     for word in (
         ".claude/workbench.json",

@@ -39,7 +39,7 @@ def test_gitignore_base_entries():
     for e in [
         "__pycache__/", "*.pyc", ".pytest_cache/", ".ruff_cache/", ".venv/",
         "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/", ".scratchpad/",
-        ".worktrees/", "**/.claude/settings.local.json", "docs/plans/index.json",
+        ".worktrees/", "**/.claude/settings.local.json",
         "docs/plans/facts.md", "docs/research/", "docs/handoffs/",
     ]:  # fmt: skip
         assert e in entries, e

@@ -1,6 +1,6 @@
 ---
 name: start-review
-description: Review a branch, diff, MR or PR against its intent before merge. Phase 5 of start-development and any "review this" request. Pins the scope, fixes the intent, runs the repo's tests and lint independently, dispatches one reviewer covering spec and quality (--single, the default and only path) that reads one shared checklist, validates every finding against the code, and returns a verdict (Act on, Consider, Noted, Dismissed) without applying anything. Read-only.
+description: Review a branch, diff, MR or PR against its intent before merge. The standalone review for any "review this" request; the reviewer in plan-run follows the same checklist. Pins the scope, fixes the intent, runs the repo's tests and lint independently, dispatches one reviewer covering spec and quality (--single, the default and only path) that reads one shared checklist, validates every finding against the code, and returns a verdict (Act on, Consider, Noted, Dismissed) without applying anything. Read-only.
 ---
 
 # start-review
@@ -12,7 +12,7 @@ reviewer never fixes anything.
 
 ## When to use it
 
-- Phase 5 of `workbench:start-development`, before merge.
+- Standalone, before merge. The `workbench:reviewer` that `plan-run` dispatches reviews a plan's whole diff with the same checklist.
 - Any request to review a branch, diff, MR or PR: "review this", "is this ready".
 - A high-risk diff (authz, secrets, concurrency, a rules engine, a data
   migration) or a contested design: run `workbench:interrogate` instead of
@@ -36,7 +36,7 @@ Done when: base and head are two SHAs and the diffstat is non-empty.
 
 ## 2. Intent
 
-Take the intent from, in order: the plan task requirements or the design doc
+Take the intent from, in order: the plan's implementation-plan.md and plan.md
 when they exist; else the MR/PR description; else one paragraph you write and
 the user confirms. Quote requirements verbatim. A review without intent is not
 run: ask first, since nothing can be judged missing, extra or wrong without it.
@@ -109,7 +109,7 @@ Done when: every finding is in exactly one bucket.
 ## After the verdict
 
 Findings are never applied by the reviewer. Act on items go to an implementer
-as a sharpened requirement: the implementer in the epic's integration tree. Consider items that change
+as a sharpened requirement: the implementer in the plan tree. Consider items that change
 scope or product behaviour go to the user. Everything else is recorded and
 closed. Do not re-review the same change unless it is materially rewritten.
 

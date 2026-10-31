@@ -1,302 +1,492 @@
-"""ticket.py migrate: map old-scheme task files to the 18 keys of templates/task.md.
+"""ticket.py migrate: convert old epic dirs to plans, keeping each in its phase folder.
 
-`migrate <epic>` or `migrate --all` (every epic under todo, in-progress and done) computes each
-task's new frontmatter: the template keys in template order, every other key dropped (the
-legacy estimate, estimate_by, actual, worktree, branch, run, provides, owns, uses,
-process_gaps, acs_for_audit, fork_point and any stray key), the body unchanged.
+An old epic dir holds README.md and no plan.md, plus any of design.md, tasks/, RETRO.md,
+record.md, approvals.json, rulings.json and close.json. `migrate <epic>` or `migrate --all`
+writes, per epic:
 
-- `points`: kept when set (an empty expected value filled from calibration.SEED); else from a
-  whole-number legacy `estimate` in minutes (calibration.points_for_minutes, the estimate kept
-  as expected_minutes, the bucket's SEED tokens as expected_tokens); else from a Notes line
-  `Estimate: N points` with SEED expected values; else all three stay empty.
-- Actuals of a task carrying a legacy key: actual_minutes from a whole-number legacy `actual`,
-  else from the task's agent records; tokens and roles only from records covering both impl
-  and review. A one-role match gives nothing from records and prints `partial:`. Legacy
-  actual_roles values are dropped. A task without a legacy key keeps its actuals.
+- plan.md: frontmatter title, repos, created, owner from the README, `rung` "1" in
+  in-progress and done and "" in todo (a todo plan passes the gate before it can be claimed).
+  Project brief and Description become What and why; Goals become one rung, `Rung 1: agreed
+  scope (migrated)`; Non-goals stay; design.md Decisions, Open questions, Research (plus
+  Research inputs) and Irreversible operations map to their sections; every other README or
+  design.md section, and approvals.json as a list, is kept under `## Migrated notes` as
+  `### <file>: <heading>`. README `## Time` is dropped (estimates are retired).
+- implementation-plan.md, when the epic has tasks: one chunk (opus when any task was opus,
+  else sonnet) of steps in dependency order, each with its status, files, verify, verified
+  head and every task body section one level deeper; rulings.json as `## Rulings (migrated)`.
+- retro.md, when RETRO.md or record.md existed: the Retro table split into What went well and
+  What went wrong or could improve, Improvements as Recommendations, the generated block
+  dropped, record.md under `## Delivery record (migrated)`.
 
-Records come from the epic's `.logs/agents` (agent_usage.records_by_task), backfilled once
-per epic from the harness transcripts with the names map, so unmarked transcripts whose
-first prompt names one task count too. Every mapped task runs through `_number_problems`
-first: any problem refuses the run (exit 1, every problem on stderr, nothing else printed).
-`--dry-run` then prints, per task it would change, each changed key with its old and new
-value and the dropped keys, each `partial:` line and, per changed done epic, the RETRO.md
-generated block computed from the new values. It changes no tracked file.
-
-Without `--dry-run` (main checkout only) it then writes, per changed epic, the task files and,
-for a done epic, RETRO.md (created from templates/retro.md when absent, else only its generated
-block replaced), its rows read from the new values, and commits exactly those files as
-`chore(ticket): <epic> migrate`; an epic with nothing to change gets no commit, so a second run
-prints `migrate: nothing to change`. It prints `<epic>: <n> tasks migrated[, RETRO.md]` per
-changed epic, then `retro-writer: <epic>` for each done epic whose RETRO.md Retro section is still
-the template's. A done epic with no RETRO.md counts as changed even when no task file
-changes. A done epic is history: this is the one writer of its task files.
+Every epic is parsed before anything is written; any problem exits 1 listing all of them.
+`--dry-run` writes nothing, runs in any checkout and prints what it would write and remove.
+A real run (main checkout only) `git rm`s the old files, keeps close.json and commits each
+plan alone as `chore(ticket): <plan> migrate`. Plan dirs holding plan.md are never touched.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
-import agent_usage  # scripts/lib, on sys.path through ticket.py
-import calibration
+OLD_FILES = (
+    "README.md",
+    "design.md",
+    "tasks",
+    "RETRO.md",
+    "record.md",
+    "approvals.json",
+    "rulings.json",
+)
+README_MAPPED = ("Project brief", "Description", "Goals", "Non-goals")
+README_DROPPED = ("Time",)
+DESIGN_MAPPED = (
+    "Decisions",
+    "Open questions",
+    "Research",
+    "Research inputs",
+    "Irreversible operations in scope",
+    "Irreversible operations",
+)
+RETRO_GENERATED = re.compile(
+    r"<!-- retro:generated:begin -->.*?<!-- retro:generated:end -->\n?", re.S
+)
+RETRO_MAPPED = ("Retro", "Improvements")
+NOT_RECORDED = "none recorded in the epic format"
+FENCE = re.compile(r"^\s*(```|~~~)")
 
-from ticket_cmds import retro
 
-WHOLE = re.compile(r"[0-9]+")
-BARE_NAME = re.compile(r"[A-Za-z0-9._/-]+")
-ACTUALS = ("actual_minutes", "actual_tokens", "actual_roles", "actual_role_tokens")
-NAME_KEYS = ("worktree", "branch")
+class Converted(NamedTuple):
+    name: str
+    dir: Path
+    files: dict[str, str]  # file name -> text
+    remove: list[str]  # old names present, "tasks/" for the dir
+    steps: int
 
 
 def register(sub, t) -> None:
-    sp = sub.add_parser("migrate", help="map old-scheme task files to the template keys")
+    sp = sub.add_parser("migrate", help="convert old epic dirs to plan.md and friends")
     sp.set_defaults(fn=lambda a: run(a, t))
     sp.add_argument("epic", nargs="?")
-    sp.add_argument("--all", action="store_true", help="every epic under todo, in-progress, done")
+    sp.add_argument("--all", action="store_true", help="every epic in todo, in-progress, done")
     sp.add_argument("--dry-run", action="store_true", help="print the plan, write nothing")
-    sp.add_argument(
-        "--transcripts",
-        help="harness subagent transcripts to backfill records from "
-        "(default: the project's dir under the harness home)",
-    )
-    sp.add_argument(
-        "--logs", help="the logs dir holding agents/ (default: the main checkout's .logs)"
-    )
 
 
-def _whole(value) -> int | None:
-    return int(value) if isinstance(value, str) and WHOLE.fullmatch(value) else None
+# ---------------------------------------------------------------- markdown helpers
 
 
-def _template_meta(t) -> dict:
-    return t._template("task.md").meta
+def split_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
+    """(preamble, [(H2 heading, text)]) of a markdown body; `## ` inside code fences is
+    content. Texts are stripped of surrounding blank lines."""
+    pre: list[str] = []
+    out: list[tuple[str, list[str]]] = []
+    fenced = False
+    for line in text.split("\n"):
+        if FENCE.match(line):
+            fenced = not fenced
+        m = None if fenced else re.match(r"^## (.+?)\s*$", line)
+        if m:
+            out.append((m.group(1), []))
+        elif out:
+            out[-1][1].append(line)
+        else:
+            pre.append(line)
+    return "\n".join(pre).strip("\n"), [(h, "\n".join(ls).strip("\n")) for h, ls in out]
 
 
-def _is_legacy(t, meta: dict) -> bool:
-    return any(key not in _template_meta(t) for key in meta)
+def shift(text: str, levels: int) -> str:
+    """Every markdown heading outside code fences `levels` deeper."""
+    out, fenced = [], False
+    for line in text.split("\n"):
+        if FENCE.match(line):
+            fenced = not fenced
+        if not fenced and re.match(r"^#{1,6} ", line):
+            line = "#" * levels + line
+        out.append(line)
+    return "\n".join(out)
 
 
-def _roles(records: list[dict]) -> set[str]:
-    return {agent_usage.role_for(r.get("role"), r.get("agentType")) for r in records} - {""}
+def drop_h1(text: str) -> str:
+    return re.sub(r"\A\s*# [^\n]*\n?", "", text).strip("\n")
 
 
-def _partial(records: list[dict]) -> str | None:
-    """The roles a one-role record set covers (', ' joined), None for none or a full set."""
-    roles = _roles(records)
-    if not records or {"impl", "review"} <= roles:
-        return None
-    return ", ".join(sorted(roles)) or "no role"
+def number_goals(text: str) -> str:
+    """Top-level `- ` bullets become `- 1.<m>: ` rung items; other lines stay."""
+    out, k = [], 0
+    for line in text.split("\n"):
+        if line.startswith("- "):
+            k += 1
+            line = f"- 1.{k}: {line[2:]}"
+        out.append(line)
+    return "\n".join(out)
 
 
-def _seed(out: dict, points: int | None, only_empty: bool) -> None:
-    """expected_minutes and expected_tokens from calibration.SEED[points]; nothing for a
-    value off the scale (`_number_problems` then refuses the points)."""
-    if points not in calibration.SEED:
-        return
-    minutes, tokens = calibration.SEED[points]
-    for key, seed in (("expected_minutes", minutes), ("expected_tokens", tokens)):
-        if not only_empty or out[key] in (None, ""):
-            out[key] = str(seed)
+def _value(v) -> str:
+    if isinstance(v, list):
+        return ", ".join(_value(x) for x in v)
+    if isinstance(v, str):
+        return v
+    return json.dumps(v)
 
 
-def migrate_meta(t, meta: dict, body: str, records: list[dict]) -> dict:
-    """The new frontmatter of one task, in template order (pure; no I/O)."""
-    template = _template_meta(t)
-    out = {key: meta.get(key, default) for key, default in template.items()}
-    if out["points"] not in (None, ""):
-        _seed(out, _whole(out["points"]), only_empty=True)
-    else:
-        minutes = _whole(meta.get("estimate"))
-        notes = retro.NOTES_POINTS.search(t._sections(body).get("Notes", ""))
-        if minutes is not None:
-            points = calibration.points_for_minutes(minutes)
-            out.update(points=str(points), expected_minutes=str(minutes))
-            out["expected_tokens"] = str(calibration.SEED[points][1])
-        elif notes:
-            out["points"] = notes.group(1)
-            _seed(out, int(notes.group(1)), only_empty=False)
-    if _is_legacy(t, meta):
-        out.update(dict.fromkeys(ACTUALS, ""))
-        if records and _partial(records) is None:
-            out.update(t.record_actuals(records))
-        actual = _whole(meta.get("actual"))
-        if actual is not None:
-            out["actual_minutes"] = str(actual)
+def approval_lines(items: list) -> str:
+    out = []
+    for it in items:
+        if isinstance(it, dict) and "id" in it and "text" in it:
+            extra = "".join(
+                f" [{k}: {_value(v)}]" for k, v in it.items() if k not in ("id", "text")
+            )
+            out.append(f"- {it['id']}: {it['text']}{extra}")
+        else:
+            out.append(f"- {json.dumps(it)}")
+    return "\n".join(out)
+
+
+def ruling_lines(items: list) -> str:
+    out = []
+    for it in items:
+        if isinstance(it, dict) and {"task", "accept", "reason"} <= set(it):
+            at = f", at {it['at']}" if "at" in it else ""
+            rest = {k: v for k, v in it.items() if k not in ("task", "accept", "reason", "at")}
+            extra = "".join(f" [{k}: {_value(v)}]" for k, v in rest.items())
+            out.append(f"- {it['task']}: accept {_value(it['accept'])}{at}: {it['reason']}{extra}")
+        else:
+            out.append(f"- {json.dumps(it)}")
+    return "\n".join(out)
+
+
+def table_cells(row: str) -> list[str]:
+    inner = row.strip()
+    inner = inner[1:] if inner.startswith("|") else inner
+    inner = inner[:-1] if inner.endswith("|") and not inner.endswith("\\|") else inner
+    return [c.strip() for c in re.split(r"(?<!\\)\|", inner)]
+
+
+def dependency_order(deps: dict[str, list[str]], t) -> list[str]:
+    """Task slugs with every dependency first, ties in slug order; a cycle is an error."""
+    left = {k: {d for d in v if d in deps and d != k} for k, v in deps.items()}
+    selfloops = sorted(k for k, v in deps.items() if k in v)
+    out: list[str] = []
+    while left and not selfloops:
+        ready = sorted(k for k, v in left.items() if not v)
+        if not ready:
+            break
+        for k in ready:
+            out.append(k)
+            del left[k]
+        for v in left.values():
+            v.difference_update(ready)
+    if selfloops or left:
+        raise t.TicketError(f"dependency cycle among tasks: {', '.join(selfloops or sorted(left))}")
     return out
 
 
-def _task_name(value, key: str, epic: str, task: str) -> str | None:
-    """A legacy worktree basename or branch that names exactly this task, else None."""
-    if not isinstance(value, str) or not value:
+# ---------------------------------------------------------------- conversion
+
+
+def _load_json(path: Path, problems: list[str]):
+    if not path.is_file():
         return None
-    name = Path(value).name if key == "worktree" else value
-    if not BARE_NAME.fullmatch(name) or epic not in name or task not in name:
+    try:
+        data = json.loads(path.read_text())
+    except ValueError as e:
+        problems.append(f"{path}: not valid JSON: {e}")
         return None
-    return name
+    if not isinstance(data, list):
+        problems.append(f"{path}: expected a JSON list")
+        return None
+    return data
 
 
-def names_map(t, root: Path) -> dict[str, tuple[str, str | None]]:
-    """Every name a transcript may use for a task: `<epic>/tasks/<task>.md`, the
-    ticket_names entries, and each old task's legacy worktree basename and branch when the
-    value is a bare name holding both the epic and the task slug (never HEAD or free text)."""
-    names = dict(t.ticket_names(root))
-    for ticket in t.scan(root):
-        if ticket.kind != "task":
-            continue
-        owner = (ticket.epic, ticket.slug)
-        names.setdefault(f"{ticket.epic}/tasks/{ticket.slug}.md", owner)
-        for key in NAME_KEYS:
-            name = _task_name(ticket.meta.get(key), key, ticket.epic, ticket.slug)
-            if name:
-                names.setdefault(name, owner)
-    return names
+def _plan_md(t, d: Path, phase: str, readme, design: dict, approvals) -> str:
+    m = readme.meta
+    title = str(m.get("title") or d.name)
+    pre, secs = split_sections(drop_h1(readme.body))
+    rs = dict(secs)
+    what = "\n\n".join(x for x in (rs.get("Project brief", ""), rs.get("Description", "")) if x)
+    goals = rs.get("Goals", "")
+    agreed = (
+        "not agreed yet"
+        if phase == "todo"
+        else "Rung 1, migrated from the epic format: the epic's goals were its agreed scope."
+    )
+    research = design.get("Research", "")
+    if design.get("Research inputs"):
+        research = f"{research}\n\n### Research inputs\n\n{design['Research inputs']}".strip()
+    irreversible = design.get("Irreversible operations in scope") or design.get(
+        "Irreversible operations", ""
+    )
+    notes = []
+    if pre:
+        notes.append(("README.md: preamble", pre))
+    notes += [(f"README.md: {h}", x) for h, x in secs if h not in README_MAPPED + README_DROPPED]
+    notes += [(f"design.md: {h}", x) for h, x in design.items() if h not in DESIGN_MAPPED]
+    if approvals is not None:
+        notes.append(("approvals.json", approval_lines(approvals)))
+    design_note = (
+        "Migrated from the epic format; the design sections without a plan.md heading are "
+        "under Migrated notes."
+        if design
+        else NOT_RECORDED
+    )
+    sections = [
+        ("What and why", what or NOT_RECORDED),
+        (
+            "Scope ladder",
+            f"### Rung 1: agreed scope (migrated)\n\n{number_goals(goals) or NOT_RECORDED}",
+        ),
+        ("Agreed scope", agreed),
+        ("Non-goals", rs.get("Non-goals") or NOT_RECORDED),
+        ("Design", design_note),
+        ("Decisions", design.get("Decisions") or NOT_RECORDED),
+        ("Open questions", design.get("Open questions") or "none"),
+        ("Research", research or NOT_RECORDED),
+        ("Irreversible operations", irreversible or "none"),
+        (
+            "Migrated notes",
+            "\n\n".join(f"### {h}\n\n{shift(x, 1)}".rstrip() for h, x in notes) or "none",
+        ),
+    ]
+    meta = {
+        "title": title,
+        "repos": list(m.get("repos") or []),
+        "created": str(m.get("created") or ""),
+        "owner": str(m.get("owner") or ""),
+        "rung": "" if phase == "todo" else "1",
+    }
+    body = f"\n# {title}\n\n" + "".join(f"## {h}\n\n{x.strip()}\n\n" for h, x in sections)
+    return t.dump(t.Doc(meta, body.rstrip("\n") + "\n"))
 
 
-def _epic_dirs(a, t, root: Path) -> list[Path]:
-    if a.epic:
-        return [t.resolve_epic(a.epic, root)]
+def _step(n: int, doc) -> str:
+    m = doc.meta
+    files = list(m.get("files") or []) or list(
+        dict.fromkeys(list(m.get("owns") or []) + list(m.get("uses") or []))
+    )
+    verify = str(m.get("verify") or "")
+    fields = [
+        f"- Status: {m.get('status') or 'unknown'}",
+        "- Files: " + (", ".join(f"`{f}`" for f in files) if files else "none"),
+        f"- Verify: `{verify}`" if verify else "- Verify: none",
+        f"- Verified head: {m.get('verified_head') or 'none'}",
+    ]
+    body = shift(drop_h1(doc.body), 2)
+    title = str(m.get("title") or "")
+    return f"### S{n}: {title}\n\n" + "\n".join(fields) + (f"\n\n{body}" if body else "")
+
+
+def _implementation_md(title: str, phase: str, tasks: list, rulings, close) -> str:
+    model = "opus" if any(str(d.meta.get("model")) == "opus" for d in tasks) else "sonnet"
+    agreed = (
+        "Not agreed yet: a draft migrated from the epic's tasks; the plan-writer revises it "
+        "after the gate."
+        if phase == "todo"
+        else "Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks."
+    )
+    verify = ((close or {}).get("integrationVerify") or {}).get("command", "")
+    sections = [
+        ("Agreed rung", agreed),
+        (
+            "Approach",
+            "Migrated from the epic format: one step per task file, in dependency order, each "
+            "with its status, files, verify, verified head and every body section.",
+        ),
+        (
+            f"Chunk 1: migrated tasks (model: {model})",
+            "\n\n".join(_step(i, d) for i, d in enumerate(tasks, 1)),
+        ),
+        ("Files to delete", NOT_RECORDED),
+        ("Final verify", f"`{verify}`" if verify else NOT_RECORDED),
+        ("After merge", "none"),
+    ]
+    if rulings is not None:
+        sections.append(("Rulings (migrated)", ruling_lines(rulings) or "none"))
+    return (
+        f"# {title} implementation plan\n\n"
+        + "".join(f"## {h}\n\n{x.strip()}\n\n" for h, x in sections).rstrip("\n")
+        + "\n"
+    )
+
+
+def _retro_md(title: str, retro_text: str | None, record_text: str | None) -> str:
+    review = ["Migrated from the epic format."]
+    well: list[str] = []
+    wrong: list[str] = []
+    recs = ""
+    if retro_text is not None:
+        _, secs = split_sections(drop_h1(RETRO_GENERATED.sub("", retro_text)))
+        for h, x in secs:
+            if h == "Retro":
+                rows = [ln for ln in x.split("\n") if ln.strip().startswith("|")]
+                for row in rows[1:]:
+                    if re.fullmatch(r"[\s|:-]*", row):
+                        continue
+                    cells = table_cells(row) + ["", ""]
+                    for cell, bucket in ((cells[0], well), (cells[1], wrong)):
+                        if cell and cell != "...":
+                            bucket.append(f"- {cell}")
+                rest = "\n".join(ln for ln in x.split("\n") if not ln.strip().startswith("|"))
+                if rest.strip():
+                    review.append(f"### RETRO.md: Retro\n\n{shift(rest.strip(), 1)}")
+            elif h == "Improvements":
+                recs = x
+            elif h not in ("Tasks", "Deltas"):
+                review.append(f"### RETRO.md: {h}\n\n{shift(x, 1)}")
+    sections = [
+        ("Review", "\n\n".join(review)),
+        ("What went well", "\n".join(well) or NOT_RECORDED),
+        ("What went wrong or could improve", "\n".join(wrong) or NOT_RECORDED),
+        ("Recommendations", recs or "none"),
+    ]
+    if record_text is not None:
+        sections.append(("Delivery record (migrated)", shift(drop_h1(record_text), 1)))
+    return (
+        f"# {title} retro\n\n"
+        + "".join(f"## {h}\n\n{x.strip()}\n\n" for h, x in sections).rstrip("\n")
+        + "\n"
+    )
+
+
+def convert(t, d: Path, problems: list[str]) -> Converted | None:
+    """One old epic dir to its plan files, in memory; problems are appended, never raised."""
+    before = len(problems)
+    phase = d.parent.name
+    readme = None
+    try:
+        readme = t.read_doc(d / "README.md")
+    except t.TicketError as e:
+        problems.append(str(e))
+    design: dict[str, str] = {}
+    if (d / "design.md").is_file():
+        design = dict(split_sections(drop_h1((d / "design.md").read_text()))[1])
+    tasks = {}
+    for p in sorted((d / "tasks").glob("*.md")) if (d / "tasks").is_dir() else []:
+        try:
+            tasks[p.stem] = t.read_doc(p)
+        except t.TicketError as e:
+            problems.append(str(e))
+    approvals = _load_json(d / "approvals.json", problems)
+    rulings = _load_json(d / "rulings.json", problems)
+    close = None
+    if (d / "close.json").is_file():
+        try:
+            close = json.loads((d / "close.json").read_text())
+        except ValueError as e:
+            problems.append(f"{d / 'close.json'}: not valid JSON: {e}")
+    try:
+        order = dependency_order(
+            {k: list(v.meta.get("depends_on") or []) for k, v in tasks.items()}, t
+        )
+    except t.TicketError as e:
+        problems.append(f"{d}: {e}")
+        order = []
+    if len(problems) > before or readme is None:
+        return None
+    title = str(readme.meta.get("title") or d.name)
+    files = {"plan.md": _plan_md(t, d, phase, readme, design, approvals)}
+    ordered = [tasks[k] for k in order]
+    if ordered:
+        files["implementation-plan.md"] = _implementation_md(
+            title, phase, ordered, rulings, close if isinstance(close, dict) else None
+        )
+    retro = d / "RETRO.md"
+    record = d / "record.md"
+    if retro.is_file() or record.is_file():
+        files["retro.md"] = _retro_md(
+            title,
+            retro.read_text() if retro.is_file() else None,
+            record.read_text() if record.is_file() else None,
+        )
+    remove = sorted(n + ("/" if (d / n).is_dir() else "") for n in OLD_FILES if (d / n).exists())
+    return Converted(d.name, d, files, remove, len(ordered))
+
+
+# ---------------------------------------------------------------- the command
+
+
+def candidates(t, root: Path, epic: str | None, problems: list[str]) -> list[Path]:
+    """Old epic dirs to migrate, phase then slug order."""
+    if epic:
+        d = t.find_plan(epic, root)
+        if d is None:
+            raise t.TicketError(f"unknown epic {epic!r} under {root}")
+        return [] if (d / t.PLAN_FILE).is_file() else [d]
     out = []
     for phase in t.PHASES:
         base = root / phase
-        out += sorted(d for d in base.iterdir() if d.is_dir()) if base.is_dir() else []
+        for d in sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []:
+            if (d / t.PLAN_FILE).is_file():
+                continue
+            if not (d / "README.md").is_file():
+                problems.append(f"{d}: no README.md or plan.md")
+                continue
+            out.append(d)
     return out
 
 
-def _show(value) -> str:
-    return "absent" if value is None else json.dumps(value)
+def _apply(t, c: Converted, root: Path) -> None:
+    in_git = t._in_git(root)
+    old = [c.dir / n.rstrip("/") for n in c.remove]
+    if in_git:
+        r = t._git(c.dir, "rm", "-r", "-q", "--ignore-unmatch", "--", *map(str, old))
+        if r.returncode != 0:
+            raise t.TicketError(f"git rm failed in {c.dir}: {r.stderr.strip()}")
+    for p in old:
+        if p.is_dir():
+            shutil.rmtree(p)
+        elif p.exists():
+            p.unlink()
+    for name, text in c.files.items():
+        (c.dir / name).write_text(text)
+    if in_git:
+        _commit(t, c)
 
 
-def _change_line(label: str, old: dict, new: dict) -> str:
-    parts = [f"{k}: {_show(old.get(k))} -> {_show(v)}" for k, v in new.items() if old.get(k) != v]
-    dropped = sorted(k for k in old if k not in new)
-    if dropped:
-        parts.append("drop: " + ", ".join(dropped))
-    return f"{label}: " + ("; ".join(parts) or "key order")
-
-
-def _plan(a, t, root: Path, epic_dir: Path, names: dict, logs, transcripts) -> dict:
-    """One epic's mapping: the new Doc per task path, the problems, the output lines."""
-    epic = epic_dir.name
-    docs = {path: t._read_doc(path) for path in t._task_files(epic_dir)}
-    legacy = [p.stem for p, doc in docs.items() if _is_legacy(t, doc.meta)]
-    wanting = [
-        p.stem for p, doc in docs.items() if "" in (doc.meta.get(k, "") for k in ACTUALS[:2])
-    ]
-    records = {}
-    if logs is not None and docs:
-        records = agent_usage.records_by_task(
-            epic, logs, transcripts, names=names, tasks=sorted(set(legacy + wanting))
+def _commit(t, c: Converted) -> None:
+    """Commit the plan dir alone. Not a pathspec commit: on a case-insensitive checkout
+    `git commit -- <dir>` refuses retro.md next to the RETRO.md still in HEAD, so the index
+    is checked to hold nothing staged outside the dir instead."""
+    top = Path(t._git(c.dir, "rev-parse", "--show-toplevel").stdout.strip())
+    rel = c.dir.resolve().relative_to(top.resolve()).as_posix() + "/"
+    add = t._git(top, "add", "-A", "--", rel)
+    if add.returncode != 0:
+        raise t.TicketError(f"git add failed: {add.stderr.strip()}")
+    staged = t._git(top, "diff", "--cached", "--name-only").stdout.split("\n")
+    outside = [f for f in staged if f and not f.startswith(rel)]
+    if outside:
+        raise t.TicketError(
+            f"staged changes outside {rel}: {', '.join(outside)}; commit or unstage them first"
         )
-    plan: dict = {"dir": epic_dir, "problems": [], "lines": [], "docs": {}, "all": docs}
-    plan["needs_retro"] = t._phase_of(epic_dir) == "done" and not (epic_dir / retro.FILE).is_file()
-    partials = []
-    for path, doc in docs.items():
-        label = f"{epic}/{path.stem}"
-        found = records.get(path.stem, []) if path.stem in legacy else []
-        new = migrate_meta(t, doc.meta, doc.body, found)
-        plan["problems"] += t._number_problems(new, label)
-        if _partial(found):
-            partials.append(f"partial: {label} ({_partial(found)})")
-        new_doc = t.Doc(new, doc.body)
-        if t.dump(new_doc) != path.read_text():
-            plan["docs"][path] = new_doc
-            plan["lines"].append(_change_line(label, doc.meta, new))
-    plan["lines"] += partials
-    changed = plan["docs"] or plan["needs_retro"]
-    if a.dry_run and changed and t._phase_of(epic_dir) == "done" and not plan["problems"]:
-        plan["lines"] += _retro_lines(a, t, root, epic_dir, {**docs, **plan["docs"]})
-    return plan
-
-
-def _retro_text(a, t, root: Path, epic_dir: Path, docs: dict) -> tuple[Path, str | None, str]:
-    """A done epic's RETRO.md: its path, its current text (None when absent) and the text with
-    the generated block computed from `docs` (the new values), as `ticket.py retro` writes it."""
-    path = epic_dir / retro.FILE
-    generated = retro._generated(retro._rows(a, t, root, epic_dir, backfill=False, docs=docs))
-    if path.is_file():
-        old = path.read_text()
-        return path, old, retro._splice(t, old, generated, path)
-    title = t._read_doc(epic_dir / "README.md").meta.get("title") or epic_dir.name
-    template = _retro_template(t).replace("<Topic>", title, 1)
-    return path, None, retro._splice(t, template, generated, path)
-
-
-def _retro_template(t) -> str:
-    return (t.TEMPLATES / "retro.md").read_text()
-
-
-def _retro_lines(a, t, root: Path, epic_dir: Path, docs: dict) -> list[str]:
-    """The RETRO.md a done epic would get, its rows read from the new values."""
-    path, old, text = _retro_text(a, t, root, epic_dir, docs)
-    if text == old:
-        return []
-    generated = text[text.index(retro.BEGIN) : text.index(retro.END) + len(retro.END)]
-    return [f"retro: {path} ({'create' if old is None else 'update'})", generated]
-
-
-def _needs_retro_writer(t, epic_dir: Path) -> bool:
-    """A done epic whose RETRO.md Retro section is still the template's."""
-    path = epic_dir / retro.FILE
-    if t._phase_of(epic_dir) != "done" or not path.is_file():
-        return False
-    placeholder = t._sections(_retro_template(t)).get("Retro")
-    return t._sections(path.read_text()).get("Retro") == placeholder
-
-
-def _write(a, t, root: Path, plans: list[dict]) -> list[str]:
-    """Compute every epic's RETRO.md first (a broken one refuses before any write), then per
-    changed epic write its task files and RETRO.md and commit exactly them."""
-    writes = []
-    for plan in plans:
-        epic_dir = plan["dir"]
-        if not plan["docs"] and not plan["needs_retro"]:
-            continue
-        retro_md = None
-        if t._phase_of(epic_dir) == "done":
-            path, old, text = _retro_text(a, t, root, epic_dir, {**plan["all"], **plan["docs"]})
-            retro_md = (path, text) if text != old else None
-        writes.append((epic_dir, plan["docs"], retro_md))
-    lines = []
-    for epic_dir, docs, retro_md in writes:
-        paths = list(docs)
-        for path, doc in docs.items():
-            path.write_text(t.dump(doc))
-        if retro_md:
-            retro_md[0].write_text(retro_md[1])
-            paths.append(retro_md[0])
-        t.commit_ticket_change(epic_dir.name, "migrate", paths, root)
-        lines.append(
-            f"{epic_dir.name}: {len(docs)} tasks migrated" + (", RETRO.md" if retro_md else "")
-        )
-    return lines
+    done = t._git(top, "commit", "-q", "-m", f"chore(ticket): {c.name} migrate")
+    if done.returncode != 0:
+        raise t.TicketError(f"git commit failed: {(done.stderr or done.stdout).strip()}")
 
 
 def run(a, t) -> int:
-    if bool(a.epic) == bool(a.all):
-        raise t.TicketError("migrate: name an epic or pass --all, not both")
     root = Path(a.root)
+    if not a.epic and not a.all:
+        raise t.TicketError("migrate needs <epic> or --all")
     if not a.dry_run:
         t.require_main_checkout(root)
-    epic_dirs = _epic_dirs(a, t, root)
-    names = names_map(t, root)
-    logs = Path(a.logs) if a.logs else t.workbench.logs_dir(root)
-    main = t.workbench.main_checkout(root)
-    transcripts = a.transcripts or (main and agent_usage.default_transcripts_dir(main))
-    plans = [_plan(a, t, root, d, names, logs, transcripts) for d in epic_dirs]
-    problems = [p for plan in plans for p in plan["problems"]]
+    problems: list[str] = []
+    dirs = candidates(t, root, None if a.all else a.epic, problems)
+    converted = [c for c in (convert(t, d, problems) for d in dirs) if c]
     if problems:
-        for problem in problems:
-            print(f"ticket.py: migrate: {problem}", file=sys.stderr)
+        for p in problems:
+            print(f"ticket.py: migrate: {p}", file=sys.stderr)
         return 1
-    if a.dry_run:
-        lines = [line for plan in plans for line in plan["lines"]]
-    else:
-        lines = _write(a, t, root, plans)
-    print("\n".join(lines) if lines else "migrate: nothing to change")
-    if not a.dry_run:
-        for epic_dir in epic_dirs:
-            if _needs_retro_writer(t, epic_dir):
-                print(f"retro-writer: {epic_dir.name}")
+    if not converted:
+        print("migrate: nothing to change")
+        return 0
+    for c in converted:
+        if a.dry_run:
+            print(f"{c.name}: would write {', '.join(c.files)}; would remove {', '.join(c.remove)}")
+            continue
+        _apply(t, c, root)
+        extra = ", retro.md" if "retro.md" in c.files else ""
+        print(f"{c.name}: migrated ({c.steps} steps{extra})")
     return 0

@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-PLANNER = ROOT / "agents" / "planner.md"
+PLAN_WRITER = ROOT / "agents" / "plan-writer.md"
 STEPS = ROOT / "skills" / "start-development" / "references" / "user-run-steps.md"
 PREFIX = "${CLAUDE_PLUGIN_ROOT}/"
 
@@ -13,8 +13,8 @@ def _bare_commands(text):
     return re.findall(r"(?<!/)(?:python3 (?:scripts|skills)/|node workflows/)\S*", text)
 
 
-def test_planner_paths_prefixed():
-    t = PLANNER.read_text()
+def test_plan_writer_paths_prefixed():
+    t = PLAN_WRITER.read_text()
     assert _bare_commands(t) == []
     assert PREFIX + "scripts/lib/workbench.py" in t
     assert not re.search(r"(?<![/\w])skills/start-development/", t)

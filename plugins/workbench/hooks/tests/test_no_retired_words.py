@@ -11,6 +11,8 @@ RETIRED = re.compile(
     r"|named copy|Workflow tool",
     re.IGNORECASE,
 )
+# ticket.py migrate reads the old epic files, so it is the one file that must name them.
+MIGRATOR = Path("skills/start-development/scripts/ticket_cmds/migrate.py")
 
 
 def test_plugin_has_no_retired_words():
@@ -19,7 +21,7 @@ def test_plugin_has_no_retired_words():
         for path in sorted((PLUGIN / d).rglob("*")):
             if not path.is_file() or "tests" in path.relative_to(PLUGIN).parts:
                 continue
-            if "__pycache__" in path.parts:
+            if "__pycache__" in path.parts or path.relative_to(PLUGIN) == MIGRATOR:
                 continue
             try:
                 text = path.read_text()

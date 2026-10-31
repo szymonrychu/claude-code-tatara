@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 SKILLS = Path(__file__).resolve().parents[2]
@@ -65,3 +66,15 @@ def test_discovery_has_no_graph_build_instructions():
     assert "~/.local/bin/graphify" not in DISCOVERY
     assert "info/exclude" not in DISCOVERY
     assert "build one, then query it" not in DISCOVERY
+
+
+def test_discovery_feeds_the_plan_writer():
+    flat = " ".join(DISCOVERY.split())
+    assert "plan-writer" in flat
+    assert "phase 2 is the plan" in flat
+    assert "design phase" not in flat
+    assert "approval gate" not in flat
+
+
+def test_names_no_epic():
+    assert not re.search(r"\bepics?\b", DISCOVERY, re.I)

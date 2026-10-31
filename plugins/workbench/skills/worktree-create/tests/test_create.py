@@ -99,48 +99,48 @@ def test_two_agents_get_independent_trees(repo):
 
 
 def test_integration_creates_meta_tree(repo):
-    info = integration("my-epic", start=repo)
-    assert info["verb"] == "created" and info["branch"] == "my-epic" and info["base"] == "main"
-    assert info["name"] == "my-epic"
-    assert Path(info["path"]) == worktrees_dir(repo) / "my-epic"
+    info = integration("my-plan", start=repo)
+    assert info["verb"] == "created" and info["branch"] == "my-plan" and info["base"] == "main"
+    assert info["name"] == "my-plan"
+    assert Path(info["path"]) == worktrees_dir(repo) / "my-plan"
     assert (Path(info["path"]) / "README.md").exists()
-    assert git(repo, "rev-parse", "my-epic").stdout == git(repo, "rev-parse", "main").stdout
+    assert git(repo, "rev-parse", "my-plan").stdout == git(repo, "rev-parse", "main").stdout
 
 
 def test_integration_reuses_tree_and_branch(repo):
-    first = integration("my-epic", start=repo)
+    first = integration("my-plan", start=repo)
     (Path(first["path"]) / "wip.txt").write_text("x")
-    again = integration("my-epic", start=repo)
+    again = integration("my-plan", start=repo)
     assert again["verb"] == "reused" and again["path"] == first["path"]
     assert (Path(first["path"]) / "wip.txt").exists()
     git(repo, "worktree", "remove", "--force", first["path"])
-    git(repo, "branch", "-f", "my-epic", "HEAD")
-    again = integration("my-epic", start=repo)
+    git(repo, "branch", "-f", "my-plan", "HEAD")
+    again = integration("my-plan", start=repo)
     assert again["verb"] == "created"
-    assert git(Path(again["path"]), "branch", "--show-current").stdout.strip() == "my-epic"
+    assert git(Path(again["path"]), "branch", "--show-current").stdout.strip() == "my-plan"
 
 
 def test_integration_refuses_destination_that_is_not_the_worktree(repo):
-    dest = worktrees_dir(repo) / "my-epic"
+    dest = worktrees_dir(repo) / "my-plan"
     dest.mkdir(parents=True)
     with pytest.raises(WorktreeError) as e:
-        integration("my-epic", start=repo)
+        integration("my-plan", start=repo)
     assert str(dest) in str(e.value)
 
 
 def test_integration_refuses_tree_on_another_branch(repo):
-    other = create("my-epic", start=repo)
+    other = create("my-plan", start=repo)
     git(Path(other["path"]), "checkout", "-q", "-b", "elsewhere")
     with pytest.raises(WorktreeError) as e:
-        integration("my-epic", start=repo)
+        integration("my-plan", start=repo)
     assert other["path"] in str(e.value)
 
 
 def test_integration_reuses_existing_branch(repo):
-    git(repo, "branch", "my-epic")
-    info = integration("my-epic", start=repo)
+    git(repo, "branch", "my-plan")
+    info = integration("my-plan", start=repo)
     assert info["verb"] == "created" and Path(info["path"]).is_dir()
-    assert git(Path(info["path"]), "branch", "--show-current").stdout.strip() == "my-epic"
+    assert git(Path(info["path"]), "branch", "--show-current").stdout.strip() == "my-plan"
 
 
 def test_integration_component_forks_tracked_branch(tmp_path):
@@ -152,8 +152,8 @@ def test_integration_component_forks_tracked_branch(tmp_path):
     (comp / "a.txt").write_text("a")
     git(comp, "add", "-A")
     git(comp, "commit", "-qm", "init")
-    local = integration("ep", repo="svc", start=wb)
-    assert Path(local["path"]) == worktrees_dir(wb) / "ep" / "svc"
+    local = integration("pl", repo="svc", start=wb)
+    assert Path(local["path"]) == worktrees_dir(wb) / "pl" / "svc"
     assert local["base"] == "main"
     (comp / "b.txt").write_text("b")
     git(comp, "add", "-A")
@@ -161,7 +161,7 @@ def test_integration_component_forks_tracked_branch(tmp_path):
     git(comp, "update-ref", "refs/remotes/origin/main", "HEAD~1")
     git(comp, "update-ref", "refs/remotes/origin/dev", "HEAD~1")
     git(comp, "branch", "dev")
-    got = integration("ep2", base="dev", repo="svc", start=wb)
+    got = integration("plan2", base="dev", repo="svc", start=wb)
     assert (
         git(Path(got["path"]), "rev-parse", "HEAD").stdout
         == git(comp, "rev-parse", "HEAD~1").stdout
@@ -172,7 +172,32 @@ def test_integration_cli_prints_path_branch_base_and_verb(repo, monkeypatch, cap
     from create import main
 
     monkeypatch.chdir(repo)
-    assert main(["--integration", "--name", "cli-epic"]) == 0
+    assert main(["--integration", "--name", "cli-plan"]) == 0
     out = capsys.readouterr().out
-    assert str(worktrees_dir(repo) / "cli-epic") in out
-    assert "cli-epic" in out and "main" in out and "created" in out
+    assert str(worktrees_dir(repo) / "cli-plan") in out
+    assert "cli-plan" in out and "main" in out and "created" in out
+
+
+def test_skill_and_help_speak_of_the_plan_tree():
+    import re
+
+    text = (Path(__file__).resolve().parents[1] / "SKILL.md").read_text()
+    flat = " ".join(text.split())
+    assert "**Plan tree.**" in flat
+    assert "ticket.py move <plan> in-progress" in flat
+    assert not re.search(r"\bepics?\b", flat, re.I)
+    script = Path(__file__).resolve().parents[1] / "scripts" / "create.py"
+    helptext = subprocess.run(
+        [sys.executable, str(script), "--help"], capture_output=True, text=True, check=True
+    ).stdout
+    assert not re.search(r"\bepic", helptext, re.I)
+    assert "<plan>" in helptext
+
+
+def test_integration_takes_a_plan_and_speaks_of_the_plan_tree():
+    import inspect
+
+    from create import integration
+
+    assert list(inspect.signature(integration).parameters)[0] == "plan"
+    assert "plan" in integration.__doc__ and "epic" not in integration.__doc__
