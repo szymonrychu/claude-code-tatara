@@ -24,6 +24,10 @@ ALLOW = {
     "plugins/workbench/hooks/worktree_lib.py": _FALLBACK,
     "plugins/workbench/hooks/bash-output-filter.py": _FALLBACK + " (docstring)",
     "plugins/workbench/references/hooks.md": _FALLBACK + " (documented)",
+    "plugins/superpowers/skills/systematic-debugging/defense-in-depth.md":
+        "vendored upstream example: an app's tmpdir guard, not a tooling scratch location",
+    "plugins/superpowers/skills/systematic-debugging/root-cause-tracing.md":
+        "vendored upstream example: an app's tmpdir guard, not a tooling scratch location",
 }
 
 
