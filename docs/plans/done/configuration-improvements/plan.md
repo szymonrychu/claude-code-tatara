@@ -1,46 +1,51 @@
-# configuration improvements design
+---
+title: configuration improvements
+repos: [agent-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# configuration improvements
 
-More of tatara-new's configurability reaches the Python platform. A preset or cluster spec gets a typed `wrapper` block (hooks, idle auto-compact and a fixed list of other claude-code-wrapper settings), an optional `leader_lease_seconds` for hive clusters and an optional `autoclose_after_seconds`. The renderer merges the block into the wrapper config after the reserved entries, with every user string escaped against `${VAR}` interpolation. A lease expiry is a handover applied by the dispatcher at the leader's turn boundary. Autoclose is a status-guarded flip to `deleting` by the api, so the existing discard path does the rest. The agents-web UI (built by frontend-decoupling) gets form inputs for every field and a Clusters page in the hamburger Settings list above Presets. Each capability is documented in the orchestrator README, proven by an API-only kind e2e test, released, pinned, applied and smoked.
+## What and why
 
-## Intent and why
+What: Expose more claude-code-wrapper settings (hooks, idle_auto_compact), optional leader lease timeout, optional cluster autoclose after a time, Clusters entry in the hamburger menu above Presets
+How: ClusterSpec and preset fields rendered into the wrapper config, a lease timeout in the leadership tables, an autoclose deadline enforced by the reconciler, a menu entry
+Why: Get more of tatara-new's configurability into the Python platform
 
-The user's request (README, verbatim): expose more claude-code-wrapper settings (including hooks and idle_auto_compact), an optional leader lease timeout, an optional autoclose of a cluster after a time, and a Clusters entry in the hamburger menu above Presets. The overall target is to get more of tatara-new's configurability into this platform. Today the orchestrator exposes only model, effort, auto_compact_pct, env, peers and replicas of the wrapper; a leader holds leadership indefinitely; a cluster lives until someone discards it; and clusters have no settings page.
+User request (2026-10-25), verbatim. Overall target: "Target getting more and more from tatara system (/Users/szymonri/Documents/tatara-new)"
 
-## Goals
+"## configuration improvements
+  * expose more claude-code-wrapper settings (including hooks, idle_auto_compact)
+  * add optional timeout to leader lease
+  * add autoclose after time (optional parameter- closing agent cluster after specified time)
+  * clusters gets it's own place in \"hamburger\" menu, above \"presets\""
 
-- G1: `POST /api/v1/clusters` and the preset routes accept `spec.wrapper` with the typed settings of D1, validated server side with named errors, and the rendered wrapper config carries them after the reserved entries (D2).
-- G2: no user string in `spec.wrapper` can read a pod env variable through wrapper interpolation; a `${CLAUDE_CODE_OAUTH_TOKEN}` value renders as that literal text.
-- G3: a hive cluster with `leader_lease_seconds` set changes leader with reason `lease_expired` once the lease has run out and the leader is between turns; a running turn is never interrupted; with no ready peer the leader stays.
-- G4: a cluster with `autoclose_after_seconds` set goes to `deleting` within about 10 s of `created_at + autoclose_after_seconds` and is then discarded as by `DELETE /api/v1/clusters/{id}`; values below the floor (default 300 s) are refused.
-- G5: the cluster view shows `closes_at`, `leader_since` and `leader_reason`.
-- G6: the agents-web Settings list shows Clusters first, above Presets; it opens a Clusters page with every cluster and open, new and discard actions.
-- G7: each capability is documented in the orchestrator README and covered by an API-only kind e2e test; the agents namespace runs the release and the live smoke passes.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: A preset or cluster spec carries a typed `wrapper` block (hooks on all 21 wrapper events, command and webhook; idle auto-compact; system prompt append; extra permissions; extra MCP servers; plugins; turn stall, restart and turn limits; agent slash commands) that reaches the claude-code-wrapper config with every reserved entry intact.
+- 1.2: A hive cluster can set `leader_lease_seconds`: once a leader has led that long, leadership is handed to the agent free the longest at the leader's next turn boundary; a running turn is never interrupted.
+- 1.3: A cluster can set `autoclose_after_seconds` (at least 300 s): counted from creation, the cluster is then discarded through the existing discard path.
+- 1.4: The hamburger menu's Settings list opens a Clusters page, listed above Presets.
+- 1.5: Every capability has a documented API and an API-only kind e2e test; the epic ends released, pinned, applied and smoked in the agents namespace.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- A raw wrapper config overlay, or exposing `extra_args`, `boot`, `server`, `paths`, peers internals, `claude_json`, `config_files`, `permission_mode` or secret-kind Claude env vars.
-- Any claude-code-wrapper code change or release.
-- A pod TTL, a handoff turn before autoclose, or a stop/pause cluster state.
-- Making `LEADER_GRACE_SECONDS` or `PUSH_INTERVAL_SECONDS` configurable (hive D14).
-- Editing the new fields on a running cluster.
+- No raw wrapper config overlay: `extra_args`, `boot`, `server`, `paths`, peers internals, `claude_json`, `config_files`, `permission_mode` and secret Claude env vars stay unexposed.
+- No claude-code-wrapper code change or release (wrapper 0.2.0 already implements every setting).
+- No pod TTL, handoff turn before close, or stop/pause state; no change to `LEADER_GRACE_SECONDS`.
+- No editing of these fields on a running cluster (spec stays immutable after create except replicas and init_scripts).
 
-## Anti-goals
+## Design
 
-- A reserved renderer entry (the onStart hook, the lock-check hook, the built-in permission denies, the `any-mcp` MCP server, the ASK_IN_WRITING prompt) removed or reordered by user config.
-- A second writer of `clusters` outside the api.
-- An agent taking leadership (hive D21), or a lease rotation interrupting a running turn.
-- UI changes landing in `agent-orchestrator/frontend` instead of agents-web.
-
-## Constraints
-
-- Hard rules: Python only except the TypeScript web UI; single writer per table, queue tables only through status-guarded updates.
-- Spec is immutable after create except `replicas` and `init_scripts` (MEMORY 2026-10-24 amending D4); the new fields are create-time only and snapshotted from the preset.
-- Hive D14: `LEADER_GRACE_SECONDS` and `PUSH_INTERVAL_SECONDS` stay module constants.
-- The wrapper accepts these settings since 0.2.0 (`code/claude-code-wrapper/src/claude_code_wrapper/config.py:HooksConfig`, `AutoCompactConfig`, `SessionsConfig`, `LimitsConfig`, `PluginsConfig`); the orchestrator dev dependency pins wrapper 1f64e9f (0.2.0), and `tests/test_render.py::test_rendered_ccw_config_validates` loads the rendered config with the wrapper's own `load_config`.
-- `/api/v1` is additive only (README Versioning).
-- Order: runs after agent-init-scripts, cluster-scaling and frontend-decoupling (README blockers). UI work lands in the agents-web repo that frontend-decoupling creates.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -80,6 +85,10 @@ The orchestrator and agents-web main builds publish their charts and images on m
 ### D12: Sequencing after the three blockers, UI in agents-web
 The epic starts after agent-init-scripts, cluster-scaling and frontend-decoupling are done; the UI tasks target the agents-web repo. agents-web paths below assume frontend-decoupling moves `frontend/` with its layout (`src/...`, a vendored `openapi/agent-orchestrator.json`); the two web tasks and the deploy pin are amended with `ticket.py amend` if its plan names other paths. (orchestrator ruling) Serves A8.
 
+## Open questions
+
+- Q1: A leader lease expiry is a handover the dispatcher applies at the leader's turn boundary, which amends hive D26 (no forced handover) for clusters that set leader_lease_seconds; accept this? [recommended: yes]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -90,7 +99,7 @@ The epic starts after agent-init-scripts, cluster-scaling and frontend-decouplin
 | research-papers | skipped: no algorithmic core (config plumbing, a timer, a UI page) | none | none |
 | research-docs | skipped: no external API used in a new way; the wrapper surface is in-house and pinned by the render validation test | none | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -121,7 +130,66 @@ The epic starts after agent-init-scripts, cluster-scaling and frontend-decouplin
 | frontend-decoupling brief | SettingsCategory menu entries; UI in agents-web | web-clusters-page |
 | frontend-decoupling brief | vendored openapi copy per backend | web-form-config-fields |
 
-## Decision coverage
+## Irreversible operations
+
+- `mise run apply` of the agents namespace (deploy-pin-config): covered by the user's scope approval (releases, pin bumps, helmfile apply plus smoke are tasks of this epic); reversible by re-pinning the previous charts and images and applying again.
+- Publishing the orchestrator and agents-web main-build charts and images on merge to main (immutable versions); covered by the same approval.
+- Autoclose discards clusters and their history when their time runs out; only clusters that set `autoclose_after_seconds` are affected, and the discard hook export runs first.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Evidence: per-task implementer + sonnet reviewer, fix rounds: openapi regen (spec-config-fields), ccw MCP name reserved (render-wrapper-settings). Whole-diff review clean (A1-A8). PR #14 CI incl. kind e2e green; agents-web PR #5 green; live apply orchestrator 0.1.0-main.60cb11c + agents-web 0.1.0-main.1343836, no drift, smoke OK incl config check (helmfile PR #20 merged).
+Security: no critical/high. MEDIUM plaintext webhook secrets / MCP headers returned by cluster and preset views: noted, not done now (same model as existing spec.env; masking is a new feature, user to decide). LOW _escape docstring overstates MCP env protection (within the accepted command-hook exposure): noted. LOW onTick interval has no floor / timeouts uncapped: affects only the user's own pod (wrapper skips overlapping ticks): dropped.
+
+### design.md: Summary
+
+More of tatara-new's configurability reaches the Python platform. A preset or cluster spec gets a typed `wrapper` block (hooks, idle auto-compact and a fixed list of other claude-code-wrapper settings), an optional `leader_lease_seconds` for hive clusters and an optional `autoclose_after_seconds`. The renderer merges the block into the wrapper config after the reserved entries, with every user string escaped against `${VAR}` interpolation. A lease expiry is a handover applied by the dispatcher at the leader's turn boundary. Autoclose is a status-guarded flip to `deleting` by the api, so the existing discard path does the rest. The agents-web UI (built by frontend-decoupling) gets form inputs for every field and a Clusters page in the hamburger Settings list above Presets. Each capability is documented in the orchestrator README, proven by an API-only kind e2e test, released, pinned, applied and smoked.
+
+### design.md: Intent and why
+
+The user's request (README, verbatim): expose more claude-code-wrapper settings (including hooks and idle_auto_compact), an optional leader lease timeout, an optional autoclose of a cluster after a time, and a Clusters entry in the hamburger menu above Presets. The overall target is to get more of tatara-new's configurability into this platform. Today the orchestrator exposes only model, effort, auto_compact_pct, env, peers and replicas of the wrapper; a leader holds leadership indefinitely; a cluster lives until someone discards it; and clusters have no settings page.
+
+### design.md: Goals
+
+- G1: `POST /api/v1/clusters` and the preset routes accept `spec.wrapper` with the typed settings of D1, validated server side with named errors, and the rendered wrapper config carries them after the reserved entries (D2).
+- G2: no user string in `spec.wrapper` can read a pod env variable through wrapper interpolation; a `${CLAUDE_CODE_OAUTH_TOKEN}` value renders as that literal text.
+- G3: a hive cluster with `leader_lease_seconds` set changes leader with reason `lease_expired` once the lease has run out and the leader is between turns; a running turn is never interrupted; with no ready peer the leader stays.
+- G4: a cluster with `autoclose_after_seconds` set goes to `deleting` within about 10 s of `created_at + autoclose_after_seconds` and is then discarded as by `DELETE /api/v1/clusters/{id}`; values below the floor (default 300 s) are refused.
+- G5: the cluster view shows `closes_at`, `leader_since` and `leader_reason`.
+- G6: the agents-web Settings list shows Clusters first, above Presets; it opens a Clusters page with every cluster and open, new and discard actions.
+- G7: each capability is documented in the orchestrator README and covered by an API-only kind e2e test; the agents namespace runs the release and the live smoke passes.
+
+### design.md: Non-goals
+
+- A raw wrapper config overlay, or exposing `extra_args`, `boot`, `server`, `paths`, peers internals, `claude_json`, `config_files`, `permission_mode` or secret-kind Claude env vars.
+- Any claude-code-wrapper code change or release.
+- A pod TTL, a handoff turn before autoclose, or a stop/pause cluster state.
+- Making `LEADER_GRACE_SECONDS` or `PUSH_INTERVAL_SECONDS` configurable (hive D14).
+- Editing the new fields on a running cluster.
+
+### design.md: Anti-goals
+
+- A reserved renderer entry (the onStart hook, the lock-check hook, the built-in permission denies, the `any-mcp` MCP server, the ASK_IN_WRITING prompt) removed or reordered by user config.
+- A second writer of `clusters` outside the api.
+- An agent taking leadership (hive D21), or a lease rotation interrupting a running turn.
+- UI changes landing in `agent-orchestrator/frontend` instead of agents-web.
+
+### design.md: Constraints
+
+- Hard rules: Python only except the TypeScript web UI; single writer per table, queue tables only through status-guarded updates.
+- Spec is immutable after create except `replicas` and `init_scripts` (MEMORY 2026-10-24 amending D4); the new fields are create-time only and snapshotted from the preset.
+- Hive D14: `LEADER_GRACE_SECONDS` and `PUSH_INTERVAL_SECONDS` stay module constants.
+- The wrapper accepts these settings since 0.2.0 (`code/claude-code-wrapper/src/claude_code_wrapper/config.py:HooksConfig`, `AutoCompactConfig`, `SessionsConfig`, `LimitsConfig`, `PluginsConfig`); the orchestrator dev dependency pins wrapper 1f64e9f (0.2.0), and `tests/test_render.py::test_rendered_ccw_config_validates` loads the rendered config with the wrapper's own `load_config`.
+- `/api/v1` is additive only (README Versioning).
+- Order: runs after agent-init-scripts, cluster-scaling and frontend-decoupling (README blockers). UI work lands in the agents-web repo that frontend-decoupling creates.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -138,7 +206,7 @@ The epic starts after agent-init-scripts, cluster-scaling and frontend-decouplin
 | D11 View fields for lease and autoclose | config-cluster-views |
 | D12 Sequencing after the three blockers | web-form-config-fields, web-clusters-page |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -153,32 +221,33 @@ The epic starts after agent-init-scripts, cluster-scaling and frontend-decouplin
 
 Cross-epic contracts used, owned elsewhere: `orch-leadership-pass` and `orch-render-hash-invariant` (hive), `orch-presets-api`, `orch-cluster-create-api` (cluster-presets), `orch-settings-menu` (web-ui epic, moved by frontend-decoupling), `agent-orchestrator-settings-env`, `agent-orchestrator-chart`, `agent-orchestrator-image`.
 
-## Review focus
+### design.md: Review focus
 
 - render: no reserved entry removable or reordered; every user string value escaped, keys untouched; rendered config loads with the wrapper's `load_config`; config hash changes only with the spec.
 - leadership step 4: runs inside the existing claim-lock transaction; never moves a leader that is busy or has a dispatching/verifying message; epoch fence intact; no takeover path; `LEADER_GRACE_SECONDS` untouched.
 - autoclose: one guarded UPDATE, database clock, NOTIFY in the same transaction, no write besides `desired` and `generation`; sweeper task cancelled cleanly on shutdown.
 - e2e: every created cluster torn down; waits bounded.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Exact UI copy and layout of the Clusters page and the new form inputs, within D7 and D8.
 - Internal names of the orchestrator's wrapper-settings models, within the field list of D1.
 - Whether the sweeper sleeps a fixed 10 s or until the next deadline, capped at 10 s.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - agents-web paths (`src/...`, `openapi/agent-orchestrator.json`, the agents-web chart values file and release test in agents-helmfile) follow the frontend-decoupling brief; confirmed by reading frontend-decoupling's task files when they exist, and amended with `ticket.py amend` (D12).
 - The fake claude in the kind agent image handles `/compact` (`code/claude-code-wrapper/tests/fake_claude/fake_claude.py` documents it) and the ingester stores every event type, so a `compacted` event is visible through `GET /api/v1/clusters/{id}/events?types=compacted`; confirmed by the kind e2e.
 - The dispatcher wakes at least every `dispatch_poll_seconds` and runs `_drain_leadership` on each wake (`dispatcher/loop.py`), so a lease expiry is acted on without a NOTIFY; pinned by the leadership-pass tests.
 - Agent pods have no NetworkPolicy limiting webhook egress (none in `k8s/render.py`); a user webhook reaches whatever the cluster network allows.
 
-## Open questions
+### approvals.json
 
-- Q1: A leader lease expiry is a handover the dispatcher applies at the leader's turn boundary, which amends hive D26 (no forced handover) for clusters that set leader_lease_seconds; accept this? [recommended: yes]
-
-## Irreversible operations in scope
-
-- `mise run apply` of the agents namespace (deploy-pin-config): covered by the user's scope approval (releases, pin bumps, helmfile apply plus smoke are tasks of this epic); reversible by re-pinning the previous charts and images and applying again.
-- Publishing the orchestrator and agents-web main-build charts and images on merge to main (immutable versions); covered by the same approval.
-- Autoclose discards clusters and their history when their time runs out; only clusters that set `autoclose_after_seconds` are affected, and the discard hook export runs first.
+- A1: Expose more claude-code-wrapper settings, including hooks and idle_auto_compact, as typed wrapper settings, not a raw config overlay. [decisions: D1, D2, D8] [tasks: spec-config-fields, render-wrapper-settings, config-cluster-views, web-form-config-fields, kind-e2e-config] [status: approved]
+- A2: Command hooks are allowed as well as http (webhook) hooks, with the env-exposure risk documented; user text rendered into the wrapper config is escaped ($$) against ${VAR} interpolation. [decisions: D2, D3] [tasks: spec-config-fields, render-wrapper-settings] [status: approved]
+- A3: Optional leader lease timeout: at expiry leadership is handed to the longest-free agent at a turn boundary, never interrupting a running turn; handover only, no takeovers. [decisions: D4, D11] [tasks: spec-config-fields, leader-lease-expiry, config-cluster-views, web-form-config-fields, kind-e2e-config] [status: approved]
+- A4: Optional autoclose after a time: counted from cluster creation, closes the cluster through the existing discard path, minimum 300 s. [decisions: D5, D6, D11] [tasks: spec-config-fields, autoclose-sweeper, config-cluster-views, web-form-config-fields, kind-e2e-config] [status: approved]
+- A5: Clusters gets its own page in the hamburger Settings list, above Presets. [decisions: D7, D11] [tasks: web-clusters-page] [status: approved]
+- A6: Every capability gets a documented API and an API-only e2e test. [decisions: D9] [tasks: config-cluster-views, kind-e2e-config, smoke-config-check] [status: approved]
+- A7: Releases, pin bumps and helmfile apply plus smoke are tasks of this epic. [decisions: D10] [tasks: smoke-config-check, deploy-pin-config] [status: approved]
+- A8: The epic runs after agent-init-scripts, cluster-scaling and frontend-decoupling; its UI tasks land in the agents-web component, not in agent-orchestrator/frontend. [decisions: D12] [tasks: web-form-config-fields, web-clusters-page] [status: approved]
