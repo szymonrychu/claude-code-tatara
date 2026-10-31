@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Print the vendored superpowers skill files a newer upstream release changed (report only): superpowers-diff <version>"
+set -euo pipefail
+exec python3 "$(dirname "$0")/../scripts/superpowers_diff.py" "$@"
