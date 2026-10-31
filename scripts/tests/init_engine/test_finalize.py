@@ -28,16 +28,11 @@ def test_slug_collapses_and_trims():
     assert finalize.slug("  My Demo_App!! ") == "my-demo-app"
 
 
-def seed_epics(root: Path):
-    epic = root / "docs/plans/in-progress/old-epic/tasks"
-    epic.mkdir(parents=True)
-    (epic / "t.md").write_text("x")
-    (root / "docs/plans/todo/another").mkdir(parents=True)
-    (root / "docs/plans/todo/another/README.md").write_text("x")
-    (root / "docs/plans/done/finished").mkdir(parents=True)
-    (root / "docs/plans/done/finished/README.md").write_text("x")
-    (root / "docs/research").mkdir()
+def seed_owned(root: Path):
+    (root / "docs/research").mkdir(parents=True)
     (root / "docs/research/brief.md").write_text("secret")
+    (root / "docs/handoffs").mkdir(parents=True)
+    (root / "docs/handoffs/h.md").write_text("x")
 
 
 def init(run_cli, *extra):
@@ -107,13 +102,10 @@ def test_unknown_harness_refused(workbench, run_cli, allow_file):
 
 
 def test_template_history_cleared(workbench, run_cli, allow_file):
-    seed_epics(workbench)
+    seed_owned(workbench)
     init(run_cli, "--license-holder", "Acme")
-    for phase in ("todo", "in-progress", "done"):
-        assert sorted(p.name for p in (workbench / "docs/plans" / phase).iterdir()) == [".gitkeep"]
-    assert not (workbench / "docs/research").exists() or not any(
-        (workbench / "docs/research").iterdir()
-    )
+    for gone in ("docs/research", "docs/handoffs", "docs/plans"):
+        assert not (workbench / gone).exists(), gone
 
 
 def plugin_licenses(root):
@@ -254,10 +246,10 @@ def test_adopt_finalizes_and_rerun_is_idempotent(workbench, run_cli, allow_file,
     assert g("status", "--porcelain", cwd=workbench).stdout == ""
 
 
-def test_rerun_keeps_epics_and_research(workbench, run_cli, allow_file, tmp_path):
+def test_rerun_keeps_plans_and_research(workbench, run_cli, allow_file, tmp_path):
     init(run_cli, "--license-holder", "Acme")
-    (workbench / "docs/plans/todo/mine").mkdir()
-    (workbench / "docs/plans/todo/mine/README.md").write_text("mine")
+    (workbench / "docs/superpowers/plans").mkdir(parents=True)
+    (workbench / "docs/superpowers/plans/mine.md").write_text("mine")
     (workbench / "docs/research").mkdir()
     (workbench / "docs/research/note.md").write_text("n")
     g("add", "-A", cwd=workbench)
@@ -272,7 +264,7 @@ def test_rerun_keeps_epics_and_research(workbench, run_cli, allow_file, tmp_path
     g("push", str(remote), "main", cwd=seed)
     r = run_cli("adopt", "--url", f"file://{remote}", "--name", "ext")
     assert r.returncode == 0, r.stdout + r.stderr
-    assert (workbench / "docs/plans/todo/mine/README.md").read_text() == "mine"
+    assert (workbench / "docs/superpowers/plans/mine.md").read_text() == "mine"
     assert (workbench / "docs/research/note.md").is_file()
 
 
@@ -294,32 +286,13 @@ def test_harness_targets_generated_before_the_commit(workbench, run_cli, allow_f
     assert g("status", "--porcelain", cwd=workbench).stdout == ""
 
 
-def test_facts_md_cleared(workbench, run_cli, allow_file):
-    (workbench / "docs/plans/facts.md").write_text("facts")
-    init(run_cli)
-    assert not (workbench / "docs/plans/facts.md").exists()
-
-
 def test_owned_paths_retired_from_tracked_files(workbench, run_cli, allow_file):
-    seed_epics(workbench)
-    plans = workbench / "docs/plans"
-    for name in ("contracts.json", "index.json", "facts.md"):
-        (plans / name).write_text("x")
-    (workbench / "docs/handoffs").mkdir()
-    (workbench / "docs/handoffs/h.md").write_text("x")
+    seed_owned(workbench)
     init(run_cli, "--license-holder", "Acme")
     tracked = g("ls-files", cwd=workbench).stdout.splitlines()
-    for gone in (
-        "docs/plans/contracts.json",
-        "docs/plans/index.json",
-        "docs/plans/facts.md",
-        "docs/research/brief.md",
-        "docs/handoffs/h.md",
-        "docs/plans/todo/another/README.md",
-    ):
+    for gone in ("docs/research/brief.md", "docs/handoffs/h.md"):
         assert gone not in tracked
-    for phase in ("todo", "in-progress", "done"):
-        assert f"docs/plans/{phase}/.gitkeep" in tracked
+    assert not [p for p in tracked if p.startswith("docs/plans/")]
 
 
 def test_owned_module_lists_exact_entries():
@@ -327,12 +300,6 @@ def test_owned_module_lists_exact_entries():
     import owned
 
     assert owned.INSTANCE_OWNED == (
-        ("docs/plans/todo", "phase"),
-        ("docs/plans/in-progress", "phase"),
-        ("docs/plans/done", "phase"),
-        ("docs/plans/contracts.json", "delete"),
-        ("docs/plans/index.json", "delete"),
-        ("docs/plans/facts.md", "delete"),
         ("docs/research", "delete"),
         ("docs/handoffs", "delete"),
         ("MEMORY.md", "rewritten"),
@@ -349,16 +316,14 @@ def test_clear_template_history_derives_from_owned_list(tmp_path, monkeypatch):
     monkeypatch.setattr(
         owned,
         "INSTANCE_OWNED",
-        (("a/phase", "phase"), ("b.txt", "delete"), ("c", "delete"), ("keep.md", "rewritten")),
+        (("b.txt", "delete"), ("c", "delete"), ("keep.md", "rewritten")),
     )
-    (tmp_path / "a/phase/x").mkdir(parents=True)
     (tmp_path / "b.txt").write_text("x")
     (tmp_path / "c").mkdir()
     (tmp_path / "keep.md").write_text("k")
     (tmp_path / "docs/research").mkdir(parents=True)
     (tmp_path / "docs/research/r.md").write_text("r")
     finalize.clear_template_history(tmp_path)
-    assert [p.name for p in (tmp_path / "a/phase").iterdir()] == [".gitkeep"]
     assert not (tmp_path / "b.txt").exists() and not (tmp_path / "c").exists()
     assert (tmp_path / "keep.md").read_text() == "k"
     assert (tmp_path / "docs/research/r.md").exists()

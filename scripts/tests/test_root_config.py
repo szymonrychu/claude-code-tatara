@@ -19,7 +19,7 @@ RUNTIME = [
     "first-run",
     "assistant-daemon-state.json",
 ]
-ACCEPTED_KEYS = {"refRunners", "suites", "deploy", "overlapIgnore"}
+ACCEPTED_KEYS = {"refRunners", "deploy"}
 
 
 def _ignore() -> set[str]:
@@ -40,7 +40,7 @@ def test_gitignore_base_entries():
         "__pycache__/", "*.pyc", ".pytest_cache/", ".ruff_cache/", ".venv/",
         "node_modules/", ".DS_Store", ".env", ".env.*", "!.env.example", ".logs/", ".scratchpad/",
         ".worktrees/", "**/.claude/settings.local.json",
-        "docs/plans/facts.md", "docs/research/", "docs/handoffs/",
+        "docs/research/", "docs/handoffs/",
     ]:  # fmt: skip
         assert e in entries, e
 

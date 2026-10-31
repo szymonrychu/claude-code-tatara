@@ -1,4 +1,4 @@
-"""The published template ships empty plan folders and no research or handoff records."""
+"""The published template ships no plans, research or handoff records."""
 
 import subprocess
 from pathlib import Path
@@ -17,10 +17,8 @@ def _tracked(*paths: str) -> list[str]:
     return out.split()
 
 
-def test_plan_folders_tracked():
-    tracked = set(_tracked("docs/plans"))
-    for folder in ("todo", "in-progress", "done"):
-        assert f"docs/plans/{folder}/.gitkeep" in tracked
+def test_no_plan_tree_tracked():
+    assert _tracked("docs/plans") == []
 
 
 def test_no_briefs_or_handoffs_tracked():

@@ -134,9 +134,6 @@ def clear_template_history(root: Path) -> None:
             shutil.rmtree(target)
         else:
             target.unlink(missing_ok=True)
-        if kind == "phase":
-            target.mkdir(parents=True)
-            (target / ".gitkeep").write_text("")
 
 
 def generate_harness(root: Path, targets: list[str]) -> None:

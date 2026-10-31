@@ -19,8 +19,7 @@ node_modules/
 .scratchpad/
 .worktrees/
 
-# generated planning and research state
-docs/plans/facts.md
+# generated research state
 docs/research/
 docs/handoffs/
 

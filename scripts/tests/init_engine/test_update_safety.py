@@ -32,7 +32,6 @@ def test_update_keeps_ignored_owned_files(project, run_cli, tmp_path):
     notes = {
         "docs/research/mine.md": "my research\n",
         "docs/handoffs/2026-10-22.md": "my handoff\n",
-        "docs/plans/facts.md": "my facts\n",
     }
     for rel, text in notes.items():
         write(project, rel, text)
@@ -65,15 +64,15 @@ def test_update_keeps_ignored_owned_files(project, run_cli, tmp_path):
 
 
 def test_update_restores_head_version_of_tracked_owned_file(project, run_cli, tmp_path):
-    write(project, "docs/plans/todo/mine.md", "project epic\n")
-    sh("add", "-A", cwd=project)
-    sh("commit", "-m", "project epic", cwd=project)
+    write(project, "docs/handoffs/mine.md", "project handoff\n")
+    sh("add", "-f", "docs/handoffs/mine.md", cwd=project)
+    sh("commit", "-m", "project handoff", cwd=project)
     forced_template_commit(
-        project, tmp_path, {"docs/plans/todo/mine.md": "template epic\n", "tooling.txt": "v2\n"}
+        project, tmp_path, {"docs/handoffs/mine.md": "template handoff\n", "tooling.txt": "v2\n"}
     )
     r = run_cli("update", *LINT)
     assert r.returncode == 0, r.stderr
-    assert (project / "docs/plans/todo/mine.md").read_text() == "project epic\n"
+    assert (project / "docs/handoffs/mine.md").read_text() == "project handoff\n"
     assert sh("status", "--porcelain", cwd=project).stdout == ""
 
 

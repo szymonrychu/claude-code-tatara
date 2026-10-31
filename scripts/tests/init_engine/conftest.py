@@ -66,9 +66,6 @@ def workbench(tmp_path):
         "plugins/workbench-secrets/LICENSE",
         "scripts/doctor.py",
         "plugins/workbench/scripts/lib/workbench.py",
-        "docs/plans/todo/.gitkeep",
-        "docs/plans/done/.gitkeep",
-        "docs/plans/in-progress/.gitkeep",
     ):
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / rel, dest / rel)
@@ -102,9 +99,10 @@ def project(workbench, run_cli, allow_file, tmp_path):
     """An initialised project sharing history with a bare template upstream."""
     sh("init", "-b", "main", cwd=workbench)
     write(workbench, "tooling.txt", "v1\n")
-    write(workbench, "docs/plans/todo/epic.md", "template epic\n")
+    write(workbench, "docs/handoffs/epic.md", "template handoff\n")
     write(workbench, "docs/research/r.md", "template research\n")
     sh("add", "-A", cwd=workbench)
+    sh("add", "-f", "docs/handoffs/epic.md", cwd=workbench)
     sh("commit", "-m", "template base", cwd=workbench)
     upstream = tmp_path / "upstream.git"
     sh("clone", "--bare", str(workbench), str(upstream), cwd=tmp_path)

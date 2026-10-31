@@ -46,7 +46,6 @@ TEMPLATE_ONLY = [
     "scripts/tests/init_engine/test_finalize.py::test_no_pack_all_false",
     "scripts/tests/init_engine/test_finalize.py::test_template_history_cleared",
     "scripts/tests/init_engine/test_finalize.py::test_adopt_finalizes_and_rerun_is_idempotent",
-    "scripts/tests/init_engine/test_finalize.py::test_facts_md_cleared",
     "scripts/tests/init_engine/test_finalize.py::test_license_options[none]",
     "scripts/tests/init_engine/test_finalize.py::test_license_holder_in_every_plugin",
     "scripts/tests/init_engine/test_finalize.py::test_license_default_holder_fallback",

@@ -8,8 +8,7 @@ from init_helpers import LINT, personal_lint, sh, template_commit, upstream_of, 
 
 TEMPLATE_FILES = {
     "tooling.txt": "v2\n",
-    "docs/plans/todo/new-epic.md": "template epic 2\n",
-    "docs/plans/facts.md": "template facts\n",
+    "plugins/superpowers/README.md": "retired fork\n",
     "docs/research/more.md": "x\n",
     "MEMORY.md": "template memory\n",
 }
@@ -22,10 +21,9 @@ def test_update_takes_tooling_drops_owned_paths(project, run_cli, tmp_path):
     assert r.returncode == 0, r.stderr
     assert (project / "tooling.txt").read_text() == "v2\n"
     tracked = sh("ls-files", cwd=project).stdout.split()
-    for gone in ("docs/plans/todo/new-epic.md", "docs/plans/facts.md", "docs/research/more.md"):
+    for gone in ("plugins/superpowers/README.md", "docs/research/more.md"):
         assert gone not in tracked
         assert not (project / gone).exists()
-    assert "docs/plans/todo/.gitkeep" in tracked
     assert (project / "MEMORY.md").read_text().startswith(memory.rstrip("\n"))
     assert f"template update {sha[:12]}" in (project / "MEMORY.md").read_text()
     assert sh("status", "--porcelain", cwd=project).stdout == ""
@@ -131,14 +129,14 @@ def test_update_adds_default_template_remote(project, run_cli, tmp_path, monkeyp
 
 
 def test_update_modify_delete_on_owned_path_keeps_project_side(project, run_cli, tmp_path):
-    write(project, "docs/plans/todo/mine.md", "project epic\n")
-    sh("add", "-A", cwd=project)
-    sh("commit", "-m", "project epic", cwd=project)
-    template_commit(project, tmp_path, {"docs/plans/todo/epic.md": "changed upstream\n"})
+    write(project, "docs/handoffs/mine.md", "project handoff\n")
+    sh("add", "-f", "docs/handoffs/mine.md", cwd=project)
+    sh("commit", "-m", "project handoff", cwd=project)
+    template_commit(project, tmp_path, {"docs/handoffs/epic.md": "changed upstream\n"})
     r = run_cli("update", *LINT)
     assert r.returncode == 0, r.stderr
-    assert (project / "docs/plans/todo/mine.md").read_text() == "project epic\n"
-    assert "docs/plans/todo/epic.md" not in sh("ls-files", cwd=project).stdout.split()
+    assert (project / "docs/handoffs/mine.md").read_text() == "project handoff\n"
+    assert "docs/handoffs/epic.md" not in sh("ls-files", cwd=project).stdout.split()
 
 
 def test_update_lint_failure_aborts_the_merge(project, run_cli, tmp_path):
@@ -168,10 +166,10 @@ def test_mise_task_runs_engine_update():
 
 
 def test_update_conflict_resolves_in_linked_worktree(project, run_cli, tmp_path):
-    write(project, "docs/plans/todo/mine.md", "project epic\n")
-    sh("add", "-A", cwd=project)
-    sh("commit", "-m", "project epic", cwd=project)
-    template_commit(project, tmp_path, {"docs/plans/todo/epic.md": "changed upstream\n"})
+    write(project, "docs/handoffs/mine.md", "project handoff\n")
+    sh("add", "-f", "docs/handoffs/mine.md", cwd=project)
+    sh("commit", "-m", "project handoff", cwd=project)
+    template_commit(project, tmp_path, {"docs/handoffs/epic.md": "changed upstream\n"})
     sh("branch", "wt", cwd=project)
     wt = tmp_path / "wt"
     sh("worktree", "add", str(wt), "wt", cwd=project)

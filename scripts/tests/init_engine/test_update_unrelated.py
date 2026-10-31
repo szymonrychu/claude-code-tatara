@@ -32,9 +32,10 @@ def make_copied(workbench, run_cli, allow_file, tmp_path, at):
     def make(copied_at=COPIED):
         sh("init", "-b", "main", cwd=workbench)
         write(workbench, "tooling.txt", "v1\n")
-        write(workbench, "docs/plans/todo/epic.md", "template epic\n")
+        write(workbench, "docs/handoffs/epic.md", "template handoff\n")
         at(T1)
         sh("add", "-A", cwd=workbench)
+        sh("add", "-f", "docs/handoffs/epic.md", cwd=workbench)
         sh("commit", "-m", "template one", cwd=workbench)
         c1 = sh("rev-parse", "HEAD", cwd=workbench).stdout.strip()
         write(workbench, "tooling.txt", "v2\n")
@@ -47,6 +48,7 @@ def make_copied(workbench, run_cli, allow_file, tmp_path, at):
         sh("init", "-b", "main", cwd=workbench)
         at(copied_at)
         sh("add", "-A", cwd=workbench)
+        sh("add", "-f", "docs/handoffs/epic.md", cwd=workbench)
         sh("commit", "-m", "copied from the template", cwd=workbench)
         root = sh("rev-parse", "HEAD", cwd=workbench).stdout.strip()
         r = run_cli(
@@ -137,7 +139,7 @@ def test_base_flag_merges_unrelated_history(workbench, make_copied, run_cli, tmp
     assert f"Template-Commit: {sha}" in sh("log", "-1", "--format=%B", cwd=workbench).stdout
     assert sh("replace", "-l", cwd=workbench).stdout == ""
     assert sh("status", "--porcelain", cwd=workbench).stdout == ""
-    assert not (workbench / "docs/plans/todo/epic.md").exists()
+    assert not (workbench / "docs/handoffs/epic.md").exists()
     roots = sh("rev-list", "--max-parents=0", "HEAD", cwd=workbench).stdout.split()
     assert shas["root"] in roots
 
