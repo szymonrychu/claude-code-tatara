@@ -31,16 +31,25 @@ def test_plugin_json_version_and_description():
     meta = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
     desc = meta["description"]
     for word in (
-        "one approval gate",
-        "scope ladder",
+        "superpowers flow",
+        "reviewer",
         "research skills",
-        "subagent-driven-development",
-        "review",
-        "debugging",
+        "pull request",
         "verification hooks",
+        "guardrails",
     ):
         assert word in desc, word
-    for gone in ("seven-phase", "approval ledger", "tiered review", "verifier", "plan execution"):
+    for gone in (
+        "seven-phase",
+        "approval ledger",
+        "tiered review",
+        "verifier",
+        "plan execution",
+        "one approval gate",
+        "scope ladder",
+        *FLOW_SKILLS,
+        "debugging",
+    ):
         assert gone not in desc, gone
     assert not re.search(r"\bepics?\b|scope audit|file-based", desc, re.I)
 
