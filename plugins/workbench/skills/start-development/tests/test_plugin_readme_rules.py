@@ -44,7 +44,7 @@ RETIRED_SUBCOMMANDS = (
 
 def test_readme_names_every_ticket_subcommand_and_no_retired_one():
     readme = README.read_text()
-    ticket = REPO / "plugins/workbench/skills/start-development/scripts/ticket.py"
+    ticket = REPO / "plugins/superpowers/scripts/ticket.py"
     out = subprocess.run(
         [sys.executable, str(ticket), "--help"], capture_output=True, text=True, check=True
     ).stdout

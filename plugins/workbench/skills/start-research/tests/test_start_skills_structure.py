@@ -328,11 +328,18 @@ def test_skill_body_fits_the_documented_cap():
 
 def test_every_reference_and_template_named_exists():
     text = (START_DEVELOPMENT / "SKILL.md").read_text()
-    named = set(re.findall(r"references/[a-z-]+\.md", text))
-    named |= set(re.findall(r"templates/[a-z]+\.md", text))
+    prefix = r"(?:\$\{CLAUDE_PLUGIN_ROOT\}/|plugins/[\w-]+/)?"
+    named = set(re.findall(prefix + r"references/[a-z-]+\.md", text))
+    named |= set(re.findall(prefix + r"templates/[a-z]+\.md", text))
     assert named, "SKILL.md names no references or templates"
     for rel in sorted(named):
-        assert (START_DEVELOPMENT / rel).is_file(), f"SKILL.md names a missing file: {rel}"
+        if rel.startswith("${CLAUDE_PLUGIN_ROOT}/"):
+            path = ROOT / rel.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
+        elif rel.startswith("plugins/"):
+            path = ROOT.parents[1] / rel
+        else:
+            path = START_DEVELOPMENT / rel
+        assert path.is_file(), f"SKILL.md names a missing file: {rel}"
 
 
 def test_research_steps_table():

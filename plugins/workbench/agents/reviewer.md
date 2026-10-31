@@ -62,8 +62,8 @@ At most 250 words, as JSON-shaped fields:
 ## Retro
 
 Write retro.md only on a clean pass (`verifyPassed`, no `undelivered`, no `overDelivered`, no open findings), from
-`${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/retro.md` to the path `ticket.py path <plan> retro`
-prints (`ticket.py` is `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`), in the main
+`plugins/superpowers/templates/retro.md` to the path `ticket.py path <plan> retro`
+prints (`ticket.py` is `python3 plugins/superpowers/scripts/ticket.py`), in the main
 checkout. It is the only file you write. Review: the Final verify summary line, the fix rounds run and the findings
 acted on or dropped, one line each. What went well and What went wrong or could improve: one line per point, from
 the review, the implementers' reports and `git log`. Recommendations: the three lists, "none" when empty - every

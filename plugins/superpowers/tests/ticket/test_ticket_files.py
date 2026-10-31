@@ -10,9 +10,14 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[3]
-SD = ROOT / "skills" / "start-development"
+ROOT = Path(__file__).resolve().parents[2]
+SD = ROOT
 SCRIPT = SD / "scripts" / "ticket.py"
+# tickets.md lives with ticket.py; worktrees.md is workbench tooling.
+REFERENCES = [
+    SD / "references",
+    ROOT.parent / "workbench" / "skills" / "start-development" / "references",
+]
 OLD_FORMAT = "old epic format under {}; run ticket.py migrate --all"
 
 
@@ -274,7 +279,8 @@ def test_tickets_reference():
 
 
 def _doc(name):
-    return " ".join((SD / "references" / name).read_text().split())
+    path = next(d / name for d in REFERENCES if (d / name).is_file())
+    return " ".join(path.read_text().split())
 
 
 def test_tickets_doc_integration_naming_and_collision_rule():

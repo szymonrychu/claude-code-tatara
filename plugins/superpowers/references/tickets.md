@@ -1,6 +1,6 @@
 # Tickets: plans as files
 
-One tool, `skills/start-development/scripts/ticket.py`, creates and moves every plan. A plan is one
+One tool, `${CLAUDE_PLUGIN_ROOT}/scripts/ticket.py`, creates and moves every plan. A plan is one
 directory: what and why with a scope ladder, the implementation plan for the agreed rung, and a retro.
 
 ## Layout
@@ -22,7 +22,7 @@ docs/plans/<phase>/<plan>/close.json              written by `ticket.py close` (
 
 ## Subcommands
 
-Core in `ticket.py`, the rest one module each under `skills/start-development/scripts/ticket_cmds/`
+Core in `ticket.py`, the rest one module each under `${CLAUDE_PLUGIN_ROOT}/scripts/ticket_cmds/`
 (`ticket_cmds`):
 
 - `slug`: `slug "<title>"` prints the slug.

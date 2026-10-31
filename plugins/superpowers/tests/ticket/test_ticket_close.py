@@ -18,7 +18,7 @@ from ticket_repo_helpers import (
     write_retro,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[3] / "workbench"
 MERGE = ROOT / "skills" / "worktree-merge" / "scripts" / "merge.py"
 
 

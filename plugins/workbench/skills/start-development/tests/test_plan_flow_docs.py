@@ -14,8 +14,21 @@ REPO = ROOT.parents[1]
 SKILL = SD / "SKILL.md"
 REFS = SD / "references"
 
+LINK = re.compile(
+    r"(?:\$\{CLAUDE_PLUGIN_ROOT\}/|plugins/[\w-]+/)?(?:references|templates)/[a-z-]+\.md"
+)
+
+
+def resolve(link):
+    """A link named in SKILL.md: plugin-root, repo-relative (plugins/...) or skill-relative."""
+    if link.startswith("${CLAUDE_PLUGIN_ROOT}/"):
+        return ROOT / link.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
+    if link.startswith("plugins/"):
+        return REPO / link
+    return SD / link
+
+
 KEPT = {
-    "tickets.md",
     "worktrees.md",
     "non-negotiables.md",
     "hooks.md",
@@ -114,7 +127,8 @@ def section(text, heading):
 
 
 def corpus():
-    return flat(" ".join(p.read_text() for p in [SKILL, *sorted(REFS.glob("*.md"))]))
+    linked = {resolve(link) for link in LINK.findall(SKILL.read_text()) if "references/" in link}
+    return flat(" ".join(p.read_text() for p in [SKILL, *sorted(linked)]))
 
 
 def test_skill_is_lean():
@@ -222,10 +236,10 @@ def test_meta_and_component_modes_stay():
 
 def test_every_named_reference_and_template_exists():
     text = SKILL.read_text()
-    named = set(re.findall(r"(?:references|templates)/[a-z-]+\.md", text))
+    named = set(LINK.findall(text))
     assert named
     for rel in sorted(named):
-        assert (SD / rel).is_file(), rel
+        assert resolve(rel).is_file(), rel
 
 
 def test_no_retired_terms_in_skill_or_references():

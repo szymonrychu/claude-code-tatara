@@ -7,7 +7,7 @@ import pytest
 from ticket_repo_helpers import SCRIPT, git, init_repo, last_subject, meta
 
 sys.path.insert(0, str(SCRIPT.parent))
-sys.path.insert(0, str(SCRIPT.parents[3] / "scripts" / "lib"))
+sys.path.insert(0, str(SCRIPT.parents[2] / "workbench" / "scripts" / "lib"))
 import workbench  # noqa: E402
 
 

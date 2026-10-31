@@ -4,9 +4,13 @@ import re
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
+PLUGIN = SKILL_DIR.parents[1]
+REPO = PLUGIN.parents[1]
 MAX_LINES = 150
+# References that moved out of the skill, by the path SKILL.md links them with.
+MOVED = {"tickets.md": "plugins/superpowers/references/tickets.md"}
+LINK = re.compile(r"(?:\$\{CLAUDE_PLUGIN_ROOT\}/|plugins/[\w-]+/)?references/[a-z-]+\.md")
 KEPT = (
-    "tickets.md",
     "worktrees.md",
     "non-negotiables.md",
     "hooks.md",
@@ -24,10 +28,16 @@ def test_skill_md_within_line_cap():
 
 def test_named_references_exist():
     text = (SKILL_DIR / "SKILL.md").read_text()
-    named = set(re.findall(r"references/([a-z-]+\.md)", text))
+    named = set(LINK.findall(text))
     assert named, "SKILL.md names no reference"
-    for name in named:
-        assert (SKILL_DIR / "references" / name).is_file(), name
+    for link in named:
+        if link.startswith("${CLAUDE_PLUGIN_ROOT}/"):
+            path = PLUGIN / link.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
+        elif link.startswith("plugins/"):
+            path = REPO / link
+        else:
+            path = SKILL_DIR / link
+        assert path.is_file(), link
 
 
 def test_every_kept_reference_is_linked_from_skill():
@@ -35,4 +45,7 @@ def test_every_kept_reference_is_linked_from_skill():
     for name in KEPT:
         assert (SKILL_DIR / "references" / name).is_file(), name
         assert f"references/{name}" in text, name
+    for name, link in MOVED.items():
+        assert not (SKILL_DIR / "references" / name).exists(), name
+        assert (REPO / link).is_file() and link in text, link
     assert "retro.md" not in KEPT

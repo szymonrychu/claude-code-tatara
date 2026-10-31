@@ -10,9 +10,9 @@ description: >
 
 Phases 1 to 4 in order, a todo each, and **one gate** between phase 2 and phase 3.
 
-`ticket.py` is `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`. It owns every file under
+`ticket.py` is `python3 plugins/superpowers/scripts/ticket.py`. It owns every file under
 `docs/plans/`, runs in the main checkout and commits its own changes as `chore(ticket): <plan> <event>` (if the user
-answers no at the gate, the orchestrator commits them). Details: `references/tickets.md`.
+answers no at the gate, the orchestrator commits them). Details: `plugins/superpowers/references/tickets.md`.
 
 ## Modes
 

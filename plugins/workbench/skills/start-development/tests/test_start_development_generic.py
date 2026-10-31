@@ -26,4 +26,4 @@ def test_health_step_conditional():
 def test_infra_agents_conditional_no_superpowers():
     assert "when the `workbench-infra` pack is enabled" in FLAT
     assert not re.search(r"Terraform or chart changes: `tf-planner`", FLAT)
-    assert "superpowers" not in TEXT
+    assert "superpowers:" not in TEXT

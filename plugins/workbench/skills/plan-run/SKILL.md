@@ -5,7 +5,7 @@ description: "Run one agreed plan after the gate of start-development: claim it,
 
 Runs phase 4 of start-development (`../start-development/SKILL.md`, read it first; the flow is not restated
 here). `<plan>` is the plan slug and `ticket.py` is
-`python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`, always run from the main checkout.
+`python3 plugins/superpowers/scripts/ticket.py`, always run from the main checkout.
 Hand agents paths, never file contents; every agent call, fix rounds via SendMessage included, runs in the
 background, and the orchestrator keeps only each agent's capped report.
 

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "ticket.py"
 sys.path.insert(0, str(SCRIPT.parent))
 import ticket  # noqa: E402
 

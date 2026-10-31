@@ -30,4 +30,4 @@ def test_user_run_steps_paths_prefixed():
 def test_skill_paths_prefixed():
     t = (ROOT / "skills" / "start-development" / "SKILL.md").read_text()
     assert _bare_commands(t) == []
-    assert PREFIX + "skills/start-development/scripts/ticket.py" in t
+    assert "python3 plugins/superpowers/scripts/ticket.py" in t

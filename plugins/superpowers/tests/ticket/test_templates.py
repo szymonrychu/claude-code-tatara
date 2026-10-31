@@ -3,9 +3,9 @@
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[3] / "workbench"
 SD = ROOT / "skills" / "start-development"
-TEMPLATES = SD / "templates"
+TEMPLATES = ROOT.parent / "superpowers" / "templates"
 
 PLAN_KEYS = ["title", "repos", "created", "owner", "rung"]
 PLAN_H2 = [

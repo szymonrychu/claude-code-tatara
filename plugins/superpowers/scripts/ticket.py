@@ -20,14 +20,39 @@ import os
 import re
 import subprocess
 import sys
+from functools import cache
 from pathlib import Path
 from typing import NamedTuple
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_lib"))
+
+def _version_key(path: Path) -> tuple[int, ...]:
+    return tuple(int(n) for n in re.findall(r"\d+", path.name))
+
+
+@cache
+def workbench_plugin_root() -> Path:
+    """The workbench plugin this script borrows its libraries and worktree modules from.
+
+    In a source tree it is the sibling `plugins/workbench`; in a plugin cache
+    (`<cache>/<marketplace>/<plugin>/<version>/`) it is the highest version under
+    `<cache>/<marketplace>/workbench/`. Neither present: exit with a named error.
+    """
+    plugin = Path(__file__).resolve().parents[1]
+    sibling = plugin.parent / "workbench"
+    if (sibling / ".claude-plugin" / "plugin.json").is_file():
+        return sibling
+    cached = plugin.parents[1] / "workbench"
+    versions = [d for d in cached.glob("*") if (d / ".claude-plugin" / "plugin.json").is_file()]
+    if versions:
+        return max(versions, key=_version_key)
+    sys.exit(f"ticket.py: workbench plugin not found (looked at {sibling} and {cached}/<version>)")
+
+
+sys.path.insert(0, str(workbench_plugin_root() / "skills" / "_lib"))
 
 from common import slugify  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
+sys.path.insert(0, str(workbench_plugin_root() / "scripts" / "lib"))
 
 import workbench  # noqa: E402
 
@@ -319,7 +344,7 @@ def _git_mv(plan_dir: Path, phase: str, root: Path, name: str | None = None) -> 
 
 def _wt_module():
     """worktree-create's module: the one implementation of worktree creation."""
-    p = Path(__file__).resolve().parents[2] / "worktree-create" / "scripts" / "create.py"
+    p = workbench_plugin_root() / "skills" / "worktree-create" / "scripts" / "create.py"
     spec = importlib.util.spec_from_file_location("worktree_create", p)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -737,7 +762,7 @@ def cmd_move(a: argparse.Namespace) -> int:
 
 def _merge_module():
     """worktree-merge's module: the one implementation of merged/dirty checks and cleanup."""
-    p = Path(__file__).resolve().parents[2] / "worktree-merge" / "scripts" / "merge.py"
+    p = workbench_plugin_root() / "skills" / "worktree-merge" / "scripts" / "merge.py"
     spec = importlib.util.spec_from_file_location("worktree_merge", p)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

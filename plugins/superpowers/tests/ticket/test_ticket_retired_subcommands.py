@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[5]
-TICKET = ROOT / "plugins/workbench/skills/start-development/scripts/ticket.py"
+ROOT = Path(__file__).resolve().parents[4]
+TICKET = ROOT / "plugins/superpowers/scripts/ticket.py"
 RUN_LOOP = ["apply-run", "args", "continue", "rule", "estimate", "facts", "decide", "contract"]
 RUN_LOOP += ["graph"]
 TASK_MACHINERY = [

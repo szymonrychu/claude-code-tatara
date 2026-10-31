@@ -4,6 +4,9 @@ import re
 from pathlib import Path
 
 REFS = Path(__file__).resolve().parents[1] / "references"
+PLUGINS = REFS.parents[3]
+# References that moved out of the skill to the plugin that owns them now.
+MOVED = {"tickets.md": PLUGINS / "superpowers" / "references"}
 
 PINS = {
     "tickets.md": [
@@ -87,7 +90,7 @@ RETIRED = (
 
 
 def flat(name):
-    return re.sub(r"\s+", " ", (REFS / name).read_text())
+    return re.sub(r"\s+", " ", (MOVED.get(name, REFS) / name).read_text())
 
 
 def _check(name):
@@ -117,7 +120,7 @@ def test_hooks_remarks():
 
 def test_kept_references_name_no_retired_machinery():
     hits = []
-    for p in sorted(REFS.glob("*.md")):
+    for p in [*sorted(REFS.glob("*.md")), *(d / n for n, d in MOVED.items())]:
         text = p.read_text()
         hits += [f"{p.name}: {w}" for w in RETIRED if w in text]
     assert not hits, hits

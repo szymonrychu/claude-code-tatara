@@ -84,7 +84,7 @@ Each failure is a decision, not an error to retry harder.
 The merger owns the landing of a plan whose review passed (retro.md exists). Meta mode runs, from the main checkout:
 
 ```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py"
+python3 "plugins/superpowers/scripts/ticket.py"
 ticket.py close <plan> --verify '<final verify>'
 ```
 

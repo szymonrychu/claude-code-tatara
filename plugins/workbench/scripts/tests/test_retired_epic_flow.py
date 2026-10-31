@@ -65,11 +65,7 @@ RETIRED_TERMS = (
     "points_" + "actual",
     "builder " + "check",
 )
-EXEMPT = (
-    f"{REL}/CHANGELOG.md",
-    f"{REL}/{SD}/scripts/ticket_cmds/migrate.py",
-    f"{REL}/{SD}/references/tickets.md",
-)
+EXEMPT = (f"{REL}/CHANGELOG.md",)
 
 
 def tracked(*paths: str) -> list[str]:

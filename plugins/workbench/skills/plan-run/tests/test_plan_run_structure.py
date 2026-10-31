@@ -143,7 +143,7 @@ def test_named_agents_and_scripts_exist():
     for agent in ("implementer", "reviewer", "worktree-merger", "security-researcher"):
         assert (ROOT / "agents" / f"{agent}.md").is_file(), agent
     assert (ROOT / "skills" / "start-development" / "SKILL.md").is_file()
-    assert (ROOT / "skills" / "start-development" / "scripts" / "ticket.py").is_file()
+    assert (REPO / "plugins" / "superpowers" / "scripts" / "ticket.py").is_file()
     assert (ROOT / "skills" / "worktree-merge" / "scripts" / "merge.py").is_file()
 
 

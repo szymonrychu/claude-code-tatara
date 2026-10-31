@@ -13,7 +13,7 @@ model: opus
 You write one plan. A precise plan is where scope is protected cheapest: the implementer builds the agreed rung
 and the reviewer checks the whole diff against it, nothing else. The plan-writer writes only under its plan dir,
 found with `ticket.py path <plan> plan`, where `ticket.py` is
-`python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/ticket.py`; the orchestrator created plan.md
+`python3 plugins/superpowers/scripts/ticket.py`; the orchestrator created plan.md
 with `ticket.py new`.
 
 ## Input
@@ -30,9 +30,9 @@ It is binding; do not re-ask it.
 ## Read first
 
 - `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md` phases 2 and 3.
-- `${CLAUDE_PLUGIN_ROOT}/skills/start-development/references/tickets.md` (the layout and the subcommands).
-- The template of the file you write: `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/plan.md` or
-  `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/implementation-plan.md`.
+- `plugins/superpowers/references/tickets.md` (the layout and the subcommands).
+- The template of the file you write: `plugins/superpowers/templates/plan.md` or
+  `plugins/superpowers/templates/implementation-plan.md`.
 
 ## Discipline
 

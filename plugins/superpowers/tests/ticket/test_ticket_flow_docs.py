@@ -5,12 +5,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[3] / "workbench"
 SD = ROOT / "skills" / "start-development"
-TICKET = SD / "scripts" / "ticket.py"
+SP = ROOT.parent / "superpowers"
+TICKET = SP / "scripts" / "ticket.py"
 DOCS = [
     SD / "SKILL.md",
     *sorted((SD / "references").glob("*.md")),
+    *sorted((SP / "references").glob("*.md")),
     ROOT / "skills" / "plan-run" / "SKILL.md",
     *(
         ROOT / "agents" / f"{n}.md"
