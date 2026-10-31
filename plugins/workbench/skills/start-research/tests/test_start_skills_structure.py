@@ -70,97 +70,22 @@ def test_no_reasoning_depth_instruction_in_prompts():
     assert "explicitly" in text and "model: sonnet" in text
 
 
-START_DEVELOPMENT = SKILLS / "start-development"
-# References start-development links that moved to the plugin that owns them now.
-MOVED_REFERENCES = (
-    *(
-        ROOT / "references" / f"{n}.md"
-        for n in ("hooks", "merge-hosts", "user-run-steps", "workbench-config", "worktrees")
-    ),
-    ROOT.parent / "superpowers" / "references" / "tickets.md",
-)
-
-EXPECTED_SKILL_MENTIONS = (
-    "git-submodules-refresh",
-    "start-discovery",
-    "plan-run",
-    "git-worktrees-commit",
-    "git-worktrees-push",
-    "pullrequests-update",
-    "pullrequests-watch",
-    "start-research",
-    "research-code-internal",
-    "research-code-external",
-    "research-papers",
-    "research-docs",
-    "start-review",
-    "start-debugging",
-)
-
-RESEARCH_SKILLS = (
-    "research-code-internal",
-    "research-code-external",
-    "research-papers",
-    "research-docs",
-)
-
-LOCAL_SKILL_DIRS = (
-    "git-submodules-refresh",
-    "start-research",
-    "start-discovery",
-    "plan-run",
-    "git-worktrees-create",
-    "git-worktrees-commit",
-    "git-worktrees-push",
-    "pullrequests-update",
-    "pullrequests-watch",
-    "research-code-internal",
-    "research-code-external",
-    "research-papers",
-    "research-docs",
-    "start-review",
-    "start-debugging",
+# The flow skills moved to plugins/superpowers; these references stay with the tooling.
+MOVED_REFERENCES = tuple(
+    ROOT / "references" / f"{n}.md"
+    for n in ("hooks", "merge-hosts", "user-run-steps", "workbench-config", "worktrees")
 )
 
 
-def sd_text(skill):
-    """SKILL.md plus every reference file, for rules that live in a reference."""
-    refs = sorted((skill.parent / "references").glob("*.md"))
-    if skill.parent == START_DEVELOPMENT:
-        refs += MOVED_REFERENCES
-    return "\n".join([*(r.read_text() for r in refs), skill.read_text()])
+def references_text():
+    """Every tooling reference the flow skills point at, joined."""
+    return "\n".join(r.read_text() for r in MOVED_REFERENCES)
 
 
-def skill_with_references():
-    """SKILL.md plus every references/*.md, for rules that moved out of the body."""
-    parts = [(START_DEVELOPMENT / "SKILL.md").read_text()]
-    for ref in [*sorted((START_DEVELOPMENT / "references").glob("*.md")), *MOVED_REFERENCES]:
-        parts.append(ref.read_text())
-    return "\n".join(parts)
-
-
-def test_start_development_frontmatter():
-    fm = frontmatter(START_DEVELOPMENT / "SKILL.md")
-    assert fm.get("name") == "start-development"
-    assert fm.get("description")
-
-
-def test_start_development_mentions_every_chained_skill():
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    for name in EXPECTED_SKILL_MENTIONS:
-        assert name in text, f"SKILL.md does not mention {name}"
-
-
-def test_start_development_local_skill_references_resolve():
-    for name in LOCAL_SKILL_DIRS:
-        assert (SKILLS / name).is_dir(), f"referenced local skill missing: {name}"
-
-
-def test_start_development_does_not_chain_superpowers():
-    """start-development owns its own flow; superpowers is not a dependency."""
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    invocations = re.findall(r"[Ii]nvoke `superpowers:[a-z-]+`", text)
-    assert not invocations, f"start-development still invokes superpowers: {invocations}"
+def test_start_research_feeds_brainstorming():
+    text = _flat((START_RESEARCH / "SKILL.md").read_text())
+    assert "superpowers:brainstorming" in text
+    assert "start-" + "development" not in text
 
 
 def test_new_agents_exist_and_are_read_only():
@@ -175,13 +100,6 @@ def test_new_agents_exist_and_are_read_only():
             assert forbidden not in str(tools), f"{name} must stay read-only, got {tools}"
 
 
-def test_start_development_states_delivery_is_mandatory():
-    """Requested scope ships regardless of how many rounds it takes."""
-    text = _flat(sd_text(START_DEVELOPMENT / "SKILL.md"))
-    assert "## Delivery is not optional" in text
-    assert "## Boy scout rule" in text
-    assert "bounds a loop, never the delivery" in text, "the fix-round cap must not cap delivery"
-
 
 def test_boy_scout_rule_ships_with_the_plugin():
     rule = ROOT / "rules" / "boy-scout.md"
@@ -190,12 +108,6 @@ def test_boy_scout_rule_ships_with_the_plugin():
     for clause in ("Simplify what you touch", "uncommitted", "adjacent commits"):
         assert clause in text, f"boy-scout rule does not cover {clause!r}"
 
-
-def test_execution_goes_through_plan_run():
-    """Phase 4 invokes the plan-run skill; the retired workflow is not named."""
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "`plan-run`" in text
-    assert "plan-execute" not in text
 
 
 def test_cartographer_can_actually_use_lsp():
@@ -234,12 +146,6 @@ def test_tdd_rule_ships_with_the_plugin():
         assert clause in text, f"tdd rule does not cover {clause!r}"
 
 
-def test_orchestrator_is_told_to_delegate_and_to_stop_at_75_percent():
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "## Orchestrate. Do not implement." in text
-    assert "75%" in text, "the context stop condition must be explicit"
-    assert "## Loop until it is actually finished" in text
-
 
 def test_worktree_skills_ship_with_scripts_and_refuse_reuse():
     for name, script in (("worktree-create", "create.py"), ("worktree-merge", "merge.py")):
@@ -256,7 +162,7 @@ def test_worktree_skills_ship_with_scripts_and_refuse_reuse():
 
 def test_orchestrator_delegates_merges_to_a_sized_agent():
     """Merges are the most context-expensive step; the orchestrator must not do them."""
-    skill = skill_with_references()
+    skill = references_text()
     assert "worktree-merger" in skill
     assert "Never merge a worktree yourself" in skill
     assert "--assess" in skill, "model choice must come from the assessment, not a guess"
@@ -292,7 +198,7 @@ def _meta_block(text: str) -> str:
 
 def test_phase_seven_picks_the_host_instead_of_assuming_gitlab():
     """A workbench can hold GitHub and GitLab repos; the merge phase must resolve per repo."""
-    text = skill_with_references()
+    text = references_text()
     assert "remote get-url origin" in text, "the host must be detected, not assumed"
     for skill in (
         "pullrequests-update",
@@ -307,7 +213,6 @@ OLD_SCM_SKILL_NAME = re.compile(r"(?:github-pull|gitlab-merge)(?:request)s?-\w")
 
 def test_no_retired_scm_skill_names_in_flow_docs():
     docs = (
-        START_DEVELOPMENT / "SKILL.md",
         ROOT / "references" / "merge-hosts.md",
         ROOT / "README.md",
     )
@@ -319,58 +224,10 @@ def test_no_retired_scm_skill_names_in_flow_docs():
     assert "WORKBENCH_SCM_HOSTS" in merge_hosts
 
 
-def test_one_gate_only():
-    """All human review happens once, up front; everything after runs unattended."""
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    headings = re.findall(r"^## The gate\s*$", text, re.M)
-    assert len(headings) == 1, f"expected exactly one '## The gate' heading, got {len(headings)}"
-    assert not re.search(r"^#+ .*Gate 1", text, re.M), "a 'Gate 1' heading remains"
-    assert not re.search(r"^#+ .*Gate 2", text, re.M), "a 'Gate 2' heading remains"
-    assert "runs unattended to merge" in text
-    assert "recommended answer" in text
-    assert "## Phase 3 - Detailed" not in text, "the post-gate question round must be gone"
 
 
-def test_skill_body_fits_the_documented_cap():
-    lines = (START_DEVELOPMENT / "SKILL.md").read_text().splitlines()
-    assert len(lines) <= 150, f"SKILL.md is {len(lines)} lines; the cap is 150"
 
 
-def test_every_reference_and_template_named_exists():
-    text = (START_DEVELOPMENT / "SKILL.md").read_text()
-    prefix = r"(?:\$\{CLAUDE_PLUGIN_ROOT\}/|plugins/[\w-]+/)?"
-    named = set(re.findall(prefix + r"references/[a-z-]+\.md", text))
-    named |= set(re.findall(prefix + r"templates/[a-z]+\.md", text))
-    assert named, "SKILL.md names no references or templates"
-    for rel in sorted(named):
-        if rel.startswith("${CLAUDE_PLUGIN_ROOT}/"):
-            path = ROOT / rel.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
-        elif rel.startswith("plugins/"):
-            path = ROOT.parents[1] / rel
-        else:
-            path = START_DEVELOPMENT / rel
-        assert path.is_file(), f"SKILL.md names a missing file: {rel}"
-
-
-def test_research_steps_table():
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    section = " ".join(_section(text, "## Phase 1 - Discovery").split())
-    for name in RESEARCH_SKILLS:
-        assert name in section, f"phase 1 does not name {name}"
-    assert "skipped" in section and "Run when" in section
-
-
-def test_closing_phase_relays_the_retro():
-    phase4 = " ".join(_section(sd_text(START_DEVELOPMENT / "SKILL.md"), "## Phase 4 - Run").split())
-    assert "retro.md" in phase4
-    assert "closing message" in phase4
-    assert "recommendations" in phase4
-
-
-def test_run_passes_the_plan_path_and_tree():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
-    for key in ("the plan path", "its chunk number", "references/worktrees.md"):
-        assert key in phase4, f"Phase 4 does not mention {key}"
 
 
 FRESHNESS_SENTENCE = (
@@ -383,76 +240,15 @@ def _flat(text):
     return re.sub(r"\s+", " ", text)
 
 
-def _section(text, heading):
-    start = text.index(heading)
-    end = text.find("\n## ", start + 1)
-    return text[start:] if end == -1 else text[start:end]
-
-
-def _skill():
-    return sd_text(START_DEVELOPMENT / "SKILL.md")
-
-
-def test_phase_three_writes_the_implementation_plan():
-    phase3 = _flat(_section(_skill(), "## Phase 3 - Implementation plan"))
-    assert "implementation-plan.md" in phase3
-    assert "agreed rung only" in phase3
-
-
-def test_gate_questions_carry_recommended_answers():
-    gate = _flat(_section(_skill(), "## The gate"))
-    wording = 'numbered, each with a recommended answer, worded so that "yes" accepts it'
-    assert wording in gate
-
-
-def test_phase4_names_plan_branch_and_main_checkout():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
-    for term in ("branch `<plan>`", "main checkout"):
-        assert term in phase4, f"Phase 4 does not name {term!r}"
-
-
-def test_run_names_the_reviewer_and_the_whole_diff():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
-    for term in ("workbench:reviewer", "`git diff <base>...HEAD`", "under-delivery"):
-        assert term in phase4, f"Phase 4 does not name {term!r}"
-
-
-def test_run_uses_start_review_and_start_debugging():
-    text = _skill()
-    phase4 = _section(text, "## Phase 4 - Run")
-    assert "start-review" in phase4
-    assert "start-debugging" in phase4
-    assert "health" in phase4
-    assert "/code-review" not in text, "the native /code-review is replaced by start-review"
-
 
 def test_hooks_section_names_the_freshness_guard():
-    text = _flat(_skill())
-    assert "## Hooks that hold the line" in text
-    hooks = ROOT / "references" / "hooks.md"
-    assert "references/hooks.md" in text
-    assert hooks.is_file()
-    combined = text + " " + _flat(hooks.read_text())
+    combined = _flat((ROOT / "references" / "hooks.md").read_text())
     assert "verification-freshness" in combined
     assert "commit guard" in combined
     assert FRESHNESS_SENTENCE in combined
 
 
-def test_tdd_section_requires_red_evidence_and_independent_verification():
-    tdd = _flat(_section(_skill(), "## Test-driven, and verified before it is believed"))
-    assert "the red run is part of the deliverable" in tdd
-    assert "verified on HEAD <sha> by an agent that did not write it" in tdd
 
-
-def _ref(name):
-    return (START_DEVELOPMENT / "references" / name).read_text()
-
-
-def test_gate_answer_is_the_only_approval():
-    gate = _flat(_section(_skill(), "## The gate"))
-    for term in ("Pick a rung per plan", "The user's answer is the only approval"):
-        assert term in gate, f"the gate does not say {term!r}"
-    assert "approvals" not in gate
 
 
 def test_worktrees_reference_covers_helpers_for_every_role():
@@ -467,31 +263,9 @@ def test_worktrees_reference_covers_helpers_for_every_role():
         assert term in text, f"references/worktrees.md does not say {term!r}"
 
 
-def test_phase_four_dispatches_in_the_background():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
-    assert "in the background" in phase4
 
 
-def test_scope_section_forbids_later_parking():
-    scope = _flat(_section(_skill(), "## Scope is not negotiable"))
-    for term in ('No "later" parking', "named blocker", "recommended, never built"):
-        assert term in scope, f"the Scope section does not say {term!r}"
 
-
-def test_closing_message_is_short():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
-    assert "three lines at most" in phase4
-    assert "concise-orchestrator" in phase4
-
-
-def test_tickets_reference_is_linked():
-    assert "references/tickets.md" in _skill()
-
-
-def test_phase_four_reap_line_has_no_conditional_parking():
-    flat = _flat(_section(_skill(), "## Phase 4 - Run"))
-    assert "removes the rest on request" not in flat
-    assert "`ticket.py reap --plan <plan>` sweeps any left over" in flat
 
 
 def test_topic_focus_goes_to_practitioner():

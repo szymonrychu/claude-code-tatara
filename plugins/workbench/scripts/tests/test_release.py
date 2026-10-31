@@ -10,7 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MARKETPLACE = ROOT.parents[1] / ".claude-plugin" / "marketplace.json"
-SD = ROOT / "skills" / "start-development"
+FLOW = ROOT.parent / "superpowers" / "skills"
+FLOW_SKILLS = ("brainstorming", "subagent-driven-development", "finishing-a-development-branch")
 
 
 def test_version_matches_changelog():
@@ -75,7 +76,7 @@ def test_readme_wording():
         "research-papers",
         "research-docs",
         "reuse-hunter",
-        "plan-writer",
+        "plan-writer-prompt.md",
         "## Documents",
         "doc_path.sh",
         "docs/research/",
@@ -84,20 +85,20 @@ def test_readme_wording():
     assert "docs/plans/<date>-" not in text
 
 
-def test_readme_dispatch_phases_match_skill():
-    """Every start-development row of the README dispatch table names an agent SKILL.md names."""
+def test_readme_dispatch_rows_match_the_flow_skills():
+    """Every flow-skill row of the README dispatch table names an agent that skill names."""
     readme = (ROOT / "README.md").read_text()
-    skill = (SD / "SKILL.md").read_text()
-    rows = re.findall(r"^\| `start-development` phase (\d) \| `(\S+)` \|", readme, re.M)
+    callers = "|".join(FLOW_SKILLS)
+    rows = re.findall(rf"^\| `superpowers:({callers})` \| `(\S+)` \|", readme, re.M)
     assert rows
     packs = {f.stem for f in (ROOT.parent).glob("workbench-*/agents/*.md")}
     assert packs, "pack agents not found"
-    for phase, agent in rows:
+    for skill, agent in rows:
         assert agent not in packs, f"core README names pack agent {agent}"
-        assert f"## Phase {phase} - " in skill, phase
-        assert agent in skill, (agent, phase)
+        text = "\n".join(p.read_text() for p in (FLOW / skill).glob("*.md"))
+        assert agent in text, (agent, skill)
     for agent in (
-        "plan-writer",
+        "codebase-cartographer",
         "implementer",
         "reviewer",
         "worktree-merger",
@@ -108,8 +109,8 @@ def test_readme_dispatch_phases_match_skill():
 def test_readme_names_the_new_flows():
     text = (ROOT / "README.md").read_text()
     for needle in (
-        "start-review",
-        "start-debugging",
+        "requesting-code-review",
+        "systematic-debugging",
         "verify-recorder.py",
         "## Verification",
         "supersedes engineering:debug",
@@ -121,8 +122,6 @@ def test_readme_names_round_three():
     text = (ROOT / "README.md").read_text()
     for needle in (
         "concise-orchestrator",
-        "/workbench:review",
-        "/workbench:debug",
         "flake-hunt",
         "full output:",
         "references/hooks.md",
@@ -139,9 +138,9 @@ def test_readme_describes_the_plan_flow():
         "plan.md",
         "implementation-plan.md",
         "retro.md",
-        "skills/start-development/scripts/ticket.py",
+        "plugins/superpowers/scripts/ticket.py",
         "plan tree",
-        "`plan-run`",
+        "`subagent-driven-development`",
         "scope ladder",
         "one gate",
         "one implementer",

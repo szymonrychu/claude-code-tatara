@@ -58,13 +58,13 @@ questions / gaps" section from the reviewer; a numbered "Sources" list. Every
 non-trivial claim cites a source; killed claims do not appear.
 
 The brief ends with a mandatory final `## Plan inputs` section, defined once in
-phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md` (lists: `reuse`,
+the Discovery section of the `superpowers:brainstorming` skill (lists: `reuse`,
 `do-not-build`, `fix-as-ac`, `ideas`).
 
 ## Notes
 
 - Runnable standalone (`/start-research <topic>`) and called by
-  `start-development` during its discovery phase.
+  `superpowers:brainstorming` during its discovery phase.
 - The four `research-*` skills (`research-docs`, `research-code-external`,
   `research-code-internal`, `research-papers`) are the single-lens entry points;
   use this skill when several lenses are wanted at once.

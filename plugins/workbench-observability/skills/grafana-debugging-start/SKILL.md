@@ -49,7 +49,7 @@ Exact params for every tool above are in
 `references/mcp-tool-cheatsheet.md` - do not duplicate them here, and do
 not guess casing at call time; read the tool's live JSON schema.
 
-A code defect found through the funnel continues in `start-debugging` phase 1, with the query as the feedback loop.
+A code defect found through the funnel continues in `superpowers:systematic-debugging` Phase 1, with the query as the feedback loop.
 
 Stages 5 and 6 are conditional: on a Grafana with no Pyroscope or Tempo
 datasource (confirmed via stage 0), state that explicitly in the report

@@ -83,7 +83,7 @@ with `--base <plan>`.
 ## Plan close
 
 The plan close has one entry point, run by the `worktree-merger`: `ticket.py close <plan>
---verify '<final verify>'` (the start-development skill's ticket script). It needs the
+--verify '<final verify>'` (the superpowers plugin's ticket script, `ticket.py`). It needs the
 reviewer's retro.md, rebases `<plan>` onto main inside the plan tree, runs the full suite
 and lint there, fast-forwards main, and writes `close.json`. This skill never fast-forwards
 main for a plan. The merger resolves a rebase conflict of `<plan>` onto main in the plan

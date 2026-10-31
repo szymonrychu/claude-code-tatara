@@ -2,10 +2,11 @@
 
 ## Claude Code only
 
-- Plugin skills are namespaced `workbench:<skill>` (for example `workbench:init`,
-  `workbench:start-development`). Other harnesses use the bare skill name.
+- Plugin skills are namespaced: `superpowers:<skill>` for the development flow (for example
+  `superpowers:brainstorming`), `workbench:<skill>` for the tooling (for example
+  `workbench:init`). Other harnesses use the bare skill name.
 - After editing a plugin, run `/reload-plugins` to pick up the change.
-- `plan-run` dispatches its implementer and reviewer agents in the background.
+- `subagent-driven-development` dispatches its implementer and reviewer agents in the background.
 - The first run in a clone shows the trust dialog; accept it so project settings and the
   workbench plugins load.
 - In a Claude Code cloud session the trust dialog and `/reload-plugins` do not exist: the

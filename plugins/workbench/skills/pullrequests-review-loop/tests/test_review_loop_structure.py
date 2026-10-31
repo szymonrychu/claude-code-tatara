@@ -16,7 +16,7 @@ def test_judging_uses_the_review_checklist():
         "evidence",
         "declined",
         "not certain",
-        "start-review",
+        "requesting-code-review",
         "critical",
         "high",
         "medium",

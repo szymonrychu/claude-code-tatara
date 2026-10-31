@@ -49,7 +49,8 @@ unchanged. It never fails the session: problems are reported to the agent as
 - Cloud threads inside a claude.ai *project* do not run repository hooks either; use a plain
   session.
 - Check it worked: ask "which workbench skills do you have?". The answer lists
-  `workbench:start-development`, `workbench:plan-execute` and the rest. The session-start
+  `superpowers:brainstorming`, `superpowers:subagent-driven-development`, `workbench:init`
+  and the rest. The session-start
   context also names each submodule's `add_repo` call.
 
 ## Working in components (submodules)

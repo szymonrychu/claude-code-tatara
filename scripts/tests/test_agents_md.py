@@ -66,10 +66,12 @@ def test_rules_block_generated():
 
 def test_ground_rules_content():
     for needle in (
-        "start-development",
-        "start-review",
-        "start-debugging",
-        "plan-run",
+        "brainstorming",
+        "writing-plans",
+        "subagent-driven-development",
+        "requesting-code-review",
+        "receiving-code-review",
+        "systematic-debugging",
         "research",
         "opus",
         "sonnet",
@@ -103,7 +105,7 @@ def test_template_maintenance():
 
 def test_no_personal_or_stale_content():
     low = AGENTS.lower()
-    banned = ("adhd", "superpowers", "engineering:debug", "szy" + "mon", "/us" + "ers/")
+    banned = ("adhd", "engineering:debug", "szy" + "mon", "/us" + "ers/")
     for bad in (*banned, "\u2014", "’", "→"):
         assert bad not in low
     assert AGENTS.isascii() and CLAUDE.isascii()
@@ -175,11 +177,16 @@ def test_model_table_has_haiku():
     assert "mechanical relays and classifiers: haiku" in flat
 
 
-def test_ground_rule_one_names_plan_run():
+def test_ground_rule_one_names_the_flow():
     start, end = AGENTS.index("1. **Development flow.**"), AGENTS.index("2. **Always")
     rule = " ".join(AGENTS[start:end].split())
     for needle in (
-        "plan-run",
+        "brainstorming",
+        "writing-plans",
+        "subagent-driven-development",
+        "systematic-debugging",
+        "receiving-code-review",
+        "superpowers:brainstorming",
         "scope ladder",
         "one approval gate",
         "one implementer",

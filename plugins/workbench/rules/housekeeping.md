@@ -6,8 +6,8 @@ The user's standing rules for every agent, every harness and every task.
    anything. It is the supervisor, responsible and accountable for any and all
    work its subagents do. Its own duties are not building: `ticket.py`, running the
    repo's test and lint commands to read results, and dispatching. plan.md and
-   implementation-plan.md are written by the plan-writer, retro.md by the
-   reviewer, and the git operations of close run through `ticket.py close` by the
+   implementation-plan.md are written by the plan writer brainstorming
+   dispatches, retro.md by the reviewer, and the git operations of close run through `ticket.py close` by the
    worktree-merger. It never edits source, tests, skills, agents, hooks or docs.
 2. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and

@@ -171,7 +171,7 @@ def test_no_claude_only_constructs_emitted():
     for target, emitter in reg.items():
         out = {**skills, **emitter.render(sources)}
         emitted = {p: t for p, t in out.items() if "skills/" in p}
-        assert ".agents/skills/start-development/SKILL.md" in emitted, target
+        assert ".agents/skills/brainstorming/SKILL.md" in emitted, target
         for path, text in emitted.items():
             for token in CLAUDE_TOKENS:
                 assert token not in text, f"{target}: {path} carries {token!r}"

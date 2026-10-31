@@ -34,7 +34,6 @@ TOKEN_KEYS = {
 }
 
 AGENT_ROLES = {
-    "workbench:plan-writer": "plan",
     "workbench:implementer": "impl",
     "workbench:reviewer": "review",
     "workbench:worktree-merger": "merge",

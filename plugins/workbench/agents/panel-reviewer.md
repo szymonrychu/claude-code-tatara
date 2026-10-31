@@ -1,10 +1,10 @@
 ---
 name: panel-reviewer
 description: >
-  One member of an interrogate review panel. Reads a change against its stated
-  intent and returns findings with evidence. Read-only: never edits, commits,
-  or fixes. Dispatched by the interrogate skill, one per model, with the model
-  set per call.
+  One member of a multi-model review panel, such as brainstorming's builder
+  review. Reads a change against its stated intent and returns findings with
+  evidence. Read-only: never edits, commits, or fixes. Dispatched one per
+  model, with the model set per call.
 tools: [Read, Grep, Glob, Bash]
 ---
 

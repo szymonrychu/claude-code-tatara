@@ -59,7 +59,8 @@ def test_housekeeping_rule_one_names_the_plan_writers():
     rule = (REPO / "plugins/workbench/rules/housekeeping.md").read_text()
     flat = " ".join(rule.split())
     for needle in (
-        "plan.md and implementation-plan.md are written by the plan-writer",
+        "plan.md and implementation-plan.md are written by the plan writer brainstorming"
+        " dispatches",
         "retro.md by the reviewer",
         "dispatching",
     ):

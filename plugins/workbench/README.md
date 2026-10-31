@@ -1,10 +1,14 @@
 # workbench - core plugin
 
-The development flow for any workbench tree, whether the tree is a metarepo or a flat
-set of sibling repos: discovery, a plan with a scope ladder behind one approval gate that
-picks the rung, unattended execution through `plan-run` (one implementer per chunk and one
-reviewer on the whole diff, who writes the retro), gated review and debugging, file-based
-plans, and hooks that guard destructive commands and tie every test run to the committed HEAD.
+The tooling for any workbench tree, whether the tree is a metarepo or a flat set of sibling
+repos: the agents the development flow dispatches, research skills, worktrees, submodules, pull
+requests, releases, and hooks that guard destructive commands and tie every test run to the
+committed HEAD. The development flow itself (discovery, a plan with a scope ladder behind one
+approval gate that picks the rung, unattended execution with one implementer per chunk and one
+reviewer on the whole diff, who writes the retro) is the `superpowers` plugin:
+`brainstorming`, `writing-plans`, `subagent-driven-development`,
+`finishing-a-development-branch`, `requesting-code-review`, `receiving-code-review` and
+`systematic-debugging`.
 
 ## Install
 
@@ -73,8 +77,7 @@ Every agent and script goes through this, so a new tree needs no code change.
 
 ## Agents
 
-Read-only, except `plan-writer` (plan.md and implementation-plan.md under its plan dir),
-`reviewer` (one file, retro.md, when the review passes), `implementer` (code in the plan tree),
+Read-only, except `reviewer` (one file, retro.md, when the review passes), `implementer` (code in the plan tree),
 `worktree-merger` (a conflicted rebase and the landing) and the `research-*` agents (a brief at their output path).
 Mechanical ones on sonnet (they exist to keep large output out of the main context);
 research ones on opus (they exist for judgement). The reviewers carry no model of their own:
@@ -85,13 +88,12 @@ the caller sets it per call.
 | `scm-shepherd` | sonnet | MR/PR + pipeline status; picks `glab` or `gh` from the remote |
 | `submodule-auditor` | sonnet | which submodule pins are stale, unpushed, detached, or remote-less |
 | `codebase-cartographer` | opus | maps an unfamiliar repo before design: entrypoints, boundaries, where a change lands |
-| `plan-writer` | opus | writes plan.md (scope ladder, open questions) from `{plan, briefs[]}`, then implementation-plan.md for the agreed rung after the gate |
 | `security-researcher` | opus | secrets, RBAC, container privilege, supply chain, CVE surface |
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
 | `implementer` | sonnet | implements one chunk of an implementation plan test-first in the plan tree and returns `complete`, `undelivered`, `discovered`; fix rounds continue it |
 | `reviewer` | per call | one reviewer on the whole diff: verify on HEAD, under- and over-delivery, debt markers, quality; writes retro.md on a pass |
-| `panel-reviewer` | per call | one member of an `interrogate` review panel, one per model |
+| `panel-reviewer` | per call | one member of a multi-model review panel, such as brainstorming's builder review, one per model |
 | `worktree-merger` | sonnet | lands a plan: `ticket.py close` (resolving a rebase conflict in the plan tree) or the MR |
 | `research-docs-purist` | sonnet | official docs at the installed version, anti-patterns in our usage |
 | `research-practitioner` | sonnet | field experience and known failure modes |
@@ -113,22 +115,20 @@ every pass, so routine work doesn't pay for them:
 
 | Caller | Agent | Trigger |
 |---|---|---|
-| `start-development` phase 1 | `submodule-auditor` | a checkout may be stale, detached, or unpushed |
-| `start-development` phase 1 | `codebase-cartographer` | mapping a repo in scope (via `start-discovery`) |
+| `superpowers:brainstorming` | `codebase-cartographer` | mapping a repo in scope (a discovery lane) |
 | `research-code-internal` | `reuse-hunter` | the reuse hunt |
-| `start-development` phase 2 | `architect-researcher` | >1 viable approach, or an expensive-to-reverse choice |
-| `start-development` phase 2 | `plan-writer` | writing plan.md from `{plan, briefs[]}`, then implementation-plan.md after the gate |
+| `superpowers:brainstorming` | `architect-researcher` | >1 viable approach, or an expensive-to-reverse choice |
 | `research-docs` | `research-docs-purist` | official docs of every library in scope |
 | `start-research` | `research-practitioner` | field experience, known failure modes |
 | `research-code-external` | `research-prior-art-scout` | similar open-source projects |
 | `research-papers` | `research-paper-scout` | literature for an algorithmic core |
 | `start-research` | `research-reviewer` | adversarial check of every research brief |
-| `start-development` phase 4 | `implementer` | every chunk, via `plan-run`, in the background |
-| `start-development` phase 4 | `reviewer` | the whole diff, after the last chunk and after each fix round |
-| `start-development` phase 4 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
-| `start-development` phase 4 | `worktree-merger` | landing the plan: `ticket.py close` or the MR |
+| `superpowers:subagent-driven-development` | `implementer` | every chunk, in the background |
+| `superpowers:subagent-driven-development` | `reviewer` | the whole diff, after the last chunk and after each fix round |
+| `superpowers:subagent-driven-development` | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
+| `superpowers:finishing-a-development-branch` | `worktree-merger` | landing the plan: `ticket.py close` or the MR |
 | `references/merge-hosts.md` | `scm-shepherd` | a pipeline failed and the cause is not in the log tail |
-| `interrogate` | `panel-reviewer` | a review panel, one agent per model |
+| a multi-model review | `panel-reviewer` | a review panel, one agent per model |
 | `git-submodules-refresh` | `submodule-auditor` | checkout state unknown before refreshing |
 
 Two rules hold throughout: no agent replaces an approval gate
@@ -168,10 +168,12 @@ harness files and fills the project block of `AGENTS.md`. `component-add` and
 `component-remove` wrap `mise run component`. `template-update` wraps `mise run init:update`:
 it fetches the template, merges its tooling, keeps the instance-owned docs and pushes nothing.
 
-`start-development` has one gate, up front, after plan.md and its scope ladder are written; it
-may batch several plans, a section and a worktree each. The answer picks the rung; the plan-writer
-then writes implementation-plan.md for that rung only, and everything after runs unattended through
-`plan-run` and ends with retro.md. The four `research-*` skills are optional inputs to that gate.
+The flow (`superpowers:brainstorming`) has one gate, up front, after plan.md and its scope ladder
+are written; it may batch several plans, a section and a worktree each. The answer picks the rung;
+`writing-plans` then writes implementation-plan.md for that rung only, and everything after runs
+unattended through `subagent-driven-development` and ends with retro.md. The four `research-*`
+skills are optional inputs to that gate; their briefs go to the plan writer brainstorming
+dispatches with `plan-writer-prompt.md`.
 
 One flow serves both tree shapes; the host (GitLab or GitHub) is picked per repo in references/merge-hosts.md.
 
@@ -187,23 +189,23 @@ docs/plans/{todo,in-progress,done}/<plan>/plan.md                 what and why, 
 docs/research/                               research briefs
 ```
 
-`skills/start-development/scripts/ticket.py` creates and moves plans between the three folders. `ticket.py new` writes plan.md from the template after the near-duplicate check, `ticket.py check` lists near duplicates, `ticket.py path` prints a plan file's path, `ticket.py rename` renames a plan in todo, `ticket.py move <plan> in-progress` is refused until plan.md has an agreed `rung` and implementation-plan.md exists (the gate is mechanical) and then creates the plan tree on branch `<plan>`, and `ticket.py move <plan> done` needs retro.md and a merged branch, then removes the tree and branch. Every step commits in the plan tree in order, and the plan merges to main once at close (`ticket.py close <plan>`: rebase onto main, full suite and lint on the rebased tip, fast-forward only when green). Plain `git worktree` is used throughout, never the harness's built-in worktree feature. Further commands (sibling modules in `scripts/ticket_cmds/`): `ticket.py worktrees --refresh` brings a plan tree up to date, `ticket.py reap --plan <plan>` reaps a done plan's leftover worktrees, and `ticket.py migrate <old-dir> | --all [--dry-run]` converts old-format directories to plans with one `chore(ticket): <plan> migrate` commit each (`ticket.py migrate --all` converts every one), and `ticket.py slug` prints a title's slug. Research paths come from `skills/start-research/scripts/doc_path.sh <kind> "<topic>"`.
-Plans follow `skills/start-development/templates/`.
+`plugins/superpowers/scripts/ticket.py` creates and moves plans between the three folders. `ticket.py new` writes plan.md from the template after the near-duplicate check, `ticket.py check` lists near duplicates, `ticket.py path` prints a plan file's path, `ticket.py rename` renames a plan in todo, `ticket.py move <plan> in-progress` is refused until plan.md has an agreed `rung` and implementation-plan.md exists (the gate is mechanical) and then creates the plan tree on branch `<plan>`, and `ticket.py move <plan> done` needs retro.md and a merged branch, then removes the tree and branch. Every step commits in the plan tree in order, and the plan merges to main once at close (`ticket.py close <plan>`: rebase onto main, full suite and lint on the rebased tip, fast-forward only when green). Plain `git worktree` is used throughout, never the harness's built-in worktree feature. Further commands (sibling modules in `scripts/ticket_cmds/`): `ticket.py worktrees --refresh` brings a plan tree up to date, `ticket.py reap --plan <plan>` reaps a done plan's leftover worktrees, and `ticket.py migrate <old-dir> | --all [--dry-run]` converts old-format directories to plans with one `chore(ticket): <plan> migrate` commit each (`ticket.py migrate --all` converts every one), and `ticket.py slug` prints a title's slug. Research paths come from `skills/start-research/scripts/doc_path.sh <kind> "<topic>"`.
+Plans follow `plugins/superpowers/templates/`.
 
 ### Per-repo config
 
-`.claude/workbench.json` holds the per-repo settings read by `scripts/lib/workbench.py`: `refRunners` (glob to command for a test ref in a step), `suites`, `deploy` (hook run after merge) and `overlapIgnore` (paths ignored by the overlap rule). Keys and defaults: `skills/start-development/references/workbench-config.md`.
+`.claude/workbench.json` holds the per-repo settings read by `scripts/lib/workbench.py`: `refRunners` (glob to command for a test ref in a step), `suites`, `deploy` (hook run after merge) and `overlapIgnore` (paths ignored by the overlap rule). Keys and defaults: `references/workbench-config.md`.
 
 ### Background dispatches and user steps
 
-`plan-run` dispatches each implementer and reviewer in the background; the completion notification is the wake signal, so the session stays free to plan another plan. A command only the user can run (reboots, firmware) becomes a user-run step: `skills/start-development/scripts/user-run-step.py` checks state before and after and parses the pasted result (`skills/start-development/references/user-run-steps.md`).
+`subagent-driven-development` dispatches each implementer and reviewer in the background; the completion notification is the wake signal, so the session stays free to plan another plan. A command only the user can run (reboots, firmware) becomes a user-run step: `scripts/user-run-step.py` checks state before and after and parses the pasted result (`references/user-run-steps.md`).
 
 Releases go through the `release` skill: `skills/release/scripts/release.py --dry-run` previews the judged bump and changelog section; a real run bumps `plugin.json` and the `workbench` entry of the root `.claude-plugin/marketplace.json`, prepends `plugins/workbench/CHANGELOG.md`, commits `chore(release): vX.Y.Z` and tags it locally.
 
 ## The plan loop
 
 - **Plans**: file-based plans (above), `ticket.py`, one plan tree per plan, retro.md before done, the tree and branch removed on done.
-- **Execution**: `plan-run` runs the chunks in order in the plan tree, one implementer per chunk; one reviewer reads the whole diff for under-delivery and over-delivery, at most two fix rounds that continue the same agents, then writes retro.md; `undelivered` is a finding and `discovered` is recommended, never built; the worktree-merger lands it.
+- **Execution**: `subagent-driven-development` runs the chunks in order in the plan tree, one implementer per chunk; one reviewer reads the whole diff for under-delivery and over-delivery, at most two fix rounds that continue the same agents, then writes retro.md; `undelivered` is a finding and `discovered` is recommended, never built; the worktree-merger lands it.
 - **Discovery**: discovery uses LSP and grep, with no graph probe; LSP first for symbols and references, then grep.
 
 Both SCM families ship deliberately. They are parallel implementations, not drift.
@@ -234,7 +236,7 @@ state surgery, raw secret-tool edits, bulk or cluster-scoped deletes, force-push
 directly; every other harness runs `hooks/adapter.py --harness <h> --event <e> --hook <name>`
 over the same logic.
 
-What each hook enforces and why: skills/start-development/references/hooks.md.
+What each hook enforces and why: references/hooks.md.
 
 ## Verification
 
@@ -244,14 +246,14 @@ The user's answer at the gate is the only approval: it picks the rung and answer
 
 Every implementer prompt carries the plan path and its chunk number, never file contents.
 
-start-debugging supersedes engineering:debug and start-review supersedes /code-review for work in these trees.
+systematic-debugging supersedes engineering:debug and requesting-code-review supersedes /code-review for work in these trees.
 
 ## Scripts
 
 | Script | Does |
 |---|---|
 | `lib/workbench.py` | tree discovery and component resolution |
-| `../skills/start-development/scripts/ticket.py` | plan ticket lifecycle (see Documents) |
+| `../../superpowers/scripts/ticket.py` | plan ticket lifecycle (see Documents) |
 | `run-tests.sh` | every skill suite, one process per skill |
 | `flake-hunt.sh` | repeats one component under load to hunt flakes |
 

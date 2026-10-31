@@ -21,8 +21,8 @@ GitHub-only)` on stderr, still processes the run's GitHub repos, and exits 1.
 A local-only repo (no PR host) is reported skipped on stderr and does not fail
 the run. For GitLab, judge unresolved discussions via `pullrequests-watch` `reviews=` and the MR UI/API.
 
-This skill does **not** merge. Merging stays the caller's job (the `worktree-merger` in
-`start-development` phase 4).
+This skill does **not** merge. Merging stays the caller's job (the `worktree-merger` that
+`superpowers:finishing-a-development-branch` dispatches).
 
 ## Procedure
 
@@ -79,7 +79,7 @@ This skill does **not** merge. Merging stays the caller's job (the `worktree-mer
      Do not block on it. Apply a grace window (a couple of poll rounds,
      spaced a few minutes apart, is enough - the reviewer is asynchronous,
      not a synchronous check): if it still hasn't reviewed, proceed on the
-     strength of your own review (the `start-review` pass already run
+     strength of your own review (the `requesting-code-review` pass already run
      earlier in the flow) and note in your report that the automated
      reviewer never weighed in.
 

@@ -82,12 +82,19 @@ def test_reuse_hunter_agent():
     assert "jscpd" in body and "Plan inputs" in body
 
 
-def test_internal_hunt_runs_before_phase_two_with_no_lean_path():
+def test_internal_hunt_runs_before_the_plan_with_no_lean_path():
     text = " ".join((SKILLS / "research-code-internal" / "SKILL.md").read_text().split())
-    assert "before phase 2" in text
+    assert "before brainstorming writes plan.md" in text
     assert "lean path" not in text
     assert "phase 3" not in text
-    assert "plan-writer" in text
+    assert "plan-writer-prompt.md" in text
+
+
+def test_plan_inputs_are_defined_by_brainstorming():
+    for name in NAMES:
+        text = " ".join((SKILLS / name / "SKILL.md").read_text().split())
+        assert "superpowers:brainstorming" in text, name
+        assert "start-" + "development" not in text, name
 
 
 def test_research_skills_name_no_epic():

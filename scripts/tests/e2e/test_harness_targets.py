@@ -128,7 +128,7 @@ def check_skills(root: Path, files: list[str]) -> None:
     assert skills, "no skills generated"
     names = [Path(f).parent.name for f in skills]
     assert len(names) == len(set(names)), "duplicate skill names across plugins"
-    assert {"kubectl-logs-query", "grafana-debugging-start", "start-development"} <= set(names)
+    assert {"kubectl-logs-query", "grafana-debugging-start", "brainstorming"} <= set(names)
     for rel in skills:
         body = (root / rel).read_text()
         assert "CLAUDE_PLUGIN_ROOT" not in body, rel

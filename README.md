@@ -100,10 +100,12 @@ agent to run init first.
 
 ## Plugins and packs
 
-The core plugin `workbench` is enabled by default. It brings the development
-flow, the plan-run loop, file-based plans, research skills, tiered
-review, debugging flow, verification hooks, a plan worktree and
-destructive-command guardrails.
+The plugins `superpowers` and `workbench` are enabled by default. `superpowers` brings
+the development flow (`brainstorming`, `writing-plans`, `subagent-driven-development`,
+`finishing-a-development-branch`), file-based plans, review (`requesting-code-review`,
+`receiving-code-review`) and debugging (`systematic-debugging`). The core plugin
+`workbench` brings the agents that flow dispatches, research skills, verification hooks,
+a plan worktree and destructive-command guardrails.
 
 Optional packs, all requiring the core:
 
@@ -148,7 +150,7 @@ plans, each with its own scope ladder, worktree and branch, so they run independ
 
 ### The one gate
 
-Non-trivial work starts with `workbench:start-development`: discovery, then a plan
+Non-trivial work starts with `superpowers:brainstorming`: discovery, then a plan
 with a scope ladder from the smallest useful delivery to the complete one, then one
 approval gate. The gate lists the rungs and the open questions as numbered
 options. Pick a rung, answer by number and state corrections bluntly.
@@ -160,7 +162,8 @@ After the gate nothing waits for you until the run ends.
 
 ### The autonomous run to merge
 
-Your answer starts `plan-run`: one implementer per chunk (tests first), one reviewer
+Your answer starts `writing-plans` for the agreed rung, then
+`subagent-driven-development`: one implementer per chunk (tests first), one reviewer
 on the whole diff for under- and over-delivery, at most two fix rounds, a retro and the merge. "Approved
 means fully delivered": every item of the agreed rung is implemented in full, with its
 tests and docs, and nothing is left half done. The only acceptable
@@ -170,22 +173,22 @@ non-delivery is an external blocker, which the run names and escalates.
 
 When a run stops on a blocker (a credential, a permission, a human merge),
 clear the blocker, then resume. Progress lives in the git log of the plan tree (one commit per step), so
-`plan-run` resumes at the first step without a commit.
+`subagent-driven-development` resumes at the first step without a commit.
 
-> Continue the run of docs/plans/in-progress/<plan>/ with plan-run. The token is set now.
+> Continue the run of docs/plans/in-progress/<plan>/ with subagent-driven-development. The token is set now.
 
 ### Debug a field issue
 
 Hand over the symptom and the evidence, not a theory.
 
-> Use start-debugging: uploads over 10 MB fail intermittently in production.
+> Use systematic-debugging: uploads over 10 MB fail intermittently in production.
 > Logs are in the ticket. Find the root cause before proposing a fix, then fix
 > it with a regression test.
 
 ### Independent review and retrospective
 
 After a batch of work, ask for a review by a different or stronger model than
-the one that wrote it, through `workbench:start-review`.
+the one that wrote it, through `superpowers:requesting-code-review`.
 
 > Review the last three merged plans with a stronger model, against their
 > plan.md and implementation-plan.md. Findings that are real get fixed; the rest are dropped with a reason.

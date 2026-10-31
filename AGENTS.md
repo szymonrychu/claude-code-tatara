@@ -57,12 +57,14 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 ## Ground rules
 
 1. **Development flow.** Non-trivial work (a feature, a cross-component change, a change to
-   the workbench itself) starts with `start-development` (Claude Code:
-   `workbench:start-development`): discovery, a plan with a scope ladder behind one approval gate that picks the rung, then
-   unattended execution. Reviews go through `start-review`, failures through
-   `start-debugging`. Implementation goes through `plan-run`: one implementer and one reviewer on the whole diff, two
-   fix rounds; never hand-roll a loop beyond that. In
-   harnesses other than Claude Code, invoke the skills by their bare names.
+   the workbench itself) starts with `brainstorming` (Claude Code:
+   `superpowers:brainstorming`): discovery, a plan with a scope ladder behind one approval gate
+   that picks the rung. `writing-plans` then writes the implementation plan for that rung, and
+   `subagent-driven-development` runs it unattended: one implementer and one reviewer on the
+   whole diff, two fix rounds; never hand-roll a loop beyond that. Reviews go through
+   `requesting-code-review` and `receiving-code-review`, failures through
+   `systematic-debugging`. In harnesses other than Claude Code, invoke the skills by their bare
+   names.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
    very complex architecture decisions fable; mechanical relays and classifiers: haiku;
@@ -207,8 +209,8 @@ The user's standing rules for every agent, every harness and every task.
    anything. It is the supervisor, responsible and accountable for any and all
    work its subagents do. Its own duties are not building: `ticket.py`, running the
    repo's test and lint commands to read results, and dispatching. plan.md and
-   implementation-plan.md are written by the plan-writer, retro.md by the
-   reviewer, and the git operations of close run through `ticket.py close` by the
+   implementation-plan.md are written by the plan writer brainstorming
+   dispatches, retro.md by the reviewer, and the git operations of close run through `ticket.py close` by the
    worktree-merger. It never edits source, tests, skills, agents, hooks or docs.
 2. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and

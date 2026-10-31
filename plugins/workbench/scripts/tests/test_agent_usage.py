@@ -149,7 +149,7 @@ def test_marker_and_role(tmp_path):
     assert agent_usage.role_for("review", "workbench:implementer") == "review"
     assert agent_usage.role_for(None, "workbench:implementer") == "impl"
     assert agent_usage.role_for("", "workbench:reviewer") == "review"
-    assert agent_usage.role_for(None, "workbench:plan-writer") == "plan"
+    assert agent_usage.role_for(None, "workbench:plan-" + "writer") == ""
     assert agent_usage.role_for(None, "workbench:worktree-merger") == "merge"
     assert agent_usage.role_for(None, "general-purpose") == ""
 

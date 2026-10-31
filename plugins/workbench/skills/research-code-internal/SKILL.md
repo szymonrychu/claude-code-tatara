@@ -13,7 +13,8 @@ rebuilding it.
 Run when:
 - the plan will add any helper, reader, parser, schema field or subsystem;
 - a repo in scope has more than ~200 source files;
-- always, before phase 2 (the plan), so the plan-writer receives its Plan inputs.
+- always, before brainstorming writes plan.md, so the plan writer it dispatches with
+  `plan-writer-prompt.md` receives its Plan inputs.
 
 Skip when:
 - every file is named and the plan adds no new helper.
@@ -26,12 +27,12 @@ Skip when:
    in scope, and the plan items or the design doc path.
 3. Write its answer to the brief path and return the path plus the Plan inputs.
 4. Its `reuse` list is the shared-parts map (part -> exists-at / needed-by /
-   proposed owner) that the plan-writer consumes in phase 2. Pass it on unedited.
+   proposed owner) that the plan writer consumes when it writes plan.md. Pass it on unedited.
 
 ## Output: Plan inputs
 
 Return the four `## Plan inputs` lists (`reuse`, `do-not-build`, `fix-as-ac`, `ideas`) exactly as
-defined in phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md`; do not restate
+defined in the Discovery section of the `superpowers:brainstorming` skill; do not restate
 them.
 
 ## Rules
