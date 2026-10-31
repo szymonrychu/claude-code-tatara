@@ -1,58 +1,48 @@
-# agents-schedule microservice design
+---
+title: agents-schedule microservice
+repos: [agents-schedule]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# agents-schedule microservice
 
-A new Python component `agents-schedule` with its own Postgres database maps user-defined 5-field cron
-schedules (with an IANA timezone) to orchestrator presets plus a prompt. A singleton worker fires due
-schedules exactly once per fire time, starts a session from the preset through the orchestrator's
-service-token port and sends the prompt, then tracks the first turn to `handled` or `failed`. A
-Schedules page in agents-web, reached from the hamburger menu between Webhooks and Presets, manages
-schedules and shows run history. Headline decisions: everything shared (DB helpers, settings and
-runtime, orchestrator client, dispatch and run tracking, fake orchestrator, trigger UI kit, service
-tokens) is consumed from agents-webhook-microservice, nothing is rebuilt (D2); the last-fired stamp
-is derived from the runs table so each table keeps one writer (D3); tatara-new due-check parity with
-one catch-up run after downtime (D5); overlaps are recorded `ignored` (D6); a run posts its prompt to the schedule's earlier session when the preset sets `reuse_running_agent` and that session still runs (D15).
+## What and why
 
-## Intent and why
+What: A separate agents-schedule microservice mapping cron schedules to presets, with a web UI entry in the hamburger menu
+How: New Python component with its own DB, cron-to-preset mappings, triggering sessions through the orchestrator API, modelled on agents-webhook
+Why: Scheduled agent runs from presets, as in tatara-new
 
-The user wants more of tatara-new in this system (README Description). tatara-new runs scheduled work
-from fixed per-activity cron fields on its Project CRD; here the request is a separate microservice
-where any cron schedule maps to any preset, "similar to agents-webhooks", living in the web UI's
-hamburger menu. It is the second trigger service after agents-webhook and reuses its shared parts.
+User request (2026-10-25), verbatim. Overall target: "Target getting more and more from tatara system (/Users/szymonri/Documents/tatara-new)"
 
-## Goals
+"## agents-schedule microservice
+  * separate microservice allowing to map cronjob to preset - similar to agents-webhooks (maps cronjob to preset), lives in webUI in hamburger menu"
 
-- G1: `code/agents-schedule` exists (public GitHub repo, created by epic agents-schedule-component) with a Python service, its image, chart and CI.
-- G2: schedules (name, cron, timezone, preset, prompt, enabled) are created, listed, edited, previewed, enabled, disabled and deleted through `/schedules/api/v1`, with 422 reasons for invalid cron, timezone or preset.
-- G3: an enabled schedule fires once per fire time, starts one session from its preset and sends its prompt; a restart or a second worker never fires or posts twice.
-- G4: after downtime a schedule fires one catch-up run; a fire while the previous run is in flight is recorded `ignored` with reason `previous_running`.
-- G5: each run ends `handled` (first turn completed) or `failed` with a reason; history per schedule and globally is listed by the API.
-- G6: the Schedules page in agents-web manages schedules and shows runs with a session link; its menu entry sits between Webhooks and Presets and appears only when the backend is configured.
-- G7: the API is documented (README, committed `openapi.json`, drift test) and a kind e2e exercises every route.
-- G8: v0.1.0 is released, deployed with its CNPG database to the agents namespace, and the live smoke covers it.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: The agents-schedule service maps 5-field cron schedules (IANA timezone, default Europe/Warsaw) to presets with a prompt, fires each due schedule once, starts a session from the preset (or, when the preset sets `reuse_running_agent` and the schedule's earlier session still runs, posts the prompt there) through the orchestrator service port and tracks the run to handled or failed.
+- 1.2: Missed runs collapse into one catch-up run; a fire while the previous run is in flight is recorded ignored (previous_running); at most 3 runs in progress, 1 per schedule.
+- 1.3: `/schedules/api/v1` is documented with a committed openapi.json and covered route by route by an API-only kind e2e.
+- 1.4: v0.1.0 is released (tag, chart 0.1.0, image); deploy, the Schedules page and the live smoke are epic agents-schedule-deploy.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- No Kubernetes CronJob per schedule (AGENTS.md decouples services from Kubernetes APIs).
-- No prompt field on presets and no change to the orchestrator API.
-- No session deletion by this service; cleanup is the preset autoclose of configuration-improvements.
-- No per-schedule jitter (tatara-new `scanOffset`), seconds field or cron macros.
-- No new shared library code, orchestrator client, dispatch algorithm, fake orchestrator or UI kit: agents-webhook-microservice owns them.
+- No Kubernetes CronJob, no prompt on presets, no orchestrator API change, no session deletion by this service.
+- No shared library, orchestrator client, dispatch, fake orchestrator or UI kit code: agents-webhook-microservice and frontend-decoupling own them.
+- The repo creation itself is epic agents-schedule-component.
 
-## Anti-goals
+Split 2026-10-25 (orchestrator ruling, scope unchanged): the agents-helmfile and agents-web tasks (deploy-schedule, helmfile-schedule-db-release, helmfile-schedule-release, schedule-service-token, smoke-schedule-check, web-config-schedules-backend, web-schedule-form, web-schedule-runs-list, web-schedules-api-client, web-schedules-menu-entry, web-schedules-page) moved to epic agents-schedule-deploy, which is blocked by this epic.
 
-- A second copy of the DB, settings, client or dispatch code next to agents-common.
-- A double fire or a second prompt after a restart or with two worker replicas.
-- A missed-run storm after downtime.
-- The schedule API reachable without SSO, or the service reaching the orchestrator through the SSO port.
+## Design
 
-## Constraints
-
-- Python only for the service; TypeScript only in agents-web (AGENTS.md hard rules).
-- Services talk only through HTTP; each table has one writer except queue tables, which change rows only through status-guarded updates.
-- The orchestrator `/api/v1` is additive-only; this epic adds nothing to it.
-- Plan-execute needs every task repo under `code/` when the run starts (`ticket.py:_integration_plan`), and an epic cannot mix superrepo and component tasks: the repo creation is its own meta epic, agents-schedule-component, a blocker of this one.
-- Orchestrator ruling: runs after agents-webhook-microservice and frontend-decoupling (README blockers), consuming their contracts. agent-init-scripts and cluster-scaling are blockers too because this epic edits the same agents-helmfile files after them, and configuration-improvements because the menu order rule `web-settings-menu-order` requires it.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -114,6 +104,21 @@ Moved 2026-10-25: the agents-helmfile half of D14 (releases, service token, web 
 
 A scheduled or manual run honours the preset's `reuse_running_agent` (contract `preset-reuse-running-agent`, `Preset.reuse_running_agent`), keyed by the schedule, by the rule agents-webhook-microservice records in its design ("Cross-epic impact", Q20), with session for cluster: if the schedule's latest run (`latest_with_session`, not `ignored`) has a session that agents-common `runs.running_session` reports running and the preset opts in, the run posts its prompt there with `runs.deliver` and is tracked with `runs.track_delivery` instead of creating a session. `deliver` returning None or `track_delivery` returning "gone" falls back to creating a new session through `runs.dispatch`. The runs column `reuse` (null, `delivered`, `fallback`) records the decision so a restart never decides twice. With the overlap rule D6 (at most 1 run new or in-progress per schedule), reuse applies when the previous run is already finished but its session is still running. Approval A3 (dispatch and tracking).
 
+## Open questions
+
+- Q1: Cron syntax: exactly 5 fields, each schedule with an IANA timezone defaulting to Europe/Warsaw, and the next 3 fire times shown? [recommended: yes]
+- Q2: Missed runs while the service was down collapse into one catch-up run for the latest missed fire time; older ones are skipped and logged? [recommended: yes]
+- Q3: A fire while the previous run of the same schedule is still running is skipped and recorded as ignored (reason previous_running), not queued or started anyway? [recommended: yes]
+- Q4: Each schedule carries a required prompt with placeholders {schedule_name} and {fired_at}, sent as the first message to the new session? [recommended: yes]
+- Q5: Limits: at most 3 scheduled runs in progress overall and 1 per schedule, the rest waiting FIFO, and a run stuck over 1 hour marked failed (timeout)? [recommended: yes]
+- Q6: The Schedules page lists schedules with enable/disable, run now, edit and delete, and shows each schedule's recent runs with status and a link to the session? [recommended: yes]
+- Q7: Menu order Sessions, Webhooks, Schedules, Presets (Schedules directly below Webhooks)? [recommended: yes]
+- Q8: A run is handled when its first turn completes; the schedule service never deletes sessions and cleanup comes from the preset's autoclose (configuration-improvements)? [recommended: yes]
+- Q9: The schedule API lives at lab.szymonrichert.pl/schedules/api/v1 behind the same SSO as the UI? [recommended: yes]
+- Q10: Release agents-schedule as tag v0.1.0 (immutable chart 0.1.0) and deploy that, rather than a main-build pin? [recommended: yes]
+- Q11: Create szymonrychu/agents-schedule as a public GitHub repo, like the other components? [recommended: yes]
+- Q12: A scheduled or manual run honours the preset's `reuse_running_agent` keyed by the schedule (post the prompt to the schedule's earlier session while it still runs, else create a new one)? [recommended: yes; same answer as agents-webhook-microservice Q20]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -125,7 +130,7 @@ A scheduled or manual run honours the preset's `reuse_running_agent` (contract `
 | research-papers | skipped: no research question | none | none |
 | sibling plans | read 2026-10-25: `../agents-webhook-microservice/design.md`, `../frontend-decoupling/tasks/*.md` | contract names, `runs.dispatch` marker pattern, run timeout, URL layout `/<prefix>/api/v1`, backend registry order slot 30 for Schedules | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -162,7 +167,95 @@ A scheduled or manual run honours the preset's `reuse_running_agent` (contract `
 | frontend-decoupling web-chart-config-ingress | URL layout `/<prefix>/api/v1`, reserved `schedules` | schedules-api-routes, chart-ingress-and-test-hook, helmfile-schedule-release |
 | frontend-decoupling web-backend-menu | registry order slots | web-schedules-menu-entry |
 
-## Decision coverage
+## Irreversible operations
+
+- Creating the public GitHub repo `szymonrychu/agents-schedule` and setting its two CI secrets (epic agents-schedule-component, task create-agents-schedule-repo); approval A7.
+- Pushing tag `v0.1.0` on agents-schedule main and publishing chart `0.1.0` (immutable in Harbor) (release-v0-1-0); approval A6.
+- Creating the CNPG database `agents-schedule-db` and applying the agents namespace with `mise run apply` (deploy-schedule); additive, no existing release removed; approval A6.
+- Writing a new SOPS-managed service token and adding its hash to the orchestrator's service-token Secret (schedule-service-token, deploy-schedule); new values only, nothing rotated; approval A6.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Acted on, as new tasks:
+- epic-review-fixes: per-run fault isolation in the dispatcher and tracker, a public fire_lock, uvicorn proxy_headers=False (security, medium: the allowlist would otherwise have seen the X-Forwarded-For address behind the oauth2-proxy sidecar), and a pinned uv image.
+- ci-image-checks-and-worker-t: the CI images job asserts uid 1000 and no pytest; test_single_worker_fires no longer depends on minute boundaries.
+- e2e-two-worker-failure: a test race that completed a message before the run recorded message_id (not a product regression).
+- ignored-runs-finished-at: discovered during scheduler-loop.
+
+Dropped (low, noted):
+- SHA-pinning the GitHub actions and a digest for the python base image: the sibling repos use tags.
+- busybox pinned by tag only.
+- A pyright false positive in api/openapi.py:60 (pydantic-settings defaults).
+- The e2e fake control route answers 500 instead of 404 on a non-numeric id.
+- Small duplicated _sleep/_wake helpers in the scheduler and dispatcher.
+
+Scope audit: no gaps. Evidence:
+- Full suite: 137 passed.
+- PR #1 CI: green, kind e2e 16 passed.
+- Main CI on 6cfa955: green.
+- v0.1.0 tag, chart 0.1.0 and image 6cfa955 published.
+
+### design.md: Summary
+
+A new Python component `agents-schedule` with its own Postgres database maps user-defined 5-field cron
+schedules (with an IANA timezone) to orchestrator presets plus a prompt. A singleton worker fires due
+schedules exactly once per fire time, starts a session from the preset through the orchestrator's
+service-token port and sends the prompt, then tracks the first turn to `handled` or `failed`. A
+Schedules page in agents-web, reached from the hamburger menu between Webhooks and Presets, manages
+schedules and shows run history. Headline decisions: everything shared (DB helpers, settings and
+runtime, orchestrator client, dispatch and run tracking, fake orchestrator, trigger UI kit, service
+tokens) is consumed from agents-webhook-microservice, nothing is rebuilt (D2); the last-fired stamp
+is derived from the runs table so each table keeps one writer (D3); tatara-new due-check parity with
+one catch-up run after downtime (D5); overlaps are recorded `ignored` (D6); a run posts its prompt to the schedule's earlier session when the preset sets `reuse_running_agent` and that session still runs (D15).
+
+### design.md: Intent and why
+
+The user wants more of tatara-new in this system (README Description). tatara-new runs scheduled work
+from fixed per-activity cron fields on its Project CRD; here the request is a separate microservice
+where any cron schedule maps to any preset, "similar to agents-webhooks", living in the web UI's
+hamburger menu. It is the second trigger service after agents-webhook and reuses its shared parts.
+
+### design.md: Goals
+
+- G1: `code/agents-schedule` exists (public GitHub repo, created by epic agents-schedule-component) with a Python service, its image, chart and CI.
+- G2: schedules (name, cron, timezone, preset, prompt, enabled) are created, listed, edited, previewed, enabled, disabled and deleted through `/schedules/api/v1`, with 422 reasons for invalid cron, timezone or preset.
+- G3: an enabled schedule fires once per fire time, starts one session from its preset and sends its prompt; a restart or a second worker never fires or posts twice.
+- G4: after downtime a schedule fires one catch-up run; a fire while the previous run is in flight is recorded `ignored` with reason `previous_running`.
+- G5: each run ends `handled` (first turn completed) or `failed` with a reason; history per schedule and globally is listed by the API.
+- G6: the Schedules page in agents-web manages schedules and shows runs with a session link; its menu entry sits between Webhooks and Presets and appears only when the backend is configured.
+- G7: the API is documented (README, committed `openapi.json`, drift test) and a kind e2e exercises every route.
+- G8: v0.1.0 is released, deployed with its CNPG database to the agents namespace, and the live smoke covers it.
+
+### design.md: Non-goals
+
+- No Kubernetes CronJob per schedule (AGENTS.md decouples services from Kubernetes APIs).
+- No prompt field on presets and no change to the orchestrator API.
+- No session deletion by this service; cleanup is the preset autoclose of configuration-improvements.
+- No per-schedule jitter (tatara-new `scanOffset`), seconds field or cron macros.
+- No new shared library code, orchestrator client, dispatch algorithm, fake orchestrator or UI kit: agents-webhook-microservice owns them.
+
+### design.md: Anti-goals
+
+- A second copy of the DB, settings, client or dispatch code next to agents-common.
+- A double fire or a second prompt after a restart or with two worker replicas.
+- A missed-run storm after downtime.
+- The schedule API reachable without SSO, or the service reaching the orchestrator through the SSO port.
+
+### design.md: Constraints
+
+- Python only for the service; TypeScript only in agents-web (AGENTS.md hard rules).
+- Services talk only through HTTP; each table has one writer except queue tables, which change rows only through status-guarded updates.
+- The orchestrator `/api/v1` is additive-only; this epic adds nothing to it.
+- Plan-execute needs every task repo under `code/` when the run starts (`ticket.py:_integration_plan`), and an epic cannot mix superrepo and component tasks: the repo creation is its own meta epic, agents-schedule-component, a blocker of this one.
+- Orchestrator ruling: runs after agents-webhook-microservice and frontend-decoupling (README blockers), consuming their contracts. agent-init-scripts and cluster-scaling are blockers too because this epic edits the same agents-helmfile files after them, and configuration-improvements because the menu order rule `web-settings-menu-order` requires it.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -181,7 +274,7 @@ A scheduled or manual run honours the preset's `reuse_running_agent` (contract `
 | D14 Release and deploy | release-v0-1-0 |
 | D15 Reuse running session | runs-repository, schema-migrations, run-dispatcher, run-outcome-tracker, schedules-api-routes, kind-e2e-api, api-docs-and-openapi |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -208,7 +301,7 @@ Moved to epic agents-schedule-deploy (its design.md owns these contracts): tasks
 
 Cross-epic, registered in `docs/plans/contracts.json` by this epic: `agents-schedule-api`, `agents-schedule-chart`, `agents-schedule-image`, `agents-schedule-settings-env` (consumers agents-web, agents-helmfile). Consumed, registered by others and listing this epic as consumer: `agents-common-lib`, `preset-mapping-model`, `orch-service-tokens`, `orch-services-service`, `trigger-ui-page-pattern` (agents-webhook-microservice); `agents-web-backends-config`, `agents-web-backend-registry`, `agents-web-url-layout`, `agents-web-openapi-vendor`, `orch-ui-retired` (frontend-decoupling; `agents-web-chart` and `agents-web-image` are consumed by deploy-schedule through agents-helmfile); `agents-common-reuse`, `preset-reuse-running-agent` (agents-webhook-microservice); `web-settings-menu-order`, `orch-cluster-autoclose` (configuration-improvements; registered name, it describes session autoclose); `orch-presets-api`, `orch-cluster-create-api` (cluster-presets, done; registered name, it describes session creation).
 
-## Review focus
+### design.md: Review focus
 
 - scheduler-loop and run-dispatcher: exactly-once firing and dispatch under restart and two workers (unique key, guarded transitions, marker check); the stamp derived from runs.
 - cron-expressions: DST behaviour in Europe/Warsaw and the missed-run collapse.
@@ -216,14 +309,14 @@ Cross-epic, registered in `docs/plans/contracts.json` by this epic: `agents-sche
 - helmfile-schedule-release and schedule-service-token: the api pod behind SSO, the orchestrator reached only on the service port, no secret printed.
 - web-schedules-menu-entry: the entry uses the reserved slot 30 and appears only with the backend configured.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal module layout beyond the files named in tasks, as long as the contract files stay where the Contracts table says.
 - Exact logging format, backoff curve for transient orchestrator errors (bounded by `SCHED_DISPATCH_MAX_ATTEMPTS`).
 - UI styling within the trigger UI kit's look.
 - Using an agents-common helper (source allowlist, LISTEN wake-up) when the released library has one; otherwise the minimal local version described in the task.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - The agents-common API is as agents-webhook design D1 and D8 describe, plus the reuse functions of v0.3.0 (`running_session`, `deliver`, `track_delivery`, `Preset.reuse_running_agent`; session names `create_session`, `get_session`, `list_messages`, `post_message`, `get_message`, failure reasons `preset_not_found`, `session_not_found`) (`BaseServiceSettings`, `run_migrations`, `transition`, `claim`, `advisory_singleton`, `run_service`, `OrchestratorClient`, `fake_orchestrator`, `runs.dispatch`/`track` with `RunStore` and `PresetBinding`, pytest plugin `agents_common.testing`). Confirmed by reading `code/agents-common` at v0.3.0 before this epic's run; a different signature is followed as released.
 - The agents-common fake orchestrator can hold a turn running and fail one; if not, kind-e2e-api covers those two cases in unit tests and reports the gap (task notes).
@@ -232,24 +325,12 @@ Cross-epic, registered in `docs/plans/contracts.json` by this epic: `agents-sche
 - Harbor CI secret values are available to the agent for `gh secret set`; otherwise the meta task blocks on the user (named there).
 - No probe could settle the user preferences below; they are in Open questions.
 
-## Open questions
+### approvals.json
 
-- Q1: Cron syntax: exactly 5 fields, each schedule with an IANA timezone defaulting to Europe/Warsaw, and the next 3 fire times shown? [recommended: yes]
-- Q2: Missed runs while the service was down collapse into one catch-up run for the latest missed fire time; older ones are skipped and logged? [recommended: yes]
-- Q3: A fire while the previous run of the same schedule is still running is skipped and recorded as ignored (reason previous_running), not queued or started anyway? [recommended: yes]
-- Q4: Each schedule carries a required prompt with placeholders {schedule_name} and {fired_at}, sent as the first message to the new session? [recommended: yes]
-- Q5: Limits: at most 3 scheduled runs in progress overall and 1 per schedule, the rest waiting FIFO, and a run stuck over 1 hour marked failed (timeout)? [recommended: yes]
-- Q6: The Schedules page lists schedules with enable/disable, run now, edit and delete, and shows each schedule's recent runs with status and a link to the session? [recommended: yes]
-- Q7: Menu order Sessions, Webhooks, Schedules, Presets (Schedules directly below Webhooks)? [recommended: yes]
-- Q8: A run is handled when its first turn completes; the schedule service never deletes sessions and cleanup comes from the preset's autoclose (configuration-improvements)? [recommended: yes]
-- Q9: The schedule API lives at lab.szymonrichert.pl/schedules/api/v1 behind the same SSO as the UI? [recommended: yes]
-- Q10: Release agents-schedule as tag v0.1.0 (immutable chart 0.1.0) and deploy that, rather than a main-build pin? [recommended: yes]
-- Q11: Create szymonrychu/agents-schedule as a public GitHub repo, like the other components? [recommended: yes]
-- Q12: A scheduled or manual run honours the preset's `reuse_running_agent` keyed by the schedule (post the prompt to the schedule's earlier session while it still runs, else create a new one)? [recommended: yes; same answer as agents-webhook-microservice Q20]
-
-## Irreversible operations in scope
-
-- Creating the public GitHub repo `szymonrychu/agents-schedule` and setting its two CI secrets (epic agents-schedule-component, task create-agents-schedule-repo); approval A7.
-- Pushing tag `v0.1.0` on agents-schedule main and publishing chart `0.1.0` (immutable in Harbor) (release-v0-1-0); approval A6.
-- Creating the CNPG database `agents-schedule-db` and applying the agents namespace with `mise run apply` (deploy-schedule); additive, no existing release removed; approval A6.
-- Writing a new SOPS-managed service token and adding its hash to the orchestrator's service-token Secret (schedule-service-token, deploy-schedule); new values only, nothing rotated; approval A6.
+- A1: A separate agents-schedule microservice with its own database, image and chart. [decisions: D1, D3, D13] [tasks: scaffold-project-and-cli, schedule-settings-model, schema-migrations, service-entrypoints, dockerfile-and-ci, helm-chart, chart-ingress-and-test-hook] [status: approved]
+- A2: Map a cron schedule to a preset (with a prompt), managed as schedules. [decisions: D3, D4, D7, D12] [tasks: cron-expressions, schedules-repository, schedules-api-routes] [status: approved]
+- A3: A schedule firing starts an agent session from its preset through the orchestrator API, exactly once, with missed runs collapsed, overlaps recorded, limits and a tracked outcome. [decisions: D3, D5, D6, D7, D8, D9, D10, D15] [tasks: runs-repository, scheduler-loop, run-dispatcher, run-outcome-tracker, runs-api-routes] [status: approved]
+- A5: Headless parity: a documented API and an API-only e2e for every capability. [decisions: D11] [tasks: schedules-api-routes, runs-api-routes, api-docs-and-openapi, kind-e2e-api] [status: approved]
+- A6: Releases, pin bumps, the CNPG database and helmfile apply plus smoke are tasks of this epic. [decisions: D13, D14] [tasks: release-v0-1-0] [status: approved]
+- A7: The GitHub repo agents-schedule is created via workbench:component-add as an explicit, gate-listed task (epic agents-schedule-component); this epic builds on it. [decisions: D1] [tasks: scaffold-project-and-cli] [status: approved]
+- A8: Runs after agents-webhook-microservice and frontend-decoupling and consumes the shared parts they own (DB and queue helpers, orchestrator client, service-to-service auth, preset binding, UI kit and page pattern); builds none of them. [decisions: D2] [tasks: scaffold-project-and-cli, run-dispatcher, run-outcome-tracker, kind-e2e-api] [status: approved]

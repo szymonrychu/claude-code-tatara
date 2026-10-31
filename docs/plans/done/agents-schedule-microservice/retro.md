@@ -1,10 +1,57 @@
-# agents-schedule microservice record
+# agents-schedule microservice retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+- 22 tasks delivered; 17 closed without a fix round, and only 5 needed one (runs repository, run dispatcher, schedules api routes, chart ingress and test hook, kind e2e api), each with one round.
+- Scope audit was clean; PR #1 merged with CI green and kind e2e 16 passed, v0.1.0 tagged, chart and image published.
+- Plan amendments before the run (agents-common v0.3.0 pin, D15 reuse key, menu order) and the user split of 11 agents-helmfile/agents-web tasks into agents-schedule-deploy kept this epic to the service.
+- Total minutes (76 vs 120) and tokens (15119343 vs 15842172) landed within budget in aggregate.
+- Drops were explicit: SHA-pinned actions, busybox tag, pyright false positive, fake control route 500, duplicated sleep helpers; accepted deviations (SCHED_HTTP_PORT, D11 run-now on disabled schedule) recorded.
+
+## What went wrong or could improve
+
+- Fix rounds hit the highest-risk tasks: runs repository (manual run could suppress a scheduled fire, fixed with a partial unique index), run dispatcher (dishonest RunId types), schedules api routes (401/403 mapping to orchestrator_auth_failed).
+- Phase 5 reviews found real defects that 22 per-task reviews missed: per-run fault isolation, a private lock import, and a security medium (uvicorn proxy_headers default rewrote the client from X-Forwarded-For behind the sidecar). Three of these became or fed task epic-review-fixes.
+- Four tasks were discovered mid-run (ignored runs finished at, epic review fixes, ci image checks and worker test flake, e2e two worker failure); the last two were CI-only failures, visible only after push because the Docker VM disk was full locally.
+- Every task was estimated at 1 point (2 for two), yet post-delivery points total 36 vs 24; run dispatcher (+2), scheduler loop (+2), kind e2e api (+2) were far larger. Minutes MdAPE 83.3%, tokens MdAPE 70.8%; run dispatcher used 3.13x tokens (2348483), e2e two worker failure 2.64x, kind e2e api 2.54x.
+- Local verification was partial: DB tests ran against a shared Postgres through an uncommitted, git-excluded root conftest.py override; docker build and kind e2e were verified only in PR CI.
+- release v0.1.0 took 8 min vs 5 expected; release-v0-1-0 AC3 evidence had to be amended to peel the annotated tag (v0.1.0^{}).
+
+## Recommendations
+
+- Code:
+  - agents-schedule scheduler loop (dispatch path): per-run fault isolation was missing until epic-review-fixes; keep a test that one failing run does not stop the others.
+  - agents-schedule uvicorn launch (service entrypoints): proxy_headers default was trusted behind the sidecar; keep a test pinning the setting.
+  - agents-schedule scheduler: private lock import replaced at whole-diff review; avoid reintroducing private imports from agents-common.
+  - Duplicated small sleep and wake helpers across tests (dropped as low); share one helper.
+- Delivered differently:
+  - Env var is SCHED_HTTP_PORT, not SCHED_PORT, because it is inherited from agents-common BaseServiceSettings.
+  - run_migrations package is "agents_schedule" rather than the design name, accepted.
+  - schedule_disabled applies only to scheduled runs, so run-now on a disabled schedule dispatches (D11).
+  - 11 agents-helmfile and agents-web tasks moved to epic agents-schedule-deploy by user decision; 4 cross-epic depends_on dropped.
+  - Four discovered tasks were added beyond the plan (ignored runs finished at, epic review fixes, ci image checks and worker test flake, e2e two worker failure).
+- Tech debt:
+  - GitHub actions not SHA-pinned and base image not digest-pinned (.github workflows, Dockerfile in agents-schedule): pin by SHA and digest.
+  - Chart test pod uses a busybox tag only: pin by digest.
+  - Fake control route returns 500 instead of 404 (agents-schedule test fakes): return 404.
+  - pyright false positive at api/openapi.py:60: suppress with a targeted ignore or fix the typing.
+  - Local DB tests depend on an uncommitted conftest.py override: remove once the Docker VM has disk or a documented shared-Postgres env switch exists.
+- Workflow:
+  - recurring (test-temp-dirs-outside-the-c, epic-and-task-migration-skil, lean-development-flow): defects that per-task reviews missed surfaced only at the whole-diff review (there: mktemp critical, done epic with no RETRO.md; here: fault isolation, private import, uvicorn proxy_headers security medium). Change: add cross-cutting checks to the per-task reviewer checklist (one failing item must not abort a loop, no private imports across packages, framework defaults that trust forwarded headers) and keep the whole-diff and security review mandatory for every epic.
+  - Estimates: every task seeded at 1 point while post-delivery points reached 3 on dispatcher, loop and e2e tasks; minutes and tokens MdAPE 83.3% and 70.8%. Change: planning should point tasks that combine external orchestrator calls, concurrency or kind e2e at 3, not default to 1. Not recurring on this exact kind in history (earlier epics show pessimistic seeds on minutes/tokens), so a note only.
+  - Local verification gaps (full Docker VM disk) pushed docker build and kind e2e to PR CI and caused two discovered CI tasks; add a preflight disk check to epic-run before dispatching tasks that need docker. Single occurrence, not recurring.
+
+## Delivery record (migrated)
+
+### Asked
 
 A separate agents-schedule microservice with its own Postgres database that maps 5-field cron schedules (IANA timezone, default Europe/Warsaw) to presets with a prompt, modelled on agents-webhook. A due schedule fires once, starts a session through the orchestrator service port (or posts to the schedule's still-running session when the preset sets reuse_running_agent), and the run is tracked to handled or failed. Missed runs collapse into one catch-up run, overlaps are recorded ignored, limits are 3 in progress and 1 per schedule. A documented /schedules/api/v1 with openapi.json and an API-only kind e2e; v0.1.0 released. The Schedules UI entry in the hamburger menu, deploy and live smoke were split to epic agents-schedule-deploy.
 
-## Shipped
+### Shipped
 
 All 22 tasks done (18 planned plus 4 discovered). Epic review verdict: pass (2026-10-25). Whole-diff review: 2 medium (per-run fault isolation, private lock import); security review: 1 medium (uvicorn proxy_headers rewrote the client from X-Forwarded-For behind the sidecar) plus lows; scope audit clean. All acted-on findings became tasks and were reviewed.
 
@@ -18,7 +65,7 @@ Deploy: not in this epic; epic agents-schedule-deploy (helmfile, web UI, smoke, 
 
 Evidence read: full suite 137 passed (README Review); PR #1 CI green with kind e2e 16 passed; main CI on 6cfa955 green. Not re-run by this record.
 
-## Tasks
+### Tasks
 
 Status and verified head are from the task files (all `done`, all with a verified head, all present in `git log 61c412b..7651e29`). The orchestrator notes record fix rounds only for the five tasks marked 1 fix; for the rest no fix round is recorded, read as 0 fix rounds (not confirmed). Per-task verification tails were not in the notes: "unknown". Points are planned/actual.
 
@@ -49,7 +96,7 @@ Status and verified head are from the task files (all `done`, all with a verifie
 
 Approvals ledger (approvals.json) at close: A1, A2, A3, A5, A6, A7, A8 all `approved` (no A4 entry).
 
-## Rulings
+### Rulings
 
 - Plan amended before the run: agents-common pinned to v0.3.0 (session names), agents-orchestrator names, menu order Sessions 10, Webhooks 20, Schedules 30, Presets 40. Cost if wrong: re-pin and a small UI reorder.
 - reuse_running_agent keyed by the schedule (D15, Q12 taken at its recommended answer). Cost if wrong: later runs of a schedule start new sessions or post to the wrong one.
@@ -59,18 +106,18 @@ Approvals ledger (approvals.json) at close: A1, A2, A3, A5, A6, A7, A8 all `appr
 - Phase 5 findings acted on as tasks: epic-review-fixes (per-run fault isolation, public fire_lock, proxy_headers=False, pinned uv image), ci-image-checks-and-worker-t, e2e-two-worker-failure (test race, not a product regression). Cost if wrong: the findings would have shipped in v0.1.0.
 - Findings dropped (low): SHA-pinned actions and a base digest (sibling repos use tags); busybox tag only; pyright false positive at api/openapi.py:60; fake control route returns 500 instead of 404 on a non-numeric id; duplicated small sleep and wake helpers. Cost if wrong: minor hardening or cleanup debt.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Deploy, Schedules UI page, service token, smoke and helmfile apply are not done: epic agents-schedule-deploy, held until shared files are free; the user or supervisor releases it.
 - Docker VM disk full on the orchestrator host: the user clears it; until then DB tests need the git-excluded conftest override.
 - Discovered tasks during the run: ignored-runs-finished-at, epic-review-fixes, ci-image-checks-and-worker-t, e2e-two-worker-failure (all done).
 - Dropped lows above remain open as optional debt; the user decides.
 
-## Not pushed
+### Not pushed
 
 agents-schedule: nothing; `git log origin/main..main` is empty and main is at 7651e29 as merged on GitHub. Superrepo: the pointer commit 2b27ff5 and the ticket moves/retro (2e54149) are committed on main; whether the superrepo main is pushed was not checked (no `git log origin/main..main` run in the superrepo); pushing stays with the user.
 
-## Lessons routed to
+### Lessons routed to
 
 - Test race completing a fake-orchestrator message before the run recorded message_id: mechanical; the fix is in tests/e2e/test_e2e_kind.py (e2e-two-worker-failure); add a helper that waits for message_id before completing a turn.
 - CI did not assert image uid 1000 or absence of dev deps: mechanical; added as the CI images job check (ci-image-checks-and-worker-t).
