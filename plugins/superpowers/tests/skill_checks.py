@@ -1,8 +1,8 @@
 """Shared structure checks for the vendored skills under plugins/superpowers/skills/.
 
-Every per-skill test calls problems(<skill>) and asserts it returns nothing: frontmatter `name` equals the
-directory, `description` is present, every `superpowers:<x>` names a vendored skill, every relative file a
-skill file names exists, and no file holds an em dash.
+Every per-skill test calls problems(<skill>) and asserts it returns nothing: frontmatter
+`name` equals the directory, `description` is present, every `superpowers:<x>` names a
+vendored skill, every relative file a skill file names exists, and no file holds an em dash.
 """
 
 import re
@@ -13,7 +13,8 @@ from harness.sources import parse_frontmatter
 PLUGIN = Path(__file__).resolve().parents[1]
 SKILLS = PLUGIN / "skills"
 EM_DASH = chr(0x2014)
-# The skills this fork vendors (plan.md items 1.1, 2.1, 2.2); a `superpowers:<x>` reference must name one.
+# The skills this fork vendors (plan.md items 1.1, 2.1, 2.2);
+# a `superpowers:<x>` reference must name one.
 VENDORED = frozenset(
     {
         "brainstorming",
@@ -77,9 +78,9 @@ def flat(text: str) -> str:
 def missing_paths(md: Path) -> list[str]:
     """Return the relative files a markdown file names that do not exist.
 
-    Markdown link targets and backticked `./` or `../` paths resolve against the file's directory;
-    `${CLAUDE_PLUGIN_ROOT}/<path>` resolves against the plugin root. Paths holding a placeholder (`<`),
-    URLs and anchors are skipped.
+    Markdown link targets and backticked `./` or `../` paths resolve against the file's
+    directory; `${CLAUDE_PLUGIN_ROOT}/<path>` resolves against the plugin root. Paths holding
+    a placeholder (`<`), URLs and anchors are skipped.
 
     Args:
         md (Path): the markdown file.
