@@ -12,7 +12,10 @@ DOCS = [
     SD / "SKILL.md",
     *sorted((SD / "references").glob("*.md")),
     ROOT / "skills" / "plan-run" / "SKILL.md",
-    *(ROOT / "agents" / f"{n}.md" for n in ("plan-writer", "implementer", "reviewer", "worktree-merger")),
+    *(
+        ROOT / "agents" / f"{n}.md"
+        for n in ("plan-writer", "implementer", "reviewer", "worktree-merger")
+    ),
 ]
 
 
@@ -35,7 +38,16 @@ def named_subcommands(text):
 
 def test_help_lists_the_plan_subcommands():
     assert subcommands() == {
-        "slug", "new", "check", "path", "rename", "move", "worktrees", "close", "reap", "migrate"
+        "slug",
+        "new",
+        "check",
+        "path",
+        "rename",
+        "move",
+        "worktrees",
+        "close",
+        "reap",
+        "migrate",
     }
 
 

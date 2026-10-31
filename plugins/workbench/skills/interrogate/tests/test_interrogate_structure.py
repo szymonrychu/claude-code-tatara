@@ -65,15 +65,17 @@ def _sd_section(heading):
 
 
 def test_start_development_routes_to_interrogate():
-    phase4 = _sd_section("## Phase 4 - Execute")
-    assert "escalated" in phase4
-    assert "workbench:interrogate" in phase4, (
-        "an escalated task should get one panel verdict, not another fix round"
+    phase2 = _sd_section("## Phase 2 - Plan")
+    assert "workbench:interrogate" in phase2 and "high-risk" in phase2
+    plan_run = " ".join((ROOT / "skills" / "plan-run" / "SKILL.md").read_text().split())
+    assert "Open findings after the cap" in plan_run
+    assert "`workbench:interrogate` once" in plan_run, (
+        "findings open after the fix rounds should get one panel verdict, not another round"
     )
 
 
 def test_start_development_classifies_questions_before_asking():
-    phase2 = _sd_section("## Phase 2 - Design doc")
+    phase2 = _sd_section("## Phase 2 - Plan")
     assert "Ask the user only what no probe can answer" in phase2
     assert "probe" in phase2 and "preference" in phase2
 

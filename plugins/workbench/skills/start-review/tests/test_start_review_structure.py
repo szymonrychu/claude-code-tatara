@@ -216,7 +216,9 @@ def test_reviewer_agents_read_only_and_read_checklist(name):
     fm = frontmatter(path)
     assert fm["name"] == name
     # the reviewer alone gains Write, for exactly one file: retro.md when the review passes
-    expected = "[Read, Write, Grep, Glob, Bash]" if name == "reviewer" else "[Read, Grep, Glob, Bash]"
+    expected = "[Read, Grep, Glob, Bash]"
+    if name == "reviewer":
+        expected = "[Read, Write, Grep, Glob, Bash]"
     assert fm["tools"] == expected
     assert "model" not in fm and "hooks" not in fm
     assert set(fm) <= {"name", "description", "tools"}

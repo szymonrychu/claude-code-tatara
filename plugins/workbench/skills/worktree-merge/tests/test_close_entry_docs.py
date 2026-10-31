@@ -9,8 +9,8 @@ DOCS = {
 
 
 def _epic_close(text: str) -> str:
-    m = re.search(r"^## Epic close\n(.*?)(?=^## )", text, re.S | re.M)
-    assert m, "no Epic close section"
+    m = re.search(r"^## (?:Epic|Plan) close\n(.*?)(?=^## )", text, re.S | re.M)
+    assert m, "no close section"
     return m.group(1)
 
 
@@ -32,5 +32,5 @@ def test_merger_close_role_is_conflict_only():
     for name, text in DOCS.items():
         section = " ".join(_epic_close(text).split())
         assert "rebase conflict" in section, name
-        assert "integration tree" in section, name
+        assert "integration tree" in section or "plan tree" in section, name
         assert "ticket.py close" in section, name
