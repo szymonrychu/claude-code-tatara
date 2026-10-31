@@ -1,45 +1,50 @@
-# frontend decoupling design
+---
+title: frontend decoupling
+repos: [agents-web, agent-orchestrator, agents-helmfile]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# frontend decoupling
 
-The web UI leaves agent-orchestrator and becomes its own TypeScript component, `agents-web` (history of `agent-orchestrator/frontend` kept), with a static nginx-unprivileged image, its own chart and CI, published to Harbor. The browser stays on one host, `lab.szymonrichert.pl`: ingress path routing sends `/` to agents-web and `/api` to the orchestrator, and every later service gets one path prefix, so everything stays same-origin (no CORS). The UI reads its backends from a runtime `config.json` rendered by its chart; a backend's menu entries appear only when it is configured. The orchestrator becomes API-only. Cutover in two live steps: agents-web plus the path split first, then the orchestrator without the UI.
+## What and why
 
-## Intent and why
+What: Decouple the web frontend from the orchestrator microservice
+How: The frontend ships and runs on its own, talking to the orchestrator only through its documented HTTP API
+Why: Services talk only through the queue or HTTP; new microservices (webhook, schedule) need UI entries without living in the orchestrator
 
-User request 2026-10-25: "decouple frontend from orchestrator microservice", toward more of tatara-new. The hard rule is that services talk only through the queue or HTTP; the next services (agents-webhook, agents-schedule) need UI pages without living in the orchestrator repo. Today one image builds the React app in a node stage and the api mounts it at `/` (`api/app.py:create_app`, `api/spa.py:SpaStaticFiles`).
+User request (2026-10-25), verbatim. Overall target: "Target getting more and more from tatara system (/Users/szymonri/Documents/tatara-new)"
 
-## Goals
+"## frontend decoupling
+  * decouple frontend from orchestrator microservice"
 
-- G1: `code/agents-web` holds the UI with its history (created by epic agents-web-component) and builds, tests, lints and type-checks there; its types come from a vendored orchestrator OpenAPI copy with a recorded commit.
-- G2: the agents-web image serves the bundle with the cache and fallback rules of `SpaStaticFiles`, plus `/healthz` and `/config.json`, and never answers an `api` path with the SPA.
-- G3: the agents-web chart renders `config.json` from `backends`, a hardened Deployment, a Service on port name `http` and an Ingress; CI publishes image `harbor.szymonrichert.pl/containers/agents-web:<sha7>` and chart `0.1.0-main.<sha7>` on main.
-- G4: live: `/` on `lab.szymonrichert.pl` is agents-web, `/api` the orchestrator, both behind the same SSO session; `mise run smoke` checks the UI, its config and the routing.
-- G5: agent-orchestrator has no `frontend/`, no node stage, no `SpaStaticFiles`, no `ORCH_STATIC_DIR`, no npm in CI; `GET /` on the api is a JSON 404; its API stays documented and tested API-only and the kind e2e passes.
-- G6: later services add a backend by a `backends` value plus registry entries in agents-web (contracts registered).
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: The web UI lives in its own component `agents-web` (TypeScript, history of `agent-orchestrator/frontend` kept) with its own static image (nginx-unprivileged), chart and CI, published to Harbor.
+- 1.2: The browser stays on one host, `lab.szymonrichert.pl`: ingress path routing sends `/` to agents-web, `/api` to the orchestrator, and reserves one prefix per later service; no CORS.
+- 1.3: The UI reads its backends from a runtime `config.json` set by its chart; a backend's menu entries appear only when it is configured, so webhook and schedule add UI entries without touching the orchestrator.
+- 1.4: The orchestrator no longer builds or serves the UI: no node stage, no `SpaStaticFiles`, no `ORCH_STATIC_DIR`, no npm in its CI; `GET /` on the api is a JSON 404. Its API stays documented and tested API-only and the kind e2e keeps passing.
+- 1.5: Released and deployed in two steps: agents-web release plus ingress split, smoked live; then the orchestrator without the UI, smoked live.
+
+Design: design.md. Runs after agent-init-scripts and cluster-scaling (their UI moves with the rest) and after agents-web-component creates `code/agents-web`.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- No UI feature change; no webhook or schedule UI (their epics).
-- No CORS middleware, BFF, gateway, auth layer in the web app, subdomains or micro-frontends.
-- No browser e2e (Playwright).
-- No change to the oauth2-proxy injector or its Secret.
+- No UI feature change and no new backend: webhook and schedule UIs are their own epics, built on this epic's contracts.
+- No CORS, no BFF or gateway, no auth layer in the web app, no subdomain per service, no micro-frontends.
+- No browser e2e (Playwright): vitest, the image smoke and the live smoke cover it.
+- No change to the oauth2-proxy injector or the `agent-orchestrator-proxy` Secret.
 
-## Anti-goals
+## Design
 
-- A live window where `/` serves nothing: the web release and path split go live before the orchestrator stops serving the SPA (D8).
-- UI changes landing in `agent-orchestrator/frontend` after the import (lost on deletion; D11).
-- An absolute backend URL compiled into the bundle.
-- A second Certificate for the host fighting the first (D7).
-
-## Constraints
-
-- Python only except web frontends (TypeScript): agents-web is the TypeScript component; its tests are vitest and node:test, its server is nginx configuration, not code.
-- Order (orchestrator ruling): runs after agent-init-scripts (PR agent-orchestrator#10) and cluster-scaling have merged; it moves the frontend as it stands then, including their UI. README blockers: agent-init-scripts, cluster-scaling, agents-web-component.
-- Repo creation is the one-task superrepo epic agents-web-component (`mise run component:add`, public GitHub repo, outward-facing, listed at the gate). It is separate because ticket.py refuses an epic that mixes superrepo and component tasks, and treats a task repo without a `code/<repo>` checkout as a superrepo task. After it closes, the orchestrator runs `git submodule update --init code/agents-web` in the main checkout before this epic starts.
-- Headless parity (user decision): the orchestrator API stays documented and tested API-only; the kind e2e must keep passing after the split.
-- Releases follow the agent-init-scripts precedent: a deploy-pin task waits, blocked, for the PR merge and main CI publish, the orchestrator writes `<sha7>` with `ticket.py amend`, then an apply-smoke task applies and smokes.
-- Harbor CI secrets on the new repo are set by the user (agents cannot read secret values).
-- Local testcontainers Postgres is unreliable on this machine (discovery section 1); the targeted verifies here need no database.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -97,6 +102,17 @@ The orchestrator API stays documented and tested API-only; the kind e2e must kee
 ### D18: O7 order after agent-init-scripts and cluster-scaling
 This epic runs after agent-init-scripts and cluster-scaling have merged and moves the frontend as it stands then, including their UI. (orchestrator ruling)
 
+## Open questions
+
+- Q1: Topology: the UI moves to a new public GitHub component repo agents-web (TypeScript, own image, chart, CI, helmfile release) with the history of agent-orchestrator/frontend kept? [recommended: yes, public like agent-orchestrator]
+- Q2: URL layout: one host lab.szymonrichert.pl with ingress path routing, UI at /, orchestrator at /api (/api/v1 unchanged), one prefix per later service (/webhooks/, /schedules/)? [recommended: yes]
+- Q3: Backends: the UI reads a runtime config.json listing its backends, set by the agents-web chart, so a service's menu entries appear only when it is configured? [recommended: yes]
+- Q4: Static server: the agents-web image is nginx-unprivileged with a config file (no Python server)? [recommended: yes]
+- Q5: Harbor CI secrets: you run gh secret set HARBOR_USERNAME and HARBOR_PASSWORD -R szymonrychu/agents-web once the repo exists (agents cannot read the values); web-ci-release stays blocked until then? [recommended: yes]
+- Q6: SSO check: after the web cutover apply you log in once at https://lab.szymonrichert.pl and confirm the cluster list loads; the run does not wait for it (the agent compares both sidecars' cookie settings itself)? [recommended: yes]
+- Q7: Repo creation runs as its own one-task superrepo epic agents-web-component that blocks this epic, because ticket.py cannot mix superrepo and component tasks in one epic? [recommended: yes]
+- Q8: Menu order slots in agents-web: 10 Clusters, 20 Webhooks, 30 Schedules, 40 Presets (matches the configuration-improvements and schedule plans)? [recommended: yes]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -107,7 +123,7 @@ This epic runs after agent-init-scripts and cluster-scaling have merged and move
 | research-papers | skipped: no algorithmic question | none | none |
 | research-docs | skipped: no third-party API decision open | none | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -145,7 +161,74 @@ This epic runs after agent-init-scripts and cluster-scaling have merged and move
 | discovery A3 | ingress-nginx longest prefix | smoke-web-ui AC3, AC4; apply-smoke-web-cutover AC2 |
 | discovery A4 | one Certificate per host | D7; deploy-pin-web AC3 |
 
-## Decision coverage
+## Irreversible operations
+
+- Creating the public GitHub repo `szymonrychu/agents-web` and pushing its main (epic agents-web-component, task create-agents-web-repo): approved by name at the gate.
+- Publishing images and charts to Harbor under immutable versions (web-ci-release on main; orchestrator main CI): versions are never overwritten (refuse-existing step).
+- Two live `helmfile apply` runs on namespace `agents` (apply-smoke-web-cutover, apply-smoke-orch-no-spa): guarded by lint, test and the kube-context guard; rollback is reverting the helmfile commits and re-applying.
+- Deleting `frontend/` from agent-orchestrator (orch-drop-frontend-build): history stays in both repos; guarded by the freeze check (D11).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+- Repo name: user asked about "agents-frontend", then chose "Keep agents-web as is".
+- create repo step and every live apply run by the orchestrator (classifier refuses them in subagents; user approved rules).
+- web-chart-config-ingress: fix rounds: test:chart glob (Node 24), helm test pod pinned and hardened.
+- web-backend-menu: fix round: menu entries memoised (warn per render).
+- orch-drop-frontend-build: AC7 amended (contradicted the requirement's sync:api README note); AC6 evidenced by PR #13 CI e2e pass.
+- deploy-pin-web: first live apply failed on duplicate imagePullSecrets (chart concat of values + global); root fix agents-web PR #2 (dedupe), re-pinned to db1f482; agent-orchestrator untouched by the failed apply.
+- smoke-web-ui: two live bugs fixed after cutover (port-forward hit the SSO sidecar; config.json keyed by id); user confirmed UI loads (Q6).
+- security: MEDIUM regctl-installer@main pinned (fix PR); MEDIUM in-cluster http-insecure port to static UI: dropped (static content, NetworkPolicy is new scope); LOW mutable base tags, missing nginx security headers, origin check scope: dropped (match existing repos / speculative).
+- epic review: whole-diff PASS; findings acted on: chart config.json validation parity with parseConfig and helm test bypassing the sidecar (agents-web PR #4), regctl-installer pinned (PR #3); re-pinned live to cedcbbc (task repin-web-after-review-fixes, helmfile PR #19), smoke OK.
+- PRs merged: agents-web #1 #2 #3 #4, agent-orchestrator #13, agents-helmfile #18 #19. Live: agents-web 0.1.0-main.cedcbbc on /, agent-orchestrator 0.1.0-main.a4be86b (API-only) on /api.
+
+### design.md: Summary
+
+The web UI leaves agent-orchestrator and becomes its own TypeScript component, `agents-web` (history of `agent-orchestrator/frontend` kept), with a static nginx-unprivileged image, its own chart and CI, published to Harbor. The browser stays on one host, `lab.szymonrichert.pl`: ingress path routing sends `/` to agents-web and `/api` to the orchestrator, and every later service gets one path prefix, so everything stays same-origin (no CORS). The UI reads its backends from a runtime `config.json` rendered by its chart; a backend's menu entries appear only when it is configured. The orchestrator becomes API-only. Cutover in two live steps: agents-web plus the path split first, then the orchestrator without the UI.
+
+### design.md: Intent and why
+
+User request 2026-10-25: "decouple frontend from orchestrator microservice", toward more of tatara-new. The hard rule is that services talk only through the queue or HTTP; the next services (agents-webhook, agents-schedule) need UI pages without living in the orchestrator repo. Today one image builds the React app in a node stage and the api mounts it at `/` (`api/app.py:create_app`, `api/spa.py:SpaStaticFiles`).
+
+### design.md: Goals
+
+- G1: `code/agents-web` holds the UI with its history (created by epic agents-web-component) and builds, tests, lints and type-checks there; its types come from a vendored orchestrator OpenAPI copy with a recorded commit.
+- G2: the agents-web image serves the bundle with the cache and fallback rules of `SpaStaticFiles`, plus `/healthz` and `/config.json`, and never answers an `api` path with the SPA.
+- G3: the agents-web chart renders `config.json` from `backends`, a hardened Deployment, a Service on port name `http` and an Ingress; CI publishes image `harbor.szymonrichert.pl/containers/agents-web:<sha7>` and chart `0.1.0-main.<sha7>` on main.
+- G4: live: `/` on `lab.szymonrichert.pl` is agents-web, `/api` the orchestrator, both behind the same SSO session; `mise run smoke` checks the UI, its config and the routing.
+- G5: agent-orchestrator has no `frontend/`, no node stage, no `SpaStaticFiles`, no `ORCH_STATIC_DIR`, no npm in CI; `GET /` on the api is a JSON 404; its API stays documented and tested API-only and the kind e2e passes.
+- G6: later services add a backend by a `backends` value plus registry entries in agents-web (contracts registered).
+
+### design.md: Non-goals
+
+- No UI feature change; no webhook or schedule UI (their epics).
+- No CORS middleware, BFF, gateway, auth layer in the web app, subdomains or micro-frontends.
+- No browser e2e (Playwright).
+- No change to the oauth2-proxy injector or its Secret.
+
+### design.md: Anti-goals
+
+- A live window where `/` serves nothing: the web release and path split go live before the orchestrator stops serving the SPA (D8).
+- UI changes landing in `agent-orchestrator/frontend` after the import (lost on deletion; D11).
+- An absolute backend URL compiled into the bundle.
+- A second Certificate for the host fighting the first (D7).
+
+### design.md: Constraints
+
+- Python only except web frontends (TypeScript): agents-web is the TypeScript component; its tests are vitest and node:test, its server is nginx configuration, not code.
+- Order (orchestrator ruling): runs after agent-init-scripts (PR agent-orchestrator#10) and cluster-scaling have merged; it moves the frontend as it stands then, including their UI. README blockers: agent-init-scripts, cluster-scaling, agents-web-component.
+- Repo creation is the one-task superrepo epic agents-web-component (`mise run component:add`, public GitHub repo, outward-facing, listed at the gate). It is separate because ticket.py refuses an epic that mixes superrepo and component tasks, and treats a task repo without a `code/<repo>` checkout as a superrepo task. After it closes, the orchestrator runs `git submodule update --init code/agents-web` in the main checkout before this epic starts.
+- Headless parity (user decision): the orchestrator API stays documented and tested API-only; the kind e2e must keep passing after the split.
+- Releases follow the agent-init-scripts precedent: a deploy-pin task waits, blocked, for the PR merge and main CI publish, the orchestrator writes `<sha7>` with `ticket.py amend`, then an apply-smoke task applies and smokes.
+- Harbor CI secrets on the new repo are set by the user (agents cannot read secret values).
+- Local testcontainers Postgres is unreliable on this machine (discovery section 1); the targeted verifies here need no database.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -168,7 +251,7 @@ This epic runs after agent-init-scripts and cluster-scaling have merged and move
 | D17 H6 headless parity | orch-drop-spa-mount, orch-drop-frontend-build |
 | D18 O7 order | orch-drop-frontend-build, web-openapi-vendor |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -182,7 +265,7 @@ This epic runs after agent-init-scripts and cluster-scaling have merged and move
 
 Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-component), `agents-web-url-layout`, `agents-web-backends-config`, `agents-web-backend-registry`, `agents-web-openapi-vendor`, `agents-web-chart`, `agents-web-image`, `orch-ui-retired`. configuration-improvements owns `web-settings-menu-order` (Clusters first), which fits slot 10 of `agents-web-backend-registry`.
 
-## Review focus
+### design.md: Review focus
 
 - `nginx/default.conf`: no `api` path ever falls back to `index.html`; assets never fall back; the 405 rule.
 - `src/config/backends.ts` validation: a `basePath` can never become absolute or cross-origin.
@@ -190,14 +273,14 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 - The orchestrator diff: only deletions plus retirement tests; `/api/v1` untouched; kind e2e green.
 - `.github/workflows/ci.yaml` of agents-web: pushes only on main or tags.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Module state or a React context for the loaded config, as long as `backendBase` and `isConfigured` are the API.
 - The exact nginx-unprivileged version tag (pinned, current stable).
 - How `App.tsx` stores the selected menu entry (no router).
 - Whether chart tests share a helper for `helm template` parsing.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - A1 (shared SSO session across pods with the same Secret): checked live by apply-smoke-web-cutover AC3 (sidecar cookie env identical) and the redirect checks; a browser login is gate question Q6.
 - A2 (the callback lands on the web sidecar): follows from `/` routing; the redirect checks show both paths behind a sidecar.
@@ -206,19 +289,13 @@ Cross-epic (docs/plans/contracts.json): `agents-web-repo` (owner agents-web-comp
 - U1 (an expired-session XHR redirect): unchanged behaviour, now per sidecar; not addressed here.
 - Harbor accepts the new repositories `containers/agents-web` and `charts/agents-web` with the existing robot credentials: proven by the first main CI run; if refused, web-ci-release's follow-up is blocked on the user (Harbor project permissions).
 
-## Open questions
-- Q1: Topology: the UI moves to a new public GitHub component repo agents-web (TypeScript, own image, chart, CI, helmfile release) with the history of agent-orchestrator/frontend kept? [recommended: yes, public like agent-orchestrator]
-- Q2: URL layout: one host lab.szymonrichert.pl with ingress path routing, UI at /, orchestrator at /api (/api/v1 unchanged), one prefix per later service (/webhooks/, /schedules/)? [recommended: yes]
-- Q3: Backends: the UI reads a runtime config.json listing its backends, set by the agents-web chart, so a service's menu entries appear only when it is configured? [recommended: yes]
-- Q4: Static server: the agents-web image is nginx-unprivileged with a config file (no Python server)? [recommended: yes]
-- Q5: Harbor CI secrets: you run gh secret set HARBOR_USERNAME and HARBOR_PASSWORD -R szymonrychu/agents-web once the repo exists (agents cannot read the values); web-ci-release stays blocked until then? [recommended: yes]
-- Q6: SSO check: after the web cutover apply you log in once at https://lab.szymonrichert.pl and confirm the cluster list loads; the run does not wait for it (the agent compares both sidecars' cookie settings itself)? [recommended: yes]
-- Q7: Repo creation runs as its own one-task superrepo epic agents-web-component that blocks this epic, because ticket.py cannot mix superrepo and component tasks in one epic? [recommended: yes]
-- Q8: Menu order slots in agents-web: 10 Clusters, 20 Webhooks, 30 Schedules, 40 Presets (matches the configuration-improvements and schedule plans)? [recommended: yes]
+### approvals.json
 
-## Irreversible operations in scope
-
-- Creating the public GitHub repo `szymonrychu/agents-web` and pushing its main (epic agents-web-component, task create-agents-web-repo): approved by name at the gate.
-- Publishing images and charts to Harbor under immutable versions (web-ci-release on main; orchestrator main CI): versions are never overwritten (refuse-existing step).
-- Two live `helmfile apply` runs on namespace `agents` (apply-smoke-web-cutover, apply-smoke-orch-no-spa): guarded by lint, test and the kube-context guard; rollback is reverting the helmfile commits and re-applying.
-- Deleting `frontend/` from agent-orchestrator (orch-drop-frontend-build): history stays in both repos; guarded by the freeze check (D11).
+- A: Decouple the frontend from the orchestrator microservice: the UI ships and runs on its own and talks to the orchestrator only through its documented HTTP API. [decisions: D1, D3, D9] [tasks: web-openapi-vendor, web-runtime-config, web-backend-menu, web-nginx-image, web-chart-workload, web-chart-config-ingress, web-ci-release, web-docs-memory, orch-drop-spa-mount, orch-drop-frontend-build, smoke-web-ui, deploy-pin-web, apply-smoke-web-cutover, deploy-pin-orch-no-spa, apply-smoke-orch-no-spa] [status: approved]
+- T1: New component repo agents-web (TypeScript), history of agent-orchestrator/frontend kept. [decisions: D1, D5, D12] [tasks: web-openapi-vendor, web-runtime-config, web-backend-menu, web-nginx-image, web-chart-workload, web-chart-config-ingress, web-ci-release, web-docs-memory] [status: approved]
+- U2: One host lab.szymonrichert.pl with ingress path routing: UI at /, orchestrator /api, one prefix per later service. [decisions: D2, D6, D7, D13] [tasks: web-chart-config-ingress, smoke-web-ui, deploy-pin-web, apply-smoke-web-cutover] [status: approved]
+- C3: Runtime config.json listing the backends, set by the chart; a backend's UI entries appear only when it is configured. [decisions: D3, D14] [tasks: web-runtime-config, web-backend-menu, web-chart-config-ingress, deploy-pin-web] [status: approved]
+- N4: nginx-unprivileged static image for the UI. [decisions: D4, D15] [tasks: web-nginx-image, web-chart-workload, web-ci-release] [status: approved]
+- R5: Releases, pin bumps and the helmfile apply plus smoke are tasks of this epic, as in agent-init-scripts. [decisions: D8, D10, D16] [tasks: web-ci-release, deploy-pin-web, apply-smoke-web-cutover, deploy-pin-orch-no-spa, apply-smoke-orch-no-spa] [status: approved]
+- H6: Headless parity: the orchestrator API stays documented and tested API-only; the kind e2e keeps passing after the split. [decisions: D5, D9, D17] [tasks: orch-drop-spa-mount, orch-drop-frontend-build] [status: approved]
+- O7: Runs after agent-init-scripts and cluster-scaling have merged and moves the frontend as it stands then, including their UI. [decisions: D11, D18] [tasks: orch-drop-frontend-build, web-openapi-vendor] [status: approved]

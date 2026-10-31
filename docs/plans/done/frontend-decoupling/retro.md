@@ -1,16 +1,34 @@
-# frontend decoupling record
+# frontend decoupling retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+none
+
+## Delivery record (migrated)
+
+### Asked
 
 Decouple the web frontend from the orchestrator microservice: the UI ships and runs on its own (`agents-web`, nginx-unprivileged image, own chart and CI), talks to the orchestrator only through its HTTP API, one host with path routing (`/` UI, `/api` orchestrator), runtime `config.json` backends. The orchestrator becomes API-only. Released and deployed in two live steps.
 
-## Shipped
+### Shipped
 
 Epic review verdict: pass (whole diff). All 16 tasks done. Live: agents-web `0.1.0-main.cedcbbc` on `/`, agent-orchestrator `0.1.0-main.a4be86b` (API-only) on `/api`; smoke OK after each apply and after the final re-pin.
 PRs merged: agents-web #1 #2 #3 #4, agent-orchestrator #13, agents-helmfile #18 #19 (all github.com/szymonrychu/<repo>/pull/<n>).
 Commits since base: agents-web bbeab79..cedcbbc (19 commits), agent-orchestrator b7906aa..a4be86b (3), agents-helmfile 8a11c0b..cc33dd2 (11).
 
-## Tasks
+### Tasks
 
 Verified head = `verified_head` in the task file; this record was written without the plan-execute return value, so independent-verifier heads, red evidence, `declined`, `cannotVerify` and `forwardMerged` were not available (unknown). Verification tail (summary line) is unknown for every row: not in the notes given. Rounds = fix rounds after the first review, from the orchestrator notes (one implementer + one sonnet reviewer each).
 
@@ -46,7 +64,7 @@ Approvals (approvals.json; plan-execute `approvals` return not available, status
 | H6 | Headless parity; kind e2e keeps passing | D5 D9 D17 | orch-drop-spa-mount, orch-drop-frontend-build | delivered (e2e evidenced by PR #13 CI) |
 | O7 | Runs after agent-init-scripts and cluster-scaling, moves UI as it stands | D11 D18 | orch-drop-frontend-build, web-openapi-vendor | delivered |
 
-## Rulings
+### Rulings
 
 - Repo name: user asked about "agents-frontend", then chose "Keep agents-web as is". Cost if wrong: a repo rename.
 - Repo creation and every live apply run by the orchestrator, not subagents (classifier refuses them there; user approved the rules). Cost if wrong: none, only who runs it.
@@ -57,17 +75,17 @@ Approvals (approvals.json; plan-execute `approvals` return not available, status
 - Epic review, acted on: chart config.json validation parity with parseConfig and helm test bypassing the sidecar (agents-web PR #4); re-pinned live to cedcbbc (task repin-web-after-review-fixes, helmfile PR #19), smoke OK.
 - Epic review, declined: image-smoke vs old test_spa case mapping (AC5 judgement, covered per task); stale `.dockerignore` node lines (not correctness). Cost if wrong: a coverage gap in image smoke; cosmetic.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Clusters menu slot (order 10) is not registered; configuration-improvements owns it. Clearable by that epic.
 - The plan-execute return (`declined`, `cannotVerify`, `forwardMerged`, per-task verifier heads, red evidence) was not supplied to this record: unknown. The orchestrator can add it.
 - Blocked items: none otherwise.
 
-## Not pushed
+### Not pushed
 
 Workbench main: commits for this epic (ticket files, submodule pointer bump 10bb104, this record) are local; the record itself is uncommitted. Pusher: the orchestrator. Submodule repos: all PRs merged, nothing unpushed known.
 
-## Lessons routed to
+### Lessons routed to
 
 - Duplicate imagePullSecrets failed only at live apply: add a chart/helmfile render test that fails on duplicate imagePullSecrets (added in d9e6867 in agents-helmfile; add the same to the agents-web chart tests).
 - Chart config.json validation drifted from `parseConfig`: add a test that feeds the same invalid fixtures to both (shared fixture list in agents-web).
