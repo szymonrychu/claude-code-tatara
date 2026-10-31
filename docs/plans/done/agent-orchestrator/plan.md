@@ -1,78 +1,47 @@
-# agent-orchestrator design
+---
+title: agent-orchestrator
+repos: [agent-orchestrator]
+created: 2026-10-22
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# agent-orchestrator
 
-agent-orchestrator is a new component at `code/agent-orchestrator` (public origin `github.com/szymonrychu/agent-orchestrator`). It is one Python repo and one image with four long-running entrypoints (`orch api`, `orch dispatcher`, `orch ingester`, `orch reconciler`), plus `orch migrate` and the `orch bench` CLI. The processes coordinate only through their own Postgres (SKIP LOCKED queue tables and LISTEN/NOTIFY wake-ups).
+## What and why
 
-Each cluster of agents is a StatefulSet of single-session claude-code-wrapper pods in the namespace `agents`, sharing one RWX CephFS PVC, with peers enabled. A per-cluster rendered onStart hook installs any-mcp into every agent pod before its session starts. A React/MUI web UI (theme ported from the ros2 web_ui) shows a left ribbon of clusters with state, pod count and a circular context gauge, and a virtualised chat of every agent's activity. The headless `/api/v1` (REST plus SSE) is the same API the UI uses, and it is the unified router that tatara and magic-trainer will use.
+What: agent-orchestrator, a new component (code/agent-orchestrator, public origin szymonrychu/agent-orchestrator): a web UI and headless /api/v1 that define, run, message and discard clusters of claude-code-wrapper pods in namespace agents, with a ribbon of live state and context gauges, a smart-loading chat of every agent, round-robin dispatch to the agent free the longest with automatic never-twice retries, peer messaging, a shared RWX CephFS workspace, any-mcp installed in every session by a rendered onStart hook, and its own Helm chart.
+How: one Python repo and image with four processes (api, dispatcher, ingester, reconciler) coordinating only through a CNPG Postgres (SKIP LOCKED queues, LISTEN/NOTIFY hints, polling fallback); the reconciler server-side-applies a StatefulSet, headless Service, RWX PVC, ConfigMap and Secret per cluster, label-partitioned in one namespace, and discards everything after an optional JSONL history-export hook; the ingester stores every wrapper event; a React 19 / MUI 9 / Vite 8 frontend ported from the ros2 web UI theme uses only the public API; a bench CLI runs the experiment arms; GitHub CI pushes the orchestrator image to Harbor, publishes the chart (Postgres required, CNPG optional) to oci://harbor.szymonrichert.pl/charts and runs a kind e2e that installs it.
+Why: the user wants to test whether round-robin plus multiple agents plus inter-agent messaging makes agents faster, more robust and more correct, and needs one router whose API tatara and magic-trainer will consume at scale.
 
-The repo ships its own Helm chart (`chart/agent-orchestrator`), published to `oci://harbor.szymonrichert.pl/charts`. The chart needs a Postgres connection and offers CNPG as an optional feature.
+agent-orchestrator: microservice web UI and headless API for orchestrating Kubernetes pods running claude-code-wrapper. Left ribbon lists active pods or clusters with waiting/working state, running-pod count and a circular 0-100% context gauge; the main view is a lazily loaded chat of agent activity (inputs, outputs, thinking, tool calls). Clusters are defined and discarded from the UI; messages go round-robin to the agent free the longest; cluster agents share an RWX CephFS PVC and can message each other; every session starts with any-mcp preinstalled. The headless API is the unified router for future tatara and magic-trainer use. Theme copied from the ros2 web UI. Design: design.md in this epic.
 
-## Intent and why
+## Scope ladder
 
-The user wants to orchestrate pods running claude-code-wrapper from one place: see which sessions are waiting or working, how many agent pods run and how full each context is; read and drive the chat of a session; define and discard pods and clusters with their config. Messages to a cluster go round-robin to the agent that has been free the longest. The point is an experiment: does round-robin plus multiple agents plus agents messaging each other make the work faster, more robust and more correct? The headless API fixes the router's shape now, because tatara and magic-trainer will consume it later.
+### Rung 1: agreed scope (migrated)
 
-## Goals
+- 1.1: Headless /api/v1 REST plus SSE covering clusters, agents, messages, events and checks.
+- 1.2: Round-robin dispatch to the agent free the longest, queued while all are busy.
+- 1.3: Cluster create/edit/discard reconciled into StatefulSet, headless Service, RWX PVC, ConfigMap, Secret in namespace agents; discard deletes everything incl. history, after an optional pre-discard export hook.
+- 1.4: Web UI: ribbon with state, pod count and context gauge; virtualised chat with backward paging and live updates; cluster forms and discard dialog.
+- 1.5: any-mcp installed per agent pod by a rendered onStart hook from a pinned tag (no derived image); AskUserQuestion disabled, agents ask in writing.
+- 1.6: A bench CLI to compare round-robin, multiple agents and peer messaging.
+- 1.7: CI pushes the orchestrator image to Harbor and publishes the Helm chart chart/agent-orchestrator with immutable versions.
 
-- G1: `/api/v1` REST plus two SSE streams cover clusters, agents, messages, commands, events and checks. Every route is documented in README.md and the README parity test passes.
-- G2: A message posted to a cluster is delivered to the ready, idle agent with the oldest `free_since`. While every agent is busy it stays queued, and it is dispatched when one frees. Two concurrent dispatchers never double-dispatch. A definite non-accept is retried automatically with bounded backoff. An ambiguous send is checked against the wrapper before any retry, so a turn is never sent twice.
-- G3: Creating, editing and discarding a cluster through the API reconciles a StatefulSet, headless Service, RWX PVC, ConfigMap and Secret, all labelled, in namespace `agents`. Discard removes every labelled object including the PVC, and the cluster's whole history. An optional pre-discard hook receives the JSONL history export first.
-- G4: The web UI shows:
-  - a left ribbon: clusters with working/waiting state, a ready/replicas count and a circular 0-100% context gauge, and expandable agents with their own gauge
-  - a virtualised chat: newest 200 on open, older pages on scroll-up, live append; it shows user inputs, assistant output, thinking, tool calls and peer messages
-  - a composer, a queue strip, a cluster form and a discard dialog
-- G5: Every agent session starts with any-mcp registered as a stdio MCP server. The rendered onStart hook installs it from a pinned git tag at pod start, so there is no derived agent image.
-- G6: `orch bench spec.yaml` runs the experiment arms against the public API and writes JSONL plus a summary table.
-- G7: GitHub CI does the following:
-  - runs Python lint and tests, and frontend lint, tests, build and API type drift
-  - builds and pushes the orchestrator image to Harbor `containers/`
-  - lints and tests the Helm chart and publishes it to `oci://harbor.szymonrichert.pl/charts`
-  - runs the kind e2e, which installs that chart
-- G8: Agents never block on AskUserQuestion. The tool is disabled, and an appended system prompt makes them ask in writing as a numbered list, each question with a recommended answer.
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- No authentication. The UI and API are LAN-only behind the ingress whitelist, which epic agents-helmfile configures through the chart's ingress values.
-- No special prompts for clustered agents beyond the ask-in-writing instruction (D8).
-- No answering AskUserQuestion from the UI: the tool is disabled.
-- No helmfile release, SOPS secrets or superrepo docs here. Those are epic `agents-helmfile` (code/agents-helmfile) and the superrepo docs.
-- No wrapper changes here. They are epic `claude-code-wrapper-orchestr`, which also adds the onStart hook.
-- No per-message callback URL for consumers.
+- No authentication (LAN-only for now).
+- No special prompts for clustered agents.
+- No answering AskUserQuestion from the UI (the tool is disabled).
+- No helmfile release or SOPS secrets (epic agents-helmfile).
 
-## Anti-goals
+## Design
 
-- A second copy of model context-window sizes in the orchestrator (it drifts; the wrapper reports the window).
-- Proxying the wrapper's event log instead of storing it (no merged timeline, no history after pod deletion, no backward paging).
-- Kubernetes credentials or wrapper tokens reachable from the no-auth `api` process.
-- A CRD or operator framework for what one table and a loop already do.
-- Starting the frontend on old majors (ESLint 8, Vite 5, MUI 6).
-- Homelab specifics baked into the chart defaults (ingress annotations, hosts, storage classes, CNPG on by default).
-- A retry that can paste one message into a session twice.
-
-## Constraints
-
-- Component hard rules (superrepo AGENTS.md), as amended by the user:
-  - Python only, except web frontends.
-  - The orchestrator may call the Kubernetes API.
-  - Services talk only through the queue or HTTP APIs, with no shared state, interpreted as one writer per table (D2).
-- Postgres only (CNPG per app, or any Postgres the chart is pointed at); no Redis, NATS or other broker.
-- Pinned versions:
-  - Python side: Python 3.12, uv, ruff, mise, FastAPI 0.160.0 (native SSE `fastapi.sse.EventSourceResponse`), psycopg 3.3.6 async, lightkube 1.0.1, httpx.
-  - npm side: react 19.3.1, @mui/material 9.5.0, vite 8.3.5, vitest 5.0.5, react-virtuoso 4.18.19, eslint 10.13.0, openapi-typescript 7.13.0.
-  - Chart: Helm through mise.
-- Wrapper facts:
-  - Auth and turns: bearer auth on `/v1`. A turn to a busy session returns 409. Session create is synchronous.
-  - Sessions root: `sessions_root` is globbed at startup, so a shared one leaks sessions between pods.
-  - Peers need a unique name, a reachable `advertise_url`, and a shared token of at least 16 characters that differs from `auth_token`. A seed equal to `self_url` is skipped. Never expose a wrapper through an ingress.
-  - Turn metadata: a turn's client `metadata` is kept on the turn record (README.md:329, turns.py:105, readable with `GET /v1/sessions/{id}/turns/{turn_id}`).
-  - AskUserQuestion: `sessions.ask_user_question` accepts forward, deny or allow (README.md:2693). `claude.permissions.deny` removes tools (config.py:148-150). `prompts.system_append` appends text to the session CLAUDE.md (README.md:2600).
-  - There is no instance-start hook today: onCreate runs after claude starts (manager.py:594-605), and `init.setup_commands` run per created session only (manager.py:474-482, workdir.py:149-160). The wrapper epic adds `hooks.onStart` (contract `wrapper-on-start-hook`).
-  - The wrapper image is python:3.12-slim with git (Dockerfile:18, :31), so `python3 -m venv` and a git pip install work in it.
-- Infra facts: `rook-ceph-rwx` is the default StorageClass; `regcred` exists in every release namespace; Harbor tags are immutable; Kubernetes v1.33.0.
-- Depends on two epics. Tasks that consume them name the contract in `uses`.
-  - `claude-code-wrapper-orchestr`: context, idle_since, user_message, `/v1/peers`, onStart.
-  - `any-mcp`: a pinned git tag with a stdio entrypoint.
-- Verify commands are targeted pytest or vitest files plus lint, never the full suite.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -402,6 +371,23 @@ Tests are pytest over `helm template` (`tests/test_chart_*.py`), with Helm insta
 
 The agents-helmfile epic consumes the chart, settings env and image contracts. Serves A27.
 
+## Open questions
+
+- Q1: The tatara rule 'services talk only through the queue or HTTP APIs; no shared state' conflicts with a Postgres-only queue, which is itself a shared table. Is it read as: one writer per table, with queue tables the only multi-writer tables, changed only through state-machine-guarded UPDATEs? [answer: yes, single-writer interpretation, written into the component README and MEMORY.md (accepted as recommended)]
+- Q2: Does each agent pod run exactly one wrapper session (max_sessions 1)? [answer: yes, 1 pod = 1 session (accepted as recommended)]
+- Q3: Is a single pod modelled as a cluster with one replica, so there is no separate single-pod type? [answer: yes, a single pod is a cluster of 1 (accepted as recommended)]
+- Q4: On discard, are the cluster's Kubernetes objects deleted including the shared PVC and its files, with history kept until an explicit purge? [answer: discard deletes everything: the Kubernetes objects, the PVC and the chat history (messages, events, turns); there is no separate purge. An optional pre-discard hook (a command or webhook URL from settings, a webhook URL from the cluster spec; none by default) receives the cluster's full history export as JSONL before anything is deleted (changed by the user, D15)]
+- Q5: When a message cannot be delivered (wrapper 503 or a network error), is it retried automatically? [answer: automatic: bounded attempts with exponential backoff on definite non-accepts; an ambiguous outcome is checked against the wrapper (did the turn start: turn metadata and snapshot current_turn_id) before any retry, so a turn is never sent twice (changed by the user, D24)]
+- Q6: Does the frontend start on the current majors (React 19.3, MUI 9.5, Vite 8.3, vitest 5, ESLint 10 flat config) rather than the ros2 versions (React 18, MUI 6, Vite 5, ESLint 8)? [answer: yes, current majors (accepted as recommended)]
+- Q7: Which helmfile bucket hosts the agent-orchestrator and agent-orchestrator-db releases in namespace agents? [answer: a separate helmfile-like repo agents-helmfile (code/agents-helmfile, public szymonrychu/agents-helmfile, SOPS secrets) manages namespace agents with local mise diff/apply tasks; epic agents-helmfile; the infrastructure epic agents-k8s-deploy is dropped (changed by the user)]
+- Q8: How is any-mcp installed into the agent image? [answer: no derived agent image: the agents run the wrapper image directly and the orchestrator renders one onStart hook script per cluster that pip-installs any-mcp from the pinned git tag into /opt/any-mcp and writes its config (changed by the user, D16)]
+- Q9: What does a cluster row's context gauge show when the cluster has several agents? [answer: the maximum used percentage over its agents (accepted as recommended)]
+- Q10: What is the context gauge's denominator? [answer: the full model context window with a tick at the auto-compact percentage (accepted as recommended)]
+- Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [answer: AskUserQuestion is disabled (ask_user_question deny plus permissions.deny); agents get an appended system prompt telling them to ask questions in writing as a numbered list, each with a recommended answer (changed by the user, D8)]
+- Q12: Where are the orchestrator and agent images pushed? [answer: Harbor containers/ (accepted as recommended); with Q8 only containers/agent-orchestrator:<sha7> is built here]
+- Q13: How are the agent-orchestrator-db CNPG backups configured? [answer: copy the backup configuration of the existing CNPG release (accepted as recommended); the chart's optional cnpg.backup passes it through verbatim]
+- Q14: Do agent clusters live in their own namespace `agents-clusters` (configurable `ORCH_CLUSTERS_NAMESPACE`, created by the helmfile release, regcred and the Claude Secret provided there) while the orchestrator runs in `agents`? [answer: everything in namespace agents, clusters told apart by labels; ORCH_CLUSTERS_NAMESPACE and agents-clusters are removed; the reserved agent-<slug> prefix and the refuse-unlabelled apply and prune guard stay (changed by the user, D26)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -413,7 +399,7 @@ The agents-helmfile epic consumes the chart, settings env and image contracts. S
 | research-code-external | ran inside the architect pass (design-orchestrator.md sources) | FastAPI native SSE (fastapi.tiangolo.com/tutorial/server-sent-events), lightkube server-side apply, `helm create` scaffold | procrastinate job library |
 | research-papers | skipped: no algorithmic question; the experiment is the bench | none | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -437,7 +423,114 @@ The agents-helmfile epic consumes the chart, settings env and image contracts. S
 | brief-ui.md section 4 | frontend CI never ran | spa-serving-and-dockerfile (CI job) |
 | design-orchestrator.md section 8 | two-dispatcher and NOTIFY-loss tests | dispatch-queue-sql, dispatcher-loop |
 
-## Decision coverage
+## Irreversible operations
+
+- Creating the public GitHub repository `szymonrychu/agent-orchestrator` and pushing to it: covered by the gate approval (D21, 5.1 approved).
+- Pushing the image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>`: Harbor tags are immutable and the tags are commit sha7s, so a push never overwrites. Covered by D17.
+- Publishing chart versions to `oci://harbor.szymonrichert.pl/charts/agent-orchestrator`: the versions are immutable (`X.Y.Z` on a tag, `X.Y.Z-main.<sha7>` on main), and CI refuses to push an existing version. Covered by D28.
+- Cluster discard deletes the cluster's Kubernetes objects, its PVC with its files, and its whole chat history (messages, events, turns, commands, checks) at run time. This is a product behaviour (D15), safeguarded by the typed-slug confirmation in the UI and by the optional pre-discard hook, which receives the full JSONL export first. A failed hook blocks the deletion.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-23)
+
+Panel review (fable, opus, sonnet) of the implementation: acted on the ingress SNAT bypass (node-IP denylist at the ingress, chart values allow/denySourceRanges, README boundary), stored dead sessions resumed or replaced, ambiguous-deadline reservation released, wrapper 500/502 routed through the verifier, discard quiesces agents before export; all other design-review Act-on items verified implemented. Scope audit: A1-A27 landed, 354 AC refs resolve. Final tip: unit 393 passed, integration (real wrapper) 8 passed, kind e2e 8 passed, chart tests, lint, chart lint, frontend lint/test (90)/build all green.
+Rulings: descriptive branch values from implementers rewritten to task branches; missing owner dependencies added for 21 tasks; renderer landed by cherry-picking its own commits onto the epic tip; parking-wording false positives accepted (readme, reconciler, session-bootstrap).
+
+Verdict: pass (2026-10-23)
+
+Panel review (fable, opus, sonnet) of the implementation: acted on the ingress SNAT bypass (node-IP denylist at the ingress, chart values allow/denySourceRanges, README boundary), stored dead sessions resumed or replaced, ambiguous-deadline reservation released, wrapper 500/502 routed through the verifier, discard quiesces agents before export; all other design-review Act-on items verified implemented. Scope audit: A1-A27 landed, 354 AC refs resolve. Final tip: unit 393 passed, integration (real wrapper) 8 passed, kind e2e 8 passed, chart tests, lint, chart lint, frontend lint/test (90)/build all green.
+Rulings: descriptive branch values from implementers rewritten to task branches; missing owner dependencies added for 21 tasks; renderer landed by cherry-picking its own commits onto the epic tip; parking-wording false positives accepted (readme, reconciler, session-bootstrap).
+
+Verdict: pass (2026-10-23)
+
+Panel review (fable, opus, sonnet) of the implementation: acted on the ingress SNAT bypass (node-IP denylist at the ingress, chart values allow/denySourceRanges, README boundary), stored dead sessions resumed or replaced, ambiguous-deadline reservation released, wrapper 500/502 routed through the verifier, discard quiesces agents before export; all other design-review Act-on items verified implemented. Scope audit: A1-A27 landed, 354 AC refs resolve. Final tip: unit 393 passed, integration (real wrapper) 8 passed, kind e2e 8 passed, chart tests, lint, chart lint, frontend lint/test (90)/build all green.
+Rulings: descriptive branch values from implementers rewritten to task branches; missing owner dependencies added for 21 tasks; renderer landed by cherry-picking its own commits onto the epic tip; parking-wording false positives accepted (readme, reconciler, session-bootstrap).
+
+Verdict: pass (2026-10-23)
+
+Panel review (fable, opus, sonnet) of the implementation: acted on the ingress SNAT bypass (node-IP denylist at the ingress, chart values allow/denySourceRanges, README boundary), stored dead sessions resumed or replaced, ambiguous-deadline reservation released, wrapper 500/502 routed through the verifier, discard quiesces agents before export; all other design-review Act-on items verified implemented. Scope audit: A1-A27 landed, 354 AC refs resolve. Final tip: unit 393 passed, integration (real wrapper) 8 passed, kind e2e 8 passed, chart tests, lint, chart lint, frontend lint/test (90)/build all green.
+Rulings: descriptive branch values from implementers rewritten to task branches; missing owner dependencies added for 21 tasks; renderer landed by cherry-picking its own commits onto the epic tip; parking-wording false positives accepted (readme, reconciler, session-bootstrap).
+
+### design.md: Summary
+
+agent-orchestrator is a new component at `code/agent-orchestrator` (public origin `github.com/szymonrychu/agent-orchestrator`). It is one Python repo and one image with four long-running entrypoints (`orch api`, `orch dispatcher`, `orch ingester`, `orch reconciler`), plus `orch migrate` and the `orch bench` CLI. The processes coordinate only through their own Postgres (SKIP LOCKED queue tables and LISTEN/NOTIFY wake-ups).
+
+Each cluster of agents is a StatefulSet of single-session claude-code-wrapper pods in the namespace `agents`, sharing one RWX CephFS PVC, with peers enabled. A per-cluster rendered onStart hook installs any-mcp into every agent pod before its session starts. A React/MUI web UI (theme ported from the ros2 web_ui) shows a left ribbon of clusters with state, pod count and a circular context gauge, and a virtualised chat of every agent's activity. The headless `/api/v1` (REST plus SSE) is the same API the UI uses, and it is the unified router that tatara and magic-trainer will use.
+
+The repo ships its own Helm chart (`chart/agent-orchestrator`), published to `oci://harbor.szymonrichert.pl/charts`. The chart needs a Postgres connection and offers CNPG as an optional feature.
+
+### design.md: Intent and why
+
+The user wants to orchestrate pods running claude-code-wrapper from one place: see which sessions are waiting or working, how many agent pods run and how full each context is; read and drive the chat of a session; define and discard pods and clusters with their config. Messages to a cluster go round-robin to the agent that has been free the longest. The point is an experiment: does round-robin plus multiple agents plus agents messaging each other make the work faster, more robust and more correct? The headless API fixes the router's shape now, because tatara and magic-trainer will consume it later.
+
+### design.md: Goals
+
+- G1: `/api/v1` REST plus two SSE streams cover clusters, agents, messages, commands, events and checks. Every route is documented in README.md and the README parity test passes.
+- G2: A message posted to a cluster is delivered to the ready, idle agent with the oldest `free_since`. While every agent is busy it stays queued, and it is dispatched when one frees. Two concurrent dispatchers never double-dispatch. A definite non-accept is retried automatically with bounded backoff. An ambiguous send is checked against the wrapper before any retry, so a turn is never sent twice.
+- G3: Creating, editing and discarding a cluster through the API reconciles a StatefulSet, headless Service, RWX PVC, ConfigMap and Secret, all labelled, in namespace `agents`. Discard removes every labelled object including the PVC, and the cluster's whole history. An optional pre-discard hook receives the JSONL history export first.
+- G4: The web UI shows:
+  - a left ribbon: clusters with working/waiting state, a ready/replicas count and a circular 0-100% context gauge, and expandable agents with their own gauge
+  - a virtualised chat: newest 200 on open, older pages on scroll-up, live append; it shows user inputs, assistant output, thinking, tool calls and peer messages
+  - a composer, a queue strip, a cluster form and a discard dialog
+- G5: Every agent session starts with any-mcp registered as a stdio MCP server. The rendered onStart hook installs it from a pinned git tag at pod start, so there is no derived agent image.
+- G6: `orch bench spec.yaml` runs the experiment arms against the public API and writes JSONL plus a summary table.
+- G7: GitHub CI does the following:
+  - runs Python lint and tests, and frontend lint, tests, build and API type drift
+  - builds and pushes the orchestrator image to Harbor `containers/`
+  - lints and tests the Helm chart and publishes it to `oci://harbor.szymonrichert.pl/charts`
+  - runs the kind e2e, which installs that chart
+- G8: Agents never block on AskUserQuestion. The tool is disabled, and an appended system prompt makes them ask in writing as a numbered list, each question with a recommended answer.
+
+### design.md: Non-goals
+
+- No authentication. The UI and API are LAN-only behind the ingress whitelist, which epic agents-helmfile configures through the chart's ingress values.
+- No special prompts for clustered agents beyond the ask-in-writing instruction (D8).
+- No answering AskUserQuestion from the UI: the tool is disabled.
+- No helmfile release, SOPS secrets or superrepo docs here. Those are epic `agents-helmfile` (code/agents-helmfile) and the superrepo docs.
+- No wrapper changes here. They are epic `claude-code-wrapper-orchestr`, which also adds the onStart hook.
+- No per-message callback URL for consumers.
+
+### design.md: Anti-goals
+
+- A second copy of model context-window sizes in the orchestrator (it drifts; the wrapper reports the window).
+- Proxying the wrapper's event log instead of storing it (no merged timeline, no history after pod deletion, no backward paging).
+- Kubernetes credentials or wrapper tokens reachable from the no-auth `api` process.
+- A CRD or operator framework for what one table and a loop already do.
+- Starting the frontend on old majors (ESLint 8, Vite 5, MUI 6).
+- Homelab specifics baked into the chart defaults (ingress annotations, hosts, storage classes, CNPG on by default).
+- A retry that can paste one message into a session twice.
+
+### design.md: Constraints
+
+- Component hard rules (superrepo AGENTS.md), as amended by the user:
+  - Python only, except web frontends.
+  - The orchestrator may call the Kubernetes API.
+  - Services talk only through the queue or HTTP APIs, with no shared state, interpreted as one writer per table (D2).
+- Postgres only (CNPG per app, or any Postgres the chart is pointed at); no Redis, NATS or other broker.
+- Pinned versions:
+  - Python side: Python 3.12, uv, ruff, mise, FastAPI 0.160.0 (native SSE `fastapi.sse.EventSourceResponse`), psycopg 3.3.6 async, lightkube 1.0.1, httpx.
+  - npm side: react 19.3.1, @mui/material 9.5.0, vite 8.3.5, vitest 5.0.5, react-virtuoso 4.18.19, eslint 10.13.0, openapi-typescript 7.13.0.
+  - Chart: Helm through mise.
+- Wrapper facts:
+  - Auth and turns: bearer auth on `/v1`. A turn to a busy session returns 409. Session create is synchronous.
+  - Sessions root: `sessions_root` is globbed at startup, so a shared one leaks sessions between pods.
+  - Peers need a unique name, a reachable `advertise_url`, and a shared token of at least 16 characters that differs from `auth_token`. A seed equal to `self_url` is skipped. Never expose a wrapper through an ingress.
+  - Turn metadata: a turn's client `metadata` is kept on the turn record (README.md:329, turns.py:105, readable with `GET /v1/sessions/{id}/turns/{turn_id}`).
+  - AskUserQuestion: `sessions.ask_user_question` accepts forward, deny or allow (README.md:2693). `claude.permissions.deny` removes tools (config.py:148-150). `prompts.system_append` appends text to the session CLAUDE.md (README.md:2600).
+  - There is no instance-start hook today: onCreate runs after claude starts (manager.py:594-605), and `init.setup_commands` run per created session only (manager.py:474-482, workdir.py:149-160). The wrapper epic adds `hooks.onStart` (contract `wrapper-on-start-hook`).
+  - The wrapper image is python:3.12-slim with git (Dockerfile:18, :31), so `python3 -m venv` and a git pip install work in it.
+- Infra facts: `rook-ceph-rwx` is the default StorageClass; `regcred` exists in every release namespace; Harbor tags are immutable; Kubernetes v1.33.0.
+- Depends on two epics. Tasks that consume them name the contract in `uses`.
+  - `claude-code-wrapper-orchestr`: context, idle_since, user_message, `/v1/peers`, onStart.
+  - `any-mcp`: a pinned git tag with a stdio entrypoint.
+- Verify commands are targeted pytest or vitest files plus lint, never the full suite.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -470,7 +563,7 @@ The agents-helmfile epic consumes the chart, settings env and image contracts. S
 | D27 Session adoption and one workdir path | k8s-object-renderer, session-bootstrap, check-jobs, wrapper-client-and-sse, fake-wrapper-contract, dispatch-queue-sql, dispatcher-loop, migrations-and-schema |
 | D28 Helm chart in the repo | helm-chart-scaffold, helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-ci-publish, kind-e2e |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -496,7 +589,7 @@ The agents-helmfile epic consumes the chart, settings env and image contracts. S
 | `helm-render` | helm-chart-scaffold | helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-ci-publish | `tests/helm_render.py` |
 | `agent-orchestrator-chart` | helm-chart-scaffold | helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-ci-publish, kind-e2e | `chart/agent-orchestrator/values.yaml` |
 
-## Cross-epic contracts
+### design.md: Cross-epic contracts
 
 Registered in `docs/plans/contracts.json`:
 
@@ -518,7 +611,7 @@ Registered in `docs/plans/contracts.json`:
 
 The Claude Secret is rendered by this repo's chart (`claude.token` or `claude.existingSecret`); agents-helmfile only supplies the SOPS value.
 
-## Review focus
+### design.md: Review focus
 
 - dispatch-queue-sql and dispatcher-loop: the claim and pick SQL, the reservation rule `free_since > last_dispatched_at`, and the 409/503 transitions. Two concurrent dispatchers must never send one message twice or two messages to one agent.
 - ambiguous-send-verifier: a resend happens only after the original wrapper answered, showed no turn with this `orch_message_id`, and the settle window passed. The reservation is cleared only when it still belongs to this message.
@@ -538,7 +631,7 @@ The Claude Secret is rendered by this repo's chart (`claude.token` or `claude.ex
   - AskUserQuestion is denied twice
 - Chart: no homelab defaults; a missing Postgres connection fails; immutable versions on publish.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Module layout inside `src/agent_orchestrator/` beyond the files named in tasks, as long as each contract stays defined in its one file.
 - Exact pydantic model names, log fields and SQL index names.
@@ -546,7 +639,7 @@ The Claude Secret is rendered by this repo's chart (`claude.token` or `claude.ex
 - Bench summary table formatting.
 - Chart helper template names and the exact `values.yaml` comments, within the keys of contract `agent-orchestrator-chart`.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - Wrapper image sha: the sha7 that contains the `claude-code-wrapper-orchestr` changes (including onStart) is known only when that epic lands. The agent image default, the e2e test image `BASE_IMAGE` and the ccw dev dependency pin take that sha. Confirm with `git -C code/claude-code-wrapper rev-parse --short=7 origin/main` after it merges.
 - any-mcp tag: `vX.Y.Z` (planned v0.1.0) is known only when the any-mcp epic tags its release. `ORCH_ANY_MCP_REF` defaults to it. Confirm with `git ls-remote --tags https://github.com/szymonrychu/any-mcp`.
@@ -556,26 +649,32 @@ The Claude Secret is rendered by this repo's chart (`claude.token` or `claude.ex
 - Agent pods reach github.com: needed for the onStart pip install. The kind e2e on ubuntu-latest has egress.
 - Residual double-send window: a turn request held inside the wrapper for longer than `ORCH_AMBIGUOUS_SETTLE_SECONDS` (60 s, four times the send timeout) and accepted after the verifier saw no turn. The wrapper records the turn synchronously before answering 202 (router.py:779), so this needs a stalled wrapper. The settle setting widens the window when needed.
 
-## Open questions
-- Q1: The tatara rule 'services talk only through the queue or HTTP APIs; no shared state' conflicts with a Postgres-only queue, which is itself a shared table. Is it read as: one writer per table, with queue tables the only multi-writer tables, changed only through state-machine-guarded UPDATEs? [answer: yes, single-writer interpretation, written into the component README and MEMORY.md (accepted as recommended)]
-- Q2: Does each agent pod run exactly one wrapper session (max_sessions 1)? [answer: yes, 1 pod = 1 session (accepted as recommended)]
-- Q3: Is a single pod modelled as a cluster with one replica, so there is no separate single-pod type? [answer: yes, a single pod is a cluster of 1 (accepted as recommended)]
-- Q4: On discard, are the cluster's Kubernetes objects deleted including the shared PVC and its files, with history kept until an explicit purge? [answer: discard deletes everything: the Kubernetes objects, the PVC and the chat history (messages, events, turns); there is no separate purge. An optional pre-discard hook (a command or webhook URL from settings, a webhook URL from the cluster spec; none by default) receives the cluster's full history export as JSONL before anything is deleted (changed by the user, D15)]
-- Q5: When a message cannot be delivered (wrapper 503 or a network error), is it retried automatically? [answer: automatic: bounded attempts with exponential backoff on definite non-accepts; an ambiguous outcome is checked against the wrapper (did the turn start: turn metadata and snapshot current_turn_id) before any retry, so a turn is never sent twice (changed by the user, D24)]
-- Q6: Does the frontend start on the current majors (React 19.3, MUI 9.5, Vite 8.3, vitest 5, ESLint 10 flat config) rather than the ros2 versions (React 18, MUI 6, Vite 5, ESLint 8)? [answer: yes, current majors (accepted as recommended)]
-- Q7: Which helmfile bucket hosts the agent-orchestrator and agent-orchestrator-db releases in namespace agents? [answer: a separate helmfile-like repo agents-helmfile (code/agents-helmfile, public szymonrychu/agents-helmfile, SOPS secrets) manages namespace agents with local mise diff/apply tasks; epic agents-helmfile; the infrastructure epic agents-k8s-deploy is dropped (changed by the user)]
-- Q8: How is any-mcp installed into the agent image? [answer: no derived agent image: the agents run the wrapper image directly and the orchestrator renders one onStart hook script per cluster that pip-installs any-mcp from the pinned git tag into /opt/any-mcp and writes its config (changed by the user, D16)]
-- Q9: What does a cluster row's context gauge show when the cluster has several agents? [answer: the maximum used percentage over its agents (accepted as recommended)]
-- Q10: What is the context gauge's denominator? [answer: the full model context window with a tick at the auto-compact percentage (accepted as recommended)]
-- Q11: How do agent sessions handle AskUserQuestion, given the UI does not answer it? [answer: AskUserQuestion is disabled (ask_user_question deny plus permissions.deny); agents get an appended system prompt telling them to ask questions in writing as a numbered list, each with a recommended answer (changed by the user, D8)]
-- Q12: Where are the orchestrator and agent images pushed? [answer: Harbor containers/ (accepted as recommended); with Q8 only containers/agent-orchestrator:<sha7> is built here]
-- Q13: How are the agent-orchestrator-db CNPG backups configured? [answer: copy the backup configuration of the existing CNPG release (accepted as recommended); the chart's optional cnpg.backup passes it through verbatim]
-- Q14: Do agent clusters live in their own namespace `agents-clusters` (configurable `ORCH_CLUSTERS_NAMESPACE`, created by the helmfile release, regcred and the Claude Secret provided there) while the orchestrator runs in `agents`? [answer: everything in namespace agents, clusters told apart by labels; ORCH_CLUSTERS_NAMESPACE and agents-clusters are removed; the reserved agent-<slug> prefix and the refuse-unlabelled apply and prune guard stay (changed by the user, D26)]
+### approvals.json
 
-
-## Irreversible operations in scope
-
-- Creating the public GitHub repository `szymonrychu/agent-orchestrator` and pushing to it: covered by the gate approval (D21, 5.1 approved).
-- Pushing the image `harbor.szymonrichert.pl/containers/agent-orchestrator:<sha7>`: Harbor tags are immutable and the tags are commit sha7s, so a push never overwrites. Covered by D17.
-- Publishing chart versions to `oci://harbor.szymonrichert.pl/charts/agent-orchestrator`: the versions are immutable (`X.Y.Z` on a tag, `X.Y.Z-main.<sha7>` on main), and CI refuses to push an existing version. Covered by D28.
-- Cluster discard deletes the cluster's Kubernetes objects, its PVC with its files, and its whole chat history (messages, events, turns, commands, checks) at run time. This is a product behaviour (D15), safeguarded by the typed-slug confirmation in the UI and by the optional pre-discard hook, which receives the full JSONL export first. A failed hook blocks the deletion.
+- A1: Left ribbon lists the active pods and clusters, each with an indicator: waiting or working, how many agent pods run, and a circular 0-100% context gauge. [decisions: D13, D11] [tasks: fe-context-gauge, fe-shell-and-ribbon, api-clusters-and-agents, ingester] [status: approved]
+- A2: Main view is a chat with smart message loading showing agent activity: past inputs, outputs, thinking and tool calls. [decisions: D5, D14] [tasks: wrapper-client-and-sse, events-store, ingester, api-events-and-streams, fe-chat-model, fe-chat-log-paging, fe-composer-and-queue-strip, chatlog-trim-test-fast] [status: approved]
+- A3: The web UI theme matches the ros2-lerobot-sverve-platform web UI. [decisions: D12] [tasks: fe-scaffold, fe-theme-port, fe-api-client-and-stream] [status: approved]
+- A4: Pods and groups of pods (clusters) can be defined with their config and discarded. [decisions: D6, D8, D15] [tasks: clusters-repository, k8s-object-renderer, reconciler-loop, session-bootstrap, api-clusters-and-agents, fe-cluster-form, discard-hook-and-export] [status: approved]
+- A5: A headless API orchestrates and communicates with the sessions and is the unified router for future use at scale (tatara, magic-trainer). [decisions: D1, D11] [tasks: api-clusters-and-agents, api-messages-and-commands, api-events-and-streams, readme-api-and-openapi, frontend-api-types-regen] [status: approved]
+- A6: Messages to a cluster go round-robin: the agent that has been free the longest receives the message. [decisions: D2, D4] [tasks: dispatch-queue-sql, dispatcher-loop, api-messages-and-commands] [status: approved]
+- A7: Agents in a cluster can communicate with each other. [decisions: D7, D8] [tasks: cluster-token-derivation, k8s-object-renderer] [status: approved]
+- A8: A cluster's agents share a PVC on RWX rook-ceph CephFS. [decisions: D6] [tasks: k8s-object-renderer, reconciler-loop] [status: approved]
+- A9: Every new session starts with any-mcp preinstalled: no derived agent image; a per-cluster rendered onStart hook pip-installs any-mcp from the pinned git tag into a venv and writes its config before the wrapper starts any session. [decisions: D8, D16] [tasks: settings-model, k8s-object-renderer, kind-e2e] [status: approved]
+- A10: The setup lets the user test whether round-robin plus multiple agents plus inter-agent messaging speeds up thinking and execution and improves robustness and correctness. [decisions: D10, D18] [tasks: check-jobs, bench-cli] [status: approved]
+- A11: Decentralised microservices coordinating only through a Postgres queue (CNPG), with the orchestrator calling the Kubernetes API itself. [decisions: D1, D2, D3, D20] [tasks: scaffold-repo-and-cli, settings-model, migrations-and-schema, clusters-repository, events-store, entrypoints-and-singleton] [status: approved]
+- A12: Integration with claude-code-wrapper is verified against the real wrapper, not only a fake. [decisions: D19] [tasks: wrapper-client-and-sse, fake-wrapper-contract, session-bootstrap] [status: approved]
+- A13: Delivered as a new component code/agent-orchestrator with public GitHub origin szymonrychu/agent-orchestrator, CI, the orchestrator image pushed to Harbor (no derived agent image), least-privilege RBAC and a kind end-to-end test that installs the repo's Helm chart. [decisions: D9, D17, D19, D21] [tasks: scaffold-repo-and-cli, settings-model, reconciler-loop, spa-serving-and-dockerfile, container-images-ci, kind-e2e, images-test-precision, fixtures-not-secret-shaped] [status: approved]
+- A14: In-cluster callers cannot reach the API: it enforces a direct-peer source allowlist (ORCH_ALLOWED_CIDRS, health routes exempt), and ClusterSpec is hardened (image allowlist ORCH_AGENT_IMAGES, reserved env keys rejected, claude.passthrough_env rendered, any_mcp_config validated against the any-mcp schema, caps on replicas, PVC size and cluster count). [decisions: D22] [tasks: scaffold-repo-and-cli, settings-model, clusters-repository, api-clusters-and-agents, k8s-object-renderer, entrypoints-and-singleton, container-images-ci, readme-api-and-openapi, kind-e2e, ingress-node-denylist] [status: approved]
+- A15: A failed send never wedges round-robin and is retried automatically: the reservation is released on every non-accept outcome, definite non-accepts (unavailable, gone) are retried with bounded attempts and exponential backoff while busy is requeued at once and config error or rejected fail at once, the wrapper client maps every HTTP status, and one clock (Postgres now()) is used for all comparisons. [decisions: D23, D24] [tasks: migrations-and-schema, dispatch-queue-sql, wrapper-client-and-sse, fake-wrapper-contract, ingester, dispatcher-loop, clusters-repository, ambiguous-send-verifier, fe-composer-and-queue-strip, ambiguous-fail-releases-agen, wrapper-5xx-ambiguous, contract-test-5xx-mapping] [status: approved]
+- A16: Two dispatchers never double-dispatch under READ COMMITTED: the claim writes agents.last_dispatched_at and the pick reads it, proven by a forced-interleaving test. [decisions: D23] [tasks: migrations-and-schema, dispatch-queue-sql] [status: approved]
+- A17: Singleton failover is fast and loud: libpq keepalives and tcp_user_timeout on the lock connection, a lock-held heartbeat, exit non-zero on loss, tested with a blackholed holder. [decisions: D25] [tasks: settings-model, entrypoints-and-singleton] [status: approved]
+- A18: A slow or ambiguous send is never sent twice: a send timeout well below the dispatching stale cutoff, a heartbeat on the dispatching row, and an ambiguous outcome (or a stale dispatching row) is checked against the wrapper (did a turn carrying this message id start, via snapshot current_turn_id and the turn records' metadata) before any automatic retry; started means sent, a definite not-started after the settle window is retried with backoff, and no answer by the deadline fails it as ambiguous with Retry as the user's choice. [decisions: D24] [tasks: settings-model, migrations-and-schema, wrapper-client-and-sse, fake-wrapper-contract, dispatch-queue-sql, dispatcher-loop, api-messages-and-commands, ambiguous-send-verifier] [status: approved]
+- A19: Everything lives in namespace agents and clusters are told apart by labels (no ORCH_CLUSTERS_NAMESPACE): object names use the reserved agent-<slug> prefix with the slugs orchestrator and orchestrator-* rejected, and the reconciler refuses to apply over or prune any object lacking both the managed-by and cluster labels. [decisions: D26] [tasks: settings-model, clusters-repository, k8s-object-renderer, reconciler-loop, check-jobs, kind-e2e, helm-chart-rbac-and-ingress] [status: approved]
+- A20: The reconciler cannot read Secrets: secrets verbs are create, patch and delete only, in namespace agents; cluster Secrets are deleted by deterministic name and never listed. [decisions: D26, D9] [tasks: reconciler-loop, kind-e2e, helm-chart-rbac-and-ingress] [status: approved]
+- A21: Session adoption is correct: adopt only creating, ready or busy sessions, resume stopped or failed sessions that have a transcript, otherwise create a new one, and a 404 on submit triggers re-bootstrap. [decisions: D27] [tasks: wrapper-client-and-sse, fake-wrapper-contract, dispatcher-loop, dispatch-queue-sql, migrations-and-schema, session-bootstrap, stored-session-resume] [status: approved]
+- A22: Sessions and check Jobs use one rendered workdir path (/workdir/<spec.workdir>), pinned by a test in each of the renderer, session bootstrap and check jobs tasks. [decisions: D27] [tasks: k8s-object-renderer, session-bootstrap, check-jobs] [status: approved]
+- A23: A targeted message never blocks the queue: the claim skips a message whose target is busy and fails one whose target is gone with reason target_gone. [decisions: D23] [tasks: dispatch-queue-sql, api-messages-and-commands] [status: approved]
+- A24: Dispatch is FIFO per cluster under concurrent dispatchers, enforced by a per-cluster transaction-level advisory lock in the claim. [decisions: D23] [tasks: dispatch-queue-sql, dispatcher-loop] [status: approved]
+- A25: Discard deletes everything: the cluster's Kubernetes objects, its PVC and its whole chat history (messages, events, turns, commands, checks). An optional pre-discard hook (a command or webhook URL from settings, or a webhook URL from the cluster spec; none by default) receives the cluster's full history export as JSONL before anything is deleted, and a failed hook blocks the deletion. [decisions: D15, D3] [tasks: migrations-and-schema, settings-model, clusters-repository, reconciler-loop, discard-hook-and-export, api-clusters-and-agents, fe-cluster-form, bench-cli, kind-e2e, discard-quiesce-before-expor] [status: approved]
+- A26: AskUserQuestion is disabled in the rendered wrapper config; agents get an appended system prompt instructing them to ask questions in writing as a numbered list, each with a recommended answer. [decisions: D8] [tasks: k8s-object-renderer] [status: approved]
+- A27: agent-orchestrator ships its own Helm chart chart/agent-orchestrator, started from helm create: the four component Deployments with the migrate initContainer, Service, ServiceAccount, the reconciler Role and RoleBinding, the settings ConfigMap and Secret refs; a Postgres connection is required by default (URL, host/user/password or existingSecret), CNPG is optional (cnpg.enabled false by default), ingress is optional with annotations from values and no homelab defaults; helm lint and helm template unit tests run in CI, which publishes the chart to oci://harbor.szymonrichert.pl/charts with immutable versions. [decisions: D28, D17, D9] [tasks: helm-chart-scaffold, helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-ci-publish, kind-e2e] [status: approved]

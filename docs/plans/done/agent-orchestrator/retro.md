@@ -1,12 +1,34 @@
-# agent-orchestrator record
+# agent-orchestrator retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: agent-orchestrator, a web UI and headless /api/v1 that define, run, message and discard clusters of claude-code-wrapper pods (round-robin dispatch, peer messaging, shared RWX workspace, any-mcp via onStart hook, own Helm chart, bench CLI, Harbor image and chart CI).
 Shipped: all 50 planned tasks built and landed on the epic branch; PR https://github.com/szymonrychu/agent-orchestrator/pull/1 merged as ccb7c04 with all PR CI green. Final tip: unit 394 passed, integration against the real wrapper 8 passed, kind e2e 8 passed, chart tests, lint, chart lint, frontend lint/test (90)/build green.
 Verdict: pass with one open item. The main-branch CI run after merge (39910755074) FAILED at "Login to Harbor" in the images job: HARBOR_PASSWORD was empty. The Harbor secrets were set afterwards (username from GitLab, password by the user); no green main run publishing the image and chart has been observed. chart-publish-tag, e2e and chart-publish were skipped in that run.
 
-## Planned vs built
+### Planned vs built
 
 50 planned, 50 present with a verifier head. Source: the last return in which each task is complete (returns 1-10 under run-agent-orchestrator), the task files and the PR log. "rounds" and "red" describe the last run that touched the task: a later fix round overwrites the first-round `tests.red`, so "none this run" does not mean the first round had no red. Task files carry `actual: ""` for every task, so actual minutes are unknown. No `tdd-revert` result is quoted as red evidence. Returns 1-4 listed tasks as `unverified` (9, 5, 6, 20 entries); the final returns list none. Return 1 `finished: false`, returns 5-10 `finished: true`; `scopeAudit` is null in every return and `audit` is "off", so the A1-A27 scope audit was done by the orchestrator review, not by the workflow.
 
@@ -95,7 +117,7 @@ Approvals (ledger `approvals.json`, all 27 entries `approved`; status from the l
 | A26 | AskUserQuestion is disabled in the rendered wrapper config; agents get an appended system prompt instructing them to ask | D8 | k8s-object-renderer | escalated (last return 2); landed per orchestrator rulings and scope audit, not re-evaluated by a later return |
 | A27 | agent-orchestrator ships its own Helm chart chart/agent-orchestrator, started from helm create: the four component Deplo | D28, D17, D9 | helm-chart-scaffold, helm-chart-config-postgres, helm-chart-deployments, helm-chart-rbac-and-ingress, helm-chart-ci-publish, kind-e2e | delivered (return 5) |
 
-## Deviations and rulings
+### Deviations and rulings
 
 - Branch values: implementers returned descriptive branch strings; rewritten to the task branches. Why: the land step needs real refs. Cost if wrong: a task lands from the wrong ref; each task's `verified_head` was read back, so low.
 - 21 tasks had missing owner dependencies; added. Why: the dependency graph under-declared owners, causing dependency-failed cascades in returns 1-4. Cost if wrong: wrong wave order, caught by dependency-failed rather than a silent merge.
@@ -106,35 +128,35 @@ Approvals (ledger `approvals.json`, all 27 entries `approved`; status from the l
 - Merge-time rulings: GitGuardian flagged two fake fixtures; the user resolved the incidents and fixtures were made non-secret-shaped (e147d5a, task fixtures-not-secret-shaped). Frontend CI timed out on a slow runner; the trim window was injected (5c862fc, chatlog-trim-test-fast). Generated API types were stale; regenerated and pinned (fc25bf1, 48a2305, frontend-api-types-regen). Harbor CI secrets set (username from GitLab, password by the user). Cost if wrong: the fixture change could hide a real secret pattern check (it is test data only); the regen is pinned by an unconditional exact-match test.
 - forwardMerged: none in any return. declined: per-task `declined` entries (findings the implementers or triage judged wrong, e.g. ambiguous-send-verifier "no code change") were not escalated; none open.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 none reported by the workflow (`duplicates` empty in all returns). Overlap seen in the git log: commits e7830e6 and 75f4dff are both "events repository with idempotent insert, gap rows and keyset paging" (events-store); the later one is the landed tip. Renderer commits were duplicated under other SHAs via dependency branches and reconciled by the cherry-pick ruling above.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Main CI images job fails at "Login to Harbor" (HARBOR_PASSWORD empty at run 39910755074, 2026-10-23). Secrets set afterwards. Clearing: re-run the main workflow (repo owner/orchestrator) and confirm the image and chart publish; cannot be confirmed from the files. chart-publish, chart-publish-tag and e2e did not run on main.
 - Process gaps recorded by the workflow: TDD red missing or after the fact for api-events-and-streams, dispatcher-loop (14 tests written after code; a malformed --exclude-ref made one independent verification fail), fake-wrapper-contract, fe-theme-port, helm-chart-config-postgres, wrapper-5xx-ambiguous (red reproduced by hand), fixtures-not-secret-shaped (gate tdd-skipped). Accepted by the orchestrator; cleared by nobody further.
 - Ledger A7, A8, A12, A26: the last return naming them says `escalated`; the cause was dependency-failed cascades and the renderer land-failure, since landed. No later return re-evaluated them; the orchestrator scope audit reports A1-A27 landed with 354 AC refs resolving. Treat as delivered but not workflow-confirmed.
 - No-auth API (LAN-only by decision) and `POST /checks` running shell on a cluster PVC are noted risks, acceptable behind the source allowlist; owner is the user. Helmfile release and SOPS secrets are the separate epic agents-helmfile.
 
-## Research that changed the plan
+### Research that changed the plan
 
 - Lead checks for the design review: workdir.py:103-106 (empty mode resolves /workdir/<name>) led to the single rendered workdir path (A22); session.py:195-231 and config.py:189 (child env is an allow-list, passthrough_env) led to the renderer setting claude.passthrough_env; manager.py:1020-1034 (resume needs a transcript) led to the adoption/resume rules (A21); cluster CNI is flannel with no NetworkPolicy enforcement, so NetworkPolicy was dismissed and a source-address allowlist (A14) used instead.
 - Convergent finding of all three panelists on the READ COMMITTED reservation race produced A16 and the forced-interleaving test.
 
-## Cost
+### Cost
 
 Orchestrator ran plan-execute 10 times (1 initial plus 9 resumptions/continuations; continue1-5 logs exist). Rounds per task in the last run: see the table (0-3). Roles: implementers (sonnet, opus on hard tasks per task `model`), independent verifier per task, triage (3 calls per return; token counts in `triageUsage`), panel review by fable/opus/sonnet twice (design, implementation). Workflow `audit` was off. Wall-clock: unknown. Token and dollar totals: unknown.
 
 Estimate vs actual: README Time estimate 284 agent-min (sum of task estimates also 284), critical path 82 min, expected wall 6.3 h; Actual 0 min in README and `actual: ""` in all 50 task files, so actual per task is unknown. Per-task estimates are in the table above.
 
-## MRs and deploy
+### MRs and deploy
 
 - PR https://github.com/szymonrychu/agent-orchestrator/pull/1 merged as ccb7c04; the last PR run (39910208427) was green, two earlier PR runs failed (GitGuardian, frontend timeout, stale types, fixed as above).
 - Main push run 39910755074: failure (images / Login to Harbor, empty password); lint, test, chart, frontend jobs green.
 - Deploy: not done and not in scope (helmfile release is epic agents-helmfile). Image and chart publication to Harbor is unconfirmed.
 
-## Lessons routed to
+### Lessons routed to
 
 - Mechanical: a CI step that logs in with a secret should fail the PR pipeline when the secret is unset (add a pre-merge check that asserts the required repo secrets exist, or run the login step in the PR workflow with --no-push). The first publish only ran on main, after merge.
 - Mechanical: the verify-task `--exclude-ref` must reject non-ref values; add an argument check/test in verify-task.py (dispatcher-loop's independent verification failed on a pasted worktree description).
