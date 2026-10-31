@@ -1,46 +1,39 @@
-# leader auto handover design
+---
+title: leader auto handover
+repos: [claude-code-wrapper, agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-26
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# leader auto handover
 
-A hive leader (any session with `max_replicas > 1`) passes leadership on automatically in two cases: just before it
-compacts, and before a scale-down removes its pod. claude-code-wrapper 0.3.0 emits a new SSE event `compacting` from
-Claude Code's PreCompact hook; the orchestrator ingester projects every compaction signal (`compacting`, `compacted`)
-into `agent_status.compaction_at`, and the dispatcher's leadership pass hands a compacted leader over at its turn
-boundary (reason `compaction`). A scale-down below the leader's ordinal is accepted when a ready agent that stays
-exists; the pass moves leadership to it (reason `scale_down`) and the reconciler keeps the leader's pod until it has.
-Every pick is restricted to agents that stay. The reason reaches the session view, the `leader_changed` frame and the
-agents-web UI. Released and deployed: wrapper 0.3.0, orchestrator pins, agents-helmfile bump, apply and a smoke that
-scales down below the leader.
+## What and why
 
-## Intent and why
+What: a hive leader passes leadership to another agent automatically before it compacts and before a scale-down removes its pod
+How: a wrapper pre-compaction event the orchestrator turns into an epoch-fenced handover, and a scale path that hands over first, both picking among ready agents that stay
+Why: a compacted or removed leader loses the user-facing context; another agent should take the next request
 
-User request 2026-10-26, verbatim: 'when session cluster leader gets compacted (or scaled down), pass it's leadership
-to another agent in the cluster.' The leader is the agent that answers the user (untargeted messages go to it). A
-compacted leader has lost the detail of the conversation, and a removed leader takes the user-facing context with it;
-another agent should take the next request. Today a compaction changes nothing and a scale-down below the leader is
-refused (`leader_would_leave`), so the user must move leadership by hand first.
+User request 2026-10-26, verbatim: 'when session cluster leader gets compacted (or scaled down), pass it's leadership to another agent in the cluster.'
 
-The user's binding decisions are three (decisions.md, 2026-10-26): hand over just before compaction through a new
-pre-compaction event from the wrapper; on a scale-down that would remove the leader's pod, hand over first and then
-shrink, still refusing when no ready agent that stays exists; always on for hived agents, no switch. Every other call
-here (which compactions count, the turn boundary, the retry, who takes over) is the orchestrator session's or the
-planner's and is marked `(my call)`.
+User decisions 2026-10-26 (AskUserQuestion and a follow-up correction): hand over just before compaction (a new pre-compaction event from the wrapper); on a scale-down that would remove the leader's pod, hand over first and then shrink, still refusing when no ready agent that stays exists; always on for hived agents (max_replicas > 1), no per-cluster switch ('Sorry.. auto handover always on for hived agents').
 
-## Goals
+Discovery: /Users/szymonri/Documents/claude-code-tatara/.scratchpad/leader-handover/discovery.md. Decisions: decisions.md next to it. Builds on done epics hive-mode-leadership-handove and cluster-scaling, and amends hive D26 ("advised, never forced") and cluster-scaling's "the leader is never removed".
 
-- G1: when the leader of a hive is about to compact (auto or manual), the wrapper reports it before the compaction
-  runs (the `compacting` event; only this report precedes the compaction) and the orchestrator then moves leadership
-  to another ready agent of the cluster at the leader's turn boundary, which for a busy leader is after the native
-  compaction has run.
-- G2: a scale-down whose new replica count would remove the leader's pod first hands leadership to a ready agent that
-  stays, then shrinks; with no such agent it is refused as today.
-- G3: the new leader is chosen among ready agents that stay in the cluster (never one about to be removed); with no
-  eligible agent the leader keeps leading and the move is retried.
-- G4: always on for every hive (max_replicas > 1); a cluster of one never hands over.
-- G5: the UI, API and stream show automatic handovers with their reason (compaction, scale-down); documented API and
-  API-only e2e test.
-- G6: released and deployed: wrapper release, orchestrator pins, agents-helmfile bump, apply and a smoke step covering
-  a scale-down below the leader.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: when the leader of a hive is about to compact (auto or manual), the wrapper reports it before the compaction runs (the `compacting` event; only this report precedes the compaction) and the orchestrator then moves leadership to another ready agent of the cluster at the leader's turn boundary, which for a busy leader is after the native compaction has run.
+- 1.2: G2: a scale-down whose new replica count would remove the leader's pod first hands leadership to a ready agent that stays, then shrinks; with no such agent it is refused as today.
+- 1.3: G3: the new leader is chosen among ready agents that stay in the cluster (never one about to be removed); with no eligible agent the leader keeps leading and the move is retried.
+- 1.4: G4: always on for every hive (max_replicas > 1); a cluster of one never hands over.
+- 1.5: G5: the UI, API and stream show automatic handovers with their reason (compaction, scale-down); documented API and API-only e2e test.
+- 1.6: G6: released and deployed: wrapper release, orchestrator pins, agents-helmfile bump, apply and a smoke step covering a scale-down below the leader.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
@@ -49,26 +42,9 @@ planner's and is marked `(my call)`.
 - No threshold-based early handover; the existing context advice stays as it is.
 - No takeovers by agents, no consensus protocol; the orchestrator stays the single authority.
 
-## Anti-goals
+## Design
 
-- A second writer of `session_leaders` (the api or the reconciler moving leaders): the dispatcher stays the only one.
-- A leader moved mid-turn by the compaction trigger, or a message re-routed away from an agent already working on it.
-- A scale-down that removes the leader's pod before leadership has moved (except after the bounded drain deadline).
-- A pick that hands leadership to an agent whose pod is about to be removed.
-- A slower PreCompact hook: the wrapper must still answer the relay at once (no hold, non-goal).
-- Pod rolls or a rendered-config change caused by this epic beyond the image pins.
-
-## Constraints
-
-- Python only (wrapper, orchestrator, helmfile tests); agents-web TypeScript.
-- Each table has exactly one writer: `session_leaders` dispatcher, `agent_status` ingester, `agents` reconciler,
-  `sessions.spec.replicas` api (`set_replicas`), `leadership_requests` api inserts and dispatcher decides.
-- `/api/v1` is additive only: new response fields and frame fields may appear, no codes change meaning.
-- TDD per task; tests are never edited to pass unless no longer accurate, and each such test is named in its task.
-- Wrapper release tag only after the `main` build is green (`release.yaml` needs `:<sha7>`); Harbor prunes sha7 tags,
-  so agents-helmfile pins the agent image by release tag (`claude-code-wrapper:0.3.0`).
-- Live `mise run apply` is run by the orchestrator session only, never by a subagent, and never as AC evidence.
-- No backward compatibility shims.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -270,6 +246,10 @@ interrogate finding 1).
 Why: a compacted leader must never take an untargeted message that a staying agent could take; one shared predicate
 keeps the hold and the move from disagreeing, so the hold can never outlive a possible move (my call).
 
+## Open questions
+
+- Q1: When a compacted leader finds no eligible agent (for example a hive running one agent), is the move retried for the rest of its term, so a peer that becomes ready later or a later scale-up takes over? [recommended: yes, retried for the rest of the term; any leader change clears it]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -280,7 +260,7 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
 | research-code-external | skipped: the handover rules are the user's decisions and the hive's single-authority design; no analogue would change them | none | Raft-style leadership transfer (non-goal: no consensus protocol) |
 | research-papers | skipped: no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 | Finding | Source | Task |
 |---|---|---|
@@ -299,7 +279,104 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
 | fake claude can script a native compaction mid-turn | discovery reuse | wrapper-compacting-event, kind-e2e-auto-handover |
 | push the compact summary to the new leader; context-aware pick; threshold handover | discovery ideas | rejected: non-goals and D7 |
 
-## Decision coverage
+## Irreversible operations
+
+- Tag `v0.3.0` pushed on the claude-code-wrapper merge commit; `release.yaml` retags `:0.3.0` and `:latest` (task
+  wrapper-release-0-3-0, run by the orchestrator after the `main` build is green; covered by the user's request for a
+  wrapper release, G6).
+- Migration `0006_compaction.sql` applied to the live orchestrator database by the deployed orchestrator (additive,
+  nullable column; forward only; covered by G6).
+- `mise run apply` on the live namespace (task helmfile-apply-smoke, orchestrator session only, after `mise run diff`
+  shows only the pins; covered by G6). The orchestrator pods roll; agent pods of existing sessions keep their image.
+- PR merges to `main` of claude-code-wrapper, agents-orchestrator, agents-web and agents-helmfile (main stays green).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+Reviewed 2026-10-27. Full notes: .scratchpad/leader-auto-handover-review.md (whole-diff start-review --single per repo, sonnet; scope-auditor, sonnet).
+
+- Goals G1-G6 landed. G6 closed by helmfile-apply-smoke: live first-message proof after a scale-down handover (session cc2f85d7-cd74-4ea1-be90-43cb597e3eec, message 69 answered by the new pod-0 leader), `mise run smoke` green on agents-helmfile main 0ed86cf, MEMORY entry merged (agents-helmfile PR #34). Non-goals respected.
+- Acted on (new tasks, done): smoke-step7-per-wait-deadlin (step 7 agent lookup and make-leader waits reused the scale-up deadline; agents-helmfile PR #34); orch-eligibility-single-sour (duplicated eligibility and handover-pending SQL predicates moved into db/eligibility.py, behaviour unchanged, CI test 1083 passed and kind e2e green; agents-orchestrator PR #25).
+- Noted: the busy-leader race is pinned at queue level only; correctness near an election assumes wrapper and DB clocks agree; no live compaction has been observed since the apply, so real Claude Code PreCompact before an auto compaction is unproven live.
+- Dropped: none.
+- Full suite: lint green in all four repos. In this pod, tests failed only for environment reasons: no Docker, a Harbor 401, in-cluster kube config, and four wrapper PTY tests in files the epic does not touch. The DB tests were proven by agents-orchestrator CI.
+
+### design.md: Summary
+
+A hive leader (any session with `max_replicas > 1`) passes leadership on automatically in two cases: just before it
+compacts, and before a scale-down removes its pod. claude-code-wrapper 0.3.0 emits a new SSE event `compacting` from
+Claude Code's PreCompact hook; the orchestrator ingester projects every compaction signal (`compacting`, `compacted`)
+into `agent_status.compaction_at`, and the dispatcher's leadership pass hands a compacted leader over at its turn
+boundary (reason `compaction`). A scale-down below the leader's ordinal is accepted when a ready agent that stays
+exists; the pass moves leadership to it (reason `scale_down`) and the reconciler keeps the leader's pod until it has.
+Every pick is restricted to agents that stay. The reason reaches the session view, the `leader_changed` frame and the
+agents-web UI. Released and deployed: wrapper 0.3.0, orchestrator pins, agents-helmfile bump, apply and a smoke that
+scales down below the leader.
+
+### design.md: Intent and why
+
+User request 2026-10-26, verbatim: 'when session cluster leader gets compacted (or scaled down), pass it's leadership
+to another agent in the cluster.' The leader is the agent that answers the user (untargeted messages go to it). A
+compacted leader has lost the detail of the conversation, and a removed leader takes the user-facing context with it;
+another agent should take the next request. Today a compaction changes nothing and a scale-down below the leader is
+refused (`leader_would_leave`), so the user must move leadership by hand first.
+
+The user's binding decisions are three (decisions.md, 2026-10-26): hand over just before compaction through a new
+pre-compaction event from the wrapper; on a scale-down that would remove the leader's pod, hand over first and then
+shrink, still refusing when no ready agent that stays exists; always on for hived agents, no switch. Every other call
+here (which compactions count, the turn boundary, the retry, who takes over) is the orchestrator session's or the
+planner's and is marked `(my call)`.
+
+### design.md: Goals
+
+- G1: when the leader of a hive is about to compact (auto or manual), the wrapper reports it before the compaction
+  runs (the `compacting` event; only this report precedes the compaction) and the orchestrator then moves leadership
+  to another ready agent of the cluster at the leader's turn boundary, which for a busy leader is after the native
+  compaction has run.
+- G2: a scale-down whose new replica count would remove the leader's pod first hands leadership to a ready agent that
+  stays, then shrinks; with no such agent it is refused as today.
+- G3: the new leader is chosen among ready agents that stay in the cluster (never one about to be removed); with no
+  eligible agent the leader keeps leading and the move is retried.
+- G4: always on for every hive (max_replicas > 1); a cluster of one never hands over.
+- G5: the UI, API and stream show automatic handovers with their reason (compaction, scale-down); documented API and
+  API-only e2e test.
+- G6: released and deployed: wrapper release, orchestrator pins, agents-helmfile bump, apply and a smoke step covering
+  a scale-down below the leader.
+
+### design.md: Non-goals
+
+- No per-cluster switch for automatic handover.
+- No holding or blocking Claude Code's compaction until the handover is acknowledged.
+- No threshold-based early handover; the existing context advice stays as it is.
+- No takeovers by agents, no consensus protocol; the orchestrator stays the single authority.
+
+### design.md: Anti-goals
+
+- A second writer of `session_leaders` (the api or the reconciler moving leaders): the dispatcher stays the only one.
+- A leader moved mid-turn by the compaction trigger, or a message re-routed away from an agent already working on it.
+- A scale-down that removes the leader's pod before leadership has moved (except after the bounded drain deadline).
+- A pick that hands leadership to an agent whose pod is about to be removed.
+- A slower PreCompact hook: the wrapper must still answer the relay at once (no hold, non-goal).
+- Pod rolls or a rendered-config change caused by this epic beyond the image pins.
+
+### design.md: Constraints
+
+- Python only (wrapper, orchestrator, helmfile tests); agents-web TypeScript.
+- Each table has exactly one writer: `session_leaders` dispatcher, `agent_status` ingester, `agents` reconciler,
+  `sessions.spec.replicas` api (`set_replicas`), `leadership_requests` api inserts and dispatcher decides.
+- `/api/v1` is additive only: new response fields and frame fields may appear, no codes change meaning.
+- TDD per task; tests are never edited to pass unless no longer accurate, and each such test is named in its task.
+- Wrapper release tag only after the `main` build is green (`release.yaml` needs `:<sha7>`); Harbor prunes sha7 tags,
+  so agents-helmfile pins the agent image by release tag (`claude-code-wrapper:0.3.0`).
+- Live `mise run apply` is run by the orchestrator session only, never by a subagent, and never as AC evidence.
+- No backward compatibility shims.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -320,7 +397,7 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
 | D15 Compactions and scale-downs wake the dispatcher through `leadership_requested` | compaction-status-projection, scale-down-staying-peer, claim-hold-and-handover-wake |
 | D16 The claim path holds untargeted messages for a leader whose handover is pending | claim-hold-and-handover-wake, kind-e2e-auto-handover |
 
-## Review focus
+### design.md: Review focus
 
 - `db/leadership.py`: step order, the epoch fence and that the compaction step never fires off the turn boundary;
   that every pick (`_FREE_LONGEST`, `_target_ready`, initial) excludes `ordinal >= spec.replicas`; that the candidate
@@ -335,7 +412,7 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
 - Tests changed because they are no longer accurate are exactly the ones each task names.
 - Whole-diff review per repo at phase 5 (recurring retro finding).
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Where the staying-peer SQL lives (a shared constant in `db/leadership.py` imported by `db/sessions.py`, or an
   equivalent), as long as the pick and the refusal use one predicate.
@@ -344,7 +421,7 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
 - How the smoke makes pod-1 the leader (public `POST /api/v1/sessions/{id}/leader`) and its timeouts within
   `SMOKE_TIMEOUT_S`.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Real Claude Code 2.1.304 fires PreCompact for auto and manual compactions and waits for the hook before compacting
   (upstream hooks docs, cited at `claude-code-wrapper/docs/plans/done/agent-callable-slash-command/design.md:74`;
@@ -361,18 +438,3 @@ keeps the hold and the move from disagreeing, so the hold can never outlive a po
   turn (ingester stores in seq order; asserted by kind-e2e-auto-handover end to end).
 - Existing sessions keep their snapshotted agent image until they are recreated; their compactions still count
   through `compacted` (D2).
-
-## Open questions
-
-- Q1: When a compacted leader finds no eligible agent (for example a hive running one agent), is the move retried for the rest of its term, so a peer that becomes ready later or a later scale-up takes over? [recommended: yes, retried for the rest of the term; any leader change clears it]
-
-## Irreversible operations in scope
-
-- Tag `v0.3.0` pushed on the claude-code-wrapper merge commit; `release.yaml` retags `:0.3.0` and `:latest` (task
-  wrapper-release-0-3-0, run by the orchestrator after the `main` build is green; covered by the user's request for a
-  wrapper release, G6).
-- Migration `0006_compaction.sql` applied to the live orchestrator database by the deployed orchestrator (additive,
-  nullable column; forward only; covered by G6).
-- `mise run apply` on the live namespace (task helmfile-apply-smoke, orchestrator session only, after `mise run diff`
-  shows only the pins; covered by G6). The orchestrator pods roll; agent pods of existing sessions keep their image.
-- PR merges to `main` of claude-code-wrapper, agents-orchestrator, agents-web and agents-helmfile (main stays green).
