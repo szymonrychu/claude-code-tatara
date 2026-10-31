@@ -1,15 +1,18 @@
-# File editor with tabs and highlighting design
+---
+title: file editor with tabs and highlighting
+repos: [claude-code-wrapper, agents-orchestrator, agents-web]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# file editor with tabs and highlighting
 
-The Files panel becomes a split: the file tree always visible on the left, a tabbed editor area on the right (stacked
-on a phone). Each open file is one tab, styled like the terminal tabs; text files open in a CodeMirror 6 editor (thin
-own React component, no wrapper library) with highlighting for python, yaml, json, terraform and toml and syntax errors
-marked, and no hints. Tabs are read-only by default; an RO/RW toggle per tab allows editing and saving (Save button and
-Ctrl/Cmd+S) through a new `PUT .../files/content` route in claude-code-wrapper, forwarded by agents-orchestrator, with
-optimistic concurrency on the mtime and size the editor loaded (409 `file_changed`, the UI offers reload or overwrite).
+## What and why
 
-## Intent and why
+What: Files panel with an always-visible tree on the left and a tabbed RO/RW editor with syntax highlighting and checking
+How: CodeMirror 6 editor, terminal-style tabs, new write route in wrapper and orchestrator
+Why: Users can read and edit several workspace files side by side without leaving the UI
 
 User request (2026-10-27), verbatim:
 
@@ -19,84 +22,30 @@ User request (2026-10-27), verbatim:
 * file tree always visible on the left
 * multiple files can be opened- similar design to tabs in terminal"
 
-Implementation order given by the user: 1. download, 2. markdown, 3. editor. Today the Files panel shows one read-only
-`<pre>` preview below the tree; no editor library, RO/RW mode or file-write API exists in the UI, the orchestrator or the
-wrapper (discovery, `.scratchpad/discovery/agents-web.md` "Files view").
+Discovery (2026-10-27): no RW editor mode, editor library or file-write API exists today; the Files panel shows one read-only preview below the tree.
 
-User decisions (binding, numbered here U1 to U7), verbatim:
+## Scope ladder
 
-- U1: "Ordering: this epic runs after file-download-in-file-browse (docs/plans/todo/file-download-in-file-browse, being planned now; read its design.md and tasks if present) and after markdown-rendering-in-chat; it builds on the download epic's wrapper/orchestrator file route patterns and the FilesPanel row changes, so state the dependency and avoid redoing that work."
-- U2: "(my call, pending user approval at the gate) CodeMirror 6 with a thin own hook, packages and versions from web-libs-docs.md (state 6.7.6, view 6.43.15, language, commands, lint, lang-python, lang-yaml, lang-json, legacy-modes toml, codemirror-lang-hcl for terraform, @lezer/highlight, smol-toml, yaml). The nomenclature guard (src/nomenclature.test.ts) is tripped by the transitive dep @marijn/find-cluster-break; the planned fix is adding exactly that package name to the guard's ALLOWED list in its own task with a test proving any other match still fails; this is a gate question for the user, keep the task in the plan."
-- U3: "(my call) 'RW editor mode': read-only by default with an RO/RW toggle per tab; RW enables editing and Save (button and Ctrl/Cmd+S); new write route in the wrapper (PUT file content, UTF-8 text only, size cap = the existing file_preview_max_bytes, existing workspace path guards, optimistic concurrency via the mtime/size the editor loaded: a changed file answers 409 and the UI offers reload or overwrite) and an orchestrator forwarding route, then `npm run sync:api -- orchestrator`. Binary and too_large files open read-only with the current note, no editor."
-- U4: "(my call) 'syntax highlighting and syntax - no hints': highlighting for python, yaml, json, terraform (.tf, .tfvars, .hcl) and toml, plus syntax error marking via @codemirror/lint (json parse linter, yaml and smol-toml parser errors, lezer parse-tree error nodes for python and hcl); no autocomplete, hover or hints (minimal setup, no autocompletion extension). Other extensions open as plain text."
-- U5: "(my call) Layout: tree always visible on the left, editor area on the right inside the Files panel (a resizable split), the phone layout stacks or keeps the tree reachable; tabs mirror TerminalPanel (MUI Tabs scrollable, closable tab with IconButton aria-label 'Close <name>', closing picks the neighbour, all tabs stay mounted), one tab per path (re-opening focuses it), unsaved changes mark the tab and closing a dirty tab asks to confirm. Tabs are per session, not persisted across reloads. Highlight palette lives in src/theme.ts."
-- U6: "(my call) Live refresh: an open RO tab refetches when the tree reports a changed mtime|size (existing behaviour); a dirty RW tab never auto-reloads, it shows a 'changed on disk' notice instead."
-- U7: "Environment: orchestrator Postgres tests need Docker (absent here), wrapper has 3 PID-1 process-group failures here, agents-web full suite has 10 load-dependent timeouts; keep task verifies targeted and Docker-free, and name in design.md the checks only CI can run."
+### Rung 1: agreed scope (migrated)
 
-## Goals
+- 1.1: Files panel: file tree always visible on the left, editor area on the right.
+- 1.2: Multiple files open at once as tabs, styled like the terminal tabs (closable, scrollable).
+- 1.3: RO/RW editor mode: read-only by default, RW lets the user edit and save the file back to the agent's workspace (new write route in claude-code-wrapper and orchestrator).
+- 1.4: Syntax highlighting for python, yaml, json, terraform and toml, plus syntax checking (errors marked) where the language allows.
 
-- G1: Files panel: file tree always visible on the left, editor area on the right.
-- G2: Multiple files open at once as tabs, styled like the terminal tabs (closable, scrollable).
-- G3: RO/RW editor mode: read-only by default, RW lets the user edit and save the file back to the agent's workspace
-  (new write route in claude-code-wrapper and orchestrator).
-- G4: Syntax highlighting for python, yaml, json, terraform and toml, plus syntax checking (errors marked) where the
-  language allows.
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No hints: no autocomplete, hover info or language-server features.
-- No file create, rename or delete (a write to a missing path is 404, never a create).
+- No file create, rename or delete.
 - Open tabs are not persisted across page reloads.
-- No re-implementation of the download epic's work (download route, `target_type`, the download icon in `Row`); this
-  epic builds on it (U1).
-- No deploy: no agents-helmfile task (open question Q2).
-- No search, find/replace, folding, minimap, formatting or multi-cursor beyond what the chosen minimal extensions bring.
-- No change to the Workspace's three-panel default sizes (25/45/30); the user can maximise the Files panel (my call).
-- No fix of the 10 load-dependent agents-web timeouts; noted, not doing now (U7).
 
-## Anti-goals
+## Design
 
-- An autocomplete popup, hover tooltip or any hint appears in the editor.
-- An RO tab can be edited, or a save silently overwrites a file the agent changed after it was loaded.
-- Any new way to write outside the workdir, or to create a file, through the write route.
-- Unsaved edits lost without a prompt (closing a dirty tab, a live refresh, a session switch and back).
-- Colour literals outside `src/theme.ts`, a second copy of `@codemirror/state`, or the editor bundled into the main
-  chunk (it loads lazily).
-- File content or the derived wrapper bearer in a log line, URL or error message.
-
-## Constraints
-
-- Python only for services; TypeScript for agents-web. No backward-compatibility shims.
-- Dependency on other epics (U1): file-download-in-file-browse and markdown-rendering-in-chat land first. This epic's
-  tasks assume their commits on each repo's default branch: the wrapper and orchestrator download routes and
-  `target_type`, `WrapperClient.open_download`, the Docker-free `tests/test_api_file_download.py` rig, the orchestrator
-  wrapper pin of the download merge, `fileDownloadUrl` and the `Row` trailing action in agents-web, and the markdown
-  epic's `package.json` and `theme.ts` changes. Task `depends_on` names only tasks of this epic; the cross-epic order is
-  the README `blockers` (to be set by the orchestrator, no ticket.py subcommand writes it).
-- Orchestrator layering pin: only `api/workspace.py` may import `agents_orchestrator.wrapper`
-  (`tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper`). `openapi.json` is generated
-  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`) and every route is documented in README `## API`
-  (`tests/test_readme_api.py`); the wrapper README documents every route and error code (`tests/test_readme_api.py`).
-- agents-web: backends only through the relative `basePath` (`src/api/client.ts:base`); `src/api/schema.d.ts` is
-  generated, never hand-edited; designRules (`src/layout/designRules.ts`): no colour literal outside `theme.ts`, no
-  decorative Unicode, no `title=` on Button/IconButton, spacing on the 0.5 grid, weights 400/500 only; the nomenclature
-  guard scans every tracked file including `package-lock.json`.
-- CodeMirror under jsdom is unsupported upstream (web-libs-docs B23, B24): editor tests stub `Range.getClientRects` and
-  `getBoundingClientRect`, assert through `view.state`, never simulate typing into contenteditable, and call lint
-  sources or `forceLinting` instead of waiting the 750 ms delay. Tab and panel tests replace `CodeEditor` with a
-  stand-in, as `ChatLog.test.tsx` replaces react-virtuoso.
-- Environment (U7): every task `verify` runs without Docker. pytest verifies never add `-q` (both Python repos set it
-  in `addopts`). Checks only CI can run:
-  - agents-orchestrator DB-backed tests (testcontainers Postgres), including `tests/test_api_files.py` and
-    `tests/test_workspace_proxy.py` (525 errors locally in the full run);
-  - the contract suite's real-wrapper leg (`pytest -m integration tests/test_fake_wrapper_contract.py`, real wrapper
-    image) and the kind e2e (`mise run test:e2e`, `tests/e2e/test_e2e_kind.py`);
-  - claude-code-wrapper `tests/test_container.py` (docker) and the 3 process-group tests
-    (`tests/test_manager.py::test_shutdown_stops_all`, `tests/test_pty_proc.py::test_exit_without_eof_still_fires`,
-    `tests/test_pty_proc.py::test_close_terminates_group_then_kill`), which fail here because PID 1 is not an init
-    reaper;
-  - the agents-web full suite (`mise run test`), whose 10 load-dependent 5000 ms timeouts (PresetForm, ScheduleForm,
-    Endpoints, FiltersEditor) pass alone; CI runs it with `npm run build` and `npm run check:api`.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -305,6 +254,13 @@ refetch too, no edit can be lost). A save's own new stamp equals the baseline, s
 event for the path (`fileEvents` `written`) applies the same rule. A refetch that answers another kind (binary,
 too_large, error) turns the tab into that note.
 
+## Open questions
+
+Product questions that need the user, collected across epics by `ticket.py questions`.
+- Q1: CodeMirror 6 pulls the npm package @marijn/find-cluster-break into package-lock.json, which trips src/nomenclature.test.ts; may task web-nomenclature-allowlist add exactly the phrase 'find-cluster-break' to the guard's ALLOWED list, with a new test proving every other spelling of the retired unit still fails? [recommended: yes; the guard keeps its purpose and a third-party npm name is the same class as the Kubernetes phrases already allowed (the only alternative, Monaco, has no toml and loads from a CDN)]
+- Q2: Deploy is not part of this epic (no agents-helmfile task), so the editor's save works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
+- Q3: A save replaces the file atomically (temporary file in the same directory, then rename), so a reader never sees a half-written file and a failed save leaves the original intact, but the file gets a new inode: hard links to it are not updated (permission bits are kept); acceptable? [recommended: yes]
+
 ## Research
 
 | Lens | Ran / skipped | Adopted ideas | Rejected ideas |
@@ -315,7 +271,7 @@ too_large, error) turns the tab into that note.
 | research-code-external | skipped: atomic replace (temp file, `fsync`, `os.replace` with dir fds) is standard POSIX practice | - | - |
 | research-papers | skipped: no algorithmic core | - | - |
 
-## Research inputs
+### Research inputs
 
 Workflow proposals from the retros of recently done epics (`ticket.py retro --history`), recurring first:
 
@@ -353,7 +309,128 @@ Brief plan inputs:
 - not acted on: hive advisory file locks (orchestrator api/agent.py:291-336) are not consulted by a user save; noted, not
   doing now.
 
-## Decision coverage
+## Irreversible operations
+
+none (no tag, release, migration or deploy; PRs merge through the normal flow; user saves overwrite workspace files by
+design, guarded by D4).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+- web-code-editor: ac3 checked through view.state.sliceDoc() (D11 CRLF separator makes doc.toString() join with \n; reviewer confirmed in @codemirror/state source); ac9 'old element' = data-testid=file-editor root. Orchestrator rulings, reviewer-confirmed.
+- web-file-tabs-state: 1 fix round (save did not invalidate an in-flight live refetch; fixed 92529d1 with test).
+- web-editor-syntax-check: 2 fix rounds (quadratic yaml duplicate-key check -> cooperative 500 ms budget + linear dup check c9bd6a9; honest tests 1c3c4da). orch-file-write-route: 1 fix round (origin.py docstring 0c99a1a).
+- web-file-tabs-view: ac8 moved to web-files-split-layout ac13 (chunk only emitted once FilesPanel mounts FileTabs).
+- web-files-split-layout: the download-icon test (FilesPanel.test.tsx:653-667) changed its lookup from file-preview-text to file-editor because the single preview is removed by design (ac10); assertion intent unchanged (download opens nothing, name click opens the file). Accepted as 'test no longer accurate' (housekeeping rule 2); the implementer did not report it.
+- Epic review round 1: whole-epic reviewer accept with 1 medium (symlink tab stamps) -> task web-symlink-tab-stamps (with the scope-audit stampKey duplicate). Security: 3 medium, 2 low; acted: orchestrator write body cap -> task orch-write-body-cap; dropped: intermediate-symlink TOCTOU on write (agent-only racer, already has a shell; same as download epic), check-then-replace lost-update window (documented in README/design, accepted), setuid/setgid copied by fchmod (low; wrapper and agent share a uid in the pod; noted, not doing now), absent Origin passes the guard (browsers always send Origin on cross-origin PUT; JSON PUT needs preflight, no CORS middleware). Wrapper-side body cap: noted, not doing now (wrapper reachable only from the orchestrator and the agent's pod).
+- Deploy note: browser saves get 403 unless the deployed orchestrator allowed_origins includes the UI origin; check in the deploy epic.
+- Full suites round 1: web 1 failed | 622 passed: PresetForm name_rules_default_name_and_pvc timed out at 5086 ms (5 s limit) under load; src/presets untouched by this epic; the file alone passes 45/45. Orchestrator: only the known lightkube env failure plus Docker errors; lint clean.
+- Round 2: web-symlink-tab-stamps (4c2690c) and orch-write-body-cap (1cd6f3b) reviewed clean; full suites after them (reviewer run): web 625 passed, orchestrator only the known lightkube env failure and Docker errors, lint clean. Deploy note: the orchestrator write cap assumes the wrapper default limits.file_preview_max_bytes 1 MiB.
+
+### design.md: Summary
+
+The Files panel becomes a split: the file tree always visible on the left, a tabbed editor area on the right (stacked
+on a phone). Each open file is one tab, styled like the terminal tabs; text files open in a CodeMirror 6 editor (thin
+own React component, no wrapper library) with highlighting for python, yaml, json, terraform and toml and syntax errors
+marked, and no hints. Tabs are read-only by default; an RO/RW toggle per tab allows editing and saving (Save button and
+Ctrl/Cmd+S) through a new `PUT .../files/content` route in claude-code-wrapper, forwarded by agents-orchestrator, with
+optimistic concurrency on the mtime and size the editor loaded (409 `file_changed`, the UI offers reload or overwrite).
+
+### design.md: Intent and why
+
+User request (2026-10-27), verbatim:
+
+"## file open
+
+* inside "Files" in RW editor mode- support python/yaml/json/terraform/toml syntax highlighting and syntax- no hints for now
+* file tree always visible on the left
+* multiple files can be opened- similar design to tabs in terminal"
+
+Implementation order given by the user: 1. download, 2. markdown, 3. editor. Today the Files panel shows one read-only
+`<pre>` preview below the tree; no editor library, RO/RW mode or file-write API exists in the UI, the orchestrator or the
+wrapper (discovery, `.scratchpad/discovery/agents-web.md` "Files view").
+
+User decisions (binding, numbered here U1 to U7), verbatim:
+
+- U1: "Ordering: this epic runs after file-download-in-file-browse (docs/plans/todo/file-download-in-file-browse, being planned now; read its design.md and tasks if present) and after markdown-rendering-in-chat; it builds on the download epic's wrapper/orchestrator file route patterns and the FilesPanel row changes, so state the dependency and avoid redoing that work."
+- U2: "(my call, pending user approval at the gate) CodeMirror 6 with a thin own hook, packages and versions from web-libs-docs.md (state 6.7.6, view 6.43.15, language, commands, lint, lang-python, lang-yaml, lang-json, legacy-modes toml, codemirror-lang-hcl for terraform, @lezer/highlight, smol-toml, yaml). The nomenclature guard (src/nomenclature.test.ts) is tripped by the transitive dep @marijn/find-cluster-break; the planned fix is adding exactly that package name to the guard's ALLOWED list in its own task with a test proving any other match still fails; this is a gate question for the user, keep the task in the plan."
+- U3: "(my call) 'RW editor mode': read-only by default with an RO/RW toggle per tab; RW enables editing and Save (button and Ctrl/Cmd+S); new write route in the wrapper (PUT file content, UTF-8 text only, size cap = the existing file_preview_max_bytes, existing workspace path guards, optimistic concurrency via the mtime/size the editor loaded: a changed file answers 409 and the UI offers reload or overwrite) and an orchestrator forwarding route, then `npm run sync:api -- orchestrator`. Binary and too_large files open read-only with the current note, no editor."
+- U4: "(my call) 'syntax highlighting and syntax - no hints': highlighting for python, yaml, json, terraform (.tf, .tfvars, .hcl) and toml, plus syntax error marking via @codemirror/lint (json parse linter, yaml and smol-toml parser errors, lezer parse-tree error nodes for python and hcl); no autocomplete, hover or hints (minimal setup, no autocompletion extension). Other extensions open as plain text."
+- U5: "(my call) Layout: tree always visible on the left, editor area on the right inside the Files panel (a resizable split), the phone layout stacks or keeps the tree reachable; tabs mirror TerminalPanel (MUI Tabs scrollable, closable tab with IconButton aria-label 'Close <name>', closing picks the neighbour, all tabs stay mounted), one tab per path (re-opening focuses it), unsaved changes mark the tab and closing a dirty tab asks to confirm. Tabs are per session, not persisted across reloads. Highlight palette lives in src/theme.ts."
+- U6: "(my call) Live refresh: an open RO tab refetches when the tree reports a changed mtime|size (existing behaviour); a dirty RW tab never auto-reloads, it shows a 'changed on disk' notice instead."
+- U7: "Environment: orchestrator Postgres tests need Docker (absent here), wrapper has 3 PID-1 process-group failures here, agents-web full suite has 10 load-dependent timeouts; keep task verifies targeted and Docker-free, and name in design.md the checks only CI can run."
+
+### design.md: Goals
+
+- G1: Files panel: file tree always visible on the left, editor area on the right.
+- G2: Multiple files open at once as tabs, styled like the terminal tabs (closable, scrollable).
+- G3: RO/RW editor mode: read-only by default, RW lets the user edit and save the file back to the agent's workspace
+  (new write route in claude-code-wrapper and orchestrator).
+- G4: Syntax highlighting for python, yaml, json, terraform and toml, plus syntax checking (errors marked) where the
+  language allows.
+
+### design.md: Non-goals
+
+- No hints: no autocomplete, hover info or language-server features.
+- No file create, rename or delete (a write to a missing path is 404, never a create).
+- Open tabs are not persisted across page reloads.
+- No re-implementation of the download epic's work (download route, `target_type`, the download icon in `Row`); this
+  epic builds on it (U1).
+- No deploy: no agents-helmfile task (open question Q2).
+- No search, find/replace, folding, minimap, formatting or multi-cursor beyond what the chosen minimal extensions bring.
+- No change to the Workspace's three-panel default sizes (25/45/30); the user can maximise the Files panel (my call).
+- No fix of the 10 load-dependent agents-web timeouts; noted, not doing now (U7).
+
+### design.md: Anti-goals
+
+- An autocomplete popup, hover tooltip or any hint appears in the editor.
+- An RO tab can be edited, or a save silently overwrites a file the agent changed after it was loaded.
+- Any new way to write outside the workdir, or to create a file, through the write route.
+- Unsaved edits lost without a prompt (closing a dirty tab, a live refresh, a session switch and back).
+- Colour literals outside `src/theme.ts`, a second copy of `@codemirror/state`, or the editor bundled into the main
+  chunk (it loads lazily).
+- File content or the derived wrapper bearer in a log line, URL or error message.
+
+### design.md: Constraints
+
+- Python only for services; TypeScript for agents-web. No backward-compatibility shims.
+- Dependency on other epics (U1): file-download-in-file-browse and markdown-rendering-in-chat land first. This epic's
+  tasks assume their commits on each repo's default branch: the wrapper and orchestrator download routes and
+  `target_type`, `WrapperClient.open_download`, the Docker-free `tests/test_api_file_download.py` rig, the orchestrator
+  wrapper pin of the download merge, `fileDownloadUrl` and the `Row` trailing action in agents-web, and the markdown
+  epic's `package.json` and `theme.ts` changes. Task `depends_on` names only tasks of this epic; the cross-epic order is
+  the README `blockers` (to be set by the orchestrator, no ticket.py subcommand writes it).
+- Orchestrator layering pin: only `api/workspace.py` may import `agents_orchestrator.wrapper`
+  (`tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper`). `openapi.json` is generated
+  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`) and every route is documented in README `## API`
+  (`tests/test_readme_api.py`); the wrapper README documents every route and error code (`tests/test_readme_api.py`).
+- agents-web: backends only through the relative `basePath` (`src/api/client.ts:base`); `src/api/schema.d.ts` is
+  generated, never hand-edited; designRules (`src/layout/designRules.ts`): no colour literal outside `theme.ts`, no
+  decorative Unicode, no `title=` on Button/IconButton, spacing on the 0.5 grid, weights 400/500 only; the nomenclature
+  guard scans every tracked file including `package-lock.json`.
+- CodeMirror under jsdom is unsupported upstream (web-libs-docs B23, B24): editor tests stub `Range.getClientRects` and
+  `getBoundingClientRect`, assert through `view.state`, never simulate typing into contenteditable, and call lint
+  sources or `forceLinting` instead of waiting the 750 ms delay. Tab and panel tests replace `CodeEditor` with a
+  stand-in, as `ChatLog.test.tsx` replaces react-virtuoso.
+- Environment (U7): every task `verify` runs without Docker. pytest verifies never add `-q` (both Python repos set it
+  in `addopts`). Checks only CI can run:
+  - agents-orchestrator DB-backed tests (testcontainers Postgres), including `tests/test_api_files.py` and
+    `tests/test_workspace_proxy.py` (525 errors locally in the full run);
+  - the contract suite's real-wrapper leg (`pytest -m integration tests/test_fake_wrapper_contract.py`, real wrapper
+    image) and the kind e2e (`mise run test:e2e`, `tests/e2e/test_e2e_kind.py`);
+  - claude-code-wrapper `tests/test_container.py` (docker) and the 3 process-group tests
+    (`tests/test_manager.py::test_shutdown_stops_all`, `tests/test_pty_proc.py::test_exit_without_eof_still_fires`,
+    `tests/test_pty_proc.py::test_close_terminates_group_then_kill`), which fail here because PID 1 is not an init
+    reaper;
+  - the agents-web full suite (`mise run test`), whose 10 load-dependent 5000 ms timeouts (PresetForm, ScheduleForm,
+    Endpoints, FiltersEditor) pass alone; CI runs it with `npm run build` and `npm run check:api`.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -372,7 +449,7 @@ Brief plan inputs:
 | D13 Split layout | web-files-split-layout |
 | D14 Live refresh rules | web-file-tabs-state, web-files-split-layout |
 
-## Review focus
+### design.md: Review focus
 
 - Wrapper write: no byte written outside the workdir or to a non-regular file; no file created for a missing path;
   the precondition read from the same descriptor that was checked; the temporary file removed and every descriptor
@@ -385,7 +462,7 @@ Brief plan inputs:
   without the user choosing Overwrite; stale fetch answers dropped.
 - Colours only from `theme.ts`; one `@codemirror/state`; the editor in its own chunk.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The temporary file name's random part and whether the write helper is one function or a few, as long as D3's order
   of checks holds and every exit closes its descriptors.
@@ -396,7 +473,7 @@ Brief plan inputs:
   the panel beyond the dirty flag flipping.
 - The minimum sizes of the split panels.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Assumed: CodeMirror's view mounts in jsdom with `Range.getClientRects`/`getBoundingClientRect` stubs (upstream gives no
   guarantee, B23). web-code-editor confirms it first; if it cannot, the task returns that as a question, it never skips
@@ -411,15 +488,3 @@ Brief plan inputs:
   checks it or builds from source with `scripts/e2e.sh`, as in the precedent.
 - Assumed: oauth2-proxy passes PUT requests with a JSON body and the SSO cookie to the orchestrator; confirmed only by a
   live save after deploy.
-
-## Open questions
-
-Product questions that need the user, collected across epics by `ticket.py questions`.
-- Q1: CodeMirror 6 pulls the npm package @marijn/find-cluster-break into package-lock.json, which trips src/nomenclature.test.ts; may task web-nomenclature-allowlist add exactly the phrase 'find-cluster-break' to the guard's ALLOWED list, with a new test proving every other spelling of the retired unit still fails? [recommended: yes; the guard keeps its purpose and a third-party npm name is the same class as the Kubernetes phrases already allowed (the only alternative, Monaco, has no toml and loads from a CDN)]
-- Q2: Deploy is not part of this epic (no agents-helmfile task), so the editor's save works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
-- Q3: A save replaces the file atomically (temporary file in the same directory, then rename), so a reader never sees a half-written file and a failed save leaves the original intact, but the file gets a new inode: hard links to it are not updated (permission bits are kept); acceptable? [recommended: yes]
-
-## Irreversible operations in scope
-
-none (no tag, release, migration or deploy; PRs merge through the normal flow; user saves overwrite workspace files by
-design, guarded by D4).
