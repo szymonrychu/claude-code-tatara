@@ -763,6 +763,120 @@ def cmd_existing(a: argparse.Namespace) -> int:
     return 0
 
 
+VERDICT_RE = re.compile(r"^Verdict: (pass|fail) \(\d{4}-\d{2}-\d{2}\)$", re.M)
+
+
+def _epics(root: Path) -> dict[str, Ticket]:
+    return {t.slug: t for t in scan(root) if t.kind == "epic"}
+
+
+def resolve_blocker(title: str, epics: dict[str, Ticket]) -> Ticket | None:
+    """The epic a `blockers` entry names: by exact title, else by its slug."""
+    for t in epics.values():
+        if t.meta.get("title") == title:
+            return t
+    return epics.get(slug(title))
+
+
+def _tasks_of(epic_dir: Path) -> list[tuple[Path, dict]]:
+    return [(p, _read_doc(p).meta) for p in _task_files(epic_dir)]
+
+
+def _undelivered(tasks: list[tuple[Path, dict]]) -> list[str]:
+    out = []
+    for p, m in tasks:
+        status = m.get("status", "")
+        if status != "done":
+            out.append(f"task {p.stem!r} is {status or 'without a status'}, not done")
+        elif not m.get("verified_head"):
+            out.append(f"task {p.stem!r} is done without a verified_head")
+    return out
+
+
+def _update_readme(epic_dir: Path, **updates) -> tuple[Path, bool]:
+    p = epic_dir / "README.md"
+    doc = _read_doc(p)
+    meta = dict(doc.meta)
+    meta.update(updates)
+    text = dump(Doc(meta, doc.body))
+    changed = text != p.read_text()
+    if changed:
+        p.write_text(text)
+    return p, changed
+
+
+def last_verdict(readme_text: str) -> str | None:
+    """The verdict of the last `Verdict:` line in the README's Review section, or None."""
+    found = VERDICT_RE.findall(_sections(readme_text).get("Review", ""))
+    return found[-1] if found else None
+
+
+def _append_to_section(body: str, name: str, text: str) -> str:
+    m = re.search(rf"^## {re.escape(name)}\s*$", body, re.M)
+    if not m:
+        return body.rstrip("\n") + f"\n\n## {name}\n\n{text}\n"
+    nxt = re.search(r"^## ", body[m.end() :], re.M)
+    end = m.end() + nxt.start() if nxt else len(body)
+    head, tail = body[:end].rstrip("\n"), body[end:]
+    return f"{head}\n\n{text}\n" + (f"\n{tail}" if tail else "")
+
+
+def _task_src(root: Path, m: dict) -> Path:
+    """The checkout a task's branch lives in: code/<repo> in a workbench, else the repo itself."""
+    repo = _task_repo(root, m.get("repo", ""))
+    wb = _workbench(root)
+    return wb / "code" / repo if repo else wb
+
+
+def _task_merged(src: Path, verified_head: str, base: str) -> bool:
+    """Whether the task's verified_head is contained in base (ancestry, else patch equivalence)."""
+    return bool(verified_head) and _merge().contained(src, verified_head, base)[0]
+
+
+def cmd_stage(a: argparse.Namespace) -> int:
+    root = Path(a.root)
+    require_main_checkout(root)
+    epic_dir = resolve_epic(a.epic, root)
+    name, phase = epic_dir.name, _phase_of(epic_dir)
+    if phase != "in-progress":
+        raise TicketError(f"epic {name!r} is in {phase}; stage needs it in-progress")
+    if a.stage == "review":
+        tasks = _tasks_of(epic_dir)
+        if not tasks:
+            raise TicketError(f"epic {name!r} has no tasks to review")
+        _refuse(_undelivered(tasks))
+    readme, changed = _update_readme(epic_dir, stage=a.stage)
+    if changed:
+        commit_ticket_change(name, f"stage {a.stage}", [readme], root)
+    print(f"{name}: stage {a.stage}")
+    return 0
+
+
+def cmd_review(a: argparse.Namespace) -> int:
+    root = Path(a.root)
+    require_main_checkout(root)
+    epic_dir = resolve_epic(a.epic, root)
+    name = epic_dir.name
+    path = epic_dir / "README.md"
+    doc = _read_doc(path)
+    if _phase_of(epic_dir) != "in-progress" or doc.meta.get("stage") != "review":
+        raise TicketError(
+            f"epic {name!r} is not in-progress at stage review; run `stage {name} review` first"
+        )
+    notes = Path(a.notes_file).read_text().strip()
+    if any(ln.startswith("Verdict:") for ln in notes.splitlines()):
+        raise TicketError(
+            "the notes must not contain a 'Verdict:' line; only the verdict "
+            "line this command writes may start with it"
+        )
+    line = f"Verdict: {a.verdict} ({datetime.date.today().isoformat()})"
+    entry = f"{line}\n\n{notes}" if notes else line
+    path.write_text(dump(Doc(doc.meta, _append_to_section(doc.body, "Review", entry))))
+    commit_ticket_change(name, f"review {a.verdict}", [path], root)
+    print(line)
+    return 0
+
+
 # ---------------------------------------------------------------- run: tasks, worktrees
 
 
@@ -959,48 +1073,7 @@ def _section_replace(body: str, name: str, text: str) -> str:
     )
 
 
-# ---------------------------------------------------------------- epic state
-
-VERDICT_RE = re.compile(r"^Verdict: (pass|fail) \(\d{4}-\d{2}-\d{2}\)$", re.M)
-
-
-def _epics(root: Path) -> dict[str, Ticket]:
-    return {t.slug: t for t in scan(root) if t.kind == "epic"}
-
-
-def resolve_blocker(title: str, epics: dict[str, Ticket]) -> Ticket | None:
-    """The epic a `blockers` entry names: by exact title, else by its slug."""
-    for t in epics.values():
-        if t.meta.get("title") == title:
-            return t
-    return epics.get(slug(title))
-
-
-def _tasks_of(epic_dir: Path) -> list[tuple[Path, dict]]:
-    return [(p, _read_doc(p).meta) for p in _task_files(epic_dir)]
-
-
-def _undelivered(tasks: list[tuple[Path, dict]]) -> list[str]:
-    out = []
-    for p, m in tasks:
-        status = m.get("status", "")
-        if status != "done":
-            out.append(f"task {p.stem!r} is {status or 'without a status'}, not done")
-        elif not m.get("verified_head"):
-            out.append(f"task {p.stem!r} is done without a verified_head")
-    return out
-
-
-def _update_readme(epic_dir: Path, **updates) -> tuple[Path, bool]:
-    p = epic_dir / "README.md"
-    doc = _read_doc(p)
-    meta = dict(doc.meta)
-    meta.update(updates)
-    text = dump(Doc(meta, doc.body))
-    changed = text != p.read_text()
-    if changed:
-        p.write_text(text)
-    return p, changed
+# ---------------------------------------------------------------- plan state
 
 
 def _git_user(root: Path) -> str:
@@ -1011,22 +1084,6 @@ def _git_user(root: Path) -> str:
 def _refuse(problems: list[str]) -> None:
     if problems:
         raise TicketError("; ".join(problems))
-
-
-def last_verdict(readme_text: str) -> str | None:
-    """The verdict of the last `Verdict:` line in the README's Review section, or None."""
-    found = VERDICT_RE.findall(_sections(readme_text).get("Review", ""))
-    return found[-1] if found else None
-
-
-def _append_to_section(body: str, name: str, text: str) -> str:
-    m = re.search(rf"^## {re.escape(name)}\s*$", body, re.M)
-    if not m:
-        return body.rstrip("\n") + f"\n\n## {name}\n\n{text}\n"
-    nxt = re.search(r"^## ", body[m.end() :], re.M)
-    end = m.end() + nxt.start() if nxt else len(body)
-    head, tail = body[:end].rstrip("\n"), body[end:]
-    return f"{head}\n\n{text}\n" + (f"\n{tail}" if tail else "")
 
 
 def _move_in_progress(a: argparse.Namespace, root: Path, plan_dir: Path) -> int:
@@ -1056,13 +1113,6 @@ def _move_in_progress(a: argparse.Namespace, root: Path, plan_dir: Path) -> int:
     return 0
 
 
-def _task_src(root: Path, m: dict) -> Path:
-    """The checkout a task's branch lives in: code/<repo> in a workbench, else the repo itself."""
-    repo = _task_repo(root, m.get("repo", ""))
-    wb = _workbench(root)
-    return wb / "code" / repo if repo else wb
-
-
 def _branch_exists(src: Path, branch: str) -> bool:
     return (
         bool(branch)
@@ -1070,14 +1120,9 @@ def _branch_exists(src: Path, branch: str) -> bool:
     )
 
 
-def _task_merged(src: Path, verified_head: str, base: str) -> bool:
-    """Whether the task's verified_head is contained in base (ancestry, else patch equivalence)."""
-    return bool(verified_head) and _merge().contained(src, verified_head, base)[0]
-
-
 def _trunk(wb: Path, repo: str, base: str) -> tuple[str, bool]:
-    """(ref the integration branch must be in, whether to fetch it): the local base in meta
-    mode, origin/<tracked branch> in component mode."""
+    """(ref the plan branch must be in, whether to fetch it): the local base in meta mode,
+    origin/<tracked branch> in component mode."""
     if not repo:
         return base, False
     return f"origin/{_submodule_branch(wb, repo)}", True
@@ -1087,17 +1132,17 @@ def _fetch_trunk(src: Path, target: str) -> None:
     _git(src, "fetch", "origin", target.split("/", 1)[1])
 
 
-def _integration_problems(root: Path, epic_dir: Path, base: str) -> list[str]:
-    """One line per integration branch that is not contained in its trunk."""
-    wb, name = _workbench(root), epic_dir.name
+def branch_problems(root: Path, plan_dir: Path, base: str) -> list[str]:
+    """One line per plan branch that is not contained in its trunk (ancestry, else patch
+    equivalence); a branch that is already gone is fine."""
+    wb, branch = _workbench(root), plan_branch(plan_dir.name)
     try:
-        plan = tree_layout(root, epic_dir)
+        layout = tree_layout(root, plan_dir)
     except TicketError as e:
         return [str(e)]
     out = []
-    for repo, _ in plan:
+    for repo, _ in layout:
         src = wb / "code" / repo if repo else wb
-        branch = plan_branch(name)
         if not _branch_exists(src, branch):
             continue
         target, fetch = _trunk(wb, repo, base)
@@ -1105,41 +1150,34 @@ def _integration_problems(root: Path, epic_dir: Path, base: str) -> list[str]:
             _fetch_trunk(src, target)
         ok, why = _merge().contained(src, branch, target)
         if not ok:
-            out.append(f"integration branch {branch!r} is not merged into {target!r}: {why}")
+            out.append(f"branch {branch!r} is not merged into {target!r}: {why}")
     return out
 
 
-def review_gate(epic_dir: Path, action: str) -> None:
-    """Refuse unless the epic is in-progress at stage review with a last verdict of pass; the
-    gate `move done` and `close` share."""
-    name, phase = epic_dir.name, _phase_of(epic_dir)
+def retro_gate(plan_dir: Path, action: str) -> None:
+    """Refuse unless the plan is in-progress and the reviewer wrote retro.md (the review
+    passed); the gate `move done` and `close` share."""
+    name, phase = plan_dir.name, phase_of(plan_dir)
     if phase != "in-progress":
-        raise TicketError(f"epic {name!r} is in {phase}; {action} needs it in-progress")
-    readme = _read_doc(epic_dir / "README.md")
-    stage = readme.meta.get("stage", "")
-    if stage != "review":
-        raise TicketError(f"epic {name!r} is at stage {stage!r}; {action} needs stage review")
-    verdict = last_verdict(readme.body)
-    if verdict is None:
-        raise TicketError(f"epic {name!r} has no review verdict; run `review` first")
-    if verdict != "pass":
-        raise TicketError(f"epic {name!r}: the last review verdict is {verdict}, not pass")
+        raise TicketError(f"plan {name!r} is in {phase}; {action} needs it in-progress")
+    if not (plan_dir / PATH_KINDS["retro"]).is_file():
+        raise TicketError(
+            f"plan {name!r} has no retro.md; the reviewer writes it when the review passes"
+        )
 
 
-def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
-    name = epic_dir.name
-    review_gate(epic_dir, "move done")
-    problems = _undelivered(_tasks_of(epic_dir))
-    problems += _integration_problems(root, epic_dir, a.base)
-    _refuse(problems)
-    dest = _git_mv(epic_dir, "done", root)
-    commit_ticket_change(name, "move done", [epic_dir, dest], root)
-    sweep = Sweep(a.base, dry_run=False)
+def finish(root: Path, plan_dir: Path, event: str, base: str) -> int:
+    """Move the plan dir to done, commit it (retro.md and close.json with it) as `event`, then
+    sweep the plan's trees and branches. A sweep error is reported; the move stands."""
+    name = plan_dir.name
+    dest = _git_mv(plan_dir, "done", root)
+    commit_ticket_change(name, event, [plan_dir, dest], root)
+    sweep = Sweep(base, dry_run=False)
     try:
-        sweep.epic(root, dest)
+        sweep.plan(root, dest)
     except Exception as e:  # the move is committed; a sweep error must not undo or hide it
         print(
-            f"ticket.py: epic {name!r} moved to done, but the worktree sweep failed: {e}",
+            f"ticket.py: plan {name!r} moved to done, but the worktree sweep failed: {e}",
             file=sys.stderr,
         )
         print(json.dumps(sweep.summary(), indent=2))
@@ -1148,57 +1186,19 @@ def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
     return 0
 
 
+def _move_done(a: argparse.Namespace, root: Path, plan_dir: Path) -> int:
+    retro_gate(plan_dir, "move done")
+    _refuse(branch_problems(root, plan_dir, a.base))
+    return finish(root, plan_dir, "move done", a.base)
+
+
 def cmd_move(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
-    epic_dir = resolve_plan(a.plan, root)
+    plan_dir = resolve_plan(a.plan, root)
     if a.phase == "in-progress":
-        return _move_in_progress(a, root, epic_dir)
-    return _move_done(a, root, epic_dir)
-
-
-def cmd_stage(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    name, phase = epic_dir.name, _phase_of(epic_dir)
-    if phase != "in-progress":
-        raise TicketError(f"epic {name!r} is in {phase}; stage needs it in-progress")
-    if a.stage == "review":
-        tasks = _tasks_of(epic_dir)
-        if not tasks:
-            raise TicketError(f"epic {name!r} has no tasks to review")
-        _refuse(_undelivered(tasks))
-    readme, changed = _update_readme(epic_dir, stage=a.stage)
-    if changed:
-        commit_ticket_change(name, f"stage {a.stage}", [readme], root)
-    print(f"{name}: stage {a.stage}")
-    return 0
-
-
-def cmd_review(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    name = epic_dir.name
-    path = epic_dir / "README.md"
-    doc = _read_doc(path)
-    if _phase_of(epic_dir) != "in-progress" or doc.meta.get("stage") != "review":
-        raise TicketError(
-            f"epic {name!r} is not in-progress at stage review; run `stage {name} review` first"
-        )
-    notes = Path(a.notes_file).read_text().strip()
-    if any(ln.startswith("Verdict:") for ln in notes.splitlines()):
-        raise TicketError(
-            "the notes must not contain a 'Verdict:' line; only the verdict "
-            "line this command writes may start with it"
-        )
-    line = f"Verdict: {a.verdict} ({datetime.date.today().isoformat()})"
-    entry = f"{line}\n\n{notes}" if notes else line
-    path.write_text(dump(Doc(doc.meta, _append_to_section(doc.body, "Review", entry))))
-    commit_ticket_change(name, f"review {a.verdict}", [path], root)
-    print(line)
-    return 0
+        return _move_in_progress(a, root, plan_dir)
+    return _move_done(a, root, plan_dir)
 
 
 # ---------------------------------------------------------------- cleanup and reap
@@ -1313,80 +1313,60 @@ class Sweep:
             self.leave(f"{src} (branch {branch})", note)
         return None
 
-    def container(
-        self, d: Path, branch: str, wb: Path, src: Path, target: str | None = None
-    ) -> None:
-        """A <config dir>/worktrees/<name> entry: a worktree of src itself, or a component-mode
-        directory holding one worktree per code/<repo>."""
-        target = target or self.base
+    def trees(self, d: Path, branch: str, wb: Path) -> None:
+        """A <configdir>/worktrees/<plan> entry: the meta tree itself or one tree per
+        code/<repo>, each judged against its trunk."""
         if (d / ".git").exists():
-            self.tree(d, src, branch, target)
-            return
-        for sub in sorted(p for p in d.iterdir() if p.is_dir()):
-            self.tree(sub, wb / "code" / sub.name, branch, target)
-        if not self.dry_run:
-            _rmdir_if_empty(d)
-
-    def integration(self, d: Path, epic: str, wb: Path) -> None:
-        """An integration entry (<config dir>/worktrees/<epic> or legacy .worktrees/<epic>):
-        the meta tree itself or one tree per repo, each judged against its trunk."""
-        if (d / ".git").exists():
-            self.tree(d, wb, epic, self.base)
+            self.tree(d, wb, branch, self.base)
             return
         for sub in sorted(p for p in d.iterdir() if p.is_dir()):
             target, fetch = _trunk(wb, sub.name, self.base)
-            self.tree(sub, wb / "code" / sub.name, epic, target, fetch)
+            self.tree(sub, wb / "code" / sub.name, branch, target, fetch)
         if not self.dry_run:
             _rmdir_if_empty(d)
 
-    def epic(self, root: Path, epic_dir: Path) -> None:
-        """The epic's integration trees at <config dir>/worktrees/<epic>[/<repo>] and legacy
-        .worktrees/<epic>/<repo>, then its integration branches (target: the trunk)."""
+    def plan(self, root: Path, plan_dir: Path) -> None:
+        """The plan's trees at <configdir>/worktrees/<plan>[/<repo>], then its branches
+        (target: the trunk)."""
         wb = _workbench(root)
-        name = epic_dir.name
-        for d in (workbench.worktrees_dir(wb) / plan_branch(name), wb / ".worktrees" / name):
-            if d.is_dir():
-                self.integration(d, name, wb)
+        branch = plan_branch(plan_dir.name)
+        d = workbench.worktrees_dir(wb) / branch
+        if d.is_dir():
+            self.trees(d, branch, wb)
         try:
-            plan = tree_layout(root, epic_dir)
+            layout = tree_layout(root, plan_dir)
         except TicketError:
             return
-        for repo, _ in plan:
+        for repo, _ in layout:
             target, fetch = _trunk(wb, repo, self.base)
-            self.branch_only(wb / "code" / repo if repo else wb, plan_branch(name), target, fetch)
+            self.branch_only(wb / "code" / repo if repo else wb, branch, target, fetch)
 
 
 def cmd_reap(a: argparse.Namespace) -> int:
+    """Sweep done plans' trees and trees named after a plan that is not in-progress; with
+    --plan only that done plan's trees."""
     root = Path(a.root)
     if not a.dry_run:
         require_main_checkout(root)
     sweep = Sweep(a.base, a.dry_run)
-    if a.epic:
-        epic_dir = resolve_epic(a.epic, root)
-        if _phase_of(epic_dir) != "done":
-            raise TicketError(f"reap: epic {epic_dir.name} is not done (in {_phase_of(epic_dir)}/)")
-        sweep.epic(root, epic_dir)
+    if a.plan:
+        plan_dir = resolve_plan(a.plan, root)
+        phase = phase_of(plan_dir)
+        if phase != "done":
+            raise TicketError(f"reap: plan {plan_dir.name} is not done (in {phase}/)")
+        sweep.plan(root, plan_dir)
         print(json.dumps({"dryRun": a.dry_run, **sweep.summary()}, indent=2))
         return 0
-    epics = _epics(root)
-    for t in epics.values():
-        if t.phase == "done":
-            sweep.epic(root, t.path.parent)
+    plans = {p.slug: p for p in scan(root)}
+    for p in plans.values():
+        if p.phase == "done":
+            sweep.plan(root, p.dir)
     wb = _workbench(root)
-    names = ticket_names(root)
     wt_dir = workbench.worktrees_dir(wb)
     for d in sorted(p for p in wt_dir.iterdir() if p.is_dir()) if wt_dir.is_dir() else []:
-        owner = names.get(d.name)
-        if owner:
-            stale = epics[owner[0]].phase != "in-progress"
-        else:
-            legacy_epic, sep, _ = d.name.partition(LEGACY_SEP)
-            stale = bool(sep) and not (
-                legacy_epic in epics and epics[legacy_epic].phase == "in-progress"
-            )
-        if not stale:
-            continue
-        sweep.container(d, d.name, wb, wb)
+        owner = plans.get(d.name)
+        if owner and owner.phase != "in-progress":
+            sweep.trees(d, d.name, wb)
     print(json.dumps({"dryRun": a.dry_run, **sweep.summary()}, indent=2))
     return 0
 
@@ -1603,7 +1583,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp = add("reap", cmd_reap)
     sp.add_argument("--dry-run", action="store_true", help="list what would go, remove nothing")
     sp.add_argument("--base", default="main")
-    sp.add_argument("--epic", help="reap only this done epic's integration trees")
+    sp.add_argument("--plan", help="reap only this done plan's trees")
     sp = add("path", cmd_path)
     sp.add_argument("plan")
     sp.add_argument("kind", choices=sorted(PATH_KINDS))
