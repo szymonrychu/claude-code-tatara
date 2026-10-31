@@ -29,6 +29,10 @@ it commits. Run only on confirmation.
 Every run prints `template: <url> <branch> <commit>` before it merges; that is the source
 actually used.
 
+The retired flow paths (the workbench flow skills and agent that `plugins/superpowers`
+replaced, listed in `owned.RETIRED`) are kept out: whatever the template stages under them
+is dropped before the commit, so an update never brings the retired flow back.
+
 ## Report
 
 On success, say in a few lines:

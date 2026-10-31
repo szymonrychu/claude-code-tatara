@@ -52,7 +52,8 @@ def fetch_template(root: Path, url: str | None, branch: str) -> str:
 
 
 def owned_rels() -> list[str]:
-    return [rel for rel, _kind in owned.INSTANCE_OWNED]
+    """Every path a template update keeps the template out of: instance-owned and retired."""
+    return [rel for rel, _kind in owned.INSTANCE_OWNED] + list(owned.RETIRED)
 
 
 def git_paths(root: Path, cmd: str, *args: str) -> set[str]:
@@ -76,7 +77,7 @@ def check_ignored_collisions(root: Path, sha: str) -> None:
 
 
 def restore_owned(root: Path) -> None:
-    """Drop the template's content under every instance-owned path, keeping the project's.
+    """Drop the template's content under every owned_rels path, keeping the project's.
 
     Only what the merge staged is removed: index paths HEAD does not track leave the index
     and the worktree, and HEAD's version is restored for the rest. Files on disk that HEAD
