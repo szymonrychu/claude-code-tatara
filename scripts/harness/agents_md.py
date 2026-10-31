@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 from harness.sources import _rules, parse_frontmatter
 
-RULE_FILES = ("boy-scout.md", "concise-orchestrator.md", "housekeeping.md")
+RULE_FILES = ("boy-scout.md", "concise-orchestrator.md", "housekeeping.md", "superpowers-flow.md")
 NOTE = "_Generated from plugins/workbench/rules/; edit there, then run `mise run harness-setup`._"
 PATH_NOTE = "_Generated from .claude/rules/; edit there, then run `mise run harness-setup`._"
 

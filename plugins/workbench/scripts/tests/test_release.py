@@ -163,7 +163,7 @@ def test_readme_describes_the_vanilla_flow():
         "superpowers:brainstorming",
         "superpowers:writing-plans",
         "superpowers:finishing-a-development-branch",
-        "docs/superpowers/",
+        "docs/plans/",
         "helpers",
         "LSP and grep",
     ):

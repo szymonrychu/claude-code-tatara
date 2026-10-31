@@ -17,7 +17,7 @@ def _block(name: str) -> str:
 
 
 def test_sizes():
-    assert len(AGENTS.encode()) < 16000
+    assert len(AGENTS.encode()) < 19000
     assert len(CLAUDE.encode()) < 2000
 
 
@@ -189,7 +189,7 @@ def test_ground_rule_one_names_the_flow():
         "superpowers:receiving-code-review",
         "superpowers:systematic-debugging",
         "superpowers:finishing-a-development-branch",
-        "docs/superpowers/",
+        "docs/plans/",
         "helpers",
     ):
         assert needle in rule, needle

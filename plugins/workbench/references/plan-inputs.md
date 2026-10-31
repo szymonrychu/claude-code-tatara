@@ -9,5 +9,5 @@ Every research brief and the reuse-hunter answer end in `## Plan inputs`: four l
 - `ideas`: adopted / rejected, one line each, with the source.
 
 The briefs are discovery input to `superpowers:brainstorming`: the design it writes in
-`docs/superpowers/specs/` and the plan `superpowers:writing-plans` writes from it in
-`docs/superpowers/plans/` place every entry. Keep the brief paths, never their contents.
+`docs/plans/<name>/plan.md` and the plan `superpowers:writing-plans` writes from it in
+`docs/plans/<name>/implementation.md` place every entry. Keep the brief paths, never their contents.

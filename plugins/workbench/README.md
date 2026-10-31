@@ -4,8 +4,8 @@ The tooling for any workbench tree, whether the tree is a metarepo or a flat set
 repos: read-only diagnostic and research agents, research skills, worktrees, submodules, pull
 requests, releases, and hooks that guard destructive commands. The development flow itself is
 the vanilla superpowers plugin (`superpowers@claude-plugins-official`, governed by
-`superpowers:using-superpowers`): `superpowers:brainstorming` (design in
-`docs/superpowers/specs/`), `superpowers:writing-plans` (plan in `docs/superpowers/plans/`),
+`superpowers:using-superpowers`): `superpowers:brainstorming` (plan in
+`docs/plans/<name>/plan.md`), `superpowers:writing-plans` (plan in `docs/plans/<name>/implementation.md`),
 `superpowers:subagent-driven-development` or `superpowers:executing-plans`,
 `superpowers:requesting-code-review`, `superpowers:receiving-code-review`,
 `superpowers:systematic-debugging` and `superpowers:finishing-a-development-branch`. Every
@@ -163,8 +163,8 @@ One flow serves both tree shapes; the host (GitLab or GitHub) is picked per repo
 ## Documents
 
 ```
-docs/superpowers/specs/    designs written by superpowers:brainstorming
-docs/superpowers/plans/    plans written by superpowers:writing-plans
+docs/plans/<name>/plan.md            written by superpowers:brainstorming
+docs/plans/<name>/implementation.md written by superpowers:writing-plans
 docs/research/             research briefs
 ```
 
@@ -245,11 +245,12 @@ both correct and honest about the skills being independent.
 
 ## Rules
 
-`rules/` carries the working rules as plain files: the cross-cutting ones (`concise-orchestrator`, `boy-scout`, `housekeeping`) and per-language ones. A plugin does not auto-load them in Claude Code; the template embeds the load-bearing rules in `AGENTS.md`, and `mise run harness-setup -- <target>` generates the per-harness copies.
+`rules/` carries the working rules as plain files: the cross-cutting ones (`concise-orchestrator`, `boy-scout`, `housekeeping`, `superpowers-flow`) and per-language ones. A plugin does not auto-load them in Claude Code; the template embeds the load-bearing rules in `AGENTS.md`, and `mise run harness-setup -- <target>` generates the per-harness copies.
 
 - `rules/concise-orchestrator.md` - one line per update, no pasted logs
 - `rules/boy-scout.md`
 - `rules/housekeeping.md` - the user's standing rules for every agent, every harness and every task
+- `rules/superpowers-flow.md` - workbench amendments to the vanilla superpowers flow: research step, one gate, per-improvement paths, retro, orchestrator never edits
 
 ## Research briefs
 

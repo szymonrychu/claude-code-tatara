@@ -1,6 +1,6 @@
 ---
 name: research-code-internal
-description: "Hunt the repos in scope for parts a plan would otherwise rebuild, near-duplicate helpers and optimisation hot spots, before the plan is written. Use when the plan adds any helper, reader, parser, schema field or subsystem, or a repo has more than ~200 source files; always, during superpowers:brainstorming before the design is written. Read-only; dispatches one reuse-hunter agent."
+description: "Hunt the repos in scope for parts a plan would otherwise rebuild, near-duplicate helpers and optimisation hot spots, before the plan is written. Use when the plan adds any helper, reader, parser, schema field or subsystem, or a repo has more than ~200 source files; always, as the research step before superpowers:brainstorming proposes a design. Read-only; dispatches one reuse-hunter agent."
 ---
 
 # research-code-internal

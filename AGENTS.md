@@ -59,14 +59,16 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 
 1. **Development flow.** The vanilla superpowers plugin governs all work
    (`superpowers:using-superpowers`); workbench skills and agents are helpers to it.
-   Non-trivial work starts with `superpowers:brainstorming` (specs in
-   `docs/superpowers/specs/`), `superpowers:writing-plans` writes the plan
-   (`docs/superpowers/plans/`), and `superpowers:subagent-driven-development` or
+   Non-trivial work starts with `superpowers:brainstorming`, `superpowers:writing-plans`
+   writes the plan, and `superpowers:subagent-driven-development` or
    `superpowers:executing-plans` runs it. Reviews go through
    `superpowers:requesting-code-review` and `superpowers:receiving-code-review`, failures
    through `superpowers:systematic-debugging`, and the branch lands through
    `superpowers:finishing-a-development-branch`. In harnesses other than Claude Code, invoke
-   the skills by their bare names.
+   the skills by their bare names. The workbench amendments (research step first, one human
+   gate, paths under `.worktrees/`, `.scratchpad/`, `.logs/` and `docs/plans/<name>/`,
+   final-review retro, the orchestrator never edits) are in the "Superpowers flow in this
+   workbench" rule below and override the superpowers defaults.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
    very complex architecture decisions fable; mechanical relays and classifiers: haiku;
@@ -179,9 +181,53 @@ The user's standing rules for every agent, every harness and every task.
 3. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and
    why. Tests make the code repeatable and guard against regressions.
-4. **One scratchpad.** Every scratchpad edit lands under `.scratchpad` in the
-   workbench root (the main checkout, never a worktree); it is the only
-   scratchpad dir (`workbench.py scratchpad` prints it).
-5. **One log dir.** Every log lands in the gitignored `.logs` in the workbench
-   root (`workbench.py logs` prints it).
+4. **One scratchpad per improvement.** Every scratchpad edit lands under
+   `.scratchpad/<name>/` in the workbench root (the main checkout, never a
+   worktree), `<name>` being the improvement's kebab-case name
+   (`workbench.py scratchpad <name>` prints it).
+5. **One log dir per improvement.** Every log of every tool the agents run lands
+   in the gitignored `.logs/<name>/` in the workbench root
+   (`workbench.py logs <name>` prints it).
+6. **The orchestrator never edits.** The orchestrating agent never updates code
+   (source, tests, skills, agents, hooks, rules, docs) and is responsible and
+   accountable for all work its subagents do. Its own duties: dispatching, reading
+   results, running the repo's test and lint commands to verify, and git merge and
+   push of reviewed work.
+
+## Superpowers flow in this workbench
+
+The development flow is the vanilla `superpowers` plugin. These amendments override its
+defaults here (superpowers gives user instructions precedence over its skills). `<name>` is
+the improvement's kebab-case name.
+
+1. **Research first.** Every development workflow starts with a research step before
+   `superpowers:brainstorming` proposes a design: (a) the docs of every tool, library and
+   system the implementation plans to use (`workbench:research-docs`), (b) a sweep of the
+   existing codebase aimed at the most reviewable update, meaning reuse and the smallest
+   coherent diff (`workbench:research-code-internal`).
+2. **One human gate.** The brainstorming plan (spec) plus its questions is the only gate.
+   The plan is more detailed than the superpowers default: what and why, research findings,
+   design, files and components touched, test approach, risks, and the scope from MVP to
+   complete. Every question offers options and always marks one option "MVP" and one
+   "Recommended" (the same option may carry both). After the user answers,
+   `superpowers:writing-plans` writes the implementation plan with no second human review,
+   and execution (`superpowers:subagent-driven-development`) starts immediately.
+3. **Paths.** These override the superpowers locations, including the worktree location
+   choice of `using-git-worktrees`:
+   - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
+   - scratchpad: `<workbench root>/.scratchpad/<name>/`
+   - logs of every tool the agents run: `<workbench root>/.logs/<name>/`
+   - plan (spec): `docs/plans/<name>/plan.md`; implementation plan:
+     `docs/plans/<name>/implementation.md` (instead of `docs/superpowers/specs` and
+     `docs/superpowers/plans`)
+4. **Final reviewer.** Besides correctness and completeness of the delivered work against
+   the agreed scope (under- and over-delivery), the final reviewer writes
+   `docs/plans/<name>/retro.md`: what came up during implementation and what was overlooked
+   during discovery and planning. The orchestrator relays the retro recommendations in its
+   closing message.
+5. **The orchestrator never edits.** The orchestrating agent never updates code (source,
+   tests, skills, agents, hooks, rules, docs); where a superpowers skill would have it edit
+   inline, it dispatches a subagent instead. It is responsible and accountable for all work
+   its subagents do. Its own duties: dispatching, reading results, running the repo's test
+   and lint commands to verify, and git merge and push of reviewed work.
 <!-- workbench:rules:end -->

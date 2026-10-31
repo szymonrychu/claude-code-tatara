@@ -56,3 +56,6 @@ docs/handoffs/
 .agents/worktrees/
 .agents/settings.local.json
 .agents/harness.json
+
+# per-improvement workbench state (superpowers-flow rule)
+docs/plans/

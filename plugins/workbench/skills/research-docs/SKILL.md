@@ -1,6 +1,6 @@
 ---
 name: research-docs
-description: "Read the official docs of every library, platform and API in scope at the installed version, and report anti-patterns in our usage and functionality the library already provides. Use by default on the full path when a library, framework, provider or platform API is used in a new way, upgraded, or touched in 3 or more call sites, and for any Helm, Terraform provider or Kubernetes API change. Runs start-research, which dispatches the workbench:research-docs-purist agent."
+description: "Read the official docs of every library, platform and API in scope at the installed version, and report anti-patterns in our usage and functionality the library already provides. Use by default on the full path when a library, framework, provider or platform API is used in a new way, upgraded, or touched in 3 or more call sites, and for any Helm, Terraform provider or Kubernetes API change. Always runs as the research step before superpowers:brainstorming proposes a design. Runs start-research, which dispatches the workbench:research-docs-purist agent."
 ---
 
 # research-docs
