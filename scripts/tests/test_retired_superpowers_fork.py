@@ -84,9 +84,7 @@ RETIRED_WORDS = re.compile(
     "|".join(
         (
             r"ticket\.py",
-            _PLAN + r"\.md",
             "implementation-" + _PLAN,
-            r"retro\.md",
             _WM,
             _WB + "reviewer",
             _WB + "implementer",

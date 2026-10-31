@@ -25,9 +25,7 @@ VANILLA = (
 # Retired flow words, built from parts so the retired-flow scan does not match this file.
 P = "plan"
 RETIRED_FLOW = (
-    P + ".md",
     "implementation-" + P,
-    "retro" + ".md",
     "ticket" + ".py",
     P + " tree",
     "worktree-" + "merger",

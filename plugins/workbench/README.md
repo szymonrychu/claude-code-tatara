@@ -250,7 +250,7 @@ both correct and honest about the skills being independent.
 - `rules/concise-orchestrator.md` - one line per update, no pasted logs
 - `rules/boy-scout.md`
 - `rules/housekeeping.md` - the user's standing rules for every agent, every harness and every task
-- `rules/superpowers-flow.md` - workbench amendments to the vanilla superpowers flow: research step, one gate, per-improvement paths, retro, orchestrator never edits
+- `rules/superpowers-flow.md` - workbench amendments to the vanilla superpowers flow: research step, single human approval, per-improvement paths, retro, orchestrator never edits
 
 ## Research briefs
 
