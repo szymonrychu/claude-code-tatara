@@ -1,49 +1,48 @@
-# Webhook event filters design
+---
+title: webhook event filters
+repos: [agents-webhook, agents-web, agents-helmfile]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# webhook event filters
 
-Every agents-webhook endpoint gets its own allow and deny rules over the normalized fields of its type: author, actor, repository, labels (Grafana alert labels as `key=value`), title, body and comment text, kind, action, and for PR/MR the source and target branch. Rules match by `equals` or by `regex`; regex runs on RE2 (linear time) with hard bounds, so a user pattern cannot stall the public ingest. A delivery that fails a filter is still accepted (202) and stored `ignored` with reason `filter_denied: <field>` or `filter_not_allowed: <field>`; it never starts an agent. Filters are set at endpoint creation, edited later through a new `PUT /webhooks/api/v1/endpoints/{id}/filters`, and in the agents-web Webhooks UI, whose example-JSON preview also reports whether the example passes. The global `WEBHOOK_ALLOWED_AUTHORS` is retired in favour of per-endpoint author rules; `WEBHOOK_BOT_LOGINS` stays as the global self-loop guard.
+## What and why
 
-## Intent and why
+What: Per-endpoint allowlist/denylist filters for every supported webhook type (grafana-alert, github-issue, github-pr, gitlab-issue, gitlab-mr): for example drop a Grafana alert when label X has value Y, or ignore an issue/PR/MR unless its author is in a username list or its repo is in a repo list; a delivery that fails a filter is accepted and stored as ignored with a reason instead of starting an agent.
+How: Filter rules stored per endpoint in the agents-webhook database, evaluated at ingest after normalization and the built-in ignore rules against the normalized event fields (author, repository, labels including Grafana alert labels, title regex, PR/MR branches and more, design D3), regex on RE2, managed through the endpoints API and the agents-web Webhooks UI, deployed through agents-helmfile.
+Why: User request 2026-10-25: finer control over which webhook events start agents: 'small epic- for each of supported webhooks add whiltelisting/blacklisting ability- e.g. grafana webhooks should blacklist if a label X consist of value Y, or issue/mr webhook will be received but internall ignorred if author is not one of the usernames from the list (or repos)- in general whitelist/blacklist capability for webhooks allowing for greater granularity in how to react to webhook events.'
 
-User request 2026-10-25, verbatim: "small epic- for each of supported webhooks add whiltelisting/blacklisting ability- e.g. grafana webhooks should blacklist if a label X consist of value Y, or issue/mr webhook will be received but internall ignorred if author is not one of the usernames from the list (or repos)- in general whitelist/blacklist capability for webhooks allowing for greater granularity in how to react to webhook events." Follow-up, verbatim: "other fields: title regex, branch name, etc".
+Each agents-webhook endpoint gets allow and deny rules over the normalized fields of its type (design D3: author, actor, repo, labels with Grafana `key=value`, title, body, comment, kind, action, and PR/MR source and target branch). Rules match by `equals` or by an RE2 `regex`. Ingest evaluates them after the built-in ignore rules; a delivery that fails is answered 202 and stored `ignored` with `filter_denied: <field>` or `filter_not_allowed: <field>`. The UI API sets filters on create, replaces them with `PUT /webhooks/api/v1/endpoints/{id}/filters`, serves the field catalogue in `GET /meta`, and the template preview reports whether an example passes. agents-web edits filters in the New endpoint dialog and in a Filters dialog per endpoint. The global `WEBHOOK_ALLOWED_AUTHORS` is retired; `WEBHOOK_BOT_LOGINS` stays. agents-helmfile pins the new builds and the smoke checks filters without ingesting a runnable delivery. Design: `design.md`.
 
-Today an endpoint reacts to every handled event of its type; the only knobs are two global env lists that apply to every endpoint alike. One hook per repo or org sends far more than the operator wants an agent for (staging alerts, PRs into release branches, issues from strangers), and each such event costs a cluster.
+## Scope ladder
 
-## Goals
+### Rung 1: agreed scope (migrated)
 
-- G1: every endpoint type has per-endpoint allow and deny rules over the fields of D3, including author, repository, labels (Grafana `key=value`), title regex and PR/MR source and target branch.
-- G2: a delivery that fails a filter answers 202 and is stored `ignored` with reason `filter_denied: <field>` or `filter_not_allowed: <field>`; it is never dispatched.
-- G3: filters are set on create and replaced later through the endpoints API; the agents-web Webhooks UI edits them on create and on an existing endpoint, and its example-JSON preview shows whether the example passes.
-- G4: regex rules run on RE2 with the bounds of D4; a pattern RE2 refuses, or any rule outside the bounds, is rejected on save with 422 naming the rule.
-- G5: `WEBHOOK_ALLOWED_AUTHORS` and the reason `author_not_allowed` are gone; `WEBHOOK_BOT_LOGINS` and `self_event` stay.
-- G6: the live namespace runs the new agents-webhook and agents-web builds and the smoke, extended with a filter check, is green.
+- 1.1: G1: every endpoint type has per-endpoint allow and deny rules over the fields of design D3, including author, repository, labels (Grafana `key=value`), title regex and PR/MR source and target branch.
+- 1.2: G2: a delivery that fails a filter answers 202 and is stored `ignored` with reason `filter_denied: <field>` or `filter_not_allowed: <field>`; it is never dispatched.
+- 1.3: G3: filters are set on create and replaced later through the endpoints API; the agents-web Webhooks UI edits them on create and on an existing endpoint, and its example-JSON preview shows whether the example passes.
+- 1.4: G4: regex rules run on RE2 (linear time) within the bounds of design D4; a pattern RE2 refuses, or a rule outside the bounds, is rejected on save with 422 naming the rule.
+- 1.5: G5: `WEBHOOK_ALLOWED_AUTHORS` and the reason `author_not_allowed` are gone; `WEBHOOK_BOT_LOGINS` and `self_event` stay.
+- 1.6: G6: the live namespace runs the new agents-webhook and agents-web builds and the extended smoke is green.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Filters over raw payload JSON paths, Grafana annotations, per-alert Grafana labels (only the group's `commonLabels`), or fields not in D3.
-- Boolean expressions or OR-groups across rules (D2 fixes the combination rule).
-- Re-evaluating events already queued when an endpoint's filters change.
-- Editing any other endpoint field (type, preset, template stay create-only, prior design D7).
+- Filters over raw payload JSON paths, Grafana annotations or per-alert Grafana labels.
+- Boolean expressions or OR-groups across rules.
+- Re-evaluating events already queued when filters change.
+- Editing other endpoint fields (type, preset, template).
 - Filter hit counters or metrics.
-- Changing the built-in ignore rules (`self_event`, `action_ignored`, `resolved`, drafts, title-only edits).
+- Changing the built-in ignore rules.
 
-## Anti-goals
+## Design
 
-- A user regex that can make ingest CPU-bound (ReDoS) on the public, unauthenticated-reachable path.
-- A filtered delivery answered with a 4xx or 5xx, so the forge retries or disables the hook.
-- A filter failure that leaks the rule set, the payload or credentials into logs.
-- A second, divergent copy of the field catalogue in the UI (the UI reads it from `GET /meta`).
-- Scope creep into a generic rules engine or a query language.
-
-## Constraints
-
-- Python only in agents-webhook, TypeScript in agents-web; services talk only over HTTP; `endpoints` keeps one writer (the api).
-- No backward compatibility shims (house rule): the retired env var and reason are removed, not aliased.
-- Test-first per task; targeted verify per task; small tasks, model per task (sonnet unless a task adds a module or touches more than five files).
-- The DB-backed agents-webhook tests (`tests/test_endpoints_repo.py`, `tests/test_ingest_http.py`, `tests/test_api.py`, `tests/e2e/`) start Postgres through testcontainers, so their verify needs a running Docker daemon.
-- The orchestrator (main session) runs `mise run apply` in agents-helmfile; apply never appears in AC evidence.
-- The ingest auth order is unchanged (429, 401, 413, ping, 400, normalize, classify, record): filters run after classify and before record, never before authentication.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -108,6 +107,12 @@ agents-helmfile pins the agents-webhook and agents-web main builds that contain 
 
 Every capability is reachable without the UI: README `## API` and `## Filters`, the committed `openapi.json`, and API-only e2e cases (real Postgres, the three processes, the fake orchestrator) for a deny, an allow miss, a pass, the PUT replacing the outcome, and the preview.
 
+## Open questions
+
+- Q1: Retire WEBHOOK_ALLOWED_AUTHORS (and reason author_not_allowed) in favour of per-endpoint author allow rules, but keep WEBHOOK_BOT_LOGINS as the global self-loop guard? [answer: yes (user: 'Go for webhook filter', 2026-10-25): retire WEBHOOK_ALLOWED_AUTHORS, keep WEBHOOK_BOT_LOGINS]
+- Q2: Run the built-in ignore rules (self_event, action_ignored, resolved) before the endpoint filters, so a filter reason only appears on events that would otherwise start an agent? [answer: yes (user gate approval 2026-10-25): built-in ignore rules run before the filters]
+- Q3: Combine allow rules with AND (author in list AND repo in list) and a rule's values with OR, with no OR-groups across rules? [answer: yes (user gate approval 2026-10-25): allow rules AND, values within a rule OR]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -118,7 +123,7 @@ Every capability is reachable without the UI: README `## API` and `## Filters`, 
 | research-papers | skipped: no algorithmic core beyond choosing a linear-time regex engine | none | none |
 | retro history | ran (`ticket.py retro --history`) | for every task that deletes or cleans up, the reviewer asks what runs if the producing step fails or a variable is empty (test-temp-dirs-outside-the-c, recurring): applied to smoke-webhook-filters (the endpoint-delete trap) and retire-allowed-authors | none |
 
-## Research inputs
+### Research inputs
 
 - `classify` runs before record in `ingest/app.py:_deliver`; filters slot in after it - code/agents-webhook `src/agents_webhook/ingest/app.py` - ingest-applies-filters.
 - `endpoints.authenticate` builds `Endpoint(*row[:-1])` positionally from `_COLUMNS`; a new column must keep `password_hash` last - `src/agents_webhook/db/endpoints.py:authenticate` - endpoint-filters-storage.
@@ -131,7 +136,82 @@ Every capability is reachable without the UI: README `## API` and `## Filters`, 
 - The smoke's temporary endpoint and closed-issue delivery are the only side effects; keep it so - agents-helmfile `scripts/smoke.sh` step 8 - smoke-webhook-filters.
 - Retro proposal (test-temp-dirs-outside-the-c, recurring): ask "what runs if the producing command fails or the variable is empty" for any cleanup path - smoke-webhook-filters.
 
-## Contracts
+## Irreversible operations
+
+- Migration `0004_endpoint_filters.sql` adds a column to the live agents-webhook database on apply (additive, forward-only; existing rows get empty filters). Covered by the gate and the apply task; the orchestrator runs `mise run apply`.
+- Removing `WEBHOOK_ALLOWED_AUTHORS` from the live values: its live value is empty, so no behaviour changes.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review of webhook-event-filters, 2026-10-25.
+
+- Scope audit: CLEAN. Every type and every D3 field is covered across API, UI create/edit, preview, deploy and smoke.
+- Whole-diff review: 1 medium finding. A stale preview verdict stayed after a filter edit; fixed by web-preview-stale-on-filter (da936ab, agents-web bc47dee), reviewed PASS.
+- Security review: 1 medium finding. Filter evaluation ran on the event loop with no total work cap; fixed by filters-off-event-loop (9f048aa, agents-webhook 206cf8e): to_thread, MAX_TOTAL_VALUES=200, MAX_LIST_ITEMS=100 fail-closed. Reviewed PASS.
+- Per-task fixes earlier in the epic:
+  - truncation now fails closed;
+  - the preview mirrors ingest (built-in rules first, filter_error).
+- Full suites:
+  - agents-helmfile `mise run test`: 122 passed, lint clean.
+  - agents-webhook PR #6 CI: green including e2e.
+  - agents-web PR #8 CI: green.
+- Live:
+  - agents-webhook 0.1.0-main.206cf8e (rev 4) and agents-web 0.1.0-main.bc47dee (rev 6) applied.
+  - Post-apply diff: "No affected releases".
+  - Smoke: OK, including the filter checks (last line "smoke: deleted webhook endpoint 4").
+
+### design.md: Summary
+
+Every agents-webhook endpoint gets its own allow and deny rules over the normalized fields of its type: author, actor, repository, labels (Grafana alert labels as `key=value`), title, body and comment text, kind, action, and for PR/MR the source and target branch. Rules match by `equals` or by `regex`; regex runs on RE2 (linear time) with hard bounds, so a user pattern cannot stall the public ingest. A delivery that fails a filter is still accepted (202) and stored `ignored` with reason `filter_denied: <field>` or `filter_not_allowed: <field>`; it never starts an agent. Filters are set at endpoint creation, edited later through a new `PUT /webhooks/api/v1/endpoints/{id}/filters`, and in the agents-web Webhooks UI, whose example-JSON preview also reports whether the example passes. The global `WEBHOOK_ALLOWED_AUTHORS` is retired in favour of per-endpoint author rules; `WEBHOOK_BOT_LOGINS` stays as the global self-loop guard.
+
+### design.md: Intent and why
+
+User request 2026-10-25, verbatim: "small epic- for each of supported webhooks add whiltelisting/blacklisting ability- e.g. grafana webhooks should blacklist if a label X consist of value Y, or issue/mr webhook will be received but internall ignorred if author is not one of the usernames from the list (or repos)- in general whitelist/blacklist capability for webhooks allowing for greater granularity in how to react to webhook events." Follow-up, verbatim: "other fields: title regex, branch name, etc".
+
+Today an endpoint reacts to every handled event of its type; the only knobs are two global env lists that apply to every endpoint alike. One hook per repo or org sends far more than the operator wants an agent for (staging alerts, PRs into release branches, issues from strangers), and each such event costs a cluster.
+
+### design.md: Goals
+
+- G1: every endpoint type has per-endpoint allow and deny rules over the fields of D3, including author, repository, labels (Grafana `key=value`), title regex and PR/MR source and target branch.
+- G2: a delivery that fails a filter answers 202 and is stored `ignored` with reason `filter_denied: <field>` or `filter_not_allowed: <field>`; it is never dispatched.
+- G3: filters are set on create and replaced later through the endpoints API; the agents-web Webhooks UI edits them on create and on an existing endpoint, and its example-JSON preview shows whether the example passes.
+- G4: regex rules run on RE2 with the bounds of D4; a pattern RE2 refuses, or any rule outside the bounds, is rejected on save with 422 naming the rule.
+- G5: `WEBHOOK_ALLOWED_AUTHORS` and the reason `author_not_allowed` are gone; `WEBHOOK_BOT_LOGINS` and `self_event` stay.
+- G6: the live namespace runs the new agents-webhook and agents-web builds and the smoke, extended with a filter check, is green.
+
+### design.md: Non-goals
+
+- Filters over raw payload JSON paths, Grafana annotations, per-alert Grafana labels (only the group's `commonLabels`), or fields not in D3.
+- Boolean expressions or OR-groups across rules (D2 fixes the combination rule).
+- Re-evaluating events already queued when an endpoint's filters change.
+- Editing any other endpoint field (type, preset, template stay create-only, prior design D7).
+- Filter hit counters or metrics.
+- Changing the built-in ignore rules (`self_event`, `action_ignored`, `resolved`, drafts, title-only edits).
+
+### design.md: Anti-goals
+
+- A user regex that can make ingest CPU-bound (ReDoS) on the public, unauthenticated-reachable path.
+- A filtered delivery answered with a 4xx or 5xx, so the forge retries or disables the hook.
+- A filter failure that leaks the rule set, the payload or credentials into logs.
+- A second, divergent copy of the field catalogue in the UI (the UI reads it from `GET /meta`).
+- Scope creep into a generic rules engine or a query language.
+
+### design.md: Constraints
+
+- Python only in agents-webhook, TypeScript in agents-web; services talk only over HTTP; `endpoints` keeps one writer (the api).
+- No backward compatibility shims (house rule): the retired env var and reason are removed, not aliased.
+- Test-first per task; targeted verify per task; small tasks, model per task (sonnet unless a task adds a module or touches more than five files).
+- The DB-backed agents-webhook tests (`tests/test_endpoints_repo.py`, `tests/test_ingest_http.py`, `tests/test_api.py`, `tests/e2e/`) start Postgres through testcontainers, so their verify needs a running Docker daemon.
+- The orchestrator (main session) runs `mise run apply` in agents-helmfile; apply never appears in AC evidence.
+- The ingest auth order is unchanged (429, 401, 413, ping, 400, normalize, classify, record): filters run after classify and before record, never before authentication.
+
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -144,7 +224,7 @@ Every capability is reachable without the UI: README `## API` and `## Filters`, 
 
 Cross-epic: none changed. agents-schedule-microservice consumes the agents-common parts and `trigger-ui-page-pattern`, which this epic does not touch. `webhook-api` (registry consumers agents-web, agents-helmfile) is extended additively plus one new route, and both consumers are in this epic. The current `ticket.py` has no `contract` subcommand, so nothing was added to `docs/plans/contracts.json`.
 
-## Decision coverage
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -159,7 +239,7 @@ Cross-epic: none changed. agents-schedule-microservice consumes the agents-commo
 | D9 Deploy | deploy-pin-webhook-filters, smoke-webhook-filters, apply-smoke-webhook-filters |
 | D10 Headless parity | ingest-applies-filters, api-endpoint-filters, e2e-endpoint-filters |
 
-## Review focus
+### design.md: Review focus
 
 - filter-rules-engine: no path compiles a user pattern with stdlib `re`; the ReDoS test uses a classic catastrophic pattern on a long input and bounds wall time; every bound is enforced on validate; absent fields fail allow and never trip deny; case rules exactly as D2.
 - ingest-applies-filters: filters run after authentication and classify, before record; a filtered delivery is 202 ignored; logs carry the reason only, never the rules or payload text.
@@ -167,25 +247,14 @@ Cross-epic: none changed. agents-schedule-microservice consumes the agents-commo
 - endpoint-filters-storage: `authenticate` still compares and verifies in constant shape (the identical-401 property) with the new column.
 - web-*: no client-side regex validation; type change drops inapplicable rules; the PUT error shows in the dialog.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal layout of `filters.py` (dataclasses, cache shape) as long as `FIELDS`, `validate`, `evaluate`, `DENIED`, `NOT_ALLOWED` and the bounds constants are module-level names.
 - UI layout and wording inside the dialogs, within MUI and the existing trigger UI kit.
 - Whether the compiled-rule cache is an `lru_cache` or a dict keyed by the canonical JSON, bounded.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - `google-re2` 1.1.20251105 installs under uv on macOS (dev) and in the image; confirmed by the filter-rules-engine verify (`uv sync`, tests) and the image build in CI.
 - GitHub `pull_request`, `pull_request_review` and `pull_request_review_comment` payloads carry `pull_request.head.ref` and `base.ref`; GitLab MR hooks carry `object_attributes.source_branch`/`target_branch` and Note hooks `merge_request.source_branch`/`target_branch` (provider docs; pinned by tests/payloads.py fixtures in normalize-branch-fields).
 - Grafana label rules match `commonLabels`, the labels shared by every alert in the notification (per-alert labels are a non-goal).
-
-## Open questions
-
-- Q1: Retire WEBHOOK_ALLOWED_AUTHORS (and reason author_not_allowed) in favour of per-endpoint author allow rules, but keep WEBHOOK_BOT_LOGINS as the global self-loop guard? [answer: yes (user: 'Go for webhook filter', 2026-10-25): retire WEBHOOK_ALLOWED_AUTHORS, keep WEBHOOK_BOT_LOGINS]
-- Q2: Run the built-in ignore rules (self_event, action_ignored, resolved) before the endpoint filters, so a filter reason only appears on events that would otherwise start an agent? [answer: yes (user gate approval 2026-10-25): built-in ignore rules run before the filters]
-- Q3: Combine allow rules with AND (author in list AND repo in list) and a rule's values with OR, with no OR-groups across rules? [answer: yes (user gate approval 2026-10-25): allow rules AND, values within a rule OR]
-
-## Irreversible operations in scope
-
-- Migration `0004_endpoint_filters.sql` adds a column to the live agents-webhook database on apply (additive, forward-only; existing rows get empty filters). Covered by the gate and the apply task; the orchestrator runs `mise run apply`.
-- Removing `WEBHOOK_ALLOWED_AUTHORS` from the live values: its live value is empty, so no behaviour changes.

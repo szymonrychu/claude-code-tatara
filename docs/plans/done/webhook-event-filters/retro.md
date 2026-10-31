@@ -1,10 +1,28 @@
-# webhook event filters record
+# webhook event filters retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+none
+
+## Delivery record (migrated)
+
+### Asked
 
 Per-endpoint allowlist/denylist filters for every webhook type (grafana-alert, github-issue, github-pr, gitlab-issue, gitlab-mr): allow and deny rules over normalized fields (author, repo, labels, title, PR/MR branches and more), `equals` or RE2 `regex`. A delivery that fails is accepted (202) and stored `ignored` with a reason instead of starting an agent. Managed through the endpoints API and the agents-web Webhooks UI, deployed through agents-helmfile. `WEBHOOK_ALLOWED_AUTHORS` retired.
 
-## Shipped
+### Shipped
 
 All 16 tasks done. Epic review verdict: pass (2026-10-25); scope audit CLEAN (every type and D3 field covered across API, UI create/edit, preview, deploy, smoke; no duplicates). Whole-diff review: 1 medium (stale preview verdict), security review: 1 medium (filter evaluation on the event loop, no total work cap); both fixed by phase 5 tasks and reviewed PASS.
 
@@ -17,7 +35,7 @@ Live (agents namespace): agents-webhook 0.1.0-main.206cf8e (rev 4) and agents-we
 
 Suites read: agents-helmfile `mise run test` 122 passed, lint clean; agents-webhook PR #6 CI green including e2e; agents-web PR #8 CI green. I ran no tests myself.
 
-## Tasks
+### Tasks
 
 Status and verified head are from the task files (all `done`, all with a verified head). Review rounds and per-task verification tails were not in the files I was given: "unknown". Points are planned/actual. The plan-execute return value was not provided, so the independent verifier head, red evidence, declined, cannotVerify and forwardMerged entries could not be read: "unknown"; the head shown is the task file's verified_head.
 
@@ -41,7 +59,7 @@ Status and verified head are from the task files (all `done`, all with a verifie
 | web-vendor-filters-api | done | 20f1694 | unknown | unknown (2/2) |
 Approvals ledger: the epic dir has no approvals.json, so no ledger rows; the gate approval is recorded in the root MEMORY.md (2026-10-25): "unknown" per entry.
 
-## Rulings
+### Rulings
 
 - Gate: Q1-Q3 at the recommended answers (user: 'Go for webhook filter'): retire WEBHOOK_ALLOWED_AUTHORS and keep WEBHOOK_BOT_LOGINS; built-in ignore rules run before filters; allow rules AND, values OR. The live apply and the additive filters column were approved at the gate. Cost if wrong: a removed env var is inert (`extra="ignore"`); an author allowlist moves to an endpoint allow rule.
 - Regex: oversized text fails closed in both directions (a deny rule treats it as a match, an allow rule as a miss), so truncation never lets an event through. Cost if wrong: an oversized event that should pass is ignored with filter_error until the bound is raised.
@@ -50,18 +68,18 @@ Approvals ledger: the epic dir has no approvals.json, so no ledger rows; the gat
 - Phase 5 fixes: filters-off-event-loop (to_thread, 200-value total budget MAX_TOTAL_VALUES, 100-item list cap MAX_LIST_ITEMS, fail closed) and web-preview-stale-on-filter (the stale preview cleared on a filter edit). Cost if wrong: ingest stalls under a large rule set, or the user creates an endpoint believing a stale verdict.
 - Superrepo main is not pushed; pushing stays with the user.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Not verifiable by the epic reviewer: live apply and smoke result, browser rendering (review was read-only); settled by the live post-diff and smoke above.
 - The pre-apply diff log (.logs/webhook-filters-prediff.log) ends "[diff] ERROR task failed" because `mise run diff` exits non-zero when there are changes ("Identified at least one change"); the diff content was as expected per agents-helmfile MEMORY.md.
 - The `.venv` editable install of agents_webhook still points at the removed worktree path (warning printed by ticket.py): the user or supervisor can reinstall.
 - Nothing else open.
 
-## Not pushed
+### Not pushed
 
 The superrepo submodule pins and ticket moves are committed on main; main is not pushed; pushing the superrepo main stays with the user. Submodule PRs are all merged.
 
-## Lessons routed to
+### Lessons routed to
 
 - Preview and ingest could diverge: a test that runs the same examples through the preview endpoint and ingest and asserts equal verdicts (partly covered by the e2e and shared `verdict` function).
 - Filter evaluation had no total work cap until review: a unit test asserting evaluation fails closed over MAX_TOTAL_VALUES and MAX_LIST_ITEMS (done in filters-off-event-loop).
