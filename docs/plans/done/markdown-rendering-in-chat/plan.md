@@ -1,42 +1,44 @@
-# markdown rendering in chat design
+---
+title: markdown rendering in chat
+repos: [agents-web]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# markdown rendering in chat
 
-The agents-web chat panel renders message text as GFM markdown: the user's own messages, the agents' answers, superleader session messages (inner text only) and peer messages. One new component, `ChatMarkdown` in `src/chat/Markdown.tsx`, wraps react-markdown 10.1.0 with remark-gfm 4.0.1 and remark-breaks 4.0.0 and maps every element to MUI components themed from `src/theme.ts`. Raw HTML stays text, links open in a new tab with `rel="noopener noreferrer"` through `defaultUrlTransform`, images never load, and code blocks are monospace with a language label and no highlighting. Tool and status rows, the session frame parser and the backend are untouched.
+## What and why
 
-## Intent and why
+What: Chat messages, the user's and the agents', render as markdown
+How: safe markdown renderer (GFM, raw HTML off) in the chat entry components
+Why: Agent answers and user input are readable: code blocks, lists, tables
 
-User request (2026-10-27), verbatim: "render markdown in chat window (both for my input and agent's responses)". Agent answers arrive as markdown (code fences, lists, tables) and today show as raw text with `pre-wrap` (`src/chat/entries.tsx:32`), which makes long answers hard to read. The user types markdown too and wants it shown the same way.
+User request (2026-10-27), verbatim:
 
-## Goals
+"## markdown rendering in the chat
 
-- Chat messages render as markdown (GFM: headings, lists, emphasis, links, inline code, fenced code blocks, tables), for the user's own messages and the agents' responses (README goal 1).
-- Raw HTML in message text is not rendered (shown as text), so message content cannot inject markup (README goal 2).
-- Session messages and peer messages render markdown too; tool and status rows stay as they are (user decision 2).
+as title implies, render markdown in chat window (both for my input and agent's responses)"
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: Chat messages render as markdown (GFM: headings, lists, emphasis, links, inline code, fenced code blocks, tables), for the user's own messages and the agents' responses.
+- 1.2: Raw HTML in message text is not rendered (shown as text), so message content cannot inject markup.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- No change to how messages are stored or sent by the backend (README).
-- No markdown editing toolbar or live preview in the composer (README).
-- No syntax highlighting of code blocks and no highlighter dependency (user decision 3; the editor epic adds one).
-- Noted, not doing now: memoizing `ChatEntry` so markdown is not re-parsed on every ChatLog render (brief web-libs-docs.md ideas); Virtuoso renders only visible rows.
+- No change to how messages are stored or sent by the backend.
+- No markdown editing toolbar or live preview in the composer.
 
-## Anti-goals
+## Design
 
-- Any path that renders raw HTML or a `javascript:`/`data:` URL from message text (XSS).
-- A remote image load triggered by message text.
-- A changed byte of the session frame contract (`src/chat/chatModel.ts:SESSION_FRAME`, agents-orchestrator `dispatcher/session_frame.py`).
-- An edit of `src/nomenclature.test.ts` or of any existing test to make the epic green.
-- Colour literals outside `src/theme.ts`, or a designRules violation.
-
-## Constraints
-
-- Python only except web frontends: this epic is TypeScript in agents-web only.
-- `src/layout/designRules.ts` rules for every non-test source: colours only in `theme.ts`, font weights 400 and 500, spacing on the 0.5 grid, no decorative Unicode.
-- `src/nomenclature.test.ts` FORBIDDEN `/c[l]uster|agent[-_]orchestrator/i` scans every tracked file, package-lock.json included.
-- Vitest runs in `node`; component tests opt into jsdom with `// @vitest-environment jsdom` and render under `<ThemeProvider theme={theme}>`; react-virtuoso is replaced by the render-all stand-in in ChatLog.test.tsx.
-- TDD: each task's tests are written and seen failing first.
-- No backward compatibility shims.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -131,6 +133,11 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 - Alternatives: no entry (the bundle cost and the image rule would be undocumented).
 - Why: house rule (MEMORY.md on every non-obvious decision); web-libs-docs.md A25 (react-markdown publishes no bundle size).
 
+## Open questions
+
+none
+- Q1: Markdown images in chat text (![alt](url)): render them as a new-tab link labelled with the alt text instead of loading the image (D4)? [recommended: yes: never render an img element, show a link to the URL labelled by the alt text, so message text cannot trigger remote loads]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -141,7 +148,7 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 | Dependency guard | ran: planning probe 2026-10-27, lockfile-only install into a scratch copy | zero FORBIDDEN matches across 99 new lockfile packages (D10) | none |
 | Prior retros | ran: `ticket.py retro --history` | see Research inputs | live apply/smoke seeds and port-forward proposals (no deploy in this epic) |
 
-## Research inputs
+### Research inputs
 
 - Recurring (paste-env-contents-into-the, matrix-read-receipts): a ruling not pinned by a test was found only in review; each task's Requirement lists every ruling with its named pin test. Acts: chat-markdown-renderer, chat-rows-render-markdown.
 - Recurring (cross-session-messaging-and, agents-matrix-connector-depl, paste-env-contents-into-the): late defects and false pass claims; each task's Steps require quoting the vitest summary line with counts and the head sha it ran on. Acts: chat-markdown-renderer, chat-rows-render-markdown.
@@ -152,7 +159,64 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 - Session frame parsing stays byte-exact; only the inner text renders (agents-orchestrator.md Epic 2). Acts: chat-rows-render-markdown.
 - Record the bundle-size delta in MEMORY.md (web-libs-docs.md A25). Acts: chat-markdown-renderer.
 
-## Decision coverage
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+## markdown-rendering-in-chat epic review notes
+
+- Whole-epic review (sonnet): clean; XSS paths (raw HTML, links, images, code), row kinds, overflow and frame parsing checked. One unnamed vitest failure on the reviewer's first full run (1 failed, 523 passed); two reruns and the orchestrator's own run green: treated as a load flake, cause not captured.
+- Scope audit (sonnet): complete, no gaps, no duplicates.
+- Full suite (orchestrator run): `Test Files  45 passed (45)`, `Tests  524 passed (524)`, lint clean (.logs/md-web-full.log).
+- Security researcher skipped: diff touches no secrets, RBAC, ingress, privilege, CI vars or image pins; XSS covered by the reviewer.
+
+### design.md: Summary
+
+The agents-web chat panel renders message text as GFM markdown: the user's own messages, the agents' answers, superleader session messages (inner text only) and peer messages. One new component, `ChatMarkdown` in `src/chat/Markdown.tsx`, wraps react-markdown 10.1.0 with remark-gfm 4.0.1 and remark-breaks 4.0.0 and maps every element to MUI components themed from `src/theme.ts`. Raw HTML stays text, links open in a new tab with `rel="noopener noreferrer"` through `defaultUrlTransform`, images never load, and code blocks are monospace with a language label and no highlighting. Tool and status rows, the session frame parser and the backend are untouched.
+
+### design.md: Intent and why
+
+User request (2026-10-27), verbatim: "render markdown in chat window (both for my input and agent's responses)". Agent answers arrive as markdown (code fences, lists, tables) and today show as raw text with `pre-wrap` (`src/chat/entries.tsx:32`), which makes long answers hard to read. The user types markdown too and wants it shown the same way.
+
+### design.md: Goals
+
+- Chat messages render as markdown (GFM: headings, lists, emphasis, links, inline code, fenced code blocks, tables), for the user's own messages and the agents' responses (README goal 1).
+- Raw HTML in message text is not rendered (shown as text), so message content cannot inject markup (README goal 2).
+- Session messages and peer messages render markdown too; tool and status rows stay as they are (user decision 2).
+
+### design.md: Non-goals
+
+- No change to how messages are stored or sent by the backend (README).
+- No markdown editing toolbar or live preview in the composer (README).
+- No syntax highlighting of code blocks and no highlighter dependency (user decision 3; the editor epic adds one).
+- Noted, not doing now: memoizing `ChatEntry` so markdown is not re-parsed on every ChatLog render (brief web-libs-docs.md ideas); Virtuoso renders only visible rows.
+
+### design.md: Anti-goals
+
+- Any path that renders raw HTML or a `javascript:`/`data:` URL from message text (XSS).
+- A remote image load triggered by message text.
+- A changed byte of the session frame contract (`src/chat/chatModel.ts:SESSION_FRAME`, agents-orchestrator `dispatcher/session_frame.py`).
+- An edit of `src/nomenclature.test.ts` or of any existing test to make the epic green.
+- Colour literals outside `src/theme.ts`, or a designRules violation.
+
+### design.md: Constraints
+
+- Python only except web frontends: this epic is TypeScript in agents-web only.
+- `src/layout/designRules.ts` rules for every non-test source: colours only in `theme.ts`, font weights 400 and 500, spacing on the 0.5 grid, no decorative Unicode.
+- `src/nomenclature.test.ts` FORBIDDEN `/c[l]uster|agent[-_]orchestrator/i` scans every tracked file, package-lock.json included.
+- Vitest runs in `node`; component tests opt into jsdom with `// @vitest-environment jsdom` and render under `<ThemeProvider theme={theme}>`; react-virtuoso is replaced by the render-all stand-in in ChatLog.test.tsx.
+- TDD: each task's tests are written and seen failing first.
+- No backward compatibility shims.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -170,7 +234,7 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 | D12 Targeted verifies, full-suite caveat | chat-markdown-renderer, chat-rows-render-markdown |
 | D13 MEMORY.md entry | chat-markdown-renderer |
 
-## Review focus
+### design.md: Review focus
 
 - XSS surface in `src/chat/Markdown.tsx`: no `skipHtml`, no rehype plugin, default `urlTransform`, no `<img>`, no `dangerouslySetInnerHTML`, no spread of `node`.
 - `src/chat/chatModel.ts` and `chatModel.test.ts` have no diff; ChatLog.test.tsx existing tests are unedited.
@@ -178,30 +242,21 @@ MEMORY.md gets a dated entry (2026-10-27, markdown-rendering-in-chat) recording 
 - package-lock.json: only the three dependencies and their transitive tree added; nomenclature guard green without an `ALLOWED` edit.
 - designRules on the new module: no colour literal, weights 400 and 500 only.
 
-## Builder check settlements (2026-10-27)
+### design.md: Builder check settlements (2026-10-27)
 
 - (my call) The blocker on file-download-in-file-browse is the user's stated implementation order (1. download, 2. markdown, 3. editor), not a code dependency. The epic starts after that epic merges; the implementer rebases on agents-web main (package.json, package-lock.json included) before the D10 dependency check.
 - D4 (images as new-tab links, never an `img` element) is a gate question; the plan builds the recommended answer unless the user changes it at the gate.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The exact `sx` values (spacing between blocks, list indent, code padding, table cell density) within the spacing grid and theme tokens.
 - Whether `src/theme.ts` gains a token for the code background or the existing `TOKENS.bgRaised` and `TOKENS.border` suffice.
 - How `Row` takes the D9 layout (an optional prop or a sibling component), as long as other kinds keep their markup.
 - How the code language label is extracted from the `pre` child (className of the `code` element), within D7.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - GFM footnote ids repeat across messages (`user-content-fn-1` in two messages); a footnote jump then lands on the first. Accepted; confirmed only if a reviewer sees it matter.
 - `defaultUrlTransform` returns `''` for unsafe URLs; the builder confirms whether React drops the empty `href` or the `a` mapping must omit it; ac5 of chat-markdown-renderer pins the outcome either way.
 - Vitest handles the ESM-only packages in node and jsdom without config (web-libs-docs.md A8, A24); confirmed by the first red run.
 - The bundle size cost is unknown until the first build (A25); recorded in MEMORY.md by chat-markdown-renderer.
-
-## Open questions
-
-none
-- Q1: Markdown images in chat text (![alt](url)): render them as a new-tab link labelled with the alt text instead of loading the image (D4)? [recommended: yes: never render an img element, show a link to the URL labelled by the alt text, so message text cannot trigger remote loads]
-
-## Irreversible operations in scope
-
-none
