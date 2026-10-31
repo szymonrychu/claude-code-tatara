@@ -1,54 +1,52 @@
-# Housekeeping rules, estimates and retrospectives design
+---
+title: "Housekeeping rules, estimates and retrospectives"
+repos: [workbench]
+created: 2026-10-24
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# Housekeeping rules, estimates and retrospectives
 
-Four flow improvements in one meta-mode epic over the workbench repo. A new plugin rule file carries the user's
-housekeeping rules into every AGENTS.md; the em dash rule is enforced by a tracked-file lint and by the
-protect-files and guard-bash hooks; `.scratchpad` and `.logs` in the main checkout become the only scratch and log
-locations. Every task gains storypoints plus expected minutes and tokens (the planner gives only the points; the tool
-fills the rest from calibration history). A Claude-only SubagentStart/SubagentStop hook records per-agent time and
-tokens under `.logs/agents`, `ticket.py task --status done` stamps the actuals, `ticket.py retro` plus a
-`retro-writer` agent write RETRO.md at close, and `ticket.py deltas` reports estimate against actual and feeds the
-next estimates.
+## What and why
 
-## Intent and why
+What: Housekeeping rules for every agent, storypoint, time and token estimates per task, a RETRO.md at epic close, and a deltas script that calibrates future estimates from actuals
+How: Rule files in the plugin rules block plus hooks and a lint for the mechanical ones; ticket.py gains estimate fields, a SubagentStop usage recorder under .logs, a retro subcommand and a deltas report; epic-run and start-development gain the retro step
+Why: Agents guess at scope, tamper with tests and estimate from reasoning alone; measured actuals per task make estimates and the flow itself improve with every epic
 
-The user wants agents that do not guess, do not tamper with tests, do not narrow scope and do not scatter files, and
-wants estimates that come from measurement instead of reasoning. Today a task has no size, no expected cost and no
-recorded cost, so nothing improves between epics. The user's words (U1-U4) are binding and quoted verbatim in the
-task requirements.
+Four improvements to the workbench development flow, requested together as one epic:
 
-## Goals
+1. Housekeeping rules, binding on every agent in every harness: the agent the user interacts with never writes code or builds anything (supervisor only, responsible and accountable for all work done by subagents); never edit, delete or xfail a test to make it pass unless the test itself is no longer accurate; implementing and reviewing subagents list all files, read them in one pass, only then make all edits, then run tests once; no backward compatibility unless the user explicitly asks; no em dash characters in any code, comment, commit, message or content of any kind; do not guess at any level, ask the user or the fable architect when unsure; always aim for the full scope, never cut corners or reduce scope; all scratchpad edits land under `.scratchpad` in the workbench root, the only scratchpad dir; all logs land in gitignored `.logs` in the workbench root.
+2. Planner improvements: each task also carries a complexity estimate in storypoints, an expected time and expected tokens.
+3. Retrospective at epic close: RETRO.md with a tasks table (task title in delivery order, post-delivery complexity in storypoints, delivery time start to finish in minutes, tokens used per task including implementation and review), a retro table (what went well; what went bad, could be improved) and a list of potential improvements in the code or things delivered differently than expected, including tech debt introduced anyway.
+4. Scripting support for deltas between complexity, delivery time and token usage per task, so estimates get more precise over time: the tasks table feeds future estimates, the retro table feeds improvement proposals for future work including workflow improvements; seamless for the agent, taking over most of the estimation from the agent's reasoning.
 
-The epic README Goals G1-G7 are the checkable goals; every task maps to one or more of them.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: A housekeeping rule set exists in the plugin rules, reaches AGENTS.md through the generated rules block, and states every rule of the request: supervisor-only orchestrator accountable for subagent work; no test editing, deletion or xfail to make a test pass unless the test is no longer accurate; list all files, read in one pass, edit all, run tests once; no backward compatibility unless asked; no em dash in any content; no guessing, ask the user or the fable architect; full scope always; `.scratchpad` as the only scratchpad dir; logs under gitignored `.logs`.
+- 1.2: G2: The em dash rule and the scratchpad and logs locations are enforced mechanically where that is possible: a lint over tracked content and a hook that refuses an em dash in a written file or a commit message; `.scratchpad` and `.logs` are gitignored and every skill, agent and script that names a scratch or log location names those two directories.
+- 1.3: G3: The implementer, reviewer and planner agent instructions carry the list, read once, edit all, test once discipline and the no test tampering rule.
+- 1.4: G4: Every task file carries a complexity estimate in storypoints, an expected time in minutes and expected tokens, written at planning time; the planner gives storypoints and the tool fills time and tokens from history, so the estimate costs the planner one number.
+- 1.5: G5: Actual delivery time (start to finish, minutes) and tokens (implementation plus review, all rounds) are captured per task without the orchestrator doing arithmetic or copying numbers, and a post-delivery storypoint measure is recorded per task.
+- 1.6: G6: Epic close produces RETRO.md with the tasks table (title in delivery order, post-delivery storypoints, delivery minutes, tokens), the retro table (went well; went bad or could be improved) and the list of improvements and things delivered differently than expected, tech debt included.
+- 1.7: G7: A script reports the deltas between estimated and actual storypoints, minutes and tokens per task and across done epics, and `new-task` defaults draw on those actuals, so estimates improve with every closed epic.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- The user's private global CLAUDE.md or any file outside this repository (C10).
-- Pricing tokens in currency (C10).
-- Backward compatibility shims for task files of done epics: they are read as they are, never rewritten (C10).
-- A new orchestration loop: epic-run changes only by the prompt marker, `--points-actual` and the retro step.
-- Mechanical enforcement of "the supervisor never writes code" or "do not guess": these stay rule text (see D2).
+- Changing the user's private global CLAUDE.md or any file outside this repository.
+- Cost in currency: tokens are counted, never priced.
+- Backward compatibility with task files of epics already in `done/`: they are read as they are, and the new fields are simply absent there.
+- A new orchestration loop: epic-run stays as it is except for the retro step and the prompt marker the capture needs.
 
-## Anti-goals
+## Design
 
-- A red main: every task keeps `mise run lint` and its suites green.
-- A hook that blocks or crashes a subagent stop because a transcript is missing or garbled.
-- A second frontmatter parser, commit helper, tracked-file walker, workbench-root resolver or transcript walker
-  (reuse brief, do-not-build).
-- Reviving the retired `ticket.py estimate`, `estimator.py` or the epic `## Time` line.
-
-## Constraints
-
-- Hooks entry scripts are Python 3.9 safe (`from __future__ import annotations`, no 3.10+ syntax, no tomllib).
-- start-development/SKILL.md stays at most 150 lines; AGENTS.md stays under 24000 bytes and in sync with
-  `mise run harness-setup` (lint:harness).
-- Templates and agent files are ASCII only (test_repo_hygiene, test_templates).
-- Retirement pins hold: no subcommand or key named `estimate`, no file named `*estimator*`, KEPT_MODULES is exact.
-- Done epics are read-only for task edits; only RETRO.md (like record.md) is written after `move done`.
-- This epic's own tasks are planned before `--points` exists, so each carries `Estimate: <n> points` in its Notes.
-  Its agent runs predate the usage hook (the plugin loads from the main checkout only after the merge); their
-  usage records are written from the marked transcripts by the backfill (D16).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -187,6 +185,12 @@ starts with the `[wb <epic>/<task>/<role>]` marker and writes the missing `.logs
 summariser, never overwriting a hook record unless `--refresh`. `ticket.py task --status done` backfills before
 stamping when the task has no record; `ticket.py actuals <epic> --backfill [--transcripts <dir>]` runs it by hand.
 
+## Open questions
+
+- Q1: 'Run tests once' (U1) is read together with TDD as: list every file, read them all in one pass, make all edits for the step, then run the targeted verify once per red step and once per green step (never an edit-run-edit-run dribble). Accept this reading? [answer: yes, approved at the gate 2026-10-24: one targeted verify run per red step and per green step]
+- Q2: Seed table for expected minutes and tokens until history has 3 samples per points bucket (and 5 overall): 1pt 11 min 0.75M, 2pt 23 min 1.5M, 3pt 34 min 2.25M, 5pt 57 min 3.75M, 8pt 91 min 6.0M, 13pt 147 min 9.75M tokens, derived from this machine's implementer and reviewer transcripts (median task taken as 3 points, scaled linearly). Accept? [answer: yes, approved at the gate 2026-10-24: the seed table stands until history has 3 samples per bucket]
+- Q3: This epic's own runs happen before the usage hook loads from main, so its actuals would be 'not recorded'. Add one small task: the epic-run prompts carry the [wb ...] marker from now on, and agent-usage-lib gains a backfill that scans the harness's subagent transcript dir for marked prompts and writes the missing .logs/agents records, so stamp-actuals and retro work for this epic too [answer: yes, approved at the gate 2026-10-24: add the backfill task]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -196,7 +200,7 @@ stamping when the task has no record; `ticket.py actuals <epic> --backfill [--tr
 | research-code-external | skipped: internal tooling over our own ticket files, no external analogue worth a fork | - | - |
 | research-papers | skipped: no algorithmic core beyond a restored least-squares fit | - | - |
 
-## Research inputs
+### Research inputs
 
 - Transcripts repeat a message.id with identical usage (on-disk check, reuse brief fix-as-ac) - agent-usage-lib.
 - SubagentStop refires after a commit-guard block and every fix round (reuse brief) - agent-usage-lib, agent-usage-hook.
@@ -213,7 +217,73 @@ stamping when the task has no record; `ticket.py actuals <epic> --backfill [--tr
 - Hooks are 3.9 safe (test_py39_safe.py) - agent-usage-hook.
 - Lint cannot validate numbers (values load as strings) - estimate-fields.
 
-## Decision coverage
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Whole-diff review (one sonnet reviewer, checklist): no critical or high findings; no missing, extra or wrong spec item against G1-G7 and D1-D16. Two medium quality findings, both confirmed and placed as task review-seams: (1) the records-or-backfill sequence written twice (task_cmd._actuals, retro._fill_from_records) plus deltas._logs rebuilding the logs path by hand; (2) the run marker defined in epic-run prose and in agent_usage.MARKER with no test tying them. Seams checked consistent: recorder fields vs aggregate/backfill, stamped keys vs retro/deltas, template H2s vs retro, commit guard probes (-m, -C, cd &&, --amend, -c, -F -), edit guard allows removals, recorder fail-open and idempotent, calibration fallbacks, rule texts vs tdd.md.
+Scope audit (sonnet): every goal G1-G7 built, no non-goal crossed, no duplicate helpers. Goals met only in text, as designed (rules 1, 3, 6, 7 are prose; the marker is a prompt convention with actuals --backfill as the fallback).
+Dropped: none. Cannot verify until /reload-plugins on main: live SubagentStart/Stop payload shapes.
+
+### design.md: Summary
+
+Four flow improvements in one meta-mode epic over the workbench repo. A new plugin rule file carries the user's
+housekeeping rules into every AGENTS.md; the em dash rule is enforced by a tracked-file lint and by the
+protect-files and guard-bash hooks; `.scratchpad` and `.logs` in the main checkout become the only scratch and log
+locations. Every task gains storypoints plus expected minutes and tokens (the planner gives only the points; the tool
+fills the rest from calibration history). A Claude-only SubagentStart/SubagentStop hook records per-agent time and
+tokens under `.logs/agents`, `ticket.py task --status done` stamps the actuals, `ticket.py retro` plus a
+`retro-writer` agent write RETRO.md at close, and `ticket.py deltas` reports estimate against actual and feeds the
+next estimates.
+
+### design.md: Intent and why
+
+The user wants agents that do not guess, do not tamper with tests, do not narrow scope and do not scatter files, and
+wants estimates that come from measurement instead of reasoning. Today a task has no size, no expected cost and no
+recorded cost, so nothing improves between epics. The user's words (U1-U4) are binding and quoted verbatim in the
+task requirements.
+
+### design.md: Goals
+
+The epic README Goals G1-G7 are the checkable goals; every task maps to one or more of them.
+
+### design.md: Non-goals
+
+- The user's private global CLAUDE.md or any file outside this repository (C10).
+- Pricing tokens in currency (C10).
+- Backward compatibility shims for task files of done epics: they are read as they are, never rewritten (C10).
+- A new orchestration loop: epic-run changes only by the prompt marker, `--points-actual` and the retro step.
+- Mechanical enforcement of "the supervisor never writes code" or "do not guess": these stay rule text (see D2).
+
+### design.md: Anti-goals
+
+- A red main: every task keeps `mise run lint` and its suites green.
+- A hook that blocks or crashes a subagent stop because a transcript is missing or garbled.
+- A second frontmatter parser, commit helper, tracked-file walker, workbench-root resolver or transcript walker
+  (reuse brief, do-not-build).
+- Reviving the retired `ticket.py estimate`, `estimator.py` or the epic `## Time` line.
+
+### design.md: Constraints
+
+- Hooks entry scripts are Python 3.9 safe (`from __future__ import annotations`, no 3.10+ syntax, no tomllib).
+- start-development/SKILL.md stays at most 150 lines; AGENTS.md stays under 24000 bytes and in sync with
+  `mise run harness-setup` (lint:harness).
+- Templates and agent files are ASCII only (test_repo_hygiene, test_templates).
+- Retirement pins hold: no subcommand or key named `estimate`, no file named `*estimator*`, KEPT_MODULES is exact.
+- Done epics are read-only for task edits; only RETRO.md (like record.md) is written after `move done`.
+- This epic's own tasks are planned before `--points` exists, so each carries `Estimate: <n> points` in its Notes.
+  Its agent runs predate the usage hook (the plugin loads from the main checkout only after the merge); their
+  usage records are written from the marked transcripts by the backfill (D16).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -234,7 +304,7 @@ stamping when the task has no record; `ticket.py actuals <epic> --backfill [--tr
 | D15 Seed table | calibration-lib |
 | D16 Actuals backfill | actuals-backfill |
 
-## Review focus
+### design.md: Review focus
 
 - agent-usage-lib and agent-usage-hook: once-per-message.id sums, idempotent overwrite, fail-open on every error,
   main-checkout `.logs` from inside a worktree.
@@ -243,13 +313,13 @@ stamping when the task has no record; `ticket.py actuals <epic> --backfill [--tr
 - estimate-fields and stamp-actuals: values load as strings; numbers are validated, never trusted.
 - retro-command: a rerun regenerates only the generated parts and keeps the retro-writer's sections.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal helper names and module layout inside the named files, within the interfaces in each task.
 - The exact wording of rule and agent text, as long as every U1 rule is stated and the pinned phrases hold.
 - Table formatting of RETRO.md and the deltas report, within the named columns.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Whether `agent-<id>.meta.json` exists at the first SubagentStop is unknown; the role falls back to the marker, so
   nothing depends on it (probe in agent-usage-hook's tests with and without meta.json).
@@ -266,13 +336,3 @@ stamping when the task has no record; `ticket.py actuals <epic> --backfill [--tr
 - Builder check (fact, probed 2026-10-24): `git ls-files | xargs grep -l U+2014` finds exactly one tracked file,
   scripts/tests/test_agents_md.py:107 (a literal in a banned-character list), so em-dash-lint goes green by turning
   that literal into an escape; no other rewrite is needed.
-
-## Open questions
-
-- Q1: 'Run tests once' (U1) is read together with TDD as: list every file, read them all in one pass, make all edits for the step, then run the targeted verify once per red step and once per green step (never an edit-run-edit-run dribble). Accept this reading? [answer: yes, approved at the gate 2026-10-24: one targeted verify run per red step and per green step]
-- Q2: Seed table for expected minutes and tokens until history has 3 samples per points bucket (and 5 overall): 1pt 11 min 0.75M, 2pt 23 min 1.5M, 3pt 34 min 2.25M, 5pt 57 min 3.75M, 8pt 91 min 6.0M, 13pt 147 min 9.75M tokens, derived from this machine's implementer and reviewer transcripts (median task taken as 3 points, scaled linearly). Accept? [answer: yes, approved at the gate 2026-10-24: the seed table stands until history has 3 samples per bucket]
-- Q3: This epic's own runs happen before the usage hook loads from main, so its actuals would be 'not recorded'. Add one small task: the epic-run prompts carry the [wb ...] marker from now on, and agent-usage-lib gains a backfill that scans the harness's subagent transcript dir for marked prompts and writes the missing .logs/agents records, so stamp-actuals and retro work for this epic too [answer: yes, approved at the gate 2026-10-24: add the backfill task]
-
-## Irreversible operations in scope
-
-none
