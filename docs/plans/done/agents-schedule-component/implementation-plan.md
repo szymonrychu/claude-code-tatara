@@ -1,27 +1,23 @@
----
-title: create agents-schedule repo
-status: done
-repo: superrepo
-value: "the schedule service has its own public repo with CI secrets, ready for its code, image and chart"
-files: [.gitmodules, code/agents-schedule, AGENTS.md]
-verify: "git config --file .gitmodules --get submodule.agents-schedule.branch && cd code/agents-schedule && pytest tests/test_smoke.py -q && ruff check ."
-depends_on: []
-model: ""
-review: full
-verified_head: c88a867
-points: 1
-expected_minutes: 5
-expected_tokens: 750000
-points_actual: 1
-actual_minutes: 7
-actual_tokens: 329372
-actual_roles: "impl 6, review 1"
-actual_role_tokens: "impl 249458, review 79914"
----
+# agents-schedule component implementation plan
 
-# create agents-schedule repo
+## Agreed rung
 
-## Requirement
+Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks.
+
+## Approach
+
+Migrated from the epic format: one step per task file, in dependency order, each with its status, files, verify, verified head and every body section.
+
+## Chunk 1: migrated tasks (model: sonnet)
+
+### S1: create agents-schedule repo
+
+- Status: done
+- Files: `.gitmodules`, `code/agents-schedule`, `AGENTS.md`
+- Verify: `git config --file .gitmodules --get submodule.agents-schedule.branch && cd code/agents-schedule && pytest tests/test_smoke.py -q && ruff check .`
+- Verified head: c88a867
+
+#### Requirement
 
 Create the component `agents-schedule` (Python) with `workbench:component-add`. Runs in the superrepo (meta mode). Outward-facing: it creates the public GitHub repo `szymonrychu/agents-schedule` (approved at the gate by name), pushes its main and sets two repo secrets. Serves agents-schedule-microservice approvals A1 and A7 (design D1 there).
 
@@ -32,7 +28,7 @@ Create the component `agents-schedule` (Python) with `workbench:component-add`. 
 
 Do not touch any other component.
 
-## Acceptance conditions
+#### Acceptance conditions
 
 - AC1: the public GitHub repo szymonrychu/agents-schedule exists and its main is the local main [evidence: command:gh repo view szymonrychu/agents-schedule --json visibility -q .visibility | grep -qx PUBLIC && cd code/agents-schedule && git fetch -q origin && test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"]
 - AC2: code/agents-schedule is a submodule of the workbench tracking main [evidence: command:git config --file .gitmodules --get submodule.agents-schedule.branch | grep -qx main && git ls-files --stage code/agents-schedule | grep -q '^160000']
@@ -42,22 +38,22 @@ Do not touch any other component.
 - AC6: AGENTS.md lists agents-schedule in the components table [evidence: command:grep -q '| agents-schedule |' AGENTS.md]
 - AC7: no other component changed and no repo other than szymonrychu/agents-schedule was created [evidence: judgement:the task diff and the gh calls reviewed against the requirement]
 
-## Files
+#### Files
 
 - `.gitmodules`
 - `code/agents-schedule`
 - `AGENTS.md`
 
-## Interfaces
+#### Interfaces
 
 - `code/agents-schedule`: submodule, branch main, origin `https://github.com/szymonrychu/agents-schedule` (public). agents-schedule-microservice needs it to exist before its run starts (`ticket.py:_integration_plan`).
 - Repo secrets `HARBOR_USERNAME`, `HARBOR_PASSWORD`, read by the CI workflow agents-schedule-microservice task `dockerfile-and-ci` adds.
 
-## Expected outcome
+#### Expected outcome
 
 `code/agents-schedule` is a submodule with a public GitHub origin and CI secrets; its README and MEMORY say what it is; the superrepo AGENTS.md lists it.
 
-## Steps
+#### Steps
 
 - `git ls-remote https://github.com/szymonrychu/agents-schedule` fails before the task (repo absent).
 - Run the component-add command of the requirement; AC1 and AC2 commands exit 0.
@@ -65,7 +61,7 @@ Do not touch any other component.
 - `gh secret set HARBOR_USERNAME -R szymonrychu/agents-schedule` and `HARBOR_PASSWORD` (values on stdin); AC3 exits 0.
 - Commit `.gitmodules`, the gitlink and AGENTS.md on this task's branch.
 
-## Notes
+#### Notes
 
 - Same shape as agents-web-component `create-agents-web-repo` and the agents-webhook D15 step; all new components are public like agent-orchestrator (probed: `gh repo view szymonrychu/agent-orchestrator` is PUBLIC).
 - `mise run component:add` refuses with staged changes in the workbench; start from a clean tree.
@@ -73,3 +69,15 @@ Do not touch any other component.
 - Never echo secret values.
 
 - 2026-10-25 done
+
+## Files to delete
+
+none recorded in the epic format
+
+## Final verify
+
+`mise run test && mise run lint`
+
+## After merge
+
+none
