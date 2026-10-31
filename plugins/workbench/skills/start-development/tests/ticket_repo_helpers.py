@@ -9,12 +9,13 @@ SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
 sys.path.insert(0, str(SCRIPT.parent))
 import ticket  # noqa: E402
 
-AC = "- AC1: it works [evidence: test:tests/test_x.py::test_works]"
+IMPL = "# Big plan implementation plan\n\n## Agreed rung\n\nRung 3.\n"
+RETRO = "# Big plan retro\n\n## Review\n\nPassed.\n"
 
 
-def cli(*args):
+def cli(*args, cwd=None):
     return subprocess.run(
-        [sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, text=True
+        [sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, text=True, cwd=cwd
     )
 
 
@@ -33,60 +34,13 @@ def init_repo(path: Path) -> Path:
     return path
 
 
-def mk_epic(root, title="Big epic", blockers=None):
-    args = ["new-epic", "--root", root, "--title", title, "--force"]
-    if blockers:
-        args += ["--blockers", blockers]
-    r = cli(*args)
-    assert r.returncode == 0, r.stderr
-    return ticket.slug(title)
-
-
-def mk_task(root, epic, title, files=None, extra=()):
-    rf, af = root / f"{title}.req", root / f"{title}.ac"
-    rf.write_text("Do the thing.")
-    af.write_text(AC)
-    r = cli(
-        "new-task",
-        "--root",
-        root,
-        "--epic",
-        epic,
-        "--title",
-        title,
-        "--repo",
-        "proj",
-        "--value",
-        "why",
-        "--files",
-        files or f"{title}.py",
-        "--verify",
-        "pytest -q tests/test_x.py",
-        "--requirement-file",
-        rf,
-        "--ac-file",
-        af,
-        "--points",
-        "3",
-        *extra,
-    )
-    rf.unlink()
-    af.unlink()
-    assert r.returncode == 0, r.stderr
-    p = Path(r.stdout.strip().splitlines()[-1])
-    text = p.read_text()
-    start, end = text.index("## Steps"), text.index("## Notes")
-    p.write_text(text[:start] + "## Steps\n\n1. test first\n\n" + text[end:])
-    return p
-
-
-def commit_all(repo, msg="tickets"):
+def commit_all(repo, msg="plans"):
     git(repo, "add", "-A", "--", "docs")
     git(repo, "commit", "-m", msg, "--allow-empty")
 
 
-def epic_dir(root, ep):
-    return ticket.find_epic(ep, root)
+def plan_dir(root, plan):
+    return ticket.find_plan(plan, root)
 
 
 def meta(path: Path) -> dict:
@@ -99,8 +53,23 @@ def set_meta(path: Path, **kw) -> None:
     path.write_text(ticket.dump(doc))
 
 
-def task_path(root, ep, task):
-    return epic_dir(root, ep) / "tasks" / f"{task}.md"
+def mk_plan(root, title="Big plan", rung="3", impl=True, repos=None):
+    """A todo plan through `new`; `rung` set and implementation-plan.md written when asked, the
+    way the plan-writer leaves it after the gate. Committed when root sits in a git repo."""
+    args = ["new", "--root", root, "--title", title, "--force"]
+    if repos:
+        args += ["--repos", repos]
+    r = cli(*args)
+    assert r.returncode == 0, r.stderr
+    plan = ticket.slug(title)
+    d = root / "todo" / plan
+    if rung:
+        set_meta(d / "plan.md", rung=rung)
+    if impl:
+        (d / "implementation-plan.md").write_text(IMPL)
+    if ticket._in_git(root):
+        commit_all(root.parent.parent, f"docs(plan): {plan} implementation plan")
+    return plan
 
 
 def last_subject(repo):
@@ -111,46 +80,43 @@ def branches(repo):
     return git(repo, "branch", "--format=%(refname:short)").stdout.split()
 
 
-def integration_tree(repo, ep) -> Path:
-    """The meta-mode integration tree the claim creates for the epic."""
-    return repo / ".claude" / "worktrees" / ep
+def plan_tree(repo, plan) -> Path:
+    """The meta-mode plan tree the claim creates."""
+    return repo / ".claude" / "worktrees" / plan
 
 
-def deliver(repo, root, ep, task):
-    """Commit the task's work on <epic> in the integration tree, as the implementer does, then
-    record it done with its verified head (the ticket change lands on main)."""
-    wt = integration_tree(repo, ep)
-    (wt / f"{task}.py").write_text(f"{task} = 1\n")
-    git(wt, "add", f"{task}.py")
-    git(wt, "commit", "-m", f"feat: {task}")
-    head = git(wt, "rev-parse", "HEAD").stdout.strip()
-    set_meta(task_path(root, ep, task), status="done", verified_head=head)
-    commit_all(repo, f"deliver {task}")
+def started(repo, root, title="Big plan"):
+    plan = mk_plan(root, title)
+    r = cli("move", plan, "in-progress", "--root", root, "--owner", "tess")
+    assert r.returncode == 0, r.stderr
+    assert plan_tree(repo, plan).is_dir()
+    return plan
+
+
+def deliver(repo, plan, name="alpha"):
+    """Commit a step's work on <plan> in the plan tree, as the implementer does."""
+    wt = plan_tree(repo, plan)
+    (wt / f"{name}.py").write_text(f"{name} = 1\n")
+    git(wt, "add", f"{name}.py")
+    git(wt, "commit", "-m", f"feat: {name}")
     return wt
 
 
-def started(repo, root, tasks=("alpha", "beta"), title="Big epic"):
-    ep = mk_epic(root, title)
-    for t in tasks:
-        mk_task(root, ep, t)
-    commit_all(repo)
-    r = cli("move", ep, "in-progress", "--root", root, "--owner", "tess")
-    assert r.returncode == 0, r.stderr
-    assert integration_tree(repo, ep).is_dir()
-    return ep
+def write_retro(root, plan):
+    """retro.md as the reviewer leaves it on a pass: written, not committed."""
+    p = plan_dir(root, plan) / "retro.md"
+    p.write_text(RETRO)
+    return p
 
 
-def reviewed(repo, root, tasks=("alpha", "beta"), merge=True, verdict="pass"):
-    ep = started(repo, root, tasks)
-    for t in tasks:
-        deliver(repo, root, ep, t)
-    if merge:  # the epic close: the integration branch lands on main
-        git(repo, "merge", "--no-ff", "--no-edit", ep)
-    r = cli("stage", ep, "review", "--root", root)
-    assert r.returncode == 0, r.stderr
-    notes = root.parent / "notes.txt"
-    notes.write_text("All good.")
-    r = cli("review", ep, "--verdict", verdict, "--notes-file", notes, "--root", root)
-    assert r.returncode == 0, r.stderr
-    notes.unlink()
-    return ep
+def reviewed(repo, root, steps=("alpha", "beta"), merge=True, retro=True):
+    """An in-progress plan with its steps delivered, optionally merged into main the way a
+    component MR lands it, and retro.md written."""
+    plan = started(repo, root)
+    for s in steps:
+        deliver(repo, plan, s)
+    if merge:
+        git(repo, "merge", "--no-ff", "--no-edit", plan)
+    if retro:
+        write_retro(root, plan)
+    return plan

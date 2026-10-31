@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""ticket.py: file-based epic and task tickets under docs/plans/{todo,in-progress,done}.
+"""ticket.py: file-based plans under docs/plans/{todo,in-progress,done}/<plan>/.
 
-Core: layout, slugs, restricted frontmatter, new-epic, new-task, path. Dedup: check, index,
-existing. Run: tasks, worktrees. Epic state: move, stage, review, rename, lint, reap.
+A plan dir holds plan.md (what and why, scope ladder, agreed scope), implementation-plan.md (the
+agreed rung's chunks and steps), retro.md (written by the reviewer when the review passes) and
+close.json (written by close). A plan's slug is its branch and worktree name.
+Subcommands: slug, new, check, path, rename, move, worktrees, reap, plus ticket_cmds/ modules.
 Every mutating subcommand calls require_main_checkout() first and commit_ticket_change() last.
 Worktree cleanup removes only merged, clean trees, through worktree-merge's cleanup().
 """
@@ -27,34 +29,20 @@ from common import slugify  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 
-import agent_usage  # noqa: E402
-import calibration  # noqa: E402
 import workbench  # noqa: E402
 
 PHASES = ("todo", "in-progress", "done")
-TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
-EPIC_STAGES = ("build", "review")
 SLUG_MAX = 28
-WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
 NEAR_DUP = 0.6
-# the old `<epic>--<task>` separator, used by the collision guard, worktree lookup and the sweep
-LEGACY_SEP = "--"
-EXIT_NEAR_DUPLICATE = 3  # new-epic stopped on a live near-duplicate epic; --force overrides
+EXIT_NEAR_DUPLICATE = 3  # new stopped on a live near-duplicate plan; --force overrides
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
-AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")
-AC_LINE = re.compile(r"^- (\S+?): (.+?) \[evidence: ([a-z-]+)(?::\s*(.*?))?\]$")
-REQUIRED_SECTIONS = ("Requirement", "Acceptance conditions", "Files", "Steps")
-POINT_KEYS = ("points", "points_actual")
-COUNT_KEYS = ("expected_minutes", "expected_tokens", "actual_minutes", "actual_tokens")
-ROLE_KEYS = ("actual_roles", "actual_role_tokens")
-ROLES = ("impl", "review")
-ROLE_PAIR = re.compile(r"(impl|review) ([0-9]+)")
+PLAN_FILE = "plan.md"
+OLD_FORMAT_FILE = "README.md"
 PATH_KINDS = {
-    "readme": "README.md",
-    "design": "design.md",
-    "record": "record.md",
-    "retro": "RETRO.md",
-    "tasks": "tasks",
+    "plan": PLAN_FILE,
+    "implementation": "implementation-plan.md",
+    "retro": "retro.md",
+    "close": "close.json",
 }
 
 
@@ -62,74 +50,8 @@ class TicketError(Exception):
     pass
 
 
-# ---------------------------------------------------------------- slugs and names
-
-
 def slug(title: str) -> str:
     return slugify(title, SLUG_MAX)
-
-
-def worktree_name(epic: str, task: str) -> str:
-    name = f"{epic}-{task}"
-    if len(name) > WORKTREE_MAX:
-        raise TicketError(f"worktree name {name!r} is {len(name)} characters, max {WORKTREE_MAX}")
-    return name
-
-
-# ---------------------------------------------------------------- branch-name collisions
-
-
-def _disk_names(root: Path) -> dict[str, str]:
-    """Names taken on disk -> what holds them: local branches of the source checkouts and
-    directories under <configdir>/worktrees/. Empty outside a git checkout."""
-    try:
-        wb = _workbench(root)
-        found: dict[str, str] = {}
-        code = wb / "code"
-        srcs = [wb] + (sorted(p for p in code.iterdir() if p.is_dir()) if code.is_dir() else [])
-        for src in srcs:
-            r = _git(src, "for-each-ref", "--format=%(refname:short)", "refs/heads")
-            for b in r.stdout.split() if r.returncode == 0 else []:
-                found.setdefault(b, f"branch {b}")
-        wt_dir = workbench.worktrees_dir(wb)
-        for d in sorted(p for p in wt_dir.iterdir() if p.is_dir()) if wt_dir.is_dir() else []:
-            found[d.name] = f"tree {d.name}"
-        return found
-    except Exception:  # not in a git checkout: nothing on disk to collide with
-        return {}
-
-
-def name_clashes(
-    root: Path, wanted: list[tuple[str, str | None, str | None]], own_epic: str | None = None
-) -> list[str]:
-    """Failure lines for names that would clash. `wanted` is (name, epic, task): task None means
-    the name is an epic slug. Tickets of `own_epic` are skipped (a rename frees its old names)."""
-    taken = {n: v for n, v in ticket_names(root).items() if own_epic is None or v[0] != own_epic}
-    disk = _disk_names(root)
-    out: list[str] = []
-    for name, epic, task in wanted:
-        what = f"epic slug {name}" if task is None else f"task branch {name}"
-        hit = taken.get(name)
-        if hit is not None:
-            other = hit[1]
-            if task is None and other is None:
-                continue  # an equal epic slug is reported as "already exists"
-            if task is not None and other is not None and hit[0] == epic:
-                continue  # the same task slug in the same epic is reported as "already exists"
-            if other is None:
-                out.append(f"{what} collides with epic slug {name}")
-            else:
-                out.append(f"{what} collides with the branch of task {other} in epic {hit[0]}")
-        elif name in disk:
-            out.append(f"{what} collides with existing {disk[name]}")
-        if task is not None:
-            legacy = LEGACY_SEP.join((epic or "", task))
-            if legacy in disk:
-                out.append(
-                    f"task branch {name} would be swept with legacy {disk[legacy]} "
-                    f"(old {legacy} name)"
-                )
-    return out
 
 
 # ---------------------------------------------------------------- frontmatter
@@ -241,7 +163,19 @@ def dump(doc: Doc) -> str:
     return "\n".join(out) + "\n" + doc.body
 
 
+def read_doc(path: Path) -> Doc:
+    return load(path.read_text(), path)
+
+
 # ---------------------------------------------------------------- layout
+
+
+class Plan(NamedTuple):
+    slug: str
+    phase: str
+    dir: Path
+    meta: dict
+    body: str
 
 
 def default_root() -> Path:
@@ -250,30 +184,71 @@ def default_root() -> Path:
     return top / "docs" / "plans"
 
 
-def find_epic(slug_: str, root: Path) -> Path | None:
+def plan_dirs(root: Path) -> list[Path]:
+    """Every plan dir under root, phase then slug order; an old epic dir (README.md and no
+    plan.md) or a dir without plan.md is refused, so no command reads a half-migrated tree."""
+    out = []
     for phase in PHASES:
-        d = root / phase / slug_
+        base = Path(root) / phase
+        for d in sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []:
+            if not (d / PLAN_FILE).is_file():
+                if (d / OLD_FORMAT_FILE).exists():
+                    raise TicketError(
+                        f"old epic format under {d.resolve()}; run ticket.py migrate --all"
+                    )
+                raise TicketError(f"no {PLAN_FILE} under {d.resolve()}")
+            out.append(d)
+    return out
+
+
+def read_plan(plan_dir: Path) -> Plan:
+    doc = read_doc(plan_dir / PLAN_FILE)
+    return Plan(plan_dir.name, plan_dir.parent.name, plan_dir, doc.meta, doc.body)
+
+
+def scan(root: Path) -> list[Plan]:
+    """Every plan under root, all phases."""
+    return [read_plan(d) for d in plan_dirs(root)]
+
+
+def find_plan(slug_: str, root: Path) -> Path | None:
+    for phase in PHASES:
+        d = Path(root) / phase / slug_
         if d.is_dir():
             return d
     return None
 
 
-def resolve_epic(arg: str, root: Path) -> Path:
-    """An epic slug or an epic directory path, to the epic directory."""
+def resolve_plan(arg: str, root: Path) -> Path:
+    """A plan slug or a plan directory path, to the plan directory. Every plan dir under root
+    is validated first (see plan_dirs)."""
+    plan_dirs(root)
     p = Path(arg)
     if (p.parent != Path(".") or arg.startswith(".")) and p.is_dir():
         resolved = p.resolve()
-        if not resolved.is_relative_to(root.resolve()):
-            raise TicketError(f"epic path {arg!r} is outside the plans root {root}")
+        if not resolved.is_relative_to(Path(root).resolve()):
+            raise TicketError(f"plan path {arg!r} is outside the plans root {root}")
         return resolved
-    found = find_epic(arg, root)
+    found = find_plan(arg, root)
     if found is None:
-        raise TicketError(f"unknown epic {arg!r} under {root}")
+        raise TicketError(f"unknown plan {arg!r} under {root}")
     return found.resolve()
 
 
-def _phase_of(epic_dir: Path) -> str:
-    return epic_dir.parent.name
+def phase_of(plan_dir: Path) -> str:
+    return plan_dir.parent.name
+
+
+def update_plan_meta(plan_dir: Path, **updates) -> Path:
+    """Rewrite plan.md's frontmatter with `updates`; the body is untouched."""
+    p = plan_dir / PLAN_FILE
+    doc = read_doc(p)
+    meta = dict(doc.meta)
+    meta.update(updates)
+    text = dump(Doc(meta, doc.body))
+    if text != p.read_text():
+        p.write_text(text)
+    return p
 
 
 # ---------------------------------------------------------------- git guard and commit
@@ -290,6 +265,10 @@ def _existing(p: Path) -> Path:
     return p
 
 
+def _in_git(root: Path) -> bool:
+    return _git(_existing(Path(root)), "rev-parse", "--git-dir").returncode == 0
+
+
 def require_main_checkout(root: Path) -> None:
     cwd = _existing(Path(root))
     g = _git(cwd, "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir")
@@ -300,10 +279,10 @@ def require_main_checkout(root: Path) -> None:
         raise TicketError("run in the main checkout, not a linked worktree")
 
 
-def commit_ticket_change(epic: str, event: str, paths: list[Path], root: Path) -> None:
-    """Commit exactly `paths` (under root) as 'chore(ticket): <epic> <event>'; no-op outside git."""
+def commit_ticket_change(plan: str, event: str, paths: list[Path], root: Path) -> None:
+    """Commit exactly `paths` (under root) as 'chore(ticket): <plan> <event>'; no-op outside git."""
     cwd = _existing(Path(root))
-    if _git(cwd, "rev-parse", "--git-dir").returncode != 0:
+    if not _in_git(root):
         return
     rel = [str(Path(p).resolve()) for p in paths]
     root_r = Path(root).resolve()
@@ -315,16 +294,267 @@ def commit_ticket_change(epic: str, event: str, paths: list[Path], root: Path) -
     add = _git(cwd, "add", "--", *present) if present else None
     if add is not None and add.returncode != 0:
         raise TicketError(f"git add failed: {add.stderr.strip()}")
-    done = _git(cwd, "commit", "-m", f"chore(ticket): {epic} {event}", "--", *rel)
+    done = _git(cwd, "commit", "-m", f"chore(ticket): {plan} {event}", "--", *rel)
     if done.returncode != 0:
         raise TicketError(f"git commit failed: {(done.stderr or done.stdout).strip()}")
 
 
-# ---------------------------------------------------------------- subcommands
+def _git_mv(plan_dir: Path, phase: str, root: Path, name: str | None = None) -> Path:
+    """Move a plan directory to <root>/<phase>/<name> with `git mv` (plain rename outside git)."""
+    dest = Path(root).resolve() / phase / (name or plan_dir.name)
+    if dest.exists():
+        raise TicketError(f"{dest} already exists")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not _in_git(root):
+        plan_dir.rename(dest)
+        return dest
+    r = _git(_existing(Path(root)), "mv", str(plan_dir), str(dest))
+    if r.returncode != 0:
+        raise TicketError(f"git mv failed: {r.stderr.strip()}")
+    return dest
+
+
+# ---------------------------------------------------------------- names and duplicates
+
+
+def _wt_module():
+    """worktree-create's module: the one implementation of worktree creation."""
+    p = Path(__file__).resolve().parents[2] / "worktree-create" / "scripts" / "create.py"
+    spec = importlib.util.spec_from_file_location("worktree_create", p)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_WT = None
+
+
+def _mod():
+    global _WT
+    if _WT is None:
+        _WT = _wt_module()
+    return _WT
+
+
+def _workbench(root: Path) -> Path:
+    return _mod().workbench_root(_existing(Path(root)))
+
+
+def disk_names(root: Path) -> dict[str, str]:
+    """Names taken on disk -> what holds them: local branches of the source checkouts (the
+    superrepo and every code/<repo>) and directories under <configdir>/worktrees/. Empty
+    outside a git checkout."""
+    if not _in_git(root):
+        return {}
+    wb = _workbench(root)
+    found: dict[str, str] = {}
+    code = wb / "code"
+    srcs = [wb] + (sorted(p for p in code.iterdir() if p.is_dir()) if code.is_dir() else [])
+    for src in srcs:
+        r = _git(src, "for-each-ref", "--format=%(refname:short)", "refs/heads")
+        for b in r.stdout.split() if r.returncode == 0 else []:
+            found.setdefault(b, f"branch {b}")
+    wt_dir = workbench.worktrees_dir(wb)
+    for d in sorted(p for p in wt_dir.iterdir() if p.is_dir()) if wt_dir.is_dir() else []:
+        found.setdefault(d.name, f"tree {d.name}")
+    return found
+
+
+def name_clashes(root: Path, name: str, plans: list[Plan], own: str | None = None) -> list[str]:
+    """Failure lines for a plan slug that is taken: by another plan in any phase, or by a
+    branch or worktree on disk (the plan's branch and tree are named after its slug)."""
+    for p in plans:
+        if p.slug == name and p.slug != own:
+            return [f"plan slug {name!r} already exists in {p.phase}"]
+    holder = disk_names(root).get(name)
+    return [f"plan slug {name} collides with existing {holder}"] if holder else []
+
+
+def _words(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def _norm(title: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", title.lower()))
+
+
+def what_and_why(body: str) -> str:
+    m = re.search(r"^## What and why\s*\n(.*?)(?=^## |\Z)", body, re.M | re.S)
+    return m.group(1) if m else ""
+
+
+def similarity(title_a: str, text_a: str, title_b: str, text_b: str) -> float:
+    """The larger of the title ratio and the word Jaccard over title plus text."""
+    ratio = difflib.SequenceMatcher(None, _norm(title_a), _norm(title_b)).ratio()
+    wa, wb = _words(title_a + " " + text_a), _words(title_b + " " + text_b)
+    jac = len(wa & wb) / len(wa | wb) if wa | wb else 0.0
+    return max(ratio, jac)
+
+
+def _live_worktrees(root: Path) -> list[str]:
+    r = _git(_existing(Path(root)), "worktree", "list", "--porcelain")
+    if r.returncode != 0:
+        return []
+    return [Path(line[9:]).name for line in r.stdout.splitlines() if line.startswith("worktree ")]
+
+
+class CheckResult(NamedTuple):
+    failures: list[str]
+    warnings: list[str]
+    notes: list[str]
+    near: list[tuple[str, str, float]]  # (slug, phase, score)
+
+
+def run_check(root: Path, title: str) -> CheckResult:
+    """Dedup rules for a new plan titled `title`: a taken slug fails; a plan whose title plus
+    What and why is similar (>= NEAR_DUP) is listed; a live tree of a plan that is not
+    in-progress is warned."""
+    root = Path(root)
+    plans = scan(root)
+    new = slug(title)
+    fails = name_clashes(root, new, plans)
+    notes: list[str] = []
+    near: list[tuple[str, str, float]] = []
+    for p in plans:
+        if p.slug == new:
+            continue
+        other = str(p.meta.get("title", p.slug))
+        score = similarity(title, "", other, what_and_why(p.body))
+        if score >= NEAR_DUP:
+            near.append((p.slug, p.phase, score))
+            notes.append(f"near-duplicate plan {p.slug} ({p.phase}): {other!r}")
+    by_slug = {p.slug: p for p in plans}
+    warns = [
+        f"warning: live worktree {n!r} belongs to plan {n!r} which is in "
+        f"{by_slug[n].phase}, not in-progress"
+        for n in _live_worktrees(root)
+        if n in by_slug and by_slug[n].phase != "in-progress"
+    ]
+    return CheckResult(fails, warns, notes, near)
+
+
+def report(res: CheckResult) -> int:
+    for n in res.notes:
+        print(n)
+    for w in res.warnings:
+        print(w, file=sys.stderr)
+    for f in res.failures:
+        print(f"ticket.py: {f}", file=sys.stderr)
+    return 1 if res.failures else 0
+
+
+# ---------------------------------------------------------------- new, check, path, rename
 
 
 def _csv(value: str | None) -> list[str]:
     return [x.strip() for x in (value or "").split(",") if x.strip()]
+
+
+def cmd_new(a: argparse.Namespace) -> int:
+    root = Path(a.root)
+    require_main_checkout(root)
+    plan = slug(a.title)
+    if not plan:
+        raise TicketError("title has no usable characters")
+    res = run_check(root, a.title)
+    if report(res):
+        return 1
+    if not a.force:
+        for twin, phase, score in res.near:
+            if phase != "done":
+                print(
+                    f"new: near duplicate {twin} ({score:.2f}); pass --force to create anyway",
+                    file=sys.stderr,
+                )
+                return EXIT_NEAR_DUPLICATE
+    template = TEMPLATES / PLAN_FILE
+    doc = load(template.read_text(), template)
+    doc.meta.update(
+        title=a.title,
+        repos=_csv(a.repos),
+        created=datetime.date.today().isoformat(),
+        owner="",
+        rung="",
+    )
+    path = root / "todo" / plan / PLAN_FILE
+    path.parent.mkdir(parents=True)
+    path.write_text(dump(Doc(doc.meta, doc.body.replace("# <title>", f"# {a.title}", 1))))
+    commit_ticket_change(plan, "new", [path], root)
+    print(path)
+    return 0
+
+
+def cmd_check(a: argparse.Namespace) -> int:
+    return report(run_check(Path(a.root), a.title))
+
+
+def cmd_path(a: argparse.Namespace) -> int:
+    print(resolve_plan(a.plan, Path(a.root)) / PATH_KINDS[a.kind])
+    return 0
+
+
+def cmd_slug(a: argparse.Namespace) -> int:
+    print(slug(a.title))
+    return 0
+
+
+def cmd_rename(a: argparse.Namespace) -> int:
+    root = Path(a.root)
+    require_main_checkout(root)
+    plan_dir = resolve_plan(a.plan, root)
+    name, phase = plan_dir.name, phase_of(plan_dir)
+    if phase != "todo":
+        raise TicketError(f"plan {name!r} is in {phase}; its slug froze when it left todo")
+    new = slug(a.title)
+    if not new:
+        raise TicketError("title has no usable characters")
+    if new != name:
+        clashes = name_clashes(root, new, scan(root), own=name)
+        if clashes:
+            raise TicketError("; ".join(clashes))
+    plan = read_plan(plan_dir)
+    old_title = str(plan.meta.get("title", name))
+    if new == name and old_title == a.title:
+        print(plan_dir)
+        return 0
+    dest = _git_mv(plan_dir, "todo", root, new) if new != name else plan_dir
+    p = update_plan_meta(dest, title=a.title)
+    heading = re.compile(rf"^# {re.escape(old_title)}$", re.M)
+    p.write_text(heading.sub(lambda _: f"# {a.title}", p.read_text(), count=1))
+    commit_ticket_change(new, "rename", [plan_dir, dest], root)
+    print(dest)
+    return 0
+
+
+# ---------------------------------------------------------------- retired task machinery (S5)
+import agent_usage  # noqa: E402
+import calibration  # noqa: E402
+
+TASK_STATUSES = ("todo", "in-progress", "done", "blocked", "escalated")
+EPIC_STAGES = ("build", "review")
+WORKTREE_MAX = SLUG_MAX + 1 + SLUG_MAX
+LEGACY_SEP = "--"
+AC_KINDS = ("test", "symbol", "command", "doc-section", "judgement")
+AC_LINE = re.compile(r"^- (\S+?): (.+?) \[evidence: ([a-z-]+)(?::\s*(.*?))?\]$")
+REQUIRED_SECTIONS = ("Requirement", "Acceptance conditions", "Files", "Steps")
+POINT_KEYS = ("points", "points_actual")
+COUNT_KEYS = ("expected_minutes", "expected_tokens", "actual_minutes", "actual_tokens")
+ROLE_KEYS = ("actual_roles", "actual_role_tokens")
+ROLES = ("impl", "review")
+ROLE_PAIR = re.compile(r"(impl|review) ([0-9]+)")
+Ticket = Plan
+_read_doc = read_doc
+resolve_epic = resolve_plan
+find_epic = find_plan
+_phase_of = phase_of
+
+
+def worktree_name(epic: str, task: str) -> str:
+    return f"{epic}-{task}"
+
+
+def ticket_names(root: Path) -> dict:
+    return {p.slug: (p.slug, None) for p in scan(root)}
 
 
 def _read(path: str | None) -> str:
@@ -430,52 +660,6 @@ def _point_fields(root: Path, points: int, task: str) -> dict:
     return {"points": str(n), "expected_minutes": str(minutes), "expected_tokens": str(tokens)}
 
 
-def cmd_new_epic(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic = slug(a.title)
-    if not epic:
-        raise TicketError("title has no usable characters")
-    res = run_check(root, a.title, blockers=_csv(a.blockers), goals=_read(a.goals_file))
-    if report(res):
-        return 1
-    if not a.force:
-        for twin, phase, score in res.near_epics:
-            if phase != "done":
-                print(
-                    f"new-epic: near duplicate {twin} ({score:.2f}); pass --force to create anyway",
-                    file=sys.stderr,
-                )
-                return EXIT_NEAR_DUPLICATE
-    doc = _template("epic.md")
-    doc.meta.update(
-        title=a.title,
-        blockers=_csv(a.blockers),
-        stage="build",
-        owner="",
-        repos=_csv(a.repos),
-        created=datetime.date.today().isoformat(),
-    )
-    body = _render(
-        doc.body,
-        {
-            "title": a.title,
-            "what": a.what or "",
-            "how": a.how or "",
-            "why": a.why or "",
-            "description": _read(a.description_file),
-            "goals": _read(a.goals_file),
-            "non_goals": _read(a.non_goals_file),
-        },
-    )
-    readme = root / "todo" / epic / "README.md"
-    readme.parent.mkdir(parents=True)
-    readme.write_text(dump(Doc(doc.meta, body)))
-    commit_ticket_change(epic, "new-epic", [readme], root)
-    print(readme)
-    return 0
-
-
 def cmd_new_task(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
@@ -522,99 +706,6 @@ def cmd_new_task(a: argparse.Namespace) -> int:
     return 0
 
 
-# ---------------------------------------------------------------- dedup: check, index, existing
-
-
-class Ticket(NamedTuple):
-    kind: str  # "epic" or "task"
-    slug: str
-    epic: str
-    phase: str
-    path: Path
-    meta: dict
-    body: str
-
-
-def _read_doc(path: Path) -> Doc:
-    return load(path.read_text(), path)
-
-
-def scan(root: Path) -> list[Ticket]:
-    """Every epic and task under root, all phases, in phase then slug order."""
-    out: list[Ticket] = []
-    for phase in PHASES:
-        base = Path(root) / phase
-        if not base.is_dir():
-            continue
-        for d in sorted(p for p in base.iterdir() if p.is_dir()):
-            readme = d / "README.md"
-            doc = _read_doc(readme) if readme.exists() else Doc({}, "")
-            out.append(Ticket("epic", d.name, d.name, phase, readme, doc.meta, doc.body))
-            for tp in sorted((d / "tasks").glob("*.md")):
-                doc = _read_doc(tp)
-                out.append(Ticket("task", tp.stem, d.name, phase, tp, doc.meta, doc.body))
-    return out
-
-
-def ticket_names(root: Path) -> dict[str, tuple[str, str | None]]:
-    """Every tree or branch name a ticket holds: `<epic>` -> (epic, None) and
-    `<epic>-<task>` -> (epic, task). `<epic>-<task>` cannot be split, so this lookup is the
-    only way code maps a name back to a ticket."""
-    out: dict[str, tuple[str, str | None]] = {}
-    for t in scan(root):
-        if t.kind == "epic":
-            out[t.slug] = (t.slug, None)
-            continue
-        try:
-            out[worktree_name(t.epic, t.slug)] = (t.epic, t.slug)
-        except TicketError:
-            continue  # too long to ever be created as a tree
-    return out
-
-
-def _words(text: str) -> set[str]:
-    return set(re.findall(r"[a-z0-9]+", text.lower()))
-
-
-def _norm(title: str) -> str:
-    return " ".join(re.findall(r"[a-z0-9]+", title.lower()))
-
-
-def _goals(body: str) -> str:
-    m = re.search(r"^## Goals\s*\n(.*?)(?=^## |\Z)", body, re.M | re.S)
-    return m.group(1) if m else ""
-
-
-def _similarity(title_a: str, text_a: str, title_b: str, text_b: str) -> float:
-    ratio = difflib.SequenceMatcher(None, _norm(title_a), _norm(title_b)).ratio()
-    wa, wb = _words(title_a + " " + text_a), _words(title_b + " " + text_b)
-    jac = len(wa & wb) / len(wa | wb) if wa | wb else 0.0
-    return max(ratio, jac)
-
-
-def _extra_text(t: Ticket) -> str:
-    return _goals(t.body) if t.kind == "epic" else str(t.meta.get("value", ""))
-
-
-def _live_worktrees(root: Path) -> list[str]:
-    r = _git(_existing(Path(root)), "worktree", "list", "--porcelain")
-    if r.returncode != 0:
-        return []
-    return [Path(line[9:]).name for line in r.stdout.splitlines() if line.startswith("worktree ")]
-
-
-class CheckResult(NamedTuple):
-    failures: list[str]
-    warnings: list[str]
-    notes: list[str]
-    near_epics: list[tuple[str, str, float]]  # (slug, phase, score), new-epic only
-
-
-def _blocker_slug(name: str, epics: dict[str, Ticket]) -> str:
-    found = resolve_blocker(name, epics)
-    return found.slug if found else name
-
-
 def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str]:
     """Shared files that still count against `other`: none when it is done or merged into the
     base branch, and never a file matching the overlapIgnore globs of its repo."""
@@ -633,118 +724,6 @@ def _counting_overlaps(root: Path, other: Ticket, shared: list[str]) -> list[str
     except (OSError, _mod().WorktreeError):
         pass  # no git checkout to ask (e.g. a bare plans dir): not merged
     return left
-
-
-def run_check(
-    root: Path,
-    title: str | None = None,
-    epic: str | None = None,
-    files: list[str] | None = None,
-    blockers: list[str] | None = None,
-    goals: str = "",
-) -> CheckResult:
-    """Dedup rules. `epic` None with a title is a new epic; with an epic, a title is a new task
-    and no title checks every task of that epic."""
-    root = Path(root)
-    fails: list[str] = []
-    warns: list[str] = []
-    notes: list[str] = []
-    near_epics: list[tuple[str, str, float]] = []
-    tickets = scan(root)
-    epics = {t.slug: t for t in tickets if t.kind == "epic"}
-    if epic is not None and epic not in epics:
-        raise TicketError(f"unknown epic {epic!r} under {root}")
-    named = set(blockers or [])
-    if epic is not None:
-        named |= set(epics[epic].meta.get("blockers", []))
-    own_blockers = {_blocker_slug(b, epics) for b in named}
-
-    def candidates() -> list[tuple[list[str], str]]:
-        """(files, label) to run the cross-epic file overlap check on."""
-        if title is not None:
-            return [(files or [], f"task {slug(title)!r}")]
-        return [
-            (list(t.meta.get("files", [])), f"task {t.slug!r}")
-            for t in tickets
-            if t.kind == "task" and t.epic == epic
-        ]
-
-    if title is not None:
-        new_slug = slug(title)
-        if epic is None:
-            for t in tickets:
-                if t.kind == "epic" and t.slug == new_slug:
-                    fails.append(f"epic slug {new_slug!r} already exists in {t.phase}")
-        else:
-            for t in tickets:
-                if t.kind == "task" and t.epic == epic and t.slug == new_slug:
-                    fails.append(f"task slug {new_slug!r} already exists in epic {epic!r}")
-        if epic is None:
-            fails += name_clashes(root, [(new_slug, None, None)])
-        else:
-            fails += name_clashes(root, [(f"{epic}-{new_slug}", epic, new_slug)])
-        kind = "epic" if epic is None else "task"
-        extra = goals if epic is None else ""
-        for t in tickets:
-            if t.kind != kind or (t.slug == new_slug and (kind == "epic" or t.epic == epic)):
-                continue
-            other = str(t.meta.get("title", t.slug))
-            score = _similarity(title, extra, other, _extra_text(t))
-            if score >= NEAR_DUP:
-                if kind == "epic":
-                    near_epics.append((t.slug, t.phase, score))
-                where = t.slug if kind == "epic" else f"{t.epic}/{t.slug}"
-                notes.append(
-                    f"near-duplicate {kind} {where} ({t.phase}): {t.meta.get('title', t.slug)!r}"
-                )
-
-    if epic is not None:
-        for tfiles, label in candidates():
-            for t in tickets:
-                if t.kind != "task" or t.epic == epic or t.epic in own_blockers:
-                    continue
-                shared = sorted(set(tfiles) & set(t.meta.get("files", [])))
-                if t.phase == "in-progress" and shared:
-                    for f in _counting_overlaps(root, t, shared):
-                        fails.append(
-                            f"{label}: file {f!r} is also in task {t.slug!r} of "
-                            f"in-progress epic {t.epic!r}"
-                        )
-
-    names = ticket_names(root)
-    for name in _live_worktrees(root):
-        owner = names.get(name)
-        if owner and epics[owner[0]].phase != "in-progress":
-            warns.append(
-                f"warning: live worktree {name!r} belongs to epic {owner[0]!r} "
-                f"which is in {epics[owner[0]].phase}, not in-progress"
-            )
-    return CheckResult(fails, warns, notes, near_epics)
-
-
-def report(res: CheckResult) -> int:
-    for n in res.notes:
-        print(n)
-    for w in res.warnings:
-        print(w, file=sys.stderr)
-    for f in res.failures:
-        print(f"ticket.py: {f}", file=sys.stderr)
-    return 1 if res.failures else 0
-
-
-def cmd_check(a: argparse.Namespace) -> int:
-    if a.title is None and a.epic is None:
-        raise TicketError("check needs --title (new epic) or --epic (new task, or all tasks)")
-    return report(
-        run_check(
-            Path(a.root),
-            a.title,
-            a.epic,
-            _csv(a.files),
-            _csv(a.blockers),
-            _read(a.goals_file),
-        )
-    )
 
 
 def cmd_index(a: argparse.Namespace) -> int:
@@ -895,29 +874,6 @@ def cmd_tasks(a: argparse.Namespace) -> int:
     return 0
 
 
-def _wt_module():
-    """worktree-create's module: the one implementation of worktree creation."""
-    p = Path(__file__).resolve().parents[2] / "worktree-create" / "scripts" / "create.py"
-    spec = importlib.util.spec_from_file_location("worktree_create", p)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_WT = None
-
-
-def _mod():
-    global _WT
-    if _WT is None:
-        _WT = _wt_module()
-    return _WT
-
-
-def _workbench(root: Path) -> Path:
-    return _mod().workbench_root(_existing(Path(root)))
-
-
 def _task_repo(root: Path, repo: str) -> str | None:
     """The task's repo when the docs root sits in a workbench with code/<repo>, else None."""
     if repo and (_workbench(root) / "code" / repo).is_dir():
@@ -1055,25 +1011,6 @@ def _update_readme(epic_dir: Path, **updates) -> tuple[Path, bool]:
     if changed:
         p.write_text(text)
     return p, changed
-
-
-def _in_git(root: Path) -> bool:
-    return _git(_existing(Path(root)), "rev-parse", "--git-dir").returncode == 0
-
-
-def _git_mv(epic_dir: Path, phase: str, root: Path, name: str | None = None) -> Path:
-    """Move an epic directory to <root>/<phase>/<name> with `git mv` (plain rename outside git)."""
-    dest = Path(root).resolve() / phase / (name or epic_dir.name)
-    if dest.exists():
-        raise TicketError(f"{dest} already exists")
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if not _in_git(root):
-        epic_dir.rename(dest)
-        return dest
-    r = _git(_existing(Path(root)), "mv", str(epic_dir), str(dest))
-    if r.returncode != 0:
-        raise TicketError(f"git mv failed: {r.stderr.strip()}")
-    return dest
 
 
 def _git_user(root: Path) -> str:
@@ -1272,45 +1209,6 @@ def cmd_review(a: argparse.Namespace) -> int:
     path.write_text(dump(Doc(doc.meta, _append_to_section(doc.body, "Review", entry))))
     commit_ticket_change(name, f"review {a.verdict}", [path], root)
     print(line)
-    return 0
-
-
-def cmd_rename(a: argparse.Namespace) -> int:
-    root = Path(a.root)
-    require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    name, phase = epic_dir.name, _phase_of(epic_dir)
-    if phase != "todo":
-        raise TicketError(f"epic {name!r} is in {phase}; its slug froze when it left todo")
-    new = slug(a.title)
-    if not new:
-        raise TicketError("title has no usable characters")
-    tasks = _tasks_of(epic_dir)
-    for p, _ in tasks:
-        worktree_name(new, p.stem)
-    epics = _epics(root)
-    if new != name and new in epics:
-        raise TicketError(f"epic slug {new!r} already exists in {epics[new].phase}")
-    if new != name:
-        wanted = [(new, None, None)] + [(f"{new}-{p.stem}", new, p.stem) for p, _ in tasks]
-        clashes = name_clashes(root, wanted, own_epic=name)
-        if clashes:
-            raise TicketError("; ".join(clashes))
-    old_title = str(epics[name].meta.get("title", name))
-    if new == name and old_title == a.title:
-        print(epic_dir)
-        return 0
-    dest = _git_mv(epic_dir, "todo", root, new) if new != name else epic_dir
-    readme, _ = _update_readme(dest, title=a.title)
-    changed = [epic_dir, dest]
-    for t in epics.values():
-        blockers = list(t.meta.get("blockers", []))
-        if t.slug == name or not any(b in (old_title, name) for b in blockers):
-            continue
-        fixed = [a.title if b in (old_title, name) else b for b in blockers]
-        changed.append(_update_readme(t.path.parent, blockers=fixed)[0])
-    commit_ticket_change(new, "rename", changed, root)
-    print(dest)
     return 0
 
 
@@ -1611,16 +1509,6 @@ def cmd_lint(a: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
-def cmd_path(a: argparse.Namespace) -> int:
-    print(resolve_epic(a.epic, Path(a.root)) / PATH_KINDS[a.kind])
-    return 0
-
-
-def cmd_slug(a: argparse.Namespace) -> int:
-    print(slug(a.title))
-    return 0
-
-
 CMD_DIR = Path(__file__).resolve().parent / "ticket_cmds"
 
 
@@ -1672,24 +1560,14 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
 
     sp = add("slug", cmd_slug, root=False)
     sp.add_argument("title")
-    sp = add("new-epic", cmd_new_epic)
+    sp = add("new", cmd_new)
     sp.add_argument("--title", required=True)
+    sp.add_argument("--repos", help="comma-separated repos the plan touches")
     sp.add_argument(
         "--force",
         action="store_true",
-        help="create even when a live (todo/in-progress) epic is a near duplicate",
+        help="create even when a live (todo/in-progress) plan is a near duplicate",
     )
-    for opt in (
-        "blockers",
-        "repos",
-        "what",
-        "how",
-        "why",
-        "description-file",
-        "goals-file",
-        "non-goals-file",
-    ):
-        sp.add_argument(f"--{opt}")
     sp = add("new-task", cmd_new_task)
     for opt in ("epic", "title", "repo", "value", "files", "verify"):
         sp.add_argument(f"--{opt}", required=True)
@@ -1703,8 +1581,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
         "expected_tokens from calibration",
     )
     sp = add("check", cmd_check)
-    for opt in ("title", "epic", "files", "blockers", "goals-file"):
-        sp.add_argument(f"--{opt}")
+    sp.add_argument("--title", required=True)
     add("index", cmd_index)
     add("existing", cmd_existing)
     sp = add("tasks", cmd_tasks)
@@ -1732,7 +1609,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--verdict", required=True, choices=("pass", "fail"))
     sp.add_argument("--notes-file", required=True)
     sp = add("rename", cmd_rename)
-    sp.add_argument("epic")
+    sp.add_argument("plan")
     sp.add_argument("title")
     sp = add("lint", cmd_lint)
     sp.add_argument("epic", nargs="?")
@@ -1741,7 +1618,7 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--base", default="main")
     sp.add_argument("--epic", help="reap only this done epic's integration trees")
     sp = add("path", cmd_path)
-    sp.add_argument("epic")
+    sp.add_argument("plan")
     sp.add_argument("kind", choices=sorted(PATH_KINDS))
     _load_cmd_modules(sub, cmd_dir or CMD_DIR)
     return ap

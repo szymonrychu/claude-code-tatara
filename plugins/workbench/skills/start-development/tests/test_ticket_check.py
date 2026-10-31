@@ -1,6 +1,5 @@
-"""Tests for ticket.py check, index and existing: enforced dedup across epics."""
+"""Tests for ticket.py check and the near-duplicate gate of new: dedup across plans."""
 
-import json
 import re
 import shutil
 import subprocess
@@ -10,8 +9,11 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
-GITIGNORE = Path(__file__).resolve().parents[5] / ".gitignore"  # repo root; plugin has none
 SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "ticket.py"
+sys.path.insert(0, str(SCRIPT.parent))
+import ticket  # noqa: E402
+
+PHASES = ("todo", "in-progress", "done")
 
 
 def cli(*args, cwd=None):
@@ -27,259 +29,112 @@ def root(tmp_path):
     return r
 
 
-def epic(root, title, phase="todo", *extra):
-    r = cli("new-epic", "--root", root, "--title", title, "--force", *extra)
+def plan(root, title, phase="todo", what=""):
+    """A plan made by `new`, moved by hand to `phase`, with `what` as its What and why."""
+    r = cli("new", "--root", root, "--title", title, "--force")
     assert r.returncode == 0, r.stderr
-    slug = cli("slug", title).stdout.strip()
+    slug = ticket.slug(title)
+    p = root / "todo" / slug / "plan.md"
+    if what:
+        text = p.read_text()
+        start = text.index("## What and why")
+        end = text.index("## Scope ladder")
+        p.write_text(text[:start] + f"## What and why\n\n{what}\n\n" + text[end:])
     if phase != "todo":
         (root / phase).mkdir(exist_ok=True)
         shutil.move(str(root / "todo" / slug), str(root / phase / slug))
     return slug
 
 
-def task(root, ep, title, files="a.py", *extra):
-    r = cli(
-        "new-task",
-        "--points",
-        "3",
-        "--root",
-        root,
-        "--epic",
-        ep,
-        "--title",
-        title,
-        "--repo",
-        "p",
-        "--value",
-        "v",
-        "--files",
-        files,
-        "--verify",
-        "true",
-        *extra,
-    )
-    assert r.returncode == 0, r.stderr
-    return r
-
-
 def check(root, *args):
     return cli("check", "--root", root, *args)
 
 
-def test_epic_slug_collision_any_phase_fails(root):
-    epic(root, "Alpha thing", "done")
+def plan_dirs(root):
+    return sorted(p.name for ph in PHASES if (root / ph).is_dir() for p in (root / ph).iterdir())
+
+
+def test_check_needs_a_title(root):
+    r = cli("check", "--root", root)
+    assert r.returncode == 2 and "--title" in r.stderr
+
+
+@pytest.mark.parametrize("opt", ["--epic", "--files", "--blockers", "--goals-file"])
+def test_check_has_no_task_options(root, opt):
+    r = check(root, "--title", "X", opt, "y")
+    assert r.returncode == 2 and opt in r.stderr
+
+
+@pytest.mark.parametrize("phase", PHASES)
+def test_slug_collision_in_any_phase_fails(root, phase):
+    plan(root, "Alpha thing", phase)
     r = check(root, "--title", "Alpha thing")
     assert r.returncode == 1
-    assert "alpha-thing" in r.stderr and "done" in r.stderr
+    assert f"plan slug 'alpha-thing' already exists in {phase}" in r.stderr
 
 
-def test_task_slug_collision_same_epic_fails(root):
-    e = epic(root, "Alpha thing")
-    task(root, e, "Build core")
-    r = check(root, "--epic", e, "--title", "Build core")
-    assert r.returncode == 1 and "build-core" in r.stderr
-
-
-def test_near_duplicate_epic_listed_not_failed(root):
-    epic(root, "Ticket deduplication tool", "in-progress")
+def test_near_duplicate_by_title_listed_exit_zero(root):
+    plan(root, "Ticket deduplication tool")
     r = check(root, "--title", "Ticket deduplication tools")
     assert r.returncode == 0, r.stderr
-    assert "near-duplicate epic" in r.stdout and "in-progress" in r.stdout
+    assert "near-duplicate plan ticket-deduplication-tool (todo)" in r.stdout
 
 
-def test_near_duplicate_by_goals_jaccard(root):
-    g = root / "g.txt"
-    g.write_text("stop duplicate planning across sessions with enforced checks")
-    epic(root, "Alpha one", "todo", "--goals-file", g)
-    r = check(root, "--title", "Zed two", "--goals-file", g)
-    assert r.returncode == 0 and "near-duplicate epic" in r.stdout
+def test_near_duplicate_by_what_and_why(root):
+    plan(root, "Alpha", what="dedup tickets tool for plans")
+    r = check(root, "--title", "dedup tickets tool plans")
+    assert r.returncode == 0 and "near-duplicate plan alpha" in r.stdout
 
 
-def test_near_duplicate_task_listed(root):
-    a = epic(root, "Alpha")
-    b = epic(root, "Beta")
-    task(root, a, "Write the parser module")
-    r = check(root, "--epic", b, "--title", "Write the parser modules")
-    assert r.returncode == 0 and "near-duplicate task" in r.stdout and "todo" in r.stdout
-
-
-def test_unrelated_not_listed(root):
-    epic(root, "Alpha")
-    r = check(root, "--title", "Completely different")
+def test_other_sections_do_not_count_for_similarity(root):
+    slug = plan(root, "Alpha")
+    p = root / "todo" / slug / "plan.md"
+    text = p.read_text()
+    p.write_text(text.replace("## Design\n", "## Design\n\ndedup tickets tool for plans\n"))
+    r = check(root, "--title", "dedup tickets tool plans")
     assert r.returncode == 0 and "near-duplicate" not in r.stdout
 
 
-def test_files_shared_with_other_in_progress_epic_fails(root):
-    a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "shared.py")
-    b = epic(root, "Beta")
-    r = check(root, "--epic", b, "--title", "T two", "--files", "shared.py")
-    assert r.returncode == 1 and "shared.py" in r.stderr and a in r.stderr
-
-
-def test_files_shared_ok_when_blocker(root):
-    a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "shared.py")
-    b = epic(root, "Beta", "todo", "--blockers", a)
-    r = check(root, "--epic", b, "--title", "T two", "--files", "shared.py")
-    assert r.returncode == 0, r.stderr
-
-
-def test_files_shared_with_todo_epic_not_failed(root):
-    a = epic(root, "Alpha")
-    task(root, a, "T one", "shared.py")
-    b = epic(root, "Beta")
-    assert check(root, "--epic", b, "--title", "T two", "--files", "shared.py").returncode == 0
-
-
-def test_check_has_no_owns_option_and_ignores_legacy_owns(root):
-    r = check(root, "--epic", epic(root, "Beta"), "--title", "T two", "--owns", "slugify")
-    assert r.returncode == 2 and "--owns" in r.stderr
-    a = epic(root, "Alpha")
-    task(root, a, "T one", "a.py")
-    tp = root / "todo" / a / "tasks" / "t-one.md"
-    tp.write_text(tp.read_text().replace("model:", "owns: [slugify]\nmodel:"))
-    r = check(root, "--epic", "beta", "--title", "T two", "--files", "b.py")
-    assert r.returncode == 0, r.stderr
-    assert "slugify" not in r.stdout + r.stderr
-
-
-def test_check_epic_without_title_checks_every_task(root):
-    a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "shared.py")
-    b = epic(root, "Beta")
-    task(root, b, "T two", "tmp.py")
-    tp = root / "todo" / b / "tasks" / "t-two.md"
-    tp.write_text(tp.read_text().replace("files: [tmp.py]", "files: [shared.py]"))
-    task(root, b, "T three", "ok.py")
-    r = check(root, "--epic", b)
-    assert r.returncode == 1
-    assert r.stderr.count("shared.py") == 1 and "t-two" in r.stderr
-    assert "ok.py" not in r.stderr
-
-
-def test_check_epic_without_title_clean(root):
-    b = epic(root, "Beta")
-    task(root, b, "T two", "x.py")
-    assert check(root, "--epic", b).returncode == 0
-
-
-def test_new_epic_refuses_on_collision(root):
-    epic(root, "Alpha thing", "done")
-    r = cli("new-epic", "--root", root, "--title", "Alpha thing")
-    assert r.returncode == 1 and "alpha-thing" in r.stderr
-
-
-def _epic_dirs(root):
-    return sorted(
-        p.name
-        for ph in ("todo", "in-progress", "done")
-        if (root / ph).is_dir()
-        for p in (root / ph).iterdir()
-    )
+def test_unrelated_not_listed(root):
+    plan(root, "Robot arm calibration")
+    r = check(root, "--title", "Web dashboard theme")
+    assert r.returncode == 0 and r.stdout == "" and r.stderr == ""
 
 
 @pytest.mark.parametrize("phase", ["todo", "in-progress"])
-def test_new_epic_stops_on_live_near_duplicate(root, phase):
-    epic(root, "Ticket deduplication tool", phase)
-    before = _epic_dirs(root)
-    r = cli("new-epic", "--root", root, "--title", "Ticket deduplication tools")
+def test_new_stops_on_live_near_duplicate_and_writes_nothing(root, phase):
+    plan(root, "Ticket deduplication tool", phase)
+    before = plan_dirs(root)
+    r = cli("new", "--root", root, "--title", "Ticket deduplication tools")
     assert r.returncode == 3
     assert re.fullmatch(
-        r"new-epic: near duplicate ticket-deduplication-tool \(\d\.\d\d\); "
+        r"new: near duplicate ticket-deduplication-tool \(\d\.\d\d\); "
         r"pass --force to create anyway",
         r.stderr.strip(),
     ), r.stderr
-    assert _epic_dirs(root) == before
+    assert plan_dirs(root) == before
 
 
-def test_new_epic_force_creates_and_prints_note(root):
-    epic(root, "Ticket deduplication tool")
-    r = cli("new-epic", "--root", root, "--title", "Ticket deduplication tools", "--force")
+def test_new_force_creates_and_prints_note(root):
+    plan(root, "Ticket deduplication tool")
+    r = cli("new", "--root", root, "--title", "Ticket deduplication tools", "--force")
     assert r.returncode == 0, r.stderr
-    assert "near-duplicate epic" in r.stdout
-    assert "ticket-deduplication-tools" in _epic_dirs(root)
+    assert "near-duplicate plan" in r.stdout
+    assert "ticket-deduplication-tools" in plan_dirs(root)
 
 
-def test_new_epic_done_near_duplicate_is_only_a_note(root):
-    epic(root, "Ticket deduplication tool", "done")
-    r = cli("new-epic", "--root", root, "--title", "Ticket deduplication tools")
+def test_new_done_near_duplicate_is_only_a_note(root):
+    plan(root, "Ticket deduplication tool", "done")
+    r = cli("new", "--root", root, "--title", "Ticket deduplication tools")
     assert r.returncode == 0, r.stderr
-    assert "near-duplicate epic" in r.stdout
+    assert "near-duplicate plan ticket-deduplication-tool (done)" in r.stdout
+    assert "ticket-deduplication-tools" in plan_dirs(root)
 
 
-def test_new_epic_force_does_not_override_slug_clash(root):
-    epic(root, "Alpha thing", "done")
-    r = cli("new-epic", "--root", root, "--title", "Alpha thing", "--force")
+def test_new_force_does_not_override_slug_clash(root):
+    plan(root, "Alpha thing", "done")
+    r = cli("new", "--root", root, "--title", "Alpha thing", "--force")
     assert r.returncode == 1 and "alpha-thing" in r.stderr
-
-
-def test_check_title_still_lists_near_duplicate_exit_zero(root):
-    epic(root, "Ticket deduplication tool")
-    r = check(root, "--title", "Ticket deduplication tools")
-    assert r.returncode == 0 and "near-duplicate epic" in r.stdout
-
-
-def test_new_task_refuses_on_shared_file(root):
-    a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "shared.py")
-    b = epic(root, "Beta")
-    r = cli(
-        "new-task",
-        "--points",
-        "3",
-        "--root",
-        root,
-        "--epic",
-        b,
-        "--title",
-        "T two",
-        "--repo",
-        "p",
-        "--value",
-        "v",
-        "--files",
-        "shared.py",
-        "--verify",
-        "true",
-    )
-    assert r.returncode == 1 and "shared.py" in r.stderr
-    assert not (root / "todo" / b / "tasks" / "t-two.md").exists()
-
-
-def test_index_writes_json(root):
-    a = epic(root, "Alpha", "in-progress")
-    task(root, a, "T one", "x.py,y.py")
-    r = cli("index", "--root", root)
-    assert r.returncode == 0, r.stderr
-    data = json.loads((root / "index.json").read_text())
-    by = {(e["kind"], e["slug"]): e for e in data}
-    ep = by[("epic", a)]
-    assert ep["phase"] == "in-progress" and ep["stage"] == "build" and ep["title"] == "Alpha"
-    tk = by[("task", "t-one")]
-    assert tk["epic"] == a and tk["files"] == ["x.py", "y.py"]
-    assert tk["status"] == "todo" and tk["phase"] == "in-progress"
-    assert "owns" not in tk and "provides" not in tk
-
-
-def test_gitignore_has_index():
-    assert "docs/plans/index.json" in GITIGNORE.read_text().split("\n")
-
-
-def test_existing_lists_files_of_done_tasks(root):
-    a = epic(root, "Alpha")
-    task(root, a, "T one", "a.py,lib/b.py")
-    tp = root / "todo" / a / "tasks" / "t-one.md"
-    tp.write_text(tp.read_text().replace("model:", "owns: [slugify]\nprovides: [helper-x]\nmodel:"))
-    live = epic(root, "Live")
-    task(root, live, "T live", "l.py")
-    (root / "done").mkdir()
-    shutil.move(str(root / "todo" / a), str(root / "done" / a))
-    r = cli("existing", "--root", root)
-    assert r.returncode == 0, r.stderr
-    names = {e["name"]: e["where"] for e in json.loads(r.stdout)}
-    assert set(names) == {"a.py", "lib/b.py"}
-    assert a in names["a.py"] and "t-one" in names["a.py"]
 
 
 def _repo(tmp_path):
@@ -295,134 +150,20 @@ def _repo(tmp_path):
     return repo
 
 
-def test_live_tree_warning_uses_ticket_lookup(tmp_path):
+def test_live_tree_of_a_plan_not_in_progress_is_warned(tmp_path):
     repo = _repo(tmp_path)
     root = repo / "docs" / "plans"
     root.mkdir(parents=True)
-    a = epic(root, "Alpha")
-    b = epic(root, "Beta", "in-progress")
-    task(root, a, "Tee one")
-    task(root, b, "Tee one")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    from ticket_repo_helpers import set_meta
-
-    set_meta(next(root.glob(f"**/{b}/tasks/tee-one.md")), verified_head=head)
-    for n in (f"{a}-tee-one", f"{b}-tee-one", a, b):
+    a = plan(root, "Alpha")
+    b = plan(root, "Beta", "in-progress")
+    for n in (a, b, "unrelated"):
         subprocess.run(
             ["git", "worktree", "add", "-q", str(tmp_path / n), "-b", n],
             cwd=repo,
             check=True,
             capture_output=True,
         )
-    r = check(root, "--epic", a)
+    r = check(root, "--title", "Gamma")
     assert r.returncode == 0, r.stderr
-    assert "warning" in r.stderr and f"{a}-tee-one" in r.stderr
-    assert f"{b}-tee-one" not in r.stderr and f"'{b}'" not in r.stderr
-    assert f"live worktree '{a}'" in r.stderr
-
-
-def test_new_task_near_duplicate_still_created(root):
-    a = epic(root, "Alpha")
-    b = epic(root, "Beta")
-    task(root, a, "Write the parser module")
-    r = cli(
-        "new-task",
-        "--points",
-        "3",
-        "--root",
-        root,
-        "--epic",
-        b,
-        "--title",
-        "Write the parser modules",
-        "--repo",
-        "p",
-        "--value",
-        "v",
-        "--files",
-        "b.py",
-        "--verify",
-        "true",
-    )
-    assert r.returncode == 0, r.stderr
-    assert "near-duplicate task" in r.stdout
-    assert (root / "todo" / b / "tasks" / "write-the-parser-modules.md").exists()
-
-
-def test_new_task_refuses_epic_path_outside_plans_root(root, tmp_path):
-    outside = tmp_path / "elsewhere" / "todo" / "rogue"
-    (outside / "tasks").mkdir(parents=True)
-    r = cli(
-        "new-task",
-        "--points",
-        "3",
-        "--root",
-        root,
-        "--epic",
-        outside,
-        "--title",
-        "Rogue task",
-        "--repo",
-        "p",
-        "--value",
-        "v",
-        "--files",
-        "a.py",
-        "--verify",
-        "true",
-    )
-    assert r.returncode != 0
-    assert "outside" in r.stderr and "plans root" in r.stderr
-    assert not (outside / "tasks" / "rogue-task.md").exists()
-
-
-def test_resolve_epic_refuses_path_outside_plans_root(root, tmp_path):
-    outside = tmp_path / "elsewhere" / "todo" / "rogue"
-    (outside / "tasks").mkdir(parents=True)
-    inside = epic(root, "Inside")
-    traversal = root / "todo" / inside / ".." / ".." / ".." / "elsewhere" / "todo" / "rogue"
-    for arg in (outside, traversal):
-        r = cli(
-            "new-task",
-            "--points",
-            "3",
-            "--root",
-            root,
-            "--epic",
-            arg,
-            "--title",
-            "Rogue task",
-            "--repo",
-            "p",
-            "--value",
-            "v",
-            "--files",
-            "a.py",
-            "--verify",
-            "true",
-        )
-        assert r.returncode != 0
-        assert "outside the plans root" in r.stderr
-    assert not (outside / "tasks" / "rogue-task.md").exists()
-    ok = cli(
-        "new-task",
-        "--points",
-        "3",
-        "--root",
-        root,
-        "--epic",
-        root / "todo" / inside,
-        "--title",
-        "Fine task",
-        "--repo",
-        "p",
-        "--value",
-        "v",
-        "--files",
-        "a.py",
-        "--verify",
-        "true",
-    )
-    assert ok.returncode == 0, ok.stderr
+    assert f"warning: live worktree '{a}' belongs to plan '{a}' which is in todo" in r.stderr
+    assert f"'{b}'" not in r.stderr and "unrelated" not in r.stderr
