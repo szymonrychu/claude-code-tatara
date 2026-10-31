@@ -1,126 +1,53 @@
-# Immediate message delivery with per-message priority design
+---
+title: Immediate message delivery with per-message priority
+repos: [claude-code-wrapper, agents-orchestrator, any-mcp-tatara-plugins, agents-web, agents-common, agents-matrix-connector]
+created: 2026-10-29
+owner: ""
+rung: ""
+---
 
-## Summary
+# Immediate message delivery with per-message priority
 
-A message sent to a session whose leader is busy no longer waits for idle: the orchestrator
-dispatches it at once and the wrapper pastes it into the running turn, carrying that turn's own
-marker plus a per-paste merge marker, so Claude Code queues it internally and the running turn
-absorbs it (D3). The message joins the running turn and shares its final answer; the wrapper
-records each merged paste on the turn record and confirms it from the transcript (D5). A Stop with
-a paste still unconfirmed waits a bounded time for it (D6). Every message carries `priority`:
-`immediate` (default) or `idle` (today's wait-until-idle) through the orchestrator API, the
-superleader's `session_send`, the ccw peer `send_message`, the wrapper `POST /turns` and a web
-composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector stops holding a
-room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
-comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.7.0, agents-common
-0.5.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
-the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
-orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
-web-sync-message-priority, web-composer-send-when-idle and the `priority` legs of the wrapper and
-peer tasks); flagged at the gate as Q10.
+## What and why
 
-## Intent and why
+What: Messages to a session reach its leader through the PTY at once, even mid-turn, and Claude Code (or the agent) queues them internally; each message carries a priority: immediate by default, or wait until the leader is idle (today's behaviour).
+How: Planned when reached (cct2 queue: after slash-commands-from-chat and the paste-.env fix).
+Why: User, verbatim (2026-10-28 21:02Z via mx-34 #262): 'currently the messages wait for too long ... message should get through PTY immediately and let either Claude Code or even agent queue them internally'; 21:04Z (#266): 'maybe worth adding priority meta to messages (by default reaching instantly, option to wait until idle)'.
 
-User (2026-10-28 21:02Z via mx-34 #262), verbatim: "Improvement idea to messaging system- currently
-the messages wait for too long. Ask agents to queue another epic- message should get through PTY
-immediately and let either Claude Code or even agent queue them internally." Scope addition
-(21:04Z via mx-34 #266), verbatim: "A: maybe worth adding priority meta to messages (by default
-reaching instantly, option to wait until idle)".
+User request (2026-10-28 21:02Z via mx-34 #262), verbatim: "Improvement idea to messaging system- currently the messages wait for too long. Ask agents to queue another epic- message should get through PTY immediately and let either Claude Code or even agent queue them internally."
 
-Today a message waits at four places for an idle leader: the orchestrator pick (`db/queue.py:_PICK`
-needs `state = 'idle'` and `free_since > last_dispatched_at`), the busy-leader hold of
-`_claim_in_session` (every later untargeted message waits, FIFO), the wrapper's 409 `busy`
-(`Session.check_submittable`) and, for Matrix, the connector's `rooms_ready`, which claims no new
-row of a room while its run is in progress (cartographer brief section 1). A long agent turn
-therefore holds every message for its whole length. Claude Code already queues input submitted
-while it works and hands it to the model at the next tool boundary within the same turn, or sends
-it right after the turn (docs brief A1, A2). The wedge of 2026-10-28 (debug record) showed the
-same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
+User scope addition (21:04Z via mx-34 #266), verbatim: "A: maybe worth adding priority meta to messages (by default reaching instantly, option to wait until idle)".
 
-## Goals
+Today every message waits for an idle leader: the orchestrator picks only an idle agent, holds later messages behind a busy leader, and the wrapper answers 409 busy to a second turn. Claude Code itself queues input typed while it works and hands it to the model at the next tool boundary, or right after the turn. This epic sends a message to a busy leader at once: the wrapper pastes it into the running turn with that turn's marker, so it joins the running turn and shares its final answer, and a message can ask to wait for idle instead. It is planned on top of slash-commands-from-chat (wrapper command queue, transcript parser, orchestrator message kind) and hive-decoupling (orchestrator migration 0011, plugins 0.4.0), both blockers. It lands after session-orchestration-mcp too (migration 0013 on top of slash's 0012, plugins v0.6.0), so it takes migration 0014 and plugins v0.7.0 (negotiated 2026-10-29, mx-34 #469/#470). Design: design.md.
 
-- G1: a message sent to a busy session reaches its leader through the PTY at once, mid-turn, and
-  Claude Code queues it internally; by default no message waits for the leader to go idle.
-- G2: each message carries a priority, immediate (the default) or idle (today's behaviour),
-  settable from the web composer, the orchestrator messages API, the superleader's session_send
-  and the ccw peer send_message.
-- G3: a message delivered mid-turn never wedges the session: the running turn still ends on its
-  Stop, and the message is linked to the turn that answered it (hop guard, delivery verifier).
-- G4: Matrix chat messages in a room whose run is in progress are delivered at once, and an answer
-  shared by merged messages is relayed to the room once.
-- G5: slash commands keep running at the turn's Stop whatever the priority; nothing is pasted while
-  a command runs or a dialog is open.
-- G6: how Claude Code 2.1.304 treats input pasted mid-turn is probed on the real binary and
-  recorded before the wrapper relies on it.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: a message sent to a busy session reaches its leader through the PTY at once, mid-turn, and Claude Code queues it internally; by default no message waits for the leader to go idle.
+- 1.2: G2: each message carries a priority, immediate (the default) or idle (wait until the leader is idle, today's behaviour), settable from the web composer, the orchestrator messages API, the superleader's session_send tool and the ccw peer send_message tool.
+- 1.3: G3: a message delivered mid-turn never wedges the session: the running turn still ends on its Stop, and the message is linked to the turn that answered it (hop guard and delivery verifier included).
+- 1.4: G4: Matrix chat messages in a room whose run is in progress are delivered at once, and an answer shared by merged messages is relayed to the room once.
+- 1.5: G5: slash commands keep running at the turn's Stop whatever the priority, and nothing is pasted while a command runs or a dialog is open.
+- 1.6: G6: how Claude Code 2.1.304 treats input pasted mid-turn is probed on the real binary and recorded before the wrapper relies on it.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-- No new `messages.status` value for "answered"; it stays derived from the linked turn
-  (`views._MESSAGE_SELECT`).
-- No delivery through the notes channel (hive only, newline-collapsing, throttled, tool-boundary
-  only), Claude Code's native cross-session messaging (frames text as peer-originated) or queue
-  keystrokes (Ctrl+Enter send-now, Ctrl+X chords, Up take-back; terminal-dependent, docs A6, A7).
+- No new message status for "answered": it stays derived from the linked turn.
+- No delivery through the notes channel, Claude Code's native cross-session messaging or queue keystrokes (Ctrl+Enter, Up take-back).
 - No slash command typed mid-turn; Claude Code's own immediate commands (slash epic Q2) stay out.
-- No orchestrator stale-busy detector and no wrapper turn watchdog (debug record follow-up; retro
-  matrix-connector-agent-initi tech debt): noted, not doing now.
-- No agents-helmfile pin, apply or smoke task (Q9).
-- No priority control in Matrix, webhook or schedule: they post `{text}` and take the server
-  default (Q3).
-- No change to `limits.turn_max_seconds`: it keeps counting from the first submit (wrapper MEMORY
-  2026-10-28), so merged messages do not extend a bounded turn.
+- No orchestrator stale-busy detector and no wrapper turn watchdog (debug record follow-up, noted, not doing now).
+- No agents-helmfile pin, apply or smoke task: deploy is decided at the gate.
+- No priority control in Matrix: connector, webhook and schedule messages take the server default.
+- No change to turn_max_seconds: it keeps counting from the turn's first submit.
 
-## Anti-goals
+## Design
 
-- A mid-turn paste carrying a new turn id marker: `Router._last_marker` would move and the running
-  turn's Stop would be dropped as stale, the 2026-10-28 wedge in reverse. Pinned by a test (D3).
-- A Stop that never completes the running turn because a merged paste was never seen: the defer is
-  bounded (D6).
-- Text pasted while a slash command runs, while the turn is in its command phase or while a dialog
-  is on screen (a CR answers a dialog, probe outA of the slash epic).
-- An unbounded number of pastes into one turn (flood): capped, 429 (D4).
-- An ambiguous send resent after it was merged (duplicate delivery): the verifier recognises merged
-  deliveries (D14).
-- The same final answer relayed twice to a Matrix room (D18).
-- A backward-compatibility shim (Housekeeping rule 4): no alias for the old behaviour beyond the
-  `idle` priority the user asked for.
-
-## Constraints
-
-- Python only (wrapper, orchestrator, plugin, agents-common, connector); TypeScript for agents-web.
-- Services talk only through HTTP; `messages` keeps one writer per transition, every status change
-  a guarded UPDATE in `db/queue.py`; the connector's `inbound` and `runs` likewise.
-- Built on the merged slash-commands-from-chat epic (README blocker): its command queue held until
-  Stop (D9), `_PICK_COMMAND` and the per-session order rule (D10), `DialogScanner` (D7), migration
-  0010 and 0012_command_outcome_index and wrapper 0.4.1 (fix round; 0.4.0 never deployed), plugins 0.5.0
-  (tatara tagged v0.5.1 on top, the latest tag). Built on hive-decoupling (README blocker): migration 0011,
-  plugins 0.4.0 and its orchestrator plugin pin. It lands after session-orchestration-mcp too: migration
-  0013 (on top of slash's 0012) and plugins v0.6.0, the live baseline before this epic. This epic therefore
-  takes migration 0014, wrapper 0.5.0, plugins 0.7.0 (negotiated 2026-10-29, mx-34 #469/#470); when a number is taken at build time the task takes the next free one and
-  the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
-  repo's main and the submodules are advanced, never against their branches (my call, builder Q1);
-  the connector's own migration is the next free one after `0002_agent_sends.sql`.
-- Pull requests (my call, builder Q5): one PR per repo for the epic. The wrapper, plugins and
-  agents-common PRs merge when their release task is green (the tag needs the merge commit); the
-  connector PR after common-release-0-5-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
-  and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.1 wrapper in
-  CI; it merges with a merge commit, so the epic-branch commit that agents-web's
-  `openapi/orchestrator.source` names stays reachable (builder Q6); the web PR merges after it.
-- Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
-  the probe task (wrapper-midturn-probe) runs the real binary, in a throwaway dir under
-  `/workdir/workdir/.scratchpad/probe-midturn`; only wrapper-fake-claude-queue edits
-  `tests/conftest.py`.
-- Generated files are regenerated, never hand-edited: orchestrator `openapi.json`
-  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`), agents-web
-  `src/api/schema.d.ts` (`npm run sync:api -- orchestrator`).
-- Claude Code pin 2.1.304 (`code/claude-code-wrapper/Dockerfile:21`). The transcript format is
-  internal and unstable (docs A9); every rule here is verified at 2.1.304 only.
-- Environment of this container (as the slash epic's Constraints): orchestrator and connector
-  Postgres tests need Docker and run in CI; wrapper `tests/test_manager.py::test_shutdown_stops_all`,
-  `tests/test_pty_proc.py::test_exit_without_eof_still_fires` and
-  `tests/test_pty_proc.py::test_close_terminates_group_then_kill` fail here (PID 1) and are
-  deselected; agents-web verifies name the chat test files only (10 load-dependent timeouts).
-- agents-web design rules (`src/layout/designRules.ts`): no colour literals outside `theme.ts`, no
-  arrows or decorative Unicode.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -426,6 +353,24 @@ Constraints. No agents-helmfile task (Q9).
 Alternatives: pin branch commits (pruned images, unreachable shas).
 Why: precedent slash D14, leader-auto-handover.
 
+## Open questions
+
+- Q1: Should a message sent while the leader is busy join the running turn and share that turn's final answer, instead of getting a turn record of its own? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q2: Name the field priority with values immediate (the default) and idle, the same in the orchestrator API, session_send, the ccw send_message, the wrapper POST /turns, with a web composer toggle labelled Send when idle? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q3: Should webhook, schedule and Matrix messages, which post text only, become immediate through the server default? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q4: Should slash commands keep running only at the turn's Stop, with any priority they carry stored and ignored? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q5: Should an immediate message overtake older idle messages still queued for the same session? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q6: Add agents-matrix-connector and agents-common to the epic, so new chat messages in a room with a run in progress are delivered at once and a shared answer is relayed once? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q7: Should the ccw peer send_message (hive peers) get the same priority option and mid-turn delivery? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 65 points? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q12: Builder Q3: may the probe (wrapper-midturn-probe) run the real claude 2.1.304 in this container with the existing login, spending real tokens on P1 to P12 (permission dialog, AskUserQuestion, /compact, MCP elicitation), and may the epic continue when P6 or another probe the container cannot run is recorded unsettled, the orchestrator then amending wrapper-merge-guards to the dialog footers it can prove? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q13: Builder Q7: are Q1 to Q11 accepted as recommended, including Q8 (the wrapper's POST /turns defaults to immediate for every client) and Q10 (the priority option stays in scope, now about 13 of the epic's 78 points)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q14: During a deploy the orchestrator rolls agent pods itself, idle only, after it is deployed, so pods still on wrapper 0.4.1 answer 422 invalid_request to the new priority field and today's mapping fails those messages for good (rejected). For this rollout window only, should the orchestrator requeue such a message with backoff and no attempt counted until that pod rolls (a temporary compatibility shim, pinned by a dispatcher test in orch-dispatch-immediate and removed in a later epic)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+- Q15: When a merged message is never seen by Claude Code before its turn ends (the settle bound expired or the turn was interrupted), should the orchestrator mark that message failed with error not_absorbed (shown in the queue strip with Retry, not relayed to Matrix) instead of leaving it sent and linked to an answer that never addressed it, accepting that a later agent turn may still act on the queued text (about 3 more points in orch-merged-delivery and mxc-relay-once-per-turn)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -438,7 +383,7 @@ Why: precedent slash D14, leader-auto-handover.
 | research-code-external | skipped: no analogue drives Claude Code's TUI queue; the forks are settled by the probe | none | none |
 | architect (fable) | skipped: every fork has a user decision or a probe; no framed question remained | none | none |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics (`ticket.py retro --history`), recurring workflow
 ones first:
@@ -495,7 +440,142 @@ Findings:
 - `chat_send` defines a chat-started turn by its first `<chat>` message (plugin `__init__.py`):
   plugin-session-send-priority.
 
-## Decision coverage
+## Irreversible operations
+
+- Migration 0014 (additive, idempotent, no data rewrite beyond the default on existing rows): runs
+  only when the orchestrator deploys, which is decided at the gate.
+- Tags v0.5.0 (wrapper), v0.7.0 (plugins), v0.5.0 (agents-common): pushed by the orchestrator
+  session after each release PR merges green; a wrong tag is never moved, a new patch is cut.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+A message sent to a session whose leader is busy no longer waits for idle: the orchestrator
+dispatches it at once and the wrapper pastes it into the running turn, carrying that turn's own
+marker plus a per-paste merge marker, so Claude Code queues it internally and the running turn
+absorbs it (D3). The message joins the running turn and shares its final answer; the wrapper
+records each merged paste on the turn record and confirms it from the transcript (D5). A Stop with
+a paste still unconfirmed waits a bounded time for it (D6). Every message carries `priority`:
+`immediate` (default) or `idle` (today's wait-until-idle) through the orchestrator API, the
+superleader's `session_send`, the ccw peer `send_message`, the wrapper `POST /turns` and a web
+composer toggle (D1). Slash commands are unaffected (D8). The Matrix connector stops holding a
+room's new messages behind its running run (D18). A real-binary probe of Claude Code 2.1.304
+comes first and may amend later tasks (D11). Releases: wrapper 0.5.0, plugins 0.7.0, agents-common
+0.5.0; the orchestrator and the connector pin them; deploy is decided at the gate (D19). Cost of
+the priority option alone (the user's "maybe"): about 13 of the epic's 78 points (tasks
+orch-priority-column, orch-session-send-priority, plugin-session-send-priority,
+web-sync-message-priority, web-composer-send-when-idle and the `priority` legs of the wrapper and
+peer tasks); flagged at the gate as Q10.
+
+### design.md: Intent and why
+
+User (2026-10-28 21:02Z via mx-34 #262), verbatim: "Improvement idea to messaging system- currently
+the messages wait for too long. Ask agents to queue another epic- message should get through PTY
+immediately and let either Claude Code or even agent queue them internally." Scope addition
+(21:04Z via mx-34 #266), verbatim: "A: maybe worth adding priority meta to messages (by default
+reaching instantly, option to wait until idle)".
+
+Today a message waits at four places for an idle leader: the orchestrator pick (`db/queue.py:_PICK`
+needs `state = 'idle'` and `free_since > last_dispatched_at`), the busy-leader hold of
+`_claim_in_session` (every later untargeted message waits, FIFO), the wrapper's 409 `busy`
+(`Session.check_submittable`) and, for Matrix, the connector's `rooms_ready`, which claims no new
+row of a room while its run is in progress (cartographer brief section 1). A long agent turn
+therefore holds every message for its whole length. Claude Code already queues input submitted
+while it works and hands it to the model at the next tool boundary within the same turn, or sends
+it right after the turn (docs brief A1, A2). The wedge of 2026-10-28 (debug record) showed the
+same mechanism by accident; the 0.3.3 parser fix made it safe to rely on.
+
+### design.md: Goals
+
+- G1: a message sent to a busy session reaches its leader through the PTY at once, mid-turn, and
+  Claude Code queues it internally; by default no message waits for the leader to go idle.
+- G2: each message carries a priority, immediate (the default) or idle (today's behaviour),
+  settable from the web composer, the orchestrator messages API, the superleader's session_send
+  and the ccw peer send_message.
+- G3: a message delivered mid-turn never wedges the session: the running turn still ends on its
+  Stop, and the message is linked to the turn that answered it (hop guard, delivery verifier).
+- G4: Matrix chat messages in a room whose run is in progress are delivered at once, and an answer
+  shared by merged messages is relayed to the room once.
+- G5: slash commands keep running at the turn's Stop whatever the priority; nothing is pasted while
+  a command runs or a dialog is open.
+- G6: how Claude Code 2.1.304 treats input pasted mid-turn is probed on the real binary and
+  recorded before the wrapper relies on it.
+
+### design.md: Non-goals
+
+- No new `messages.status` value for "answered"; it stays derived from the linked turn
+  (`views._MESSAGE_SELECT`).
+- No delivery through the notes channel (hive only, newline-collapsing, throttled, tool-boundary
+  only), Claude Code's native cross-session messaging (frames text as peer-originated) or queue
+  keystrokes (Ctrl+Enter send-now, Ctrl+X chords, Up take-back; terminal-dependent, docs A6, A7).
+- No slash command typed mid-turn; Claude Code's own immediate commands (slash epic Q2) stay out.
+- No orchestrator stale-busy detector and no wrapper turn watchdog (debug record follow-up; retro
+  matrix-connector-agent-initi tech debt): noted, not doing now.
+- No agents-helmfile pin, apply or smoke task (Q9).
+- No priority control in Matrix, webhook or schedule: they post `{text}` and take the server
+  default (Q3).
+- No change to `limits.turn_max_seconds`: it keeps counting from the first submit (wrapper MEMORY
+  2026-10-28), so merged messages do not extend a bounded turn.
+
+### design.md: Anti-goals
+
+- A mid-turn paste carrying a new turn id marker: `Router._last_marker` would move and the running
+  turn's Stop would be dropped as stale, the 2026-10-28 wedge in reverse. Pinned by a test (D3).
+- A Stop that never completes the running turn because a merged paste was never seen: the defer is
+  bounded (D6).
+- Text pasted while a slash command runs, while the turn is in its command phase or while a dialog
+  is on screen (a CR answers a dialog, probe outA of the slash epic).
+- An unbounded number of pastes into one turn (flood): capped, 429 (D4).
+- An ambiguous send resent after it was merged (duplicate delivery): the verifier recognises merged
+  deliveries (D14).
+- The same final answer relayed twice to a Matrix room (D18).
+- A backward-compatibility shim (Housekeeping rule 4): no alias for the old behaviour beyond the
+  `idle` priority the user asked for.
+
+### design.md: Constraints
+
+- Python only (wrapper, orchestrator, plugin, agents-common, connector); TypeScript for agents-web.
+- Services talk only through HTTP; `messages` keeps one writer per transition, every status change
+  a guarded UPDATE in `db/queue.py`; the connector's `inbound` and `runs` likewise.
+- Built on the merged slash-commands-from-chat epic (README blocker): its command queue held until
+  Stop (D9), `_PICK_COMMAND` and the per-session order rule (D10), `DialogScanner` (D7), migration
+  0010 and 0012_command_outcome_index and wrapper 0.4.1 (fix round; 0.4.0 never deployed), plugins 0.5.0
+  (tatara tagged v0.5.1 on top, the latest tag). Built on hive-decoupling (README blocker): migration 0011,
+  plugins 0.4.0 and its orchestrator plugin pin. It lands after session-orchestration-mcp too: migration
+  0013 (on top of slash's 0012) and plugins v0.6.0, the live baseline before this epic. This epic therefore
+  takes migration 0014, wrapper 0.5.0, plugins 0.7.0 (negotiated 2026-10-29, mx-34 #469/#470); when a number is taken at build time the task takes the next free one and
+  the orchestrator amends its `files`. The epic starts only once both blockers are merged on each
+  repo's main and the submodules are advanced, never against their branches (my call, builder Q1);
+  the connector's own migration is the next free one after `0002_agent_sends.sql`.
+- Pull requests (my call, builder Q5): one PR per repo for the epic. The wrapper, plugins and
+  agents-common PRs merge when their release task is green (the tag needs the merge commit); the
+  connector PR after common-release-0-5-0's tag; the orchestrator PR only after orch-wrapper-pin-0-5-0
+  and orch-plugins-pin-0-5-0 are green, so no orchestrator main sends `priority` to a 0.4.1 wrapper in
+  CI; it merges with a merge commit, so the epic-branch commit that agents-web's
+  `openapi/orchestrator.source` names stays reachable (builder Q6); the web PR merges after it.
+- Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
+  the probe task (wrapper-midturn-probe) runs the real binary, in a throwaway dir under
+  `/workdir/workdir/.scratchpad/probe-midturn`; only wrapper-fake-claude-queue edits
+  `tests/conftest.py`.
+- Generated files are regenerated, never hand-edited: orchestrator `openapi.json`
+  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`), agents-web
+  `src/api/schema.d.ts` (`npm run sync:api -- orchestrator`).
+- Claude Code pin 2.1.304 (`code/claude-code-wrapper/Dockerfile:21`). The transcript format is
+  internal and unstable (docs A9); every rule here is verified at 2.1.304 only.
+- Environment of this container (as the slash epic's Constraints): orchestrator and connector
+  Postgres tests need Docker and run in CI; wrapper `tests/test_manager.py::test_shutdown_stops_all`,
+  `tests/test_pty_proc.py::test_exit_without_eof_still_fires` and
+  `tests/test_pty_proc.py::test_close_terminates_group_then_kill` fail here (PID 1) and are
+  deselected; agents-web verifies name the chat test files only (10 load-dependent timeouts).
+- agents-web design rules (`src/layout/designRules.ts`): no colour literals outside `theme.ts`, no
+  arrows or decorative Unicode.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -519,7 +599,7 @@ Findings:
 | D18 Matrix connector delivery | common-message-turn-id, common-release-0-5-0, mxc-relay-once-per-turn, mxc-deliver-during-run |
 | D19 release and pin | wrapper-release-0-5-0, orch-wrapper-pin-0-5-0, orch-plugins-pin-0-5-0, plugins-release-0-5-0, common-release-0-5-0, mxc-relay-once-per-turn |
 
-## Review focus
+### design.md: Review focus
 
 - The marker rule (D3): every mid-turn paste carries the running turn's id in its turn marker; a
   grep of the paste path for `new_turn_id` on the merge leg must find nothing. The pin test is the
@@ -539,7 +619,7 @@ Findings:
 - Security per task (retro): size limits on merged text (`limits.max_prompt_bytes` applies), the
   429 cap, the onTurn veto on merges, peer rate limits unchanged.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal names of helpers, timers and the exact placement of the merge-pending wait inside the
   router, within D6's order and bound.
@@ -551,7 +631,7 @@ Findings:
   under `/workdir/workdir/.scratchpad/probe-midturn`.
 - The exact wording of the plugin descriptions and the web toggle label, within D15 and D16.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - U1/P1-P2: whether a paste during a tool call is injected at the tool boundary as a
   `queued_command` attachment, and whether one queued at a text-only turn end yields one Stop or
@@ -575,27 +655,3 @@ Findings:
   re-checked against D4, D8 and D13 before this epic starts.
 - hive-decoupling takes migration 0011 and plugins 0.4.0, slash migration 0012 and session-orchestration-mcp migration 0013 and plugins v0.6.0 (mx-34 #469); if any lands differently, the numbers here
   move to the next free ones.
-
-## Open questions
-- Q1: Should a message sent while the leader is busy join the running turn and share that turn's final answer, instead of getting a turn record of its own? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q2: Name the field priority with values immediate (the default) and idle, the same in the orchestrator API, session_send, the ccw send_message, the wrapper POST /turns, with a web composer toggle labelled Send when idle? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q3: Should webhook, schedule and Matrix messages, which post text only, become immediate through the server default? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q4: Should slash commands keep running only at the turn's Stop, with any priority they carry stored and ignored? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q5: Should an immediate message overtake older idle messages still queued for the same session? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q6: Add agents-matrix-connector and agents-common to the epic, so new chat messages in a room with a run in progress are delivered at once and a shared answer is relayed once? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q7: Should the ccw peer send_message (hive peers) get the same priority option and mid-turn delivery? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q8: Should the wrapper's own POST /turns default to immediate for every client, not only the orchestrator? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q9: Keep deploy out of this epic (no agents-helmfile pin, apply or smoke task) and decide it at the gate? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q10: Keep the per-message priority option (the idle choice) in this epic, at about 13 of its 65 points? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q11: Should messages already queued when the migration runs keep today's wait-until-idle behaviour, with only new messages defaulting to immediate? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q12: Builder Q3: may the probe (wrapper-midturn-probe) run the real claude 2.1.304 in this container with the existing login, spending real tokens on P1 to P12 (permission dialog, AskUserQuestion, /compact, MCP elicitation), and may the epic continue when P6 or another probe the container cannot run is recorded unsettled, the orchestrator then amending wrapper-merge-guards to the dialog footers it can prove? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q13: Builder Q7: are Q1 to Q11 accepted as recommended, including Q8 (the wrapper's POST /turns defaults to immediate for every client) and Q10 (the priority option stays in scope, now about 13 of the epic's 78 points)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q14: During a deploy the orchestrator rolls agent pods itself, idle only, after it is deployed, so pods still on wrapper 0.4.1 answer 422 invalid_request to the new priority field and today's mapping fails those messages for good (rejected). For this rollout window only, should the orchestrator requeue such a message with backoff and no attempt counted until that pod rolls (a temporary compatibility shim, pinned by a dispatcher test in orch-dispatch-immediate and removed in a later epic)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-- Q15: When a merged message is never seen by Claude Code before its turn ends (the settle bound expired or the turn was interrupted), should the orchestrator mark that message failed with error not_absorbed (shown in the queue strip with Retry, not relayed to Matrix) instead of leaving it sent and linked to an answer that never addressed it, accepting that a later agent turn may still act on the queued text (about 3 more points in orch-merged-delivery and mxc-relay-once-per-turn)? [answer: yes (user approved the gate 2026-10-29 07:18Z via mx-34 #363, verbatim: "Yes to all, go"; includes the temporary requeue-on-422 shim)]
-
-## Irreversible operations in scope
-
-- Migration 0014 (additive, idempotent, no data rewrite beyond the default on existing rows): runs
-  only when the orchestrator deploys, which is decided at the gate.
-- Tags v0.5.0 (wrapper), v0.7.0 (plugins), v0.5.0 (agents-common): pushed by the orchestrator
-  session after each release PR merges green; a wrong tag is never moved, a new patch is cut.
