@@ -2,12 +2,13 @@
 """SubagentStart / SubagentStop recorder: one usage record per subagent, Claude Code only.
 
 Writes `<main checkout>/.logs/agents/<agentId>.json` (`workbench.logs_dir` from the event cwd,
-so an agent working in an integration tree still records into the main checkout).
+so an agent working in a plan tree still records into the main checkout).
 
 - SubagentStart (spawn and every resume) records the start time, agent id and type, the
   agent transcript path derived from `transcript_path` and `session_id`
-  (`<dir>/<session_id>/subagents/agent-<agent_id>.jsonl`) and the run marker when the
-  transcript is already readable. A resume keeps the first start.
+  (`<dir>/<session_id>/subagents/agent-<agent_id>.jsonl`) and, from the run marker
+  `[wb <plan>/<role>]` when the transcript is already readable, the plan and role. A
+  resume keeps the first start.
 - SubagentStop recomputes model, end and tokens from the whole agent transcript with
   `agent_usage.summarize` and overwrites the record, keeping the start the SubagentStart
   record holds. Stopping again (a fix round, a commit-guard refire) never double counts.
@@ -69,10 +70,10 @@ def build_record(payload: dict, earlier: dict, now: str) -> dict | None:
     )
     readable = bool(transcript) and Path(transcript).is_file()
 
-    record = dict(earlier)
+    record = {k: v for k, v in earlier.items() if k not in ("epic", "task")}
     record.update(agentId=agent_id, agentType=agent_type, transcript=transcript, updatedAt=now)
     record.setdefault("start", None)
-    for key in ("model", "epic", "task", "end"):
+    for key in ("model", "plan", "end"):
         record.setdefault(key, None)
 
     if stop:
@@ -92,8 +93,8 @@ def build_record(payload: dict, earlier: dict, now: str) -> dict | None:
 
     marker = agent_usage.parse_marker(transcript) if readable else None
     if marker:
-        record["epic"], record["task"] = marker[0], marker[1]
-    record["role"] = agent_usage.role_for(marker[2] if marker else None, agent_type)
+        record["plan"] = marker[0]
+    record["role"] = agent_usage.role_for(marker[1] if marker else None, agent_type)
     return record
 
 

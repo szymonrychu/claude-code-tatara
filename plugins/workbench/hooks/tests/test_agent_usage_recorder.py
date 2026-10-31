@@ -62,7 +62,7 @@ def usage(inp, cc, cr, out):
     }
 
 
-def first_round(prompt="[wb my-epic/my-task/impl]\n\nImplement the task."):
+def first_round(prompt="[wb my-plan/impl]\n\nImplement the chunk."):
     return [
         {
             "type": "user",
@@ -152,7 +152,8 @@ def test_stop_writes_record(tmp_path):
     assert rec["agentId"] == "a1"
     assert rec["agentType"] == "workbench:implementer"
     assert rec["model"] == "claude-test-1"
-    assert (rec["epic"], rec["task"], rec["role"]) == ("my-epic", "my-task", "impl")
+    assert (rec["plan"], rec["role"]) == ("my-plan", "impl")
+    assert "epic" not in rec and "task" not in rec
     assert rec["start"] == "2026-10-24T10:00:00.000Z"
     assert rec["end"] == "2026-10-24T10:05:00.000Z"
     assert rec["transcript"] == str(s.agent_transcript("a1"))
@@ -208,25 +209,23 @@ def test_start_then_stop_keeps_start(tmp_path):
     assert rec["agentType"] == "workbench:reviewer"
     assert rec["transcript"] == str(s.agent_transcript("a3"))
     assert rec["role"] == "review"
-    assert rec["epic"] is None and rec["task"] is None
+    assert rec["plan"] is None and "epic" not in rec and "task" not in rec
     start = rec["start"]
     assert start and start.endswith("Z") and start > "2026-10-24T10:00:00.000Z"
 
     # Resume fires SubagentStart again; the first start stays, and the marker is now readable.
-    write_transcript(
-        s.agent_transcript("a3"), first_round("[wb my-epic/my-task/review]\nReview it.")
-    )
+    write_transcript(s.agent_transcript("a3"), first_round("[wb my-plan/review]\nReview it."))
     assert_silent(run_hook(early, root))
     rec = load(root, "a3")
     assert rec["start"] == start
-    assert (rec["epic"], rec["task"], rec["role"]) == ("my-epic", "my-task", "review")
+    assert (rec["plan"], rec["role"]) == ("my-plan", "review")
 
     assert_silent(run_hook(s.payload("SubagentStop", "a3", "workbench:reviewer", root), root))
     rec = load(root, "a3")
     assert rec["start"] == start
     assert rec["end"] == "2026-10-24T10:05:00.000Z"
     assert rec["tokens"]["total"] == 1125
-    assert (rec["epic"], rec["task"], rec["role"]) == ("my-epic", "my-task", "review")
+    assert (rec["plan"], rec["role"]) == ("my-plan", "review")
 
 
 def test_internal_agent_writes_nothing(tmp_path):
@@ -261,7 +260,7 @@ def test_fails_open(tmp_path):
     # Garbled transcript.
     garbled = s.agent_transcript("bad")
     garbled.parent.mkdir(parents=True, exist_ok=True)
-    garbled.write_bytes(b"\x00\xff not json\n{\"type\": \n[]\n")
+    garbled.write_bytes(b'\x00\xff not json\n{"type": \n[]\n')
     assert_silent(run_hook(s.payload("SubagentStop", "bad", "workbench:implementer", root), root))
     assert not record_path(root, "bad").exists()
 
@@ -293,17 +292,17 @@ def test_record_lands_in_main_checkout(tmp_path):
     (main / "seed.txt").write_text("seed\n")
     git(main, "add", "seed.txt")
     git(main, "commit", "-qm", "seed")
-    tree = main / ".claude" / "worktrees" / "epic-x"
-    git(main, "worktree", "add", "-q", "-b", "epic-x", str(tree))
+    tree = main / ".claude" / "worktrees" / "plan-x"
+    git(main, "worktree", "add", "-q", "-b", "plan-x", str(tree))
     s = Session(tmp_path)
 
     cases = [
         # No meta.json yet: the role comes from the marker.
-        ("w1", False, first_round(), "workbench:implementer", "impl", "my-epic"),
+        ("w1", False, first_round(), "workbench:implementer", "impl", "my-plan"),
         # meta.json beside an unmarked transcript: the role comes from agent_type.
         ("w2", True, first_round("no marker here"), "workbench:reviewer", "review", None),
     ]
-    for agent_id, meta, lines, agent_type, role, epic in cases:
+    for agent_id, meta, lines, agent_type, role, plan in cases:
         transcript = write_transcript(s.agent_transcript(agent_id), lines)
         if meta:
             transcript.with_name(f"agent-{agent_id}.meta.json").write_text(
@@ -314,7 +313,7 @@ def test_record_lands_in_main_checkout(tmp_path):
 
         rec = load(main, agent_id)
         assert rec["role"] == role, agent_id
-        assert rec["epic"] == epic, agent_id
+        assert rec["plan"] == plan, agent_id
         assert rec["tokens"]["total"] == 1125, agent_id
         assert not (tree / ".logs").exists(), agent_id
 
