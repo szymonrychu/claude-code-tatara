@@ -1,6 +1,28 @@
-# cluster presets record
+# cluster presets retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked (2026-10-23): named ClusterSpec presets (create, copy, edit, delete) with a seeded 1-pod Default, scheduling a cluster from a preset alone, live cluster edit removed, Presets as the first settings category in the hamburger menu, everything also usable headless.
 
@@ -8,7 +30,7 @@ Shipped: 13 tasks, all `done`. agent-orchestrator: `0002_presets.sql`, `/api/v1/
 
 Verdict: delivered and merged. Orchestrator suite 528 passed, frontend 183 passed, PR CI green including kind e2e. Not deployed: `helmfile apply` and smoke are user-run. PR CI kind e2e caught a real bug the unit tests missed (PATCH answered 404, not 405, behind the SPA mount in the built image); fixed test-first in `spa-method-not-allowed`.
 
-## Planned vs built
+### Planned vs built
 
 Sources: plan-execute first-run return (`presets-return.json`, 11 tasks), task files, `git show --stat` of each landed commit in `code/agent-orchestrator` and `code/agents-helmfile`, `presets-suite.log`. The return was not provided for the later runs (`presets-review-fixes`, `spa-method-not-allowed`, `deploy-pin-presets`); their rows use the task file `verified_head` and say so. Continuations per task: unknown (not in the return); the epic took 4 apply-run commits in the superrepo (`f97dc34`, `48ab361`, `5e4f223`, `550c518`).
 
@@ -45,7 +67,7 @@ Approvals ledger (`approvals.json`, all `approved`). The run-1 return column is 
 | G | Headless parity: documented public API and an API-only e2e test per capability | D8 D10 | create-cluster-from-preset, kind-e2e-presets, preset-routes | escalated (kind-e2e-presets) | delivered: ASGI tests per route plus kind e2e through /api/v1, CI green |
 | H | Chart and image pinned in agents-helmfile; helmfile apply and smoke run by the user | D9 | deploy-pin-presets | escalated (dependency-failed) | pin delivered and merged (helmfile#7); apply and smoke pending, user |
 
-## Deviations and rulings
+### Deviations and rulings
 
 Each entry: what, why, cost if wrong.
 
@@ -73,11 +95,11 @@ Other deviations from the files:
 - The run-1 return has `audit: "off"` and `scopeAudit: null`; the scope audit (sonnet, every item A-G landed, 17 e2e collected) ran later per the README Review section. I did not see its output.
 - `forwardMerged`: none.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 None (return `duplicates` is empty; `misattributed` is empty).
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Real bug, fixed: `SpaStaticFiles` answered every `api/` path with 404 before any method check, so retired `PATCH` returned 404 in the built image; unit tests never mounted the SPA. Found by PR CI kind e2e `test_patch_cluster_retired`. Fixed by `spa-method-not-allowed` (`c979451`, 405 with `Allow: GET, HEAD`). Cleared.
 - Kind e2e cannot run in this container (no cluster, no kind binary). Run by the PR CI `e2e` job only: green. Cleared by CI.
@@ -89,7 +111,7 @@ None (return `duplicates` is empty; `misattributed` is empty).
 - Process gap: kind-e2e-presets has no red/green evidence (test-only diff). The verifier gate repeated on it for 3 rounds on an environment failure, not a code defect (5 fix minutes plus 1 false-finding minute in `actual_roles`).
 - The run-1 return contradicts the files in three places: `filesChanged` is `[]` for fe-preset-form and kind-e2e-presets; kind-e2e-presets has `verification.passed: true` while its evidence says the AC4 run exited 1; `finished: false` with `undelivered: []`. The files above are what I used.
 
-## Research that changed the plan
+### Research that changed the plan
 
 - `research.md` 1 (PATCH callers: only the UI and tests; `bench/runner.py:115` and `smoke.sh:46` only POST and DELETE) -> `retire-cluster-patch-route` is safe in tree; `smoke.sh` unchanged (Q2); tatara and magic-trainer left as a named risk.
 - `research.md` 3 (EC2 launch templates are immutable, https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/manage-launch-template-versions.html; Kubernetes template change rolls pods, `k8s/render.py:189`, `:254`) -> snapshot at create, versioned presets rejected (D4, D13, Non-goals).
@@ -98,7 +120,7 @@ None (return `duplicates` is empty; `misattributed` is empty).
 - `research.md` 4 (MUI temporary Drawer, https://mui.com/material-ui/react-drawer/) -> no new dependency; Presets via the `settingsCategories` contract `orch-settings-menu` (D7).
 - discovery `reuse.md` fix-as-ac (private `_check_spec`) -> `preset-routes` owns the public `check-spec-public`; `arm_slug` sanitising -> `slug-from-name` task (`slugify`, `generated_slug`, also used by `orch bench`); idempotent seed -> `INSERT ... ON CONFLICT DO NOTHING` in `0002_presets.sql`.
 
-## Cost
+### Cost
 
 Agents by role are `actual_roles` minutes summed over the 13 task files: impl 35, verify 33, review 12, fix 9, land 11, false-finding 2 (total 102). The per-task `actual` values sum to 90; the role minutes exceed `actual` on 6 tasks (kind-e2e-presets 9 vs 8, presets-review-fixes 12 vs 11, deploy-pin-presets 4 vs 1, retire-cluster-patch-route 9 vs 8, presets-table-and-repo 7 vs 5, slug-from-name 4 vs 2). Agent counts and tokens: unknown, except run-1 triage usage: 7 calls, 14 input and 5565 output tokens. Continuations: unknown per task; 4 plan-execute runs. Audits: whole-diff review (sonnet), scope audit (sonnet), security review skipped; run-1 `audit` was `off`. Wall-clock: superrepo `move in-progress` 2026-10-24 02:00:10 UTC to pointer bump 03:50:02 UTC, about 110 min including both merges (PR #5 03:41 UTC, PR #7 03:48 UTC).
 
@@ -121,14 +143,14 @@ README Time: Estimate 73 agent-min, Critical path 47 min, Expected wall at P=1.5
 | spa-method-not-allowed | 5 | 5 | impl 2, verify 1, review 1, land 1 |
 | Total | 73 | 90 | |
 
-## MRs and deploy
+### MRs and deploy
 
 - agent-orchestrator PR #5, https://github.com/szymonrychu/agent-orchestrator/pull/5: PR CI all green including kind e2e (after `c979451`); merged as `9ab0d60`. Orchestrator 528 passed, frontend 183 passed (`presets-suite.log`: 22 files, build and check:api clean).
 - agents-helmfile PR #7, https://github.com/szymonrychu/agents-helmfile/pull/7: pin chart `0.1.0-main.9ab0d60` and image `9ab0d60` (`de32698`); merged as `8bf0b6b`. Release tests pass except the two chart-pull tests blocked by the container network policy (run by `mise run apply`); ruff clean.
 - Superrepo: pointers bumped in `d440c21` on `claude/nifty-davinci-0z8a2v`; ticket moved to done in `c2a6d1d`.
 - Deploy: not done. The user runs `helmfile apply` and `mise run smoke`. The orchestrator runs migration 0002 on start (additive, idempotent, existing clusters keep their spec). No deploy confirmation exists.
 
-## Lessons routed to
+### Lessons routed to
 
 Mechanical (add a check):
 - Status-code contract tests passed in-process but failed in the built image (SPA mount shadowed the 405). Add a test fixture that builds the app with `static_dir` set and run the retirement and method tests (`PATCH` 405, unknown `api/` 404) against it; `tests/test_spa.py` now holds the two cases, extend the pattern to every retired route.
