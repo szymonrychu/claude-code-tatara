@@ -1,12 +1,34 @@
-# cluster scaling record
+# cluster scaling retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: agents join and leave a running cluster; the leader scales it between 1 and a cap set at init (ceiling 16) via a scale tool; static clusters offer no scale tool. Shipped: set_replicas guarded writer, scale-down drain, public and agent scale routes, scale tool allow rule, UI scale control and leaving mark, kind e2e, smoke scale step, deploy pin 3b9926d. 10 of 10 planned tasks built. Verdict: pass (2026-10-25); whole-diff review PASS, security none past boundary, CI green on PR #11.
 
 **INCIDENT (live deploy):** helm revision 12 (2026-10-25 08:54 CET, 07:53Z) was an accidental rollback of the live agents namespace to a5b5a75. The plan-execute verifier ran AC3 `command:mise run apply` from the unbuilt deploy-pin tree. The orchestrator re-applied 3b9926d as revision 13 under the user's standing apply approval. Post-apply `mise run diff`: "No affected releases". `mise run smoke` last line: `smoke: OK` (scale 1->2->1, pod-0 uid kept, init scripts succeeded). Fix: AC3 evidence changed to `judgement` ("never run apply as AC evidence") here and in two todo epics; MEMORY note added.
 
-## Planned vs built
+### Planned vs built
 
 Verifier head = `tasks[].verification.head` from run wf_92726cff-61b. Files from `filesChanged` in the return (agent-scale-route and kind-e2e-scaling list test files only; the route feature commit d2c41af landed in the same branch earlier).
 
@@ -39,7 +61,7 @@ Approvals (ledger `approvals.json`; the return value from the first run showed S
 | Q7 | Static single-pod gets no hive/peers/messaging/scale tools | D4 | scale-tool-allow, kind-e2e-scaling | delivered |
 | REL | Releases, bumps, helmfile apply and smoke | D6 | smoke-scale-check, deploy-pin-scaling | delivered (apply by orchestrator, rev 13; smoke OK) |
 
-## Deviations and rulings
+### Deviations and rulings
 
 - Live rollback (helm rev 12) by verifier running AC3 apply. Why: AC3 was `command:mise run apply`, executed from the unbuilt deploy-pin tree. Fix: orchestrator re-applied 3b9926d (rev 13) under the user's standing apply approval; AC evidence changed to judgement in this and two todo epics. Cost if wrong: live namespace on an old release until noticed; here about one hour (07:53Z to rev 13), no data loss seen, pod-0 uid kept.
 - kind-e2e-scaling gate-repeat (tdd-skipped): accepted. Why: test-only deliverable, cannot run without kind. Cost if wrong: tests that never fail; mitigated by CI e2e on PR #11, which caught two stale expectations.
@@ -51,11 +73,11 @@ Approvals (ledger `approvals.json`; the return value from the first run showed S
 - Audit gap fixed: README leaving-agent derivation (docs PR #12).
 - forwardMerged: none.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 none (return `duplicates` empty). Cherry-picked-vs-original commits of smoke-scale-check and double e2e fix commits (040bbcf/41567ec) are lineage noise, not duplicated work.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Verifier ran a live-mutating AC3 (rollback incident above). Fixed by judgement-only AC evidence; cleared.
 - Permission classifier denied `mise run apply`/`smoke` for the deploy-pin implementer and verifier ("Shared Cluster Mutation"). Cleared by the orchestrator applying under the user's standing approval.
@@ -63,11 +85,11 @@ none (return `duplicates` empty). Cherry-picked-vs-original commits of smoke-sca
 - declined/cannotVerify (return): ClusterNotFound mapping, full suites, schema.d.ts byte-identity with generator, plugin tool name prefix `orchestrator_scale` (contract test covers the plugin), live StatefulSet scale-down on real cluster (now covered by smoke 1->2->1), row-lock under concurrent writers, ChatView drainWaiting wiring from real status.drain, ScaleControl rendering in ChatView, smoke timeout paths, dispatcher refusing handover to a non-ready draining agent (hive epic code). Owner: next epic touching each; none block.
 - Contradiction: the first return showed S1/REL blocked and deploy-pin `verification.head` 0dd5aa2 (same as smoke-scale-check) with `rounds: 0`; later files and rulings show it delivered. README Time shows Actual 1 min, which covers only deploy-pin (impl 1, verify 1); other tasks have empty `actual`.
 
-## Research that changed the plan
+### Research that changed the plan
 
 none recorded.
 
-## Cost
+### Cost
 
 Agents by role, wall-clock and per-role counts: unknown (not in the inputs; only deploy-pin has `actual_roles: impl 1, verify 1`). Review rounds: 1 for five tasks, 2 for four, 0 for deploy-pin; continuations unknown. Scope audit run wf_0b33bdf5-b0d (2 agents: epic, settled) found one gap (README) fixed in PR #12. Triage calls 11.
 
@@ -86,14 +108,14 @@ Agents by role, wall-clock and per-role counts: unknown (not in the inputs; only
 
 README Time: Estimate 54 agent-min, critical path 27 min, expected wall 1.2 h at P=1.5, Actual 1 min, Remaining 0.
 
-## MRs and deploy
+### MRs and deploy
 
 - szymonrychu/agent-orchestrator#11 merged, 3b9926d (CI test/lint/frontend/e2e green).
 - szymonrychu/agent-orchestrator#12 README leaving-agent docs, merged, b7906aa.
 - szymonrychu/agents-helmfile#17 merged, 8a11c0b (pin ed0233a, memory 894e057).
 - Deploy: helm rev 13, chart 0.1.0-main.3b9926d (rev 12 accidental rollback to a5b5a75, see incident). Post-apply diff "No affected releases". Smoke last line `smoke: OK`, scale 1->2->1, pod-0 uid kept, init scripts succeeded.
 
-## Lessons routed to
+### Lessons routed to
 
 - AC evidence of `command:mise run apply` (any live mutation) must never run in verification: add a lint in the task/AC validator (`ticket.py` or verify-task.py) rejecting `command:` evidence matching apply/deploy/sync/helm upgrade; the judgement-only wording is already in the deploy-pin template text.
 - Verifier must not run `--install`/AC commands from a tree whose base is unbuilt for deploy tasks: add a verify-task.py guard that refuses commands outside an allowlist when the epic repo is a deploy repo.
