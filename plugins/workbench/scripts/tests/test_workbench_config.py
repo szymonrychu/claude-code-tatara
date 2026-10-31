@@ -27,34 +27,23 @@ def repo(tmp_path, cfg=None, raw=None):
 def test_defaults_without_file(tmp_path):
     r = repo(tmp_path)
     c = workbench.load_config(r)
-    assert c["refRunners"] == {} and c["suites"] == [] and c["deploy"] == {}
-    assert c["overlapIgnore"] == workbench.DEFAULT_OVERLAP_IGNORE
+    assert c["refRunners"] == {} and c["deploy"] == {}
+    assert set(c) == {"harness", "refRunners", "deploy"}
 
 
-def test_overlap_ignore_appends_repo_globs(tmp_path):
+def test_config_found_from_a_subdir(tmp_path):
     r = repo(
         tmp_path,
         {
             "refRunners": {"*.go": "go test {file}"},
-            "suites": ["make test"],
             "deploy": {"command": "make deploy", "verify": "make check"},
-            "overlapIgnore": ["docs/**"],
         },
     )
     sub = r / "a" / "b"
     sub.mkdir(parents=True)
     c = workbench.load_config(sub)
     assert c["refRunners"] == {"*.go": "go test {file}"}
-    assert c["suites"] == ["make test"]
     assert c["deploy"] == {"command": "make deploy", "verify": "make check"}
-    assert c["overlapIgnore"] == workbench.DEFAULT_OVERLAP_IGNORE + ["docs/**"]
-    assert workbench.DEFAULT_OVERLAP_IGNORE == [
-        "*README.md",
-        "MEMORY.md",
-        "**/SKILL.md",
-        "tests/README.md",
-        "CHANGELOG.md",
-    ]
 
 
 @pytest.mark.parametrize(
@@ -63,12 +52,11 @@ def test_overlap_ignore_appends_repo_globs(tmp_path):
         ({"bogus": 1}, "bogus"),
         ({"refRunners": []}, "refRunners"),
         ({"refRunners": {"*.go": 3}}, "refRunners"),
-        ({"suites": "x"}, "suites"),
-        ({"suites": [1]}, "suites"),
+        ({"suites": ["make test"]}, "suites"),
         ({"deploy": {"command": "x"}}, "deploy"),
         ({"deploy": {"command": "x", "verify": 2}}, "deploy"),
         ({"deploy": {"command": "x", "verify": "y", "z": "w"}}, "deploy"),
-        ({"overlapIgnore": "x"}, "overlapIgnore"),
+        ({"overlapIgnore": ["docs/**"]}, "overlapIgnore"),
         ([], "workbench.json"),
     ],
 )
@@ -87,7 +75,7 @@ def test_malformed_json(tmp_path):
 
 
 def test_overlap_ignored_globs():
-    g = workbench.DEFAULT_OVERLAP_IGNORE
+    g = ["*README.md", "MEMORY.md", "**/SKILL.md", "tests/README.md", "CHANGELOG.md"]
     assert workbench.overlap_ignored("README.md", g)
     assert workbench.overlap_ignored("skills/x/README.md", g)
     assert workbench.overlap_ignored("MEMORY.md", g)
@@ -107,21 +95,21 @@ def test_config_for_repo_fallback(tmp_path):
     (root / ".gitmodules").write_text("")
     comp = root / "code" / "svc"
     comp.mkdir()
-    repo(comp, {"suites": ["svc test"]})
+    repo(comp, {"refRunners": {"*.go": "svc test"}})
     # plans root is its own git repo with a config
-    top = repo(root, {"suites": ["root test"]})
-    assert workbench.config_for_repo(top, "svc")["suites"] == ["svc test"]
-    assert workbench.config_for_repo(top, "missing")["suites"] == ["root test"]
-    assert workbench.config_for_repo(top, "superrepo")["suites"] == ["root test"]
+    top = repo(root, {"refRunners": {"*.go": "root test"}})
+    assert workbench.config_for_repo(top, "svc")["refRunners"] == {"*.go": "svc test"}
+    assert workbench.config_for_repo(top, "missing")["refRunners"] == {"*.go": "root test"}
+    assert workbench.config_for_repo(top, "superrepo")["refRunners"] == {"*.go": "root test"}
 
 
 def test_config_cli(tmp_path):
-    r = repo(tmp_path, {"suites": ["a"]})
+    r = repo(tmp_path, {"refRunners": {"*.py": "a"}})
     out = subprocess.run(
         [sys.executable, str(CLI), "config", "--repo", str(r)], capture_output=True, text=True
     )
     assert out.returncode == 0
-    assert json.loads(out.stdout)["suites"] == ["a"]
+    assert json.loads(out.stdout)["refRunners"] == {"*.py": "a"}
     (r / ".claude" / "workbench.json").write_text('{"x": 1}')
     bad = subprocess.run(
         [sys.executable, str(CLI), "config", "--repo", str(r)], capture_output=True, text=True

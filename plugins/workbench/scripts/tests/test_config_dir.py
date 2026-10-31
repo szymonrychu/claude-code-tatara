@@ -70,9 +70,9 @@ def test_active_unknown_rejected(tmp_path):
 
 def test_load_config_reads_config_dir(tmp_path):
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
-    put(tmp_path, ".gemini", {"suites": ["x"], "harness": {"active": "gemini"}})
+    put(tmp_path, ".gemini", {"refRunners": {"*.x": "x"}, "harness": {"active": "gemini"}})
     c = workbench.load_config(tmp_path)
-    assert c["suites"] == ["x"]
+    assert c["refRunners"] == {"*.x": "x"}
     assert c["harness"]["active"] == "gemini"
 
 

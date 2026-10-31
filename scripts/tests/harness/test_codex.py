@@ -53,9 +53,9 @@ def test_hooks_only_registered_guards(tree):
     assert pre["Bash"] == (
         "python3 plugins/core/hooks/adapter.py --harness codex --event pre-tool --hook guard-bash"
     )
-    assert "matcher" not in hooks["SubagentStop"][0]
+    assert set(hooks) == {"PreToolUse"}
     text = json.dumps(hooks)
-    for gone in ("verify-recorder", "bash-output-filter", "format-file", "PostToolUse"):
+    for gone in ("bash-output-filter", "format-file", "PostToolUse", "SubagentStop"):
         assert gone not in text
 
 
@@ -92,7 +92,7 @@ def test_toml_parses_and_roundtrips(tree):
 def test_real_tree_renders_every_agent():
     out = CodexEmitter().render(load_sources(REPO))
     agents = {k for k in out if k.startswith(".codex/agents/")}
-    assert ".codex/agents/reviewer.toml" in agents
+    assert ".codex/agents/reuse-hunter.toml" in agents
     for k in agents:
         tomllib.loads(out[k])
 

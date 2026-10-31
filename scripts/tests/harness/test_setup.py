@@ -30,7 +30,7 @@ def clean_tree(tree):
         json.dumps(
             {
                 "harness": {"targets": [], "models": {"cursor": {"opus": "x"}}},
-                "overlapIgnore": ["x.lock"],
+                "refRunners": {"*.lock": "x"},
             }
         )
     )
@@ -57,7 +57,7 @@ def test_writes_targets_and_skills_and_records(clean_tree):
     assert c["harness"]["targets"] == ["cursor"]
     assert c["harness"]["active"] == "cursor"  # a single target migrates the config dir
     assert c["harness"]["models"] == {"cursor": {"opus": "x"}}
-    assert c["overlapIgnore"] == ["x.lock"]
+    assert c["refRunners"] == {"*.lock": "x"}
     assert not (clean_tree / ".claude/skills").exists()
 
 

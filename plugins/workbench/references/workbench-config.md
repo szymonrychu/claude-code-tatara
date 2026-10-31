@@ -9,33 +9,21 @@ error naming the file and the key. Only `${CLAUDE_PLUGIN_ROOT}/scripts/lib/workb
 ```json
 {
   "refRunners": {"*.go": "go test ./... -run {name}", "tests/*.bats": "bats {file}"},
-  "suites": ["make test", "make lint"],
-  "deploy": {"command": "make deploy", "verify": "make smoke"},
-  "overlapIgnore": ["docs/**", "*.lock"]
+  "deploy": {"command": "make deploy", "verify": "make smoke"}
 }
 ```
 
 ## Keys
 
-- `refRunners`: glob to command template for a test ref in an implementation-plan step.
+- `refRunners`: glob to command template for a test ref.
   Placeholders: `{ref}` the whole ref, `{file}` the file path, `{name}` the test name,
   `{pkg}` the basename of the nearest package directory (not its path). The command
   already runs with that package root as cwd, so a `cd {pkg}` template is wrong. A glob
   without `/` matches the basename of the ref's file, so `*.go` matches `pkg/x_test.go`.
   Overrides the built-in runners (pyproject.toml,
-  package.json, package.xml). Read by `workbench.py runner <ref> --repo <dir>`, and read by the plan writer
-  to choose between a test and a command in a step's Verify.
-- `suites`: shell commands the merger runs as the repo's test suites after the fast-forward
-  (skip with `--no-suites`; a failing suite exits 4 and leaves the merge in place).
-  Read by worktree-merge only (merge.py).
+  package.json, package.xml). Read by `workbench.py runner <ref> --repo <dir>`.
 - `deploy`: `{command, verify}`, both shell strings; deploy after merge, then verify.
-  Read by the deploy hook.
-- `overlapIgnore`: globs of doc files whose merge conflicts the merger
-  union-merges. Read by worktree-merge only. Your list is appended to the defaults.
-
-## Default overlapIgnore
-
-`*README.md`, `MEMORY.md`, `**/SKILL.md`, `tests/README.md`, `CHANGELOG.md`.
+  Read by `scripts/deploy-hook.py`.
 
 Glob rules: `**/` matches zero or more directories; a pattern without `/` matches the
 basename.

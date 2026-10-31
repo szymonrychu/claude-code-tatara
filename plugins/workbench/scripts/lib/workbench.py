@@ -169,14 +169,7 @@ def resolve(root: Path, kind: str, name: str, require_git: bool = True) -> Path 
 
 # ---- per-repo config: <repo>/.claude/workbench.json (the only reader) ----
 
-DEFAULT_OVERLAP_IGNORE = [
-    "*README.md",
-    "MEMORY.md",
-    "**/SKILL.md",
-    "tests/README.md",
-    "CHANGELOG.md",
-]
-CONFIG_KEYS = ("refRunners", "suites", "deploy", "overlapIgnore", "harness")
+CONFIG_KEYS = ("refRunners", "deploy", "harness")
 HARNESS_TARGETS = ("copilot", "cursor", "codex", "gemini", "antigravity")
 
 
@@ -299,9 +292,6 @@ def _validate(raw, path: Path) -> dict:
         isinstance(k, str) and isinstance(v, str) for k, v in rr.items()
     ):
         bad("refRunners", "must be an object of glob to command string")
-    suites = raw.get("suites", [])
-    if not _is_str_list(suites):
-        bad("suites", "must be a list of shell command strings")
     dep = raw.get("deploy", {})
     if dep != {} and not (
         isinstance(dep, dict)
@@ -309,16 +299,11 @@ def _validate(raw, path: Path) -> dict:
         and all(isinstance(v, str) for v in dep.values())
     ):
         bad("deploy", "must be an object with string keys command and verify")
-    ign = raw.get("overlapIgnore", [])
-    if not _is_str_list(ign):
-        bad("overlapIgnore", "must be a list of glob strings")
     harness = _validate_harness(raw["harness"], bad) if "harness" in raw else None
     return {
         "harness": harness or {"targets": [], "models": {}},
         "refRunners": dict(rr),
-        "suites": list(suites),
         "deploy": dict(dep),
-        "overlapIgnore": DEFAULT_OVERLAP_IGNORE + list(ign),
     }
 
 

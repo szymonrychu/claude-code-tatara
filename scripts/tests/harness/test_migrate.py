@@ -26,7 +26,8 @@ def snapshot(root: Path) -> dict[str, bytes]:
 def mtree(tree):
     cdir = tree / ".claude"
     (cdir / "workbench.json").write_text(
-        json.dumps({"harness": {"targets": ["cursor"]}, "overlapIgnore": ["x"]}, indent=2) + "\n"
+        json.dumps({"harness": {"targets": ["cursor"]}, "refRunners": {"*.x": "x"}}, indent=2)
+        + "\n"
     )
     (cdir / "settings.local.json").write_text('{"a": 1}\n')
     (cdir / "harness-manifest.json").write_text('{"cursor": []}\n')
@@ -77,7 +78,7 @@ def test_tools_follow_the_move(mtree):
     assert wb.config_dir(mtree) == mtree / ".codex"
     assert wb.worktrees_dir(mtree) == mtree / ".codex/worktrees"
     assert wb.active_harness(mtree) == "codex"
-    assert wb.load_config(mtree)["overlapIgnore"][-1] == "x"
+    assert wb.load_config(mtree)["refRunners"] == {"*.x": "x"}
     migrate.migrate(mtree, "claude")
     assert wb.worktrees_dir(mtree) == mtree / ".claude/worktrees"
     assert wb.active_harness(mtree) == "claude"
@@ -210,7 +211,7 @@ def test_tools_follow_move(mtree):
     git(mtree, "init", "-q")
     migrate.migrate(mtree, "gemini")
     assert wb.worktrees_dir(mtree) == mtree / ".gemini/worktrees"
-    assert wb.load_config(mtree)["overlapIgnore"][-1] == "x"
+    assert wb.load_config(mtree)["refRunners"] == {"*.x": "x"}
     migrate.migrate(mtree, "claude")
     assert wb.worktrees_dir(mtree) == mtree / ".claude/worktrees"
 
