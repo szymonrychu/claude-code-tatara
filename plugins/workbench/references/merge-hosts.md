@@ -1,6 +1,6 @@
 # Merge hosts: pick the host per repo, act per RESOLVED line
 
-Read from `superpowers:finishing-a-development-branch`.
+The PR path of `superpowers:finishing-a-development-branch` for repos under `code/`.
 
 **Pick the host per repo, do not assume GitLab.** Check the remote before
 dispatching anything:

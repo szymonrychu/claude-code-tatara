@@ -7,6 +7,9 @@ description: "Create or update pull requests (GitHub) and merge requests (GitLab
 
 Creates or updates the PR or MR for a pushed branch across one or more repos in `code/`, then cross-links each description with the other PRs/MRs from the same run. The host is detected per repo from its `origin`, so one run may mix GitHub and GitLab repos.
 
+The PR path of `superpowers:finishing-a-development-branch` for repos under `code/`, on
+GitHub or GitLab.
+
 ## Host map
 
 Per repo, from the origin hostname: `WORKBENCH_SCM_HOSTS` first (`host=github|gitlab`, comma-separated, e.g. `git.example.com=gitlab`), then a hostname containing `github` means GitHub and one containing `gitlab` means GitLab. Anything else is local-only: the repo gets a `skipped` row `local-only: no PR/MR host for <origin>` and does not fail the run. A malformed `WORKBENCH_SCM_HOSTS` exits 2 naming the entry.

@@ -10,8 +10,36 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MARKETPLACE = ROOT.parents[1] / ".claude-plugin" / "marketplace.json"
-FLOW = ROOT.parent / "superpowers" / "skills"
-FLOW_SKILLS = ("brainstorming", "subagent-driven-development", "finishing-a-development-branch")
+# Vanilla superpowers skills the README dispatch table may name as callers.
+VANILLA = (
+    "brainstorming",
+    "writing-plans",
+    "subagent-driven-development",
+    "executing-plans",
+    "requesting-code-review",
+    "receiving-code-review",
+    "systematic-debugging",
+    "finishing-a-development-branch",
+    "using-git-worktrees",
+)
+# Retired flow words, built from parts so the retired-flow scan does not match this file.
+P = "plan"
+RETIRED_FLOW = (
+    P + ".md",
+    "implementation-" + P,
+    "retro" + ".md",
+    "ticket" + ".py",
+    P + " tree",
+    "worktree-" + "merger",
+    "`implementer`",
+    "`reviewer`",
+    "panel-reviewer",
+    "verify-recorder",
+    "subagent-commit-guard",
+    "scope ladder",
+    "one gate",
+    "docs/" + P + "s/{",
+)
 
 
 def test_version_matches_changelog():
@@ -31,11 +59,9 @@ def test_plugin_json_version_and_description():
     meta = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
     desc = meta["description"]
     for word in (
-        "superpowers flow",
-        "reviewer",
+        "helpers to vanilla superpowers",
         "research skills",
         "pull request",
-        "verification hooks",
         "guardrails",
     ):
         assert word in desc, word
@@ -47,7 +73,9 @@ def test_plugin_json_version_and_description():
         "plan execution",
         "one approval gate",
         "scope ladder",
-        *FLOW_SKILLS,
+        "implementer",
+        "worktree-" + "merger",
+        "verification hooks",
         "debugging",
     ):
         assert gone not in desc, gone
@@ -85,7 +113,6 @@ def test_readme_wording():
         "research-papers",
         "research-docs",
         "reuse-hunter",
-        "plan-writer-prompt.md",
         "## Documents",
         "doc_path.sh",
         "docs/research/",
@@ -94,25 +121,16 @@ def test_readme_wording():
     assert "docs/plans/<date>-" not in text
 
 
-def test_readme_dispatch_rows_match_the_flow_skills():
-    """Every flow-skill row of the README dispatch table names an agent that skill names."""
+def test_readme_dispatch_rows_name_vanilla_callers_and_real_agents():
+    """Every superpowers row of the README dispatch table names a vanilla skill and a core agent."""
     readme = (ROOT / "README.md").read_text()
-    callers = "|".join(FLOW_SKILLS)
-    rows = re.findall(rf"^\| `superpowers:({callers})` \| `(\S+)` \|", readme, re.M)
+    rows = re.findall(r"^\| `superpowers:([\w-]+)` \| `(\S+)` \|", readme, re.M)
     assert rows
-    packs = {f.stem for f in (ROOT.parent).glob("workbench-*/agents/*.md")}
-    assert packs, "pack agents not found"
+    agents = {f.stem for f in (ROOT / "agents").glob("*.md")}
     for skill, agent in rows:
-        assert agent not in packs, f"core README names pack agent {agent}"
-        text = "\n".join(p.read_text() for p in (FLOW / skill).glob("*.md"))
-        assert agent in text, (agent, skill)
-    for agent in (
-        "codebase-cartographer",
-        "implementer",
-        "reviewer",
-        "worktree-merger",
-    ):
-        assert agent in {a for _, a in rows}, agent
+        assert skill in VANILLA, skill
+        assert agent in agents, agent
+    assert "codebase-cartographer" in {a for _, a in rows}
 
 
 def test_readme_names_the_new_flows():
@@ -120,8 +138,6 @@ def test_readme_names_the_new_flows():
     for needle in (
         "requesting-code-review",
         "systematic-debugging",
-        "verify-recorder.py",
-        "## Verification",
         "supersedes engineering:debug",
     ):
         assert needle in text, needle
@@ -140,47 +156,23 @@ def test_readme_names_round_three():
     assert "intentionally forked" not in text
 
 
-def test_readme_describes_the_plan_flow():
+def test_readme_describes_the_vanilla_flow():
     text = (ROOT / "README.md").read_text()
     for needle in (
-        "docs/plans/{todo,in-progress,done}/<plan>/",
-        "plan.md",
-        "implementation-plan.md",
-        "retro.md",
-        "plugins/superpowers/scripts/ticket.py",
-        "plan tree",
-        "`subagent-driven-development`",
-        "scope ladder",
-        "one gate",
-        "one implementer",
-        "one reviewer",
-        "at most two fix rounds",
-        "under-delivery",
-        "over-delivery",
-        "undelivered",
-        "discovered",
-        "verified head",
+        "superpowers:using-superpowers",
+        "superpowers:brainstorming",
+        "superpowers:writing-plans",
+        "superpowers:finishing-a-development-branch",
+        "docs/superpowers/",
+        "helpers",
         "LSP and grep",
-        "ticket.py migrate --all",
     ):
         assert needle in text, needle
-    for gone in (
+    for gone in RETIRED_FLOW + (
         "approvals.json",
         "approval ledger",
-        "script+haiku verifier",
-        "risk tier",
-        "gate-only fix rounds",
-        "time estimate",
         "heartbeat",
-        "<epic>",
-        "<task>",
         "scope audit",
-        "record-writer",
-        "retro-writer",
-        "scope-auditor",
-        "ep" + "ic-run",
-        "new-task",
-        "points-actual",
         "design.md",
     ):
         assert gone not in text, gone

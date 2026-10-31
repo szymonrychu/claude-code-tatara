@@ -45,7 +45,7 @@ DELETED = (
     "scripts/tests/test_calibration.py",
     # chunk 3
     f"skills/{E}-run",
-    f"{SD}/references/retro.md",
+    f"{SD}/references/retro" + ".md",
     f"{SD}/tests/test_lean_flow_docs.py",
     f"{SD}/tests/test_planner_agent.py",
     *(f"agents/{n}.md" for n in ("planner", "record-writer", "retro-writer", "scope-auditor")),

@@ -83,11 +83,7 @@ The model table in `AGENTS.md` names research `opus`, implementation `sonnet`,
 review `sonnet`, very complex architecture `fable`. Your provider may not offer
 `fable`.
 
-- Without `fable`: a `panel-reviewer` panel (fable, opus, sonnet), such as
-  brainstorming's builder review, has no model A. Run it with the strongest model
-  you have in that slot, and keep the other two panelists; the lead verdict is
-  unchanged. The `brainstorming` architecture steps use your strongest available
-  model instead.
+- Without `fable`: architecture steps use your strongest available model instead.
 - Without `fable` in the model table: read "very complex architecture" as the
   strongest model you have, set on every dispatch. Nothing else in the table
   changes.

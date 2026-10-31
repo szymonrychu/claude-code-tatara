@@ -1,6 +1,6 @@
 ---
 name: research-code-internal
-description: "Hunt the repos in scope for parts a plan would otherwise rebuild, near-duplicate helpers and optimisation hot spots, before the plan is written. Use when the plan adds any helper, reader, parser, schema field or subsystem, or a repo has more than ~200 source files; always, before phase 2 (the plan). Read-only; dispatches one reuse-hunter agent."
+description: "Hunt the repos in scope for parts a plan would otherwise rebuild, near-duplicate helpers and optimisation hot spots, before the plan is written. Use when the plan adds any helper, reader, parser, schema field or subsystem, or a repo has more than ~200 source files; always, during superpowers:brainstorming before the design is written. Read-only; dispatches one reuse-hunter agent."
 ---
 
 # research-code-internal
@@ -13,8 +13,8 @@ rebuilding it.
 Run when:
 - the plan will add any helper, reader, parser, schema field or subsystem;
 - a repo in scope has more than ~200 source files;
-- always, before brainstorming writes plan.md, so the plan writer it dispatches with
-  `plan-writer-prompt.md` receives its Plan inputs.
+- always, during `superpowers:brainstorming` before the design is written, so the design
+  and the plan receive its Plan inputs.
 
 Skip when:
 - every file is named and the plan adds no new helper.
@@ -27,13 +27,13 @@ Skip when:
    in scope, and the plan items or the design doc path.
 3. Write its answer to the brief path and return the path plus the Plan inputs.
 4. Its `reuse` list is the shared-parts map (part -> exists-at / needed-by /
-   proposed owner) that the plan writer consumes when it writes plan.md. Pass it on unedited.
+   proposed owner) that the design and the plan consume. Pass it on unedited.
 
 ## Output: Plan inputs
 
 Return the four `## Plan inputs` lists (`reuse`, `do-not-build`, `fix-as-ac`, `ideas`) exactly as
-defined in the Discovery section of the `superpowers:brainstorming` skill; do not restate
-them.
+defined in `${CLAUDE_PLUGIN_ROOT}/references/plan-inputs.md`; do not restate them. The brief
+feeds `superpowers:brainstorming`.
 
 ## Rules
 

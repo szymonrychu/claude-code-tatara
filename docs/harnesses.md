@@ -29,16 +29,13 @@ Copilot cloud agent share the `copilot` target.
 | Hooks | native (plugin) | generated `.github/hooks/workbench.json` | same (needs `chat.useClaudeHooks` or the same file, see trust) | degraded: unverified | generated `.cursor/hooks.json` | generated `.codex/hooks.json` | generated `.gemini/settings.json` | generated `.agents/hooks.json` |
 | MCP | native `.mcp.json` | native root `.mcp.json` | generated `.vscode/mcp.json` | manual: repository Settings | generated `.cursor/mcp.json` | generated `.codex/config.toml` | generated `.gemini/settings.json` | generated `.agents/mcp_config.json` |
 
-Only the guards with an equivalent are registered on non-Claude harnesses: `guard-bash`,
-`protect-files` and `subagent-commit-guard`. `verify-recorder`, `bash-output-filter` and
-`format-file` are Claude-only.
+Only the guards with an equivalent are registered on non-Claude harnesses: `guard-bash` and
+`protect-files`. `bash-output-filter` and `format-file` are Claude-only.
 
-Flow skills: the vendored flow in `plugins/superpowers` (brainstorming, writing-plans,
-subagent-driven-development and the rest) is generated like every other skill, as
-`.agents/skills/<name>/SKILL.md` with its `scripts/`, `references/` and `templates/` paths
-pointing into `plugins/superpowers/`. The using-superpowers SessionStart hook is Claude-only;
-other harnesses reach the flow through AGENTS.md ground rule 1. Per-harness tool notes live in
-`plugins/superpowers/skills/using-superpowers/references/`.
+Flow skills: the development flow is the vanilla superpowers plugin, not generated here.
+Install superpowers in each harness the way upstream documents for it; the generated workbench
+skills name its skills by their bare names (the `superpowers:` prefix is stripped), and
+AGENTS.md ground rule 1 names the flow.
 
 ## Run it
 

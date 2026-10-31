@@ -13,6 +13,9 @@ and flags `no pipeline launched` if nothing registers within the grace window.
 mergeability. The script never invents interpretation - it emits a structured
 report that you then narrate.
 
+The PR path of `superpowers:finishing-a-development-branch` for repos under `code/`, on
+GitHub or GitLab.
+
 ## Host per repo
 
 Each repo's host comes from its `origin` url (`skills/_lib/scm.py`,

@@ -18,9 +18,9 @@ A workbench is a thin superrepo. It holds almost no product code of its own:
 - **The rules** live in `AGENTS.md`, the one instruction file, with the
   load-bearing working rules embedded. Nothing depends on anyone's home
   directory.
-- **The agents** follow the same flow everywhere: discovery, design and plan
-  behind one approval gate, then unattended execution with tests, review and a
-  scope audit.
+- **The agents** follow the same flow everywhere: the vanilla superpowers plugin
+  (design, plan, test-driven execution, review, finishing the branch), with the
+  workbench skills as helpers.
 
 The point: a new project no longer starts by hand-copying root files and rules
 from an older metarepo, and colleagues can reuse the same flow regardless of
@@ -77,8 +77,7 @@ agent to run init first.
   table and `code/` tasks are regenerated.
 - **Forge creation only after confirmation:** init never creates a GitHub or
   GitLab repo or pushes without you confirming first.
-- **Template docs removed:** the template's own docs (plans, records, contracts,
-  research, handoffs) are deleted, and `MEMORY.md` and `ROADMAP.md` start fresh.
+- **Template docs removed:** the template's own docs (research, handoffs) are deleted, and `MEMORY.md` and `ROADMAP.md` start fresh.
 - **A single commit:** everything init writes lands in one commit.
 
 ## Repo layout
@@ -93,19 +92,20 @@ agent to run init first.
 | `plugins/` | the core plugin and the packs |
 | `.claude-plugin/marketplace.json` | root marketplace listing the plugins |
 | `.claude/` | project settings and `rules/` |
-| `docs/` | plans, research, handoffs, architecture, harnesses, enterprise, claude-cloud |
+| `docs/` | superpowers specs and plans, research, handoffs, architecture, harnesses, enterprise, claude-cloud |
 | `scripts/` | init engine, harness generators, doctor, lint checks |
 | `mise-tasks/` | the `mise run ...` tasks |
 | `.github/workflows/` | CI |
 
 ## Plugins and packs
 
-The plugins `superpowers` and `workbench` are enabled by default. `superpowers` brings
-the development flow (`brainstorming`, `writing-plans`, `subagent-driven-development`,
-`finishing-a-development-branch`), file-based plans, review (`requesting-code-review`,
-`receiving-code-review`) and debugging (`systematic-debugging`). The core plugin
-`workbench` brings the agents that flow dispatches, research skills, verification hooks,
-a plan worktree and destructive-command guardrails.
+The plugins `superpowers` (vanilla, from the official `claude-plugins-official`
+marketplace, never modified here) and `workbench` are enabled by default. `superpowers`
+brings the development flow (`brainstorming`, `writing-plans`, `subagent-driven-development`
+or `executing-plans`, `finishing-a-development-branch`), review (`requesting-code-review`,
+`receiving-code-review`) and debugging (`systematic-debugging`); `using-superpowers` governs.
+The core plugin `workbench` brings helpers to it: research and diagnostic agents, research
+skills, multi-submodule worktree and pull request skills, and destructive-command guardrails.
 
 Optional packs, all requiring the core:
 
@@ -135,10 +135,9 @@ These are the ways of working that hold up day to day. Each has an example
 prompt. In other harnesses, use the bare skill names instead of the
 `superpowers:` and `workbench:` prefixes.
 
-The flow, from the `superpowers` plugin: `brainstorming` (discovery and plan.md) ->
-the one gate -> `writing-plans` (implementation-plan.md for the agreed rung) ->
-`subagent-driven-development` (implementers, the whole-diff review, retro.md) ->
-`finishing-a-development-branch` (the merge).
+The flow, from the vanilla `superpowers` plugin: `brainstorming` (design in
+`docs/superpowers/specs/`) -> `writing-plans` (plan in `docs/superpowers/plans/`) ->
+`subagent-driven-development` or `executing-plans` -> `finishing-a-development-branch`.
 
 ### Write requests as a brief
 
@@ -151,37 +150,17 @@ that carries all four needs no clarifying questions.
 > docs are updated.
 
 Several features in one message are fine: the agent splits them into separate
-plans, each with its own scope ladder, worktree and branch, so they run independently.
+designs and plans, each with its own worktree and branch, so they run independently.
 
-### The one gate
+### Design, plan, run
 
-Non-trivial work starts with `superpowers:brainstorming`: discovery, then a plan
-with a scope ladder from the smallest useful delivery to the complete one, then one
-approval gate. The gate lists the rungs and the open questions as numbered
-options. Pick a rung, answer by number and state corrections bluntly.
+Non-trivial work starts with `superpowers:brainstorming`: it asks its questions and writes
+the design for your approval. `superpowers:writing-plans` turns the approved design into a
+plan, `superpowers:subagent-driven-development` (or `superpowers:executing-plans`) runs it
+test-first, and `superpowers:finishing-a-development-branch` lands it, through the
+`workbench:pullrequests-*` skills when a branch spans repos under `code/`.
 
-> Rung 2. 1b, 2a, 3: no, drop it. The plan is wrong on step 4: the cache must be
-> invalidated on write, not on a timer.
-
-After the gate nothing waits for you until the run ends.
-
-### The autonomous run to merge
-
-Your answer starts `writing-plans` for the agreed rung, then
-`subagent-driven-development`: one implementer per chunk (tests first), one reviewer
-on the whole diff for under- and over-delivery, at most two fix rounds, a retro, and the merge
-through `finishing-a-development-branch`. "Approved
-means fully delivered": every item of the agreed rung is implemented in full, with its
-tests and docs, and nothing is left half done. The only acceptable
-non-delivery is an external blocker, which the run names and escalates.
-
-### Resume after an escalation
-
-When a run stops on a blocker (a credential, a permission, a human merge),
-clear the blocker, then resume. Progress lives in the git log of the plan tree (one commit per step), so
-`subagent-driven-development` resumes at the first step without a commit.
-
-> Continue the run of docs/plans/in-progress/<plan>/ with subagent-driven-development. The token is set now.
+> Approved, with one change: the cache must be invalidated on write, not on a timer.
 
 ### Debug a field issue
 
@@ -197,10 +176,10 @@ After a batch of work, ask for a review by a different or stronger model than
 the one that wrote it, through `superpowers:requesting-code-review`.
 
 > Review the last three merged plans with a stronger model, against their
-> plan.md and implementation-plan.md. Findings that are real get fixed; the rest are dropped with a reason.
+> designs and plans in docs/superpowers/. Findings that are real get fixed; the rest are dropped with a reason.
 
 Then run a workflow retrospective: what stalled, what cost the most, what the
-agents got wrong (each finished plan's retro.md already lists its recommendations). Turn the result into a new plan, planned and executed like any other work.
+agents got wrong. Turn the result into a new plan, planned and executed like any other work.
 
 ### Research and feasibility
 
@@ -327,7 +306,7 @@ or a sandbox.
 - `MEMORY.md` records non-obvious decisions, dated, newest last.
 - `ROADMAP.md` is human-owned; agents ask rather than invent entries.
 - `.claude/rules/` holds per-language rules (python, go, terraform, helm ...).
-- `docs/plans/` holds plans and tickets, `docs/research/` research output,
+- `docs/superpowers/` holds designs and plans, `docs/research/` research output,
   `docs/handoffs/` context handoffs.
 - Before working in a component, read its `AGENTS.md`, `MEMORY.md` and
   `ROADMAP.md`.
@@ -356,8 +335,7 @@ mise run init:update -- --url <url> --branch <branch> --base <sha>
 commit your workbench was created from.
 
 What arrives: tooling (`scripts/`, `mise-tasks/`, `.mise.toml`), plugins, rules
-and the generated blocks. What never arrives: the template's plans and records,
-`contracts.json`, `index.json`, `facts.md`, research, handoffs, and the entries
+and the generated blocks. What never arrives: the template's research, handoffs, and the entries
 in your `MEMORY.md` and `ROADMAP.md`. Those stay yours.
 
 The update refuses, and changes nothing, when:
@@ -395,8 +373,8 @@ lint) and the `secrets` job on every push.
 ## Worktree caveat
 
 The plugin loads from the main checkout, not from a git worktree. Edits to
-`plugins/` made in a plan tree take effect in Claude Code only
-after the plan merges to main and you run `/reload-plugins`.
+`plugins/` made in a worktree take effect in Claude Code only
+after the branch merges to main and you run `/reload-plugins`.
 
 ## License
 

@@ -82,19 +82,28 @@ def test_reuse_hunter_agent():
     assert "jscpd" in body and "Plan inputs" in body
 
 
-def test_internal_hunt_runs_before_the_plan_with_no_lean_path():
+def test_internal_hunt_runs_during_brainstorming_with_no_lean_path():
     text = " ".join((SKILLS / "research-code-internal" / "SKILL.md").read_text().split())
-    assert "before brainstorming writes plan.md" in text
+    assert "during `superpowers:brainstorming`" in text
     assert "lean path" not in text
     assert "phase 3" not in text
-    assert "plan-writer-prompt.md" in text
+    assert "plan" + "-writer" not in text and "plan" + ".md" not in text
 
 
-def test_plan_inputs_are_defined_by_brainstorming():
+def test_plan_inputs_are_defined_by_the_workbench_reference():
+    ref = ROOT / "references" / "plan-inputs.md"
+    flat = " ".join(ref.read_text().split())
+    for name in LISTS:
+        assert f"`{name}`" in flat, name
+    assert "superpowers:brainstorming" in flat and "superpowers:writing-plans" in flat
+    for path in [SKILLS / n / "SKILL.md" for n in NAMES] + [ROOT / "agents" / "reuse-hunter.md"]:
+        text = " ".join(path.read_text().split())
+        assert "references/plan-inputs.md" in text, path
+        assert "Discovery section" not in text, path
+        assert "start-" + "development" not in text, path
     for name in NAMES:
-        text = " ".join((SKILLS / name / "SKILL.md").read_text().split())
+        text = (SKILLS / name / "SKILL.md").read_text()
         assert "superpowers:brainstorming" in text, name
-        assert "start-" + "development" not in text, name
 
 
 def test_research_skills_name_no_epic():

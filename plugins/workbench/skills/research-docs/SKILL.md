@@ -36,8 +36,8 @@ Skip when:
 ## Output: Plan inputs
 
 Return the four `## Plan inputs` lists (`reuse`, `do-not-build`, `fix-as-ac`, `ideas`) exactly as
-defined in the Discovery section of the `superpowers:brainstorming` skill; do not restate
-them.
+defined in `${CLAUDE_PLUGIN_ROOT}/references/plan-inputs.md`; do not restate them. The brief
+feeds `superpowers:brainstorming`.
 
 ## Rules
 

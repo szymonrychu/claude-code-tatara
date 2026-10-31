@@ -9,6 +9,9 @@ Pushes the branch checked out in `<config dir>/worktrees/<branch>/<repo>` (for e
 each requested repo. Runs after `git-worktrees-commit` has produced local
 commits and before opening or updating a pull request.
 
+The multi-submodule path for `superpowers:using-git-worktrees`: use it when a branch spans
+repos under `code/`; vanilla superpowers covers a single repo.
+
 ## Procedure
 
 1. Determine the branch name and target repos from the user's request. If no

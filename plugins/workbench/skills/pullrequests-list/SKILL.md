@@ -9,6 +9,9 @@ Lists every open PR/MR of a single `code/` repo, classifies each by merge
 readiness, and prints a table sorted oldest-to-newest. The host (GitHub or
 GitLab) is detected from the repo's `origin`.
 
+The PR path of `superpowers:finishing-a-development-branch` for repos under `code/`, on
+GitHub or GitLab.
+
 ## Procedure
 
 1. Invoke the script once, passing the repo name:

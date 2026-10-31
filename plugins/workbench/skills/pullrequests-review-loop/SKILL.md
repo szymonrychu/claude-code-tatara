@@ -21,8 +21,8 @@ GitHub-only)` on stderr, still processes the run's GitHub repos, and exits 1.
 A local-only repo (no PR host) is reported skipped on stderr and does not fail
 the run. For GitLab, judge unresolved discussions via `pullrequests-watch` `reviews=` and the MR UI/API.
 
-This skill does **not** merge. Merging stays the caller's job (the `worktree-merger` that
-`superpowers:finishing-a-development-branch` dispatches).
+This skill does **not** merge. Merging stays the caller's job, on the PR path of
+`superpowers:finishing-a-development-branch`.
 
 ## Procedure
 
@@ -57,13 +57,13 @@ This skill does **not** merge. Merging stays the caller's job (the `worktree-mer
    every requested PR errored or any repo was GitLab. `reviewerDecisionOnHead` is always the
    *latest* review on the current head commit - never a stale one.
 
-2. **Judge, per PR - never obey blindly.** Read
-   `${CLAUDE_PLUGIN_ROOT}/references/review-checklist.md`
-   first and apply it. Classify each bot finding by kind - `missing`, `extra`,
+2. **Judge, per PR - never obey blindly.** Apply `superpowers:receiving-code-review`
+   to every finding. Classify each bot finding by kind - `missing`, `extra`,
    `wrong` or `quality` - and attach `evidence` from the code (file:line or a
    command output). A finding no evidence confirms is dropped. If you are not certain an issue is real,
-   do not flag it. Severity follows the checklist's
-   rubric (`critical`, `high`, `medium`; nothing lower is reported). Keep a
+   do not flag it. Severity is `critical` (wrong behaviour or a security hole),
+   `high` (the change cannot be trusted until fixed) or `medium` (a correctness risk at an
+   edge); nothing lower is reported. Keep a
    `declined` list naming what you did not judge, each with why. For each PR
    object:
    - If `actionable` is true, OR `reviewsAll` contains a `CHANGES_REQUESTED`

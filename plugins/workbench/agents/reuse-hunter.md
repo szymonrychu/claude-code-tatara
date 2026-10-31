@@ -31,8 +31,8 @@ is for reading only (no writes, installs, or git mutations).
 ## Output: Plan inputs
 
 Return the four `## Plan inputs` lists (`reuse`, `do-not-build`, `fix-as-ac`, `ideas`) exactly as
-defined in the Discovery section of the `superpowers:brainstorming` skill; do not restate
-them.
+defined in the workbench plugin's `references/plan-inputs.md`; do not restate them. The answer
+feeds `superpowers:brainstorming`.
 
 Then the shared-parts map table:
 

@@ -1,7 +1,7 @@
 """No tracked file names a retired workbench flow skill or agent.
 
 Retired names are built from parts so this file does not match itself. A name matches only
-as a whole token: `workbench:reviewer` and `plan-writer-prompt.md` are other names.
+as a whole token: longer names that start with a retired one are other names.
 """
 
 import re
@@ -24,9 +24,7 @@ RETIRED_NAMES = (
     "skills/" + "review",
     "ep" + "ic-run",
 )
-PATTERN = re.compile(
-    r"(?<![\w-])(" + "|".join(re.escape(n) for n in RETIRED_NAMES) + r")(?![\w-])"
-)
+PATTERN = re.compile(r"(?<![\w-])(" + "|".join(re.escape(n) for n in RETIRED_NAMES) + r")(?![\w-])")
 EXEMPT = {
     "MEMORY.md",
     "scripts/tests/test_no_retired_flow_refs.py",

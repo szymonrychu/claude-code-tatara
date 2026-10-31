@@ -70,10 +70,10 @@ def test_no_reasoning_depth_instruction_in_prompts():
     assert "explicitly" in text and "model: sonnet" in text
 
 
-# The flow skills moved to plugins/superpowers; these references stay with the tooling.
+# The tooling references the workbench helper skills point at.
 MOVED_REFERENCES = tuple(
     ROOT / "references" / f"{n}.md"
-    for n in ("hooks", "merge-hosts", "user-run-steps", "workbench-config", "worktrees")
+    for n in ("hooks", "merge-hosts", "user-run-steps", "workbench-config")
 )
 
 
@@ -86,6 +86,7 @@ def test_start_research_feeds_brainstorming():
     text = _flat((START_RESEARCH / "SKILL.md").read_text())
     assert "superpowers:brainstorming" in text
     assert "start-" + "development" not in text
+    assert "references/plan-inputs.md" in text and "Discovery section" not in text
 
 
 def test_new_agents_exist_and_are_read_only():
@@ -100,14 +101,12 @@ def test_new_agents_exist_and_are_read_only():
             assert forbidden not in str(tools), f"{name} must stay read-only, got {tools}"
 
 
-
 def test_boy_scout_rule_ships_with_the_plugin():
     rule = ROOT / "rules" / "boy-scout.md"
     assert rule.is_file(), "rules/boy-scout.md missing"
     text = rule.read_text()
     for clause in ("Simplify what you touch", "uncommitted", "adjacent commits"):
         assert clause in text, f"boy-scout rule does not cover {clause!r}"
-
 
 
 def test_cartographer_can_actually_use_lsp():
@@ -132,49 +131,6 @@ def test_no_graphify_in_discovery_agents():
 def test_guard_bash_protects_the_shared_stash_stack():
     text = (ROOT / "hooks" / "lib" / "core.py").read_text()
     assert "stash" in text, "guard-bash must cover git stash pop/drop/clear"
-
-
-def test_tdd_rule_ships_with_the_plugin():
-    text = (ROOT / "rules" / "tdd.md").read_text()
-    for clause in ("Red", "Green", "Refactor", "Verify before reporting back"):
-        assert clause in text, f"tdd rule does not cover {clause!r}"
-
-
-
-def test_worktree_skills_ship_with_scripts_and_refuse_reuse():
-    for name, script in (("worktree-create", "create.py"), ("worktree-merge", "merge.py")):
-        d = SKILLS / name
-        assert (d / "SKILL.md").is_file(), f"{name} has no SKILL.md"
-        assert (d / "scripts" / script).is_file(), f"{name} has no {script}"
-        fm = frontmatter(d / "SKILL.md")
-        assert fm.get("name") == name
-    create = (SKILLS / "worktree-create" / "scripts" / "create.py").read_text()
-    assert "already exists" in create, "create must refuse a name already in use"
-    merge = (SKILLS / "worktree-merge" / "scripts" / "merge.py").read_text()
-    assert "merged_into" in merge, "merge must verify the work landed before cleaning up"
-
-
-def test_orchestrator_delegates_merges_to_a_sized_agent():
-    """Merges are the most context-expensive step; the orchestrator must not do them."""
-    skill = references_text()
-    assert "worktree-merger" in skill
-    assert "Never merge a worktree yourself" in skill
-    assert "--assess" in skill, "model choice must come from the assessment, not a guess"
-
-    agent = ROOT / "agents" / "worktree-merger.md"
-    assert agent.is_file()
-    fm = frontmatter(agent)
-    assert fm.get("name") == "worktree-merger"
-    assert fm.get("model") in ("sonnet", "opus")
-    # this agent legitimately writes: it resolves conflicts and lands the merge
-    assert "Bash" in str(fm.get("tools"))
-
-
-def test_assess_reports_a_model_without_leaking_the_diff():
-    text = (SKILLS / "worktree-merge" / "scripts" / "merge.py").read_text()
-    assert "def assess(" in text
-    assert '"model"' in text and "opus" in text and "sonnet" in text
-    assert "merge-tree" in text, "conflict prediction should not touch a worktree"
 
 
 def _meta_block(text: str) -> str:
@@ -218,48 +174,9 @@ def test_no_retired_scm_skill_names_in_flow_docs():
     assert "WORKBENCH_SCM_HOSTS" in merge_hosts
 
 
-
-
-
-
-
-
-FRESHNESS_SENTENCE = (
-    "a subagent cannot end a turn in a worktree whose last test run was not on its HEAD"
-)
-
-
 def _flat(text):
     """Collapse line wrapping so a sentence matches however the prose is wrapped."""
     return re.sub(r"\s+", " ", text)
-
-
-
-def test_hooks_section_names_the_freshness_guard():
-    combined = _flat((ROOT / "references" / "hooks.md").read_text())
-    assert "verification-freshness" in combined
-    assert "commit guard" in combined
-    assert FRESHNESS_SENTENCE in combined
-
-
-
-
-
-def test_worktrees_reference_covers_helpers_for_every_role():
-    text = _flat((ROOT / "references" / "worktrees.md").read_text())
-    for term in (
-        "A helper spawned by an implementer",
-        "spawned by the reviewer",
-        "read-only like its parent",
-        "merge helper",
-        "never in another",
-    ):
-        assert term in text, f"references/worktrees.md does not say {term!r}"
-
-
-
-
-
 
 
 def test_topic_focus_goes_to_practitioner():

@@ -58,8 +58,8 @@ questions / gaps" section from the reviewer; a numbered "Sources" list. Every
 non-trivial claim cites a source; killed claims do not appear.
 
 The brief ends with a mandatory final `## Plan inputs` section, defined once in
-the Discovery section of the `superpowers:brainstorming` skill (lists: `reuse`,
-`do-not-build`, `fix-as-ac`, `ideas`).
+`${CLAUDE_PLUGIN_ROOT}/references/plan-inputs.md` (lists: `reuse`, `do-not-build`,
+`fix-as-ac`, `ideas`).
 
 ## Notes
 

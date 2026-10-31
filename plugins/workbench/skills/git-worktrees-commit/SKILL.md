@@ -10,6 +10,9 @@ This is a **two-phase** flow: the script never writes the commit message
 itself, it only shows diffs and performs git plumbing. You (the agent) read
 the diff and write the title.
 
+The multi-submodule path for `superpowers:using-git-worktrees`: use it when a branch spans
+repos under `code/`; vanilla superpowers covers a single repo.
+
 ## Phase 1: collect
 
 Run for the branch and repos in scope (optionally restrict to a file subset):

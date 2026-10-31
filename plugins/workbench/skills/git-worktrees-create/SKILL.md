@@ -8,6 +8,9 @@ Creates `<configdir>/worktrees/<branch>/<repo>` for each requested submodule und
 checked out into the worktree; otherwise it is created fresh off the repo's
 tracked default branch (from `.gitmodules`, default `main`).
 
+The multi-submodule path for `superpowers:using-git-worktrees`: use it when a branch spans
+repos under `code/`; vanilla superpowers covers a single repo.
+
 ## Procedure
 
 1. Map the user's request to a branch name and a repo list. If the user says

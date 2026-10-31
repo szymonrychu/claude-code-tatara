@@ -25,25 +25,12 @@ EOF2
 
 today="$(date +%F)"
 
-for kind in design plan record; do
-  out="$(cd "$WB" && bash "$SCRIPT" "$kind" "My Topic" 2>&1)"; status=$?
-  assert_status "$status" 0 "doc_path $kind exits 0"
-  assert_eq "$out" "$WB/docs/plans/$today-my-topic-$kind.md" "doc_path $kind builds dated .md path"
-done
-if [ -d "$WB/docs/plans" ]; then ok "doc_path creates docs/plans"; else fail "docs/plans not created"; fi
-
-out="$(cd "$WB" && bash "$SCRIPT" tasks "My Topic" 2>&1)"
-assert_eq "$out" "$WB/docs/plans/$today-my-topic-tasks.json" "doc_path tasks ends in .json"
-
-out="$(cd "$WB" && bash "$SCRIPT" approvals "My Topic" 2>&1)"
-assert_eq "$out" "$WB/docs/plans/$today-my-topic-approvals.json" "doc_path approvals ends in .json"
-
 out="$(cd "$WB" && bash "$SCRIPT" research "My Topic" 2>&1)"
 assert_eq "$out" "$WB/docs/research/$today-my-topic.md" "doc_path research uses the research dir"
 if [ -d "$WB/docs/research" ]; then ok "doc_path creates the research dir"; else fail "research dir not created"; fi
 
-out="$(cd "$WB/code/foo" && bash "$SCRIPT" plan "My Topic" 2>&1)"
-assert_eq "$out" "$WB/docs/plans/$today-my-topic-plan.md" "doc_path from code/<repo> resolves to the workbench"
+out="$(cd "$WB/code/foo" && bash "$SCRIPT" research "My Topic" 2>&1)"
+assert_eq "$out" "$WB/docs/research/$today-my-topic.md" "doc_path from code/<repo> resolves to the workbench"
 if [ ! -d "$WB/code/foo/docs" ]; then ok "doc_path leaves the submodule untouched"; else fail "docs dir created inside submodule"; fi
 
 # the script finds the workbench that contains it: the plain-repo fallback exists only in the
@@ -56,19 +43,22 @@ else
   mkdir -p "$PLAIN"
   git -C "$PLAIN" init -q
   top="$(git -C "$PLAIN" rev-parse --show-toplevel)"
-  out="$(cd "$PLAIN" && bash "$SCRIPT" design "My Topic" 2>&1)"
-  assert_eq "$out" "$top/docs/plans/$today-my-topic-design.md" "doc_path works in a plain git repo"
+  out="$(cd "$PLAIN" && bash "$SCRIPT" research "My Topic" 2>&1)"
+  assert_eq "$out" "$top/docs/research/$today-my-topic.md" "doc_path works in a plain git repo"
 fi
 
-out="$(cd "$WB" && bash "$SCRIPT" bogus "My Topic" 2>&1)"; status=$?
-assert_status "$status" 1 "doc_path exits 1 on an unknown kind"
-assert_contains "$out" "usage:" "doc_path prints usage on an unknown kind"
+for kind in design plan record tasks approvals bogus; do
+  out="$(cd "$WB" && bash "$SCRIPT" "$kind" "My Topic" 2>&1)"; status=$?
+  assert_status "$status" 1 "doc_path exits 1 on kind $kind"
+  assert_contains "$out" "usage:" "doc_path prints usage on kind $kind"
+done
+if [ ! -d "$WB/docs/plans" ]; then ok "doc_path creates no docs/plans"; else fail "docs/plans created"; fi
 
-(cd "$WB" && bash "$SCRIPT" plan >/dev/null 2>&1); assert_status "$?" 1 "doc_path exits 1 on a missing topic"
-out="$(cd "$WB" && bash "$SCRIPT" plan "" 2>&1)"; status=$?
+(cd "$WB" && bash "$SCRIPT" research >/dev/null 2>&1); assert_status "$?" 1 "doc_path exits 1 on a missing topic"
+out="$(cd "$WB" && bash "$SCRIPT" research "" 2>&1)"; status=$?
 assert_status "$status" 1 "doc_path exits 1 on an empty topic"
 assert_contains "$out" "usage:" "doc_path prints usage on an empty topic"
-(cd "$WB" && bash "$SCRIPT" plan "!!!" >/dev/null 2>&1); assert_status "$?" 1 "doc_path exits 1 on an empty slug"
+(cd "$WB" && bash "$SCRIPT" research "!!!" >/dev/null 2>&1); assert_status "$?" 1 "doc_path exits 1 on an empty slug"
 
 echo "----"
 echo "passed: $PASS failed: $FAIL"

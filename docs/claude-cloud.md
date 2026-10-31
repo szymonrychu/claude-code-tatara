@@ -1,7 +1,7 @@
 # Runbook: the workbench in Claude Code cloud sessions
 
 How to set up a Claude Code cloud environment (claude.ai/code, the Claude app, `claude --cloud`)
-so a workbench works there: the workbench plugins load, the pinned tools install, the PR skills
+so a workbench works there: the workbench plugins and vanilla superpowers load, the pinned tools install, the PR skills
 reach GitHub and the agent can push to the component submodules.
 
 ## Why a cloud session needs this
@@ -10,7 +10,7 @@ A cloud session runs on a fresh VM behind two proxies. Four things differ from a
 
 | Local behaviour | Cloud behaviour | What fixes it |
 |---|---|---|
-| `.claude/settings.json` enables the workbench plugins after the trust dialog; `/reload-plugins` picks up changes | Plugins a repo enables are never installed, there is no trust dialog and no `/reload-plugins` | The SessionStart hook installs them at user scope; a plugin installed by a SessionStart hook loads in that same session |
+| `.claude/settings.json` enables the workbench plugins after the trust dialog; `/reload-plugins` picks up changes | Plugins a repo enables are never installed, there is no trust dialog and no `/reload-plugins` | The SessionStart hook installs them at user scope (the workbench plugins from the in-repo marketplace, superpowers from the official marketplace); a plugin installed by a SessionStart hook loads in that same session |
 | `mise install` fetches from GitHub releases and verifies attestations through sigstore | `tuf-repo-cdn.sigstore.dev` is blocked, and `github.com/<o>/<r>/archive` and `codeload.github.com` are refused for repositories not attached to the session | The hook writes `~/.config/mise/conf.d/workbench-cloud.toml`: no aqua attestation check (release checksums are still verified) and bats from npm |
 | `git push` uses your own credentials for any repo | The git proxy only credentials repositories attached to the session, so pushing in `code/<component>` is refused | The agent attaches each component repo with the `add_repo` tool; the hook lists the exact calls |
 | `gh pr ...` works | GitHub GraphQL is blocked, so `gh pr`, `gh issue`, `gh repo view --json` fail | The `pullrequests-*` skills use `gh api repos/{owner}/{repo}/...` REST; review threads come from the proxy's `pulls/{n}/ccr/review_threads` route |
@@ -49,7 +49,7 @@ unchanged. It never fails the session: problems are reported to the agent as
 - Cloud threads inside a claude.ai *project* do not run repository hooks either; use a plain
   session.
 - Check it worked: ask "which workbench skills do you have?". The answer lists
-  `superpowers:brainstorming`, `superpowers:subagent-driven-development`, `workbench:init`
+  `superpowers:brainstorming` (vanilla superpowers), `workbench:init`
   and the rest. The session-start
   context also names each submodule's `add_repo` call.
 
