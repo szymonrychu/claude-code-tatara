@@ -1,69 +1,44 @@
-# Epic and task migration skill design
+---
+title: Epic and task migration skill
+repos: [workbench]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# Epic and task migration skill
 
-A new subcommand `ticket.py migrate` rewrites every epic's task files from the old ticket scheme (minutes
-`estimate`, `actual`, run-loop keys) to the scheme epic housekeeping-rules-estimates defined (Fibonacci
-`points`, `expected_minutes`, `expected_tokens`, `points_actual`, `actual_minutes`, `actual_tokens`,
-`actual_roles`, `actual_role_tokens`), fills actuals from legacy numbers and from the subagent transcripts
-still on disk, and writes each done epic's RETRO.md generated block in the same commit. A thin skill,
-`epic-migrate`, runs it: dry run, migrate, retro-writer and `ticket.py retro` per epic, then the bucket
-table. The epic ends by migrating this repository's six done epics for real, so calibration reads one
-scheme and `deltas --all --buckets` leaves the seed table.
+## What and why
 
-## Intent and why
+What: `ticket.py migrate` and a thin `epic-migrate` skill that rewrite every epic's task files from the old ticket scheme (minutes estimate, run-loop keys) to the points scheme, fill actuals from legacy numbers and the transcripts still on disk, and give every done epic a RETRO.md; then this repository's six done epics are migrated for real.
+How: A new ticket_cmds module reusing ticket.py's frontmatter I/O and commit helper, retro's generated block, calibration's seed table (plus a minutes-to-points inverse) and agent_usage's backfill (plus a legacy transcript matcher and one transcript pass per epic); one `chore(ticket): <epic> migrate` commit per epic, idempotent, with a dry run.
+Why: Calibration reads only done tasks with points and both actuals, and no done task has points today, so every estimate bucket is still on the seed table and only one epic has a retro.
 
-The user asked on 2026-10-25: "Skill to add: migrate epics/tasks from old scheme to new one. Can be
-started after current work gets delivered." Calibration (`calibration_rows`) only reads done tasks with
-`points` and both actuals; no done task has `points` today (the five old epics predate it, and the
-bootstrap epic housekeeping-rules-estimates was planned before the field existed), so every bucket is on
-the seed table and RETRO.md exists for one epic only. The housekeeping-rules-estimates retro names this
-epic as the removal of that tech debt.
+Requested 2026-10-25: "Skill to add: migrate epics/tasks from old scheme to new one. Can be started after current work gets delivered." The new scheme is the one epic housekeeping-rules-estimates defined (design D7-D16). The mapping is in design.md: points from the legacy minutes estimate (nearest seed bucket) or the Notes line "Estimate: N points", expected values from the legacy estimate or the seed, actuals from legacy numbers or matched transcripts and never invented, legacy keys dropped. The retro delivery order falls back to verified_head commit dates, the deltas legacy rows retire, and retro-writer reads record.md for epics with no orchestrator notes.
 
-## Goals
+## Scope ladder
 
-- G1: `ticket.py migrate [<epic> | --all] [--dry-run]` rewrites every old-scheme task file in todo,
-  in-progress and done epics to the 18 template keys in template order, with points, expected values and
-  actuals per D3 and D4, never inventing a value.
-- G2: Each done epic gets a RETRO.md: migrate writes its generated block in the epic's one
-  `chore(ticket): <epic> migrate` commit, and retro-writer fills Retro and Improvements from record.md.
-- G3: A second run changes nothing (idempotent), and a dry run changes no tracked file and commits nothing.
-- G4: A thin `epic-migrate` skill (at most 45 lines) wraps the commands, and the plugin README, the flow
-  docs and references/tickets.md name it and `migrate`.
-- G5: This repository's six done epics are migrated: `ticket.py lint` prints `lint: ok`,
-  `ticket.py deltas --all --buckets` shows at least one bucket with source history or refit, and every
-  done epic has a tracked RETRO.md with a filled Retro section.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: `ticket.py migrate [<epic> | --all] [--dry-run]` rewrites every old-scheme task file in todo, in-progress and done epics to the 18 template keys in template order, with points, expected values and actuals per the design, never inventing a value.
+- 1.2: G2: Each done epic gets a RETRO.md: migrate writes its generated block in the epic's one `chore(ticket): <epic> migrate` commit, and retro-writer fills Retro and Improvements from record.md.
+- 1.3: G3: A second run changes nothing (idempotent), and a dry run changes no tracked file and commits nothing.
+- 1.4: G4: A thin `epic-migrate` skill (at most 45 lines) wraps the commands, and the plugin README, the flow docs and references/tickets.md name it and `migrate`.
+- 1.5: G5: This repository's six done epics are migrated: `ticket.py lint` prints `lint: ok`, `ticket.py deltas --all --buckets` shows at least one bucket with source history or refit, and every done epic has a tracked RETRO.md with a filled Retro section.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Rewriting approvals.json, rulings.json, record.md, close.json, README.md or design.md of any epic: they
-  stay as history.
-- Re-estimating old tasks by judgement: points come only from the legacy number or the Notes line (D3).
-- Keeping a backward compatible reader for the old keys (deltas legacy rows go, D11).
-- Changing the calibration formula or the seed table.
+- Rewriting approvals.json, rulings.json, record.md, close.json, README.md or design.md of any epic.
+- Re-estimating old tasks by judgement, or changing the calibration formula or seed table.
+- A backward compatible reader for the old keys: the deltas legacy rows are removed.
 
-## Anti-goals
+## Design
 
-- A migrated task with a malformed number that `calibration_rows` then silently drops (D10).
-- An actual or a role guessed where no number, no record and no transcript exists.
-- Changing a tracked file or committing in a dry run, or anything at all on a second run.
-- A per-task walk of every transcript (O(tasks x transcripts)) when one pass per epic suffices (D6).
-- Touching the Retro and Improvements text of a RETRO.md that already has them (the bootstrap epic).
-
-## Constraints
-
-- No em dash characters anywhere; ASCII only in plugin markdown; plain hyphens and straight quotes.
-- Python 3.9 safe in hooks and `scripts/lib`; `scripts/lib` is stdlib only, so `agent_usage` cannot import
-  ticket.py: the legacy matcher takes a names map from its caller.
-- No backward compatibility: migrate is the one path for old files; legacy keys are dropped; no shims.
-- Writer rule: only the orchestrator writes tickets, only through ticket.py, only in the main checkout;
-  every mutating subcommand calls `require_main_checkout` first and `commit_ticket_change` last.
-- Retirement pins: KEPT and KEPT_MODULES in test_ticket_retired_run_loop.py are exact; nothing may be
-  named `estimate` or `estimator`; start-development SKILL.md is at 149 of 150 lines; skill wrappers are at
-  most 45 lines with frontmatter exactly `name` and `description`.
-- TDD: each task is one test file's worth of behaviour, test first.
-- Verify commands: `bash plugins/workbench/scripts/run-tests.sh --only <suite>` plus `mise run lint`; the
-  full gate is `mise run test` and `mise run lint` (both green on main b947d5b: 1907 assertions).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -206,6 +181,11 @@ task's acceptance conditions are the real check: they run the integration tree's
 docs/plans (interrogate item 7). Its verify, the full `mise run test && mise run lint` in the integration
 tree, guards the code only: that tree cannot see main's migrated docs/plans.
 
+## Open questions
+
+- Q1: Legacy actual_roles are dropped (no safe mapping, sums disagree); roles come only from records, with workbench:verifier transcripts counted as review. Agree? [recommended: yes]
+- Q2: The real run (task migrate-this-repo) writes docs/plans on main, which only the orchestrator may do: does the orchestrator run it in the main checkout with the integration tree's ticket.py before the epic review, with the reviewer checking the acceptance commands against main's docs/plans? [recommended: yes (D13)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -215,7 +195,7 @@ tree, guards the code only: that tree cannot see main's migrated docs/plans.
 | research-papers | skipped: no scientific or algorithmic core | - | - |
 | research-docs | skipped: no library or platform API used in a new way (stdlib, git, the transcript format documented in housekeeping-rules-estimates) | - | - |
 
-## Research inputs
+### Research inputs
 
 - Old scheme keys and counts (discovery brief: 74 old tasks over five epics; `estimate` "" in 3; numeric `actual` in flow-speed only) - migrate-dry-run.
 - Legacy `actual_roles` uses impl, verify, review, fix and one `false-finding` (medium-only-hold), and disagrees with `actual` in 2 tasks; dropped (interrogate item 3) - migrate-dry-run (D4, Q1).
@@ -237,7 +217,93 @@ tree, guards the code only: that tree cannot see main's migrated docs/plans.
 - Retro history, housekeeping-rules-estimates (workflow): reviewers run the documented command for any README or skill snippet - epic-migrate-skill (flags checked against `--help`).
 - Retro history, housekeeping-rules-estimates (tech debt): no `points` on that epic's tasks, remove by this epic - migrate-this-repo.
 
-## Decision coverage
+## Irreversible operations
+
+none: the real run rewrites done task files and RETRO.md on main in per-epic `chore(ticket): <epic>
+migrate` and `retro` commits, each revertible with `git revert`; the dropped legacy keys stay in git
+history. `.logs/agents` records it writes are gitignored and regenerable.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review verdict: pass (2026-10-25).
+- Whole-diff start-review (sonnet, checklist) on 2d5f24d...3c5c5a5: one medium gap (done epic already on the new scheme but without RETRO.md skipped by migrate; verified at migrate.py:205 and :251), fixed by task migrate-retro-missing (b1072ef, reviewed clean). Declined by the reviewer: a repeated whole-number regex, SHA constant placement (style).
+- Scope audit (sonnet): no gaps, no duplicates; every goal, non-goal, D1-D13 and AC mapped to code, docs or the commits on main.
+- Full suite and lint in the integration tree on b1072ef: assertions passed 1961 (see .logs/epic-review-test2.log), lint exit 0.
+- Security lens skipped: the diff touches no hooks, secrets, RBAC, ingress, CI vars or image pins.
+- Real run on main verified: AC1-AC7 ok; six migrate commits, five retro commits; buckets 1,2,3,5,8 on history.
+
+### design.md: Summary
+
+A new subcommand `ticket.py migrate` rewrites every epic's task files from the old ticket scheme (minutes
+`estimate`, `actual`, run-loop keys) to the scheme epic housekeeping-rules-estimates defined (Fibonacci
+`points`, `expected_minutes`, `expected_tokens`, `points_actual`, `actual_minutes`, `actual_tokens`,
+`actual_roles`, `actual_role_tokens`), fills actuals from legacy numbers and from the subagent transcripts
+still on disk, and writes each done epic's RETRO.md generated block in the same commit. A thin skill,
+`epic-migrate`, runs it: dry run, migrate, retro-writer and `ticket.py retro` per epic, then the bucket
+table. The epic ends by migrating this repository's six done epics for real, so calibration reads one
+scheme and `deltas --all --buckets` leaves the seed table.
+
+### design.md: Intent and why
+
+The user asked on 2026-10-25: "Skill to add: migrate epics/tasks from old scheme to new one. Can be
+started after current work gets delivered." Calibration (`calibration_rows`) only reads done tasks with
+`points` and both actuals; no done task has `points` today (the five old epics predate it, and the
+bootstrap epic housekeeping-rules-estimates was planned before the field existed), so every bucket is on
+the seed table and RETRO.md exists for one epic only. The housekeeping-rules-estimates retro names this
+epic as the removal of that tech debt.
+
+### design.md: Goals
+
+- G1: `ticket.py migrate [<epic> | --all] [--dry-run]` rewrites every old-scheme task file in todo,
+  in-progress and done epics to the 18 template keys in template order, with points, expected values and
+  actuals per D3 and D4, never inventing a value.
+- G2: Each done epic gets a RETRO.md: migrate writes its generated block in the epic's one
+  `chore(ticket): <epic> migrate` commit, and retro-writer fills Retro and Improvements from record.md.
+- G3: A second run changes nothing (idempotent), and a dry run changes no tracked file and commits nothing.
+- G4: A thin `epic-migrate` skill (at most 45 lines) wraps the commands, and the plugin README, the flow
+  docs and references/tickets.md name it and `migrate`.
+- G5: This repository's six done epics are migrated: `ticket.py lint` prints `lint: ok`,
+  `ticket.py deltas --all --buckets` shows at least one bucket with source history or refit, and every
+  done epic has a tracked RETRO.md with a filled Retro section.
+
+### design.md: Non-goals
+
+- Rewriting approvals.json, rulings.json, record.md, close.json, README.md or design.md of any epic: they
+  stay as history.
+- Re-estimating old tasks by judgement: points come only from the legacy number or the Notes line (D3).
+- Keeping a backward compatible reader for the old keys (deltas legacy rows go, D11).
+- Changing the calibration formula or the seed table.
+
+### design.md: Anti-goals
+
+- A migrated task with a malformed number that `calibration_rows` then silently drops (D10).
+- An actual or a role guessed where no number, no record and no transcript exists.
+- Changing a tracked file or committing in a dry run, or anything at all on a second run.
+- A per-task walk of every transcript (O(tasks x transcripts)) when one pass per epic suffices (D6).
+- Touching the Retro and Improvements text of a RETRO.md that already has them (the bootstrap epic).
+
+### design.md: Constraints
+
+- No em dash characters anywhere; ASCII only in plugin markdown; plain hyphens and straight quotes.
+- Python 3.9 safe in hooks and `scripts/lib`; `scripts/lib` is stdlib only, so `agent_usage` cannot import
+  ticket.py: the legacy matcher takes a names map from its caller.
+- No backward compatibility: migrate is the one path for old files; legacy keys are dropped; no shims.
+- Writer rule: only the orchestrator writes tickets, only through ticket.py, only in the main checkout;
+  every mutating subcommand calls `require_main_checkout` first and `commit_ticket_change` last.
+- Retirement pins: KEPT and KEPT_MODULES in test_ticket_retired_run_loop.py are exact; nothing may be
+  named `estimate` or `estimator`; start-development SKILL.md is at 149 of 150 lines; skill wrappers are at
+  most 45 lines with frontmatter exactly `name` and `description`.
+- TDD: each task is one test file's worth of behaviour, test first.
+- Verify commands: `bash plugins/workbench/scripts/run-tests.sh --only <suite>` plus `mise run lint`; the
+  full gate is `mise run test` and `mise run lint` (both green on main b947d5b: 1907 assertions).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -255,7 +321,7 @@ tree, guards the code only: that tree cannot see main's migrated docs/plans.
 | D12 Done epics are history | migrate-command |
 | D13 The real run | migrate-this-repo |
 
-## Review focus
+### design.md: Review focus
 
 - Never invented: every planned and actual value traces to a legacy number, a Notes line, a record or
   SEED; check the empty cases in migrate-dry-run's tests.
@@ -267,14 +333,14 @@ tree, guards the code only: that tree cannot see main's migrated docs/plans.
 - Partial record sets leave tokens and roles empty.
 - Delivery order with a non-sha verified_head.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The dry run line format, as long as it names the epic, the task, each changed key with old and new
   value, and each dropped key.
 - How the token-bounded match is written in `legacy_task`, within D5's rules.
 - Whether `records_for` is rewritten on top of `records_by_task`, keeping its signature and behaviour.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - 1042 transcripts are on disk now (887 workflow ones under `<session>/subagents/workflows/wf_*/`); how
   many match old tasks is unknown until the dry run in migrate-this-repo prints its lines. Retention of
@@ -283,14 +349,3 @@ tree, guards the code only: that tree cannot see main's migrated docs/plans.
 - Old verified_head shas are still in the object store (merged); a missing one falls back per D7.
 - After migration the bootstrap epic gives at least 5 calibration rows, so buckets leave the seed;
   confirmed by migrate-this-repo's AC.
-
-## Open questions
-
-- Q1: Legacy actual_roles are dropped (no safe mapping, sums disagree); roles come only from records, with workbench:verifier transcripts counted as review. Agree? [recommended: yes]
-- Q2: The real run (task migrate-this-repo) writes docs/plans on main, which only the orchestrator may do: does the orchestrator run it in the main checkout with the integration tree's ticket.py before the epic review, with the reviewer checking the acceptance commands against main's docs/plans? [recommended: yes (D13)]
-
-## Irreversible operations in scope
-
-none: the real run rewrites done task files and RETRO.md on main in per-epic `chore(ticket): <epic>
-migrate` and `retro` commits, each revertible with `git revert`; the dropped legacy keys stay in git
-history. `.logs/agents` records it writes are gitignored and regenerable.
