@@ -1,9 +1,9 @@
 ---
-title: "Superpowers-based plan flow replaces the workbench flow"
+title: Superpowers-based plan flow replaces the workbench flow
 repos: [claude-code-tatara]
-created: "2026-10-31"
-owner: ""
-rung: "3"
+created: 2026-10-31
+owner: Szymon Richert
+rung: 3
 ---
 
 # Superpowers-based plan flow replaces the workbench flow
