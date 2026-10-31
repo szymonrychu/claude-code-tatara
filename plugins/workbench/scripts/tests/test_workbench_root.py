@@ -192,3 +192,19 @@ def test_scratchpad_and_logs_cli(tmp_path):
 def test_main_checkout_from_submodule(tmp_path):
     root = metarepo(tmp_path)
     assert workbench.main_checkout(root / "code" / "x") == root.resolve()
+
+
+def test_scratchpad_and_logs_cli_per_improvement_name(tmp_path):
+    main = _repo(tmp_path / "main")
+    for action in ("scratchpad", "logs"):
+        r = subprocess.run(
+            [sys.executable, str(CLI), action, "my-improvement", "--from", str(main)],
+            capture_output=True,
+            text=True,
+        )
+        assert r.returncode == 0, r.stderr
+        want = main.resolve() / f".{action}" / "my-improvement"
+        assert r.stdout.strip() == str(want)
+        assert want.is_dir()
+    assert workbench.logs_dir(main, "x") == main.resolve() / ".logs" / "x"
+    assert workbench.scratchpad_dir(main, "x") == main.resolve() / ".scratchpad" / "x"

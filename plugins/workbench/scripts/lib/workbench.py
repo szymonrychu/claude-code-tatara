@@ -22,8 +22,8 @@ Usage:
   workbench.py components [--from DIR]
   workbench.py resolve <component> [--from DIR]
   workbench.py doctor [--from DIR]
-  workbench.py scratchpad [--from DIR]   main checkout's .scratchpad, created
-  workbench.py logs [--from DIR]         main checkout's .logs, created
+  workbench.py scratchpad [NAME] [--from DIR]   main checkout's .scratchpad[/NAME], created
+  workbench.py logs [NAME] [--from DIR]         main checkout's .logs[/NAME], created
   workbench.py config [--repo DIR] [--plans-root DIR --repo-name NAME]
 
 Exit 0 on success, 1 when nothing resolves. `root` and `doctor` exit 0 with
@@ -117,17 +117,17 @@ def main_checkout(start: Path | None = None) -> Path | None:
     return Path(common).resolve().parent if common else None
 
 
-def _state_dir(name: str, start: Path | None) -> Path | None:
+def _state_dir(name: str, start: Path | None, improvement: str | None = None) -> Path | None:
     main = main_checkout(start)
     if main is None:
         return None
-    d = main / name
+    d = main / name / improvement if improvement else main / name
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
-def scratchpad_dir(start: Path | None = None) -> Path | None:
-    return _state_dir(".scratchpad", start)
+def scratchpad_dir(start: Path | None = None, improvement: str | None = None) -> Path | None:
+    return _state_dir(".scratchpad", start, improvement)
 
 
 def existing_logs_dir(start: Path | None = None) -> Path | None:
@@ -136,8 +136,8 @@ def existing_logs_dir(start: Path | None = None) -> Path | None:
     return main / ".logs" if main else None
 
 
-def logs_dir(start: Path | None = None) -> Path | None:
-    return _state_dir(".logs", start)
+def logs_dir(start: Path | None = None, improvement: str | None = None) -> Path | None:
+    return _state_dir(".logs", start, improvement)
 
 
 def components(root: Path, kind: str, require_git: bool = True) -> dict[str, Path]:
@@ -495,7 +495,7 @@ def main() -> int:
         return 0
 
     if args.action in ("scratchpad", "logs"):
-        d = (scratchpad_dir if args.action == "scratchpad" else logs_dir)(args.start)
+        d = (scratchpad_dir if args.action == "scratchpad" else logs_dir)(args.start, args.name)
         if d is None:
             print("workbench.py: no main checkout found (not inside git)", file=sys.stderr)
             return 1

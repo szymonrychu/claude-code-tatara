@@ -92,11 +92,8 @@ tracked_branch() {
 
 worktree_path() {
   local branch="$1" repo="$2" root
-  local cfg here
   root="$(repo_root)" || return 1
-  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  cfg="$(python3 "$here/../../scripts/lib/workbench.py" config-dir --from "$root")" || return 1
-  echo "$cfg/worktrees/$branch/$repo"
+  echo "$root/.worktrees/$branch/$repo"
 }
 
 REPORT_REPOS=()

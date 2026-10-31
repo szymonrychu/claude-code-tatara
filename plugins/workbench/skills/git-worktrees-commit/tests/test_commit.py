@@ -22,7 +22,7 @@ def workbench(tmp_path, monkeypatch):
     (root / ".gitmodules").write_text(GITMODULES)
     (root / "code" / "foo").mkdir(parents=True)
 
-    repo_dir = root / ".claude" / "worktrees" / "my-branch" / "foo"
+    repo_dir = root / ".worktrees" / "my-branch" / "foo"
     repo_dir.mkdir(parents=True)
     subprocess.run(["git", "init", "-q"], cwd=repo_dir, check=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_dir, check=True)
@@ -95,8 +95,8 @@ def test_collect_unknown_repo_fails(workbench, capsys):
     assert "unknown repo" in captured.out
 
 
-def test_commits_in_config_dir_worktree(workbench):
-    assert workbench.parts[-4:-2] == (".claude", "worktrees")
+def test_commits_in_dot_worktrees_worktree(workbench):
+    assert workbench.parts[-3] == ".worktrees"
     exit_code = commit.cmd_commit("my-branch", ["foo"], [], {"foo": "feat: update files"})
     assert exit_code == 0
     assert _log_subject(workbench) == "feat: update files"
