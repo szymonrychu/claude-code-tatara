@@ -1,10 +1,10 @@
 ---
 name: start-discovery
 description: >
-  Builds the evidence base before any design or planning happens: maps the
+  Builds the evidence base before any plan is written: maps the
   existing codebase (LSP symbols, grep, per-repo recon agents) and
   sweeps external prior art in parallel, then reports what is known, what is
-  assumed, and what is still unknown. Use as phase 1 of start-development, or
+  assumed, and what is still unknown. Use as phase 1 of start-development (its briefs feed the plan-writer), or
   standalone before planning any change to an unfamiliar or large codebase.
   Read-only - it never edits, plans, or designs.
 ---
@@ -17,7 +17,7 @@ call sites that matter, and reinvents a decision the repo already made.
 
 Discovery is read-only and ends in a written brief. It does not design, does not
 propose an approach, and does not ask the user to choose anything - that is the
-design phase's job (phase 2), and it needs this brief as input.
+plan-writer's job (phase 2 is the plan), and it needs this brief as input.
 
 ## The four lanes
 
@@ -120,4 +120,4 @@ same location `start-research` uses). Structure:
 - All four lanes dispatch in one message. Serial discovery is slow discovery.
 - Never let a lane report "nothing found" without saying what it looked for.
 - The brief ends with unknowns, not with a recommendation. Handing the
-  design phase a conclusion pre-empts the approval gate that follows it.
+  plan-writer a conclusion pre-empts the gate that follows the plan.

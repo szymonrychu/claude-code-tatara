@@ -35,3 +35,11 @@ def test_skill_names_pullrequests_watch():
     assert "name: pullrequests-review-loop" in text
     assert "pullrequests-watch" in text
     assert "GitHub only" in text
+
+
+def test_names_no_epic_and_the_merge_step_is_the_mergers():
+    import re
+
+    text = " ".join(SKILL.read_text().split())
+    assert not re.search(r"\bepics?\b", text, re.I)
+    assert "`worktree-merger`" in text

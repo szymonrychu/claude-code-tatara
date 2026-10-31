@@ -212,7 +212,7 @@ def main(argv=None) -> int:
     ap.add_argument(
         "--integration",
         action="store_true",
-        help="create the epic integration tree: --name is the epic slug, branch <epic>",
+        help="create the plan tree: --name is the plan slug, branch <plan>",
     )
     ap.add_argument("--list", action="store_true", help="list names already in use and exit")
     args = ap.parse_args(argv)

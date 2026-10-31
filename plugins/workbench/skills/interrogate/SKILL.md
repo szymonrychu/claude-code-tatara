@@ -1,6 +1,6 @@
 ---
 name: interrogate
-description: One-pass adversarial review by a panel of three models (fable, opus, sonnet) plus a lead verdict that sorts every finding into act on, consider, noted, or dismissed. Use for a contested design, a high-risk diff (authz, secrets, concurrency, rules engines, data migrations), or a task epic-run escalated - instead of another review->fix round. Never auto-applies anything.
+description: One-pass adversarial review by a panel of three models (fable, opus, sonnet) plus a lead verdict that sorts every finding into act on, consider, noted, or dismissed. Use for a contested design, a high-risk diff (authz, secrets, concurrency, rules engines, data migrations), or findings still open after plan-run's two fix rounds - instead of another review->fix round. Never auto-applies anything.
 ---
 
 # interrogate
@@ -15,17 +15,16 @@ tokens re-arguing, and a panel verdict ends the argument.
 
 ## When to use it
 
-- The design doc and plan doc are contested or high-risk: run the panel
-  before the gate and put the verdict in the gate message.
+- plan.md is contested or a high-risk plan (authz, secrets, concurrency, a
+  rules engine, a data migration): run the panel before the gate and put the
+  verdict in the gate message.
 - A design is contested, or two viable shapes remain at the gate.
 - The diff touches authz, secrets, concurrency, a rules engine, or a data
   migration - where the costly bugs are reasoning bugs a green suite misses.
-- `workbench:epic-run` returned a task in `escalated`. One panel verdict
+- `plan-run`'s two fix rounds ended with findings open. One panel verdict
   replaces another fix round.
-- An epic review (phase 5 of `workbench:start-development`) that covers
-  `panel` tier tasks: the panel replaces `start-review --single` there.
 
-Not for routine diffs: the per-task review in `epic-run` covers those.
+Not for routine diffs: the reviewer in `plan-run` covers those.
 
 ## 1. Scope
 
@@ -87,7 +86,7 @@ Then an agreement line: where the models converged and where they split.
 ## After the verdict
 
 Never auto-apply. Act on items go to an implementer as a sharpened requirement
-(an implementer in the epic's integration tree).
+(an implementer in the plan tree).
 Consider items that change scope or product behaviour go to the user.
 Everything else is recorded and closed. The panel does not run again on the
 same change unless the change itself is materially rewritten.

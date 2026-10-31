@@ -176,3 +176,19 @@ def test_integration_cli_prints_path_branch_base_and_verb(repo, monkeypatch, cap
     out = capsys.readouterr().out
     assert str(worktrees_dir(repo) / "cli-epic") in out
     assert "cli-epic" in out and "main" in out and "created" in out
+
+
+def test_skill_and_help_speak_of_the_plan_tree():
+    import re
+
+    text = (Path(__file__).resolve().parents[1] / "SKILL.md").read_text()
+    flat = " ".join(text.split())
+    assert "**Plan tree.**" in flat
+    assert "ticket.py move <plan> in-progress" in flat
+    assert not re.search(r"\bepics?\b", flat, re.I)
+    script = Path(__file__).resolve().parents[1] / "scripts" / "create.py"
+    helptext = subprocess.run(
+        [sys.executable, str(script), "--help"], capture_output=True, text=True, check=True
+    ).stdout
+    assert not re.search(r"\bepic", helptext, re.I)
+    assert "<plan>" in helptext

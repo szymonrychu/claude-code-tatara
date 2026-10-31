@@ -1,6 +1,6 @@
 ---
 name: start-debugging
-description: "Debug a defect with a gated flow: reproduce, isolate, find the root cause, prove a regression test, then fix through the lean path. Use for an error message or stack trace, a failing test nobody owns, 'works in staging but not in prod', a regression after a deploy, or a failed post-deploy health check. Replaces report-template debugging for work in these trees. Read-only until the fix phase."
+description: "Debug a defect with a gated flow: reproduce, isolate, find the root cause, prove a regression test, then fix through start-development. Use for an error message or stack trace, a failing test nobody owns, 'works in staging but not in prod', a regression after a deploy, or a failed post-deploy health check. Replaces report-template debugging for work in these trees. Read-only until the fix phase."
 ---
 
 # Start debugging
@@ -66,7 +66,7 @@ Done when: the test is red for the right reason, with the failure output quoted.
 
 ## Phase 7 - Fix
 
-Implement through `start-development`'s lean path with the regression test as the acceptance condition. Then the proof: test passes; revert the fix, test fails; restore, test passes. Finally the original un-minimised loop from phase 1 is green.
+Implement through `start-development`, with the regression test and the fix as the MVP rung of the plan. Then the proof: test passes; revert the fix, test fails; restore, test passes. Finally the original un-minimised loop from phase 1 is green.
 
 Done when: the revert proof ran with output quoted, and the original loop is green.
 

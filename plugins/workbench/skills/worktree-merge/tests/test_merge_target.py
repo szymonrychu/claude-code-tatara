@@ -156,7 +156,7 @@ def test_refuses_base_checked_out_nowhere(epic):
         merge_back("ep-t1", base="ep", start=repo)
     msg = str(e.value)
     assert "ep is not checked out in any worktree of" in msg
-    assert "ticket.py move <epic> in-progress" in msg
+    assert "ticket.py move <plan> in-progress" in msg
     assert rev(repo, "ep") == ep_before and rev(task, "HEAD") == task_before
 
 

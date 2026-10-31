@@ -21,8 +21,8 @@ GitHub-only)` on stderr, still processes the run's GitHub repos, and exits 1.
 A local-only repo (no PR host) is reported skipped on stderr and does not fail
 the run. For GitLab, judge unresolved discussions via `pullrequests-watch` `reviews=` and the MR UI/API.
 
-This skill does **not** merge. Merging stays the caller's job (`merge own
-PRs` step in `start-development`).
+This skill does **not** merge. Merging stays the caller's job (the `worktree-merger` in
+`start-development` phase 4).
 
 ## Procedure
 

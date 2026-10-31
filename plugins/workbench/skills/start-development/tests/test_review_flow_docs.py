@@ -45,10 +45,10 @@ def test_start_review_step_four_defaults_to_single():
     assert "opus when any reviewed task ran on opus" not in REVIEW_SKILL.read_text()
 
 
-def test_interrogate_when_to_use_names_panel_tier_and_epic_review():
+def test_interrogate_when_to_use_names_open_findings_after_plan_run():
     sec = section(INTERROGATE_SKILL, "When to use it")
-    assert "`panel` tier" in sec
-    assert "epic review" in sec
+    assert "`plan-run`" in sec
+    assert "findings open" in sec
 
 
 def test_scope_section_names_undelivered_as_a_finding():

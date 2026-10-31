@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rebase one subagent worktree onto base, land it in base's worktree, then clean up.
 
-The target is whichever worktree has base checked out (an epic integration tree or
+The target is whichever worktree has base checked out (a plan tree or
 the main checkout); no checkout is ever switched.
 
 Cleanup is conditional: the worktree and its branch are removed only after the
@@ -233,7 +233,7 @@ def target_tree(src: Path, base: str) -> Path:
         elif ln == f"branch refs/heads/{base}" and path is not None:
             return path
     raise WorktreeError(
-        f"{base} is not checked out in any worktree of {src}; run ticket.py move <epic> "
+        f"{base} is not checked out in any worktree of {src}; run ticket.py move <plan> "
         "in-progress for an integration branch, or check out {0} in the main checkout".format(base)
     )
 

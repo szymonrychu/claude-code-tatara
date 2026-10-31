@@ -3,7 +3,7 @@ name: worktree-merge
 description: >
   Rebases one subagent's worktree onto the base branch, optionally verifies the
   rebased tree, fast-forwards it into the worktree that has the base checked out
-  (an epic integration tree or the main checkout), verifies every commit landed,
+  (a plan tree or the main checkout), verifies every commit landed,
   and only then removes the worktree and its branch. Keeps the worktree intact on any conflict, dirty
   tree, or failed check. Use after a subagent returns work created with
   worktree-create.
@@ -19,22 +19,22 @@ recoverable; lost commits are not.
 
 ```sh
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/worktree-merge/scripts/merge.py" \
-  --name <name> [--base main|<epic>] [--repo <code/ submodule>] [--keep] [--verify '<cmd>']
+  --name <name> [--base main|<plan>] [--repo <code/ submodule>] [--keep] [--verify '<cmd>']
 ```
 
 The **target tree** is the worktree whose checked-out branch is `<base>`, found with
-`git worktree list --porcelain`: the integration tree for `--base <epic>`, the main
+`git worktree list --porcelain`: the plan tree for `--base <plan>`, the main
 checkout for `--base main`. The script never runs `git checkout` and never switches the
 human's checkout. When `<base>` is checked out in no worktree it raises
-`<base> is not checked out in any worktree of <src>; run ticket.py move <epic> in-progress
+`<base> is not checked out in any worktree of <src>; run ticket.py move <plan> in-progress
 for an integration branch, or check out <base> in the main checkout`, with nothing
 rebased or merged.
 
 Containment: `merged_into` (used by merge_back's post-merge check, the
 `ticket.py` move done gate, and the Sweep) first tests ancestry, then falls back to patch equivalence
-(`git cherry <target> <head>` printing only `-` lines). This is needed because the epic
-close rebases `<epic>` onto a moved main, after which the branch is no longer an ancestor of it.
-`git cherry` skips merge commits, so a merge of `<epic>` into a dependent never counts
+(`git cherry <target> <head>` printing only `-` lines). This is needed because the plan
+close rebases `<plan>` onto a moved main, after which the branch is no longer an ancestor of it.
+`git cherry` skips merge commits, so a merge of `<plan>` into another branch never counts
 against it. Otherwise it reports `<n> commit(s) of <head> have no equivalent in <target>`.
 
 **Nothing to merge.** When the named tree's HEAD is already contained in `<base>` (ancestor
@@ -50,7 +50,7 @@ What it does, in order, stopping at the first failure:
    finish. Nothing is discarded - commit the work in the worktree, then re-run.
 2. **Finds the target tree** (above) or refuses.
 3. **Rebases onto local `<base>`** (never `origin/<base>`; `git fetch origin <base>` is
-   best effort and fails harmlessly for an epic branch with no remote), so the
+   best effort and fails harmlessly for a plan branch with no remote), so the
    history lands linear on top of whatever else merged meanwhile. A conflict
    in a doc file or a file matching `overlapIgnore` (workbench.json, plus the
    defaults) is union-merged: both sides are kept. Any other conflict aborts the
@@ -78,21 +78,20 @@ What it does, in order, stopping at the first failure:
 
 The result carries `baseBefore` (the `<base>` SHA the final rebase was onto, before the
 fast-forward), `baseAfter` and `verification: {command, passed, tail}`. `--assess` works
-with `--base <epic>`.
+with `--base <plan>`.
 
-## Epic close
+## Plan close
 
-The epic close has one entry point, run by the orchestrator: `ticket.py close <epic>
---verify '<full suite and lint>'` (the start-development skill's ticket script). It enforces
-the done-task gate and the review gate, rebases `<epic>` onto main inside the
-integration tree, runs the full suite and lint there, fast-forwards main, and writes
-`close.json`. This skill never fast-forwards main for an epic. The merger is dispatched
-only to resolve a rebase conflict of `<epic>` onto main in the integration tree; once
-resolved, the orchestrator reruns `ticket.py close`.
+The plan close has one entry point, run by the `worktree-merger`: `ticket.py close <plan>
+--verify '<final verify>'` (the start-development skill's ticket script). It needs the
+reviewer's retro.md, rebases `<plan>` onto main inside the plan tree, runs the full suite
+and lint there, fast-forwards main, and writes `close.json`. This skill never fast-forwards
+main for a plan. The merger resolves a rebase conflict of `<plan>` onto main in the plan
+tree; once resolved, it runs `ticket.py close` again.
 
 ## Rules
 
-- Do not run this until the agent's task is review-clean and verified. Merging
+- Do not run this until the agent's work is review-clean and verified. Merging
   unfinished work is how the remainder gets forgotten.
 - Merge in plan order when several agents ran in parallel. A conflict between
   two agents' branches is information: they were probably one task.

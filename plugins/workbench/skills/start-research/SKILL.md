@@ -64,7 +64,7 @@ phase 1 of `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md` (lists: `re
 ## Notes
 
 - Runnable standalone (`/start-research <topic>`) and called by
-  `start-development` during its discovery and design phases.
+  `start-development` during its discovery phase.
 - The four `research-*` skills (`research-docs`, `research-code-external`,
   `research-code-internal`, `research-papers`) are the single-lens entry points;
   use this skill when several lenses are wanted at once.

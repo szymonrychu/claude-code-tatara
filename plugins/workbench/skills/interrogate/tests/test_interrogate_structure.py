@@ -4,6 +4,7 @@ Ported from pstack's interrogate. It replaces a review->fix loop for contested
 designs and high-risk diffs: one panel, one verdict, nothing auto-applied.
 """
 
+import re
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
@@ -84,3 +85,14 @@ def test_interrogate_runs_before_the_gate_when_contested():
     """With one gate, a contested design gets its panel before the human sees it."""
     for path in (SKILL, START_DEVELOPMENT):
         assert "before the gate" in path.read_text(), f"{path} does not say 'before the gate'"
+
+
+def test_interrogate_runs_after_plan_run_leaves_findings_open():
+    text = " ".join(SKILL.read_text().split())
+    assert "`plan-run`" in text
+    assert "two fix rounds" in text
+    assert "findings open" in text
+    assert "high-risk plan" in text
+    assert "before the gate" in text
+    assert "`panel` tier" not in text
+    assert not re.search(r"\bepics?\b|epic-run|escalated", text, re.I)
