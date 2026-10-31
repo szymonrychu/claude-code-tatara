@@ -1,33 +1,56 @@
 ---
 title: cache-self-repair
-blockers: []
-stage: review
-owner: Szymon Richert
 repos: [agents-orchestrator]
 created: 2026-10-26
+owner: Szymon Richert
+rung: 1
 ---
 
 # cache-self-repair
 
-## Project brief
+## What and why
 
 What: Unreadable workspace cache archive resets the workdir and is overwritten by the next save
 How: restore wipes the workdir on ExtractError and emits reset; reset joins the save allow-list
 Why: User decision 2026-10-26: cache repair - start empty
 
-## Description
+## Scope ladder
 
+### Rung 1: agreed scope (migrated)
 
+none recorded in the epic format
 
-## Goals
+## Agreed scope
 
-
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
+none recorded in the epic format
 
+## Design
 
-## Review
+none recorded in the epic format
+
+## Decisions
+
+none recorded in the epic format
+
+## Open questions
+
+none
+
+## Research
+
+none recorded in the epic format
+
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 

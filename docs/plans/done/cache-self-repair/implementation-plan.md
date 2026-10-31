@@ -1,27 +1,23 @@
----
-title: restore resets workdir on unreadable archive
-status: done
-repo: agents-orchestrator
-value: A corrupt cache key repairs itself instead of blocking its key forever
-files: [src/agents_orchestrator/cache/transfer.py, src/agents_orchestrator/reconciler/cache.py, tests/test_cache_cli.py, tests/test_cache_save.py, README.md, MEMORY.md]
-verify: mise run test
-depends_on: []
-model: sonnet
-review: ""
-verified_head: 6ec2d89
-points: 3
-expected_minutes: 6
-expected_tokens: 999852
-points_actual: 3
-actual_minutes: 10
-actual_tokens: 1164665
-actual_roles: "impl 7, review 3"
-actual_role_tokens: "impl 951619, review 213046"
----
+# cache-self-repair implementation plan
 
-# restore resets workdir on unreadable archive
+## Agreed rung
 
-## Requirement
+Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks.
+
+## Approach
+
+Migrated from the epic format: one step per task file, in dependency order, each with its status, files, verify, verified head and every body section.
+
+## Chunk 1: migrated tasks (model: sonnet)
+
+### S1: restore resets workdir on unreadable archive
+
+- Status: done
+- Files: `src/agents_orchestrator/cache/transfer.py`, `src/agents_orchestrator/reconciler/cache.py`, `tests/test_cache_cli.py`, `tests/test_cache_save.py`, `README.md`, `MEMORY.md`
+- Verify: `mise run test`
+- Verified head: 6ec2d89
+
+#### Requirement
 
 User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair- start empty". A cache key whose archive cannot be read must repair itself: the session starts with an empty workdir and the discard save overwrites the bad archive.
 
@@ -31,7 +27,7 @@ User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair-
 4. Docs: README cache state table and the save paragraph (README.md near line 395-397) describe `reset`; replace "a corrupt archive is fixed by deleting the object". Add a dated MEMORY.md line amending D11 with the why.
 5. No change to agents-web unless it hard-codes the set of cache states; if it does, report it as a question instead of editing (other repo).
 
-## Acceptance conditions
+#### Acceptance conditions
 
 - AC1: A restore of a corrupt archive (bad zstd bytes) over a workdir with pre-existing files leaves the workdir existing and empty, prints state `reset` with reason starting `extract_failed: `, and exits 0 [evidence: test:tests/test_cache_cli.py]
 - AC2: A restore whose stream drops after some bytes (non-ExtractError) still prints `failed` `extract_failed` and leaves the workdir untouched [evidence: test:tests/test_cache_cli.py]
@@ -39,7 +35,7 @@ User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair-
 - AC4: A save after a restore in state `reset` creates the save Job; `failed` restores still skip [evidence: test:tests/test_cache_save.py]
 - AC5: README and MEMORY.md describe `reset` and amend D11 [evidence: doc-section:README.md]
 
-## Files
+#### Files
 
 - `src/agents_orchestrator/cache/transfer.py`
 - `src/agents_orchestrator/reconciler/cache.py`
@@ -48,24 +44,36 @@ User decision 2026-10-26 (open question from workspace-s3-cache): "cache repair-
 - `README.md`
 - `MEMORY.md`
 
-## Interfaces
+#### Interfaces
 
 See the Requirement; no new cross-repo contract.
 
-## Expected outcome
+#### Expected outcome
 
 Every acceptance condition holds on the committed HEAD.
 
-## Steps
+#### Steps
 
 - Red: write the AC tests; run the task verify: they fail.
 - Green: implement the Requirement; rerun the verify: they pass.
 - Run the repo's full suite and lint: green.
 
-## Notes
+#### Notes
 
 - See the Requirement and the epic design.md.
 - DB tests: Docker disk is full, so testcontainers fail; use the shared local Postgres at postgresql://test@127.0.0.1:55433/postgres (trust auth) through a temporary, uncommitted fixture override with a fresh template DB name (for example `csr_tpl_1`). Run the full suite through plugins/workbench/skills/worktree-merge/scripts/suite-lock.sh in the workbench root.
 - D11 in MEMORY.md is the save allow-list decision this amends; keep the allow-list shape (fail safe), only add `reset`.
 
 - 2026-10-26 done
+
+## Files to delete
+
+none recorded in the epic format
+
+## Final verify
+
+none recorded in the epic format
+
+## After merge
+
+none
