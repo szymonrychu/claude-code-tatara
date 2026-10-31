@@ -33,6 +33,13 @@
       "version": "1.0.0",
       "source": "./plugins/workbench-secrets",
       "category": "devops"
+    },
+    {
+      "name": "superpowers",
+      "description": "Development flow forked from superpowers 7.0.0: a plan.md with a scope ladder from MVP to complete, one approval gate that picks the rung, one implementer per chunk, one whole-diff reviewer, at most two fix rounds.",
+      "version": "1.0.0",
+      "source": "./plugins/superpowers",
+      "category": "devops"
     }
   ]
 }

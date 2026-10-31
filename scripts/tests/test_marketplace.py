@@ -9,8 +9,9 @@ PLUGINS = {
     "workbench-infra": "./plugins/workbench-infra",
     "workbench-observability": "./plugins/workbench-observability",
     "workbench-secrets": "./plugins/workbench-secrets",
+    "superpowers": "./plugins/superpowers",
 }
-PACKS = [n for n in PLUGINS if n != "workbench"]
+PACKS = [n for n in PLUGINS if n.startswith("workbench-")]
 
 
 def _json(rel: str) -> dict:
@@ -25,7 +26,7 @@ def test_marketplace_header():
     m = _json(".claude-plugin/marketplace.json")
     assert m["name"] == "workbench-template"
     assert m["owner"] == {"name": "workbench contributors"}
-    assert len(m["plugins"]) == 4
+    assert len(m["plugins"]) == len(PLUGINS)
 
 
 def test_entries_sources_and_names():

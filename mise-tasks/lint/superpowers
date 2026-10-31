@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#MISE description="Lint the vendored superpowers plugin (ruff, shellcheck)"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+ruff check plugins/superpowers
+# Every *.sh file plus every extensionless file with a bash shebang; an empty set passes.
+files=()
+while IFS= read -r -d '' f; do
+  case "${f##*/}" in
+    *.sh) files+=("$f") ;;
+    *.*) ;;
+    *) if [ "$(head -n 1 "$f")" = "#!/usr/bin/env bash" ]; then files+=("$f"); fi ;;
+  esac
+done < <(find plugins/superpowers -type f -not -path '*/__pycache__/*' -print0)
+if [ "${#files[@]}" -gt 0 ]; then
+  shellcheck "${files[@]}"
+fi

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the vendored superpowers plugin tests"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+pytest plugins/superpowers/tests
