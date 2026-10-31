@@ -881,9 +881,12 @@ def _task_repo(root: Path, repo: str) -> str | None:
     return None
 
 
-def integration_branch(epic: str) -> str:
-    """The integration branch and tree name of an epic: its slug."""
-    return epic
+# ---------------------------------------------------------------- plan trees
+
+
+def plan_branch(plan: str) -> str:
+    """The branch and tree name of a plan: its slug."""
+    return plan
 
 
 def _submodule_branch(wb: Path, repo: str) -> str:
@@ -891,42 +894,38 @@ def _submodule_branch(wb: Path, repo: str) -> str:
     return r.stdout.strip() or "main"
 
 
-def _integration_plan(root: Path, epic_dir: Path) -> list[tuple[str, str]]:
-    """(repo, base) per integration tree: ("", main) in meta mode, else one per submodule."""
-    scope = _read_doc(epic_dir / "README.md").meta.get("repos") or []
-    task_repos = [doc.meta.get("repo", "") for doc in map(_read_doc, _task_files(epic_dir))]
-    comp = {r for r in scope if _task_repo(root, r)}
-    outside = False
-    for r in task_repos:
-        if _task_repo(root, r):
-            comp.add(r)
-        else:
-            outside = True
+def tree_layout(root: Path, plan_dir: Path) -> list[tuple[str, str]]:
+    """(repo, base) per plan tree, from plan.md `repos`: ("", "main") in meta mode, else one
+    per entry that is a code/<repo> checkout, based on its tracked branch. A plan naming both
+    kinds is refused."""
+    repos = list(read_plan(plan_dir).meta.get("repos") or [])
+    wb = _workbench(root)
+    comp = sorted(r for r in repos if r and (wb / "code" / r).is_dir())
     if not comp:
         return [("", "main")]
-    if outside:
+    if set(repos) - set(comp):
         raise TicketError(
-            f"epic {epic_dir.name} mixes meta and component tasks; split it into two epics"
+            f"plan {plan_dir.name} mixes meta and component repos "
+            f"({'; '.join(sorted(repos))}); split it into two plans"
         )
-    wb = _workbench(root)
-    return [(r, _submodule_branch(wb, r)) for r in sorted(comp)]
+    return [(r, _submodule_branch(wb, r)) for r in comp]
 
 
-def integration_trees(root: Path, epic_dir: Path) -> dict[str, Path]:
-    """Integration tree path per repo ("" for the superrepo); the only place they are computed."""
-    d = _mod().worktrees_dir(_workbench(root)) / integration_branch(epic_dir.name)
-    return {r: (d / r if r else d) for r, _ in _integration_plan(root, epic_dir)}
+def plan_trees(root: Path, plan_dir: Path) -> dict[str, Path]:
+    """Plan tree path per repo ("" for the superrepo); the only place they are computed."""
+    d = _mod().worktrees_dir(_workbench(root)) / plan_branch(plan_dir.name)
+    return {r: (d / r if r else d) for r, _ in tree_layout(root, plan_dir)}
 
 
-def ensure_integration_trees(root: Path, epic_dir: Path) -> list[dict]:
-    """Create or reuse the epic's integration trees; one create.integration result per tree."""
+def ensure_plan_trees(root: Path, plan_dir: Path) -> list[dict]:
+    """Create or reuse the plan's trees; one worktree-create integration() result per tree."""
     mod = _mod()
     out = []
-    for repo, base in _integration_plan(root, epic_dir):
+    for repo, base in tree_layout(root, plan_dir):
         try:
             out.append(
                 mod.integration(
-                    integration_branch(epic_dir.name), base=base, repo=repo or None, start=root
+                    plan_branch(plan_dir.name), base=base, repo=repo or None, start=root
                 )
             )
         except mod.WorktreeError as e:
@@ -934,25 +933,16 @@ def ensure_integration_trees(root: Path, epic_dir: Path) -> list[dict]:
     return out
 
 
-def _write_task(path: Path, doc: Doc, **updates) -> None:
-    """Rewrite the task with updated frontmatter when it differs."""
-    meta = dict(doc.meta)
-    meta.update(updates)
-    text = dump(Doc(meta, doc.body))
-    if text != path.read_text():
-        path.write_text(text)
-
-
 def cmd_worktrees(a: argparse.Namespace) -> int:
-    """Create or reuse the integration trees of an in-progress epic; tasks run inside them."""
+    """Create or reuse the trees of an in-progress plan."""
     root = Path(a.root)
     require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
-    phase = _phase_of(epic_dir)
+    plan_dir = resolve_plan(a.plan, root)
+    phase = phase_of(plan_dir)
     if phase != "in-progress":
-        raise TicketError(f"epic {epic_dir.name!r} is in {phase}; worktrees needs it in-progress")
-    for tree in ensure_integration_trees(root, epic_dir):
-        print(f"integration {tree['path']} ({tree['verb']})")
+        raise TicketError(f"plan {plan_dir.name!r} is in {phase}; worktrees needs it in-progress")
+    for tree in ensure_plan_trees(root, plan_dir):
+        print(f"tree {tree['path']} ({tree['verb']})")
         if a.refresh:
             base = a.base or tree["base"]
             print(f"refresh {tree['path']} {_mod().fast_forward(Path(tree['path']), base)}")
@@ -1039,30 +1029,29 @@ def _append_to_section(body: str, name: str, text: str) -> str:
     return f"{head}\n\n{text}\n" + (f"\n{tail}" if tail else "")
 
 
-def _move_in_progress(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
-    name, phase = epic_dir.name, _phase_of(epic_dir)
+def _move_in_progress(a: argparse.Namespace, root: Path, plan_dir: Path) -> int:
+    """The claim: refused unless the plan is in todo with an agreed rung and an
+    implementation-plan.md (the human gate passed); creates or reuses the plan trees, then
+    moves the dir to in-progress and sets the owner."""
+    name, phase = plan_dir.name, phase_of(plan_dir)
     if phase != "todo":
-        raise TicketError(f"epic {name!r} is in {phase}; move in-progress needs it in todo")
-    epics = _epics(root)
+        raise TicketError(f"plan {name!r} is in {phase}; move in-progress needs it in todo")
     problems = []
-    for b in _read_doc(epic_dir / "README.md").meta.get("blockers", []):
-        t = resolve_blocker(b, epics)
-        if t is None:
-            problems.append(f"blocker {b!r} names no epic")
-        elif t.phase != "done":
-            problems.append(f"blocker {b!r} (epic {t.slug!r}) is in {t.phase}, not done")
-    problems += run_check(root, epic=name).failures
+    if not str(read_plan(plan_dir).meta.get("rung", "")).strip():
+        problems.append(
+            f"plan {name!r} has no agreed rung (plan.md rung is empty); the gate sets it"
+        )
+    if not (plan_dir / PATH_KINDS["implementation"]).is_file():
+        problems.append(
+            f"plan {name!r} has no implementation-plan.md; the plan-writer writes it after the gate"
+        )
     _refuse(problems)
     if _in_git(root):
-        for tree in ensure_integration_trees(root, epic_dir):
-            print(f"integration {tree['path']} ({tree['verb']})")
-    dest = _git_mv(epic_dir, "in-progress", root)
-    _update_readme(dest, owner=a.owner or _git_user(root), stage="build")
-    for path in _task_files(dest):
-        doc = _read_doc(path)
-        if doc.meta.get("status") == "todo":
-            _write_task(path, doc, status="in-progress")
-    commit_ticket_change(name, "move in-progress", [epic_dir, dest], root)
+        for tree in ensure_plan_trees(root, plan_dir):
+            print(f"tree {tree['path']} ({tree['verb']})")
+    dest = _git_mv(plan_dir, "in-progress", root)
+    update_plan_meta(dest, owner=a.owner or _git_user(root))
+    commit_ticket_change(name, "move in-progress", [plan_dir, dest], root)
     print(dest)
     return 0
 
@@ -1102,13 +1091,13 @@ def _integration_problems(root: Path, epic_dir: Path, base: str) -> list[str]:
     """One line per integration branch that is not contained in its trunk."""
     wb, name = _workbench(root), epic_dir.name
     try:
-        plan = _integration_plan(root, epic_dir)
+        plan = tree_layout(root, epic_dir)
     except TicketError as e:
         return [str(e)]
     out = []
     for repo, _ in plan:
         src = wb / "code" / repo if repo else wb
-        branch = integration_branch(name)
+        branch = plan_branch(name)
         if not _branch_exists(src, branch):
             continue
         target, fetch = _trunk(wb, repo, base)
@@ -1162,7 +1151,7 @@ def _move_done(a: argparse.Namespace, root: Path, epic_dir: Path) -> int:
 def cmd_move(a: argparse.Namespace) -> int:
     root = Path(a.root)
     require_main_checkout(root)
-    epic_dir = resolve_epic(a.epic, root)
+    epic_dir = resolve_plan(a.plan, root)
     if a.phase == "in-progress":
         return _move_in_progress(a, root, epic_dir)
     return _move_done(a, root, epic_dir)
@@ -1355,18 +1344,16 @@ class Sweep:
         .worktrees/<epic>/<repo>, then its integration branches (target: the trunk)."""
         wb = _workbench(root)
         name = epic_dir.name
-        for d in (workbench.worktrees_dir(wb) / integration_branch(name), wb / ".worktrees" / name):
+        for d in (workbench.worktrees_dir(wb) / plan_branch(name), wb / ".worktrees" / name):
             if d.is_dir():
                 self.integration(d, name, wb)
         try:
-            plan = _integration_plan(root, epic_dir)
+            plan = tree_layout(root, epic_dir)
         except TicketError:
             return
         for repo, _ in plan:
             target, fetch = _trunk(wb, repo, self.base)
-            self.branch_only(
-                wb / "code" / repo if repo else wb, integration_branch(name), target, fetch
-            )
+            self.branch_only(wb / "code" / repo if repo else wb, plan_branch(name), target, fetch)
 
 
 def cmd_reap(a: argparse.Namespace) -> int:
@@ -1589,17 +1576,17 @@ def build_parser(cmd_dir: Path | None = None) -> argparse.ArgumentParser:
     sp.add_argument("--only", help="comma-separated task slugs; others are not validated")
     sp.add_argument("--out", help="write the JSON to this file instead of stdout")
     sp = add("worktrees", cmd_worktrees)
-    sp.add_argument("epic")
+    sp.add_argument("plan")
     sp.add_argument("--base", default=None, help="--refresh target (default: each tree's trunk)")
     sp.add_argument(
         "--refresh",
         action="store_true",
-        help="fast-forward each clean integration tree with nothing ahead of --base",
+        help="fast-forward each clean plan tree with nothing ahead of --base",
     )
     sp = add("move", cmd_move)
-    sp.add_argument("epic")
+    sp.add_argument("plan")
     sp.add_argument("phase", choices=("in-progress", "done"))
-    sp.add_argument("--owner", help="who claims the epic (default: git user.name)")
+    sp.add_argument("--owner", help="who claims the plan (default: git user.name)")
     sp.add_argument("--base", default="main", help="branch the epic branch must be merged into")
     sp = add("stage", cmd_stage)
     sp.add_argument("epic")
