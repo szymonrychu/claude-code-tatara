@@ -1,56 +1,62 @@
-# web ui cluster tabs with filesystem chat and terminal panels design
+---
+title: web ui cluster tabs with filesystem chat and terminal panels
+repos: [agent-orchestrator, claude-code-wrapper, agents-helmfile]
+created: 2026-10-23
+owner: Claude
+rung: 1
+---
 
-## Summary
+# web ui cluster tabs with filesystem chat and terminal panels
 
-The agent-orchestrator web UI drops the left cluster ribbon for a top tab bar (one tab per cluster) with a hamburger menu, and each cluster tab becomes a three-panel workspace: filesystem tree, chat (the existing ChatView with an agents strip), and a multi-tab terminal. Two new backend surfaces carry it: the claude-code-wrapper gains a session-scoped file API (list, read) and a terminal API (HTTP lifecycle plus a WebSocket PTY), and the orchestrator api proxies both through one new module, guarded by a mandatory Origin allowlist. Every capability is a documented public API with an API-only end-to-end test (headless parity). The epic ends with the image and chart pins in agents-helmfile; apply and smoke are run by the user.
+## What and why
 
-## Intent and why
+What: Replace the left cluster ribbon with top tabs; each cluster tab is a three-panel workspace (filesystem tree, chat, multi-tab terminal) with resizable separators and minimize/maximize
+How: react-resizable-panels for the panels, MUI Tabs for clusters and terminals, xterm.js over a WebSocket PTY served by the wrapper and proxied by the orchestrator api, MUI X SimpleTreeView over a lazy wrapper file-tree API on the shared RWX workdir
+Why: One screen per cluster that shows what the agents changed on disk, lets the user run commands beside the chat, and scales past a handful of clusters better than a side ribbon
 
-The user wants one screen per cluster that shows what the agents changed on disk and lets them run commands beside the chat, and a navigation that scales past a handful of clusters better than a side ribbon (user request 2026-10-23, README Description). Today the UI has no view of the shared workdir and no shell; seeing a file or running `git status` means asking an agent to do it.
+User request (2026-10-23), verbatim:
 
-## Goals
+"Next epic concering webUI:
+1. instead of left ribbon, lets switch to tabs (each session is a tab presented at the upper side of the screen)
+2. session consist of 3 panels, separators allow to change their sizing horizontally, there is a minimize button that allows to minimize two out of three at a time and maximize one of them:
+  1. filesystem
+  2. chat
+  3. terminal
+3. chat stays as is, terminal allows for scheduling multiple tabs, filesystem shows everything in tree view (same as vscode)"
 
-- The ribbon aside (`frontend/src/layout/Shell.tsx` aside, `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`) is gone from `git ls-files`; a top tab bar shows one tab per cluster with state mark, slug and context gauge; New cluster and Discard are reachable from the bar; no Edit entry point remains in the UI.
-- A hamburger button at the top left opens a drawer: every cluster (session) listed from the top, a settings section pinned to the bottom that renders the categories it is given (none in this epic).
-- A cluster tab shows filesystem, chat and terminal panels split by draggable separators; minimize, maximize and restore follow the rules in D7; the layout persists per cluster in the browser; the phone layout shows one panel at a time with a three-way switch.
-- The chat panel is ChatView with its agent filter chips replaced by an agents strip (pod, state, free since, own gauge, filter toggle).
-- The terminal panel holds several shell tabs, each on a chosen agent pod (first ready agent preselected), over a WebSocket PTY rendered with xterm.js 6; shells survive tab switches and reloads and replay their scrollback on reattach.
-- The filesystem panel shows the cluster workdir as a lazy tree (dotfiles and `.git` included, 2000 entries per page with a "more" row), refreshed from the event stream and by a manual refresh, with a read-only preview.
-- Wrapper: `GET /v1/sessions/{id}/files`, `GET /v1/sessions/{id}/files/content`, `POST|GET /v1/sessions/{id}/terminals`, `DELETE /v1/sessions/{id}/terminals/{terminal_id}`, `WS /v1/sessions/{id}/terminals/{terminal_id}/attach`, each documented in the wrapper README and covered by an API-only e2e test on the real service.
-- Orchestrator: `GET /api/v1/clusters/{cluster_id}/files`, `GET /api/v1/clusters/{cluster_id}/files/content`, `GET /api/v1/clusters/{cluster_id}/terminals`, `POST /api/v1/agents/{agent_id}/terminals`, `DELETE /api/v1/agents/{agent_id}/terminals/{terminal_id}`, `WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach`, documented in the README (the WebSocket route by hand), in OpenAPI and `schema.d.ts`, with API-only tests against FakeWrapper and a kind e2e test.
-- agents-helmfile pins the orchestrator chart and image and the wrapper image of this epic and sets `ORCH_ALLOWED_ORIGINS`.
+The "left ribbon" is the agent-orchestrator frontend aside (frontend/src/layout/Shell.tsx, frontend/src/ribbon/Ribbon.tsx). A "session" in this request is one orchestrator cluster: the unit the ribbon lists, the chat shows and the shared RWX workdir belongs to. The wrapper has no web UI of its own.
+
+Research findings with citations are in research.md next to this README.
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: The left ribbon is replaced by a top tab bar: one tab per open cluster, with its state mark, slug and context gauge; New cluster and discard stay reachable from the tab bar. Live cluster edit is not carried over (user, 2026-10-23: "Live session edit is not needed"); its API removal belongs to the presets epic.
+- 1.2: A hamburger button at the top left opens a menu listing every session (cluster) tab from the top and the settings categories from the bottom; this epic builds the menu and its sessions list, and the settings area shows the categories that exist (the presets epic adds Presets, the only one planned).
+- 1.3: A cluster tab shows three panels side by side, filesystem, chat and terminal, split by draggable separators (horizontal resizing).
+- 1.4: Each panel has minimize and maximize controls: at most two panels are minimized at once, maximize minimizes the other two, a minimized panel stays as a narrow labelled strip that restores it; the layout persists per cluster in the browser.
+- 1.5: The chat panel is the existing ChatView unchanged (log, agent filter, queue strip, composer).
+- 1.6: The terminal panel holds several terminal tabs, each an interactive shell in the cluster workdir on a chosen agent pod, over a WebSocket PTY, rendered with xterm.js.
+- 1.7: The filesystem panel shows the cluster's shared workdir as a lazily loaded tree (VS Code explorer style), refreshed when the event stream shows a write, with a read-only file preview.
+- 1.8: New backend surface, test-first: a wrapper file-tree and file-read API and a wrapper terminal WebSocket API, and orchestrator /api/v1 proxies for both, with Origin checks, path confinement, size caps and terminal caps.
+- 1.9: Deployed: wrapper image, orchestrator image and chart bumped in agents-helmfile, applied, smoke OK on the LAN.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- No authentication or user accounts; the UI stays unauthenticated and LAN-only.
-- No file editing, upload, rename or delete; no inotify.
-- No keyboard attached to the Claude TUI PTY; terminals are separate shells.
-- No chat or dispatch behaviour change.
-- No Kubernetes `pods/exec` RBAC and no workspace pod.
-- No removal of `PATCH /api/v1/clusters/{cluster_id}`, `patchCluster` or the ClusterForm edit mode: the cluster-presets epic removes that code. This epic removes only the Edit entry points from the UI.
-- No Presets settings category (cluster-presets adds it to this epic's menu).
-- No wrapper version tag or GitHub release; images are deployed by short sha.
-- Running `helmfile apply`, `mise run smoke` or the kind e2e in this container: the user runs apply and smoke after the epic; the kind e2e runs in the orchestrator PR CI.
+- No authentication or user accounts: the UI stays unauthenticated and LAN-only (ORCH_ALLOWED_CIDRS plus ingress source ranges). Adding auth is a separate epic if wanted.
+- No file editing, upload, rename or delete in the filesystem panel (read-only tree and preview).
+- No attaching a human keyboard to the Claude TUI PTY: terminals are separate shells.
+- No change to chat behaviour or to dispatch.
+- No Kubernetes pods/exec RBAC for the orchestrator.
 
-## Anti-goals
+## Design
 
-- A WebSocket route reachable from an arbitrary web page in a LAN browser (cross-site WebSocket hijacking).
-- A file read that escapes the session workdir through `..`, an absolute path or a symlink.
-- A slow terminal client that stalls the PTY reader or the wrapper event loop.
-- The api gaining broad wrapper access: only the one proxy module may use the wrapper client and tokens.
-- A regression in ChatView, dispatch or the existing `/api/v1` routes and tests.
-- Shells or file reads that keep running after their session is destroyed or the service stops.
-
-## Constraints
-
-- Python only except the TypeScript frontend; services talk only through the queue or HTTP (WebSocket counts as HTTP upgrade).
-- Test-first in every repo. Wrapper rules (`code/claude-code-wrapper/CLAUDE.md`): `uv run` always, plain ASCII, tests never use a real claude, only the fake-claude task edits `tests/conftest.py`, never write service files into a session workdir.
-- Wrapper `tests/test_readme_api.py` scrapes routes and `ApiError` codes; every new error code needs an Errors table row and every new `LimitsConfig` key a Configuration reference row (`tests/test_readme_config.py`). Its `_walk` sees only `APIRoute`, so the WebSocket route needs its own README check.
-- Orchestrator `tests/test_readme_api.py` requires a README `### \`METHOD /api/v1...\`` heading per HTTP route and `openapi.json` plus `frontend/src/api/schema.d.ts` regenerated (`uv run python -m agent_orchestrator.api.openapi > openapi.json`, then `npm run gen:api`). WebSocket routes are absent from OpenAPI; document them by hand under a `### \`WS /api/v1/...\`` heading, which the README route regex (GET|POST|PATCH|PUT|DELETE) ignores.
-- `frontend/src/layout/designRules.ts`: no colour literals outside `theme.ts` (the xterm colour map lives there), no decorative Unicode, no `title=` on buttons, fontWeight 400/500 only.
-- Verify commands in this container: orchestrator `uv run pytest -q -p no:cacheprovider <files>` plus the lint (testcontainers, dockerd running); task verifies spell the lint as `uv run ruff check . && uv run ruff format --check .` (what `mise run lint` runs in the Python repos), because the plan validator counts `mise run lint` as a whole suite; frontend `mise x node@24.20.0 -- npm --prefix frontend ci` first, then `run lint`, `test -- <file>`, `run build`, `run check:api`; wrapper targeted test files plus `mise run lint` (the full wrapper suite takes 13 minutes and `tests/test_manager.py::test_shutdown_stops_all` fails only in this container because PID 1 does not reap zombies; it is never a verify target).
-- No cluster access here: helmfile apply, smoke and kind e2e cannot run; the kind test is verified by collection (`-m e2e --collect-only`) and runs in the PR CI `e2e` job.
-- Merge order: the wrapper PR merges before `wrapper-sha-pin` runs; both product PRs merge before `deploy-pin` runs (D9).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -138,6 +144,25 @@ N1 (Q16): the orchestrator api may call wrapper pods for the file and terminal p
 ### D28: Headless parity
 Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test. (user decision)
 
+## Open questions
+
+- Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [answer: yes, one cluster = one tab (user, 2026-10-23)]
+- Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [answer: agents strip in the chat panel header merged with the agent filter chips (user, 2026-10-23)]
+- Q3: Where does a terminal run? [answer: shell in an agent pod served by the wrapper, proxied by the orchestrator api (user, 2026-10-23)]
+- Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [answer: several concurrent shells as tabs, each with its own pod choice, first ready agent preselected (user, 2026-10-23)]
+- Q5: How long does a shell live? [answer: survives tab switches and reloads, reaped 15 min after last detach, 256 KiB scrollback replayed on reattach, max 8 shells per pod (user, 2026-10-23)]
+- Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [answer: yes, scrub CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN as defence in depth (user, 2026-10-23)]
+- Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [answer: yes, unauthenticated LAN-only with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) (user, 2026-10-23)]
+- Q8: Does "shows everything" include dotfiles and .git? [answer: yes, everything incl. dotfiles and .git, lazy per directory, 2000 entries cap with a more row (user, 2026-10-23)]
+- Q9: What does clicking a file do? [answer: read-only preview, text up to 1 MiB, binary shows size and type (user, 2026-10-23)]
+- Q10: How does the tree stay current? [answer: re-fetch directories touched by the event stream plus manual refresh, no inotify (user, 2026-10-23)]
+- Q11: What does a minimized panel look like? [answer: narrow vertical strip with name and restore button, double-click separator restores 25/45/30 (user, 2026-10-23)]
+- Q12: Phone layout? [answer: phone: one panel at a time with a three-way switch (user, 2026-10-23)]
+- Q13: Add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons? [answer: yes, add @mui/icons-material 9.5.0 (user, 2026-10-23)]
+- Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [answer: yes, this epic builds the hamburger menu (sessions top, settings section bottom, empty until presets) (user, 2026-10-23)]
+- Q15: Drop the cluster Edit action from the UI in this epic, before the presets epic removes the PATCH route? [answer: yes, drop the cluster Edit action from the UI; tab actions carry only Discard (user, 2026-10-23)]
+- Q16: May the orchestrator api call wrapper pods for the file and terminal proxies, reversing MEMORY D5 and README Architecture ("api never calls wrappers or holds their tokens")? [answer: yes, narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; the import test whitelists exactly it; README Architecture and MEMORY.md updated with date and why (user, 2026-10-23)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -147,7 +172,7 @@ Headless parity: every capability of this epic has a documented public API (Open
 | research-code-external | ran (research.md sections 2 and 5) | OWASP WebSocket cheat sheet: validate Origin on every handshake with an explicit allowlist (https://cheatsheetseries.owasp.org/cheatsheets/WebSocket_Security_Cheat_Sheet.html) | workspace pod (option B) and `pods/exec` (option C), research.md section 5 |
 | research-papers | skipped: UI and infra plumbing, no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -201,7 +226,153 @@ Headless parity: every capability of this epic has a documented public API (Open
 | research.md section 4 | inotify blind to other CephFS clients | fe-filesystem-panel |
 | research.md section 2 | scrub CLAUDE_CODE_OAUTH_TOKEN, CCW_* from the shell | terminal-registry |
 
-## Decision coverage
+## Irreversible operations
+
+- Deleting `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`, `Ribbon.test.tsx`, `AgentRow.tsx` and `frontend/src/chat/AgentFilter.tsx`: git history keeps them; pinned by retirement tests.
+- Live shells on agent pods: an interactive shell can change the shared workdir like any agent; covered by the user's Q7 answer (LAN-only, Origin allowlist).
+- Deploy (helmfile apply) is run by the user after the epic, not by this plan.
+
+## Migrated notes
+
+### README.md: Scope
+
+In scope, per repo:
+
+- claude-code-wrapper: a session-scoped file API (list one directory, read one file) confined to the session workdir, and a session-scoped terminal API (create, list, attach over WebSocket, close) that runs a login shell under a PTY in the workdir. Bearer auth as every `/v1` route; caps on terminals, frame size, file size and directory entries.
+- agent-orchestrator backend: `/api/v1` proxies for both (the api already holds `ORCH_MASTER_KEY` through the shared chart env and can derive each cluster's wrapper token with `tokens_for`), an Origin allowlist for WebSocket upgrades, OpenAPI and `schema.d.ts` regenerated.
+- agent-orchestrator frontend: cluster tab bar replacing `Shell` aside and `Ribbon`, the three-panel workspace, the filesystem panel, the terminal panel; ChatView reused unchanged.
+- agent-orchestrator chart: documented ingress WebSocket timeouts, the new `ORCH_*` settings.
+- agents-helmfile: version bumps, apply, smoke.
+
+### README.md: Related epics and order
+
+Order: cluster-form-defaults-and-ga (in progress), then this epic, then presets-for-cluster-scheduling (adds the Presets settings category to this epic's hamburger menu, removes live edit from the API, makes New cluster take a preset), then hive-mode-leadership-handove (its leader badge lands in this epic's tabs and agents strip).
+
+### README.md: How (sketch, decided in design)
+
+- Layout: `react-resizable-panels` 4.x `Group` (horizontal) with three `Panel`s (`collapsible`, a small pixel `collapsedSize`) and two `Separator`s. Minimize calls `panelRef.collapse()`, maximize collapses the other two, restore calls `expand()`; a rule keeps at least one panel expanded. `onLayoutChanged` persists the layout per cluster in localStorage (wrapped in try/catch, the page works without it).
+- Cluster tabs: MUI `Tabs` (`variant="scrollable"`) in the top bar, one tab per cluster from the existing `useClusters` store (its `selectedId` becomes the active tab), each tab label carrying `StateMark`, slug and `ContextGauge`; a New cluster button and a per-tab actions menu (Edit, Discard) replace the ribbon controls (the Edit item is dropped). A hamburger `IconButton` at the top left opens a MUI `Drawer` whose list holds the sessions from the top and a settings section pinned to the bottom. Agent rows (pod, state, free since, gauge) move into the chat panel header beside `AgentFilter`.
+- Filesystem: MUI X `SimpleTreeView` (MIT) with lazy children fetched on expand from `GET /api/v1/clusters/{id}/files?path=`; directories touched by `tool_call` events (Write, Edit, NotebookEdit `file_path`) or by any finished Bash `tool_result` are re-fetched when expanded; a read-only preview pane for text files.
+- Terminal: MUI `Tabs` inside the panel, one `@xterm/xterm` 6 instance per tab with `@xterm/addon-fit` (re-fit on panel resize), a small WebSocket protocol (binary frames are PTY bytes, text frames are JSON control such as `{"type":"resize","cols":..,"rows":..}`), app-level ping every 20 s, reconnect with scrollback replay.
+- Wrapper side: reuse `PtyProcess` and its ring (`pty_proc.py`) for shells; file API resolves every path and refuses anything that leaves the workdir after symlink resolution.
+
+### README.md: Decisions (user, 2026-10-23)
+
+- Headless parity (user, 2026-10-23): everything in this epic must also work in headless mode. Every UI capability is backed by a documented public API (OpenAPI, README) that a client without the UI can drive end to end, and each feature gets an API-only e2e test.
+- Q1: yes, one cluster is one tab.
+- Q3: a shell in an agent pod; the user does not know how, so the mechanism is decided in design (recommended: served by the wrapper, proxied by the orchestrator api).
+- Q7: yes, unauthenticated LAN-only shell with the mandatory Origin allowlist.
+- From the presets message: live cluster edit is not needed (supports Q15: yes).
+
+### README.md: Open questions
+
+- Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [recommended: yes, a tab per cluster, same set the ribbon lists today]
+- Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [recommended: a compact agents strip in the chat panel header, merged with the agent filter chips]
+- Q3: Where does a terminal run? [recommended: a shell in a chosen agent pod, served by the wrapper and proxied by the orchestrator api; not a separate workspace pod, not Kubernetes pods/exec]
+- Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [recommended: yes, several concurrent shells as tabs, each with its own pod choice]
+- Q5: How long does a shell live? [recommended: survives tab switches and page reloads, reaped 15 minutes after its last client detaches, 256 KiB scrollback replayed on reattach, at most 8 shells per pod]
+- Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [recommended: yes, as defence in depth only; the same uid can still read them from /proc, which the wrapper trust model already accepts]
+- Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [recommended: yes, with a mandatory Origin allowlist on every WebSocket upgrade (ORCH_ALLOWED_ORIGINS) and the existing source allowlist; authentication stays a separate epic]
+- Q8: Does "shows everything" include dotfiles and .git? [recommended: yes, everything, loaded lazily per directory, at most 2000 entries per directory with a "more" row]
+- Q9: What does clicking a file do? [recommended: a read-only preview inside the filesystem panel, text only up to 1 MiB, binary files shown as size and type]
+- Q10: How does the tree stay current? [recommended: re-fetch directories touched by the cluster event stream plus a manual refresh button; no inotify, which does not see writes from other CephFS clients]
+- Q11: What does a minimized panel look like? [recommended: a narrow vertical strip with the panel name and a restore button; double-click on a separator restores the default 25/45/30 split]
+- Q12: Phone layout? [recommended: one panel at a time with a three-way switch (a forced maximize), the cluster tabs scroll]
+- Q13: Add `@mui/icons-material` 9.5.0 for minimize, maximize, folder and file icons? [recommended: yes, SVG icons pass designRules.ts, which only bans glyph Unicode]
+- Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [recommended: yes, the top bar is designed once here; the presets epic only adds its category and page]
+- Q15: Drop the cluster Edit action from the UI in this epic, before the presets epic removes the PATCH route? [recommended: yes, the user said live edit is not needed, so the tab actions carry only Discard]
+
+### README.md: Risks
+
+- Security: an interactive shell and a file reader on an unauthenticated UI. A WebSocket upgrade is not subject to CORS, so without an Origin check any web page open in a LAN browser can attach to a shell (cross-site WebSocket hijacking). The existing `AllowlistMiddleware` already closes disallowed WebSocket peers (api/allowlist.py:35-49) but sees only the direct peer, not the browser origin.
+- Agent pods inside the cluster can reach the ingress hostname (README `## Security`); the new routes widen what a pod could do through it unless `ingress.denySourceRanges` is set as documented.
+- ingress-nginx closes idle proxied connections after 60 s by default; long-lived terminals need app-level pings and raised `proxy-read-timeout` / `proxy-send-timeout`.
+- MUI X lazy loading and virtualization are Pro features; the MIT tree needs hand-rolled lazy loading and entry caps, and very large directories (node_modules) stay slow.
+- Shells in agent pods share CPU and memory with Claude; a runaway command can starve the agent.
+- xterm.js 6 removed the canvas renderer and changed scrolling; many online examples target 5.x.
+- react-resizable-panels 4 renamed its components (`Group`, `Panel`, `Separator`); older examples use `PanelGroup` / `PanelResizeHandle`.
+- Retiring the ribbon retires `Ribbon.test.tsx` and parts of `Shell`; the in-progress epic cluster-form-defaults-and-ga edits `ContextGauge`, hence the blocker.
+
+### README.md: Rough task list
+
+1. wrapper: file API (list directory, read file) with path confinement, caps and tests.
+2. wrapper: terminal API (create, list, WebSocket attach with the control protocol, close, reaper, caps, env scrub, scrollback ring) and tests.
+3. wrapper: README sections and a release with the new image.
+4. orchestrator api: file proxies and terminal proxies (HTTP plus WebSocket relay to the chosen pod), Origin allowlist setting, OpenAPI and schema.d.ts regen.
+5. orchestrator chart: ingress WebSocket timeouts documented, new settings wired.
+6. frontend: dependencies (react-resizable-panels, @xterm/xterm, @xterm/addon-fit, @mui/x-tree-view, optionally @mui/icons-material).
+7. frontend: cluster tab bar and actions replacing Shell aside and Ribbon (retirement tests for the ribbon), hamburger menu with the sessions list and the settings section, phone behaviour.
+8. frontend: three-panel workspace with minimize and maximize rules and persisted layout.
+9. frontend: filesystem panel (lazy tree, event-driven refresh, preview).
+10. frontend: terminal panel (tabs, xterm, protocol, fit on resize, reconnect).
+11. e2e: kind test that lists the workdir and runs a shell command through the orchestrator proxy.
+12. agents-helmfile: bump wrapper image and chart, apply, smoke from a LAN browser.
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-24)
+
+Whole-diff review (sonnet): no blockers; 4 findings acted on in fe-review-fixes and be-review-fixes.
+Scope audit (sonnet): every approved item A-K landed, 186 ACs resolve, no gaps.
+Security: wrapper (opus) no critical/high, 4 low fixed in wrapper-security-followups, 3 limits documented; orchestrator (opus) no critical/high, ws_max_size fixed, DNS-rebinding Host allowlist and pre-existing bodyless POST Origin guards noted not done; hairpin-NAT reachability from agent pods left as a deploy-time check for the user.
+Full suites: wrapper 1653 passed (2 container-only failures, green in CI); orchestrator 472 passed, frontend 164 passed, build and check:api clean; PR CI green on both (incl. kind e2e).
+Merged: claude-code-wrapper#2 (1ced775), agent-orchestrator#4 (f1baa5b); agents-helmfile#6 pin open.
+
+### design.md: Summary
+
+The agent-orchestrator web UI drops the left cluster ribbon for a top tab bar (one tab per cluster) with a hamburger menu, and each cluster tab becomes a three-panel workspace: filesystem tree, chat (the existing ChatView with an agents strip), and a multi-tab terminal. Two new backend surfaces carry it: the claude-code-wrapper gains a session-scoped file API (list, read) and a terminal API (HTTP lifecycle plus a WebSocket PTY), and the orchestrator api proxies both through one new module, guarded by a mandatory Origin allowlist. Every capability is a documented public API with an API-only end-to-end test (headless parity). The epic ends with the image and chart pins in agents-helmfile; apply and smoke are run by the user.
+
+### design.md: Intent and why
+
+The user wants one screen per cluster that shows what the agents changed on disk and lets them run commands beside the chat, and a navigation that scales past a handful of clusters better than a side ribbon (user request 2026-10-23, README Description). Today the UI has no view of the shared workdir and no shell; seeing a file or running `git status` means asking an agent to do it.
+
+### design.md: Goals
+
+- The ribbon aside (`frontend/src/layout/Shell.tsx` aside, `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`) is gone from `git ls-files`; a top tab bar shows one tab per cluster with state mark, slug and context gauge; New cluster and Discard are reachable from the bar; no Edit entry point remains in the UI.
+- A hamburger button at the top left opens a drawer: every cluster (session) listed from the top, a settings section pinned to the bottom that renders the categories it is given (none in this epic).
+- A cluster tab shows filesystem, chat and terminal panels split by draggable separators; minimize, maximize and restore follow the rules in D7; the layout persists per cluster in the browser; the phone layout shows one panel at a time with a three-way switch.
+- The chat panel is ChatView with its agent filter chips replaced by an agents strip (pod, state, free since, own gauge, filter toggle).
+- The terminal panel holds several shell tabs, each on a chosen agent pod (first ready agent preselected), over a WebSocket PTY rendered with xterm.js 6; shells survive tab switches and reloads and replay their scrollback on reattach.
+- The filesystem panel shows the cluster workdir as a lazy tree (dotfiles and `.git` included, 2000 entries per page with a "more" row), refreshed from the event stream and by a manual refresh, with a read-only preview.
+- Wrapper: `GET /v1/sessions/{id}/files`, `GET /v1/sessions/{id}/files/content`, `POST|GET /v1/sessions/{id}/terminals`, `DELETE /v1/sessions/{id}/terminals/{terminal_id}`, `WS /v1/sessions/{id}/terminals/{terminal_id}/attach`, each documented in the wrapper README and covered by an API-only e2e test on the real service.
+- Orchestrator: `GET /api/v1/clusters/{cluster_id}/files`, `GET /api/v1/clusters/{cluster_id}/files/content`, `GET /api/v1/clusters/{cluster_id}/terminals`, `POST /api/v1/agents/{agent_id}/terminals`, `DELETE /api/v1/agents/{agent_id}/terminals/{terminal_id}`, `WS /api/v1/agents/{agent_id}/terminals/{terminal_id}/attach`, documented in the README (the WebSocket route by hand), in OpenAPI and `schema.d.ts`, with API-only tests against FakeWrapper and a kind e2e test.
+- agents-helmfile pins the orchestrator chart and image and the wrapper image of this epic and sets `ORCH_ALLOWED_ORIGINS`.
+
+### design.md: Non-goals
+
+- No authentication or user accounts; the UI stays unauthenticated and LAN-only.
+- No file editing, upload, rename or delete; no inotify.
+- No keyboard attached to the Claude TUI PTY; terminals are separate shells.
+- No chat or dispatch behaviour change.
+- No Kubernetes `pods/exec` RBAC and no workspace pod.
+- No removal of `PATCH /api/v1/clusters/{cluster_id}`, `patchCluster` or the ClusterForm edit mode: the cluster-presets epic removes that code. This epic removes only the Edit entry points from the UI.
+- No Presets settings category (cluster-presets adds it to this epic's menu).
+- No wrapper version tag or GitHub release; images are deployed by short sha.
+- Running `helmfile apply`, `mise run smoke` or the kind e2e in this container: the user runs apply and smoke after the epic; the kind e2e runs in the orchestrator PR CI.
+
+### design.md: Anti-goals
+
+- A WebSocket route reachable from an arbitrary web page in a LAN browser (cross-site WebSocket hijacking).
+- A file read that escapes the session workdir through `..`, an absolute path or a symlink.
+- A slow terminal client that stalls the PTY reader or the wrapper event loop.
+- The api gaining broad wrapper access: only the one proxy module may use the wrapper client and tokens.
+- A regression in ChatView, dispatch or the existing `/api/v1` routes and tests.
+- Shells or file reads that keep running after their session is destroyed or the service stops.
+
+### design.md: Constraints
+
+- Python only except the TypeScript frontend; services talk only through the queue or HTTP (WebSocket counts as HTTP upgrade).
+- Test-first in every repo. Wrapper rules (`code/claude-code-wrapper/CLAUDE.md`): `uv run` always, plain ASCII, tests never use a real claude, only the fake-claude task edits `tests/conftest.py`, never write service files into a session workdir.
+- Wrapper `tests/test_readme_api.py` scrapes routes and `ApiError` codes; every new error code needs an Errors table row and every new `LimitsConfig` key a Configuration reference row (`tests/test_readme_config.py`). Its `_walk` sees only `APIRoute`, so the WebSocket route needs its own README check.
+- Orchestrator `tests/test_readme_api.py` requires a README `### \`METHOD /api/v1...\`` heading per HTTP route and `openapi.json` plus `frontend/src/api/schema.d.ts` regenerated (`uv run python -m agent_orchestrator.api.openapi > openapi.json`, then `npm run gen:api`). WebSocket routes are absent from OpenAPI; document them by hand under a `### \`WS /api/v1/...\`` heading, which the README route regex (GET|POST|PATCH|PUT|DELETE) ignores.
+- `frontend/src/layout/designRules.ts`: no colour literals outside `theme.ts` (the xterm colour map lives there), no decorative Unicode, no `title=` on buttons, fontWeight 400/500 only.
+- Verify commands in this container: orchestrator `uv run pytest -q -p no:cacheprovider <files>` plus the lint (testcontainers, dockerd running); task verifies spell the lint as `uv run ruff check . && uv run ruff format --check .` (what `mise run lint` runs in the Python repos), because the plan validator counts `mise run lint` as a whole suite; frontend `mise x node@24.20.0 -- npm --prefix frontend ci` first, then `run lint`, `test -- <file>`, `run build`, `run check:api`; wrapper targeted test files plus `mise run lint` (the full wrapper suite takes 13 minutes and `tests/test_manager.py::test_shutdown_stops_all` fails only in this container because PID 1 does not reap zombies; it is never a verify target).
+- No cluster access here: helmfile apply, smoke and kind e2e cannot run; the kind test is verified by collection (`-m e2e --collect-only`) and runs in the PR CI `e2e` job.
+- Merge order: the wrapper PR merges before `wrapper-sha-pin` runs; both product PRs merge before `deploy-pin` runs (D9).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -234,7 +405,7 @@ Headless parity: every capability of this epic has a documented public API (Open
 | D27 N1 api proxy module may call wrappers | wrapper-proxy-seam, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay |
 | D28 Headless parity | wrapper-file-api, terminal-websocket-api, wrapper-workspace-e2e, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay, kind-e2e-workspace |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -259,7 +430,7 @@ Headless parity: every capability of this epic has a documented public API (Open
 
 Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapper-terminals-api` (consumer agent-orchestrator), `orch-allowed-origins` (consumer agents-helmfile) and `orch-settings-menu` (consumer cluster-presets: its Presets category is one entry in the `settingsCategories` prop of `SessionsMenu`; it also removes PATCH and the ClusterForm edit code this epic leaves in place).
 
-## Review focus
+### design.md: Review focus
 
 - Path confinement in `files.py`: symlink escapes, `..`, absolute paths, FIFOs and devices (opened `O_NONBLOCK|O_NOFOLLOW`, refused by `fstat`, never stat-then-open), size caps enforced before reading the whole file.
 - Terminal fan-out and reaper in `terminals.py`: no unbounded queue, no PTY stall from a slow client, the reaper never kills an attached shell, every shell (and every process in its session) closed on session destroy and shutdown, the cap holding under concurrent creates, the env scrub.
@@ -269,7 +440,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - The relay: both directions closed when either side closes, close codes mapped (never re-sending 1005, 1006 or 1015), no task leak per connection, no token in logs.
 - Frontend: retirement tests assert on `git ls-files`; no Edit entry point anywhere; ChatView behaviour unchanged apart from the agents strip.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal module layout inside the named files (helper names, dataclasses), as long as the routes, fields, error codes and config keys named in the tasks hold.
 - Exact visual sizes of the minimized strip and tab labels within designRules.
@@ -277,7 +448,7 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 - The reconnect backoff curve of the terminal socket within 1 to 30 s.
 - Mocking strategy for `react-resizable-panels`, `@xterm/xterm` and `@mui/x-tree-view` under jsdom.
 
-### Builder check rulings (my call)
+#### Builder check rulings (my call)
 
 1. Attaching to an exited shell replays the scrollback, sends the exit control frame, then closes 1000. The panel reopens tabs on mount only for alive shells from listTerminals.
 2. The idle clock starts at creation for a never-attached terminal, else at the last detach. terminals_max counts every registered terminal, alive or exited; an exited terminal with no attached client is reaped at the next reaper tick.
@@ -291,45 +462,35 @@ Cross-epic contracts in `docs/plans/contracts.json`: `wrapper-files-api`, `wrapp
 10. Accepted that only configured origins work; the orchestrator README and chart README document ORCH_ALLOWED_ORIGINS with http://localhost:5173 as the dev example; the helmfile sets only the ingress origin.
 11. A missing workdir root (not_found for path "") renders as an empty tree with the line "workdir not created yet", not as an error.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - `react-resizable-panels` 4 and `@xterm/xterm` 6 need mocks under jsdom (no ResizeObserver, no canvas): confirmed by the first frontend task that imports them; tests mock them like `react-virtuoso`.
 - Starlette `TestClient` runs the app on its own loop, which conflicts with the async psycopg pool fixture: the relay test serves the api with uvicorn on a loopback port in the test loop and connects with the `websockets` client (probe in terminal-ws-relay).
 - The wrapper image keeps `/bin/bash` and `/etc/profile.d/mise-shims.sh` (wrapper Dockerfile:81): checked by the wrapper e2e test, which runs a login shell.
 - Harbor publishes `claude-code-wrapper:<sha7>` and chart `0.1.0-main.<sha7>` on each main merge: checked by the pin tasks before pinning (`helm show chart` or registry digest where credentials allow; otherwise the user's apply surfaces it).
 
-## Open questions
-- Q1: Is a "session" in the request one orchestrator cluster, with every cluster shown as a tab (no closing, scrollable bar, ordered by slug)? [answer: yes, one cluster = one tab (user, 2026-10-23)]
-- Q2: Where do the per-agent rows (pod, state, free since, own gauge) go once the ribbon is gone? [answer: agents strip in the chat panel header merged with the agent filter chips (user, 2026-10-23)]
-- Q3: Where does a terminal run? [answer: shell in an agent pod served by the wrapper, proxied by the orchestrator api (user, 2026-10-23)]
-- Q4: Does "terminal allows for scheduling multiple tabs" mean several concurrent terminal tabs, rather than queued or scheduled commands? [answer: several concurrent shells as tabs, each with its own pod choice, first ready agent preselected (user, 2026-10-23)]
-- Q5: How long does a shell live? [answer: survives tab switches and reloads, reaped 15 min after last detach, 256 KiB scrollback replayed on reattach, max 8 shells per pod (user, 2026-10-23)]
-- Q6: Does the shell environment drop the wrapper and Claude secrets (CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN)? [answer: yes, scrub CCW_AUTH_TOKEN, CCW_PEER_TOKEN, CCW_HOOK_TOKEN, CLAUDE_CODE_OAUTH_TOKEN as defence in depth (user, 2026-10-23)]
-- Q7: Is an unauthenticated, LAN-only interactive shell acceptable, given that a chat prompt can already run arbitrary commands in the pod? [answer: yes, unauthenticated LAN-only with a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) (user, 2026-10-23)]
-- Q8: Does "shows everything" include dotfiles and .git? [answer: yes, everything incl. dotfiles and .git, lazy per directory, 2000 entries cap with a more row (user, 2026-10-23)]
-- Q9: What does clicking a file do? [answer: read-only preview, text up to 1 MiB, binary shows size and type (user, 2026-10-23)]
-- Q10: How does the tree stay current? [answer: re-fetch directories touched by the event stream plus manual refresh, no inotify (user, 2026-10-23)]
-- Q11: What does a minimized panel look like? [answer: narrow vertical strip with name and restore button, double-click separator restores 25/45/30 (user, 2026-10-23)]
-- Q12: Phone layout? [answer: phone: one panel at a time with a three-way switch (user, 2026-10-23)]
-- Q13: Add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons? [answer: yes, add @mui/icons-material 9.5.0 (user, 2026-10-23)]
-- Q14: Does this epic build the hamburger menu (sessions from the top, a settings section at the bottom that stays empty until the presets epic adds Presets)? [answer: yes, this epic builds the hamburger menu (sessions top, settings section bottom, empty until presets) (user, 2026-10-23)]
-- Q15: Drop the cluster Edit action from the UI in this epic, before the presets epic removes the PATCH route? [answer: yes, drop the cluster Edit action from the UI; tab actions carry only Discard (user, 2026-10-23)]
-- Q16: May the orchestrator api call wrapper pods for the file and terminal proxies, reversing MEMORY D5 and README Architecture ("api never calls wrappers or holds their tokens")? [answer: yes, narrowly: api/workspace.py is the only api module allowed to use the wrapper client and tokens; the import test whitelists exactly it; README Architecture and MEMORY.md updated with date and why (user, 2026-10-23)]
-
-## Irreversible operations in scope
-
-- Deleting `frontend/src/ribbon/Ribbon.tsx`, `ClusterRow.tsx`, `Ribbon.test.tsx`, `AgentRow.tsx` and `frontend/src/chat/AgentFilter.tsx`: git history keeps them; pinned by retirement tests.
-- Live shells on agent pods: an interactive shell can change the shared workdir like any agent; covered by the user's Q7 answer (LAN-only, Origin allowlist).
-- Deploy (helmfile apply) is run by the user after the epic, not by this plan.
-
-## Run 1 rulings on discovered items (2026-10-24)
+### design.md: Run 1 rulings on discovered items (2026-10-24)
 
 - uvicorn logs an ERROR after every WebSocket denial response: third-party behaviour, dropped (noted, not doing now).
 - anyio imported directly by api/terminals.py: folded into wrapper-security-followups (declare the dependency).
 - verifier role ran its script with an unsupported flag: workflow tooling, outside this epic, dropped.
 
-## Epic review rulings (2026-10-24)
+### design.md: Epic review rulings (2026-10-24)
 
 - Acted on (tasks fe-review-fixes, be-review-fixes): Origin refusal shown as refused within two attempts; terminal list refresh on agent readiness and unavailable_agents notice; hook-failed mark and ready/replicas count in tabs; uvicorn ws_max_size 65536; stale ribbon comment.
 - Noted, not doing now: Host allowlist against DNS rebinding on port-forward access (prod ingress host routing blocks it); Origin guard on pre-existing bodyless POST routes in messages.py (pre-existing, outside this epic).
 - For the user at deploy: verify agent pods cannot reach the UI through hairpin NAT (curl the UI host from an agent pod, expect 403).
+
+### approvals.json
+
+- A: The left ribbon is replaced by a top tab bar: one tab per cluster with its state mark, slug and context gauge; New cluster and Discard are reachable from the bar; the cluster Edit action is dropped from the UI. [decisions: D10, D12, D13] [tasks: fe-retire-ribbon, fe-top-bar] [status: approved]
+- C: A cluster tab shows three panels side by side, filesystem, chat and terminal, split by draggable separators, with minimize and maximize controls (at most two minimized, maximize minimizes the other two), a layout persisted per cluster in the browser, and a phone layout. [decisions: D7, D15, D16] [tasks: fe-deps-and-storage, fe-panel-workspace] [status: approved]
+- E: The terminal panel holds several terminal tabs, each an interactive shell in the cluster workdir on a chosen agent pod, over a WebSocket PTY served by the wrapper and proxied by the orchestrator api, rendered with xterm.js. [decisions: D2, D3, D6, D11, D18, D19, D20, D21] [tasks: fe-terminal-panel, fe-terminal-socket, pty-resize-and-raw-ring, terminal-proxy-routes, terminal-registry, terminal-websocket-api, terminal-ws-relay, wrapper-workspace-e2e] [status: approved]
+- F: The filesystem panel shows the cluster's shared workdir as a lazily loaded tree (VS Code explorer style), refreshed when the event stream shows a write, with a read-only file preview. [decisions: D1, D8, D23, D24, D25] [tasks: fe-filesystem-panel, file-proxy-routes, wrapper-file-api] [status: approved]
+- I: New backend surface: a wrapper file and terminal API and orchestrator /api/v1 proxies for both, with path confinement, size caps and terminal caps. [decisions: D4, D27] [tasks: file-proxy-routes, terminal-proxy-routes, terminal-ws-relay, wrapper-proxy-seam] [status: approved]
+- K: Every WebSocket upgrade is checked against a mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) beside the existing source allowlist. [decisions: D5, D22] [tasks: deploy-pin, origin-allowlist, terminal-proxy-routes, terminal-ws-relay] [status: approved]
+- J: Deployed: the wrapper image, the orchestrator image and chart are pinned in agents-helmfile; apply and smoke are run by the user after the epic. [decisions: D9] [tasks: wrapper-sha-pin, kind-e2e-workspace, deploy-pin] [status: approved]
+- B: Q14: this epic builds the hamburger menu at the top left: every session (cluster) listed from the top and a settings section pinned to the bottom that stays empty until the cluster-presets epic adds Presets. [decisions: D14] [tasks: fe-top-bar, fe-retire-ribbon] [status: approved]
+- D: Q2: the per-agent rows (pod, state, free since, own gauge) move into an agents strip in the chat panel header, merged with the agent filter chips. [decisions: D17] [tasks: fe-agents-strip] [status: approved]
+- G: Q13: add @mui/icons-material 9.5.0 for minimize, maximize, folder and file icons. [decisions: D26] [tasks: fe-deps-and-storage, fe-top-bar, fe-panel-workspace, fe-filesystem-panel] [status: approved]
+- H: Headless parity: every capability of this epic has a documented public API (OpenAPI and README; WebSocket routes documented by hand in the README since they are not in OpenAPI) and an API-only e2e test. [decisions: D28] [tasks: wrapper-file-api, terminal-websocket-api, wrapper-workspace-e2e, file-proxy-routes, terminal-proxy-routes, terminal-ws-relay, kind-e2e-workspace] [status: approved]

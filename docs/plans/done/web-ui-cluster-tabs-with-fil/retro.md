@@ -1,6 +1,28 @@
-# web ui cluster tabs with filesystem chat and terminal panels record
+# web ui cluster tabs with filesystem chat and terminal panels retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked (2026-10-23): replace the left cluster ribbon with top tabs; each cluster tab is a three-panel workspace (filesystem tree, chat, multi-tab terminal) with resizable separators and minimize/maximize; chat unchanged; headless parity for every capability.
 
@@ -8,7 +30,7 @@ Shipped: top tab bar plus hamburger menu (sessions list, empty settings section)
 
 Verdict: pass (epic review 2026-10-24). Not live-verified: helmfile apply, LAN smoke and the hairpin-NAT check are user-run steps, so the deploy is pinned and merged but unconfirmed running. Real-browser behaviour (pointer drag, xterm fit, tab overflow) was only exercised under jsdom mocks.
 
-## Planned vs built
+### Planned vs built
 
 Source of each cell: task frontmatter (`status`, `verified_head`, `actual_roles`), git history of the three component repos, and the first plan-execute return (`/tmp/claude-0/-home-user-claude-code-tatara/8fe589da-3f22-5560-aa23-25819f182e28/scratchpad/webui-return.json`). The return covers run 1 only; tasks that finished in later runs (marked "later") have no return value, so rounds are unknown and the verifier head is the frontmatter `verified_head`. "Verifier head" is the SHA the independent verifier ran on (`tasks[].verification.head`); the tail below it is the landing verify result, and any count quoted from the implementer is labelled `impl`.
 
@@ -48,7 +70,7 @@ Branch totals from git: wrapper ca2ddf3..354e669 is 23 files, +3351/-33; orchest
 
 Return fields for the 3 run-1 unfinished tasks: wrapper-sha-pin `verified: true` with `stopped: blocked` and `complete: false`; kind-e2e-workspace and deploy-pin `verification: null`, listed in `unverified`. After continuation all three have a `verified_head` in the task files.
 
-### Red evidence (implementer `tests.red`)
+#### Red evidence (implementer `tests.red`)
 
 No `tdd-revert` result is quoted here: it restores every non-test file to base at once, so a new test importing new code fails trivially.
 
@@ -69,7 +91,7 @@ No `tdd-revert` result is quoted here: it restores every non-test file to base a
 | kind-e2e-workspace | none for the feature. red.txt shows 3 failures on a local stack: `read_until` pattern `^still-42\r?$` did not match PTY output with `\r\n` after the echo; this is a test defect fixed by 5675058, not a failing-before-implementation run. green.txt: 3 passed | test-only task over landed surfaces |
 | terminal-registry, wrapper-security-followups, origin-allowlist (wiring), file-proxy-routes, fake-wrapper-workdir-regress, fe-retire-ribbon, fe-agents-strip, fe-top-bar, deploy-pin, wrapper-sha-pin, be/fe-review-fixes | not recorded in the run return, or exception stated | terminal-registry round 3 changed no code; fe-top-bar was a comment edit; fe-retire-ribbon/fe-agents-strip rewrites of passing tests; wrapper-sha-pin dependency bump (its implementer claimed a red Dockerfile test that was green at 504b870); fake-wrapper-workdir-regress process gap: new root assertion not run red before the fix |
 
-### Approvals
+#### Approvals
 
 Run-1 return statuses are shown first; the later status for K, J and H is derived from the task files (all their tasks `done`) and the merged PRs, not from a return value.
 
@@ -87,7 +109,7 @@ Run-1 return statuses are shown first; the later status for K, J and H is derive
 | K | Mandatory Origin allowlist (ORCH_ALLOWED_ORIGINS) on every WebSocket upgrade | D5 D22 | deploy-pin, origin-allowlist, terminal-proxy-routes, terminal-ws-relay | escalated (deploy-pin dependency-failed) | delivered; helmfile sets `ORCH_ALLOWED_ORIGINS: https://agents.szymonrichert.pl` |
 | J | Wrapper image, orchestrator image and chart pinned in agents-helmfile; apply and smoke by the user | D9 | wrapper-sha-pin, kind-e2e-workspace, deploy-pin | blocked (wrapper PR merge sha, orchestrator can clear) | delivered for the pins; apply and smoke unverified, user-run |
 
-## Deviations and rulings
+### Deviations and rulings
 
 Costs below are the record author's reading of what a wrong call would cost; the design file states the rulings but not their costs.
 
@@ -110,11 +132,11 @@ Costs below are the record author's reading of what a wrong call would cost; the
 8. Epic review rulings: acted on origin refusal shown within two attempts, terminal list refresh on agent readiness with unavailable_agents notice, hook-failed mark and ready/replicas count in tabs, ws_max_size 65536, stale ribbon comment. Noted, not done: Host allowlist (DNS rebinding), Origin guard on pre-existing bodyless POSTs in messages.py.
 9. `forwardMerged`: none (empty in the run return).
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 None. The run return `duplicates` is empty and `misattributed` is empty for every task. The overlap between `terminal-proxy-routes` and `file-proxy-routes` on `workspace.py`, `schemas.py` and the fake wrapper was sequenced by `depends_on`, not built twice.
 
-## Discovered and blocked
+### Discovered and blocked
 
 Cleared during the run:
 - wrapper-sha-pin blocked on the wrapper merge sha; cleared by merging claude-code-wrapper#2 and amending the task (orchestrator). Cascaded to kind-e2e-workspace and deploy-pin `dependency-failed`; both finished after resume.
@@ -132,7 +154,7 @@ Open, with who can clear:
 - Unverified by any agent (`cannotVerify`, none settled by a ruling): real-browser layout and pointer drag (fe-panel-workspace, fe-agents-strip, fe-top-bar); xterm FitAddon and ResizeObserver on a hidden host, reconnect replay against a live wrapper (fe-terminal-panel); live ingress behaviour for 1009 handling and ping keepalive (fe-terminal-socket); dev proxy `ws: true` at runtime (fe-deps-and-storage); live Write/Edit/Bash events refreshing the tree (fe-filesystem-panel); real uvicorn behaviour for refusals and close codes (terminal-websocket-api, terminal-ws-relay, origin-allowlist); nohup/setsid kill on close in a real container, `/proc`-less hosts, shutdown timing (terminal-registry); real-wrapper 401/403 relay (wrapper-proxy-seam); scrub-disabled mutation (wrapper-workspace-e2e). Clear by: user smoke after apply.
 - `declined` items (none settled by a ruling beyond those under Deviations): autoCompactPct optionality, lockfile `yaml` removal, slot remount at the phone breakpoint, order of the 503 vs 409 checks, `timeout` argument on `forward`, empty-cluster list returns 200 not 409, explicit default ports in listed origins never match, symlinked-directory listing returns the resolved path, permission-denied reads answer `invalid_path`, `TERMINAL_ID_RE` re-exported from api/terminals.py, pass-through of 3000-3999 close codes, mypy on workspace.py (pre-existing, no mypy config), exited shells dropped on reload and `unavailable_agents` ignored in listTerminals (later added by fe-review-fixes), pid reuse and secret-looking names (later fixed by wrapper-security-followups). Owner: none required.
 
-## Research that changed the plan
+### Research that changed the plan
 
 - `discovery/wrapper.md`: `require_auth` fails on WebSocket routes (typed to `Request`). Change: terminal-websocket-api retypes it to `HTTPConnection`; `tests/test_api_auth.py::test_websocket_requires_bearer` was the red test (api/auth.py:21).
 - `research.md` section 4: inotify does not see writes from other CephFS clients. Change: D25, event-stream re-fetch of touched directories plus a manual refresh in fe-filesystem-panel.
@@ -146,7 +168,7 @@ Open, with who can clear:
 - `discovery/wrapper.md`: no app lifespan. Change: terminals closed from manager shutdown (terminal-registry).
 - Library checks (npm/PyPI 2026-10-23): react-resizable-panels 4 renamed components (`Group`, `Panel`, `Separator`); `@xterm/xterm` 6 has no canvas renderer; MUI X lazy loading is Pro. Change: hand-rolled lazy loading with a 2000-entry cap; mocks for jsdom.
 
-## Cost
+### Cost
 
 Agents by role, summed from `actual_roles` (agent-minutes): impl 110, verify 69, review 32, fix 41, land 23, false-finding 2, triage 1 = 278. The task `actual` fields total 262 (README `Actual: 262 min`); the 16-minute gap is per-task rounding in the files (for example kind-e2e-workspace roles sum to 18, actual 17).
 
@@ -187,7 +209,7 @@ Estimate vs actual (agent-minutes; all `estimate_by: formula`):
 
 Largest overruns: terminal-registry (+40, three review rounds and a rejected finding), kind-e2e-workspace (+12, 14 fix minutes on PTY CRLF matching), terminal-ws-relay (+14), file-proxy-routes (+12). Report only, not a budget.
 
-## MRs and deploy
+### MRs and deploy
 
 | Repo | PR | Merge | State |
 |---|---|---|---|
@@ -199,7 +221,7 @@ Superrepo pointers bumped in 7505377 (wrapper 1ced775, orchestrator f1baa5b, hel
 
 Deploy: not applied. `mise run apply`, the LAN smoke and the hairpin-NAT check are the user's steps; there is no deploy confirmation.
 
-## Lessons routed to
+### Lessons routed to
 
 Mechanical (add a check):
 - A PTY-output matcher passed review and failed on CRLF in kind e2e (14 fix minutes in kind-e2e-workspace). Add a unit test for the `read_until` helper in `tests/e2e/test_e2e_kind.py` against CR, CRLF and escape-sequence fixtures, in a module the default (non-e2e) suite collects.
@@ -214,7 +236,7 @@ Judgement (edit a skill or rule):
 - `plan-execute` implementer role: reports must state a red run only when the test failed at the recorded head (the wrapper-sha-pin report claimed a red Dockerfile test that was green) and must say "mutation" or "module absent" when that is what the red was.
 - `start-development` record step: record the final status of approvals after continuation runs in the run return, so the approvals table does not have to be rebuilt from task files for K, J and H.
 
-## Contradictions between summaries and files
+### Contradictions between summaries and files
 
 - wrapper-sha-pin: run-1 return shows `verified: true` and a passing tail at 504b870 while `stopped: blocked`; that head predates the pin. The frontmatter `verified_head` is 2edeb38.
 - terminal-ws-relay: the `processGaps` entry says the independent verification failed and head was never collected, but the return carries `verification.head` 876c5be and the file `verified_head` 876c5be; the head is the landing tree, not an independent verifier run.
