@@ -1,63 +1,49 @@
-# Live session transcript backup design
+---
+title: Live session transcript backup
+repos: [agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-29
+owner: ""
+rung: ""
+---
 
-## Summary
+# Live session transcript backup
 
-The reconciler backs up each live session's Claude transcripts to S3 on a timer, not only at discard.
-For a converged session whose conversation changed since its last backup (a turn completed after it),
-at most every `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS` (default 1800), it runs a backup Job that tars
-`/sessions` from the ReadWriteMany PVC beside the running pods and overwrites the session's transcripts
-object (the one the decouple epic pins in `status.cache.sessions_object`). The run has its own status
-record `status.cache.sessions_backup` and Job name, so the one-shot discard save stays untouched and final;
-the discard removes a running backup Job first. Archive reads become safe for live files (read through the
-open file, trim a torn last JSONL line). The API's `last_transcripts_backup` shows the newer of the live and
-final backups. Discovery: `.scratchpad/live-backup/brief-cartographer.md`.
+## What and why
 
-## Intent and why
+What: The reconciler periodically backs up each live session's Claude transcripts to its S3 transcripts object, not only at discard.
+How: A per-session live backup step in the reconciler with its own status record and Job name, reusing the cache save Job and the decouple epic's pinned transcripts object; archive reads tolerate live files; API and discard dialog show the latest backup.
+Why: mx-34 #234: 'The user lost sessions in the incident, so a live backup is worth having.' (cct2 queue item 4)
 
-mx-34 #234 (2026-10-28): "The live-session backup trigger: yes ... The user lost sessions in the incident,
-so a live backup is worth having." Origin #232: "there's no backup trigger for a live session
-(last_transcripts_backup=null)". The PVC survives pod rolls but is not a backup; the S3 object is written
-only by the discard (`reconciler/cache.py:315 save_step`, one-shot by `sessions_save`).
+Request (mx-34 #234, 2026-10-28, relaying the user's priorities): "The live-session backup trigger: yes, take it after the paste-.env bug, as a small start-development epic. The user lost sessions in the incident, so a live backup is worth having." and "The ingester row stuck at status='sent' after its turn failed: file it as a small bug inside that same backup epic, no separate queue slot." Origin (mx-34 #232): "there's no backup trigger for a live session (last_transcripts_backup=null)".
 
-The bundled item "message row stays status='sent' after its turn failed" (#234 point 3) was investigated:
-`sent` is final by design (`0001_init.sql:51`, README.md:575), the ingester records the turn as
-`interrupted` and never touches message rows (`ingester/loop.py:250-267`), and the case was the wrapper
-queued_command wedge fixed in wrapper 0.3.3 (`.scratchpad/live-backup/sent-row-root-cause.md`). No orchestrator
-change; closed by open question Q5.
+Today the orchestrator writes a session's Claude transcripts to S3 only when the session is discarded (`reconciler/loop.py:_discard`, one-shot `sessions_save`), so a live session has no off-cluster copy: claude-code-tatara had none during the 2026-10-28 incident. The transcripts live on the session PVC, which survives pod rolls but not a lost volume or a discard that fails before its save. This epic adds a periodic live backup run by the reconciler: for each converged live session whose conversation changed since its last backup, a backup Job tars the transcripts from the ReadWriteMany PVC beside the running pods and overwrites the session's transcripts object, the same object the discard save writes and a recreated session restores. The discard save stays the final word. It builds on decouple-s3-session-cache-fr (per-session cache names, the pinned `status.cache.sessions_object` and the copy migration); the sent-row item was investigated and is not an orchestrator defect (`.scratchpad/live-backup/sent-row-root-cause.md`), so it is closed by a gate question, not a task. Design: design.md.
 
-## Goals
+## Scope ladder
 
-As in README.md G1-G5.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: every converged live session whose conversation changed since its last backup gets its Claude transcripts saved to its S3 transcripts object at least every `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS` (default 1800), by a reconciler-run Job, without stopping or pausing its pods.
+- 1.2: G2: a live backup never corrupts or blocks the discard: a running backup Job is removed before the discard's final save, the final save is never skipped because a live backup exists, and a failed or partial live backup leaves the previous object intact.
+- 1.3: G3: a live backup taken while files are appended or atomically replaced succeeds and restores into a session that resumes (no torn final JSONL line, no failure on a replaced file).
+- 1.4: G4: the API's `last_transcripts_backup` and the discard dialog show the latest successful backup, live or final, and the live backup state is visible in `status.cache`.
+- 1.5: G5: released and deployed (orchestrator image, web image, helmfile pins), and proven live: a running session's transcripts object appears in S3 with a recent `last_transcripts_backup`.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-As in README.md: no live workspace backup, no versioned objects or retention, no on-demand trigger, no
-pre-roll gating, no message status change, no wrapper/plugins/common change.
+- Live backup of the workspace archive (workdir): its objects are large and may be shared across sessions; the workspace keeps its discard-time save.
+- Versioned or timestamped backup objects, retention or lifecycle rules; one object per cache name, overwritten.
+- An on-demand "back up now" button, API route or MCP tool.
+- Backups gated before pod rolls (the PVC survives rolls).
+- A new message status or any change to message/turn linking (the sent-row item is closed as by design).
+- Changes to claude-code-wrapper, any-mcp-tatara-plugins or agents-common.
 
-## Anti-goals
+## Design
 
-- The discard's final save skipped, delayed without bound or overwritten by a later live backup.
-- A failed or partial live backup replacing a good object.
-- A live backup that pauses, scales or restarts the session's pods.
-- S3 credentials outside the reconciler, or the api calling S3 (`test_api_never_imports_k8s_or_wrapper`).
-- A live backup writing a transcripts name the decouple migration has not settled (the timing trap of
-  decouple D7/D9).
-- Unbounded Job churn: idle sessions backed up again and again.
-
-## Constraints
-
-- AGENTS.md: services over HTTP; one writer per table (the reconciler is the only writer of
-  `sessions.status`); Python and TypeScript; no compatibility shims.
-- The reconciler is the singleton S3 credential holder and Job creator (`chart/.../deployment.yaml:82-91`,
-  `role.yaml:24-26`).
-- PVC `ReadWriteMany` (`k8s/render.py:297`), so a Job can mount `sessions` read-only beside running pods,
-  exactly as the discard save Job does (`render_cache_job`, cache.py:126-151).
-- Blocker: decouple-s3-session-cache-fr (approved, unbuilt) changes the same cache files and pins
-  `sessions_object`; this epic builds after it lands on main and uses its names. No SQL migration is planned
-  here (status is jsonb); if a builder finds one is needed, it takes the next free number at build time
-  (0010, 0012 and the decouple epic's number are claimed).
-- The DB-backed reconciler tests need Docker (CI only in agent pods); the archive and render tests run
-  locally (`test_cache_archive.py`, `test_cache_jobs_render.py`).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -180,6 +166,16 @@ Apply order: orchestrator first, then web (the web reads the new required `Backu
 runs under the deploy Lease `agents/agents-helmfile-apply` (user decision). Acts: helmfile-backup-pins,
 helmfile-backup-live-check.
 
+## Open questions
+
+- Q1: Back up each live session's transcripts at most every 30 minutes, when it is working or finished work since the last backup (idle sessions are not backed up again)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q2: Transcripts only, the workspace keeps its discard-time save? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q3: No "back up now" button or tool in this epic? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q4: Skip the live backup while another session (live, starting or being discarded) shares the same cache name? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q5: Close the "row stays sent after its turn failed" item as by design (sent is final, the turn shows the outcome, the cause was the wrapper wedge fixed in 0.3.3)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q6: Cut a torn last JSONL line only in the Claude transcripts archive, never in the workspace archive, so a workspace .jsonl file without a trailing newline is never truncated? (D6 amendment) [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+- Q7: The helmfile pins of this epic also deploy decouple-s3-session-cache-fr, which has no deploy task of its own, so its copy migration of every existing session runs at this apply; deploy both together and check the migration records in the live check? (D8) [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
+
 ## Research
 
 | Lens | Ran / skipped | Adopted | Rejected |
@@ -191,7 +187,7 @@ helmfile-backup-live-check.
 | research-papers | skipped: no scientific core | - | - |
 | start-debugging (sent-row item, opus) | ran read-only, `.scratchpad/live-backup/sent-row-root-cause.md`: no orchestrator root cause | close as by design (Q5) | a new `answered`/`failed` message status |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics that bear on this epic (`ticket.py retro --history`),
 recurring workflow ones first:
@@ -245,7 +241,78 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
   changes, pre-roll gating. Placed in Non-goals, Anti-goals and task Notes.
 - ideas rejected: "back up now" button and MCP tool (Non-goal, Q3); turn-end trigger (D1).
 
-## Decision coverage
+## Irreversible operations
+
+- Live backups overwrite each session's S3 transcripts object (the same object the discard writes); a
+  failed backup leaves the old object (direct PUT after a full pack).
+- Releases: orchestrator and web images; helmfile apply under the deploy lease.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+The reconciler backs up each live session's Claude transcripts to S3 on a timer, not only at discard.
+For a converged session whose conversation changed since its last backup (a turn completed after it),
+at most every `ORCH_SESSIONS_BACKUP_INTERVAL_SECONDS` (default 1800), it runs a backup Job that tars
+`/sessions` from the ReadWriteMany PVC beside the running pods and overwrites the session's transcripts
+object (the one the decouple epic pins in `status.cache.sessions_object`). The run has its own status
+record `status.cache.sessions_backup` and Job name, so the one-shot discard save stays untouched and final;
+the discard removes a running backup Job first. Archive reads become safe for live files (read through the
+open file, trim a torn last JSONL line). The API's `last_transcripts_backup` shows the newer of the live and
+final backups. Discovery: `.scratchpad/live-backup/brief-cartographer.md`.
+
+### design.md: Intent and why
+
+mx-34 #234 (2026-10-28): "The live-session backup trigger: yes ... The user lost sessions in the incident,
+so a live backup is worth having." Origin #232: "there's no backup trigger for a live session
+(last_transcripts_backup=null)". The PVC survives pod rolls but is not a backup; the S3 object is written
+only by the discard (`reconciler/cache.py:315 save_step`, one-shot by `sessions_save`).
+
+The bundled item "message row stays status='sent' after its turn failed" (#234 point 3) was investigated:
+`sent` is final by design (`0001_init.sql:51`, README.md:575), the ingester records the turn as
+`interrupted` and never touches message rows (`ingester/loop.py:250-267`), and the case was the wrapper
+queued_command wedge fixed in wrapper 0.3.3 (`.scratchpad/live-backup/sent-row-root-cause.md`). No orchestrator
+change; closed by open question Q5.
+
+### design.md: Goals
+
+As in README.md G1-G5.
+
+### design.md: Non-goals
+
+As in README.md: no live workspace backup, no versioned objects or retention, no on-demand trigger, no
+pre-roll gating, no message status change, no wrapper/plugins/common change.
+
+### design.md: Anti-goals
+
+- The discard's final save skipped, delayed without bound or overwritten by a later live backup.
+- A failed or partial live backup replacing a good object.
+- A live backup that pauses, scales or restarts the session's pods.
+- S3 credentials outside the reconciler, or the api calling S3 (`test_api_never_imports_k8s_or_wrapper`).
+- A live backup writing a transcripts name the decouple migration has not settled (the timing trap of
+  decouple D7/D9).
+- Unbounded Job churn: idle sessions backed up again and again.
+
+### design.md: Constraints
+
+- AGENTS.md: services over HTTP; one writer per table (the reconciler is the only writer of
+  `sessions.status`); Python and TypeScript; no compatibility shims.
+- The reconciler is the singleton S3 credential holder and Job creator (`chart/.../deployment.yaml:82-91`,
+  `role.yaml:24-26`).
+- PVC `ReadWriteMany` (`k8s/render.py:297`), so a Job can mount `sessions` read-only beside running pods,
+  exactly as the discard save Job does (`render_cache_job`, cache.py:126-151).
+- Blocker: decouple-s3-session-cache-fr (approved, unbuilt) changes the same cache files and pins
+  `sessions_object`; this epic builds after it lands on main and uses its names. No SQL migration is planned
+  here (status is jsonb); if a builder finds one is needed, it takes the next free number at build time
+  (0010, 0012 and the decouple epic's number are claimed).
+- The DB-backed reconciler tests need Docker (CI only in agent pods); the archive and render tests run
+  locally (`test_cache_archive.py`, `test_cache_jobs_render.py`).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -258,7 +325,7 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 | D7 visibility | orch-backup-view-latest, web-discard-latest-backup |
 | D8 settings and deploy | orch-sessions-live-backup, helmfile-backup-pins, helmfile-backup-live-check |
 
-## Review focus
+### design.md: Review focus
 
 - The discard path: the final save always runs after a live backup Job is gone; crash between delete and
   save.
@@ -267,7 +334,7 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 - The change signal and interval use the database clock; no backup storm for idle sessions.
 - Archive change keeps every existing archive test green (symlink escape, excludes, size cap).
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Module placement (cache.py vs a new `reconciler/live_backup.py`), helper names, the SQL for the
   busy-or-`free_since` check (review fix of D1), test file split, within D1-D8.
@@ -278,7 +345,7 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
   the web AC5 commands are the real check and its verify matches; Q8 helmfile-backup-live-check is
   orchestrator-session work; Q9 overridden, deleting rows count (D5); Q10 yes to both (D3, orch-sessions-live-backup AC7).
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Claude Code's `--resume` tolerance of a torn final JSONL line: unknown; D6 removes the case.
 - Backup Job cost: one Job pod with a 5 GiB emptyDir per changed session per interval; acceptable at the
@@ -289,19 +356,3 @@ Brief plan inputs (`.scratchpad/live-backup/brief-cartographer.md`):
 - (review fix) `free_since` also moves on a booting-to-idle transition, so a pod roll can make one extra backup
   due after the interval; accepted, bounded by the interval (my call).
 - (review fix) Builder Q3: a file shrunk mid-read fails that pack; retried next interval (my call).
-
-## Open questions
-
-- Q1: Back up each live session's transcripts at most every 30 minutes, when it is working or finished work since the last backup (idle sessions are not backed up again)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q2: Transcripts only, the workspace keeps its discard-time save? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q3: No "back up now" button or tool in this epic? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q4: Skip the live backup while another session (live, starting or being discarded) shares the same cache name? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q5: Close the "row stays sent after its turn failed" item as by design (sent is final, the turn shows the outcome, the cause was the wrapper wedge fixed in 0.3.3)? [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q6: Cut a torn last JSONL line only in the Claude transcripts archive, never in the workspace archive, so a workspace .jsonl file without a trailing newline is never truncated? (D6 amendment) [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-- Q7: The helmfile pins of this epic also deploy decouple-s3-session-cache-fr, which has no deploy task of its own, so its copy migration of every existing session runs at this apply; deploy both together and check the migration records in the live check? (D8) [answer: yes (user approved the gate 2026-10-29 10:06Z via mx-34 #375, verbatim: "Yes, go")]
-
-## Irreversible operations in scope
-
-- Live backups overwrite each session's S3 transcripts object (the same object the discard writes); a
-  failed backup leaves the old object (direct PUT after a full pack).
-- Releases: orchestrator and web images; helmfile apply under the deploy lease.
