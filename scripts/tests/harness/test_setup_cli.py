@@ -18,7 +18,7 @@ SETUP = Path(__file__).resolve().parents[2] / "harness" / "setup.py"
 def test_no_args_syncs_rules_block_without_targets(clean_tree):
     rules = clean_tree / "plugins/workbench/rules"
     rules.mkdir(parents=True, exist_ok=True)
-    (rules / "tdd.md").write_text("---\nname: tdd\n---\n\n# Tests first\n\nRed, green.\n")
+    (rules / "boy-scout.md").write_text("---\nname: scout\n---\n\n# Tests first\n\nRed, green.\n")
     agents = clean_tree / "AGENTS.md"
     before = agents.read_text()
     assert run(clean_tree) == 0
@@ -47,7 +47,7 @@ def test_no_args_cli_exit_zero(clean_tree):
 def test_no_args_syncs_blocks_and_targets(clean_tree):
     rules = clean_tree / "plugins/workbench/rules"
     rules.mkdir(parents=True, exist_ok=True)
-    (rules / "tdd.md").write_text("---\nname: tdd\n---\n\n# Tests first\n\nRed, green.\n")
+    (rules / "boy-scout.md").write_text("---\nname: scout\n---\n\n# Tests first\n\nRed, green.\n")
     assert run(clean_tree, "cursor") == 0
     (clean_tree / ".cursor/a.txt").write_text("hand edited")
     agents = clean_tree / "AGENTS.md"

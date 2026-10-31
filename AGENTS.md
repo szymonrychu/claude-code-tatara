@@ -57,15 +57,16 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 
 ## Ground rules
 
-1. **Development flow.** Non-trivial work (a feature, a cross-component change, a change to
-   the workbench itself) starts with `brainstorming` (Claude Code:
-   `superpowers:brainstorming`): discovery, a plan with a scope ladder behind one approval gate
-   that picks the rung. `writing-plans` then writes the implementation plan for that rung, and
-   `subagent-driven-development` runs it unattended: one implementer and one reviewer on the
-   whole diff, two fix rounds; never hand-roll a loop beyond that. Reviews go through
-   `requesting-code-review` and `receiving-code-review`, failures through
-   `systematic-debugging`. In harnesses other than Claude Code, invoke the skills by their bare
-   names.
+1. **Development flow.** The vanilla superpowers plugin governs all work
+   (`superpowers:using-superpowers`); workbench skills and agents are helpers to it.
+   Non-trivial work starts with `superpowers:brainstorming` (specs in
+   `docs/superpowers/specs/`), `superpowers:writing-plans` writes the plan
+   (`docs/superpowers/plans/`), and `superpowers:subagent-driven-development` or
+   `superpowers:executing-plans` runs it. Reviews go through
+   `superpowers:requesting-code-review` and `superpowers:receiving-code-review`, failures
+   through `superpowers:systematic-debugging`, and the branch lands through
+   `superpowers:finishing-a-development-branch`. In harnesses other than Claude Code, invoke
+   the skills by their bare names.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
    very complex architecture decisions fable; mechanical relays and classifiers: haiku;
@@ -126,41 +127,6 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
 <!-- workbench:rules:begin -->
 _Generated from plugins/workbench/rules/; edit there, then run `mise run harness-setup`._
 
-## Test-driven development
-
-Every behaviour change is written test-first. Not "tested afterwards" - the test
-comes first and is seen failing before the code that makes it pass exists.
-
-1. **Red.** Write the test and run it. Watch it fail, and check it fails for the
-   reason you expect. A test that passes before the implementation exists is
-   asserting nothing, and this is the step that catches that.
-2. **Green.** Write the smallest implementation that passes it.
-3. **Refactor.** Clean up with the test still green.
-
-This is not optional because the change is small, urgent, or "obviously
-correct". Those are the changes that ship broken.
-
-Legitimate exceptions, and they are narrow: pure formatting, a comment or doc
-edit, a dependency bump with no behaviour change, a spike you are going to
-throw away, or a deletion pinned by a retirement test (the diff's non-test
-changes are deletions only and it adds or changes a test that pins the removal). If you skip the cycle, say which exception applied - do not claim a
-red-green cycle you did not run.
-
-### Verify before reporting back
-
-Never report work as done, passing, or complete without having run the check and
-read its output. This applies especially when handing work back to an
-orchestrating agent, which cannot see your terminal and will take the claim at
-face value.
-
-- Run the repo's own command (`mise run test`, or whatever the repo defines).
-- Quote the real output, including the pass/fail summary line.
-- "Should pass", "the change is straightforward", and a green diff are not
-  evidence. An unread command is an unrun command.
-
-If verification fails and you cannot fix it, say so with the output. A named
-failure is useful; a false pass costs the next agent hours.
-
 ## Boy scout rule
 
 Leave the tree better than you found it, and never let someone else's loose
@@ -206,32 +172,16 @@ notification reply, poll reply and status is VERY short.
 
 The user's standing rules for every agent, every harness and every task.
 
-1. **Supervisor only.** The agent the user talks to never writes code or builds
-   anything. It is the supervisor, responsible and accountable for any and all
-   work its subagents do. Its own duties are not building: `ticket.py`, running the
-   repo's test and lint commands to read results, and dispatching. plan.md and
-   implementation-plan.md are written by the plan writer brainstorming
-   dispatches, retro.md by the reviewer, and the git operations of close run through `ticket.py close` by the
-   worktree-merger. It never edits source, tests, skills, agents, hooks or docs.
-2. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
+1. **No em dash characters** in any code, comment, commit, message or content of
+   any kind. Use a plain hyphen.
+2. **No backward compatibility** (shims, aliases, legacy fallbacks) unless the
+   user explicitly asks for it.
+3. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and
    why. Tests make the code repeatable and guard against regressions.
-3. **Read, then edit, then run.** Before changing anything, an implementing or
-   reviewing subagent must list every file the step touches, read them all in one
-   pass, and only then make all edits for the step. It then runs the targeted
-   verify once per step; under TDD that is once per red step and once per green
-   step, never an edit-run-edit-run dribble.
-4. **No backward compatibility** (shims, aliases, legacy fallbacks) unless the
-   user explicitly asks for it.
-5. **No em dash characters** in any code, comment, commit, message or content of
-   any kind. Use a plain hyphen.
-6. **Do not guess, at any level.** When unsure of a fact, ask the user or the
-   fable architect; a subagent returns it as a question instead of guessing.
-7. **Full scope.** Always aim for the full scope of the improvement; never cut
-   corners or reduce scope.
-8. **One scratchpad.** Every scratchpad edit lands under `.scratchpad` in the
+4. **One scratchpad.** Every scratchpad edit lands under `.scratchpad` in the
    workbench root (the main checkout, never a worktree); it is the only
    scratchpad dir (`workbench.py scratchpad` prints it).
-9. **One log dir.** Every log lands in the gitignored `.logs` in the workbench
+5. **One log dir.** Every log lands in the gitignored `.logs` in the workbench
    root (`workbench.py logs` prints it).
 <!-- workbench:rules:end -->

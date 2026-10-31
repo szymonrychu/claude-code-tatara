@@ -121,7 +121,6 @@ def test_claude_md():
         "workbench:<skill>",
         "/reload-plugins",
         "trust dialog",
-        "in the background",
         "docs/claude-cloud.md",
     ):
         assert needle in CLAUDE
@@ -181,21 +180,37 @@ def test_ground_rule_one_names_the_flow():
     start, end = AGENTS.index("1. **Development flow.**"), AGENTS.index("2. **Always")
     rule = " ".join(AGENTS[start:end].split())
     for needle in (
-        "brainstorming",
-        "writing-plans",
-        "subagent-driven-development",
-        "systematic-debugging",
-        "receiving-code-review",
+        "superpowers:using-superpowers",
         "superpowers:brainstorming",
-        "scope ladder",
-        "one approval gate",
-        "one implementer",
-        "one reviewer on the whole diff",
-        "two fix rounds",
+        "superpowers:writing-plans",
+        "superpowers:subagent-driven-development",
+        "superpowers:executing-plans",
+        "superpowers:requesting-code-review",
+        "superpowers:receiving-code-review",
+        "superpowers:systematic-debugging",
+        "superpowers:finishing-a-development-branch",
+        "docs/superpowers/",
+        "helpers",
     ):
         assert needle in rule, needle
-    for gone in ("epic", "scope audit", "plan-execute", "Workflow tool"):
+    for gone in (
+        "epic",
+        "scope audit",
+        "plan-execute",
+        "Workflow tool",
+        "scope ladder",
+        "one approval gate",
+        "two fix rounds",
+        "plan" + ".md",
+        "ticket" + ".py",
+    ):
         assert gone not in rule, gone
+
+
+def test_claude_md_drops_the_fork():
+    claude = (ROOT / "CLAUDE.md").read_text()
+    assert "subagent-driven-development` dispatches its implementer" not in claude
+    assert "`superpowers:<skill>` for the development flow" not in claude
 
 
 def test_ground_rule_four_has_no_heartbeat():
@@ -212,18 +227,20 @@ def test_banner_routes_other_requests():
 
 
 HOUSEKEEPING = (
-    "supervisor",
-    "accountable",
     "xfail",
     "no longer accurate",
-    "list every file",
-    "one pass",
     "backward compatibility",
     "em dash",
-    "fable",
-    "full scope",
     ".scratchpad",
     ".logs",
+)
+HOUSEKEEPING_GONE = (
+    "supervisor",
+    "ticket" + ".py",
+    "plan" + ".md",
+    "list every file",
+    "fable",
+    "full scope",
 )
 
 
@@ -233,6 +250,9 @@ def test_housekeeping_rules():
         flat = " ".join(text.split()).lower()
         for needle in HOUSEKEEPING:
             assert needle in flat, needle
+    flat = " ".join(rule.split()).lower()
+    for gone in HOUSEKEEPING_GONE:
+        assert gone not in flat, gone
     assert len(re.findall(r"^## Housekeeping rules$", AGENTS, re.M)) == 1
 
 

@@ -9,7 +9,7 @@ from harness import agents_md, emit, setup
 from harness.sources import _rules
 
 REPO = Path(__file__).resolve().parents[3]
-RULE_NAMES = ("tdd.md", "boy-scout.md", "concise-orchestrator.md", "housekeeping.md")
+RULE_NAMES = ("boy-scout.md", "concise-orchestrator.md", "housekeeping.md")
 
 
 class Fake(emit.Emitter):
@@ -30,11 +30,11 @@ def fakes(monkeypatch):
 def wb(tree):
     rules = tree / "plugins/workbench/rules"
     rules.mkdir(parents=True)
-    (rules / "tdd.md").write_text(
-        "---\nname: tdd\n---\n\n# Test-driven\n\nBody one.\n\n```\n# not a heading\n```\n\n## Sub\n"
+    (rules / "boy-scout.md").write_text(
+        "---\nname: scout\n---\n\n# Boy scout\n\nBody one.\n\n```\n# not a heading\n```\n\n## Sub\n"
     )
-    (rules / "boy-scout.md").write_text("# Boy scout\n\nBody two.\n")
-    (rules / "concise-orchestrator.md").write_text("# Concise\n\nBody three.\n")
+    (rules / "concise-orchestrator.md").write_text("# Concise\n\nBody two.\n")
+    (rules / "housekeeping.md").write_text("# Housekeeping\n\nBody three.\n")
     (tree / ".claude/workbench.json").write_text(json.dumps({"harness": {"targets": []}}))
     return tree
 
@@ -53,8 +53,8 @@ def block(text, name):
 def test_rules_block_rendered(wb):
     out = agents_md.render_rules_block(wb)
     assert "enerated from plugins/workbench/rules/; edit there" in out
-    assert "name: tdd" not in out and "---" not in out
-    assert "## Test-driven\n" in out and "### Sub" in out
+    assert "name: scout" not in out and "---" not in out
+    assert "## Boy scout\n" in out and "### Sub" in out
     assert "# not a heading" in out and "## not a heading" not in out
     assert out.index("Body one") < out.index("Body two") < out.index("Body three")
 
@@ -76,7 +76,7 @@ def test_setup_refreshes_rules_block_for_any_target(wb):
 
 def test_rules_block_drift(wb, capsys):
     run(wb, "cursor")
-    src = wb / "plugins/workbench/rules/tdd.md"
+    src = wb / "plugins/workbench/rules/boy-scout.md"
     src.write_text(src.read_text() + "\nChanged.\n")
     assert run(wb, "--check") == 1
     assert "AGENTS.md" in capsys.readouterr().out
@@ -119,8 +119,9 @@ def test_path_rules_missing_is_drift(wb):
 def test_repo_agents_md_has_current_rules_block():
     text = (REPO / "AGENTS.md").read_text()
     assert block(text, "rules") == "\n" + agents_md.render_rules_block(REPO)
-    for needle in ("Test-driven development", "Boy scout", "Concise orchestrator"):
+    for needle in ("Boy scout", "Concise orchestrator", "Housekeeping rules"):
         assert needle in block(text, "rules")
+    assert "Test-driven development" not in block(text, "rules")
 
 
 def test_rules_block_includes_housekeeping():
