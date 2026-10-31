@@ -15,7 +15,6 @@ from ..skills_emit import _rewrite
 
 # Hooks registered on non-Claude targets (design: builder check B1); the rest are Claude-only.
 _PRE_TOOL = {"guard-bash": "Shell", "protect-files": "Write|Delete"}
-_STOP = "subagent-commit-guard"
 _ENV = re.compile(r"\$\{(?!env:|workspaceFolder\b)([A-Za-z_]\w*)(?::-[^}]*)?\}")
 
 
@@ -53,7 +52,6 @@ def _agent(agent, sources, prefix: str, names: list[str]) -> str:
 
 def _hooks(sources) -> dict:
     pre: list[dict] = []
-    stop: list[dict] = []
     seen: set[tuple[str, str]] = set()
     for plugin in sources.plugins:
         prefix = os.path.relpath(plugin.root, sources.root).replace(os.sep, "/")
@@ -73,12 +71,7 @@ def _hooks(sources) -> dict:
                         "failClosed": True,
                     }
                 )
-            elif reg.event == "SubagentStop" and hook == _STOP:
-                seen.add((hook, reg.event))
-                cmd = f"{base} --event stop --hook {hook}"
-                stop.append({"command": cmd, "type": "command", "timeout": 15})
-    hooks = {k: v for k, v in (("preToolUse", pre), ("subagentStop", stop)) if v}
-    return {"version": 1, "hooks": hooks} if hooks else {}
+    return {"version": 1, "hooks": {"preToolUse": pre}} if pre else {}
 
 
 def _env(node):

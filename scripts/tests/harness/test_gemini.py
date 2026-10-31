@@ -23,22 +23,20 @@ def test_settings_shape(tree):
     s = json.loads(render(tree)[".gemini/settings.json"])
     assert s["context"]["fileName"] == ["AGENTS.md", "GEMINI.md"]
     hooks = s["hooks"]
-    assert set(hooks) == {"BeforeTool", "AfterAgent"}
+    assert set(hooks) == {"BeforeTool"}
     cmds = {h["name"]: h for groups in hooks.values() for g in groups for h in g["hooks"]}
-    assert set(cmds) == {"guard-bash", "protect-files", "subagent-commit-guard"}
+    assert set(cmds) == {"guard-bash", "protect-files"}
     matchers = [g["matcher"] for g in hooks["BeforeTool"]]
     assert matchers == ["run_shell_command", "write_file|replace"]
-    assert "matcher" not in hooks["AfterAgent"][0]
     for h in cmds.values():
         assert h["type"] == "command"
         assert isinstance(h["timeout"], int) and h["timeout"] >= 1000
         assert "adapter.py --harness gemini" in h["command"]
-    assert "--event stop --hook subagent-commit-guard" in cmds["subagent-commit-guard"]["command"]
 
 
 def test_claude_only_hooks_not_emitted(tree):
     text = render(tree)[".gemini/settings.json"]
-    for name in ("verify-recorder", "bash-output-filter", "format-file"):
+    for name in ("bash-output-filter", "format-file"):
         assert name not in text
 
 
@@ -111,10 +109,3 @@ def test_gemini_gets_path_rules_block():
 def test_context_filename(tree):
     s = json.loads(render(tree)[".gemini/settings.json"])
     assert "AGENTS.md" in s["context"]["fileName"]
-
-
-def test_stop_fallback_hook(tree):
-    s = json.loads(render(tree)[".gemini/settings.json"])
-    hook = s["hooks"]["AfterAgent"][0]["hooks"][0]
-    assert hook["name"] == "subagent-commit-guard"
-    assert "--event stop --hook subagent-commit-guard" in hook["command"]

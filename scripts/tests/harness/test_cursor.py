@@ -68,9 +68,9 @@ def test_hooks_fail_closed(tree):
     assert {h["matcher"] for h in pre} == {"Shell", "Write|Delete"}
     assert all(h["failClosed"] is True for h in pre)
     assert all("adapter.py --harness cursor" in h["command"] for h in pre)
-    assert "subagent-commit-guard" in hooks["hooks"]["subagentStop"][0]["command"]
+    assert set(hooks["hooks"]) == {"preToolUse"}
     text = json.dumps(hooks)
-    for claude_only in ("verify-recorder", "bash-output-filter", "format-file"):
+    for claude_only in ("bash-output-filter", "format-file"):
         assert claude_only not in text
 
 

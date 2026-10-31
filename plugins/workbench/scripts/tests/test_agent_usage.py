@@ -1,7 +1,6 @@
 """agent_usage.py: per-agent time and tokens read from Claude subagent transcripts."""
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -48,7 +47,7 @@ def write(path: Path, lines) -> Path:
 
 def test_tokens_summed_once_per_message_id(tmp_path):
     lines = [
-        user("2026-10-24T10:00:00.000Z", "[wb ep/t1/impl]\nDo it."),
+        user("2026-10-24T10:00:00.000Z", "Do it."),
         # One message split over three lines with identical usage: counted once.
         assistant("2026-10-24T10:00:01.000Z", usage(2, 100, 1000, 10), "msg_1", "req_1"),
         assistant("2026-10-24T10:00:02.000Z", usage(2, 100, 1000, 10), "msg_1", "req_1"),
@@ -76,7 +75,7 @@ def test_tokens_summed_once_per_message_id(tmp_path):
 
 def test_summarize_tolerates_garbage(tmp_path):
     lines = [
-        user("2026-10-24T10:00:00.000Z", "[wb ep/t1/impl]\nDo it."),
+        user("2026-10-24T10:00:00.000Z", "Do it."),
         "{not json",
         "",
         "[1, 2, 3]",
@@ -112,119 +111,7 @@ def test_summarize_tolerates_garbage(tmp_path):
     assert missing["tokens"]["total"] == 0
 
 
-def test_marker_and_role(tmp_path):
-    marked = write(
-        tmp_path / "m.jsonl",
-        [
-            json.dumps({"type": "attachment", "timestamp": "2026-10-24T10:00:00.000Z"}),
-            user("2026-10-24T10:00:00.000Z", "[wb plan-flow-rework/review]\nReview."),
-            user("2026-10-24T10:00:01.000Z", "[wb other/impl]"),
-        ],
-    )
-    assert agent_usage.parse_marker(marked) == ("plan-flow-rework", "review")
-    listed = write(
-        tmp_path / "l.jsonl",
-        [user("2026-10-24T10:00:00.000Z", [{"type": "text", "text": "  [wb ep/merge]\nGo"}])],
-    )
-    assert agent_usage.parse_marker(listed) == ("ep", "merge")
-    for role in ("plan", "impl", "review", "merge"):
-        path = write(
-            tmp_path / f"{role}.jsonl", [user("2026-10-24T10:00:00.000Z", f"[wb p/{role}]")]
-        )
-        assert agent_usage.parse_marker(path) == ("p", role)
-    # The marker must be on the first line of the first user message.
-    later = write(
-        tmp_path / "s.jsonl",
-        [
-            user("2026-10-24T10:00:00.000Z", "Implement this.\n[wb ep/impl]"),
-            user("2026-10-24T10:00:01.000Z", "[wb ep/impl]"),
-        ],
-    )
-    assert agent_usage.parse_marker(later) is None
-    bad_role = write(tmp_path / "b.jsonl", [user("2026-10-24T10:00:00.000Z", "[wb ep/fix]")])
-    assert agent_usage.parse_marker(bad_role) is None
-    assert agent_usage.parse_marker(tmp_path / "missing.jsonl") is None
-    assert agent_usage.MARKER.match("[wb ep/impl]")
-
-    assert agent_usage.role_for("review", "workbench:implementer") == "review"
-    assert agent_usage.role_for(None, "workbench:implementer") == "impl"
-    assert agent_usage.role_for("", "workbench:reviewer") == "review"
-    assert agent_usage.role_for(None, "workbench:plan-" + "writer") == ""
-    assert agent_usage.role_for(None, "workbench:worktree-merger") == "merge"
-    assert agent_usage.role_for(None, "general-purpose") == ""
-
-
-def test_old_three_part_marker_does_not_parse(tmp_path):
-    old = write(tmp_path / "o.jsonl", [user("2026-10-24T10:00:00.000Z", "[wb ep/t1/impl]\nGo")])
-    assert agent_usage.parse_marker(old) is None
-    assert not agent_usage.MARKER.match("[wb ep/t1/review]")
-
-
-def record(agent_id, plan="ep", role="impl", transcript="", total=10, **extra):
-    return {
-        "agentId": agent_id,
-        "agentType": "workbench:implementer",
-        "model": "claude-sonnet-5-5",
-        "plan": plan,
-        "role": role,
-        "transcript": transcript,
-        "start": "2026-10-24T09:00:00.000Z",
-        "end": "2026-10-24T09:30:00.000Z",
-        "tokens": {
-            "input": total,
-            "cache_creation": 0,
-            "cache_read": 0,
-            "output": 0,
-            "total": total,
-        },
-        "updatedAt": "2026-10-24T09:30:00Z",
-        **extra,
-    }
-
-
-def test_write_record_overwrites(tmp_path):
-    logs = tmp_path / ".logs"
-    first = agent_usage.write_record(logs, record("a1", total=10))
-    second = agent_usage.write_record(logs, record("a1", total=99))
-    assert first == second == logs / "agents" / "a1.json"
-    assert sorted(p.name for p in (logs / "agents").iterdir()) == ["a1.json"]
-    stored = json.loads(second.read_text())
-    assert stored["tokens"]["total"] == 99
-    assert stored == record("a1", total=99)
-
-
-def test_write_record_refuses_unusable_ids(tmp_path):
-    for bad in ("", "..", "a/b", None):
-        try:
-            agent_usage.write_record(tmp_path, {"agentId": bad})
-        except ValueError:
-            continue
-        raise AssertionError(bad)
-
-
-def test_only_what_the_recorder_uses_is_left():
-    public = {
-        n for n in dir(agent_usage) if not n.startswith("_") and callable(getattr(agent_usage, n))
-    }
-    public -= {"Any", "Iterator", "Path"}
-    assert public == {"transcript_lines", "summarize", "parse_marker", "role_for", "write_record"}
-    for gone in ("aggregate", "backfill", "read_records", "records_for", "records_by_task"):
-        assert not hasattr(agent_usage, gone), gone
-    assert "LEGACY_ROLES" not in dir(agent_usage)
-
-
-def test_calibration_is_gone():
-    root = SCRIPTS.parents[2]
-    out = subprocess.run(
-        [
-            "git",
-            "ls-files",
-            "plugins/workbench/scripts/lib/calibration.py",
-            "plugins/workbench/scripts/tests/test_calibration.py",
-        ],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    assert out == ""
+def test_no_role_concept():
+    assert not hasattr(agent_usage, "role_for")
+    assert not hasattr(agent_usage, "AGENT_ROLES")
+    assert not hasattr(agent_usage, "parse_marker")

@@ -83,8 +83,6 @@ def test_hooks(tree):
         HookReg("PreToolUse", "Bash", "guard-bash"),
         HookReg("PreToolUse", "Edit|MultiEdit|NotebookEdit|Write", "protect-files"),
         HookReg("PostToolUse", "Edit|MultiEdit|NotebookEdit|Write", "format-file"),
-        HookReg("PostToolUse", "Bash", "verify-recorder"),
-        HookReg("SubagentStop", "", "subagent-commit-guard"),
     )
 
 

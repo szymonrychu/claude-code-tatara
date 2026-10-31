@@ -2,16 +2,14 @@
 """SubagentStart / SubagentStop recorder: one usage record per subagent, Claude Code only.
 
 Writes `<main checkout>/.logs/agents/<agentId>.json` (`workbench.logs_dir` from the event cwd,
-so an agent working in a plan tree still records into the main checkout).
+so an agent working in a worktree still records into the main checkout).
 
 - SubagentStart (spawn and every resume) records the start time, agent id and type, the
   agent transcript path derived from `transcript_path` and `session_id`
-  (`<dir>/<session_id>/subagents/agent-<agent_id>.jsonl`) and, from the run marker
-  `[wb <plan>/<role>]` when the transcript is already readable, the plan and role. A
-  resume keeps the first start.
+  (`<dir>/<session_id>/subagents/agent-<agent_id>.jsonl`). A resume keeps the first start.
 - SubagentStop recomputes model, end and tokens from the whole agent transcript with
   `agent_usage.summarize` and overwrites the record, keeping the start the SubagentStart
-  record holds. Stopping again (a fix round, a commit-guard refire) never double counts.
+  record holds. Stopping again (a fix round) never double counts.
 
 An empty `agent_type` (Claude Code's internal agents) writes nothing. The recorder makes no
 decision: any error (garbled stdin, missing or garbled transcript, unwritable dir) exits 0
@@ -73,7 +71,7 @@ def build_record(payload: dict, earlier: dict, now: str) -> dict | None:
     record = dict(earlier)
     record.update(agentId=agent_id, agentType=agent_type, transcript=transcript, updatedAt=now)
     record.setdefault("start", None)
-    for key in ("model", "plan", "end"):
+    for key in ("model", "end"):
         record.setdefault(key, None)
 
     if stop:
@@ -91,10 +89,6 @@ def build_record(payload: dict, earlier: dict, now: str) -> dict | None:
     else:
         record["start"] = earlier.get("start") or now
 
-    marker = agent_usage.parse_marker(transcript) if readable else None
-    if marker:
-        record["plan"] = marker[0]
-    record["role"] = agent_usage.role_for(marker[1] if marker else None, agent_type)
     return record
 
 

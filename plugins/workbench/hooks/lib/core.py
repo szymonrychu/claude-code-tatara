@@ -15,28 +15,17 @@ Stdlib only, and runnable by the system python 3 (3.9+) that hook processes get.
 from __future__ import annotations
 
 import fnmatch
-import json
 import re
-import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-# worktree_lib sits next to lib/ and is shared with the Claude-only wrappers;
-# agent_usage (scripts/lib) owns the transcript walker.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "lib"))
+from .apply_patch import PATCH_KEYS, patch_added_lines
 
-import agent_usage  # noqa: E402
-import worktree_lib as wl  # noqa: E402
-
-from .apply_patch import PATCH_KEYS, patch_added_lines  # noqa: E402
-
-EVENTS = ("pre-tool", "post-tool", "stop")
+EVENTS = ("pre-tool", "post-tool")
 TOOL_KINDS = ("shell", "edit", "write", "read", "other")
-ACTIONS = ("allow", "deny", "block")
+ACTIONS = ("allow", "deny")
 
 
 @dataclass
@@ -48,7 +37,6 @@ class NormalizedEvent:
     command: str = ""
     paths: list[str] = field(default_factory=list)
     cwd: str = ""
-    succeeded: bool = True
     raw: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -60,11 +48,10 @@ class NormalizedEvent:
 
 @dataclass(frozen=True)
 class Decision:
-    """What the harness should do: `allow`, `deny` a tool call, or `block` a stop."""
+    """What the harness should do: `allow` or `deny` a tool call."""
 
     action: str
     reason: str = ""
-    data: dict[str, Any] = field(default_factory=dict, compare=False)
 
     def __post_init__(self) -> None:
         if self.action not in ACTIONS:
@@ -106,7 +93,6 @@ def from_claude_payload(payload: Any, event: str, default_kind: str = "other") -
     path = tool_input.get("file_path") or tool_input.get("notebook_path")
     cwd = data.get("cwd")
     return NormalizedEvent(
-        succeeded=data.get("hook_event_name") != "PostToolUseFailure",
         event=event,
         tool_kind=tool_kind,
         command=command if isinstance(command, str) else "",
@@ -473,167 +459,11 @@ def protect_files(event: NormalizedEvent) -> Decision:
     return ALLOW
 
 
-# --- verify-recorder ----------------------------------------------------------
-#
-# When an agent in a worktree runs a test or lint command, the decision carries
-# the record to remember (command, HEAD, dirty, passed) in `data`. Writing it is
-# the caller's side effect: `write_verify_record`.
-
-VERIFY_COMMAND = re.compile(
-    r"\b(pytest|node --test|bats|mise run (test|lint)|run-tests\.sh|go test"
-    r"|npm test|cargo test|make test|pre-commit run|shellcheck|ruff)\b"
-)
-
-
-def verify_recorder(event: NormalizedEvent) -> Decision:
-    """Allow always; `data` is the verification record, or empty when none applies."""
-    if event.event != "post-tool" or event.tool_kind != "shell":
-        return ALLOW
-    if event.raw.get("hook_event_name", "PostToolUse") not in ("PostToolUse", "PostToolUseFailure"):
-        return ALLOW
-    command = wl.unwrap_output_filter(event.command)
-    target = wl.leading_cd_target(command) or event.cwd
-    if not target or not wl.is_agent_worktree(target) or not Path(target).is_dir():
-        return ALLOW
-    stripped = wl.strip_leading_cd(command)
-    if not VERIFY_COMMAND.search(stripped):
-        return ALLOW
-    return Decision(
-        "allow",
-        data={
-            "worktree": target,
-            "command": stripped,
-            "head": wl.head(target),
-            "dirty": bool(wl.dirty_files(target)),
-            "passed": event.succeeded,
-            "at": datetime.now(timezone.utc).isoformat(),
-        },
-    )
-
-
-def write_verify_record(data: dict[str, Any]) -> None:
-    """Persist a `verify-recorder` record to `<git dir>/workbench-verify.json`."""
-    if not data:
-        return
-    path = wl.record_path(data["worktree"])
-    if path is None:
-        return
-    path.write_text(json.dumps({k: v for k, v in data.items() if k != "worktree"}))
-
-
-# --- subagent-commit-guard ----------------------------------------------------
-#
-# A subagent may not end its turn holding uncommitted work or on a stale or
-# failed verification. Scope is the worktrees an agent was given; the main
-# checkout is never blocked. Fires once: `stop_hook_active` means the agent has
-# already been told, and the turn may end so nothing can wedge.
-
-
-def collect_worktrees(event: NormalizedEvent) -> list[str]:
-    """Agent worktrees to check: the event cwd, then any `cd` target the agent's
-    transcript shows it running Bash in."""
-    found: list[str] = []
-
-    def add(path: str) -> None:
-        if path not in found and wl.is_agent_worktree(path) and Path(path).is_dir():
-            found.append(path)
-
-    if event.cwd:
-        add(event.cwd)
-
-    transcript = event.raw.get("agent_transcript_path")
-    if isinstance(transcript, str) and transcript:
-        for line in agent_usage.transcript_lines(transcript):
-            message = line.get("message")
-            content = message.get("content") if isinstance(message, dict) else None
-            if not isinstance(content, list):
-                continue
-            for item in content:
-                if not (
-                    isinstance(item, dict)
-                    and item.get("type") == "tool_use"
-                    and item.get("name") == "Bash"
-                    and isinstance(item.get("input"), dict)
-                ):
-                    continue
-                command = item["input"].get("command")
-                target = (
-                    wl.leading_cd_target(wl.unwrap_output_filter(command))
-                    if isinstance(command, str)
-                    else None
-                )
-                if target:
-                    add(target)
-    return found
-
-
-def stale_reason(worktree: str) -> str | None:
-    """Why the last recorded verification cannot be trusted, or None."""
-    record = wl.read_record(worktree)
-    if record is None:
-        return None
-    current = wl.head(worktree)
-    if record.get("head") != current:
-        why = f"last verification ran on {record.get('head')} but HEAD is {current}"
-    elif record.get("dirty"):
-        why = "last verification ran on a dirty tree"
-    elif not record.get("passed"):
-        why = "last verification did not pass"
-    else:
-        return None
-    return (
-        f"You are ending your turn in {worktree}, but {why}. "
-        f"Re-run {record.get('command')} in that worktree, read the output, "
-        "fix what fails and commit, then report the result you saw."
-    )
-
-
-def dirty_reason(cwd: str, entries: list[str]) -> str:
-    count = len(entries)
-    noun = "file" if count == 1 else "files"
-    sample = "\n".join(f"  {entry}" for entry in entries[:10])
-    if count > 10:
-        sample += f"\n  ... and {count - 10} more"
-    return (
-        f"You are ending your turn with {count} uncommitted {noun} in "
-        f"{cwd}:\n{sample}\n\n"
-        "Uncommitted work in a worktree is work that can be lost - a spend "
-        "limit, a killed session or a conflicting merge takes all of it, and "
-        "that has already happened.\n\n"
-        "Do this before you stop:\n"
-        "1. Run the repo's own check (`mise run test`, or whatever it "
-        "defines) and read the output.\n"
-        "2. Commit what passes, with a real message. Split unrelated work "
-        "into separate commits; pre-existing work gets its own commit.\n"
-        "3. If a background command is still running, do NOT end the turn to "
-        "wait for it - commit first, then keep working or bound the wait.\n"
-        "4. If something genuinely must not be committed (a spike, a secret, "
-        "a broken half-edit), say so explicitly in your report and name the "
-        "files - do not end the turn silently holding them.\n\n"
-        '"Waiting", "holding" and "blocked" are not reportable states '
-        "(plugin rules/boy-scout.md, rules/concise-orchestrator.md)."
-    )
-
-
-def subagent_commit_guard(event: NormalizedEvent) -> Decision:
-    """Block a stop while an agent worktree is dirty or its verification is stale."""
-    if event.event != "stop" or event.raw.get("stop_hook_active"):
-        return ALLOW
-    for worktree in collect_worktrees(event):
-        entries = wl.dirty_files(worktree)
-        reason = dirty_reason(worktree, entries) if entries else stale_reason(worktree)
-        if reason:
-            return Decision("block", reason)
-    return ALLOW
-
-
 # --- dispatch -----------------------------------------------------------------
 
 HOOKS: dict[str, Callable[[NormalizedEvent], Decision]] = {
     "guard-bash": guard_bash,
     "protect-files": protect_files,
-    "verify-recorder": verify_recorder,
-    "subagent-commit-guard": subagent_commit_guard,
 }
 
 

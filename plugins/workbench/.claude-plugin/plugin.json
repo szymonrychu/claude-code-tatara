@@ -1,6 +1,6 @@
 {
   "name": "workbench",
-  "description": "tooling for any workbench tree (metarepo or flat), dispatched by the superpowers flow: implementer, reviewer, worktree-merger and read-only diagnostic subagents, research skills, worktree, submodule and pull request skills, init, component and template-update skills, verification hooks that tie every test run to the committed HEAD, and destructive-command guardrails.",
+  "description": "tooling for any workbench tree (metarepo or flat), helpers to vanilla superpowers: read-only diagnostic and research subagents, research skills, worktree, submodule and pull request skills, init, component and template-update skills, and destructive-command guardrails.",
   "version": "4.0.0",
   "author": {
     "name": "workbench contributors"
@@ -47,17 +47,6 @@
             "statusMessage": "Formatting..."
           }
         ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/verify-recorder.py\"",
-            "timeout": 10,
-            "statusMessage": "Recording verification..."
-          }
-        ]
       }
     ],
     "SubagentStart": [
@@ -77,32 +66,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-commit-guard.py\"",
-            "timeout": 15,
-            "statusMessage": "Checking for uncommitted work..."
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-usage-recorder.py\"",
             "timeout": 10,
             "statusMessage": "Recording agent usage..."
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/verify-recorder.py\"",
-            "timeout": 10,
-            "statusMessage": "Recording verification..."
           }
         ]
       }

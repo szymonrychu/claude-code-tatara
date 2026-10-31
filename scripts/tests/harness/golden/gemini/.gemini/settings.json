@@ -29,18 +29,6 @@
           }
         ]
       }
-    ],
-    "AfterAgent": [
-      {
-        "hooks": [
-          {
-            "name": "subagent-commit-guard",
-            "type": "command",
-            "command": "python3 plugins/core/hooks/adapter.py --harness gemini --event stop --hook subagent-commit-guard",
-            "timeout": 15000
-          }
-        ]
-      }
     ]
   },
   "mcpServers": {

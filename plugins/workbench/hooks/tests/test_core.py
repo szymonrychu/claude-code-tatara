@@ -319,10 +319,10 @@ def test_never_ask():
 
 
 def test_contract_values_and_validation():
-    assert EVENTS == ("pre-tool", "post-tool", "stop")
+    assert EVENTS == ("pre-tool", "post-tool")
     assert TOOL_KINDS == ("shell", "edit", "write", "read", "other")
-    assert ACTIONS == ("allow", "deny", "block")
-    event = NormalizedEvent(event="stop", tool_kind="other")
+    assert ACTIONS == ("allow", "deny")
+    event = NormalizedEvent(event="post-tool", tool_kind="other")
     assert (event.command, event.paths, event.cwd, event.raw) == ("", [], "", {})
     assert Decision("allow").reason == ""
     with pytest.raises(ValueError):

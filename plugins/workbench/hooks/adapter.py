@@ -5,13 +5,13 @@
 
 Reads the harness's hook payload on stdin, normalizes it (`lib/harness_io.py`),
 runs the shared guard logic (`lib/core.py` `decide`) and prints that harness's
-JSON on stdout. Exit 0 allows. On a deny or a stop block it also writes the
+JSON on stdout. Exit 0 allows. On a deny it also writes the
 reason to stderr and exits 2, the one deny signal Claude, Copilot, Cursor, Codex
 and Gemini all document; Antigravity's exit codes are undocumented, so its JSON
 `decision` is the signal there.
 
 Fails closed on pre-tool: an unreadable payload or an internal error denies.
-Post-tool and stop fail open, so a broken payload can never wedge a session.
+Post-tool fails open, so a broken payload can never wedge a session.
 An unknown harness, event or hook is a usage error: exit 2, usage on stderr.
 
 Harness configs launch this from the repo root, so the plugin is found from this
@@ -29,7 +29,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib.core import ALLOW, EVENTS, HOOKS, Decision, decide, write_verify_record  # noqa: E402
+from lib.core import ALLOW, EVENTS, HOOKS, Decision, decide  # noqa: E402
 from lib.harness_io import HARNESSES, normalize, render  # noqa: E402
 
 
@@ -60,8 +60,6 @@ def run(harness: str, event: str, hook: str, payload: dict[str, Any] | None) -> 
         return ALLOW
     try:
         decision = decide(hook, normalize(harness, event, payload))
-        if hook == "verify-recorder":
-            write_verify_record(decision.data)
     except Exception as exc:  # a broken guard must not let a tool call through
         if event == "pre-tool":
             return Decision("deny", f"{hook}: internal error ({exc}); denied")

@@ -78,10 +78,9 @@ def test_hooks_json(tree):
         "--event pre-tool --hook guard-bash"
     )
     assert cmd["timeout"] == 10
-    stop = hooks["Stop"][0]["hooks"][0]
-    assert "--event stop --hook subagent-commit-guard" in stop["command"]
+    assert set(hooks) == {"PreToolUse"}
     blob = json.dumps(hooks)
-    for claude_only in ("verify-recorder", "bash-output-filter", "format-file"):
+    for claude_only in ("bash-output-filter", "format-file"):
         assert claude_only not in blob
 
 
@@ -112,7 +111,7 @@ def test_agents_md_cap_counts_synced_rules_block(tree):
     # Raw file under the cap, but the generated rules block pushes the synced file over it.
     rules = tree / "plugins/workbench/rules"
     rules.mkdir(parents=True, exist_ok=True)
-    (rules / "tdd.md").write_text("# T\n" + "rule line\n" * 600)
+    (rules / "boy-scout.md").write_text("# T\n" + "rule line\n" * 600)
     (tree / "AGENTS.md").write_text("x" * 20000)
     with pytest.raises(AntigravityError, match="24,000"):
         render(tree)

@@ -10,8 +10,6 @@ import pytest
 HOOKS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HOOKS))
 
-import worktree_lib  # noqa: E402
-
 
 def run(script: str, stdin: str):
     return subprocess.run(
@@ -58,25 +56,9 @@ def test_main_exception_exits_2(monkeypatch, capsys):
         assert capsys.readouterr().err.strip()
 
 
-def test_git_disables_fsmonitor():
-    with mock.patch.object(worktree_lib.subprocess, "run") as run_mock:
-        run_mock.return_value = mock.Mock(returncode=0, stdout="")
-        worktree_lib._git("/x", "status", "--porcelain")
-    argv = run_mock.call_args[0][0]
-    assert argv[:2] == ["git", "-c"] or "core.fsmonitor=false" in argv
-    assert "core.fsmonitor=false" in argv
-    assert argv.index("core.fsmonitor=false") < argv.index("status")
-
-
 def test_deny_hooks_fail_closed(monkeypatch, capsys):
     for script in ("protect_files.py", "guard-bash.py"):
         proc = run(script, "not json")
         assert proc.returncode == 2
         assert proc.stderr.strip()
     test_main_exception_exits_2(monkeypatch, capsys)
-
-
-def test_worktree_lib_git_disables_fsmonitor():
-    test_git_disables_fsmonitor()
-    src = (HOOKS / "worktree_lib.py").read_text()
-    assert src.count("subprocess.run(") == 1, "all git calls must go through _git"

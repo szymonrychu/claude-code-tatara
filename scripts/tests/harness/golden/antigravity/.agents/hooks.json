@@ -21,17 +21,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 plugins/core/hooks/adapter.py --harness antigravity --event stop --hook subagent-commit-guard",
-            "timeout": 15
-          }
-        ]
-      }
     ]
   }
 }

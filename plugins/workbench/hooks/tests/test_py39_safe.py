@@ -31,8 +31,6 @@ DENY = [
 ALL = [
     "guard-bash.py",
     "protect_files.py",
-    "subagent-commit-guard.py",
-    "verify-recorder.py",
     "bash-output-filter.py",
     "agent-usage-recorder.py",
 ]

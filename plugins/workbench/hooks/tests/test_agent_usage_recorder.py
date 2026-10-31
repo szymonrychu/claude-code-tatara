@@ -14,16 +14,6 @@ HOOKS = Path(__file__).resolve().parents[1]
 HOOK = HOOKS / "agent-usage-recorder.py"
 PLUGIN_JSON = HOOKS.parent / ".claude-plugin" / "plugin.json"
 RECORDER_CMD = 'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/agent-usage-recorder.py"'
-GUARD_GROUP = {
-    "hooks": [
-        {
-            "type": "command",
-            "command": 'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/subagent-commit-guard.py"',
-            "timeout": 15,
-            "statusMessage": "Checking for uncommitted work...",
-        }
-    ]
-}
 
 
 def run_hook(stdin, root=None):
@@ -62,7 +52,7 @@ def usage(inp, cc, cr, out):
     }
 
 
-def first_round(prompt="[wb my-plan/impl]\n\nImplement the chunk."):
+def first_round(prompt="Implement the chunk."):
     return [
         {
             "type": "user",
@@ -145,14 +135,14 @@ def test_stop_writes_record(tmp_path):
     s = Session(tmp_path)
     write_transcript(s.agent_transcript("a1"), first_round())
 
-    proc = run_hook(s.payload("SubagentStop", "a1", "workbench:implementer", root), root)
+    proc = run_hook(s.payload("SubagentStop", "a1", "workbench:reuse-hunter", root), root)
 
     assert_silent(proc)
     rec = load(root, "a1")
     assert rec["agentId"] == "a1"
-    assert rec["agentType"] == "workbench:implementer"
+    assert rec["agentType"] == "workbench:reuse-hunter"
     assert rec["model"] == "claude-test-1"
-    assert (rec["plan"], rec["role"]) == ("my-plan", "impl")
+    assert "role" not in rec and "plan" not in rec
     assert rec["start"] == "2026-10-24T10:00:00.000Z"
     assert rec["end"] == "2026-10-24T10:05:00.000Z"
     assert rec["transcript"] == str(s.agent_transcript("a1"))
@@ -171,7 +161,7 @@ def test_second_stop_overwrites(tmp_path):
     root.mkdir()
     s = Session(tmp_path)
     transcript = write_transcript(s.agent_transcript("a2"), first_round())
-    payload = s.payload("SubagentStop", "a2", "workbench:implementer", root)
+    payload = s.payload("SubagentStop", "a2", "workbench:reuse-hunter", root)
 
     assert_silent(run_hook(payload, root))
     assert load(root, "a2")["tokens"]["total"] == 1125
@@ -201,30 +191,29 @@ def test_start_then_stop_keeps_start(tmp_path):
     s = Session(tmp_path)
 
     # Spawn: the agent transcript may not exist yet; the record still gets its start.
-    early = s.payload("SubagentStart", "a3", "workbench:reviewer", root)
+    early = s.payload("SubagentStart", "a3", "general-purpose", root)
     assert_silent(run_hook(early, root))
     rec = load(root, "a3")
     assert rec["agentId"] == "a3"
-    assert rec["agentType"] == "workbench:reviewer"
+    assert rec["agentType"] == "general-purpose"
     assert rec["transcript"] == str(s.agent_transcript("a3"))
-    assert rec["role"] == "review"
-    assert rec["plan"] is None
+    assert "role" not in rec and "plan" not in rec
     start = rec["start"]
     assert start and start.endswith("Z") and start > "2026-10-24T10:00:00.000Z"
 
-    # Resume fires SubagentStart again; the first start stays, and the marker is now readable.
-    write_transcript(s.agent_transcript("a3"), first_round("[wb my-plan/review]\nReview it."))
+    # Resume fires SubagentStart again; the first start stays.
+    write_transcript(s.agent_transcript("a3"), first_round("Review it."))
     assert_silent(run_hook(early, root))
     rec = load(root, "a3")
     assert rec["start"] == start
-    assert (rec["plan"], rec["role"]) == ("my-plan", "review")
+    assert "role" not in rec
 
-    assert_silent(run_hook(s.payload("SubagentStop", "a3", "workbench:reviewer", root), root))
+    assert_silent(run_hook(s.payload("SubagentStop", "a3", "general-purpose", root), root))
     rec = load(root, "a3")
     assert rec["start"] == start
     assert rec["end"] == "2026-10-24T10:05:00.000Z"
     assert rec["tokens"]["total"] == 1125
-    assert (rec["plan"], rec["role"]) == ("my-plan", "review")
+    assert "role" not in rec
 
 
 def test_internal_agent_writes_nothing(tmp_path):
@@ -253,14 +242,14 @@ def test_fails_open(tmp_path):
         assert_silent(run_hook(stdin, root))
 
     # Missing transcript.
-    assert_silent(run_hook(s.payload("SubagentStop", "gone", "workbench:implementer", root), root))
+    assert_silent(run_hook(s.payload("SubagentStop", "gone", "workbench:reuse-hunter", root), root))
     assert not record_path(root, "gone").exists()
 
     # Garbled transcript.
     garbled = s.agent_transcript("bad")
     garbled.parent.mkdir(parents=True, exist_ok=True)
     garbled.write_bytes(b'\x00\xff not json\n{"type": \n[]\n')
-    assert_silent(run_hook(s.payload("SubagentStop", "bad", "workbench:implementer", root), root))
+    assert_silent(run_hook(s.payload("SubagentStop", "bad", "workbench:reuse-hunter", root), root))
     assert not record_path(root, "bad").exists()
 
     # Unwritable logs dir: the main checkout is a file, so nothing can be created under it.
@@ -268,10 +257,10 @@ def test_fails_open(tmp_path):
     blocker = tmp_path / "not-a-dir"
     blocker.write_text("x")
     for event in ("SubagentStart", "SubagentStop"):
-        assert_silent(run_hook(s.payload(event, "ok", "workbench:implementer", blocker), blocker))
+        assert_silent(run_hook(s.payload(event, "ok", "workbench:reuse-hunter", blocker), blocker))
 
     # An agent id that cannot name a file.
-    assert_silent(run_hook(s.payload("SubagentStop", "../x", "workbench:implementer", root), root))
+    assert_silent(run_hook(s.payload("SubagentStop", "../x", "workbench:reuse-hunter", root), root))
     assert not (root / ".logs" / "x.json").exists()
 
     # Wrong field types.
@@ -296,12 +285,10 @@ def test_record_lands_in_main_checkout(tmp_path):
     s = Session(tmp_path)
 
     cases = [
-        # No meta.json yet: the role comes from the marker.
-        ("w1", False, first_round(), "workbench:implementer", "impl", "my-plan"),
-        # meta.json beside an unmarked transcript: the role comes from agent_type.
-        ("w2", True, first_round("no marker here"), "workbench:reviewer", "review", None),
+        ("w1", False, first_round(), "workbench:reuse-hunter"),
+        ("w2", True, first_round(), "general-purpose"),
     ]
-    for agent_id, meta, lines, agent_type, role, plan in cases:
+    for agent_id, meta, lines, agent_type in cases:
         transcript = write_transcript(s.agent_transcript(agent_id), lines)
         if meta:
             transcript.with_name(f"agent-{agent_id}.meta.json").write_text(
@@ -311,8 +298,7 @@ def test_record_lands_in_main_checkout(tmp_path):
             assert_silent(run_hook(s.payload(event, agent_id, agent_type, tree)))
 
         rec = load(main, agent_id)
-        assert rec["role"] == role, agent_id
-        assert rec["plan"] == plan, agent_id
+        assert "role" not in rec, agent_id
         assert rec["tokens"]["total"] == 1125, agent_id
         assert not (tree / ".logs").exists(), agent_id
 
@@ -329,8 +315,7 @@ def test_plugin_json_registers_recorder():
         assert entries[0]["command"] == RECORDER_CMD
         assert entries[0]["type"] == "command"
         assert entries[0]["timeout"] == 10
-    # A separate entry: the commit guard group and its decision are untouched.
-    assert GUARD_GROUP in hooks["SubagentStop"]
+    assert [h["command"] for h in _commands(hooks, "SubagentStop")] == [RECORDER_CMD]
     assert [h["command"] for h in _commands(hooks, "SubagentStart")] == [RECORDER_CMD]
 
 

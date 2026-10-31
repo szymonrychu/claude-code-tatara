@@ -5,8 +5,6 @@ the harness's projects dir (the path arrives in the hook payload). `assistant` l
 carry `timestamp`, `message.model` and `message.usage`; one message often spans several
 lines with the same `message.id` and identical usage, so usage is counted once per id
 (then `requestId`, then the line).
-The first `user` line opens with the run marker `[wb <plan>/<role>]`, role one of plan,
-impl, review, merge.
 
 Records live at `<logs>/agents/<agentId>.json`, one per agent, overwritten whole on
 every write by the agent-usage-recorder hook, which is the only user of this module besides
@@ -23,20 +21,12 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-MARKER = re.compile(r"^\[wb ([^\s/\]]+)/(plan|impl|review|merge)\]")
-
 # Token components: record key -> usage key. Tokens are their sum (hooks brief finding 4).
 TOKEN_KEYS = {
     "input": "input_tokens",
     "cache_creation": "cache_creation_input_tokens",
     "cache_read": "cache_read_input_tokens",
     "output": "output_tokens",
-}
-
-AGENT_ROLES = {
-    "workbench:implementer": "impl",
-    "workbench:reviewer": "review",
-    "workbench:worktree-merger": "merge",
 }
 
 _AGENT_ID = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -91,38 +81,6 @@ def summarize(path: str | os.PathLike) -> dict:
     }
     tokens["total"] = sum(tokens.values())
     return {"start": start, "end": end, "model": model, "tokens": tokens}
-
-
-def _first_text(content: Any) -> str | None:
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        for item in content:
-            if isinstance(item, dict) and item.get("type") == "text":
-                text = item.get("text")
-                return text if isinstance(text, str) else None
-    return None
-
-
-def parse_marker(path: str | os.PathLike) -> tuple[str, str] | None:
-    """(plan, role) from the first line of the first user message, or None."""
-    for obj in transcript_lines(path):
-        if obj.get("type") != "user":
-            continue
-        text = _first_text(_message(obj).get("content"))
-        if text is None:
-            return None
-        lines = text.strip().splitlines()
-        match = MARKER.match(lines[0].strip()) if lines else None
-        return (match.group(1), match.group(2)) if match else None
-    return None
-
-
-def role_for(marker_role: str | None, agent_type: str | None) -> str:
-    """The marker's role, else the role the agent type implies, else ''."""
-    if marker_role:
-        return marker_role
-    return AGENT_ROLES.get(agent_type or "", "")
 
 
 def write_record(logs_dir: str | os.PathLike, record: dict) -> Path:

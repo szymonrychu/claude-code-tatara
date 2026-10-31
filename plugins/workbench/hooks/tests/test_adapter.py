@@ -18,7 +18,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(HOOKS))
 
 import harness_payloads as hp  # noqa: E402
-from worktree_lib import read_record  # noqa: E402
 
 HARNESS_IDS = [h.name for h in hp.ALL]
 DANGEROUS = "terraform destroy -auto-approve"
@@ -38,25 +37,6 @@ def run(
     )
     out = json.loads(proc.stdout) if proc.stdout.strip() else {}
     return proc.returncode, out, proc.stderr
-
-
-def git(repo: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", *args], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout.strip()
-
-
-@pytest.fixture
-def worktree(tmp_path: Path) -> Path:
-    path = tmp_path / "wb" / ".claude" / "worktrees" / "t1-adapter"
-    path.mkdir(parents=True)
-    git(path, "init", "-q", "-b", "main")
-    git(path, "config", "user.email", "t@example.com")
-    git(path, "config", "user.name", "T")
-    (path / "seed.txt").write_text("seed\n")
-    git(path, "add", "seed.txt")
-    git(path, "commit", "-qm", "seed")
-    return path
 
 
 def assert_deny_shape(harness: str, out: dict[str, Any], needle: str) -> None:
@@ -84,28 +64,10 @@ def assert_deny_shape(harness: str, out: dict[str, Any], needle: str) -> None:
         raise AssertionError(f"no shape for {harness}")
 
 
-def assert_stop_block_shape(harness: str, out: dict[str, Any], needle: str) -> None:
-    """The harness's documented stop-block shape, carrying the reason."""
-    if harness in ("copilot", "codex"):
-        assert out["decision"] == "block"
-        assert needle in out["reason"]
-    elif harness == "cursor":
-        assert needle in out["followup_message"]
-    elif harness == "gemini":
-        assert out["decision"] == "deny"
-        assert needle in out["reason"]
-    elif harness == "antigravity":
-        assert out["decision"] == "continue"
-        assert needle in out["reason"]
-    else:
-        raise AssertionError(f"no shape for {harness}")
-
-
 def assert_allow(harness: str, rc: int, out: dict[str, Any], stderr: str) -> None:
     assert rc == 0, stderr
     assert stderr == ""
     assert "deny" not in json.dumps(out)
-    assert "block" not in json.dumps(out)
     if harness == "antigravity":
         # Antigravity requires a `decision` on every PreToolUse output.
         assert out.get("decision") in (None, "allow")
@@ -300,11 +262,6 @@ def test_self_filter(h: hp.Harness, tmp_path: Path) -> None:
         h.harness, "pre-tool", "protect-files", h.shell("cat .env", "/w"), tmp_path
     )
     assert_allow(h.harness, rc, out, stderr)
-    # the stop guard on a pre-tool event: allow.
-    rc, out, stderr = run(
-        h.harness, "pre-tool", "subagent-commit-guard", h.shell(DANGEROUS, "/w"), tmp_path
-    )
-    assert_allow(h.harness, rc, out, stderr)
 
 
 @pytest.mark.parametrize("harness", ["copilot", "cursor", "codex", "gemini", "antigravity"])
@@ -367,74 +324,6 @@ def test_shell_command_as_argv_list(tmp_path: Path) -> None:
     assert_deny_shape("codex", out, "terraform destroy")
 
 
-# --- AC5 ----------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_stop_block_every_harness(h: hp.Harness, worktree: Path, tmp_path: Path) -> None:
-    (worktree / "wip.txt").write_text("unsaved\n")
-    rc, out, stderr = run(
-        h.harness, "stop", "subagent-commit-guard", h.stop(str(worktree)), tmp_path
-    )
-    assert rc == 2
-    assert "uncommitted" in stderr
-    assert_stop_block_shape(h.harness, out, "wip.txt")
-
-
-@pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_stop_allow_clean_every_harness(h: hp.Harness, worktree: Path, tmp_path: Path) -> None:
-    rc, out, stderr = run(
-        h.harness, "stop", "subagent-commit-guard", h.stop(str(worktree)), tmp_path
-    )
-    assert rc == 0, stderr
-    assert stderr == ""
-    assert out == {}
-
-
-@pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_stop_fires_once(h: hp.Harness, worktree: Path, tmp_path: Path) -> None:
-    """Once the agent has been told, the harness's loop marker lets the turn end."""
-    (worktree / "wip.txt").write_text("unsaved\n")
-    payload = h.stop(str(worktree))
-    if h.name == "cursor":
-        payload["loop_count"] = 1
-    elif h.name in ("copilot-native", "antigravity"):
-        payload["stopHookActive"] = True
-    else:
-        payload["stop_hook_active"] = True
-    rc, out, stderr = run(h.harness, "stop", "subagent-commit-guard", payload, tmp_path)
-    assert rc == 0, stderr
-    assert out == {}
-
-
-# --- verify-recorder ----------------------------------------------------------
-
-
-@pytest.mark.parametrize("failed", [False, True], ids=["passed", "failed"])
-@pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_verify_recorder_every_harness(
-    h: hp.Harness, failed: bool, worktree: Path, tmp_path: Path
-) -> None:
-    payload = h.post_shell("pytest -q", str(worktree), failed)
-    rc, out, stderr = run(h.harness, "post-tool", "verify-recorder", payload, tmp_path)
-    assert rc == 0, stderr
-    assert out == {}
-    record = read_record(str(worktree))
-    assert record is not None
-    assert record["command"] == "pytest -q"
-    assert record["head"] == git(worktree, "rev-parse", "HEAD")
-    assert record["passed"] is (not failed)
-
-
-@pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_verify_recorder_ignores_non_verify(h: hp.Harness, worktree: Path, tmp_path: Path) -> None:
-    payload = h.post_shell("ls", str(worktree), False)
-    rc, out, _ = run(h.harness, "post-tool", "verify-recorder", payload, tmp_path)
-    assert rc == 0
-    assert out == {}
-    assert read_record(str(worktree)) is None
-
-
 # --- AC6 ----------------------------------------------------------------------
 
 
@@ -448,18 +337,15 @@ def _decisions(value: Any) -> list[str]:
 
 
 @pytest.mark.parametrize("h", hp.ALL, ids=HARNESS_IDS)
-def test_never_ask(h: hp.Harness, worktree: Path, tmp_path: Path) -> None:
-    (worktree / "wip.txt").write_text("unsaved\n")
+def test_never_ask(h: hp.Harness, tmp_path: Path) -> None:
     cases = [
         ("pre-tool", h.shell(DANGEROUS, "/w")),
         ("pre-tool", h.shell(SAFE, "/w")),
         ("pre-tool", h.edit(".env", "/w")),
         ("pre-tool", h.write("ok.txt", "/w")),
-        ("post-tool", h.post_shell("pytest", str(worktree), True)),
-        ("stop", h.stop(str(worktree))),
         ("pre-tool", "not json"),
     ]
-    hooks = ("guard-bash", "protect-files", "verify-recorder", "subagent-commit-guard")
+    hooks = ("guard-bash", "protect-files")
     for event, payload in cases:
         for hook in hooks:
             rc, out, _ = run(h.harness, event, hook, payload, tmp_path)
@@ -503,14 +389,3 @@ def test_unreadable_payload_fails_closed_pre_tool(
     assert rc == 2
     assert "unreadable" in stderr
     assert_deny_shape(h.harness, out, "unreadable")
-
-
-@pytest.mark.parametrize(
-    "event,hook", [("post-tool", "verify-recorder"), ("stop", "subagent-commit-guard")]
-)
-def test_unreadable_payload_allows_post_tool_and_stop(
-    event: str, hook: str, tmp_path: Path
-) -> None:
-    rc, out, stderr = run("codex", event, hook, "not json", tmp_path)
-    assert rc == 0, stderr
-    assert out == {}

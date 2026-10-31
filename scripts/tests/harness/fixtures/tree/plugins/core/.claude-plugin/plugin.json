@@ -23,19 +23,6 @@
         "hooks": [
           {"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/format-file.sh\"", "timeout": 30}
         ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/verify-recorder.py\"", "timeout": 10}
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {"type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-commit-guard.py\"", "timeout": 15}
-        ]
       }
     ]
   }

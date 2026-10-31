@@ -15,12 +15,11 @@ from harness.models import model_for
 from harness.skills_emit import _rewrite
 
 # hook name -> (Gemini event, matcher, adapter event, timeout in milliseconds). Only the guards
-# with a Gemini equivalent are registered; verify-recorder, bash-output-filter and format-file
-# are Claude-only.
-EVENT = {"PreToolUse": "BeforeTool", "SubagentStop": "AfterAgent"}
-ADAPTER_EVENT = {"PreToolUse": "pre-tool", "SubagentStop": "stop"}
+# with a Gemini equivalent are registered; bash-output-filter and format-file are Claude-only.
+EVENT = {"PreToolUse": "BeforeTool"}
+ADAPTER_EVENT = {"PreToolUse": "pre-tool"}
 MATCHER = {"Bash": "run_shell_command", "Edit|MultiEdit|NotebookEdit|Write": "write_file|replace"}
-TIMEOUT_MS = {"guard-bash": 10000, "protect-files": 10000, "subagent-commit-guard": 15000}
+TIMEOUT_MS = {"guard-bash": 10000, "protect-files": 10000}
 _UNRESOLVED = re.compile(r"\$\{?CLAUDE_\w+\}?")
 
 

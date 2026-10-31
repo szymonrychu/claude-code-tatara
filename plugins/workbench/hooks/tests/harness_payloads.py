@@ -6,9 +6,8 @@ top-level fields but not the tool-argument keys, the example uses the keys the
 harness's own tool schema uses and says so; the adapter accepts every alias
 listed in `lib/harness_io.py`, so a different spelling still normalizes.
 
-Each harness module-level entry is a `Harness` with five builders:
-`shell(command, cwd)`, `edit(path, cwd)`, `write(path, cwd)`,
-`post_shell(command, cwd, failed)` and `stop(cwd)`. The `harness` field is the
+Each harness module-level entry is a `Harness` with three builders:
+`shell(command, cwd)`, `edit(path, cwd)` and `write(path, cwd)`. The `harness` field is the
 `--harness` value the adapter is called with; `copilot-native` is the Copilot CLI
 camelCase payload and runs as `--harness copilot` too.
 """
@@ -30,8 +29,6 @@ class Harness:
     shell: Callable[[str, str], Payload]
     edit: Callable[[str, str], Payload]
     write: Callable[[str, str], Payload]
-    post_shell: Callable[[str, str, bool], Payload]
-    stop: Callable[[str], Payload]
 
 
 # --- GitHub Copilot, PascalCase keys (VS Code-compatible payload) -----------
@@ -72,13 +69,6 @@ COPILOT = Harness(
         "tool_input": {"file_path": path, "content": "x"},
         "tool_use_id": "tu-3",
     },
-    post_shell=lambda command, cwd, failed: {
-        **_copilot_common("PostToolUseFailure" if failed else "PostToolUse", cwd),
-        "tool_name": "Bash",
-        "tool_input": {"command": command},
-        "tool_use_id": "tu-4",
-    },
-    stop=lambda cwd: {**_copilot_common("SubagentStop", cwd), "stop_hook_active": False},
 )
 
 
@@ -106,14 +96,6 @@ COPILOT_NATIVE = Harness(
         "edit", {"path": path, "old_str": "a", "new_str": "b"}, cwd
     ),
     write=lambda path, cwd: _copilot_native("create", {"path": path, "file_text": "x"}, cwd),
-    post_shell=lambda command, cwd, failed: {
-        **_copilot_native("bash", {"command": command}, cwd),
-        "toolResult": {
-            "resultType": "failure" if failed else "success",
-            "textResultForLlm": "",
-        },
-    },
-    stop=lambda cwd: {"timestamp": 1792497600000, "cwd": cwd, "stopHookActive": False},
 )
 
 
@@ -156,17 +138,6 @@ CURSOR = Harness(
         "tool_name": "Write",
         "tool_input": {"file_path": path, "content": "x"},
         "tool_use_id": "tu-3",
-    },
-    post_shell=lambda command, cwd, failed: {
-        **_cursor_common("postToolUseFailure" if failed else "postToolUse", cwd),
-        "tool_name": "Shell",
-        "tool_input": {"command": command, "working_directory": cwd},
-        "tool_output": "",
-    },
-    stop=lambda cwd: {
-        **_cursor_common("subagentStop", cwd),
-        "status": "completed",
-        "loop_count": 0,
     },
 )
 
@@ -216,18 +187,6 @@ CODEX = Harness(
         codex_patch(f"*** Update File: {path}", "@@", "-a", "+b"), cwd
     ),
     write=lambda path, cwd: codex_apply_patch(codex_patch(f"*** Add File: {path}", "+x"), cwd),
-    post_shell=lambda command, cwd, failed: {
-        **_codex_common("PostToolUse", cwd),
-        "tool_name": "Bash",
-        "tool_use_id": "tu-4",
-        "tool_input": {"command": command},
-        "tool_response": {"exit_code": 1 if failed else 0, "output": ""},
-    },
-    stop=lambda cwd: {
-        **_codex_common("SubagentStop", cwd),
-        "stop_hook_active": False,
-        "last_assistant_message": "done",
-    },
 )
 
 
@@ -269,22 +228,6 @@ GEMINI = Harness(
         "tool_input": {"file_path": path, "content": "x"},
         "mcp_context": None,
     },
-    post_shell=lambda command, cwd, failed: {
-        **_gemini_common("AfterTool", cwd),
-        "tool_name": "run_shell_command",
-        "tool_input": {"command": command},
-        "tool_response": {
-            "llmContent": "",
-            "returnDisplay": "",
-            **({"error": {"message": "exit code 1"}} if failed else {}),
-        },
-    },
-    stop=lambda cwd: {
-        **_gemini_common("AfterAgent", cwd),
-        "prompt": "do it",
-        "prompt_response": "done",
-        "stop_hook_active": False,
-    },
 )
 
 
@@ -325,13 +268,6 @@ ANTIGRAVITY = Harness(
         "toolName": "write_to_file",
         "toolInput": {"TargetFile": path, "CodeContent": "x"},
     },
-    post_shell=lambda command, cwd, failed: {
-        **_antigravity_common("PostToolUse", cwd),
-        "toolName": "run_command",
-        "toolInput": {"CommandLine": command, "Cwd": cwd},
-        "toolResponse": {"exitCode": 1 if failed else 0},
-    },
-    stop=lambda cwd: _antigravity_common("Stop", cwd),
 )
 
 

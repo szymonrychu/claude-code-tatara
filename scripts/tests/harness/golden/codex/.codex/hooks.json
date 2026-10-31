@@ -19,16 +19,6 @@
           }
         ]
       }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 plugins/core/hooks/adapter.py --harness codex --event stop --hook subagent-commit-guard"
-          }
-        ]
-      }
     ]
   }
 }

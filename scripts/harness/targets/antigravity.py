@@ -23,8 +23,7 @@ PRE_MATCHERS = {
     "guard-bash": "run_command",
     "protect-files": "write_to_file|replace_file_content|multi_replace_file_content",
 }
-STOP_HOOK = "subagent-commit-guard"
-TIMEOUTS = {"guard-bash": 10, "protect-files": 10, STOP_HOOK: 15}  # seconds
+TIMEOUT = 10  # seconds
 
 
 class AntigravityError(ValueError):
@@ -67,25 +66,18 @@ def _command(prefix: str, event: str, hook: str) -> str:
 
 def _hooks(sources) -> dict | None:
     pre: dict[str, list] = {m: [] for m in PRE_MATCHERS.values()}
-    stop: list = []
     for plugin in sources.plugins:
         prefix = os.path.relpath(plugin.root, sources.root).replace(os.sep, "/")
         for reg in plugin.hooks:
             hook = reg.hook.replace("_", "-")
-            if hook in PRE_MATCHERS and reg.event == "PreToolUse":
-                event, bucket = "pre-tool", pre[PRE_MATCHERS[hook]]
-            elif hook == STOP_HOOK and reg.event in ("SubagentStop", "Stop"):
-                event, bucket = "stop", stop
-            else:
+            if hook not in PRE_MATCHERS or reg.event != "PreToolUse":
                 continue
-            entry = {"type": "command", "command": _command(prefix, event, hook)}
-            bucket.append({**entry, "timeout": TIMEOUTS[hook]})
+            entry = {"type": "command", "command": _command(prefix, "pre-tool", hook)}
+            pre[PRE_MATCHERS[hook]].append({**entry, "timeout": TIMEOUT})
     hooks: dict[str, list] = {}
     groups = [{"matcher": m, "hooks": h} for m, h in pre.items() if h]
     if groups:
         hooks["PreToolUse"] = groups
-    if stop:
-        hooks["Stop"] = [{"hooks": stop}]
     return {"hooks": hooks} if hooks else None
 
 

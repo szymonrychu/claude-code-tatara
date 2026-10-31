@@ -16,13 +16,6 @@
         "matcher": "Write|Delete",
         "failClosed": true
       }
-    ],
-    "subagentStop": [
-      {
-        "command": "python3 plugins/core/hooks/adapter.py --harness cursor --event stop --hook subagent-commit-guard",
-        "type": "command",
-        "timeout": 15
-      }
     ]
   }
 }

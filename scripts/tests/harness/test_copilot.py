@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import shlex
 from pathlib import Path
 
@@ -99,10 +98,10 @@ def test_prompt_cap(tree):
 def test_hooks_call_adapter(tree):
     hooks = json.loads(render(tree)[".github/hooks/workbench.json"])
     assert hooks["version"] == 1
-    assert set(hooks["hooks"]) == {"PreToolUse", "SubagentStop"}
+    assert set(hooks["hooks"]) == {"PreToolUse"}
     cmds = [e["bash"] for entries in hooks["hooks"].values() for e in entries]
-    assert len(cmds) == 3
-    assert not any("verify-recorder" in c or "format" in c for c in cmds)
+    assert len(cmds) == 2
+    assert not any("bash-output-filter" in c or "format" in c for c in cmds)
     for entries in hooks["hooks"].values():
         for e in entries:
             assert e["timeoutSec"] > 0
@@ -110,8 +109,6 @@ def test_hooks_call_adapter(tree):
             assert tokens[:2] == ["python3", "plugins/workbench/hooks/adapter.py"]
             assert (REPO / tokens[1]).is_file()
             assert tokens[2:4] == ["--harness", "copilot"]
-    stop = hooks["hooks"]["SubagentStop"][0]["bash"]
-    assert re.search(r"--event stop --hook subagent-commit-guard$", stop)
 
 
 def test_vscode_mcp(tree):

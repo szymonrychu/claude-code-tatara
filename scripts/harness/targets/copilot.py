@@ -32,11 +32,10 @@ ALIASES = {
     "agent": "agent",
 }
 DROPPED = frozenset({"lsp", "toolsearch"})
-# (Copilot event, matcher, adapter event, hook, timeoutSec): the Claude-only hooks are not emitted.
+# (Copilot event, matcher, adapter event, hook, timeoutSec); Claude-only hooks are not emitted.
 HOOKS = (
     ("PreToolUse", "Bash", "pre-tool", "guard-bash", 10),
     ("PreToolUse", "Edit|MultiEdit|NotebookEdit|Write", "pre-tool", "protect-files", 10),
-    ("SubagentStop", "", "stop", "subagent-commit-guard", 10),
 )
 
 

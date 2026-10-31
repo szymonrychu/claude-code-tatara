@@ -15,10 +15,10 @@ from harness.emit import Emitter
 from harness.models import model_for
 from harness.skills_emit import _rewrite
 
-# Only the guards that exist in the adapter and make sense before a tool or at a subagent stop.
-# verify-recorder, bash-output-filter and format-file are Claude-only and are not emitted.
-_EVENTS = {"PreToolUse": "pre-tool", "SubagentStop": "stop"}
-_HOOKS = {"guard-bash", "protect-files", "subagent-commit-guard"}
+# Only the guards that exist in the adapter and make sense before a tool.
+# bash-output-filter and format-file are Claude-only and are not emitted.
+_EVENTS = {"PreToolUse": "pre-tool"}
+_HOOKS = {"guard-bash", "protect-files"}
 _LEFTOVER_ROOT = re.compile(r"\$\{?CLAUDE_PLUGIN_ROOT\}?")
 _MATCHERS = {
     "Bash": "Bash",

@@ -78,13 +78,10 @@ _PATH_LIST_KEYS = ("paths", "filePaths", "file_paths", "files")
 _TOOL_CWD_KEYS = ("working_directory", "Cwd", "cwd", "dir_path", "directory")
 _WORKSPACE_KEYS = ("workspace_roots", "workspacePaths", "workspace_paths")
 _EVENT_NAME_KEYS = ("hook_event_name", "hookEventName")
-_STOP_ACTIVE_KEYS = ("stop_hook_active", "stopHookActive")
-_TRANSCRIPT_KEYS = ("agent_transcript_path", "agentTranscriptPath")
-_RESULT_KEYS = ("tool_response", "toolResponse", "toolResult", "tool_result", "tool_output")
 _SHELLS = ("bash", "sh", "zsh", "/bin/bash", "/bin/sh", "/bin/zsh", "/usr/bin/env")
 
-# The Claude event name `core` keys verify-recorder off, per normalized event.
-_CLAUDE_EVENT = {"pre-tool": "PreToolUse", "post-tool": "PostToolUse", "stop": "Stop"}
+# The Claude event name `core` reads out of `raw`, per normalized event.
+_CLAUDE_EVENT = {"pre-tool": "PreToolUse", "post-tool": "PostToolUse"}
 
 
 class UsageError(ValueError):
@@ -157,30 +154,6 @@ def _cwd(data: dict[str, Any], tool_input: dict[str, Any]) -> str:
     return tool_cwd or base
 
 
-def _succeeded(data: dict[str, Any]) -> bool:
-    name = _str(_first(data, _EVENT_NAME_KEYS))
-    if "failure" in name.lower():
-        return False
-    result = _first(data, _RESULT_KEYS)
-    if not isinstance(result, dict):
-        return True
-    code = _first(result, ("exit_code", "exitCode", "returncode"))
-    if isinstance(code, int) and not isinstance(code, bool) and code != 0:
-        return False
-    if result.get("success") is False or result.get("error"):
-        return False
-    result_type = result.get("resultType")
-    return not (isinstance(result_type, str) and result_type != "success")
-
-
-def _stop_hook_active(data: dict[str, Any]) -> bool:
-    if any(data.get(key) is True for key in _STOP_ACTIVE_KEYS):
-        return True
-    # Cursor reports how many stop loops it already ran instead.
-    loop_count = data.get("loop_count")
-    return isinstance(loop_count, int) and not isinstance(loop_count, bool) and loop_count > 0
-
-
 def normalize(harness: str, event: str, payload: Any) -> NormalizedEvent:
     """A harness's hook stdin as a `NormalizedEvent` for `core.decide`."""
     if harness not in HARNESSES:
@@ -191,23 +164,16 @@ def normalize(harness: str, event: str, payload: Any) -> NormalizedEvent:
     tool_name = _str(_first(data, _TOOL_NAME_KEYS))
     tool_kind = TOOL_KINDS.get(tool_name, "other") if tool_name else "other"
     tool_input = _tool_input(data)
-    succeeded = _succeeded(data)
 
     # `core` reads Claude-named keys out of `raw`; give it those, keep the rest.
     raw = dict(data)
     raw["harness"] = harness
     raw["harness_event_name"] = _str(_first(data, _EVENT_NAME_KEYS))
     claude_event = _CLAUDE_EVENT[event]
-    raw["hook_event_name"] = (
-        "PostToolUseFailure" if event == "post-tool" and not succeeded else claude_event
-    )
-    raw["stop_hook_active"] = _stop_hook_active(data)
+    raw["hook_event_name"] = claude_event
     # protect-files reads the new content from `tool_input`; Copilot's JSON-string
     # `toolArgs` and Antigravity's `toolInput` land there already parsed.
     raw["tool_input"] = tool_input
-    transcript = _first(data, _TRANSCRIPT_KEYS)
-    if isinstance(transcript, str):
-        raw["agent_transcript_path"] = transcript
 
     return NormalizedEvent(
         event=event,
@@ -215,7 +181,6 @@ def normalize(harness: str, event: str, payload: Any) -> NormalizedEvent:
         command=_command(tool_input) if tool_kind == "shell" else "",
         paths=_paths(tool_input) if tool_kind in ("edit", "write", "read") else [],
         cwd=_cwd(data, tool_input),
-        succeeded=succeeded,
         raw=raw,
     )
 
@@ -241,16 +206,6 @@ def _deny(harness: str, reason: str) -> dict[str, Any]:
     return {"decision": "deny", "reason": reason}  # gemini, antigravity
 
 
-def _block(harness: str, reason: str) -> dict[str, Any]:
-    if harness == "cursor":
-        return {"followup_message": reason}
-    if harness == "gemini":
-        return {"decision": "deny", "reason": reason}  # AfterAgent deny forces a retry
-    if harness == "antigravity":
-        return {"decision": "continue", "reason": reason}  # Stop: keep the agent going
-    return {"decision": "block", "reason": reason}  # copilot, codex
-
-
 def render(harness: str, event: str, decision: Decision) -> dict[str, Any]:
     """The JSON `harness` reads for `decision` on `event`.
 
@@ -264,6 +219,4 @@ def render(harness: str, event: str, decision: Decision) -> dict[str, Any]:
         if harness == "antigravity" and event == "pre-tool":
             return {"decision": "allow"}
         return {}
-    if event == "stop":
-        return _block(harness, decision.reason)
     return _deny(harness, decision.reason)
