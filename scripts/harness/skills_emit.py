@@ -96,7 +96,8 @@ def render_skills(sources) -> dict[str, str]:
     """Repo-relative path -> text for every emitted skill; raises SkillError on bad names."""
     out: dict[str, str] = {}
     owner: dict[str, str] = {}
-    plugin_names = ["workbench", *(p.name for p in sources.plugins)]
+    # superpowers: the vanilla plugin, installed per harness under bare skill names.
+    plugin_names = ["workbench", "superpowers", *(p.name for p in sources.plugins)]
     for plugin in sources.plugins:
         prefix = os.path.relpath(plugin.root, sources.root).replace(os.sep, "/")
         for skill in plugin.skills:
@@ -114,4 +115,3 @@ def render_skills(sources) -> dict[str, str]:
             body = _rewrite(skill.body, prefix, plugin_names, skill.dir, plugin.root)
             out[f".agents/skills/{skill.name}/SKILL.md"] = _frontmatter(fm, skill.name) + body
     return out
-

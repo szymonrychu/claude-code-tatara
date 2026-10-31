@@ -2,12 +2,12 @@
 
 INSTANCE_OWNED: paths the template repo uses for its own development; a new or adopted
 workbench must not inherit them and a template update never brings them. Kinds:
-  phase      emptied and recreated as an empty dir holding .gitkeep
   delete     removed (file or dir; missing is fine)
   rewritten  left alone here; project_files.memory_and_roadmap writes fresh content
 
-RETIRED: the workbench flow paths retired for plugins/superpowers; a template update drops
-whatever the template stages under them so the retired flow never comes back. Names are
+RETIRED: the retired workbench flow paths, the retired in-repo superpowers fork and its
+helpers (vanilla superpowers governs now); a template update drops whatever the template
+stages under them so the retired flow never comes back. Names are
 built from parts so the retired-name scan does not match this file.
 
 GENERATED_ON_CONFLICT: generated files an update resolves by regeneration instead of
@@ -16,12 +16,6 @@ which the caller resolves.
 """
 
 INSTANCE_OWNED: tuple[tuple[str, str], ...] = (
-    ("docs/plans/todo", "phase"),
-    ("docs/plans/in-progress", "phase"),
-    ("docs/plans/done", "phase"),
-    ("docs/plans/contracts.json", "delete"),
-    ("docs/plans/index.json", "delete"),
-    ("docs/plans/facts.md", "delete"),
     ("docs/research", "delete"),
     ("docs/handoffs", "delete"),
     ("MEMORY.md", "rewritten"),
@@ -44,6 +38,18 @@ RETIRED: tuple[str, ...] = (
         )
     ),
     f"plugins/workbench/agents/{_PLAN}writer.md",
+    "plugins/superpowers",
+    "plugins/workbench/skills/worktree-create",
+    "plugins/workbench/skills/worktree-merge",
+    *(
+        f"plugins/workbench/agents/{name}.md"
+        for name in ("implementer", "reviewer", "worktree-" + "merger", "panel-reviewer")
+    ),
+    "plugins/workbench/references/review-checklist.md",
+    "plugins/workbench/references/worktrees.md",
+    "plugins/workbench/hooks/verify-recorder.py",
+    "plugins/workbench/hooks/subagent-commit-guard.py",
+    "plugins/workbench/rules/tdd.md",
 )
 
 GENERATED_ON_CONFLICT: tuple[str, ...] = (

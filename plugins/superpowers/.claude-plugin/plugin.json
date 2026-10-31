@@ -1,9 +1,0 @@
-{
-  "name": "superpowers",
-  "version": "1.0.0",
-  "description": "Development flow forked from superpowers 7.0.0: brainstorming writes plan.md with a scope ladder from MVP to complete and stops at one gate that picks the rung, writing-plans writes the implementation plan for that rung, subagent-driven-development runs one implementer per chunk and one whole-diff reviewer with at most two fix rounds, finishing-a-development-branch lands it.",
-  "author": {
-    "name": "workbench contributors"
-  },
-  "license": "MIT"
-}

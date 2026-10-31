@@ -1,4 +1,4 @@
-"""Pins the project settings that switch this repo to the vendored superpowers flow."""
+"""Pins the project settings that enable the official (vanilla) superpowers plugin."""
 
 import json
 from pathlib import Path
@@ -17,14 +17,14 @@ def enabled_plugins() -> dict:
     return json.loads((ROOT / ".claude" / "settings.json").read_text())["enabledPlugins"]
 
 
-def test_vendored_superpowers_enabled():
-    assert enabled_plugins()[f"superpowers@{MARKET}"] is True
-
-
-def test_official_superpowers_and_template_workbench_disabled():
+def test_official_superpowers_enabled_and_no_fork():
     plugins = enabled_plugins()
-    assert plugins["superpowers@claude-plugins-official"] is False
-    assert plugins["workbench@workbench-template"] is False
+    assert plugins["superpowers@claude-plugins-official"] is True
+    assert f"superpowers@{MARKET}" not in plugins
+
+
+def test_template_workbench_disabled():
+    assert enabled_plugins()["workbench@workbench-template"] is False
 
 
 def test_existing_entries_unchanged():

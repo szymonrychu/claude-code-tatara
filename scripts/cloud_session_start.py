@@ -4,9 +4,10 @@
 Runs only when CLAUDE_CODE_REMOTE=true; anywhere else it exits 0 silently. A cloud session
 differs from a local one in three ways this hook repairs, see docs/claude-cloud.md:
 
-- It never installs the plugins `.claude/settings.json` enables, so the workbench plugins
-  are installed here at user scope from the in-repo marketplace; a plugin installed by a
-  SessionStart hook loads in that same session.
+- It never installs the plugins `.claude/settings.json` enables, so they are installed here
+  at user scope: the workbench plugins from the in-repo marketplace, vanilla superpowers from
+  the official marketplace; a plugin installed by a SessionStart hook loads in that same
+  session.
 - Its egress proxy blocks sigstore and github.com source archives, which `mise install`
   needs; a mise conf.d file skips aqua's attestation check and takes bats from npm.
 - Its git proxy credentials only repositories attached to the session, so submodule pushes
@@ -60,33 +61,41 @@ def _last_line(out: str) -> str:
     return lines[-1].strip() if lines else "no output"
 
 
-def local_plugins(settings: Mapping, root: Path) -> list[tuple[Path, list[str]]]:
-    """(marketplace dir, enabled plugin ids) for each directory marketplace the settings name."""
+def marketplace_plugins(settings: Mapping, root: Path) -> list[tuple[str, list[str]]]:
+    """(marketplace add source, enabled plugin ids) for each directory or github marketplace
+    the settings name: a directory resolves against the root, github is its owner/repo."""
     enabled = [k for k, v in (settings.get("enabledPlugins") or {}).items() if v is True]
     found = []
     for name, entry in (settings.get("extraKnownMarketplaces") or {}).items():
         source = (entry or {}).get("source") or {}
-        if source.get("source") != "directory" or not source.get("path"):
+        if source.get("source") == "directory" and source.get("path"):
+            where = str((root / source["path"]).resolve())
+        elif source.get("source") == "github" and source.get("repo"):
+            where = source["repo"]
+        else:
             continue
         ids = [k for k in enabled if k.endswith(f"@{name}")]
         if ids:
-            found.append(((root / source["path"]).resolve(), ids))
+            found.append((where, ids))
     return found
 
 
-def install_plugins(markets: list[tuple[Path, list[str]]], runner: Runner, root: Path) -> list[str]:
+def install_plugins(markets: list[tuple[str, list[str]]], runner: Runner, root: Path) -> list[str]:
+    """Add each marketplace, then install its plugins at user scope. A failed add is reported
+    only when an install of that marketplace fails too: it may already be known."""
     failures = []
-    for path, ids in markets:
-        rc, out = runner(
-            ["claude", "plugin", "marketplace", "add", str(path), "--scope", "user"], root
-        )
-        if rc:
-            failures.append(f"marketplace {path}: {_last_line(out)}")
-            continue
+    for source, ids in markets:
+        add = ["claude", "plugin", "marketplace", "add", source, "--scope", "user"]
+        rc, out = runner(add, root)
+        market_failure = f"marketplace {source}: {_last_line(out)}" if rc else None
+        plugin_failures = []
         for plugin in ids:
             rc, out = runner(["claude", "plugin", "install", plugin, "--scope", "user"], root)
             if rc:
-                failures.append(f"plugin {plugin}: {_last_line(out)}")
+                plugin_failures.append(f"plugin {plugin}: {_last_line(out)}")
+        if plugin_failures and market_failure:
+            failures.append(market_failure)
+        failures += plugin_failures
     return failures
 
 
@@ -172,7 +181,7 @@ def main(env: Mapping[str, str], runner: Runner = run, config_home: Path | None 
     except (OSError, ValueError) as e:
         settings = {}
         failures.append(f"reading .claude/settings.json: {e}")
-    failures += install_plugins(local_plugins(settings, root), runner, root)
+    failures += install_plugins(marketplace_plugins(settings, root), runner, root)
 
     subs = submodules(root, runner)
     failed_subs = init_submodules(root, subs, runner)

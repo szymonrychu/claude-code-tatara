@@ -15,8 +15,6 @@ SCOPE = ("plugins/", "scripts/", "mise-tasks/")
 
 _FALLBACK = "no-main-checkout fallback: with no checkout there is no .logs to land in"
 ALLOW = {
-    "plugins/workbench/skills/worktree-merge/scripts/suite-lock.sh":
-        "transient lock dir created and removed within one run",
     "mise-tasks/lint/secrets": "transient staging dir created and removed within one run",
     "scripts/probes/claude-plugin-load.sh": "transient probe dir removed within one run",
     "plugins/workbench/scripts/run-tests.sh": _FALLBACK,
@@ -24,10 +22,6 @@ ALLOW = {
     "plugins/workbench/hooks/worktree_lib.py": _FALLBACK,
     "plugins/workbench/hooks/bash-output-filter.py": _FALLBACK + " (docstring)",
     "plugins/workbench/references/hooks.md": _FALLBACK + " (documented)",
-    "plugins/superpowers/skills/systematic-debugging/defense-in-depth.md":
-        "vendored upstream example: an app's tmpdir guard, not a tooling scratch location",
-    "plugins/superpowers/skills/systematic-debugging/root-cause-tracing.md":
-        "vendored upstream example: an app's tmpdir guard, not a tooling scratch location",
 }
 
 

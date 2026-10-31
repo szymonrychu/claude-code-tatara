@@ -5,6 +5,12 @@
         "source": "directory",
         "path": "./"
       }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
     }
   },
   "enabledPlugins": {
@@ -12,8 +18,7 @@
     "workbench-infra@claude-code-tatara-workbench": true,
     "workbench-observability@claude-code-tatara-workbench": true,
     "workbench-secrets@claude-code-tatara-workbench": true,
-    "superpowers@claude-code-tatara-workbench": true,
-    "superpowers@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": true,
     "workbench@workbench-template": false
   },
   "permissions": {

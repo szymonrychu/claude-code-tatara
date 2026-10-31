@@ -9,7 +9,6 @@ PLUGINS = {
     "workbench-infra": "./plugins/workbench-infra",
     "workbench-observability": "./plugins/workbench-observability",
     "workbench-secrets": "./plugins/workbench-secrets",
-    "superpowers": "./plugins/superpowers",
 }
 PACKS = [n for n in PLUGINS if n.startswith("workbench-")]
 

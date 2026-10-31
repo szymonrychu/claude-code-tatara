@@ -39,29 +39,45 @@ class Recorder:
         return 0, ""
 
 
-def test_local_plugins_picks_enabled_plugins_of_directory_marketplaces(tmp_path):
+def test_marketplace_plugins_picks_enabled_plugins_of_directory_and_github_marketplaces(
+    tmp_path,
+):
     settings = _settings(
         enabled={
             f"workbench@{MARKET}": True,
             f"workbench-infra@{MARKET}": False,
             "other@remote": True,
+            "off@remote": False,
+            "x@unknown": True,
         },
         known={
             MARKET: {"source": {"source": "directory", "path": "./"}},
             "remote": {"source": {"source": "github", "repo": "o/r"}},
+            "unknown": {"source": {"source": "url", "url": "https://x"}},
         },
     )
-    assert css.local_plugins(settings, tmp_path) == [(tmp_path, [f"workbench@{MARKET}"])]
+    assert css.marketplace_plugins(settings, tmp_path) == [
+        (str(tmp_path), [f"workbench@{MARKET}"]),
+        ("o/r", ["other@remote"]),
+    ]
 
 
-def test_local_plugins_resolves_relative_marketplace_path(tmp_path):
+def test_marketplace_plugins_resolves_relative_marketplace_path(tmp_path):
     settings = _settings(known={MARKET: {"source": {"source": "directory", "path": "sub"}}})
-    assert css.local_plugins(settings, tmp_path) == [(tmp_path / "sub", [f"workbench@{MARKET}"])]
+    assert css.marketplace_plugins(settings, tmp_path) == [
+        (str(tmp_path / "sub"), [f"workbench@{MARKET}"])
+    ]
+
+
+def test_project_settings_install_official_superpowers_in_cloud():
+    settings = json.loads((REPO / ".claude" / "settings.json").read_text())
+    found = dict(css.marketplace_plugins(settings, REPO))
+    assert found["anthropics/claude-plugins-official"] == ["superpowers@claude-plugins-official"]
 
 
 def test_install_plugins_adds_marketplace_then_installs_each_at_user_scope(tmp_path):
     run = Recorder()
-    failures = css.install_plugins([(tmp_path, ["a@m", "b@m"])], run, tmp_path)
+    failures = css.install_plugins([(str(tmp_path), ["a@m", "b@m"])], run, tmp_path)
     assert failures == []
     assert [c[0] for c in run.calls] == [
         ["claude", "plugin", "marketplace", "add", str(tmp_path), "--scope", "user"],
@@ -72,9 +88,28 @@ def test_install_plugins_adds_marketplace_then_installs_each_at_user_scope(tmp_p
 
 def test_install_plugins_reports_a_failed_install_and_keeps_going(tmp_path):
     run = Recorder({("claude", "plugin", "install", "a@m"): (1, "boom\nreal reason")})
-    failures = css.install_plugins([(tmp_path, ["a@m", "b@m"])], run, tmp_path)
+    failures = css.install_plugins([(str(tmp_path), ["a@m", "b@m"])], run, tmp_path)
     assert failures == ["plugin a@m: real reason"]
     assert run.calls[-1][0][3] == "b@m"
+
+
+def test_install_plugins_still_installs_when_the_marketplace_is_already_known(tmp_path):
+    run = Recorder({("claude", "plugin", "marketplace", "add"): (1, "already added")})
+    assert css.install_plugins([("o/r", ["a@r"])], run, tmp_path) == []
+    assert run.calls[-1][0] == ["claude", "plugin", "install", "a@r", "--scope", "user"]
+
+
+def test_install_plugins_reports_the_marketplace_when_its_installs_fail(tmp_path):
+    run = Recorder(
+        {
+            ("claude", "plugin", "marketplace", "add"): (1, "no network"),
+            ("claude", "plugin", "install"): (1, "unknown marketplace"),
+        }
+    )
+    assert css.install_plugins([("o/r", ["a@r"])], run, tmp_path) == [
+        "marketplace o/r: no network",
+        "plugin a@r: unknown marketplace",
+    ]
 
 
 def test_write_mise_config_disables_attestations_and_aliases_bats_to_npm(tmp_path):
