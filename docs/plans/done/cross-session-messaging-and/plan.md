@@ -1,83 +1,50 @@
-# Cross-session messaging and Kubernetes access session options design
+---
+title: Cross-session messaging and Kubernetes access session options
+repos: [agents-orchestrator, any-mcp, agents-web, agents-helmfile]
+created: 2026-10-26
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# Cross-session messaging and Kubernetes access session options
 
-Two opt-in, sparse, create-time session spec options for agents-orchestrator, settable on presets:
-`session_messaging` (makes the session a superleader: its leader can list the leaders of all open
-sessions and message any of them, while every other session's leader, alone sessions included, can
-list and message only superleaders; messages arrive as framed turns on the target's leader through
-the existing message queue) and `kube_access` (the session's agent pods run as one chart-rendered ServiceAccount bound to
-the built-in `cluster-admin` ClusterRole, with the token mounted and `KUBERNETES_SERVICE_HOST/PORT` passed to claude's Bash; kubectl comes from a
-user hook or the agent). Every other
-agent pod and every Job gets an explicit unprivileged ServiceAccount and no token. any-mcp ships two
-new orchestrator tools (release v0.4.0), agents-web gets two preset switches and a sender label in the
-chat, agents-helmfile pins and enables it all.
+## What and why
 
-## Intent and why
+What: Two opt-in session options: superleader messaging (a session whose leader can message the leaders of all sessions, and every leader can message superleaders), and cluster-admin in-cluster Kubernetes access for a session's agents
+How: Spec fields threaded through orchestrator (queue with sender session, dispatcher framing, rendering, chart ServiceAccount + ClusterRoleBinding behind a value), new any-mcp orchestrator tools, preset form switches and chat labels, deployed via agents-helmfile
+Why: Let one agent team orchestrate others (e.g. the Messenger assistant delegating to the project team) and let a project team operate the cluster it deploys to
 
-The user wants one agent team to orchestrate others (the Messenger assistant delegating to the
-project team) and a project team to operate the Kubernetes cluster it deploys to, without the
-kubeconfig env and onStart machinery the claude-code-tatara preset carries today. Both must stay off
-unless a session asks for them.
+Two new per-session options (spec fields, settable on presets) for agents-orchestrator sessions ("clusters" of agents):
 
-## Goals
+1. Cross-session messaging (superleader): a session with the option on is a superleader session: its leader sees the leaders of all open sessions and can send messages to any of them. The leader of every other session (a hive leader, or the single agent of an alone session) sees only the superleader sessions (plus its own members through the hive tools) and can send messages only to them. The option is needed on one end only; the tools are rendered for every session. The user talks to agents through Facebook chat, and those agents dispatch messages to existing sessions and relay their answers. Messages go through the orchestrator's existing message queue, so delivery is durable and follows the target's leader.
+2. Kubernetes access: the agents of a session get in-cluster Kubernetes credentials with full read-write on all namespaces and all resources.
 
-The epic README Goals, verbatim:
+Both are opt-in per session and off by default. Kubernetes access is additionally gated by the deployment (a chart value that creates the privileged ServiceAccount); without it the option is refused. Work spans agents-orchestrator (spec, API, dispatcher, rendering, chart RBAC), any-mcp (orchestrator plugin tools), agents-web (preset form, chat display) and agents-helmfile (deploy). After deploy the "facebook chat" preset enables messaging and "claude-code-tatara" enables Kubernetes access.
 
-- G1: A sparse create-time spec option for cross-session messaging that makes a session a
-  superleader: its leader lists the leaders of all open sessions and can send a message to any of
-  them; the leader of every other session, alone sessions included, lists only the superleader
-  sessions and can send only to them; every session receives messages sent to it as turns on its
-  leader that name the sender session.
-- G2: A sparse create-time spec option for Kubernetes access; agent pods of a session with it on run
-  as a ServiceAccount bound to cluster-admin with its token mounted and the in-cluster API address
-  passed to the agent's shell, so in-cluster access works from it (kubectl comes from a user hook or
-  the agent, not the orchestrator).
-- G3: Every other agent pod and every Job runs with an explicit ServiceAccount and no mounted token.
-- G4: Both options are editable in the agents-web preset form, and received cross-session messages
-  are shown with their sender session in the chat.
-- G5: Deployed: new orchestrator, any-mcp and agents-web versions applied through agents-helmfile
-  with the Kubernetes access chart value on; the "facebook chat" preset has messaging on (its running
-  session discarded) and "claude-code-tatara" has Kubernetes access on.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: A sparse create-time spec option for cross-session messaging that makes a session a superleader: its leader lists the leaders of all open sessions and can send a message to any of them; the leader of every other session, alone sessions included, lists only the superleader sessions and can send only to them; every session receives messages sent to it as turns on its leader that name the sender session.
+- 1.2: A sparse create-time spec option for Kubernetes access; agent pods of a session with it on run as a ServiceAccount bound to cluster-admin with its token mounted and the in-cluster API address passed to the agent's shell, so in-cluster access works from it (kubectl comes from a user hook or the agent, not the orchestrator).
+- 1.3: Every other agent pod and every Job runs with an explicit ServiceAccount and no mounted token.
+- 1.4: Both options are editable in the agents-web preset form, and received cross-session messages are shown with their sender session in the chat.
+- 1.5: Deployed: new orchestrator, any-mcp and agents-web versions applied through agents-helmfile with the Kubernetes access chart value on; the "facebook chat" preset has messaging on (its running session discarded) and "claude-code-tatara" has Kubernetes access on.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No scoped or per-namespace Kubernetes roles; access is all-or-nothing cluster-admin.
 - No synchronous request/reply or context transfer between sessions; messaging is an async mailbox.
-- No messaging for non-leader agents, and no messaging between two sessions of which neither is a
-  superleader.
-- No change to the claude-code-tatara preset's env or onStart hook (the user removes its kubeconfig
-  machinery).
+- No messaging for non-leader agents, and no messaging between two sessions of which neither is a superleader.
+- No change to the claude-code-tatara preset's env or onStart hook (the user removes its kubeconfig machinery).
 
-## Anti-goals
+## Design
 
-- Any agent pod or Job of a session without `kube_access` ending up with a mounted token, or any
-  token reaching the api, dispatcher or ingester processes (foundation anti-goal, design D9).
-- The reconciler gaining RBAC on `rbac.authorization.k8s.io` or on ServiceAccounts (research A1-A5:
-  that grant is cluster-admin-equivalent and cannot be name-restricted).
-- A message queued between two sessions of which neither is a superleader, or a ping-pong between
-  two leaders that nothing stops.
-- A second writer on the `messages` table, or a new transport beside the queue.
-- Backward-compatibility shims, aliases or fallbacks.
-
-## Constraints
-
-- Superrepo hard rules: Python only except agents-web; services talk through the queue or HTTP; each
-  table one writer; queue rows change only through status-guarded updates.
-- Spec is immutable after create (PATCH 405); only `replicas` and `init_scripts` change in place, so
-  both options are create-time and decide rendering once (hive D2, contract
-  `orch-spec-runtime-mutable`).
-- Nomenclature guards in all repos ban the word "cluster" except listed Kubernetes phrases:
-  agents-orchestrator `tests/test_nomenclature.py` (gains `cluster-admin`, task
-  orch-session-options-spec), any-mcp `tests/test_nomenclature.py` (orchestrator.py, its test, README:
-  no "cluster" at all), agents-web `src/nomenclature.test.ts` and agents-helmfile
-  `tests/test_nomenclature.py` (write "full Kubernetes access", never "cluster-admin", there).
-- any-mcp reaches pods only through the pinned tag `ORCH_ANY_MCP_REF`; `OrchestratorConfig` refuses
-  extra keys, so this design adds no config key (no lockstep change).
-- `openapi.json` and the goldens are generated; README is test-pinned (routes, settings, SSE types).
-- Never put `mise run apply` in acceptance evidence (agents-helmfile MEMORY 2026-10-25).
-- Orchestrator tests need Docker and an unset `VIRTUAL_ENV`; a stale `.venv` shebang once broke
-  `mise run test` (retro paste-env-contents-into-the): recreate with `uv sync` on import errors.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -287,6 +254,10 @@ started by trigger services from a `kube_access` preset get the same access, so 
 content reaching one is a cluster-admin prompt-injection path (user decision Q2: yes, allowed). (my call;
 Q2 user decision)
 
+## Open questions
+
+none
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -298,7 +269,7 @@ Q2 user decision)
 | prior art | ran (docs/research/2026-10-26-cluster-options-prior-art.md) | async mailbox, peer data framing, server-issued id, rate limit, queue cap, hop counter (Patterns worth borrowing) | blocking request/reply, context transfer, dedup window, per-peer allowlist (Traps to avoid; ideas not asked); two-sided opt-in (superseded by the user's one-sided superleader decision) |
 | reuse hunt | ran (.scratchpad/cluster-options/reuse.md) | enqueue_message, require_agent, get_by_slug, _require_open_session, `_clean`-style escape, cache meta pattern | a new route-to-leader path, a cross-session client in agents-common, new agent tokens (do-not-build) |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics, recurring workflow ones first:
 
@@ -344,7 +315,127 @@ Findings:
 - The chat coerces unknown origins to `you` (chatModel.ts:66, entries.tsx:70). Acts:
   web-chat-session-messages.
 
-## Decision coverage
+## Irreversible operations
+
+- any-mcp tag `v0.4.0` push (R1): a published release tag; covered by the gate approval.
+- The agents-helmfile apply (R3): creates a ClusterRoleBinding of the `-kube-access` ServiceAccount to
+  cluster-admin and rolls every running agent pod once (in-flight turns are interrupted); covered by
+  the gate approval and run when no turn is in flight.
+- Discarding the user's current facebook chat session (R6): user decision 2026-10-26.
+- Preset updates of "facebook chat" and "claude-code-tatara" (R6): user decision 2026-10-26.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review (phase 5), 2026-10-27.
+- Full suites: orchestrator 1027 passed (non-integration), lint and chart tests clean; agents-web 429 passed, lint clean; any-mcp 215 passed; agents-helmfile 208 passed, lint and gitleaks clean.
+- PR CI: any-mcp #4 green; agents-web #15 green; agents-orchestrator #22 green after one e2e fix (two kind e2e assertions still expected the two-tool allow list; fixed f92cc8d); agents-helmfile #30 pending.
+- Whole-diff review (sonnet): no findings across seams (frame contract, tool names, settings names, superleader authz, ServiceAccount wiring).
+- Security review (sonnet): no critical/high. MEDIUM fixed as task agent-serviceaccounts-do-not (agent ServiceAccounts no longer inherit api annotations). LOW dismissed: 404 vs 403 slug probing (slugs are not secret); advisory limit overshoot (documented D10).
+- Interrogate panel ran on the design before the gate (fable/opus/sonnet); its findings were applied to the plan.
+- Scope audit (sonnet): all landed; G5 deploy and presets pending.
+- Discovered task: allow-the-init-scripts-tools (agents were told to use a tool no allow list included).
+
+Verdict: pass (2026-10-26)
+
+Epic review (phase 5), 2026-10-27.
+- Full suites: orchestrator 1027 passed (non-integration), lint and chart tests clean; agents-web 429 passed, lint clean; any-mcp 215 passed; agents-helmfile 208 passed, lint and gitleaks clean.
+- PR CI: any-mcp #4 green; agents-web #15 green; agents-orchestrator #22 green after one e2e fix (two kind e2e assertions still expected the two-tool allow list; fixed f92cc8d); agents-helmfile #30 pending.
+- Whole-diff review (sonnet): no findings across seams (frame contract, tool names, settings names, superleader authz, ServiceAccount wiring).
+- Security review (sonnet): no critical/high. MEDIUM fixed as task agent-serviceaccounts-do-not (agent ServiceAccounts no longer inherit api annotations). LOW dismissed: 404 vs 403 slug probing (slugs are not secret); advisory limit overshoot (documented D10).
+- Interrogate panel ran on the design before the gate (fable/opus/sonnet); its findings were applied to the plan.
+- Scope audit (sonnet): all landed; G5 deploy and presets pending.
+- Discovered task: allow-the-init-scripts-tools (agents were told to use a tool no allow list included).
+- Deploy (R3): agents-helmfile 86ee171 applied (orchestrator de16c14, web de64208, wrapper 0.3.0 pin from the previous epic also applied for the first time); rollouts OK; ClusterRoleBinding agents-orchestrator-kube-access -> cluster-admin.
+- Smoke (R5): first run failed on a pre-existing smoke race (make-leader before agent ready); fixed as task smoke-waits-for-agent-readin (agents-helmfile #31, a68e876); third run passed incl. kube access (SelfSubjectAccessReview */* allowed) and superleader messaging (send, framed delivery, target_not_superleader refusal). Second run failed only on the orchestrator's own stray port-forward.
+- Presets (R6): facebook chat session_messaging true, claude-code-tatara kube_access true; mx-4 discarded (idle, 0 queued).
+- R7 live kubectl proof in a claude-code-tatara session: pending the user's U1 preset edit; access already proven by the smoke.
+
+### design.md: Summary
+
+Two opt-in, sparse, create-time session spec options for agents-orchestrator, settable on presets:
+`session_messaging` (makes the session a superleader: its leader can list the leaders of all open
+sessions and message any of them, while every other session's leader, alone sessions included, can
+list and message only superleaders; messages arrive as framed turns on the target's leader through
+the existing message queue) and `kube_access` (the session's agent pods run as one chart-rendered ServiceAccount bound to
+the built-in `cluster-admin` ClusterRole, with the token mounted and `KUBERNETES_SERVICE_HOST/PORT` passed to claude's Bash; kubectl comes from a
+user hook or the agent). Every other
+agent pod and every Job gets an explicit unprivileged ServiceAccount and no token. any-mcp ships two
+new orchestrator tools (release v0.4.0), agents-web gets two preset switches and a sender label in the
+chat, agents-helmfile pins and enables it all.
+
+### design.md: Intent and why
+
+The user wants one agent team to orchestrate others (the Messenger assistant delegating to the
+project team) and a project team to operate the Kubernetes cluster it deploys to, without the
+kubeconfig env and onStart machinery the claude-code-tatara preset carries today. Both must stay off
+unless a session asks for them.
+
+### design.md: Goals
+
+The epic README Goals, verbatim:
+
+- G1: A sparse create-time spec option for cross-session messaging that makes a session a
+  superleader: its leader lists the leaders of all open sessions and can send a message to any of
+  them; the leader of every other session, alone sessions included, lists only the superleader
+  sessions and can send only to them; every session receives messages sent to it as turns on its
+  leader that name the sender session.
+- G2: A sparse create-time spec option for Kubernetes access; agent pods of a session with it on run
+  as a ServiceAccount bound to cluster-admin with its token mounted and the in-cluster API address
+  passed to the agent's shell, so in-cluster access works from it (kubectl comes from a user hook or
+  the agent, not the orchestrator).
+- G3: Every other agent pod and every Job runs with an explicit ServiceAccount and no mounted token.
+- G4: Both options are editable in the agents-web preset form, and received cross-session messages
+  are shown with their sender session in the chat.
+- G5: Deployed: new orchestrator, any-mcp and agents-web versions applied through agents-helmfile
+  with the Kubernetes access chart value on; the "facebook chat" preset has messaging on (its running
+  session discarded) and "claude-code-tatara" has Kubernetes access on.
+
+### design.md: Non-goals
+
+- No scoped or per-namespace Kubernetes roles; access is all-or-nothing cluster-admin.
+- No synchronous request/reply or context transfer between sessions; messaging is an async mailbox.
+- No messaging for non-leader agents, and no messaging between two sessions of which neither is a
+  superleader.
+- No change to the claude-code-tatara preset's env or onStart hook (the user removes its kubeconfig
+  machinery).
+
+### design.md: Anti-goals
+
+- Any agent pod or Job of a session without `kube_access` ending up with a mounted token, or any
+  token reaching the api, dispatcher or ingester processes (foundation anti-goal, design D9).
+- The reconciler gaining RBAC on `rbac.authorization.k8s.io` or on ServiceAccounts (research A1-A5:
+  that grant is cluster-admin-equivalent and cannot be name-restricted).
+- A message queued between two sessions of which neither is a superleader, or a ping-pong between
+  two leaders that nothing stops.
+- A second writer on the `messages` table, or a new transport beside the queue.
+- Backward-compatibility shims, aliases or fallbacks.
+
+### design.md: Constraints
+
+- Superrepo hard rules: Python only except agents-web; services talk through the queue or HTTP; each
+  table one writer; queue rows change only through status-guarded updates.
+- Spec is immutable after create (PATCH 405); only `replicas` and `init_scripts` change in place, so
+  both options are create-time and decide rendering once (hive D2, contract
+  `orch-spec-runtime-mutable`).
+- Nomenclature guards in all repos ban the word "cluster" except listed Kubernetes phrases:
+  agents-orchestrator `tests/test_nomenclature.py` (gains `cluster-admin`, task
+  orch-session-options-spec), any-mcp `tests/test_nomenclature.py` (orchestrator.py, its test, README:
+  no "cluster" at all), agents-web `src/nomenclature.test.ts` and agents-helmfile
+  `tests/test_nomenclature.py` (write "full Kubernetes access", never "cluster-admin", there).
+- any-mcp reaches pods only through the pinned tag `ORCH_ANY_MCP_REF`; `OrchestratorConfig` refuses
+  extra keys, so this design adds no config key (no lockstep change).
+- `openapi.json` and the goldens are generated; README is test-pinned (routes, settings, SSE types).
+- Never put `mise run apply` in acceptance evidence (agents-helmfile MEMORY 2026-10-25).
+- Orchestrator tests need Docker and an unset `VIRTUAL_ENV`; a stale `.venv` shebang once broke
+  `mise run test` (retro paste-env-contents-into-the): recreate with `uv sync` on import errors.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -365,7 +456,7 @@ Findings:
 | D15 deploy and smoke | smoke-session-options, helmfile-deploy-pin |
 | D16 honest docs | chart-kube-access-rbac, orch-kube-access-render |
 
-## Review focus
+### design.md: Review focus
 
 - orch-agent-session-messaging: the superleader rule (a send needs a superleader on one end; a
   non-superleader's list never shows a non-superleader); authorization order and that no refusal queues a row; the hop is
@@ -378,7 +469,7 @@ Findings:
   reconciler Role is unchanged; the privileged SA has automount false.
 - This epic touches authz and credentials: a `workbench:interrogate` before the gate is warranted.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal helper names and the SQL of the count and hop queries, within the routes and codes of D6,
   D7 and D10.
@@ -387,7 +478,7 @@ Findings:
 - Wording of tool descriptions and UI helper text, within the nomenclature guards and D6/D14 meaning.
 - How the smoke steps poll and time out, within `SMOKE_TIMEOUT_S` and the existing smoke style.
 
-## Rollout
+### design.md: Rollout
 
 Release and deploy steps run by the orchestrator between and after tasks:
 
@@ -420,7 +511,7 @@ User steps, asked up front at the gate:
   R7 waits for it.
 - U2: confirm the facebook chat session discard at R6 time is still wanted (user decision says yes).
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Settled by probe at the builder check (2026-10-26): agent pods reach github.com (HTTP 200) and the
   API server is v1.33.0; curl is in the agent image, so the smoke's in-pod API probe needs no kubectl.
@@ -432,16 +523,3 @@ User steps, asked up front at the gate:
   the same access, README Security warns).
 - No other running session depends on the default ServiceAccount token today (live probe: no
   ClusterRoleBinding names agents; the default SA has no bindings found).
-
-## Open questions
-
-none
-
-## Irreversible operations in scope
-
-- any-mcp tag `v0.4.0` push (R1): a published release tag; covered by the gate approval.
-- The agents-helmfile apply (R3): creates a ClusterRoleBinding of the `-kube-access` ServiceAccount to
-  cluster-admin and rolls every running agent pod once (in-flight turns are interrupted); covered by
-  the gate approval and run when no turn is in flight.
-- Discarding the user's current facebook chat session (R6): user decision 2026-10-26.
-- Preset updates of "facebook chat" and "claude-code-tatara" (R6): user decision 2026-10-26.
