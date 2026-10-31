@@ -1,54 +1,49 @@
-# Decouple S3 session cache from presets design
+---
+title: Decouple S3 session cache from presets
+repos: [agents-orchestrator, agents-web]
+created: 2026-10-29
+owner: ""
+rung: ""
+---
 
-## Summary
+# Decouple S3 session cache from presets
 
-A preset's `cache.key` becomes a Jinja2 cache name template, rendered once per session at create with the preset name, preset id, session slug and creating service; empty means the default `<preset>-<session>`. One rendered name per session names both S3 objects (workspace archive and Claude transcripts) and is pinned in `status.cache`. The preset-id-derived key and the reserved `preset-` prefix go away. The reconciler, the only S3 credential holder, copies the objects of every session that existed before the change to its new name (server-side, copy only) and repoints it, so rotation keeps working. agents-web edits the template and shows the effective name. The plan follows every recommended answer in Open questions; a "no" there changes the named tasks before the build.
+## What and why
 
-## Intent and why
+What: Session S3 cache named by a per-session Jinja2 template (default <preset>-<sessionname>) instead of the preset-derived key; existing sessions' caches copied to the new names so everything works after rotation
+How: start-development full path; copy-only migration (never move or delete); planned after paste-.env and immediate delivery in the cct2 queue
+Why: User request 2026-10-29 04:52Z via mx-34 #343: decouple s3 cache from preset, Jinja2 backup name template defaulting to preset-sessionname, copy caches of existing sessions
 
-User request (2026-10-29 04:52Z, mx-34 #343), verbatim: "I also want to decouple s3 cache from preset. There must be a way to define S3 backup name with jonja2 template with default as preset-sessionname. This must also copy caches of existing sessions, so after rotation everything will work properly." (jonja2 = Jinja2)
+Today a session created from a cache-enabled preset without a key gets `preset-<16 hex of sha256(preset id)>`, so every session of a preset shares one workspace archive, and the Claude transcripts sit at `sessions/<slug>`. This epic makes the preset's `cache.key` a Jinja2 template (sandboxed, expressions only), rendered once at session create with the preset name, preset id, session slug and creating service; empty means the default `<preset>-<session>`. One rendered name per session names both S3 objects: `<prefix><name>.tar.zst` (workspace) and `<prefix>sessions/<name>.tar.zst` (transcripts). The reconciler, the only holder of the S3 credentials, copies the objects of every session that existed before the change to its new name (server-side CopyObject, never overwriting, never moving or deleting) and repoints the session, so a session discarded and recreated with the same slug from the same preset restores its workspace and transcripts. agents-web edits the template on a preset and names the effective cache name in the discard dialog. Design: design.md. Blocked by the in-progress epics hive decoupling and slash commands from chat, which change the same orchestrator and web files (README, MEMORY, openapi.json, pyproject.toml, spec.py, the vendored schema).
 
-Today every session of a preset shares one workspace archive `preset-<sha256(preset id)[:16]>` (`spec.py:413 default_cache_key`), so sessions of one preset overwrite each other (last writer wins), and the name says nothing about the session. The user wants per-session names they can shape. Changing names without a copy would make every recreated session restore nothing (`miss`), hence the copy. The sibling epic s3-cache-management-section (a web section over the cache objects) is blocked on this one and needs a stable naming model.
+## Scope ladder
 
-## Goals
+### Rung 1: agreed scope (migrated)
 
-- G1: A preset's `cache.key` is a Jinja2 cache name template; a session created from it stores the rendered name, and an empty template renders the default `<preset>-<session>` that always fits the key rule.
-- G2: Templates are checked at preset save (422 on an unsafe or invalid template, or a trial render that breaks the key rule) and rendered in a restricted Jinja2 sandbox; a raw-spec key is rendered with the session variables only.
-- G3: One cache name per session names both its workspace archive and its Claude transcripts object, pinned in `status.cache` (`key`, `object`, `sessions_object`) at the first restore.
-- G4: No preset-id-derived key remains: `default_cache_key`, the reserved `preset-` prefix and the copy rule are removed, and presets that stored their own derived key get the default.
-- G5: The caches of sessions that existed before this epic (workspace and transcripts) are copied server-side to their new names, never moved, deleted or overwritten, and each session is repointed so its next save and a session recreated from the same preset with the same slug use the new name.
-- G6: agents-web edits the cache name template on a preset (the default shown from `/meta`) and the discard dialog names the effective cache name and when it is restored.
+- 1.1: G1: A preset's `cache.key` is a Jinja2 cache name template; a session created from it stores the rendered name, and an empty template renders the default `<preset>-<session>` that always fits the key rule.
+- 1.2: G2: Templates are checked at preset save (422 on an unsafe or invalid template, or a trial render that breaks the key rule) and rendered in a restricted Jinja2 sandbox; a raw-spec key is rendered with the session variables only.
+- 1.3: G3: One cache name per session names both its workspace archive and its Claude transcripts object, pinned in `status.cache` (`key`, `object`, `sessions_object`) at the first restore.
+- 1.4: G4: No preset-id-derived key remains: `default_cache_key`, the reserved `preset-` prefix and the copy rule are removed, and presets that stored their own derived key get the default.
+- 1.5: G5: The caches of sessions that existed before this epic (workspace and transcripts) are copied server-side to their new names, never moved, deleted or overwritten, and each session is repointed so its next save and a session recreated from the same preset with the same slug use the new name.
+- 1.6: G6: agents-web edits the cache name template on a preset (the default shown from `/meta`) and the discard dialog names the effective cache name and when it is restored.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-- The S3 cache management section and any orchestrator list, inspect or delete API over cache objects (sibling epic s3-cache-management-section).
+- The S3 cache management section in agents-web and any orchestrator list, inspect or delete API over cache objects (sibling epic s3-cache-management-section).
 - Deleting, moving or expiring old `preset-*` or `sessions/<slug>` objects, bucket lifecycle rules, or a quota change.
 - A per-session template override at session create or in the new session dialog.
 - Changes to agents-helmfile, agents-webhook, agents-schedule, agents-matrix-connector, agents-common or claude-code-wrapper.
 - Retiring the migration code once no pre-epic session remains.
-- Cache name uniqueness enforcement or locking.
+- Cache name uniqueness enforcement or locking (shared names keep last-writer-wins, design D4 of workspace-s3-cache).
 - The live-session transcript backup trigger (cct2 queue item 4).
 
-## Anti-goals
+## Design
 
-- Any S3 object moved, deleted or overwritten by this epic (leader constraint: copy only).
-- A recreated pre-epic session restoring nothing or a stale copy (the timing trap: a live session saves to its pinned name at discard).
-- A template that can run loops, call functions, read attributes or inflate output in the api or reconciler process.
-- A second S3 credential path, or S3 credentials in the api.
-- A legacy-key fallback on restore or any compatibility shim (the pre-epic key formula lives only in the migration, to recognise old sessions).
-- The sibling's seam made harder: the naming module must stay importable by the api (no `reconciler` or `k8s` import).
-
-## Constraints
-
-- Python only except the web frontend (TypeScript); services talk over HTTP; one writer per table: the api writes `sessions.spec` and `presets`, the reconciler writes `sessions.status`. So the migration repoints `status.cache` only and leaves a pre-epic session's `spec.cache.key` as its old literal (my call).
-- Only the reconciler holds the S3 credentials (workspace-s3-cache D2); the api may not import `reconciler` or `k8s` (`test_api_never_imports_k8s_or_wrapper`).
-- TDD, no em dashes, no backward compatibility unless asked.
-- Rendered names keep `spec.CACHE_KEY_RE` `^[a-z0-9][a-z0-9._-]{0,62}$` (a strict subset of the AWS safe key set; brief-docs section 2).
-- Ceph RGW ignores destination `If-None-Match` on CopyObject and moto 5.2.4 does too (brief-docs section 3), so never-overwrite relies on HEAD-then-copy under the single-writer reconciler.
-- Sequencing: the in-progress epics hive decoupling and slash commands from chat change the same files (agents-orchestrator README.md, MEMORY.md, openapi.json, pyproject.toml, uv.lock, spec.py, api/schemas.py, tests/test_migrations.py; agents-web vendored orchestrator schema), so they are this epic's README blockers (`ticket.py` file overlap rule) (my call).
-- Builder start (builder-check Q1, my call): the builder waits for both README blockers (hive decoupling, slash commands from chat) to land on main, rebases onto them, and takes the next free SQL migration number at build time (negotiated 2026-10-29, mx-34 #469: 0015, after slash 0012, session-orchestration-mcp 0013 and immediate delivery 0014). They stay README blockers; nothing in the plan changes.
-- Deploy order (interrogate, Noted): the orchestrator tasks ship together in one release; orch-transcripts-follow-name never ships before orch-cache-name-migration, because without the migration's pending rule (D9) a pre-epic session's transcripts restore would read `sessions/<legacy key>`, a name that never existed. The epic lands on main as one close, so no orchestrator image is cut between them (my call).
-- No Docker in agent pods: DB-backed tests run in CI; reviewers read the CI result for them.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -125,6 +120,21 @@ The preset form's cache field becomes `Cache name template` (placeholder: the or
 
 No per-session override at create (`CreateSession` has no cache field; the new session dialog is unchanged). Alternatives: a `cache_name` field on `POST /api/v1/sessions` and in the new session dialog (cartographer idea; widens the create contract for webhook, schedule and matrix callers). Why: presets are where the cache is configured and sessions snapshot them. Open question Q8.
 
+## Open questions
+
+The plan follows each recommended answer; a "no" changes the tasks named in the decision before the build.
+- Q1: Does the one cache name cover both S3 objects of a session, the workspace archive and the Claude transcripts, which move from sessions/<slug> to sessions/<name>? Sessions sharing a name then also share transcripts, and a recreated session resumes the last conversation saved under it. D5 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q2: Is the template the preset's existing cache.key field read as a Jinja2 template, empty meaning the default and a literal key keeping today's shared-cache behaviour, rather than a new field or a global setting? D1 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q3: Are the template variables preset (slugified preset name), preset_id, session (slug) and created_by, with the default rendering <preset>-<session> and shortening the preset part so it always fits the 63-character key rule, and a rendered name that breaks the rule refused with 422? D2 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q4: Does rotation mean a session discarded and recreated with the same slug, so the migration copies each existing session's objects to its new name and repoints the session so its next save goes to the new name? D7 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q5: Does the per-session default apply to every preset, including webhook and schedule presets, so each trigger session gets its own cache that is never restored again and objects accumulate until the cache management section cleans them, while a preset that wants today's shared cache sets the template {{ preset }}? D11 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q6: Drop the reserved preset- prefix rule and the preset-id-derived key, since any API caller can already create a session from a preset with a free slug and so reach the same cache? D6 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q7: Render templates in-process in agents-orchestrator with a restricted Jinja2 sandbox: output expressions only, no loops or calls, filters lower, upper, replace, trim, truncate, 256 characters at most, instead of agents-webhook's child-process renderer or a shared library? D3 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q8: Is the template set per preset only, with no per-session override field on session create or in the new session dialog? D14 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q9: Remove cache.key from presets that stored their own preset-derived key, so they get the per-session default instead of staying on one shared preset-wide name? D10 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q10: Keep the default exactly as asked, <preset>-<session>, accepting that it is ambiguous across presets (preset a-b with session c equals preset a with session b-c, and truncation adds collisions) and that a shared name shares the workspace archive (which may hold .env files and git credentials) and the transcripts (Q1)? A "no" adds a short preset_id hash to the default (for example <preset>-<session>-<first 6 hex of preset_id>), so two presets never share a cache by accident while a template can still share on purpose; that changes orch-cache-name-template, orch-cache-name-migration and the expected names in their ACs. D2 (interrogate Consider) [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+- Q11: A pre-epic session migrated onto its preset's current template follows it exactly; when that template is a shared literal (mine, or {{ preset }}), the session's later discard saves overwrite the shared object other sessions restore from, and the HEAD-then-copy guard protects only the initial copy. Is that intended? D7 (builder-check Q3, interrogate Consider) [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -136,7 +146,7 @@ No per-session override at create (`CreateSession` has no cache field; the new s
 | interrogate (plan review panel: A fable, B opus, C sonnet; lead cct2-1) | ran 2026-10-29 on README, design.md and tasks, verdict `/workdir/workdir/.scratchpad/s3-cache/interrogate.md` | Act on 1-6, all applied: sandbox render cost (D3; orch-cache-name-template), failed-then-discarded migration, transcripts of an unconverged session, discard in flight at deploy, repoint after a failed copy with a skipped save, deleted-preset sessions (D7, D9; orch-cache-name-migration); Noted deploy order (Constraints); Consider items as open questions Q10 and Q11 | Dismissed by the panel: a one-writer violation (the migration writes only `status`); concurrent reconcilers (sessions reconcile sequentially, `loop.py:150`) |
 | builder check (sonnet) | ran 2026-10-29, `/workdir/workdir/.scratchpad/s3-cache/builder-check.md` | Q1 wait for the blockers, next free migration number (Constraints, my call); Q3 as open question Q11; Q4 exact AST node list (D3, my call); Q5 syntax error as `ValueError` (D3, my call) | Q2 (are Q1-Q9 approved) is the gate's question, not a plan change |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics that bear on this epic (ticket.py retro --history), recurring workflow ones first:
 
@@ -157,7 +167,69 @@ Brief plan inputs:
 - fix-as-ac: `jinja2>=3.1.6` runtime dependency (orch-cache-name-template AC1); sandbox settings, 256-character cap, variable allowlist, trial render 422 (orch-cache-name-template AC5-AC8, orch-cache-name-on-create AC4); rendered name must match the key rule (orch-cache-name-template AC7); copy never overwrites, 403 is an error, `CopySource` dict, metadata COPY (orch-cache-copy-if-absent AC2, AC4); off the event loop (orch-cache-name-migration Interfaces); tests do not claim destination `If-None-Match` (orch-cache-copy-if-absent Notes); both objects copied (orch-cache-name-migration AC1); discard dialog wording and effective name (web-discard-effective-name AC1-AC3); README and contract notes on `default_cache_key` (orch-cache-name-on-create AC10); reserved prefix vs a preset named "preset..." (resolved by D6).
 - ideas adopted: migration outcome per session in `status.cache.migration` (cartographer; orch-cache-name-migration); sources derived from the DB, not a bucket listing (brief-docs idea 4; orch-cache-name-migration). Rejected: per-session override (D14), preview endpoint (D12), recording the Ceph release in agents-helmfile MEMORY (other repo; noted, not doing now).
 
-## Decision coverage
+## Irreversible operations
+
+- New S3 objects written by the migration (one copy per pre-epic session and object, about 435 MB today) count against the bucket quota; nothing is moved, deleted or overwritten (leader constraint). Safeguard: copy-if-absent, single-writer reconciler; the old objects stay, so a rollback still finds them.
+- `status.cache` of live sessions repointed to the new names: a rollback to the previous orchestrator would keep saving under the new names, which the old code does not derive; the old objects remain for a manual repoint. Covered by approving this plan.
+- The SQL migration removes `cache.key` from presets that stored their own derived key; reversible only by recomputing the key (the formula is in the migration and pinned by its test). Covered by approving this plan.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+A preset's `cache.key` becomes a Jinja2 cache name template, rendered once per session at create with the preset name, preset id, session slug and creating service; empty means the default `<preset>-<session>`. One rendered name per session names both S3 objects (workspace archive and Claude transcripts) and is pinned in `status.cache`. The preset-id-derived key and the reserved `preset-` prefix go away. The reconciler, the only S3 credential holder, copies the objects of every session that existed before the change to its new name (server-side, copy only) and repoints it, so rotation keeps working. agents-web edits the template and shows the effective name. The plan follows every recommended answer in Open questions; a "no" there changes the named tasks before the build.
+
+### design.md: Intent and why
+
+User request (2026-10-29 04:52Z, mx-34 #343), verbatim: "I also want to decouple s3 cache from preset. There must be a way to define S3 backup name with jonja2 template with default as preset-sessionname. This must also copy caches of existing sessions, so after rotation everything will work properly." (jonja2 = Jinja2)
+
+Today every session of a preset shares one workspace archive `preset-<sha256(preset id)[:16]>` (`spec.py:413 default_cache_key`), so sessions of one preset overwrite each other (last writer wins), and the name says nothing about the session. The user wants per-session names they can shape. Changing names without a copy would make every recreated session restore nothing (`miss`), hence the copy. The sibling epic s3-cache-management-section (a web section over the cache objects) is blocked on this one and needs a stable naming model.
+
+### design.md: Goals
+
+- G1: A preset's `cache.key` is a Jinja2 cache name template; a session created from it stores the rendered name, and an empty template renders the default `<preset>-<session>` that always fits the key rule.
+- G2: Templates are checked at preset save (422 on an unsafe or invalid template, or a trial render that breaks the key rule) and rendered in a restricted Jinja2 sandbox; a raw-spec key is rendered with the session variables only.
+- G3: One cache name per session names both its workspace archive and its Claude transcripts object, pinned in `status.cache` (`key`, `object`, `sessions_object`) at the first restore.
+- G4: No preset-id-derived key remains: `default_cache_key`, the reserved `preset-` prefix and the copy rule are removed, and presets that stored their own derived key get the default.
+- G5: The caches of sessions that existed before this epic (workspace and transcripts) are copied server-side to their new names, never moved, deleted or overwritten, and each session is repointed so its next save and a session recreated from the same preset with the same slug use the new name.
+- G6: agents-web edits the cache name template on a preset (the default shown from `/meta`) and the discard dialog names the effective cache name and when it is restored.
+
+### design.md: Non-goals
+
+- The S3 cache management section and any orchestrator list, inspect or delete API over cache objects (sibling epic s3-cache-management-section).
+- Deleting, moving or expiring old `preset-*` or `sessions/<slug>` objects, bucket lifecycle rules, or a quota change.
+- A per-session template override at session create or in the new session dialog.
+- Changes to agents-helmfile, agents-webhook, agents-schedule, agents-matrix-connector, agents-common or claude-code-wrapper.
+- Retiring the migration code once no pre-epic session remains.
+- Cache name uniqueness enforcement or locking.
+- The live-session transcript backup trigger (cct2 queue item 4).
+
+### design.md: Anti-goals
+
+- Any S3 object moved, deleted or overwritten by this epic (leader constraint: copy only).
+- A recreated pre-epic session restoring nothing or a stale copy (the timing trap: a live session saves to its pinned name at discard).
+- A template that can run loops, call functions, read attributes or inflate output in the api or reconciler process.
+- A second S3 credential path, or S3 credentials in the api.
+- A legacy-key fallback on restore or any compatibility shim (the pre-epic key formula lives only in the migration, to recognise old sessions).
+- The sibling's seam made harder: the naming module must stay importable by the api (no `reconciler` or `k8s` import).
+
+### design.md: Constraints
+
+- Python only except the web frontend (TypeScript); services talk over HTTP; one writer per table: the api writes `sessions.spec` and `presets`, the reconciler writes `sessions.status`. So the migration repoints `status.cache` only and leaves a pre-epic session's `spec.cache.key` as its old literal (my call).
+- Only the reconciler holds the S3 credentials (workspace-s3-cache D2); the api may not import `reconciler` or `k8s` (`test_api_never_imports_k8s_or_wrapper`).
+- TDD, no em dashes, no backward compatibility unless asked.
+- Rendered names keep `spec.CACHE_KEY_RE` `^[a-z0-9][a-z0-9._-]{0,62}$` (a strict subset of the AWS safe key set; brief-docs section 2).
+- Ceph RGW ignores destination `If-None-Match` on CopyObject and moto 5.2.4 does too (brief-docs section 3), so never-overwrite relies on HEAD-then-copy under the single-writer reconciler.
+- Sequencing: the in-progress epics hive decoupling and slash commands from chat change the same files (agents-orchestrator README.md, MEMORY.md, openapi.json, pyproject.toml, uv.lock, spec.py, api/schemas.py, tests/test_migrations.py; agents-web vendored orchestrator schema), so they are this epic's README blockers (`ticket.py` file overlap rule) (my call).
+- Builder start (builder-check Q1, my call): the builder waits for both README blockers (hive decoupling, slash commands from chat) to land on main, rebases onto them, and takes the next free SQL migration number at build time (negotiated 2026-10-29, mx-34 #469: 0015, after slash 0012, session-orchestration-mcp 0013 and immediate delivery 0014). They stay README blockers; nothing in the plan changes.
+- Deploy order (interrogate, Noted): the orchestrator tasks ship together in one release; orch-transcripts-follow-name never ships before orch-cache-name-migration, because without the migration's pending rule (D9) a pre-epic session's transcripts restore would read `sessions/<legacy key>`, a name that never existed. The epic lands on main as one close, so no orchestrator image is cut between them (my call).
+- No Docker in agent pods: DB-backed tests run in CI; reviewers read the CI result for them.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -176,7 +248,7 @@ Brief plan inputs:
 | D13 meta default template | orch-cache-name-on-create, web-preset-cache-name-field |
 | D14 per preset only | orch-cache-name-on-create |
 
-## Review focus
+### design.md: Review focus
 
 - The sandbox (orch-cache-name-template): can any template within 256 characters loop, call, read an attribute, reach a global, or render unbounded output; are all exceptions mapped to `ValueError`; is `StrictUndefined` in force. Specifically: every `BinOp` (`%` included) refused, `replace` with an empty `old` refused, and no filter input, filter output or rendered output over 256 characters (D3 amendment).
 - The migration failure paths (orch-cache-name-migration, D7 and D9 amendments): a `failed` record is retried, in discard at once; nothing runs while a save is `running`; a pre-epic session's transcripts read `sessions/<slug>` until the repoint; a failed copy with a skipped save keeps that target's old object; a deleted preset's session is recognised.
@@ -186,7 +258,7 @@ Brief plan inputs:
 - One writer: the reconciler writes only `status`; the api writes `spec` and `presets`; the SQL migration touches only presets carrying their own derived key.
 - The api still imports neither `reconciler` nor `k8s`.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The exact text of `DEFAULT_CACHE_NAME_TEMPLATE`, within D2's boundary (renders `<preset>-<session>` for short inputs, always matches the key rule), documented in the module.
 - How the AST allowlist walk is written, within D3's node and filter lists.
@@ -194,7 +266,7 @@ Brief plan inputs:
 - The helper text wording in the web form, within D12.
 - The SQL migration number: the next free one on the base branch at build time.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Which live session (cct2, claude-code-tatara, mx-34) carries which `spec.cache.key` and `status.cache`: unknown, needs `SELECT slug, spec->'cache', status->'cache' FROM sessions` or the public API with a token; the migration's per-session `status.cache.migration` record shows it after deploy. Who: the orchestrator, read-only probe before the deploy.
 - Ceph RGW CopyObject on the deployed release (not pinned in the workbench): assumed supported (RGW features list); confirmed by the first migration record (`copied`) after deploy, never by a test.
@@ -203,24 +275,3 @@ Brief plan inputs:
 - agents-helmfile smoke: sessions A and B share the raw key `smoke-workspace-cache`, so under D5 B also restores A's transcripts and may resume its conversation; the smoke only greps the workspace marker, so it is assumed to stay green; confirmed by the post-deploy smoke.
 - Whether any preset stores its own derived key: unknown (DB read); the D10 migration is correct either way.
 - No transcripts object of a live session exists today (cartographer probe), so `sessions/<slug>` copies will mostly answer `source_missing`.
-
-## Open questions
-
-The plan follows each recommended answer; a "no" changes the tasks named in the decision before the build.
-- Q1: Does the one cache name cover both S3 objects of a session, the workspace archive and the Claude transcripts, which move from sessions/<slug> to sessions/<name>? Sessions sharing a name then also share transcripts, and a recreated session resumes the last conversation saved under it. D5 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q2: Is the template the preset's existing cache.key field read as a Jinja2 template, empty meaning the default and a literal key keeping today's shared-cache behaviour, rather than a new field or a global setting? D1 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q3: Are the template variables preset (slugified preset name), preset_id, session (slug) and created_by, with the default rendering <preset>-<session> and shortening the preset part so it always fits the 63-character key rule, and a rendered name that breaks the rule refused with 422? D2 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q4: Does rotation mean a session discarded and recreated with the same slug, so the migration copies each existing session's objects to its new name and repoints the session so its next save goes to the new name? D7 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q5: Does the per-session default apply to every preset, including webhook and schedule presets, so each trigger session gets its own cache that is never restored again and objects accumulate until the cache management section cleans them, while a preset that wants today's shared cache sets the template {{ preset }}? D11 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q6: Drop the reserved preset- prefix rule and the preset-id-derived key, since any API caller can already create a session from a preset with a free slug and so reach the same cache? D6 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q7: Render templates in-process in agents-orchestrator with a restricted Jinja2 sandbox: output expressions only, no loops or calls, filters lower, upper, replace, trim, truncate, 256 characters at most, instead of agents-webhook's child-process renderer or a shared library? D3 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q8: Is the template set per preset only, with no per-session override field on session create or in the new session dialog? D14 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q9: Remove cache.key from presets that stored their own preset-derived key, so they get the per-session default instead of staying on one shared preset-wide name? D10 [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q10: Keep the default exactly as asked, <preset>-<session>, accepting that it is ambiguous across presets (preset a-b with session c equals preset a with session b-c, and truncation adds collisions) and that a shared name shares the workspace archive (which may hold .env files and git credentials) and the transcripts (Q1)? A "no" adds a short preset_id hash to the default (for example <preset>-<session>-<first 6 hex of preset_id>), so two presets never share a cache by accident while a template can still share on purpose; that changes orch-cache-name-template, orch-cache-name-migration and the expected names in their ACs. D2 (interrogate Consider) [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-- Q11: A pre-epic session migrated onto its preset's current template follows it exactly; when that template is a shared literal (mine, or {{ preset }}), the session's later discard saves overwrite the shared object other sessions restore from, and the HEAD-then-copy guard protects only the initial copy. Is that intended? D7 (builder-check Q3, interrogate Consider) [answer: yes (user approved the gate 2026-10-29 06:50Z via mx-34 #355: S3 gate approved, copy-only migration as planned)]
-
-## Irreversible operations in scope
-
-- New S3 objects written by the migration (one copy per pre-epic session and object, about 435 MB today) count against the bucket quota; nothing is moved, deleted or overwritten (leader constraint). Safeguard: copy-if-absent, single-writer reconciler; the old objects stay, so a rollback still finds them.
-- `status.cache` of live sessions repointed to the new names: a rollback to the previous orchestrator would keep saving under the new names, which the old code does not derive; the old objects remain for a manual repoint. Covered by approving this plan.
-- The SQL migration removes `cache.key` from presets that stored their own derived key; reversible only by recomputing the key (the formula is in the migration and pinned by its test). Covered by approving this plan.
