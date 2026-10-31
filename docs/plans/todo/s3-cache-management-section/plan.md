@@ -1,59 +1,48 @@
-# S3 cache management section design
+---
+title: S3 cache management section
+repos: [agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-29
+owner: ""
+rung: ""
+---
 
-## Summary
+# S3 cache management section
 
-A Cache section in agents-web lists every S3 cache object with its kind, class, size and age, shows a quota
-gauge, and deletes one object at a time after a typed-name confirm. The reconciler, the only S3 credential
-holder, keeps a bucket inventory table (full listing every 15 minutes or on Refresh) and executes delete
-requests queued by the api in a status-guarded table, refusing objects any session row still pins or that
-changed since listing. The api classifies objects on every read from session rows and presets through a pure
-`cache.pins` module shared with the reconciler. Bulk deletion of old copies stays in the cleanup epic, which
-will reuse this delete path. Source decision: `.scratchpad/s3-section/architecture.md` (architect-researcher,
-opus); code map `.scratchpad/s3-section/brief-cartographer.md`.
+## What and why
 
-## Intent and why
+What: Dedicated agents-web section for S3 cache management, beside presets, sessions and webhooks, backed by an orchestrator HTTP API
+How: the reconciler (sole S3 credential holder) keeps a bucket inventory table and runs single-object deletes queued through a status-guarded request table; the orchestrator api serves a classified, paged list and delete requests on the web port only; agents-web adds a Cache section with a quota gauge and a typed-name confirm
+Why: User request 2026-10-29 04:52Z via mx-34 #343: dedicated section (as presets, sessions, webhooks) for s3 cache management
 
-User (2026-10-29 04:52Z, mx-34 #343), verbatim: "I want to have dedicated section (as presets, sessions,
-webhooks) for s3 cache management." Cleanup follow-up (#355), verbatim: "Migration copies, but there is a
-follow-up epic to cleanup them". After decouple-s3-session-cache-fr every session gets its own objects, so
-the bucket fills until its quota (100G / 100000 objects); objects of discarded sessions are invisible
-without a listing; a corrupt archive is repaired only by deleting its object (orchestrator MEMORY D11),
-which no tool can do today.
+User request (2026-10-29 04:52Z via mx-34 #343), verbatim: "I want to have dedicated section (as presets, sessions, webhooks) for s3 cache management."
 
-## Goals
+Today nothing lists, inspects or deletes S3 cache objects: the only S3 call is presigning for the reconciler's save and restore Jobs, the database knows only live sessions' objects, and objects of discarded sessions, old `preset-*` and `sessions/<slug>` copies left by decouple-s3-session-cache-fr, and smoke objects show up only in a bucket listing. The bucket has a quota (100G, 100000 objects) and no versioning, and a corrupt archive is "fixed by deleting the object" (orchestrator MEMORY D11) with no tool to do it. This epic adds a Cache section beside Sessions and Presets: every object with its kind, class (in use by which session, named by a preset, legacy copy, saved, other), size and age, a quota gauge, and a single-object delete the orchestrator refuses for objects a session still uses or that changed since listing. Bulk deletion of old copies stays in the unqueued clean-up-old-s3-session-cach epic, which reuses this delete path. Architecture: `.scratchpad/s3-section/architecture.md`; design: design.md.
 
-As in README.md G1-G5.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: agents-web has a Cache section in the orchestrator menu (beside Sessions and Presets) listing every object under the cache prefix with object name, kind (workspace or transcripts), class, size and last modified, filterable by class and searchable by name, paged.
+- 1.2: G2: each object's class is current on every view: `in_use` (with the session slugs), `preset` (with the preset name), `legacy` (old `preset-*` copy, with how many live sessions copied it), `saved` or `other`; the object list itself is at most `ORCH_CACHE_INVENTORY_INTERVAL_SECONDS` old (default 900), shows when it was listed, and a Refresh lists again at once.
+- 1.3: G3: a user deletes one object after typing its name; the orchestrator's reconciler refuses an object pinned by any session row (live, starting or discarding) or rewritten since it was listed, and the outcome (done, refused with reason, failed with reason) is shown.
+- 1.4: G4: S3 credentials stay on the reconciler only; the new routes are on the web port only (not the agent or service ports).
+- 1.5: G5: a quota gauge shows bytes and objects against the bucket quota set in agents-helmfile; released and deployed, and proven live by listing the bucket and deleting one disposable object.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-As in README.md: no bulk delete, no overwrite/upload/download/rename, no MCP or service-port access, no
-bucket configuration change, no wrapper/plugins/common change.
+- Bulk or multi-select deletion, and automatic deletion of old copies (the clean-up-old-s3-session-cach epic).
+- Overwriting, uploading, downloading or renaming objects from the UI.
+- An MCP tool or service-port access for cache management.
+- Bucket versioning, lifecycle rules or quota changes.
+- Changes to claude-code-wrapper, any-mcp-tatara-plugins or agents-common.
 
-## Anti-goals
+## Design
 
-- S3 credentials in the api, web or any new component (workspace-s3-cache D2, decouple anti-goal).
-- Deleting an object a session row pins (live, starting, unconverged or discarding), or one rewritten since
-  the user saw it.
-- The list badge and the reconciler's refusal disagreeing (two copies of the pin rule).
-- A page view triggering a full bucket listing.
-- Cache routes reachable from agent or service tokens.
-- Overlap with the cleanup epic's bulk deletion.
-
-## Constraints
-
-- AGENTS.md: services over HTTP or a queue; one writer per table; queue rows change only through
-  status-guarded updates; Python and TypeScript; no shims.
-- The api must not import `reconciler`/`k8s` (`tests/test_api_sessions.py:237`); it may import `cache.*`
-  (it already imports `cache.save_rule`). The legacy key formula stays in `reconciler/cache_migration.py`.
-- `commands` cannot carry cache requests (`agent_id NOT NULL`, kind CHECK, `0001_init.sql:89-99`); the
-  `checks` queue (`db/queue.py:713`, `reconciler/checks.py:105`) is the pattern.
-- The bucket has no versioning (`agents-helmfile/raw/workspace-cache-bucket.pre.yaml`): a delete is
-  permanent.
-- Blockers: decouple-s3-session-cache-fr (names, `sessions_object`, migration records) and
-  live-session-transcript-back (`sessions_backup` runs, same cache files). One SQL migration, numbered
-  `<MIGRATION>` = next free at build time (expected 0016, after 0015 of decouple-s3-session-cache-fr; 0010 and 0012 are slash's, 0013 session-orchestration-mcp's, 0014 immediate-message-delivery-w's).
-- Web: no router; menu from `backends/registry.ts:26 BACKEND_MENUS`; `layout/ConfirmDialog.tsx` is the one
-  confirm pattern; design rules in `layout/designRules.ts`; `nomenclature.test.ts`.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -128,6 +117,15 @@ Release orchestrator and web, pin in agents-helmfile with the quota values, appl
 live check lists the bucket in the section and deletes one disposable object created for the check (a smoke
 object, never a session's cache) (my call).
 
+## Open questions
+
+- Q1: May a user permanently delete one S3 cache object from the Cache section, after typing its name, with no undo since the bucket keeps no versions (the orchestrator refuses any object a session still uses or that changed since it was listed)? [recommended: yes]
+- Q2: Old preset-* copies are listed and deletable one by one here, and bulk deletion of proven copies stays in the cleanup epic, which will use the same delete path? [recommended: yes]
+- Q3: Refresh the object list every 15 minutes plus a Refresh button, while "in use" is always current? [recommended: yes]
+- Q4: Show a quota gauge by setting the 100G / 100000-object limits as orchestrator settings in agents-helmfile? [recommended: yes]
+- Q5: May an object named by a preset's fixed cache name be deleted, so the preset's next session starts empty (the bad-archive repair)? [recommended: yes]
+- Q6: One object at a time in this epic, no multi-select? [recommended: yes]
+
 ## Research
 
 | Lens | Ran / skipped | Adopted | Rejected |
@@ -138,7 +136,7 @@ object, never a session's cache) (my call).
 | research-code-internal | covered by the cartographer's Plan inputs (reuse list) | reuse above | - |
 | research-code-external, research-papers | skipped: no open fork left; no scientific core | - | - |
 
-## Research inputs
+### Research inputs
 
 - `registry.test.ts` exact orchestrator list (cartographer Plan inputs, fix-as-ac) - web-cache-section AC1.
 - README route table and `openapi.json` drift tests (`tests/test_readme_api.py`) (cartographer, fix-as-ac) - orch-cache-api AC13-AC15.
@@ -159,7 +157,76 @@ object, never a session's cache) (my call).
 - Retro (matrix-connector-agent-initi, deploy-safe-agent-sessions, delivered differently): web `openapi/orchestrator.source` pinned an epic-branch commit and forced a merge commit (web-cache-client Notes).
 - Retro (matrix-connector-agent-initi, code): a chart env value reached only some containers; assert the api Deployment reads the quota (orch-chart-cache-quota AC1).
 
-## Decision coverage
+## Irreversible operations
+
+- User-initiated permanent deletion of single S3 cache objects (no bucket versioning) - Q1, typed-name
+  confirm, reconciler refusal rules.
+- The live check deletes one disposable object created for it.
+- SQL migration `<MIGRATION>` (new tables, additive); orchestrator and web releases; helmfile apply under the
+  deploy lease.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+A Cache section in agents-web lists every S3 cache object with its kind, class, size and age, shows a quota
+gauge, and deletes one object at a time after a typed-name confirm. The reconciler, the only S3 credential
+holder, keeps a bucket inventory table (full listing every 15 minutes or on Refresh) and executes delete
+requests queued by the api in a status-guarded table, refusing objects any session row still pins or that
+changed since listing. The api classifies objects on every read from session rows and presets through a pure
+`cache.pins` module shared with the reconciler. Bulk deletion of old copies stays in the cleanup epic, which
+will reuse this delete path. Source decision: `.scratchpad/s3-section/architecture.md` (architect-researcher,
+opus); code map `.scratchpad/s3-section/brief-cartographer.md`.
+
+### design.md: Intent and why
+
+User (2026-10-29 04:52Z, mx-34 #343), verbatim: "I want to have dedicated section (as presets, sessions,
+webhooks) for s3 cache management." Cleanup follow-up (#355), verbatim: "Migration copies, but there is a
+follow-up epic to cleanup them". After decouple-s3-session-cache-fr every session gets its own objects, so
+the bucket fills until its quota (100G / 100000 objects); objects of discarded sessions are invisible
+without a listing; a corrupt archive is repaired only by deleting its object (orchestrator MEMORY D11),
+which no tool can do today.
+
+### design.md: Goals
+
+As in README.md G1-G5.
+
+### design.md: Non-goals
+
+As in README.md: no bulk delete, no overwrite/upload/download/rename, no MCP or service-port access, no
+bucket configuration change, no wrapper/plugins/common change.
+
+### design.md: Anti-goals
+
+- S3 credentials in the api, web or any new component (workspace-s3-cache D2, decouple anti-goal).
+- Deleting an object a session row pins (live, starting, unconverged or discarding), or one rewritten since
+  the user saw it.
+- The list badge and the reconciler's refusal disagreeing (two copies of the pin rule).
+- A page view triggering a full bucket listing.
+- Cache routes reachable from agent or service tokens.
+- Overlap with the cleanup epic's bulk deletion.
+
+### design.md: Constraints
+
+- AGENTS.md: services over HTTP or a queue; one writer per table; queue rows change only through
+  status-guarded updates; Python and TypeScript; no shims.
+- The api must not import `reconciler`/`k8s` (`tests/test_api_sessions.py:237`); it may import `cache.*`
+  (it already imports `cache.save_rule`). The legacy key formula stays in `reconciler/cache_migration.py`.
+- `commands` cannot carry cache requests (`agent_id NOT NULL`, kind CHECK, `0001_init.sql:89-99`); the
+  `checks` queue (`db/queue.py:713`, `reconciler/checks.py:105`) is the pattern.
+- The bucket has no versioning (`agents-helmfile/raw/workspace-cache-bucket.pre.yaml`): a delete is
+  permanent.
+- Blockers: decouple-s3-session-cache-fr (names, `sessions_object`, migration records) and
+  live-session-transcript-back (`sessions_backup` runs, same cache files). One SQL migration, numbered
+  `<MIGRATION>` = next free at build time (expected 0016, after 0015 of decouple-s3-session-cache-fr; 0010 and 0012 are slash's, 0013 session-orchestration-mcp's, 0014 immediate-message-delivery-w's).
+- Web: no router; menu from `backends/registry.ts:26 BACKEND_MENUS`; `layout/ConfirmDialog.tsx` is the one
+  confirm pattern; design rules in `layout/designRules.ts`; `nomenclature.test.ts`.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -173,19 +240,19 @@ object, never a session's cache) (my call).
 | D8 Relation to the cleanup epic | orch-cache-requests, web-cache-section |
 | D9 Deploy and live check | helmfile-cache-pins, helmfile-cache-live-check |
 
-## Review focus
+### design.md: Review focus
 
 - The reconciler's check-then-delete: every session state pins; ETag comparison; claim guard.
 - `cache.pins` shared by api and reconciler, no duplicate rule.
 - Inventory generation swap is atomic; listing failures keep the previous generation.
 - Web-port-only routes; no credentials outside the reconciler.
 
-## Left to the builder
+### design.md: Left to the builder
 
 Module placement, helper names, table indexes, the inventory task's loop structure and test file split,
 within D1-D9.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - The OBC key has DeleteObject (owner key); if not, the first delete ends `failed` with the 403 reason; the
   live check confirms.
@@ -204,20 +271,3 @@ within D1-D9.
   README.md:105) and Q9 (keep 60-86400) are recorded in the Notes of web-cache-client, helmfile-cache-pins,
   helmfile-cache-live-check, orch-cache-requests and orch-cache-inventory.
 - (my call) S3 client bounds: connect 5 s, read 30 s, 2 total attempts (orch-cache-inventory, review fix).
-
-## Open questions
-
-- Q1: May a user permanently delete one S3 cache object from the Cache section, after typing its name, with no undo since the bucket keeps no versions (the orchestrator refuses any object a session still uses or that changed since it was listed)? [recommended: yes]
-- Q2: Old preset-* copies are listed and deletable one by one here, and bulk deletion of proven copies stays in the cleanup epic, which will use the same delete path? [recommended: yes]
-- Q3: Refresh the object list every 15 minutes plus a Refresh button, while "in use" is always current? [recommended: yes]
-- Q4: Show a quota gauge by setting the 100G / 100000-object limits as orchestrator settings in agents-helmfile? [recommended: yes]
-- Q5: May an object named by a preset's fixed cache name be deleted, so the preset's next session starts empty (the bad-archive repair)? [recommended: yes]
-- Q6: One object at a time in this epic, no multi-select? [recommended: yes]
-
-## Irreversible operations in scope
-
-- User-initiated permanent deletion of single S3 cache objects (no bucket versioning) - Q1, typed-name
-  confirm, reconciler refusal rules.
-- The live check deletes one disposable object created for it.
-- SQL migration `<MIGRATION>` (new tables, additive); orchestrator and web releases; helmfile apply under the
-  deploy lease.
