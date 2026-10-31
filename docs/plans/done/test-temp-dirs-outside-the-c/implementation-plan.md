@@ -1,27 +1,23 @@
----
-title: Suite temp dirs outside the checkout
-status: done
-repo: workbench
-value: "Plugin suites stay green inside initialised workbenches, so template updates can land"
-files: [plugins/workbench/scripts/run-tests.sh, plugins/workbench/scripts/flake-hunt.sh, plugins/workbench/hooks/bash-output-filter.py, plugins/workbench/scripts/tests/test_run_tests.py]
-verify: "bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint"
-depends_on: []
-model: sonnet
-review: ""
-verified_head: bd22020
-points: 3
-expected_minutes: 23
-expected_tokens: 723362
-points_actual: 3
-actual_minutes: 14
-actual_tokens: 1421756
-actual_roles: "impl 14, review 3"
-actual_role_tokens: "impl 1127922, review 293834"
----
+# Test temp dirs outside the checkout implementation plan
 
-# Suite temp dirs outside the checkout
+## Agreed rung
 
-## Requirement
+Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks.
+
+## Approach
+
+Migrated from the epic format: one step per task file, in dependency order, each with its status, files, verify, verified head and every body section.
+
+## Chunk 1: migrated tasks (model: sonnet)
+
+### S1: Suite temp dirs outside the checkout
+
+- Status: done
+- Files: `plugins/workbench/scripts/run-tests.sh`, `plugins/workbench/scripts/flake-hunt.sh`, `plugins/workbench/hooks/bash-output-filter.py`, `plugins/workbench/scripts/tests/test_run_tests.py`
+- Verify: `bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint`
+- Verified head: bd22020
+
+#### Requirement
 
 Epic README G1-G4 (verbatim): "G1: `run-tests.sh` gives each component's pytest a `--basetemp` and a `TMPDIR` under a fresh mktemp dir outside any git checkout; the dir is removed when every component passes and is kept and printed (next to `full output:`) when one fails. G2: a regression test runs the fake suite from a fabricated initialised workbench and asserts the suite's temp dir is not under that tree (nor under any dir with `.gitmodules`), while the log still lands in the tree's `.logs/run-tests/`. G3: the `GIT_CEILING_DIRECTORIES` export and the comments that justify nesting are removed; run-tests.sh, flake-hunt.sh and the bash-output-filter docstring describe the new layout. G4: the plugin's own `_lib` suite passes when the plugin is copied into a fabricated initialised workbench (the exact failure seen in claude-code-tatara), proven by a command acceptance condition."
 
@@ -31,7 +27,7 @@ Design (my call, lean): `run-tests.sh` keeps `LOG_DIR` as is (`RUN_TESTS_LOG_DIR
 
 Builder check answers (my call, 2026-10-25): (1) `${TMPDIR:-/tmp}` is trusted as given; the test only asserts the suite's temp dir is not under the fabricated tree and under no directory holding `.gitmodules`. (2) bats suites get the exported `TMPDIR` only; `--basetemp` is pytest's. (3) With `RUN_TESTS_LOG_DIR` overridden the temp dir is still its own mktemp dir, kept and printed on red exactly as without the override; flake-hunt keeps surfacing only its logs. (4) The temp dir is removed whenever run-tests.sh exits 0 (all green or skip-only), kept otherwise.
 
-## Acceptance conditions
+#### Acceptance conditions
 
 - AC1: run from a fabricated initialised workbench (a git repo with `code/` and `.gitmodules`, WORKBENCH_ROOT pointing at it), the fake component's pytest basetemp and its `TMPDIR` are outside that tree and under no directory holding `.gitmodules`, while `<tree>/.logs/run-tests/<stamp>/fake.log` holds the log [evidence: test:plugins/workbench/scripts/tests/test_run_tests.py::test_suite_temp_dirs_are_outside_any_checkout]
 - AC2: a green run removes both the log dir and the temp dir; a red run keeps both and prints `temp dirs: <path>` after the `full output:` line [evidence: test:plugins/workbench/scripts/tests/test_run_tests.py::test_temp_dir_kept_on_failure_removed_on_green]
@@ -39,28 +35,28 @@ Builder check answers (my call, 2026-10-25): (1) `${TMPDIR:-/tmp}` is trusted as
 - AC4: the plugin's `_lib` suite passes when the plugin is copied into a fabricated initialised workbench, reproducing the claude-code-tatara failure [evidence: command:W="$(mktemp -d "${TMPDIR:-/tmp}/wb-init.XXXXXX")" && git -C "$W" init -q && mkdir -p "$W/code" && : > "$W/.gitmodules" && cp -R plugins "$W/plugins" && (cd "$W" && git add -A && git -c user.name=t -c user.email=t@t commit -qm init && WORKBENCH_ROOT="$W" bash plugins/workbench/scripts/run-tests.sh --only _lib) && rm -rf "$W"]
 - AC5: the existing run-tests tests (log dir override and fallback, green run leaves nothing, flake-hunt) still pass and the scripts suite and lint are green [evidence: command:bash plugins/workbench/scripts/run-tests.sh --only scripts && mise run lint]
 
-## Files
+#### Files
 
 - `plugins/workbench/scripts/run-tests.sh`
 - `plugins/workbench/scripts/flake-hunt.sh`
 - `plugins/workbench/hooks/bash-output-filter.py`
 - `plugins/workbench/scripts/tests/test_run_tests.py`
 
-## Interfaces
+#### Interfaces
 
 Signatures, schemas and contracts this task builds or must keep, with file:symbol.
 
-## Expected outcome
+#### Expected outcome
 
 What is true and observable when the task is done.
 
-## Steps
+#### Steps
 
 1. Red: in scripts/tests/test_run_tests.py add `test_suite_temp_dirs_are_outside_any_checkout` (make the fixture tree an initialised workbench: `git init`, `code/`, `.gitmodules`; have the fake component record its basetemp and TMPDIR into its output) and `test_temp_dir_kept_on_failure_removed_on_green`; run `bash plugins/workbench/scripts/run-tests.sh --only scripts` and see exactly those two fail.
 2. Green: in run-tests.sh create the mktemp temp dir, pass `--basetemp "$TMP_DIR/<component>"` and export `TMPDIR` for every suite, remove it on green, keep and print `temp dirs:` on red, drop the GIT_CEILING_DIRECTORIES block; update the header comments of run-tests.sh and flake-hunt.sh and the docstring of hooks/bash-output-filter.py; run the same command once and see it green.
 3. Run AC3 and AC4 as written, then the verify on the committed HEAD.
 
-## Notes
+#### Notes
 
 Context the implementer needs: pitfalls, existing code to reuse, decisions already made.
 
@@ -69,3 +65,15 @@ Context the implementer needs: pitfalls, existing code to reuse, decisions alrea
 - 2026-10-25 done
 
 - 2026-10-25 done
+
+## Files to delete
+
+none recorded in the epic format
+
+## Final verify
+
+`mise run test && mise run lint`
+
+## After merge
+
+none
