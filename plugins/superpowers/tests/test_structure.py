@@ -39,3 +39,41 @@ def test_marketplace_entry_matches_manifest():
     entry = next(e for e in market["plugins"] if e["name"] == "superpowers")
     assert entry["source"] == "./plugins/superpowers"
     assert entry["version"] == _json(PLUGIN / ".claude-plugin" / "plugin.json")["version"]
+
+
+# Retired workbench flow names, built from parts so the retired-name scan skips this file.
+RETIRED_NAMES = (
+    "start-" + "development",
+    "start-" + "discovery",
+    "plan-" + "run",
+    "interro" + "gate",
+    "plan-" + "writer",
+    "start-" + "debugging",
+    "start-" + "review",
+    "ep" + "ic-",
+)
+
+
+def vendored_skills() -> list[str]:
+    return sorted(p.name for p in (PLUGIN / "skills").iterdir() if p.is_dir())
+
+
+def test_readme_names_each_vendored_skill_and_the_diff_task():
+    readme = (PLUGIN / "README.md").read_text()
+    for skill in vendored_skills():
+        assert f"`{skill}`" in readme, skill
+    assert "mise run superpowers-diff" in readme
+
+
+def test_workbench_manifest_and_entry_are_4_0_0_without_the_flow():
+    manifest = _json(ROOT / "plugins" / "workbench" / ".claude-plugin" / "plugin.json")
+    market = _json(ROOT / ".claude-plugin" / "marketplace.json")
+    entry = next(e for e in market["plugins"] if e["name"] == "workbench")
+    assert manifest["version"] == entry["version"] == "4.0.0"
+    assert manifest["description"] == entry["description"]
+    for name in (*RETIRED_NAMES, *vendored_skills()):
+        assert name not in manifest["description"], name
+
+
+def test_architecture_names_the_plugin():
+    assert "plugins/superpowers" in (ROOT / "docs" / "architecture.md").read_text()

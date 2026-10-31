@@ -133,7 +133,12 @@ The marketplace name after `@` is the one init wrote (see
 
 These are the ways of working that hold up day to day. Each has an example
 prompt. In other harnesses, use the bare skill names instead of the
-`workbench:` prefix.
+`superpowers:` and `workbench:` prefixes.
+
+The flow, from the `superpowers` plugin: `brainstorming` (discovery and plan.md) ->
+the one gate -> `writing-plans` (implementation-plan.md for the agreed rung) ->
+`subagent-driven-development` (implementers, the whole-diff review, retro.md) ->
+`finishing-a-development-branch` (the merge).
 
 ### Write requests as a brief
 
@@ -164,7 +169,8 @@ After the gate nothing waits for you until the run ends.
 
 Your answer starts `writing-plans` for the agreed rung, then
 `subagent-driven-development`: one implementer per chunk (tests first), one reviewer
-on the whole diff for under- and over-delivery, at most two fix rounds, a retro and the merge. "Approved
+on the whole diff for under- and over-delivery, at most two fix rounds, a retro, and the merge
+through `finishing-a-development-branch`. "Approved
 means fully delivered": every item of the agreed rung is implemented in full, with its
 tests and docs, and nothing is left half done. The only acceptable
 non-delivery is an external blocker, which the run names and escalates.

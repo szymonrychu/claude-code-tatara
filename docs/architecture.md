@@ -27,3 +27,16 @@ claude-code-tatara/
 - `code/agents-schedule` (python): Python microservice mapping cron schedules to presets; fires agent clusters through the orchestrator API; own database
 - `code/agents-matrix-connector` (python): Python microservice with its own Postgres database: connects to the Matrix homeserver as a bot user, auto-discovers Messenger chats bridged by mautrix-meta, applies allow/deny rules and routes allowed chats to agents-orchestrator sessions
 - `code/any-mcp-tatara-plugins` (python): Bucket of platform-specific any-mcp plugins grouped into topic subdirectories, installed by any-mcp from a git repo, subdirectory and ref (terraform-module-like source notation)
+
+## Plugins
+
+The root marketplace (`.claude-plugin/marketplace.json`) offers the plugins under `plugins/`:
+
+- `plugins/superpowers`: the development flow, a vendored fork of superpowers 7.0.0
+  (brainstorming, writing-plans, subagent-driven-development, finishing-a-development-branch
+  and the disciplines they lean on) plus `ticket.py` and the plan templates; `UPSTREAM.md`
+  and `mise run superpowers-diff` track upstream.
+- `plugins/workbench`: the tooling the flow dispatches: agents, research, worktree,
+  submodule and pull request skills, init and template-update, hooks.
+- `plugins/workbench-infra`, `plugins/workbench-observability`, `plugins/workbench-secrets`:
+  optional packs.

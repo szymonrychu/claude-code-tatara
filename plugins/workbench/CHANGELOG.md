@@ -1,5 +1,16 @@
 # Changelog
 
+## v4.0.0 - 2026-10-31
+
+### Breaking
+
+- workbench: the flow skills (discovery, plan, plan run, interrogation, debugging and review flows) and the plan writer agent retire; the development flow is the vendored superpowers 7.0.0 fork in `plugins/superpowers`, and this plugin keeps the tooling it dispatches (7a27212)
+- ticket: `ticket.py`, its subcommands and the plan templates move to `plugins/superpowers` (0c876d5)
+
+### Features
+
+- init: a template update keeps the retired flow paths out (1da23b1)
+
 ## v3.0.0 - 2026-10-31
 
 ### Breaking
