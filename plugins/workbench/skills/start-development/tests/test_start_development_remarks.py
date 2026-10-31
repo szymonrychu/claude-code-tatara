@@ -47,7 +47,7 @@ def test_phase_four_deploy_hook_and_user_run_steps():
 
 
 def test_config_keys_are_read_by_the_right_readers():
-    cfg = flat((SD / "references" / "workbench-config.md").read_text())
+    cfg = flat((ROOT / "references" / "workbench-config.md").read_text())
     assert "read by the plan-writer" in cfg
     assert "Read by worktree-merge only" in cfg
     assert "planner" not in cfg and "epic" not in cfg.lower()

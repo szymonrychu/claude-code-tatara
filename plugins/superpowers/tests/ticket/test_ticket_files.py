@@ -14,10 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SD = ROOT
 SCRIPT = SD / "scripts" / "ticket.py"
 # tickets.md lives with ticket.py; worktrees.md is workbench tooling.
-REFERENCES = [
-    SD / "references",
-    ROOT.parent / "workbench" / "skills" / "start-development" / "references",
-]
+REFERENCES = [SD / "references", ROOT.parent / "workbench" / "references"]
 OLD_FORMAT = "old epic format under {}; run ticket.py migrate --all"
 
 

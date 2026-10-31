@@ -17,7 +17,7 @@ callees and types around the change before judging it. Report only what affects
 correctness, security, the stated requirement, or what the next maintainer
 inherits. No style preferences, no "consider also".
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/start-review/references/review-checklist.md`
+Read `${CLAUDE_PLUGIN_ROOT}/references/review-checklist.md`
 first and apply it; it is the single review checklist.
 
 For each finding return: `kind` (missing, extra, wrong, quality), severity

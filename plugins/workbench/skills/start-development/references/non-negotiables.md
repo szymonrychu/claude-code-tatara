@@ -28,7 +28,7 @@ Verify and the Final verify on HEAD.
 
 ## Hooks that hold the line
 
-The commit guard and verification-freshness guard (`references/hooks.md`): a subagent cannot end a turn in a worktree whose last test run was not on its HEAD.
+The commit guard and verification-freshness guard (`${CLAUDE_PLUGIN_ROOT}/references/hooks.md`): a subagent cannot end a turn in a worktree whose last test run was not on its HEAD.
 
 ## Boy scout rule
 

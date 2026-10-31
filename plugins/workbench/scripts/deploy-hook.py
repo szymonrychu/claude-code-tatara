@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
 import workbench  # noqa: E402
 
 

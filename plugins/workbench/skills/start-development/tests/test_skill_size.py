@@ -8,16 +8,21 @@ PLUGIN = SKILL_DIR.parents[1]
 REPO = PLUGIN.parents[1]
 MAX_LINES = 150
 # References that moved out of the skill, by the path SKILL.md links them with.
-MOVED = {"tickets.md": "plugins/superpowers/references/tickets.md"}
+MOVED = {
+    "tickets.md": "plugins/superpowers/references/tickets.md",
+    **{
+        n: f"${{CLAUDE_PLUGIN_ROOT}}/references/{n}"
+        for n in (
+            "worktrees.md",
+            "hooks.md",
+            "merge-hosts.md",
+            "user-run-steps.md",
+            "workbench-config.md",
+        )
+    },
+}
 LINK = re.compile(r"(?:\$\{CLAUDE_PLUGIN_ROOT\}/|plugins/[\w-]+/)?references/[a-z-]+\.md")
-KEPT = (
-    "worktrees.md",
-    "non-negotiables.md",
-    "hooks.md",
-    "merge-hosts.md",
-    "user-run-steps.md",
-    "workbench-config.md",
-)
+KEPT = ("non-negotiables.md",)
 
 
 def test_skill_md_within_line_cap():
@@ -47,5 +52,10 @@ def test_every_kept_reference_is_linked_from_skill():
         assert f"references/{name}" in text, name
     for name, link in MOVED.items():
         assert not (SKILL_DIR / "references" / name).exists(), name
-        assert (REPO / link).is_file() and link in text, link
+        path = (
+            PLUGIN / link.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
+            if link.startswith("${CLAUDE_PLUGIN_ROOT}/")
+            else REPO / link
+        )
+        assert path.is_file() and link in text, link
     assert "retro.md" not in KEPT

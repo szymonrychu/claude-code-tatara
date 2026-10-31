@@ -6,7 +6,11 @@ from pathlib import Path
 REFS = Path(__file__).resolve().parents[1] / "references"
 PLUGINS = REFS.parents[3]
 # References that moved out of the skill to the plugin that owns them now.
-MOVED = {"tickets.md": PLUGINS / "superpowers" / "references"}
+MOVED = {
+    "tickets.md": PLUGINS / "superpowers" / "references",
+    "worktrees.md": PLUGINS / "workbench" / "references",
+    "hooks.md": PLUGINS / "workbench" / "references",
+}
 
 PINS = {
     "tickets.md": [

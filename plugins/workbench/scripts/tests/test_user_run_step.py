@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "user-run-step.py"
-REF = ROOT / "skills" / "start-development" / "references" / "user-run-steps.md"
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "user-run-step.py"
+REF = ROOT / "references" / "user-run-steps.md"
 
 
 def spec(tmp_path, **kw):

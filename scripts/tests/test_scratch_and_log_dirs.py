@@ -23,7 +23,7 @@ ALLOW = {
     "plugins/workbench/scripts/flake-hunt.sh": _FALLBACK,
     "plugins/workbench/hooks/worktree_lib.py": _FALLBACK,
     "plugins/workbench/hooks/bash-output-filter.py": _FALLBACK + " (docstring)",
-    "plugins/workbench/skills/start-development/references/hooks.md": _FALLBACK + " (documented)",
+    "plugins/workbench/references/hooks.md": _FALLBACK + " (documented)",
 }
 
 

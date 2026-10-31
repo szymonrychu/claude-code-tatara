@@ -151,7 +151,7 @@ def test_readme_lists_ticket_tools():
 
 
 def test_no_circular_discussion_loop_reference():
-    hosts = (ROOT / "skills" / "start-development" / "references" / "merge-hosts.md").read_text()
+    hosts = (ROOT / "references" / "merge-hosts.md").read_text()
     loop = (ROOT / "skills" / "pullrequests-review-loop" / "SKILL.md").read_text()
     assert "discussion loop below" not in hosts
     flat = re.sub(r"\s+", " ", hosts)

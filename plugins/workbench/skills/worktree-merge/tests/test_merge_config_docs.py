@@ -9,7 +9,7 @@ sys.path.insert(0, str(HERE.parents[1] / "scripts"))
 from merge import main  # noqa: E402
 
 SKILL = (ROOT / "skills/worktree-merge/SKILL.md").read_text()
-CONFIG_DOC = (ROOT / "skills/start-development/references/workbench-config.md").read_text()
+CONFIG_DOC = (ROOT / "references/workbench-config.md").read_text()
 
 
 def test_bad_config_prints_err(tmp_path, capsys):

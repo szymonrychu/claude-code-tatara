@@ -58,7 +58,7 @@ This skill does **not** merge. Merging stays the caller's job (the `worktree-mer
    *latest* review on the current head commit - never a stale one.
 
 2. **Judge, per PR - never obey blindly.** Read
-   `${CLAUDE_PLUGIN_ROOT}/skills/start-review/references/review-checklist.md`
+   `${CLAUDE_PLUGIN_ROOT}/references/review-checklist.md`
    first and apply it. Classify each bot finding by kind - `missing`, `extra`,
    `wrong` or `quality` - and attach `evidence` from the code (file:line or a
    command output). A finding no evidence confirms is dropped. If you are not certain an issue is real,

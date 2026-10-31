@@ -78,7 +78,7 @@ as `docs(plan): <plan> implementation plan` (path: `ticket.py path <plan> implem
 Invoke the `plan-run` skill; it runs this loop, written once there, and every agent call runs in the background, so
 the session stays free to plan other work.
 1. `ticket.py move <plan> in-progress`, from the main checkout, claims the plan (refused unless `rung` is set and
-   implementation-plan.md exists) and creates the integration tree on branch `<plan>` (`references/worktrees.md`).
+   implementation-plan.md exists) and creates the integration tree on branch `<plan>` (`${CLAUDE_PLUGIN_ROOT}/references/worktrees.md`).
 2. Per chunk, one `workbench:implementer`: sequential chunks in one tree, each told the plan path and its chunk
    number.
 3. One reviewer, `workbench:reviewer` (sonnet), on the whole diff `git diff <base>...HEAD`: under-delivery against
@@ -90,10 +90,10 @@ the session stays free to plan other work.
 4. One `worktree-merger` lands the plan: **meta mode** runs `ticket.py close <plan> --verify '<final verify>'` (rebase
    onto main in the tree, verify, fast-forward only when green, verify main; a rebase conflict is resolved in the plan
    tree, then close runs again). **Component mode** runs `git-worktrees-commit`, `git-worktrees-push`,
-   `pullrequests-update`, `pullrequests-watch` (host per repo, `references/merge-hosts.md`) and merges the MR the
+   `pullrequests-update`, `pullrequests-watch` (host per repo, `${CLAUDE_PLUGIN_ROOT}/references/merge-hosts.md`) and merges the MR the
    moment it is green, mergeable and review-clean. Deploy: `pullrequests-watch --deploy`, or `python3
-   ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/deploy-hook.py` for a `deploy` config
-   (`references/workbench-config.md`); a step only the user may run follows `references/user-run-steps.md`.
+   ${CLAUDE_PLUGIN_ROOT}/scripts/deploy-hook.py` for a `deploy` config
+   (`${CLAUDE_PLUGIN_ROOT}/references/workbench-config.md`); a step only the user may run follows `${CLAUDE_PLUGIN_ROOT}/references/user-run-steps.md`.
    Post-deploy health: `grafana-debugging-start` when the `workbench-observability` pack is enabled, else the repo's
    `deploy.verify` command; a failed check continues in `start-debugging`. Then `ticket.py move <plan> done` removes
    the tree and branch and `ticket.py reap --plan <plan>` sweeps any left over.
@@ -105,7 +105,7 @@ the second is recommended, never built, and relayed from retro.md.
 
 ## Non-negotiables
 
-Full text in `references/non-negotiables.md`, the hooks behind them in `references/hooks.md`: **Delivery is not
+Full text in `references/non-negotiables.md`, the hooks behind them in `${CLAUDE_PLUGIN_ROOT}/references/hooks.md`: **Delivery is not
 optional** (only a named genuine blocker stops it). **Orchestrate. Do not implement** (set every subagent's model; at
 400k tokens or 75% context, hand off with `handoff`). **Test-driven and verified** (the reviewer that did not write
 the code verified it on HEAD). **Scope is not negotiable** (the agreed rung is the scope; under- and over-delivery are

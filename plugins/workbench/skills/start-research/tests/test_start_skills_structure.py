@@ -71,6 +71,14 @@ def test_no_reasoning_depth_instruction_in_prompts():
 
 
 START_DEVELOPMENT = SKILLS / "start-development"
+# References start-development links that moved to the plugin that owns them now.
+MOVED_REFERENCES = (
+    *(
+        ROOT / "references" / f"{n}.md"
+        for n in ("hooks", "merge-hosts", "user-run-steps", "workbench-config", "worktrees")
+    ),
+    ROOT.parent / "superpowers" / "references" / "tickets.md",
+)
 
 EXPECTED_SKILL_MENTIONS = (
     "git-submodules-refresh",
@@ -118,13 +126,15 @@ LOCAL_SKILL_DIRS = (
 def sd_text(skill):
     """SKILL.md plus every reference file, for rules that live in a reference."""
     refs = sorted((skill.parent / "references").glob("*.md"))
+    if skill.parent == START_DEVELOPMENT:
+        refs += MOVED_REFERENCES
     return "\n".join([*(r.read_text() for r in refs), skill.read_text()])
 
 
 def skill_with_references():
     """SKILL.md plus every references/*.md, for rules that moved out of the body."""
     parts = [(START_DEVELOPMENT / "SKILL.md").read_text()]
-    for ref in sorted((START_DEVELOPMENT / "references").glob("*.md")):
+    for ref in [*sorted((START_DEVELOPMENT / "references").glob("*.md")), *MOVED_REFERENCES]:
         parts.append(ref.read_text())
     return "\n".join(parts)
 
@@ -298,14 +308,14 @@ OLD_SCM_SKILL_NAME = re.compile(r"(?:github-pull|gitlab-merge)(?:request)s?-\w")
 def test_no_retired_scm_skill_names_in_flow_docs():
     docs = (
         START_DEVELOPMENT / "SKILL.md",
-        START_DEVELOPMENT / "references" / "merge-hosts.md",
+        ROOT / "references" / "merge-hosts.md",
         ROOT / "README.md",
     )
     for doc in docs:
         text = doc.read_text()
         found = OLD_SCM_SKILL_NAME.search(text)
         assert not found, f"{doc.name} still names {found.group(0)}"
-    merge_hosts = (START_DEVELOPMENT / "references" / "merge-hosts.md").read_text()
+    merge_hosts = (ROOT / "references" / "merge-hosts.md").read_text()
     assert "WORKBENCH_SCM_HOSTS" in merge_hosts
 
 
@@ -419,7 +429,7 @@ def test_run_uses_start_review_and_start_debugging():
 def test_hooks_section_names_the_freshness_guard():
     text = _flat(_skill())
     assert "## Hooks that hold the line" in text
-    hooks = START_DEVELOPMENT / "references" / "hooks.md"
+    hooks = ROOT / "references" / "hooks.md"
     assert "references/hooks.md" in text
     assert hooks.is_file()
     combined = text + " " + _flat(hooks.read_text())
@@ -446,7 +456,7 @@ def test_gate_answer_is_the_only_approval():
 
 
 def test_worktrees_reference_covers_helpers_for_every_role():
-    text = _flat((START_DEVELOPMENT / "references" / "worktrees.md").read_text())
+    text = _flat((ROOT / "references" / "worktrees.md").read_text())
     for term in (
         "A helper spawned by an implementer",
         "spawned by the reviewer",

@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 PLAN_WRITER = ROOT / "agents" / "plan-writer.md"
-STEPS = ROOT / "skills" / "start-development" / "references" / "user-run-steps.md"
+STEPS = ROOT / "references" / "user-run-steps.md"
 PREFIX = "${CLAUDE_PLUGIN_ROOT}/"
 
 
@@ -24,7 +24,7 @@ def test_plan_writer_paths_prefixed():
 def test_user_run_steps_paths_prefixed():
     t = STEPS.read_text()
     assert _bare_commands(t) == []
-    assert t.count(PREFIX + "skills/start-development/scripts/user-run-step.py") == 2
+    assert t.count(PREFIX + "scripts/user-run-step.py") == 2
 
 
 def test_skill_paths_prefixed():

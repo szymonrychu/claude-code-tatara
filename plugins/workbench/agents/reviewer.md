@@ -8,7 +8,7 @@ description: >
 tools: [Read, Write, Grep, Glob, Bash]
 ---
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/start-review/references/review-checklist.md`
+Read `${CLAUDE_PLUGIN_ROOT}/references/review-checklist.md`
 first; it governs step 5 and the format of every finding, `declined` and
 `cannotVerify` entry.
 

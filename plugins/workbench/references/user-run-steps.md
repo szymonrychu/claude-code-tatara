@@ -19,11 +19,11 @@ JSON, written by the orchestrator:
 ## Flow
 
 1. Write the spec.
-2. `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/user-run-step.py prepare <spec>` prints `PRE ok <cmd>` or
+2. `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/user-run-step.py prepare <spec>` prints `PRE ok <cmd>` or
    `PRE FAIL <cmd> exit <n>` per check. Any failure exits 1: fix the cause, do not hand over the command.
    When all pass it prints `! <command>`.
 3. Hand that `! <command>` line to the user to paste, and wait for them to say it ran.
-4. `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/user-run-step.py check <spec>` runs each `post` check and matches
+4. `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/user-run-step.py check <spec>` runs each `post` check and matches
    `expect` (a regex) against their combined output. It prints `RESULT pass` or `RESULT fail: <reason>`, then the
    last 20 lines of output; exit 0 or 1.
 5. Record the RESULT line in the run notes. On fail, show the user the tail and agree the next step.

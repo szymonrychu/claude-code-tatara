@@ -28,14 +28,7 @@ def resolve(link):
     return SD / link
 
 
-KEPT = {
-    "worktrees.md",
-    "non-negotiables.md",
-    "hooks.md",
-    "merge-hosts.md",
-    "user-run-steps.md",
-    "workbench-config.md",
-}
+KEPT = {"non-negotiables.md"}
 DELETED_REFS = (
     "retro.md",
     "phase-4-execute.md",

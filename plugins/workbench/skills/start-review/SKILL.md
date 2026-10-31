@@ -70,7 +70,7 @@ reviewer here.
 
 The reviewer gets the intent, the range, the worktree path, and this
 instruction: read
-`${CLAUDE_PLUGIN_ROOT}/skills/start-review/references/review-checklist.md`
+`${CLAUDE_PLUGIN_ROOT}/references/review-checklist.md`
 first, then apply it.
 
 - spec axis: reports missing / extra / wrong, quoting the requirement line for

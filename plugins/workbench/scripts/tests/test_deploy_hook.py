@@ -5,8 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "skills" / "start-development" / "scripts" / "deploy-hook.py"
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "deploy-hook.py"
 
 
 def make_repo(tmp_path, deploy=None):

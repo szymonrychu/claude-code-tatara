@@ -8,7 +8,7 @@ import pytest
 SKILL_DIR = Path(__file__).resolve().parents[1]
 ROOT = SKILL_DIR.parents[1]
 SKILL = SKILL_DIR / "SKILL.md"
-CHECKLIST = SKILL_DIR / "references" / "review-checklist.md"
+CHECKLIST = ROOT / "references" / "review-checklist.md"
 PANEL = ROOT / "agents" / "panel-reviewer.md"
 REVIEWERS = ("reviewer",)
 RETIRED = ("spec-reviewer", "quality-reviewer", "plan-execute")
@@ -164,7 +164,7 @@ def test_referenced_files_exist():
     names = set(re.findall(r"references/([\w.-]+\.md)", text))
     assert "review-checklist.md" in names
     for name in names:
-        assert (SKILL_DIR / "references" / name).is_file(), name
+        assert (ROOT / "references" / name).is_file(), name
 
 
 def test_panel_reviewer_reads_the_checklist():
