@@ -94,7 +94,7 @@ NEW_AGENTS = (
     "research-prior-art-scout",
     "research-paper-scout",
     "research-reviewer",
-    "planner",
+    "plan-writer",
 )
 
 

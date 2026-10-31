@@ -215,11 +215,14 @@ def test_reviewer_agents_read_only_and_read_checklist(name):
     path = ROOT / "agents" / f"{name}.md"
     fm = frontmatter(path)
     assert fm["name"] == name
-    assert fm["tools"] == "[Read, Grep, Glob, Bash]"
+    # the reviewer alone gains Write, for exactly one file: retro.md when the review passes
+    expected = "[Read, Write, Grep, Glob, Bash]" if name == "reviewer" else "[Read, Grep, Glob, Bash]"
+    assert fm["tools"] == expected
     assert "model" not in fm and "hooks" not in fm
     assert set(fm) <= {"name", "description", "tools"}
     text = path.read_text()
-    assert "Edit" not in fm["tools"] and "Write" not in fm["tools"]
+    assert "Edit" not in fm["tools"]
+    assert ("Write" in fm["tools"]) == (name == "reviewer")
     body = text.split("\n---\n", 1)[1]
     assert "review-checklist.md" in body
     assert body.index("review-checklist.md") < 400

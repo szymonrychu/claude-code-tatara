@@ -1,4 +1,4 @@
-"""The lean loop's agents: one implementer, one reviewer, one scope auditor, one planner."""
+"""The plan flow's agents: one plan-writer, one implementer, one whole-diff reviewer, one merger."""
 
 import re
 import subprocess
@@ -33,14 +33,19 @@ def _section(body, heading):
     raise AssertionError(f"no ## {heading}")
 
 
-def test_split_reviewers_retired():
+RETIRED_AGENTS = (
+    "spec-reviewer",
+    "quality-reviewer",
+    "planner",
+    "record-writer",
+    "retro-writer",
+    "scope-auditor",
+)
+
+
+def test_retired_agents_are_untracked():
     out = subprocess.run(
-        [
-            "git",
-            "ls-files",
-            "plugins/workbench/agents/spec-reviewer.md",
-            "plugins/workbench/agents/quality-reviewer.md",
-        ],
+        ["git", "ls-files", "--", *(f"plugins/workbench/agents/{n}.md" for n in RETIRED_AGENTS)],
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -63,14 +68,20 @@ def test_implementer_is_lean():
         assert word in text, word
     flat = " ".join(body.split())
     for phrase in (
-        "integration worktree",
+        "plan tree",
         "main checkout",
+        "implementation-plan.md",
+        "chunk",
+        "git log",
+        "builds nothing outside",
+        "recommended, never built",
         "200 words",
         "same agent",
         "Never edit, delete, skip or xfail an existing test",
         "WIP:",
     ):
         assert phrase in flat, phrase
+    assert "epic" not in flat.lower()
     text.encode("ascii")
 
 
@@ -78,13 +89,14 @@ def test_reviewer_verifies_then_reviews():
     fm, body = _frontmatter("reviewer")
     assert fm["name"] == "reviewer"
     assert "model" not in fm
-    assert fm["tools"] == "[Read, Grep, Glob, Bash]"
+    assert fm["tools"] == "[Read, Write, Grep, Glob, Bash]"
     order = " ".join(_section(body, "Order").split())
     steps = (
         "git status --porcelain",
         "git rev-parse HEAD",
-        "verify command",
-        "every acceptance condition",
+        "Final verify",
+        "under-delivery",
+        "over-delivery",
         "debt markers",
         "quality",
     )
@@ -93,48 +105,48 @@ def test_reviewer_verifies_then_reviews():
     assert positions == sorted(positions), dict(zip(steps, positions, strict=True))
     for marker in ("TODO", "FIXME", "later", "follow-up", "out of scope", "phase 2"):
         assert marker in order, marker
-    assert "test:<file>::<name>" in order
     output = _section(body, "Output")
-    for key in ("head", "verifyPassed", "unmetAcs", "findings", "declined", "cannotVerify"):
+    for key in (
+        "head",
+        "verifyPassed",
+        "undelivered",
+        "overDelivered",
+        "findings",
+        "declined",
+        "cannotVerify",
+    ):
         assert f"`{key}`" in output, key
+    assert "pointsActual" not in _text("reviewer")
+    retro = " ".join(_section(body, "Retro").split())
+    for phrase in (
+        "templates/retro.md",
+        "ticket.py path <plan> retro",
+        "only on a clean pass",
+        "the only file you write",
+        "Recommendations",
+        "discovered",
+    ):
+        assert phrase in retro, phrase
     flat = " ".join(body.split())
     assert "same reviewer" in flat
     assert "review-checklist.md" in flat
     _text("reviewer").encode("ascii")
 
 
-def test_scope_auditor_and_planner_are_lean():
-    for name in ("scope-auditor", "planner"):
-        lowered = _text(name).lower()
-        for word in ("ledger", "approvals", "plan-execute", "validate-tasks", "shared-parts"):
-            assert word not in lowered, (name, word)
-    audit = " ".join(_text("scope-auditor").split())
+def test_worktree_merger_has_a_plan_close():
+    body = _frontmatter("worktree-merger")[1]
+    close = " ".join(_section(body, "Plan close").split())
     for phrase in (
-        "git diff <base>...<epic>",
-        "Goals",
-        "Non-goals",
-        "every task",
-        "acceptance condition",
-        "duplicate sweep",
-        "suggestedTask",
+        "ticket.py close <plan> --verify",
+        "rebase conflict",
+        "in the plan tree",
+        "run close again",
+        "pushes",
+        "opens the MR",
+        "ticket.py move <plan> done",
     ):
-        assert phrase in audit, phrase
-    fm, body = _frontmatter("planner")
-    assert fm["model"] == "opus"
-    flat = " ".join(body.split())
-    for phrase in (
-        "ticket.py lint <epic>",
-        "ticket.py new-task",
-        "verbatim",
-        "`test:`",
-        "`command:`",
-        "depends_on",
-        "one test file's worth of behaviour, at most 8 files",
-        "more than five files",
-    ):
-        assert phrase in flat, phrase
-    for word in ("contract", "ticket.py graph", "ticket.py facts", "ticket.py estimate"):
-        assert word not in flat, word
+        assert phrase in close, phrase
+    assert "epic" not in " ".join(body.split()).lower()
 
 
 def test_start_review_names_no_split_reviewers():
@@ -156,8 +168,10 @@ def _flat(name):
 def test_agents_list_read_once_edit_once():
     for name in ("implementer", "reviewer"):
         flat = _flat(name)
-        for phrase in ("list every file", "one pass", "once per red or green step"):
+        for phrase in ("list every file", "one pass"):
             assert phrase in flat, (name, phrase)
+    assert "once per red or green step" in _flat("implementer")
+    assert "Run each Verify once" in _flat("reviewer")
 
 
 def test_no_test_tampering():
@@ -172,7 +186,7 @@ def test_reviewer_flags_xfail_and_compat_shims():
     flat = _flat("reviewer")
     assert "an added skip or xfail" in flat
     assert "backward compatibility shim" in flat
-    assert "the requirement did not ask for" in flat
+    assert "the plan did not ask for" in flat
     assert "high finding" in flat
 
 
@@ -185,8 +199,6 @@ def test_implementer_asks_instead_of_guessing():
     assert "backward compatibility" in flat
 
 
-def test_reviewer_reports_points_actual():
-    output = _text("reviewer").split("## Output")[1].split("\n## ")[0]
-    flat = " ".join(output.split())
-    assert "`pointsActual`" in flat
-    assert "(1, 2, 3, 5, 8, 13)" in flat
+def test_reviewer_reports_no_points():
+    assert "pointsActual" not in _text("reviewer")
+    assert "storypoints" not in _text("reviewer").lower()

@@ -85,22 +85,19 @@ the caller sets it per call.
 | `scm-shepherd` | sonnet | MR/PR + pipeline status; picks `glab` or `gh` from the remote |
 | `submodule-auditor` | sonnet | which submodule pins are stale, unpushed, detached, or remote-less |
 | `codebase-cartographer` | opus | maps an unfamiliar repo before design: entrypoints, boundaries, where a change lands |
-| `planner` | opus | plans an epic from `{epic, briefs[], userDecisions[]}`: design.md and linted tasks |
+| `plan-writer` | opus | writes plan.md (scope ladder, open questions) from `{plan, briefs[]}`, then implementation-plan.md for the agreed rung after the gate |
 | `security-researcher` | opus | secrets, RBAC, container privilege, supply chain, CVE surface |
 | `architect-researcher` | opus | design research that ends in a decision, not a table |
 | `reuse-hunter` | sonnet | finds parts a plan would rebuild, near-duplicate helpers and hot spots; returns a shared-parts map |
-| `record-writer` | sonnet | fills the record template for a finished epic from its task files and git log, one file |
-| `retro-writer` | sonnet | fills RETRO.md's Retro table and Improvements for a finished epic from the notes, the deltas and the retro history, one file |
-| `implementer` | sonnet | implements one task test-first in the epic's integration worktree and returns `complete`, `undelivered`, `discovered`; fix rounds continue it |
-| `reviewer` | per call | one reviewer per task: verify on HEAD, every acceptance condition, debt markers, then quality |
+| `implementer` | sonnet | implements one chunk of an implementation plan test-first in the plan tree and returns `complete`, `undelivered`, `discovered`; fix rounds continue it |
+| `reviewer` | per call | one reviewer on the whole diff: verify on HEAD, under- and over-delivery, debt markers, quality; writes retro.md on a pass |
 | `panel-reviewer` | per call | one member of an `interrogate` review panel, one per model |
-| `worktree-merger` | sonnet | resolves a conflicted rebase of an epic's integration branch, sized by `--assess` |
+| `worktree-merger` | sonnet | lands a plan: `ticket.py close` (resolving a rebase conflict in the plan tree) or the MR |
 | `research-docs-purist` | sonnet | official docs at the installed version, anti-patterns in our usage |
 | `research-practitioner` | sonnet | field experience and known failure modes |
 | `research-prior-art-scout` | sonnet | similar open-source projects, shapes and dead ends |
 | `research-paper-scout` | sonnet | literature for the algorithmic core, cited by DOI or arXiv id |
 | `research-reviewer` | sonnet | adversarial check of research briefs |
-| `scope-auditor` | sonnet | once per epic: README goals and every acceptance condition against the integrated diff, plus a duplicate sweep |
 
 `scm-shepherd` decides per repo from `remote get-url`, so one agent serves GitHub and GitLab trees.
 

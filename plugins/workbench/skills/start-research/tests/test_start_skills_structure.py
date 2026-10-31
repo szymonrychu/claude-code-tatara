@@ -154,7 +154,7 @@ def test_start_development_does_not_chain_superpowers():
 
 
 def test_new_agents_exist_and_are_read_only():
-    for name in ("scope-auditor", "codebase-cartographer"):
+    for name in ("codebase-cartographer",):
         f = ROOT / "agents" / f"{name}.md"
         assert f.is_file(), f"agents/{name}.md missing"
         fm = frontmatter(f)
@@ -317,7 +317,7 @@ def test_one_gate_only():
     assert not re.search(r"^#+ .*Gate 1", text, re.M), "a 'Gate 1' heading remains"
     assert not re.search(r"^#+ .*Gate 2", text, re.M), "a 'Gate 2' heading remains"
     assert "runs unattended to merge" in text
-    assert "builder check" in text
+    assert "recommended answer" in text
     assert "## Phase 3 - Detailed" not in text, "the post-gate question round must be gone"
 
 
@@ -337,22 +337,22 @@ def test_every_reference_and_template_named_exists():
 
 def test_research_steps_table():
     text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    section = _section(text, "## Phase 1 - Discovery")
+    section = " ".join(_section(text, "## Phase 1 - Discovery").split())
     for name in RESEARCH_SKILLS:
         assert name in section, f"phase 1 does not name {name}"
     assert "skipped" in section and "Run when" in section
 
 
-def test_record_phase():
-    text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "## Phase 7 - Record" in text
-    assert "record-writer" in text
-    assert "ticket.py path <epic> record" in text
+def test_closing_phase_relays_the_retro():
+    phase4 = " ".join(_section(sd_text(START_DEVELOPMENT / "SKILL.md"), "## Phase 4 - Run").split())
+    assert "retro.md" in phase4
+    assert "closing message" in phase4
+    assert "recommendations" in phase4
 
 
-def test_execute_passes_the_task_file_and_tree():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
-    for key in ("the task file verbatim", "the tree path", "references/worktrees.md"):
+def test_run_passes_the_plan_path_and_tree():
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
+    for key in ("the plan path", "its chunk number", "references/worktrees.md"):
         assert key in phase4, f"Phase 4 does not mention {key}"
 
 
@@ -376,9 +376,10 @@ def _skill():
     return sd_text(START_DEVELOPMENT / "SKILL.md")
 
 
-def test_phase_three_lints_the_documents():
-    phase3 = _flat(_section(_skill(), "## Phase 3 - Tasks"))
-    assert "ticket.py lint <epic>" in phase3
+def test_phase_three_writes_the_implementation_plan():
+    phase3 = _flat(_section(_skill(), "## Phase 3 - Implementation plan"))
+    assert "implementation-plan.md" in phase3
+    assert "agreed rung only" in phase3
 
 
 def test_gate_questions_carry_recommended_answers():
@@ -387,34 +388,25 @@ def test_gate_questions_carry_recommended_answers():
     assert wording in gate
 
 
-def test_phase4_names_epic_branch_and_main_checkout():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
-    for term in ("branch `<epic>`", "main checkout"):
+def test_phase4_names_plan_branch_and_main_checkout():
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
+    for term in ("branch `<plan>`", "main checkout"):
         assert term in phase4, f"Phase 4 does not name {term!r}"
 
 
-def test_execute_names_the_reviewer_and_verified_head():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
-    for term in (
-        "workbench:reviewer",
-        "--verified-head <head>",
-        "the commit the task started from",
-    ):
+def test_run_names_the_reviewer_and_the_whole_diff():
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
+    for term in ("workbench:reviewer", "`git diff <base>...HEAD`", "under-delivery"):
         assert term in phase4, f"Phase 4 does not name {term!r}"
 
 
-def test_phase_five_uses_start_review():
+def test_run_uses_start_review_and_start_debugging():
     text = _skill()
-    phase5 = _section(text, "## Phase 5 - Epic review")
-    assert "start-review" in phase5
-    assert "workbench:interrogate" in phase5
+    phase4 = _section(text, "## Phase 4 - Run")
+    assert "start-review" in phase4
+    assert "start-debugging" in phase4
+    assert "health" in phase4
     assert "/code-review" not in text, "the native /code-review is replaced by start-review"
-
-
-def test_phase_six_routes_to_start_debugging():
-    phase6 = _section(_skill(), "## Phase 6 - Close or merge")
-    assert "start-debugging" in phase6
-    assert "health" in phase6
 
 
 def test_hooks_section_names_the_freshness_guard():
@@ -435,22 +427,13 @@ def test_tdd_section_requires_red_evidence_and_independent_verification():
     assert "verified on HEAD <sha> by an agent that did not write it" in tdd
 
 
-def test_record_writer_reads_verified_heads():
-    text = (ROOT / "agents" / "record-writer.md").read_text()
-    for term in ("verified_head", "unverified", "task files", "git log"):
-        assert term in text, f"record-writer.md does not mention {term}"
-
-
 def _ref(name):
     return (START_DEVELOPMENT / "references" / name).read_text()
 
 
-def test_gate_approves_goals_and_acceptance_conditions():
+def test_gate_answer_is_the_only_approval():
     gate = _flat(_section(_skill(), "## The gate"))
-    for term in (
-        "the project brief (what, how, why)",
-        "approves the README goals and every task's acceptance conditions",
-    ):
+    for term in ("Pick a rung per plan", "The user's answer is the only approval"):
         assert term in gate, f"the gate does not say {term!r}"
     assert "approvals" not in gate
 
@@ -459,7 +442,7 @@ def test_worktrees_reference_covers_helpers_for_every_role():
     text = _flat((START_DEVELOPMENT / "references" / "worktrees.md").read_text())
     for term in (
         "A helper spawned by an implementer",
-        "review or audit role",
+        "spawned by the reviewer",
         "read-only like its parent",
         "merge helper",
         "never in another",
@@ -468,32 +451,30 @@ def test_worktrees_reference_covers_helpers_for_every_role():
 
 
 def test_phase_four_dispatches_in_the_background():
-    phase4 = _flat(_section(_skill(), "## Phase 4 - Execute"))
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
     assert "in the background" in phase4
 
 
 def test_scope_section_forbids_later_parking():
     scope = _flat(_section(_skill(), "## Scope is not negotiable"))
-    for term in ('No "later" parking', "named blocker", "in one line"):
+    for term in ('No "later" parking', "named blocker", "recommended, never built"):
         assert term in scope, f"the Scope section does not say {term!r}"
 
 
 def test_closing_message_is_short():
-    phase7 = _flat(_section(_skill(), "## Phase 7 - Record"))
-    assert "three lines at most" in phase7
-    assert "concise-orchestrator" in phase7
+    phase4 = _flat(_section(_skill(), "## Phase 4 - Run"))
+    assert "three lines at most" in phase4
+    assert "concise-orchestrator" in phase4
 
 
-def test_tickets_reference_lists_value():
-    text = _flat((START_DEVELOPMENT / "references" / "tickets.md").read_text())
-    assert "`value`: one line, what this task is worth to the user; required" in text
+def test_tickets_reference_is_linked():
     assert "references/tickets.md" in _skill()
 
 
-def test_phase_six_reap_line_has_no_conditional_parking():
-    flat = _flat(_section(_skill(), "## Phase 6"))
+def test_phase_four_reap_line_has_no_conditional_parking():
+    flat = _flat(_section(_skill(), "## Phase 4 - Run"))
     assert "removes the rest on request" not in flat
-    assert "(`ticket.py reap --epic <epic>`) removes every remaining worktree of the epic" in flat
+    assert "`ticket.py reap --plan <plan>` sweeps any left over" in flat
 
 
 def test_topic_focus_goes_to_practitioner():

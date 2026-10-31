@@ -164,7 +164,6 @@ def test_readme_describes_the_lean_flow():
         assert gone not in text, gone
     assert "graphify" not in text.lower()
     assert "epic reached main" in text
-    assert re.search(r"`scope-auditor` \| sonnet \|", text)
 
 
 def test_readme_documents_the_template():

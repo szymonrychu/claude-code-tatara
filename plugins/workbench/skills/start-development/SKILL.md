@@ -77,23 +77,26 @@ as `docs(plan): <plan> implementation plan` (path: `ticket.py path <plan> implem
 
 Invoke the `plan-run` skill; it runs this loop, written once there, and every agent call runs in the background, so
 the session stays free to plan other work.
-1. `ticket.py move <plan> in-progress` claims the plan (refused unless `rung` is set and implementation-plan.md
-   exists) and creates the integration tree on branch `<plan>` (`references/worktrees.md`).
-2. Per chunk, one `workbench:implementer`: sequential chunks in one tree, each told the plan path and its chunk number.
+1. `ticket.py move <plan> in-progress`, from the main checkout, claims the plan (refused unless `rung` is set and
+   implementation-plan.md exists) and creates the integration tree on branch `<plan>` (`references/worktrees.md`).
+2. Per chunk, one `workbench:implementer`: sequential chunks in one tree, each told the plan path and its chunk
+   number.
 3. One reviewer, `workbench:reviewer` (sonnet), on the whole diff `git diff <base>...HEAD`: under-delivery against
-   every agreed item and step, over-delivery of any change no step covers, then quality; a diff touching secrets,
-   SOPS, RBAC, ingress, privilege, CI vars, image pins or hooks also gets `security-researcher` (Terraform or charts:
-   `tf-planner` / `helmfile-differ` when the `workbench-infra` pack is enabled). Findings go back in at most two fix
-   rounds by `SendMessage` to the same agents. On a pass the reviewer writes retro.md.
-4. One `worktree-merger` lands the plan: **meta mode** runs `ticket.py close <plan> --verify '<final verify>'`
-   (rebase onto main in the tree, verify, fast-forward only when green, verify main; a rebase conflict is resolved in
-   the plan tree, then close runs again). **Component mode** runs `git-worktrees-commit`, `git-worktrees-push`,
+   every agreed item and step, over-delivery of any change no step covers, then quality, following the `start-review`
+   checklist; a diff touching secrets, SOPS, RBAC, ingress, privilege, CI vars, image pins or hooks also gets
+   `security-researcher` (Terraform or charts: `tf-planner` / `helmfile-differ` when the `workbench-infra` pack is
+   enabled). Findings go back in at most two fix rounds by `SendMessage` to the same agents. On a pass the reviewer
+   writes retro.md.
+4. One `worktree-merger` lands the plan: **meta mode** runs `ticket.py close <plan> --verify '<final verify>'` (rebase
+   onto main in the tree, verify, fast-forward only when green, verify main; a rebase conflict is resolved in the plan
+   tree, then close runs again). **Component mode** runs `git-worktrees-commit`, `git-worktrees-push`,
    `pullrequests-update`, `pullrequests-watch` (host per repo, `references/merge-hosts.md`) and merges the MR the
-   moment it is green, mergeable and review-clean. Deploy: `pullrequests-watch --deploy`, or
-   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/deploy-hook.py` for a `deploy` config
+   moment it is green, mergeable and review-clean. Deploy: `pullrequests-watch --deploy`, or `python3
+   ${CLAUDE_PLUGIN_ROOT}/skills/start-development/scripts/deploy-hook.py` for a `deploy` config
    (`references/workbench-config.md`); a step only the user may run follows `references/user-run-steps.md`.
    Post-deploy health: `grafana-debugging-start` when the `workbench-observability` pack is enabled, else the repo's
-   `deploy.verify` command; a failed check continues in `start-debugging`. Then `ticket.py move <plan> done`.
+   `deploy.verify` command; a failed check continues in `start-debugging`. Then `ticket.py move <plan> done` removes
+   the tree and branch and `ticket.py reap --plan <plan>` sweeps any left over.
 5. ONE closing message, three lines at most (`concise-orchestrator`): the plan and retro.md paths, what needs the
    user, and retro.md's recommendations relayed one line each.
 
