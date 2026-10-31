@@ -11,7 +11,10 @@
     "workbench@claude-code-tatara-workbench": true,
     "workbench-infra@claude-code-tatara-workbench": true,
     "workbench-observability@claude-code-tatara-workbench": true,
-    "workbench-secrets@claude-code-tatara-workbench": true
+    "workbench-secrets@claude-code-tatara-workbench": true,
+    "superpowers@claude-code-tatara-workbench": true,
+    "superpowers@claude-plugins-official": false,
+    "workbench@workbench-template": false
   },
   "permissions": {
     "allow": []
