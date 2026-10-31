@@ -70,7 +70,7 @@ def build_record(payload: dict, earlier: dict, now: str) -> dict | None:
     )
     readable = bool(transcript) and Path(transcript).is_file()
 
-    record = {k: v for k, v in earlier.items() if k not in ("epic", "task")}
+    record = dict(earlier)
     record.update(agentId=agent_id, agentType=agent_type, transcript=transcript, updatedAt=now)
     record.setdefault("start", None)
     for key in ("model", "plan", "end"):

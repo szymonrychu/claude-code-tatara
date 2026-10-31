@@ -153,7 +153,6 @@ def test_stop_writes_record(tmp_path):
     assert rec["agentType"] == "workbench:implementer"
     assert rec["model"] == "claude-test-1"
     assert (rec["plan"], rec["role"]) == ("my-plan", "impl")
-    assert "epic" not in rec and "task" not in rec
     assert rec["start"] == "2026-10-24T10:00:00.000Z"
     assert rec["end"] == "2026-10-24T10:05:00.000Z"
     assert rec["transcript"] == str(s.agent_transcript("a1"))
@@ -209,7 +208,7 @@ def test_start_then_stop_keeps_start(tmp_path):
     assert rec["agentType"] == "workbench:reviewer"
     assert rec["transcript"] == str(s.agent_transcript("a3"))
     assert rec["role"] == "review"
-    assert rec["plan"] is None and "epic" not in rec and "task" not in rec
+    assert rec["plan"] is None
     start = rec["start"]
     assert start and start.endswith("Z") and start > "2026-10-24T10:00:00.000Z"
 
@@ -333,3 +332,8 @@ def test_plugin_json_registers_recorder():
     # A separate entry: the commit guard group and its decision are untouched.
     assert GUARD_GROUP in hooks["SubagentStop"]
     assert [h["command"] for h in _commands(hooks, "SubagentStart")] == [RECORDER_CMD]
+
+
+def test_recorder_has_no_legacy_key_shim():
+    src = (Path(__file__).resolve().parents[1] / "agent-usage-recorder.py").read_text()
+    assert "epic" not in src and '"task"' not in src

@@ -74,18 +74,18 @@ def test_fast_forward_results(tmp_path):
     assert fast_forward(trees["tree-a"], "main") == "current"
 
 
-def test_fast_forward_against_epic_base(tmp_path):
+def test_fast_forward_against_plan_base(tmp_path):
     r = tmp_path / "proj"
     r.mkdir()
     git(r, "init", "-q", "-b", "main")
     commit(r, "base.txt")
-    epic = Path(integration("my-epic", start=r)["path"])
-    task = Path(create("my-epic-t1", base="my-epic", start=r)["path"])
-    commit(epic, "landed.txt")
+    tree = Path(integration("my-plan", start=r)["path"])
+    work = Path(create("my-plan-w1", base="my-plan", start=r)["path"])
+    commit(tree, "landed.txt")
     commit(r, "main-only.txt")
-    assert fast_forward(task, "my-epic") == "updated"
-    assert (task / "landed.txt").exists() and not (task / "main-only.txt").exists()
-    assert fast_forward(task, "my-epic") == "current"
-    commit(task, "mine.txt")
-    commit(epic, "more.txt")
-    assert fast_forward(task, "my-epic") == "ahead"
+    assert fast_forward(work, "my-plan") == "updated"
+    assert (work / "landed.txt").exists() and not (work / "main-only.txt").exists()
+    assert fast_forward(work, "my-plan") == "current"
+    commit(work, "mine.txt")
+    commit(tree, "more.txt")
+    assert fast_forward(work, "my-plan") == "ahead"
