@@ -1,67 +1,49 @@
-# agents-matrix-connector design
+---
+title: agents matrix connector
+repos: [agents-matrix-connector, agents-helmfile, agents-web]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# agents matrix connector
 
-A new Python microservice, agents-matrix-connector (repo `code/agents-matrix-connector`, own CNPG database), lets people talk to agents over Facebook Messenger. It logs in to the live Synapse as a plain bot user `@agents:szymonrichert.pl` with an access token (the Hermes pattern, no appservice); that user is logged in to the existing mautrix-meta bridge with a dedicated Facebook account, so each Messenger chat with that account becomes a Matrix portal room the bot is invited to. The bot auto-joins invites and records rooms, users and members; a default-deny allow/deny policy over Matrix user id, Facebook id, room id and alias (display name: deny only) decides each message; allowed messages go, batched per room, to one agents-orchestrator session per room through agents-common, reused while it runs, and each turn's final text is posted back as plain text. A UI API under `/matrix/api/v1` and an agents-web Chats page show discovered rooms, users, decisions and recent messages and edit the rules. Deployed through agents-helmfile into namespace `agents`; the Matrix account, its token and the bridge login are user-run steps in namespace `messaging`.
+## What and why
 
-## Revision R1 (2026-10-25, user decision, supersedes parts of D2, D3, U1-U4 and Q2)
+What: New microservice agents-matrix-connector that connects to the existing Matrix deployment and lets people talk to agents through Facebook Messenger via the existing mautrix-meta bridge, with user/chat/room auto discovery and allowlist/denylist.
+How: A Python service (own repo `code/agents-matrix-connector`, own CNPG database) logs in to the live Synapse (`http://matrix-synapse.messaging.svc.cluster.local:8008`) as a plain bot user with an access token, the way Hermes does; that user is logged in to mautrix-meta with a Facebook account, so every Messenger chat with that account becomes a Matrix portal room the bot is invited to. A sync loop auto-joins invites and records rooms, users and members; a default-deny allow/deny policy decides which messages reach an agent; allowed messages are batched per room and sent through agents-common's orchestrator client to one agents-orchestrator session per room (reused while it runs), and each turn's final text is posted back to the room. A UI API under `/matrix/api/v1` and a Chats page in agents-web list discovered rooms and users, edit the rules and room settings and show recent messages. Deployed through agents-helmfile into namespace `agents`.
+Why: User request 2026-10-25: 'agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge.'
 
-User, verbatim: "When you'll be implementing, update also hermess config (in ~/Documents/infrastructure/code/helmfile)- scale it to 0. Whitelist only 1 channel for now- the one where Hermess sends "Hermess is shutting down..." messages (Szymon Richert to Szymon Richert)." Asked and answered: the connector takes over Hermes' identity (option "Reuse Hermes"), and Hermes is scaled to 0 now (option "Now").
+The connector has one image and two long-running processes: `api` (UI API, SSO) and `bot` (singleton: Matrix sync, dispatch worker, reply tracker), plus `migrate` as an initContainer. Discovery: every invite is joined; each room is classified from its `m.bridge` state (`dm`, `group`, `infrastructure`) or as a plain `matrix` room, encrypted rooms are marked and never served; members are recorded with their Facebook id parsed from the bridge ghost id. Policy: deny rules win, then allow rules on the room or the sender, else the default policy (deny). Conversation: one session per room from the room's preset (or the default preset), messages arriving while the agent works are queued and sent as the next batch into the same running session; replies are plain text, split at 4000 characters, with a typing indicator while the agent works. Bot user creation, its token and the bridge login are user-run steps outside namespace `agents`. Design: `design.md`.
 
-- Identity: the connector logs in as `@hermes:szymonrichert.pl`, device `hermes-agent`, with the access token from Secret `hermes-agent-matrix` (key `MATRIX_ACCESS_TOKEN`, namespace `ai`, read-only, piped into the agents-helmfile SOPS file, never printed). That user is already logged in to mautrix-meta with Hermes' Facebook account `61594633049360`; self identities are `@hermes:szymonrichert.pl` and `@facebook_61594633049360:szymonrichert.pl`. Wherever this document says `@agents:szymonrichert.pl`, read `@hermes:szymonrichert.pl`.
-- U1-U4 are dropped: no new Matrix account, no new token, no new bridge login.
-- Hermes (release `hermes-agent`, namespace `ai`, repo `~/Documents/infrastructure/code/helmfile`) is scaled to 0 through an MR there, outside both epics, so only one client answers on that account (replaces the separate-account anti-goal of D3).
-- Allow list: exactly one allow rule, kind `room`, value `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` (Hermes' home channel `platforms.matrix.home_channel`, read from the live config 2026-10-25; the owner DM between Facebook ids 100000241356957 and 61594633049360), created after the first apply (task apply-smoke-matrix of agents-matrix-connector-depl). Default policy stays deny.
-- Amended tasks: mxc-operations-docs; in agents-matrix-connector-depl: helmfile-matrix-secrets, helmfile-matrix-releases, smoke-matrix-check, apply-smoke-matrix.
+## Scope ladder
 
-## Intent and why
+### Rung 1: agreed scope (migrated)
 
-User request 2026-10-25, verbatim: "agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge."
+- 1.1: G1: the connector runs in namespace `agents` as Matrix user `@agents:szymonrichert.pl` against the live Synapse, and a Messenger message to the connected Facebook account in an allowed chat gets the agent's reply in the same chat.
+- 1.2: G2: rooms (DM, group, plain Matrix, infrastructure), users (Matrix id, display name, Facebook id) and room membership are discovered automatically from invites and sync, without operator action.
+- 1.3: G3: allow and deny rules over Matrix user id, Facebook id, room id and room alias (display name: deny only) decide every message; deny wins; with no matching rule the default policy applies and defaults to deny.
+- 1.4: G4: each room maps to one agent session from its preset (or the default preset); while that session runs, new messages from the room go into it; a gone session falls back to a new one; no message is lost or answered twice across restarts.
+- 1.5: G5: the agents-web Chats page lists discovered rooms and users with their access decision, edits the allow and deny rules, a room's preset and trigger and the default preset, and shows each room's recent inbound and outbound messages.
+- 1.6: G6: every capability is reachable headless (README `## API`, committed `openapi.json`, API e2e), and the live namespace runs the connector with a green smoke.
 
-Agents today start only from the UI, webhooks and schedules. Messenger is where the user and the people around them already talk; the Matrix homeserver and the mautrix-meta bridge are already live and proven by Hermes (namespace `ai`). A connector turns any allowed Messenger chat into a conversation with an agent session, with the same preset-driven sessions and reuse the trigger services use. Because anyone who can reach the Facebook account can write to it and the agents run untrusted prompts, access must be explicit (default deny) and visible.
+## Agreed scope
 
-## Goals
-
-- G1: the connector runs in namespace `agents` as `@agents:szymonrichert.pl` against the live Synapse, and a Messenger message to the connected Facebook account in an allowed chat gets the agent's reply in the same chat (D2, D3, D8, D9).
-- G2: rooms (dm, group, matrix, infrastructure), users (Matrix id, display name, Facebook id) and membership are discovered from invites and sync with no operator action (D5).
-- G3: allow and deny rules over user, facebook, room and alias (display_name deny only) decide every message; deny wins; no match means the default policy, default deny (D6).
-- G4: one session per room from its preset or the default preset; messages arriving while it runs go into it; a gone session falls back to a new one; restarts never lose or double-answer a message (D8, D9).
-- G5: the agents-web Chats page lists rooms and users with their decision, edits rules, room preset and trigger and the default preset, and shows recent messages (D11, D12).
-- G6: headless parity (README `## API`, committed `openapi.json`, API e2e) and a live deploy with a green smoke (D13, D14).
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- E2EE rooms (D4), media, reactions, edits, redactions, voice, token streaming.
-- Changing Hermes, its Facebook account, its rooms or its config.
-- Managing Synapse or mautrix-meta from agents-helmfile.
-- Regex or expression rules (exact identifiers only, D6).
-- Targeting other bridges.
+- End-to-end encrypted rooms (marked `encrypted`, never read or answered).
+- Media, reactions, edits, redactions and voice: only `m.text` messages are processed.
+- Token streaming of agent output; one message per agent turn.
+- Changing Hermes, its Facebook account or its rooms.
+- Synapse or mautrix-meta configuration managed from agents-helmfile (they stay in namespace `messaging`, applied by the user).
+- Regex or expression rules; rule matching is exact identifiers.
+- Other bridges (WhatsApp, Signal, Telegram); they would work as plain Matrix rooms but are not targeted.
 
-## Anti-goals
+## Design
 
-- A stranger on Messenger reaching an agent without an explicit allow rule (default deny, D6).
-- The bot answering itself, the bridge bot or another bridged copy of itself (loop guard, D7).
-- A restart replaying history or posting a reply twice (D5 since-token transaction, D9 transaction ids).
-- Hermes and the connector both answering one chat (separate Facebook account, D3).
-- Message bodies of denied rooms stored anywhere (D7), or the access token in a log or a ConfigMap.
-- A second copy of agents-common's run tracking or orchestrator client in the connector.
-
-## Constraints
-
-- Python only in the service, TypeScript in agents-web; services talk only over HTTP; each table has one writer, queue tables change rows only through status-guarded updates (`agents_common.db.queue.transition` / `claim`).
-- No backward-compatibility shims; names follow orchestrator-rename-sessions (agents-orchestrator, session).
-- Test-first per task, targeted verify per task. DB-backed tests use `agents_common.testing` (testcontainers Postgres), so their verify needs Docker.
-- Read-only kubectl for agents; nothing in namespaces `messaging` or `ai` is changed by an agent. User-run steps U1-U4 below are the user's.
-- The orchestrator runs `mise run apply` in agents-helmfile; apply never appears in AC evidence.
-- Secrets live only in SOPS files in agents-helmfile and Kubernetes Secrets; values travel through pipes and files, never echoed.
-
-## Orchestrator and user-run steps
-
-- O1 (orchestrator, after the gate, before `ticket.py move agents-matrix-connector in-progress`): from a clean workbench main, `mise run component:add -- --component agents-matrix-connector:python --remote github --forge-owner szymonrychu --public --confirm-forge --role "agents-matrix-connector=Python microservice with its own Postgres database: connects to the Matrix homeserver as a bot user, auto-discovers Messenger chats bridged by mautrix-meta, applies allow/deny rules and routes allowed chats to agents-orchestrator sessions"`; then `gh secret set HARBOR_USERNAME` and `HARBOR_PASSWORD -R szymonrychu/agents-matrix-connector` (values on stdin; else ask the user to set them); commit the gitlink, `.gitmodules`, `AGENTS.md` and what component-add writes as `chore(workbench): add component agents-matrix-connector`. Same shape as agents-schedule-component `create-agents-schedule-repo`.
-- U1 (user, namespace `messaging`): create the Matrix account `@agents:szymonrichert.pl` (registration is disabled: `register_new_matrix_user` in the matrix-synapse pod with the shared secret, or the Synapse admin API `PUT /_synapse/admin/v2/users/@agents:szymonrichert.pl` with an admin token), not an admin, with a password kept by the user.
-- U2 (user): log in once as `agents` with `device_id` `agents-matrix-connector` (`POST /_matrix/client/v3/login`) and write only the `access_token` to `/Users/szymonri/Documents/claude-code-tatara/.scratchpad/agents-matrix-connector/matrix-token` (mode 600, gitignored); the orchestrator checks it with `GET /_matrix/client/v3/account/whoami` (expects `@agents:szymonrichert.pl`) through the user-run-step flow and deletes the file after task helmfile-matrix-secrets.
-- U3 (user): in Element as `@agents`, open a DM with `@facebookbot:szymonrichert.pl`, run the bridge `login` flow with the Facebook account the agents answer as (gate Q2), and report the bot's own ghost id `@facebook_<id>:szymonrichert.pl` (the orchestrator amends it into helmfile-matrix-releases as `selfIdentities`).
-- U4 (user, only if U3 is refused for lack of bridge permission): grant `@agents:szymonrichert.pl` (or the domain) level `user` in the mautrix-meta config's `bridge.permissions` where that config is managed (Secret `mautrix-meta` in namespace `messaging`, outside agents-helmfile) and restart the bridge.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -129,6 +111,15 @@ This epic is blocked by orchestrator-rename-sessions and uses its names: agents-
 
 opus for the security core and the concurrency-heavy modules (matrix client and fake homeserver, access policy, sync loop, dispatch worker, reply tracker, API e2e); sonnet for repositories, settings, API routes, chart, CI, docs, helmfile and web tasks, even when they add a small module (my call: house rule "sonnet; opus only for the most problematic tasks" over the skill's add-a-module default).
 
+## Open questions
+
+- Q1: Default policy: every discovered chat and person is listed but no message reaches an agent until an allow rule covers its room or sender (MATRIX_DEFAULT_POLICY=deny)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q2: Agents answer as a dedicated Facebook account (not Hermes' and not yours), logged in to mautrix-meta by the new Matrix user @agents:szymonrichert.pl (user-run U1-U3)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q3: One agent session per chat from the room's preset (or a default preset), reused while it runs; queued messages sent as one batch; replies are the turn's final text as plain Messenger messages split at 4000 characters, typing shown while the agent works, a short apology on failure, no token streaming? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q4: Allowing a group chat lets every member talk to the agent, and in groups the agent answers only when mentioned (per-room override to all messages)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q5: Display-name rules are deny-only, since a sender chooses their own display name and could impersonate an allowed person? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q6: Denied chats stay joined but inert (nothing stored, nothing answered) instead of being left, because a bridged chat cannot be rejoined without a fresh bridge invite? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -139,7 +130,7 @@ opus for the security core and the concurrency-heavy modules (matrix client and 
 | research-docs | skipped | the client-server calls used are stable Matrix v3 API, already used by Hermes' roomadmin.py (`/sync`, `/join`, `/rooms/{id}/state`); no new library | matrix-nio |
 | research-papers | skipped | no algorithmic core | |
 
-## Research inputs
+### Research inputs
 
 - Hermes authenticates as a plain user with an access token, device `hermes-agent` - deployment `ai/hermes-agent` env - matrix-client-and-fake-hs, mxc-settings-model, helmfile-matrix-secrets.
 - Portals carry `m.bridge`/`uk.half-shot.bridge` with `com.beeper.room_type.v2`; spaces and filtering spaces are infrastructure - roomadmin.py `room_kind` - room-and-event-discovery.
@@ -152,7 +143,100 @@ opus for the security core and the concurrency-heavy modules (matrix client and 
 - Webhook api CIDR allowlist and SSO annotations - agents-webhook settings.py `api_allowed_cidrs`, chart - api-rooms-and-users, mxc-chart-network, helmfile-matrix-releases.
 - Trigger UI kit and backend registry slots - agents-web `src/triggers/index.ts`, `src/backends/registry.ts` - web-chats-rooms-page, web-chats-menu-entry.
 
-## Contracts
+## Irreversible operations
+
+- O1: creating the public GitHub repo `szymonrychu/agents-matrix-connector`, its submodule and repo secrets (orchestrator, after the gate).
+- U1: creating the Matrix account `@agents:szymonrichert.pl` on the live Synapse (namespace `messaging`, the user); a Matrix id cannot be reused after deactivation.
+- U2: issuing a long-lived access token for device `agents-matrix-connector` (the user); revocable by logging the device out.
+- U3: logging a Facebook account in to mautrix-meta (the user); the bridge stores its session in its own database in namespace `messaging`.
+- U4 (only if needed): editing the mautrix-meta config Secret and restarting the bridge in namespace `messaging` (the user), outside agents-helmfile.
+- Publishing images and charts to Harbor from the new repo's main CI.
+- `mise run apply` in agents-helmfile (orchestrator): creates the CNPG cluster `agents-matrix-connector-db`, the connector release with its `/matrix/api` ingress, adds a service token hash to agents-orchestrator (rolling restart), and pins agents-web.
+- Committing the SOPS-encrypted access token and service token to agents-helmfile.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Checks: whole-diff review PASS; full suite 188 passed (suite-lock, local Postgres override; Docker disk full so testcontainers not exercised locally); mise run lint, lint:chart, test:chart, uv lock --check green; scope audit: no gaps (G1, G5 and the live half of G6 moved to agents-matrix-connector-depl by the split); security review done.
+
+Acted on (new tasks, reviewed clean):
+- matrix-identity-spoofing-gua: HIGH facebook-id spoof via foreign-server ghost ids; MEDIUM unverified canonical alias.
+- review-cleanups: duplicate utcnow (scope audit); upstream error text in 502 bodies; Dockerfile uv:latest and floating base tag.
+
+Dropped:
+- RuleExists noqa N818: the task spec fixes the name RuleExists; accepted in its task review.
+- Untrusted-input preamble only on the first turn: by design (D8).
+- No oauth2-proxy sidecar / NetworkPolicy in the chart: SSO comes from pod annotations set by depl task helmfile-matrix-releases; the CIDR allowlist fails closed.
+
+### design.md: Summary
+
+A new Python microservice, agents-matrix-connector (repo `code/agents-matrix-connector`, own CNPG database), lets people talk to agents over Facebook Messenger. It logs in to the live Synapse as a plain bot user `@agents:szymonrichert.pl` with an access token (the Hermes pattern, no appservice); that user is logged in to the existing mautrix-meta bridge with a dedicated Facebook account, so each Messenger chat with that account becomes a Matrix portal room the bot is invited to. The bot auto-joins invites and records rooms, users and members; a default-deny allow/deny policy over Matrix user id, Facebook id, room id and alias (display name: deny only) decides each message; allowed messages go, batched per room, to one agents-orchestrator session per room through agents-common, reused while it runs, and each turn's final text is posted back as plain text. A UI API under `/matrix/api/v1` and an agents-web Chats page show discovered rooms, users, decisions and recent messages and edit the rules. Deployed through agents-helmfile into namespace `agents`; the Matrix account, its token and the bridge login are user-run steps in namespace `messaging`.
+
+### design.md: Revision R1 (2026-10-25, user decision, supersedes parts of D2, D3, U1-U4 and Q2)
+
+User, verbatim: "When you'll be implementing, update also hermess config (in ~/Documents/infrastructure/code/helmfile)- scale it to 0. Whitelist only 1 channel for now- the one where Hermess sends "Hermess is shutting down..." messages (Szymon Richert to Szymon Richert)." Asked and answered: the connector takes over Hermes' identity (option "Reuse Hermes"), and Hermes is scaled to 0 now (option "Now").
+
+- Identity: the connector logs in as `@hermes:szymonrichert.pl`, device `hermes-agent`, with the access token from Secret `hermes-agent-matrix` (key `MATRIX_ACCESS_TOKEN`, namespace `ai`, read-only, piped into the agents-helmfile SOPS file, never printed). That user is already logged in to mautrix-meta with Hermes' Facebook account `61594633049360`; self identities are `@hermes:szymonrichert.pl` and `@facebook_61594633049360:szymonrichert.pl`. Wherever this document says `@agents:szymonrichert.pl`, read `@hermes:szymonrichert.pl`.
+- U1-U4 are dropped: no new Matrix account, no new token, no new bridge login.
+- Hermes (release `hermes-agent`, namespace `ai`, repo `~/Documents/infrastructure/code/helmfile`) is scaled to 0 through an MR there, outside both epics, so only one client answers on that account (replaces the separate-account anti-goal of D3).
+- Allow list: exactly one allow rule, kind `room`, value `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` (Hermes' home channel `platforms.matrix.home_channel`, read from the live config 2026-10-25; the owner DM between Facebook ids 100000241356957 and 61594633049360), created after the first apply (task apply-smoke-matrix of agents-matrix-connector-depl). Default policy stays deny.
+- Amended tasks: mxc-operations-docs; in agents-matrix-connector-depl: helmfile-matrix-secrets, helmfile-matrix-releases, smoke-matrix-check, apply-smoke-matrix.
+
+### design.md: Intent and why
+
+User request 2026-10-25, verbatim: "agents-matrix-connector New microservice- is meant to connect with existing matrix deployment and allow for talking to agents through facebook. Must support user/chat/room auto discovery and white/blacklosting. Hermes already uses working bridge."
+
+Agents today start only from the UI, webhooks and schedules. Messenger is where the user and the people around them already talk; the Matrix homeserver and the mautrix-meta bridge are already live and proven by Hermes (namespace `ai`). A connector turns any allowed Messenger chat into a conversation with an agent session, with the same preset-driven sessions and reuse the trigger services use. Because anyone who can reach the Facebook account can write to it and the agents run untrusted prompts, access must be explicit (default deny) and visible.
+
+### design.md: Goals
+
+- G1: the connector runs in namespace `agents` as `@agents:szymonrichert.pl` against the live Synapse, and a Messenger message to the connected Facebook account in an allowed chat gets the agent's reply in the same chat (D2, D3, D8, D9).
+- G2: rooms (dm, group, matrix, infrastructure), users (Matrix id, display name, Facebook id) and membership are discovered from invites and sync with no operator action (D5).
+- G3: allow and deny rules over user, facebook, room and alias (display_name deny only) decide every message; deny wins; no match means the default policy, default deny (D6).
+- G4: one session per room from its preset or the default preset; messages arriving while it runs go into it; a gone session falls back to a new one; restarts never lose or double-answer a message (D8, D9).
+- G5: the agents-web Chats page lists rooms and users with their decision, edits rules, room preset and trigger and the default preset, and shows recent messages (D11, D12).
+- G6: headless parity (README `## API`, committed `openapi.json`, API e2e) and a live deploy with a green smoke (D13, D14).
+
+### design.md: Non-goals
+
+- E2EE rooms (D4), media, reactions, edits, redactions, voice, token streaming.
+- Changing Hermes, its Facebook account, its rooms or its config.
+- Managing Synapse or mautrix-meta from agents-helmfile.
+- Regex or expression rules (exact identifiers only, D6).
+- Targeting other bridges.
+
+### design.md: Anti-goals
+
+- A stranger on Messenger reaching an agent without an explicit allow rule (default deny, D6).
+- The bot answering itself, the bridge bot or another bridged copy of itself (loop guard, D7).
+- A restart replaying history or posting a reply twice (D5 since-token transaction, D9 transaction ids).
+- Hermes and the connector both answering one chat (separate Facebook account, D3).
+- Message bodies of denied rooms stored anywhere (D7), or the access token in a log or a ConfigMap.
+- A second copy of agents-common's run tracking or orchestrator client in the connector.
+
+### design.md: Constraints
+
+- Python only in the service, TypeScript in agents-web; services talk only over HTTP; each table has one writer, queue tables change rows only through status-guarded updates (`agents_common.db.queue.transition` / `claim`).
+- No backward-compatibility shims; names follow orchestrator-rename-sessions (agents-orchestrator, session).
+- Test-first per task, targeted verify per task. DB-backed tests use `agents_common.testing` (testcontainers Postgres), so their verify needs Docker.
+- Read-only kubectl for agents; nothing in namespaces `messaging` or `ai` is changed by an agent. User-run steps U1-U4 below are the user's.
+- The orchestrator runs `mise run apply` in agents-helmfile; apply never appears in AC evidence.
+- Secrets live only in SOPS files in agents-helmfile and Kubernetes Secrets; values travel through pipes and files, never echoed.
+
+### design.md: Orchestrator and user-run steps
+
+- O1 (orchestrator, after the gate, before `ticket.py move agents-matrix-connector in-progress`): from a clean workbench main, `mise run component:add -- --component agents-matrix-connector:python --remote github --forge-owner szymonrychu --public --confirm-forge --role "agents-matrix-connector=Python microservice with its own Postgres database: connects to the Matrix homeserver as a bot user, auto-discovers Messenger chats bridged by mautrix-meta, applies allow/deny rules and routes allowed chats to agents-orchestrator sessions"`; then `gh secret set HARBOR_USERNAME` and `HARBOR_PASSWORD -R szymonrychu/agents-matrix-connector` (values on stdin; else ask the user to set them); commit the gitlink, `.gitmodules`, `AGENTS.md` and what component-add writes as `chore(workbench): add component agents-matrix-connector`. Same shape as agents-schedule-component `create-agents-schedule-repo`.
+- U1 (user, namespace `messaging`): create the Matrix account `@agents:szymonrichert.pl` (registration is disabled: `register_new_matrix_user` in the matrix-synapse pod with the shared secret, or the Synapse admin API `PUT /_synapse/admin/v2/users/@agents:szymonrichert.pl` with an admin token), not an admin, with a password kept by the user.
+- U2 (user): log in once as `agents` with `device_id` `agents-matrix-connector` (`POST /_matrix/client/v3/login`) and write only the `access_token` to `/Users/szymonri/Documents/claude-code-tatara/.scratchpad/agents-matrix-connector/matrix-token` (mode 600, gitignored); the orchestrator checks it with `GET /_matrix/client/v3/account/whoami` (expects `@agents:szymonrichert.pl`) through the user-run-step flow and deletes the file after task helmfile-matrix-secrets.
+- U3 (user): in Element as `@agents`, open a DM with `@facebookbot:szymonrichert.pl`, run the bridge `login` flow with the Facebook account the agents answer as (gate Q2), and report the bot's own ghost id `@facebook_<id>:szymonrichert.pl` (the orchestrator amends it into helmfile-matrix-releases as `selfIdentities`).
+- U4 (user, only if U3 is refused for lack of bridge permission): grant `@agents:szymonrichert.pl` (or the domain) level `user` in the mautrix-meta config's `bridge.permissions` where that config is managed (Secret `mautrix-meta` in namespace `messaging`, outside agents-helmfile) and restart the bridge.
+
+### design.md: Contracts
 
 Each part with its owning task, its consumers and where it is defined (one line each; the task files carry no `owns`/`uses` keys in the current eighteen-key scheme, so ordering is through `depends_on`):
 
@@ -168,7 +252,7 @@ Each part with its owning task, its consumers and where it is defined (one line 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
 
-## Decision coverage
+### design.md: Decision coverage
 
 Split 2026-10-25 (user decision): the agents-helmfile and agents-web tasks moved to epic agents-matrix-connector-depl, which also covers D2 with helmfile-matrix-secrets; D3 with helmfile-matrix-releases, apply-smoke-matrix; D6 with web-chats-access-panels; D12 with web-matrix-api-client, web-chats-rooms-page, web-chats-access-panels, web-chats-menu-entry; D13 with helmfile-matrix-secrets, helmfile-matrix-releases, helmfile-web-chats-entry, smoke-matrix-check, apply-smoke-matrix; D15 with helmfile-matrix-releases. The table lists this epic's tasks only; the Chats page decision is anchored here on the API task it consumes.
 
@@ -191,20 +275,20 @@ Split 2026-10-25 (user decision): the agents-helmfile and agents-web tasks moved
 | D15 Names follow orchestrator-rename-sessions | mxc-scaffold-and-cli |
 | D16 Model per task | mxc-scaffold-and-cli |
 
-## Review focus
+### design.md: Review focus
 
 - access-policy-engine and matrix-sync-loop: deny wins everywhere, default deny holds with zero rules, display_name never grants, self and bridge-bot messages never create rows, denied bodies are never stored.
 - matrix-sync-loop and reply-tracker: the since token and the inbound inserts commit together; replies use deterministic transaction ids; a crash at any step neither loses nor duplicates a message.
 - dispatch-worker: one run per room at a time, guarded transitions only, the new-session cap, the `session_gone` fallback returns rows to `new` once.
 - The access token: only from a file or Secret, never logged, never in a ConfigMap, redacted from exception text.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal module split under `src/agents_matrix_connector/` beyond the files named per task, within each task's file list.
 - The exact sync filter JSON and backoff jitter, within D5.
 - UI layout details of the Chats page within D12 (tabs or stacked sections), reusing the trigger UI kit.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - mautrix-meta's `bridge.permissions` lets `@agents:szymonrichert.pl` log in (unknown: the config lives in Secret `mautrix-meta`, whose values were not read). Confirmed by U3; U4 if refused.
 - The bridge invites the logged-in user to every portal, including new chats and message requests (Hermes' behaviour; confirmed by U3 plus the first discovered room in the smoke-free live check of apply-smoke-matrix).
@@ -212,21 +296,13 @@ Split 2026-10-25 (user decision): the agents-helmfile and agents-web tasks moved
 - orchestrator-rename-sessions keeps `Turn.final_text`, `get_message`, `deliver` and the service API semantics while renaming clusters to sessions (D15); its planned task common-client-sessions renames only the cluster names, confirmed by reading it 2026-10-25.
 - The FB id parsed from `@facebook_<id>` is the stable Facebook user id (the bridge's ghost naming, observed on Hermes' operator and self ids).
 
-## Open questions
-- Q1: Default policy: every discovered chat and person is listed but no message reaches an agent until an allow rule covers its room or sender (MATRIX_DEFAULT_POLICY=deny)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q2: Agents answer as a dedicated Facebook account (not Hermes' and not yours), logged in to mautrix-meta by the new Matrix user @agents:szymonrichert.pl (user-run U1-U3)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q3: One agent session per chat from the room's preset (or a default preset), reused while it runs; queued messages sent as one batch; replies are the turn's final text as plain Messenger messages split at 4000 characters, typing shown while the agent works, a short apology on failure, no token streaming? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q4: Allowing a group chat lets every member talk to the agent, and in groups the agent answers only when mentioned (per-room override to all messages)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q5: Display-name rules are deny-only, since a sender chooses their own display name and could impersonate an allowed person? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q6: Denied chats stay joined but inert (nothing stored, nothing answered) instead of being left, because a bridged chat cannot be rejoined without a fresh bridge invite? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+### approvals.json
 
-## Irreversible operations in scope
-
-- O1: creating the public GitHub repo `szymonrychu/agents-matrix-connector`, its submodule and repo secrets (orchestrator, after the gate).
-- U1: creating the Matrix account `@agents:szymonrichert.pl` on the live Synapse (namespace `messaging`, the user); a Matrix id cannot be reused after deactivation.
-- U2: issuing a long-lived access token for device `agents-matrix-connector` (the user); revocable by logging the device out.
-- U3: logging a Facebook account in to mautrix-meta (the user); the bridge stores its session in its own database in namespace `messaging`.
-- U4 (only if needed): editing the mautrix-meta config Secret and restarting the bridge in namespace `messaging` (the user), outside agents-helmfile.
-- Publishing images and charts to Harbor from the new repo's main CI.
-- `mise run apply` in agents-helmfile (orchestrator): creates the CNPG cluster `agents-matrix-connector-db`, the connector release with its `/matrix/api` ingress, adds a service token hash to agents-orchestrator (rolling restart), and pins agents-web.
-- Committing the SOPS-encrypted access token and service token to agents-helmfile.
+- A1: A new microservice, agents-matrix-connector: its own public repo and submodule (orchestrator step O1), one image with migrate, api and a singleton bot, its own database, on agents-common with the agents-orchestrator session names. [decisions: D1, D15, D16] [tasks: mxc-scaffold-and-cli, mxc-service-entrypoints, mxc-dockerfile-and-ci, mxc-chart-workloads] [status: approved]
+- A2: It connects to the existing Matrix deployment as the plain bot user @agents:szymonrichert.pl with an access token, like Hermes; no appservice and no Synapse configuration change beyond creating the account (user-run U1, U2). [decisions: D2] [tasks: matrix-client-and-fake-hs, mxc-settings-model, helmfile-matrix-secrets, mxc-operations-docs] [status: approved]
+- A3: Users talk to agents through Facebook via the existing mautrix-meta bridge, with the bot logged in to the bridge with its own Facebook account (user-run U3, U4 if needed); encrypted rooms are marked and never answered. [decisions: D3, D4] [tasks: mxc-operations-docs, helmfile-matrix-releases, apply-smoke-matrix, room-and-event-discovery] [status: approved]
+- A4: Users, chats and rooms are auto-discovered: invites are joined, rooms classified (dm, group, matrix, infrastructure), members and Facebook ids recorded, and only text messages taken in, without replaying history. [decisions: D5, D7] [tasks: room-and-event-discovery, directory-repository, inbound-queue-repository, matrix-sync-loop] [status: approved]
+- A5: There is an allowlist and a denylist over Matrix user id, Facebook id, room id and alias (display name deny only); deny wins and the default is deny. [decisions: D6] [tasks: access-policy-engine, rules-and-settings-repo, api-rules-and-settings, web-chats-access-panels] [status: approved]
+- A6: Each chat maps to one agents-orchestrator session from its preset, reused while it runs, falling back to a new one when gone; the agent's final text of each turn is posted back to the chat exactly once, with typing while it works. [decisions: D8, D9, D10] [tasks: mxc-schema-migrations, chat-prompt-render, runs-and-outbound-repo, dispatch-worker, reply-tracker] [status: approved]
+- A7: A UI API under /matrix/api/v1 and a Chats page in agents-web show discovered rooms and users with their decisions and recent messages, and edit the rules, room presets and triggers and the default preset. [decisions: D11, D12] [tasks: api-rooms-and-users, api-rules-and-settings, mxc-openapi-and-readme, web-matrix-api-client, web-chats-rooms-page, web-chats-access-panels, web-chats-menu-entry] [status: approved]
+- A8: Headless parity (README API, openapi.json, API e2e against fakes) and a live deploy into namespace agents through agents-helmfile with a green smoke that never sends a chat message. [decisions: D13, D14] [tasks: matrix-client-and-fake-hs, mxc-e2e-api, mxc-chart-network, helmfile-matrix-secrets, helmfile-matrix-releases, helmfile-web-chats-entry, smoke-matrix-check, apply-smoke-matrix] [status: approved]
