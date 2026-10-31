@@ -1,36 +1,58 @@
 ---
 title: agents-helmfile CI test job
-blockers: []
-stage: build
-owner: Szymon Richert
 repos: [agents-helmfile]
 created: 2026-10-29
+owner: Szymon Richert
+rung: 1
 ---
 
 # agents-helmfile CI test job
 
-## Project brief
+## What and why
 
 What: A GitHub Actions job running lint, the helmfile tests and check-pins on PRs and main.
 How: One workflow following the sibling repos' pinned-action conventions; Harbor login from repo secrets; README and MEMORY updated.
 Why: Main went red after pin PR #40 because no CI ran the tests; user approved the job (2026-10-28 21:07Z).
 
-## Description
+## Scope ladder
 
+### Rung 1: agreed scope (migrated)
 
+- 1.1: A GitHub Actions job in agents-helmfile runs `mise run lint`, the whole `mise run test` suite (incl. tests/test_orchestrator_release.py) and `mise run check-pins` on every pull request and on push to main (user, 2026-10-28 21:07Z via mx-34 #270: "Yes").
+- 1.2: Missing repository secrets fail the job loudly by name; no test is skipped or xfailed to get green.
 
-## Goals
+## Agreed scope
 
-- A GitHub Actions job in agents-helmfile runs `mise run lint`, the whole `mise run test` suite (incl. tests/test_orchestrator_release.py) and `mise run check-pins` on every pull request and on push to main (user, 2026-10-28 21:07Z via mx-34 #270: "Yes").
-- Missing repository secrets fail the job loudly by name; no test is skipped or xfailed to get green.
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - Branch protection or required checks (repository settings stay with the user).
 - Deciding where the SOPS key lives: open user decision (mx-34 #349); the PR merges only after it and the Harbor secrets are settled, so main never goes red.
 
+## Design
 
-## Review
+none recorded in the epic format
+
+## Decisions
+
+none recorded in the epic format
+
+## Open questions
+
+none
+
+## Research
+
+none recorded in the epic format
+
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 
