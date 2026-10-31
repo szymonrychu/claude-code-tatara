@@ -1,53 +1,51 @@
-# matrix connector agent-initiated and follow-up messages design
+---
+title: matrix connector agent-initiated and follow-up messages
+repos: [agents-matrix-connector, agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile, agents-web]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# matrix connector agent-initiated and follow-up messages
 
-A session leader reaches the user's Matrix (Messenger) chat at any time through four new
-any-mcp tools, `orchestrator_chat_rooms`, `orchestrator_chat_send`, `orchestrator_chat_react` and
-`orchestrator_chat_status`. The orchestrator checks the caller (agent token, pod IP, leader) and
-forwards the call synchronously to a new token-protected agent listener on the connector api. The
-connector checks the room (policy-allowed, and bound to the session or flagged
-`agents_may_initiate`), queues a `sends` row and answers `s<n>`; the bot delivers it through
-`outbound`, with quoted replies and reactions resolved from short `m<n>`/`s<n>` references, never raw
-event ids. A chat room and a session are bound one to one (user decision at the final gate,
-D9): the user's chat messages always go to the room's one bound session, an agent starts a chat
-only in an unbound flagged room (which binds it to that agent's session), and the binding is
-released only when the session is deleted. any-mcp-tatara-plugins v0.2.0 ships the tools; agents-helmfile wires one new secret, the
-values and a live smoke (S1-S4) in the owner DM. Architecture decision adopted from
-`.scratchpad/design/matrix-outbound-arch.md` (every "(pick)" is the design); deviations forced by
-probed facts are marked "(probe)".
+## What and why
 
-## Intent and why
+What: Agents send, follow up, reply and react in the user's Matrix (Messenger) chat at any time, not only as the answer to a chat-started turn
+How: orchestrator-relayed orchestrator_chat_* MCP tools, a token-protected agent port and sends queue on the connector, a hard 1:1 room-session binding (user decision 2026-10-27), and a per-room agents_may_initiate flag that lets an agent start a chat in an unbound room
+Why: Replies to turns not started from the chat (session messages, background completions) never reach the user, and agents cannot start a chat
 
-User request (2026-10-27, relayed by the mx-5 leader), verbatim: "Bug: agents talking to the user
-over the Matrix connector (bridged to Facebook Messenger) can only answer the turn that came from a
-chat message. [...] Replies to turns started any other way (e.g. a <session-message> from another
-session's leader, background task completions, member agents reporting) show only in the web UI and
-never reach the chat. [...] The agent has no Matrix MCP tool, only plain-text replies." Requirements:
-"1. Must: an agent can initiate a chat with the user over the connector (no prior inbound message
-needed). 2. Must: an agent can send follow-ups (multiple messages without a user reply in between).
-3. Ideally: an agent can reply to a specific message (threaded/quoted reply) and react to messages
-with emoji (reactions may be enough for acknowledgements)."
+User request (2026-10-27, relayed by the mx-5 leader), verbatim:
 
-Why it fails today (discovery brief sec 1): the tracker follows only the one orchestrator message the
-connector posted (`tracker.py:Tracker._outcome`, `db/runs.py:latest_session`), and stops when that
-run finishes; turns started any other way have no connector message, and agents have no tool.
+"Bug: agents talking to the user over the Matrix connector (bridged to Facebook Messenger) can only answer the turn that came from a chat message. Turns arriving from a chat message carry a marker like `<!-- agents-matrix:12 -->`; the reply text to those reaches Facebook. Replies to turns started any other way (e.g. a <session-message> from another session's leader, background task completions, member agents reporting) show only in the web UI and never reach the chat. Repro: user sends a chat message, agent replies (delivered); another session messages the agent before the user writes again; the agent's reply to that turn is never delivered. Observed 2026-10-27 ~16:38Z in hive mx-5 (session-message #87 reply was dropped). The agent has no Matrix MCP tool, only plain-text replies.
 
-## Goals
+Requirements from the user:
+1. Must: an agent can initiate a chat with the user over the connector (no prior inbound message needed).
+2. Must: an agent can send follow-ups (multiple messages without a user reply in between).
+3. Ideally: an agent can reply to a specific message (threaded/quoted reply) and react to messages with emoji (reactions may be enough for acknowledgements)."
 
-The README Goals, verbatim:
+Final gate answer (2026-10-27, relayed by the mx-5 leader), verbatim: "1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go". The last-speaker routing is replaced by a hard 1:1 room-session binding (design D9).
 
-- G1: An agent (session leader) can send a message to the user's Matrix chat at any time, including a chat it never received a message from (initiate), through MCP tools, not only as the final answer of a chat-started turn.
-- G2: An agent can send several messages in a row without a user reply in between (follow-ups), including while a chat-started turn is still running.
-- G3: An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji.
-- G4: An agent can list the rooms it may post to and read the delivery status of what it sent.
-- G5: Agents may post only to policy-allowed rooms that are bound to their session or flagged agents_may_initiate (off by default, set per room by the user); the agent token never leaves the orchestrator.
-- G6: A chat room and a session are bound one to one: a room has at most one bound session and a session at most one bound room, and the user's chat messages in a bound room, including the answer to an agent-initiated or follow-up message, always reach its bound session.
-- G7: Docs, tests (unit, contract, e2e) and a live smoke in the owner DM covering send without inbound, quoted reply and reaction.
+Queued after the four epics in flight (file-download, markdown, file-editor, slash-commands).
+
+Discovery (2026-10-27): .scratchpad/discovery/matrix-outbound.md. Architecture decision: .scratchpad/design/matrix-outbound-arch.md (orchestrator-relayed orchestrator_chat_* tools, connector agent port, `sends` queue, room authorisation by binding or an agents_may_initiate flag, short m<n>/s<n> message references).
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: An agent (session leader) can send a message to the user's Matrix chat at any time, including a chat it never received a message from (initiate), through MCP tools, not only as the final answer of a chat-started turn.
+- 1.2: An agent can send several messages in a row without a user reply in between (follow-ups), including while a chat-started turn is still running.
+- 1.3: An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji.
+- 1.4: An agent can list the rooms it may post to and read the delivery status of what it sent.
+- 1.5: Agents may post only to policy-allowed rooms that are bound to their session or flagged agents_may_initiate (off by default, set per room by the user); the agent token never leaves the orchestrator.
+- 1.6: A chat room and a session are bound one to one: a room has at most one bound session and a session at most one bound room, and the user's chat messages in a bound room, including the answer to an agent-initiated or follow-up message, always reach its bound session.
+- 1.7: Docs, tests (unit, contract, e2e) and a live smoke in the owner DM covering send without inbound, quoted reply and reaction.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
-
-The README Non-goals, verbatim:
 
 - No automatic forwarding of every final reply of every turn to the chat (agents use the send tool).
 - No posting to arbitrary allowed rooms; no raw Matrix event ids from agents.
@@ -55,55 +53,9 @@ The README Non-goals, verbatim:
 - No other chat channels (Slack, Telegram); one upstream only.
 - No change to the inbound allow/deny policy model.
 
-Also (my call): no inbound Messenger reactions or reply relations as prompt context (discovery
-"ideas": noted, not doing now); no agents-common change or tag; no orchestrator migration; no
-NetworkPolicies.
+## Design
 
-## Anti-goals
-
-- The agent token, the orchestrator master key or the Matrix access token reaching the connector
-  agent listener, a log line, an error body or the prompt.
-- A room the policy denies receiving any agent message, or a send accepted at the api and delivered
-  after the policy turned to deny.
-- Weakening default deny or the identifier-only rules (connector AGENTS.md: "do not weaken them").
-- A second writer on any connector table, or a queue row changed outside a status-guarded update.
-- A room bound to two sessions, or a session bound to two rooms, at any moment (D9); a user
-  message in a bound room reaching any session but the bound one.
-- Double output: the same text posted twice because the agent sent it and its final answer repeated
-  it.
-- An existing chat-started reply path regressing (the tracker's final-answer posting stays).
-- A live deploy, `mise run apply` or a Matrix send in any acceptance condition's evidence
-  (workbench MEMORY 2026-10-25).
-
-## Constraints
-
-- Services talk only through HTTP or a queue; each table has exactly one writer; queue tables change
-  rows only through status-guarded updates (`agents_common.db.queue.transition`).
-- Ordering amendment (user decision 2026-10-27 20:44Z and 20:52Z, via mx-34): the session-loss incident epic deploy-safe-agent-sessions runs first and is a README blocker (it edits shared orchestrator files: `openapi.json`, `settings.py`, `tests/e2e/test_e2e_kind.py`, `render.py`); this epic builds on `main` after it merges. slash-commands-from-chat is in stage `parked` (ticket.py), so it no longer reserves files.
-- Ordering (user decision 2026-10-27, via mx-5, "Yes!"): this epic runs next, ahead of
-  slash-commands-from-chat, which is parked and resumes after this epic merges; the order is this
-  epic, slash-commands-from-chat, hive-decoupling, session-orchestration-mcp. This epic builds
-  every shared file from `main` (orchestrator `settings.py`, `pyproject.toml`, `uv.lock`,
-  `tests/test_settings.py`, `openapi.json`, `README.md`, `MEMORY.md`, `tests/e2e/test_e2e_kind.py`;
-  the plugin `__init__.py`, its tests, `pyproject.toml`, README, `uv.lock` and
-  `tests/test_source_install.py`) and releases any-mcp-tatara-plugins v0.2.0 from `main` (main is at
-  v0.1.0), its own chat tools only; slash-commands then releases v0.3.0 on top. See
-  Reprioritisation.
-- `web-room-initiate-toggle` lands after markdown-rendering-in-chat and file-editor-with-tabs-and-hi
-  (shared agents-web files). Ticket `depends_on` cannot name another epic's task, and `ticket.py
-  new-task` refuses files shared with an in-progress epic that is not a blocker (file-editor shares
-  the orchestrator `openapi.json`, `pyproject.toml`, `uv.lock` and `tests/e2e/test_e2e_kind.py`), so
-  both epics are README blockers too (my call); both are merged (done), so the extra blockers delay
-  nothing.
-- No `mise run apply` or other live deploy in AC evidence; `mise run diff` or a judgement AC
-  instead; the orchestrator session runs applies and tag pushes (workbench MEMORY 2026-10-25).
-  Standing rule (user, 2026-10-27): deploy whenever possible; live applies need no approval.
-- No Docker in agent pods: DB-backed tests (testcontainers) and chart tests needing `helm` run in
-  GitHub CI; tasks keep non-DB unit tests for their logic so the local verify has signal
-  (retro proposal, see Research inputs).
-- Model per task: opus when the task adds a product source module or touches more than five files,
-  else sonnet; a new test file or test fake alone does not count as a module (my call).
-- No em dashes, smart quotes or decorative Unicode anywhere.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -546,6 +498,21 @@ deploy is the epics 1-3 deploy (file-download, markdown, file-editor; agents-hel
 orchestrator `96e46f3`, agents-web `01e971c`, agent image claude-code-wrapper `0.3.1`), and
 slash-commands deploys after its own merge.
 
+## Open questions
+
+- Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
+- Q2: Your next chat message after an agent starts a chat or sends a follow-up goes to the session that last spoke in the room while it runs ('while it runs' means the session exists with desired state active, not that it is mid-turn), including a hive leader or a webhook or schedule session, as a follow message with its final answer posted to the chat; if that session is busy (for example a hive leader in a long turn), your message waits behind its current turn and the connector tracks the reply for up to 30 min (the run timeout), holding your later messages in that room meanwhile; otherwise it goes to the room's chat session? [answer: no: rejected by the user at the final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; replaced by the hard 1:1 room-session binding (D9): your chat messages always go to the room's one bound session]
+- Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
+- Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
+- Q5: Per-session limit of 20 messages a minute (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
+- Q6: This epic's agents-helmfile values and live smoke run only after the one deploy approved for the four earlier epics (file-download, markdown, file-editor, slash-commands) has applied, so this epic's applies move only the connector, the orchestrator (chat config, plugins v0.3.0) and agents-web; if that deploy epic does not exist when this epic reaches helmfile-chat-values, the orchestrator creates and runs it first? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
+- Q7: You confirm in Messenger what S1-S4 look like (one line each: shown, quoted reply shown, thumbs-up shown, second reaction replaced or rejected), while the orchestrator records the connector-side ids, statuses and reasons? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
+- Q8: S1 runs at smoke time even if the owner DM had an inbound message in the last 24 h; the smoke records the hours since the last inbound, and the over-24h case is confirmed at the first natural opportunity and noted in agents-helmfile MEMORY.md without holding the epic? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
+- Q9: When a room is bound to a running session (for example one that started the chat there through agents_may_initiate), your answer routes to it even if the room has no preset; a preset is only needed to start a new chat session in an unbound room (reworded 2026-10-27 for the 1:1 rule; was: "When the last speaker in a flagged room is a running session, your answer routes there even if the room has no preset; a preset is only needed to start a new chat session")? [answer: yes, adapted to the 1:1 rule (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; the 1:1 rule wins where it conflicts, so the room's bound session takes the place of the last speaker and the question is reworded)]
+- Q10: A room stays bound to its one session until that session is deleted (the connector releases the binding at the room's next message or within about a minute); turning agents_may_initiate off or adding a deny rule does not unbind it, though a deny rule still stops every agent send and inbound message (reworded 2026-10-27 for the 1:1 rule; was: "A session stays bound to a room it posted in; turning agents_may_initiate off does not unbind it; revocation is a deny rule on the room or deleting the session")? [answer: yes, adapted to the 1:1 rule (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; the 1:1 rule wins where it conflicts, so the question is reworded: deleting the session releases the binding)]
+- Q11: Under the 1:1 rule a throwaway smoke session is refused room_bound in the owner DM whenever the DM is already bound to its chat session (for example the mx-5 hive leader). Should chat-smoke run S1-S4 from the leader pod of the session the owner DM is bound to (only that pod's own agent credentials; no message to or change of that session, nothing created or deleted), and create a throwaway session that initiates there and is deleted afterwards (releasing the binding) only when the owner DM is unbound? [answer: yes (derived by the tatara leader 2026-10-27 from the user's hard 1:1 rule, msg 107: a throwaway session cannot post into a bound DM)]
+- Q12: Migration 0002 (approved, no down step) also creates room_bindings and backfills one active binding per room from its newest run that has a session, or reserves the room for an in-progress first run without one, so existing chats keep their session; bindings of sessions already deleted are released by the bot's first binding sweep. Approve that backfill as part of migration 0002? [answer: yes (derived by the tatara leader 2026-10-27: 1:1 requires every existing room bound to its session; migration 0002 and its live run are user-approved, msg 107)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -556,7 +523,7 @@ slash-commands deploys after its own merge.
 | research-code-external | skipped: the analogues are in-repo (orchestrator agent and service ports, `session_send`) | none | none |
 | research-papers | skipped: no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 Plan inputs of the discovery brief and architecture, and the retro proposals of the last five done
 epics that bear on this epic (recurring workflow ones first).
@@ -601,7 +568,152 @@ epics that bear on this epic (recurring workflow ones first).
 - Retro, recurring (markdown-rendering-in-chat): an agents-web vitest test is flaky under load and the failing name was never captured. Acted on: web-room-initiate-toggle (Notes: on a first-run failure capture the failing test name and output tail before any rerun).
 - Retro, workflow (markdown-rendering-in-chat): calibrate seeds by task kind. No task: calibration tooling, not this epic.
 
-## Decision coverage
+## Irreversible operations
+
+Approved at the final gate (2026-10-27): the plugins tag v0.3.0 (now v0.2.0: the number swapped with slash-commands-from-chat, user decision 2026-10-27, both tags user-approved), migration 0002 without a down
+step, the new SOPS token and the live applies; standing rule since then: deploy whenever possible
+(live applies need no approval).
+
+- Tag `v0.2.0` pushed to any-mcp-tatara-plugins origin on the merge commit of plugins-release-0-3-0
+  (orchestrator session, after green CI). Safeguard: approved at the gate; ac on the tag checked
+  after the push.
+- Live migration 0002 on the agents-matrix-connector database (runs in the connector init container
+  on apply): additive (new tables `sends` and `room_bindings`, new columns, widened CHECK, the
+  `room_bindings` backfill from existing runs), but the migrator has no down step. Safeguard:
+  approved at the gate (the backfill inside it: gate question Q12); migration idempotence,
+  constraint, uniqueness and backfill tests in mxc-sends-schema.
+- Live applies (orchestrator session, chat-live-smoke): agents-matrix-connector, agents-orchestrator
+  (the v0.2.0 plugins ref changes the rendered config hash and rolls every running agent pod,
+  including the mx-5 hive), agents-web. Safeguard: approved at the gate and the standing deploy
+  rule; `--selector` per release in D18's order; `mise run diff` reviewed before each apply.
+- New credential: the chat token generated by `bootstrap-secrets.sh` and committed SOPS-encrypted.
+  Safeguard: approved at the gate; never rotates, both files or neither.
+- Grant: `agents_may_initiate` set on the owner DM `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` (Q1).
+  While the DM is bound to its chat session the flag lets no other session in (D9).
+- Messages sent to the user's Messenger from the owner's Facebook account by the live smoke (S1-S4)
+  in the owner DM; a sent Messenger message cannot be unsent by the connector. Under the 1:1 rule
+  they are sent with the identity of the DM's bound session when it is bound (Q11).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-29)
+
+## Matrix phase 5 judgement (tatara-0, 2026-10-28)
+Fix tasks: mxc-outbound-limits (sec M2, L slug, L m<n> probing), mxc-pool-and-binding (connector Consider 1, 2), orch-chat-untrusted-sessions (sec M1 + orch Consider e2e literal list), helmfile-smoke-helpers (web-helmfile Act on redirect + scope audit duplicate).
+Noted, not fixed: sec L NetworkPolicy (cluster-level, 256-bit token, api-only); sec L plugin pinned by tag (pre-existing pattern, tag = 4506e70 = uv.lock); connector Consider 3 PREAMBLE after failed first prompt (not a regression); orch Noted items (upstream 401 passthrough, env override can recreate crash, stale wording, query forwarding); web MEMORY.md entry (Consider).
+Scope audit: helmfile-orch-chat-pin ac1 superseded by helmfile-orch-chat-fix-pin; orch-chart-chat ac1 superseded by orch-chat-env-scope (intended).
+- mxc-pool-and-binding review medium dropped as not-this-task: Sender._claim holds a connection while RoomPolicy.refusal takes more (sender.py:88-106,150-165); pre-existing, bounded (single sequential bot loop, no cycle). Noted, not doing now.
+
+### design.md: Summary
+
+A session leader reaches the user's Matrix (Messenger) chat at any time through four new
+any-mcp tools, `orchestrator_chat_rooms`, `orchestrator_chat_send`, `orchestrator_chat_react` and
+`orchestrator_chat_status`. The orchestrator checks the caller (agent token, pod IP, leader) and
+forwards the call synchronously to a new token-protected agent listener on the connector api. The
+connector checks the room (policy-allowed, and bound to the session or flagged
+`agents_may_initiate`), queues a `sends` row and answers `s<n>`; the bot delivers it through
+`outbound`, with quoted replies and reactions resolved from short `m<n>`/`s<n>` references, never raw
+event ids. A chat room and a session are bound one to one (user decision at the final gate,
+D9): the user's chat messages always go to the room's one bound session, an agent starts a chat
+only in an unbound flagged room (which binds it to that agent's session), and the binding is
+released only when the session is deleted. any-mcp-tatara-plugins v0.2.0 ships the tools; agents-helmfile wires one new secret, the
+values and a live smoke (S1-S4) in the owner DM. Architecture decision adopted from
+`.scratchpad/design/matrix-outbound-arch.md` (every "(pick)" is the design); deviations forced by
+probed facts are marked "(probe)".
+
+### design.md: Intent and why
+
+User request (2026-10-27, relayed by the mx-5 leader), verbatim: "Bug: agents talking to the user
+over the Matrix connector (bridged to Facebook Messenger) can only answer the turn that came from a
+chat message. [...] Replies to turns started any other way (e.g. a <session-message> from another
+session's leader, background task completions, member agents reporting) show only in the web UI and
+never reach the chat. [...] The agent has no Matrix MCP tool, only plain-text replies." Requirements:
+"1. Must: an agent can initiate a chat with the user over the connector (no prior inbound message
+needed). 2. Must: an agent can send follow-ups (multiple messages without a user reply in between).
+3. Ideally: an agent can reply to a specific message (threaded/quoted reply) and react to messages
+with emoji (reactions may be enough for acknowledgements)."
+
+Why it fails today (discovery brief sec 1): the tracker follows only the one orchestrator message the
+connector posted (`tracker.py:Tracker._outcome`, `db/runs.py:latest_session`), and stops when that
+run finishes; turns started any other way have no connector message, and agents have no tool.
+
+### design.md: Goals
+
+The README Goals, verbatim:
+
+- G1: An agent (session leader) can send a message to the user's Matrix chat at any time, including a chat it never received a message from (initiate), through MCP tools, not only as the final answer of a chat-started turn.
+- G2: An agent can send several messages in a row without a user reply in between (follow-ups), including while a chat-started turn is still running.
+- G3: An agent can reply to a specific chat message (quoted reply) and react to a message with an emoji.
+- G4: An agent can list the rooms it may post to and read the delivery status of what it sent.
+- G5: Agents may post only to policy-allowed rooms that are bound to their session or flagged agents_may_initiate (off by default, set per room by the user); the agent token never leaves the orchestrator.
+- G6: A chat room and a session are bound one to one: a room has at most one bound session and a session at most one bound room, and the user's chat messages in a bound room, including the answer to an agent-initiated or follow-up message, always reach its bound session.
+- G7: Docs, tests (unit, contract, e2e) and a live smoke in the owner DM covering send without inbound, quoted reply and reaction.
+
+### design.md: Non-goals
+
+The README Non-goals, verbatim:
+
+- No automatic forwarding of every final reply of every turn to the chat (agents use the send tool).
+- No posting to arbitrary allowed rooms; no raw Matrix event ids from agents.
+- No member-agent (non-leader) chat tools; members report through their leader.
+- No other chat channels (Slack, Telegram); one upstream only.
+- No change to the inbound allow/deny policy model.
+
+Also (my call): no inbound Messenger reactions or reply relations as prompt context (discovery
+"ideas": noted, not doing now); no agents-common change or tag; no orchestrator migration; no
+NetworkPolicies.
+
+### design.md: Anti-goals
+
+- The agent token, the orchestrator master key or the Matrix access token reaching the connector
+  agent listener, a log line, an error body or the prompt.
+- A room the policy denies receiving any agent message, or a send accepted at the api and delivered
+  after the policy turned to deny.
+- Weakening default deny or the identifier-only rules (connector AGENTS.md: "do not weaken them").
+- A second writer on any connector table, or a queue row changed outside a status-guarded update.
+- A room bound to two sessions, or a session bound to two rooms, at any moment (D9); a user
+  message in a bound room reaching any session but the bound one.
+- Double output: the same text posted twice because the agent sent it and its final answer repeated
+  it.
+- An existing chat-started reply path regressing (the tracker's final-answer posting stays).
+- A live deploy, `mise run apply` or a Matrix send in any acceptance condition's evidence
+  (workbench MEMORY 2026-10-25).
+
+### design.md: Constraints
+
+- Services talk only through HTTP or a queue; each table has exactly one writer; queue tables change
+  rows only through status-guarded updates (`agents_common.db.queue.transition`).
+- Ordering amendment (user decision 2026-10-27 20:44Z and 20:52Z, via mx-34): the session-loss incident epic deploy-safe-agent-sessions runs first and is a README blocker (it edits shared orchestrator files: `openapi.json`, `settings.py`, `tests/e2e/test_e2e_kind.py`, `render.py`); this epic builds on `main` after it merges. slash-commands-from-chat is in stage `parked` (ticket.py), so it no longer reserves files.
+- Ordering (user decision 2026-10-27, via mx-5, "Yes!"): this epic runs next, ahead of
+  slash-commands-from-chat, which is parked and resumes after this epic merges; the order is this
+  epic, slash-commands-from-chat, hive-decoupling, session-orchestration-mcp. This epic builds
+  every shared file from `main` (orchestrator `settings.py`, `pyproject.toml`, `uv.lock`,
+  `tests/test_settings.py`, `openapi.json`, `README.md`, `MEMORY.md`, `tests/e2e/test_e2e_kind.py`;
+  the plugin `__init__.py`, its tests, `pyproject.toml`, README, `uv.lock` and
+  `tests/test_source_install.py`) and releases any-mcp-tatara-plugins v0.2.0 from `main` (main is at
+  v0.1.0), its own chat tools only; slash-commands then releases v0.3.0 on top. See
+  Reprioritisation.
+- `web-room-initiate-toggle` lands after markdown-rendering-in-chat and file-editor-with-tabs-and-hi
+  (shared agents-web files). Ticket `depends_on` cannot name another epic's task, and `ticket.py
+  new-task` refuses files shared with an in-progress epic that is not a blocker (file-editor shares
+  the orchestrator `openapi.json`, `pyproject.toml`, `uv.lock` and `tests/e2e/test_e2e_kind.py`), so
+  both epics are README blockers too (my call); both are merged (done), so the extra blockers delay
+  nothing.
+- No `mise run apply` or other live deploy in AC evidence; `mise run diff` or a judgement AC
+  instead; the orchestrator session runs applies and tag pushes (workbench MEMORY 2026-10-25).
+  Standing rule (user, 2026-10-27): deploy whenever possible; live applies need no approval.
+- No Docker in agent pods: DB-backed tests (testcontainers) and chart tests needing `helm` run in
+  GitHub CI; tasks keep non-DB unit tests for their logic so the local verify has signal
+  (retro proposal, see Research inputs).
+- Model per task: opus when the task adds a product source module or touches more than five files,
+  else sonnet; a new test file or test fake alone does not count as a module (my call).
+- No em dashes, smart quotes or decorative Unicode anywhere.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -624,7 +736,7 @@ epics that bear on this epic (recurring workflow ones first).
 | D17 live smoke S1-S4 | mxc-room-initiate-flag, chat-smoke-script, chat-live-smoke |
 | D18 deploy order | helmfile-chat-values, chat-live-smoke |
 
-## Review focus
+### design.md: Review focus
 
 - Authorisation (mxc-agent-room-policy, mxc-agent-routes, mxc-bot-sends-delivery): (a) as defined
   in D4 (member-aware, deny on any member) on every route, at claim and again right before each
@@ -653,7 +765,7 @@ epics that bear on this epic (recurring workflow ones first).
   the caller is the owner DM's bound session when the DM is bound and a throwaway session only when
   it is unbound (Q11), and the bound session is never messaged, changed or deleted.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Module and function names inside the connector and orchestrator, within the files each task lists.
 - How the api process runs two uvicorn listeners (two `serve_asgi` tasks or one server with two
@@ -664,7 +776,7 @@ epics that bear on this epic (recurring workflow ones first).
 - Function names of the binding repository (`db/bindings.py`) and how the 60 s binding sweep keeps
   its last-run time, within D9.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - The deployed mautrix-meta bridges Matrix `m.in_reply_to` and `m.annotation` to Messenger (upstream
   ROADMAP says done; deployed version unknown). Confirmed by chat-live-smoke S2-S4; if S2 or S3 fails,
@@ -678,7 +790,7 @@ epics that bear on this epic (recurring workflow ones first).
 - SOPS encryption of the new secrets files needs only the public recipients in `.sops.yaml`; decryption
   for diff and apply needs the orchestrator session's key. Confirmed when helmfile-chat-secrets runs.
 
-## Builder check settlements (2026-10-27)
+### design.md: Builder check settlements (2026-10-27)
 
 The builder check (sonnet, no prior context) asked nine questions; settled here, facts probed:
 
@@ -691,44 +803,3 @@ The builder check (sonnet, no prior context) asked nine questions; settled here,
 - B7 (`ORCH_CHAT_URL`): the chart default is empty (routes answer 503 chat_unconfigured); agents-helmfile sets `http://agents-matrix-connector-api-agents:8001`, the in-namespace Service name; namespace `agents` (fact: agents-helmfile values).
 - B8 (`room` argument): `room` takes a Matrix room id (`!id:server`) as listed by orchestrator_chat_rooms and as shown in the prompt's `room_id`, or is omitted; names are never accepted (my call).
 - B9 (images): each repo's CI builds and pushes the Harbor image on its `main` merge (build-push job, as for claude-code-wrapper 4581f3b); chat-live-smoke's precondition is that those main builds are green (fact: CI workflows).
-
-## Open questions
-
-- Q1: Only the owner DM gets agents_may_initiate on, set once after deploy (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
-- Q2: Your next chat message after an agent starts a chat or sends a follow-up goes to the session that last spoke in the room while it runs ('while it runs' means the session exists with desired state active, not that it is mid-turn), including a hive leader or a webhook or schedule session, as a follow message with its final answer posted to the chat; if that session is busy (for example a hive leader in a long turn), your message waits behind its current turn and the connector tracks the reply for up to 30 min (the run timeout), holding your later messages in that room meanwhile; otherwise it goes to the room's chat session? [answer: no: rejected by the user at the final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; replaced by the hard 1:1 room-session binding (D9): your chat messages always go to the room's one bound session]
-- Q3: No automatic forwarding of every final reply; agents use the send tool (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
-- Q4: Add an 'agents may start chats' toggle to the agents-web room settings in this epic (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
-- Q5: Per-session limit of 20 messages a minute (my call, pending gate)? [answer: yes (approved by the user 2026-10-27, 'All yes')]
-- Q6: This epic's agents-helmfile values and live smoke run only after the one deploy approved for the four earlier epics (file-download, markdown, file-editor, slash-commands) has applied, so this epic's applies move only the connector, the orchestrator (chat config, plugins v0.3.0) and agents-web; if that deploy epic does not exist when this epic reaches helmfile-chat-values, the orchestrator creates and runs it first? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
-- Q7: You confirm in Messenger what S1-S4 look like (one line each: shown, quoted reply shown, thumbs-up shown, second reaction replaced or rejected), while the orchestrator records the connector-side ids, statuses and reasons? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
-- Q8: S1 runs at smoke time even if the owner DM had an inbound message in the last 24 h; the smoke records the hours since the last inbound, and the over-24h case is confirmed at the first natural opportunity and noted in agents-helmfile MEMORY.md without holding the epic? [answer: yes (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go')]
-- Q9: When a room is bound to a running session (for example one that started the chat there through agents_may_initiate), your answer routes to it even if the room has no preset; a preset is only needed to start a new chat session in an unbound room (reworded 2026-10-27 for the 1:1 rule; was: "When the last speaker in a flagged room is a running session, your answer routes there even if the room has no preset; a preset is only needed to start a new chat session")? [answer: yes, adapted to the 1:1 rule (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; the 1:1 rule wins where it conflicts, so the room's bound session takes the place of the last speaker and the question is reworded)]
-- Q10: A room stays bound to its one session until that session is deleted (the connector releases the binding at the room's next message or within about a minute); turning agents_may_initiate off or adding a deny rule does not unbind it, though a deny rule still stops every agent send and inbound message (reworded 2026-10-27 for the 1:1 rule; was: "A session stays bound to a room it posted in; turning agents_may_initiate off does not unbind it; revocation is a deny rule on the room or deleting the session")? [answer: yes, adapted to the 1:1 rule (approved by the user, final gate answer 2026-10-27, relayed by the mx-5 leader: '1. hard 1:1 relationship between chat and session / Wrap other code changes around it, besides that: Go'; the 1:1 rule wins where it conflicts, so the question is reworded: deleting the session releases the binding)]
-- Q11: Under the 1:1 rule a throwaway smoke session is refused room_bound in the owner DM whenever the DM is already bound to its chat session (for example the mx-5 hive leader). Should chat-smoke run S1-S4 from the leader pod of the session the owner DM is bound to (only that pod's own agent credentials; no message to or change of that session, nothing created or deleted), and create a throwaway session that initiates there and is deleted afterwards (releasing the binding) only when the owner DM is unbound? [answer: yes (derived by the tatara leader 2026-10-27 from the user's hard 1:1 rule, msg 107: a throwaway session cannot post into a bound DM)]
-- Q12: Migration 0002 (approved, no down step) also creates room_bindings and backfills one active binding per room from its newest run that has a session, or reserves the room for an in-progress first run without one, so existing chats keep their session; bindings of sessions already deleted are released by the bot's first binding sweep. Approve that backfill as part of migration 0002? [answer: yes (derived by the tatara leader 2026-10-27: 1:1 requires every existing room bound to its session; migration 0002 and its live run are user-approved, msg 107)]
-
-## Irreversible operations in scope
-
-Approved at the final gate (2026-10-27): the plugins tag v0.3.0 (now v0.2.0: the number swapped with slash-commands-from-chat, user decision 2026-10-27, both tags user-approved), migration 0002 without a down
-step, the new SOPS token and the live applies; standing rule since then: deploy whenever possible
-(live applies need no approval).
-
-- Tag `v0.2.0` pushed to any-mcp-tatara-plugins origin on the merge commit of plugins-release-0-3-0
-  (orchestrator session, after green CI). Safeguard: approved at the gate; ac on the tag checked
-  after the push.
-- Live migration 0002 on the agents-matrix-connector database (runs in the connector init container
-  on apply): additive (new tables `sends` and `room_bindings`, new columns, widened CHECK, the
-  `room_bindings` backfill from existing runs), but the migrator has no down step. Safeguard:
-  approved at the gate (the backfill inside it: gate question Q12); migration idempotence,
-  constraint, uniqueness and backfill tests in mxc-sends-schema.
-- Live applies (orchestrator session, chat-live-smoke): agents-matrix-connector, agents-orchestrator
-  (the v0.2.0 plugins ref changes the rendered config hash and rolls every running agent pod,
-  including the mx-5 hive), agents-web. Safeguard: approved at the gate and the standing deploy
-  rule; `--selector` per release in D18's order; `mise run diff` reviewed before each apply.
-- New credential: the chat token generated by `bootstrap-secrets.sh` and committed SOPS-encrypted.
-  Safeguard: approved at the gate; never rotates, both files or neither.
-- Grant: `agents_may_initiate` set on the owner DM `!iLWrAwaTMYnINJsyNv:szymonrichert.pl` (Q1).
-  While the DM is bound to its chat session the flag lets no other session in (D9).
-- Messages sent to the user's Messenger from the owner's Facebook account by the live smoke (S1-S4)
-  in the owner DM; a sent Messenger message cannot be unsent by the connector. Under the 1:1 rule
-  they are sent with the identity of the DM's bound session when it is bound (Q11).
