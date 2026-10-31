@@ -172,6 +172,29 @@ def test_license_file_in_every_plugin(workbench, run_cli, allow_file, tmp_path):
         assert lic.read_text() == "All rights reserved by Acme.\n", lic
 
 
+VENDORED_COPYRIGHT = "Copyright (c) 2025 Jesse Vincent"
+
+
+@pytest.mark.parametrize("option", ["mit", "file"])
+def test_vendored_plugin_license_keeps_its_holder(workbench, run_cli, allow_file, tmp_path, option):
+    vendored = workbench / "plugins/vendored"
+    vendored.mkdir(parents=True)
+    upstream = f"MIT License\n\n{VENDORED_COPYRIGHT}\n\nPermission is hereby granted.\n"
+    (vendored / "LICENSE").write_text(upstream)
+    (vendored / "NOTICE").write_text("Vendored from upstream.\n")
+    own = workbench / "plugins/workbench/LICENSE"
+    if option == "mit":
+        init(run_cli, "--license", "mit", "--license-holder", "Acme Corp")
+        assert copyright_line(own).endswith("Acme Corp")
+    else:
+        src = tmp_path / "prop.txt"
+        src.write_text("All rights reserved by Acme.\n")
+        init(run_cli, "--license-file", str(src))
+        assert own.read_text() == "All rights reserved by Acme.\n"
+    assert (vendored / "LICENSE").read_text() == upstream
+    assert copyright_line(vendored / "LICENSE") == VENDORED_COPYRIGHT
+
+
 def test_license_file_missing_refused(workbench, run_cli, allow_file, tmp_path):
     r = run_cli(*NEW, "--license-file", str(tmp_path / "nope"))
     assert r.returncode == 1

@@ -165,9 +165,15 @@ def license_file(root: Path, opts: Options, first: bool) -> None:
     """Rewrite the root LICENSE and every plugins/*/LICENSE with one holder.
 
     --license none removes only the root LICENSE; plugin licenses stay and are rewritten.
+    A plugin whose dir holds a NOTICE file is a vendored third-party plugin: its LICENSE
+    names the upstream holder and is never rewritten.
     """
     root_license = root / "LICENSE"
-    plugin_licenses = sorted((root / "plugins").glob("*/LICENSE"))
+    plugin_licenses = [
+        p
+        for p in sorted((root / "plugins").glob("*/LICENSE"))
+        if not (p.parent / "NOTICE").is_file()
+    ]
     if opts.license_file:
         for target in (root_license, *plugin_licenses):
             shutil.copyfile(opts.license_file, target)
