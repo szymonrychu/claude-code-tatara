@@ -1,10 +1,28 @@
-# agents-webhook microservice record
+# agents-webhook microservice retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+none
+
+## Delivery record (migrated)
+
+### Asked
 
 A separate agents-webhook microservice with its own Postgres database: per-webhook public endpoints https://lab.szymonrichert.pl/webhook/<suffix> (one type, one required preset, basic auth each) for GitHub/GitLab PR/MR and issue events and Grafana alerts. Events go into a FIFO queue with per-endpoint dedup and limits, start agent clusters from presets through the orchestrator API, and (opt-in per preset, reuse_running_agent) route later events to the agent still running for the item. A Webhooks UI entry between Clusters and Presets manages endpoints and shows recent events. Shared library agents-common and the web trigger UI kit are built for agents-schedule-microservice.
 
-## Shipped
+### Shipped
 
 All 51 tasks done. Epic review verdict: pass (2026-10-25); scope audit CLEAN (all 10 user requirements delivered, no duplicates); whole-diff review of agents-webhook found 3 medium findings and the security review 2 medium findings, all fixed by tasks added in phase 5 and reviewed PASS; review of agent-orchestrator, agents-common, agents-web and agents-helmfile found nothing.
 
@@ -19,7 +37,7 @@ Live (agents namespace): agents-webhook 0.1.0-main.cc0f706, agents-webhook-db, a
 
 Suites read: agents-helmfile `mise run test` 116 passed, lint clean; agents-webhook main CI cc0f706 green (500 passed on Linux); agent-orchestrator and agents-web main CI green; agents-web vitest src/webhooks src/presets 58 passed.
 
-## Tasks
+### Tasks
 
 Status and verified head are from the task files (all `done`, all with a verified head). Review rounds and per-task verification tails were not in the files I was given: "unknown". Points are planned/actual.
 
@@ -78,7 +96,7 @@ Status and verified head are from the task files (all `done`, all with a verifie
 
 Approvals ledger (approvals.json) at close: A1, A2, A5, A6, A8, A9, A10 `approved`; A3, A4, A7, A11, A12 still `pending` in the file (ledger not updated at close, although their tasks are done; scope audit found all 10 requirements delivered).
 
-## Rulings
+### Rulings
 
 - Squash merge for agents-webhook PR #1 (ed3ea7e): GitGuardian flagged two test-fixture strings in old branch commits (since fixed). Squash keeps them out of main history without a force-push. Cost if wrong: the incidents stay on the GitGuardian dashboard until the user marks them false positive; main history is clean.
 - Clean fix branches: the review and deploy fixes went on fresh branches from main (PR #3, #4; #2 closed and superseded) rather than extending the flagged branch. Cost if wrong: one extra closed PR.
@@ -90,18 +108,18 @@ Approvals ledger (approvals.json) at close: A1, A2, A5, A6, A8, A9, A10 `approve
 - Prompt template: sandboxed Jinja2 with from_json filter, POST /webhooks/api/v1/templates/preview, reason template_error.
 - Findings dropped (below medium, declined by reviewers): unused getEvent/getMeta exports and double endpoint fetch in agents-web; duplicate CHANNEL constant; retention keyed on updated_at; hard-coded probe port 8000; claim/release churn when orchestrator is unavailable. Cost if wrong: minor cleanup or edge-case behaviour.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - GitGuardian incidents for two test-fixture strings remain open on the dashboard: the user marks them false positive.
 - Not verifiable by reviewers: orchestrator pytest (needs Docker/testcontainers), that the SOPS service-token hash equals sha256 of the token (secrets not decrypted); both settled by the live smoke (webhook checks OK).
 - Approvals ledger shows A3, A4, A7, A11, A12 `pending` though delivered: the supervisor can update the ledger.
 - The `.venv` editable install of agents_webhook still points at the removed worktree path (warning printed by ticket.py): the user or supervisor can reinstall.
 
-## Not pushed
+### Not pushed
 
 none known. The superrepo pins (a0f66e0) and ticket moves (8685b1b) are committed on main; main is not pushed; pushing the superrepo main stays with the user.
 
-## Lessons routed to
+### Lessons routed to
 
 - A chart probe referencing a port name that another template (sidecar injection) can rename broke the first live apply: add a chart test asserting probe ports are numeric (done in webhook-chart-probe-port).
 - Test fakes returned 404 where the real orchestrator service port returns 403, hiding the non-UUID preset bug: add a contract test in agents-webhook that runs the client against the real route allowlist responses.

@@ -1,71 +1,77 @@
-# agents-webhook microservice design
+---
+title: agents-webhook microservice
+repos: [agents-common, agents-webhook, agent-orchestrator, agents-helmfile, agents-web]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# agents-webhook microservice
 
-A new Python service, agents-webhook, with its own CNPG Postgres database, receives GitHub and
-GitLab PR/MR, issue and comment webhooks and Grafana alerts on per-webhook public endpoints
-`https://lab.szymonrichert.pl/webhook/<suffix>`, each created with exactly one type, one required
-preset and HTTP basic-auth credentials. Events are stored in a FIFO queue table with content-aware
-dedup and limits and start agent clusters from the endpoint's preset through the orchestrator API
-("scheduler API" in the request). A preset may opt in to agent reuse: while the agent handling an
-item runs, later events for that item go to it instead of a new cluster. A Webhooks page in the web
-UI, between Clusters and Presets, manages the endpoints and lists recent events with their status.
-Headline decisions: a library component agents-common holds what agents-schedule-microservice
-reuses (D1, D19); the public ingest runs in its own Deployment without SSO (D2); per-webhook
-endpoints with basic auth are the only ingest path (D3, D7); agent reuse is a preset field (D16,
-D17); the orchestrator gains bearer service tokens on a dedicated internal port (D10); the UI lands
-in agents-web (D11).
+## What and why
 
-Re-planned in place on 2026-10-25 (user requirement in the scratchpad `wh-userreq2.md`, quoted in
-D3, D7, D16, D17): per-webhook endpoints replace the per-source `/webhooks/<source>` HMAC and token
-ingest and the mapping table; agent reuse added. Done tasks are untouched.
+What: A separate agents-webhook microservice with its own database: receives GitHub/GitLab PR/MR and issue webhooks and Grafana alerts on per-webhook URLs https://<base>/webhook/<suffix> (one type, one preset, basic auth each), queues them FIFO with content-aware dedup and limits, sends them to the scheduler API, optionally routes later events to the agent still running for the item, with a web UI to manage the webhook endpoints and see recent events
+How: New Python component with its own DB (endpoints and an event queue table), dedup keys per endpoint, a client of the orchestrator API, an opt-in reuse_running_agent preset field, a UI entry between Clusters and Presets
+Why: Events from forges and alerts start agent clusters from presets, as in tatara-new
 
-## Intent and why
+User request (2026-10-25), verbatim. Overall target: "Target getting more and more from tatara system (/Users/szymonri/Documents/tatara-new)"
 
-The user wants more of tatara-new's behaviour in this system: forge and alert events start agent
-clusters automatically, as tatara-new's operator did with webhooks, a queue and Tasks. Here the
-unit of work is an agent cluster from a preset, the services talk only over HTTP, and each owns its
-database (AGENTS.md hard rules). One URL per assignment makes the routing explicit (the URL is the
-mapping) and lets each forge or Grafana contact point carry its own credentials. Agent reuse keeps
-one agent on one PR, MR, issue or alert for as long as it runs. The webhook service is the first
-trigger service; the schedule service follows and reuses its parts.
+"## agents-webhook microservice
+  * separate microservice agents-webhook, with it's own database- it's responsible for getting webhook, caching it in FIFO queue and sending them into scheduler api
+  (with content aware deduplication and limits). supported webhooks:
+    * gitlab/github MR/PR created/updated (deduplication around: platform/repo/mr-id)
+    * gitlab/github issue created/updated and comment added (deduplication around: platform/repo/issue-id)
+    * grafana alert (deduplication around alert labels)
+  * agents-webhook microservice has webUI entry between clusters and presets
+    * recent events (along with their status: new/in-progress/handled/ignored)
+    * allows to map event to preset (so event triggers an agent cluster defined with preset), allows to remove such mapping"
 
-## Goals
+Re-plan requirement (2026-10-25), verbatim:
 
-- G1: `POST https://lab.szymonrichert.pl/webhook/<suffix>` accepts an event only with that endpoint's basic-auth credentials and answers 202 for accepted or ignored, 401 for an unknown suffix or wrong credentials (identical), 413 over 5 MiB, 429 after repeated failed authentications, 5xx only when the DB write fails.
-- G2: endpoints of type `github-pr`, `github-issue`, `gitlab-mr`, `gitlab-issue` and `grafana-alert` normalise their provider events (PR/MR created and updated, issue created and updated, comments added, Grafana alerts) into one event shape with a dedup key: `<platform>/<repo>/mr/<n>`, `<platform>/<repo>/issue/<n>`, `grafana/<sha256 of the sorted commonLabels>[:16]`.
-- G3: events are a FIFO queue (alerts first, then by sequence) with dedup per D5 and limits per D6.
-- G4: an endpoint event creates a cluster from the endpoint's preset, posts the rendered prompt and tracks the first turn; with agent reuse on, a later event for the same item goes to the cluster still running for it (D16); statuses new, in-progress, handled, ignored, failed, each with a reason where relevant.
-- G5: `/webhooks/api/v1` creates, lists, rotates and deletes endpoints (URL and password shown once) and lists events; documented in the README, committed `openapi.json`, drift-tested.
-- G6: the Webhooks UI entry sits between Clusters and Presets and manages endpoints and recent events; the preset form has a Reuse running agent switch.
-- G7: the orchestrator accepts the service's calls with a bearer service token on port 8002; every other caller sees no change; presets carry the optional `reuse_running_agent` field.
-- G8: released, pinned and applied with its CNPG database; the live smoke is green.
+"Add an ability to create webhook url in form of https://<base>/webhook/<random string>.
+Such webhook will be defined as one of the supported types on creation.
+When creating such webhook url user can provide:
+* <random string> url suffix (by default it's random, user can supply any unique string)
+* basic-auth credentials (by default random u/p are provided, user can override both)
+
+User is required to provide a preset that will be used to run the webhook along with a type of the webhook (grafana alert/gitlab-issue/gitlab-mr/github-issue/github-pr). only these sink endpoints will be used onwards for any webhooks and such url will be unique for each assignment."
+
+"Another requirement- as long as an agent handling specific event is running, it will receive any new webhooks/events instead of creating new one."
+
+"(agent reuse is an optional feature, it can be set during preset creation)"
+
+User decision (2026-10-25): re-plan this in-progress epic around these per-webhook endpoints; they replace the per-source ingest and the mapping table, which supersedes the mapping part of the original request above.
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: A new service, agents-webhook, with its own Postgres database, receives GitHub and GitLab PR/MR events (created, updated), issue events (created, updated) and comments, and Grafana alerts on per-webhook public URLs https://lab.szymonrichert.pl/webhook/<suffix>; each endpoint is created with exactly one type (grafana-alert, gitlab-issue, gitlab-mr, github-issue, github-pr), one required preset, a random or user-supplied unique suffix and random or user-supplied basic-auth credentials, and these endpoints are the only ingest path.
+- 1.2: Credentials are stored as salted hashes, checked in constant time, the password is shown once, unknown suffixes are indistinguishable from wrong credentials, and repeated failed authentications are throttled.
+- 1.3: Every received event is stored in a FIFO queue table with content-aware dedup per endpoint: platform/repo/mr-id for PRs and MRs, platform/repo/issue-id for issues and comments, the alert labels for Grafana.
+- 1.4: Limits hold: at most 3 events in progress at once and 1 per endpoint, a 500-event queue cap, a 5 MiB body cap.
+- 1.5: An endpoint event starts an agent cluster from the endpoint's preset through the orchestrator API, sends the event as the first prompt and tracks the run until the first turn ends; when the preset sets reuse_running_agent, later events for the same item go to the agent still running for it instead of a new cluster.
+- 1.6: A Webhooks entry in the web UI, between Clusters and Presets, creates endpoints (type, preset, optional suffix, optional credentials), shows the full URL and credentials once, rotates credentials, deletes endpoints, and lists recent events with their status (new, in-progress, handled, ignored, failed); the preset form has a Reuse running agent switch.
+- 1.7: The orchestrator accepts calls from other in-cluster services through bearer service tokens on a dedicated internal port, and presets carry the optional reuse_running_agent field.
+- 1.8: The shared library agents-common (settings, DB and queue helpers, orchestrator client, run tracker, preset binding, agent-reuse helpers in v0.2.0) and the web trigger UI kit are built here for agents-schedule-microservice to reuse.
+- 1.9: Everything is released, pinned, deployed with its CNPG database in the agents namespace and proven by the smoke; every capability has a documented API and an API-only e2e.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Forge write-back (comments, statuses), cluster deletion, rate limiting of successful deliveries, editing an endpoint's type or preset after creation (delete and recreate), revealing a password after creation, any change to the shape of existing `/api/v1` routes beyond the additive spec field.
+- No forge write-back: the service posts no comments or statuses to GitHub or GitLab.
+- No cluster cleanup: the service never deletes clusters; autoclose belongs to configuration-improvements.
+- No rate limiting of successful deliveries and no per-source signature secrets; one URL per assignment instead.
+- No editing of an endpoint's type or preset (delete and recreate) and no revealing a password after creation.
+- No prompt field on presets or ClusterSpec; the prompt is a message.
+- No change to the existing `/api/v1` routes of the orchestrator beyond the additive optional spec field.
 
-## Anti-goals
+## Design
 
-- The public ingest Deployment reaching the UI API or carrying the SSO sidecar's session.
-- A plaintext password stored anywhere, logged, or returned outside the create and rotate responses.
-- A response that lets a caller tell an existing suffix from a missing one.
-- A restart or a duplicate delivery posting a second prompt or starting a second cluster for the same event.
-- An event lost when the cluster it was routed to goes away mid-delivery.
-- Event text reaching an agent as instructions instead of framed, escaped data.
-- Any new caller of the orchestrator main port, or the CIDR allowlist loosened.
-- Copies of the DB, settings, client or reuse code in agents-schedule later (the reason for agents-common).
-
-## Constraints
-
-- Python only for services; TypeScript only in agents-web (AGENTS.md hard rules).
-- Services talk only through HTTP; each table has one writer except queue tables, which change rows only through status-guarded updates (`code/agent-orchestrator/MEMORY.md` L19).
-- `/api/v1` of the orchestrator is additive-only (`code/agent-orchestrator/MEMORY.md` L17).
-- The oauth2-proxy injector has no skip-auth annotation (`infrastructure/code/containers/apps/oauth2proxy-injector/webhook.go` L404-450), so a public endpoint cannot share a pod with SSO.
-- The orchestrator `SourceAllowlist` reads only the socket peer; live `ORCH_ALLOWED_CIDRS` is `127.0.0.1/32` (`code/agents-helmfile/values/agent-orchestrator/common.yaml`).
-- agents-common v0.1.0 is tagged and published; tags are never re-pointed, so new shared code ships as v0.2.0 (D19).
-- Live applies run in the orchestrator's main session; the classifier refuses them in subagents, so no AC evidence runs `mise run apply` (apply-smoke-webhook).
-- Raw `sops` is blocked in agent shells; secret files change through the project's secret helper.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -155,6 +161,35 @@ Default credentials: username `wh-` + 8 hex, password `secrets.token_urlsafe(32)
 
 The reuse support is shared, so it ships in agents-common as additive v0.2.0 (tasks common-reuse-running, common-release-v0-2-0): `Preset.spec`, `Preset.reuse_running_agent`, `Cluster.status`, `runs.running_cluster`, `runs.deliver` (post without failing the run when the cluster is gone), `runs.track_delivery` (handled on `sent`, "gone" on cancel), and fake orchestrator helpers (`add_preset(spec=)`, `mark_sent`, `discard_cluster`, `remove_cluster`). v0.1.0 stays as tagged; webhook-scaffold pins v0.1.0 and webhook-reuse-routing moves the pin to v0.2.0, so the service work starts before the new tag. Alternative: the reuse code inside agents-webhook (rejected: agents-schedule would copy it, an anti-goal). Serves Q24. Approvals A10, A12.
 
+## Open questions
+
+- Q1: Dedup: while the earlier event with the same key is new, does the newer payload replace it (keeping its FIFO place), and while it is in-progress, is the newer one sent as an update message to the same cluster and recorded handled? [answer: first half kept; second half superseded by Q19 and Q21 (re-plan 2026-10-25)]
+- Q2: Do limits mean concurrency caps (3 in progress, 1 per mapping, FIFO with alerts first), a 5 MiB body cap and a 500-event queue cap, with no per-minute rate limit? [answer: superseded by Q23 (per endpoint instead of per mapping)]
+- Q3: Is incoming auth tatara-new parity (GitHub HMAC, GitLab token, Grafana bearer), one SOPS secret per source, with public ingest at https://lab.szymonrichert.pl/webhooks/<source> in its own Deployment without SSO? [answer: own public Deployment without SSO kept; auth and paths superseded by Q13-Q17 and Q25]
+- Q4: Are events ignored (still listed with the reason) when no mapping matches, the actor is a bot login, the action is closed/merged/labeled/title-only edit, the alert is resolved, a duplicate, or the queue is full? [answer: superseded by Q17 (type_mismatch replaces no_mapping)]
+- Q5: Add a fifth status failed (create, message or turn failed, or a 1 h timeout) with a reason? [answer: yes (working answer, kept)]
+- Q6: Is an event handled when its first turn completes, with the service never deleting clusters (cleanup via configuration-improvements autoclose)? [answer: yes (working answer, kept); a delivery to a running agent is handled when sent (Q22)]
+- Q7: Is a mapping (source, kind, repo or any, Grafana label subset) to a preset plus optional prompt template, most specific wins, created from an event row and removable, not re-queuing past events? [answer: superseded by Q13 (endpoints replace mappings)]
+- Q8: Add an optional global author allowlist that ignores issue and comment events from other authors when set (off by default)? [answer: yes (working answer, kept; independent of mappings)]
+- Q9: Use bearer service tokens on a dedicated orchestrator port 8002 (sha256 hashes in ORCH_SERVICE_TOKENS) serving only the routes a trigger service needs? [answer: yes (built)]
+- Q10: Put shared code in a new library component agents-common pinned by git tag v0.1.0? [answer: yes (built and tagged)]
+- Q11: Create szymonrychu/agents-common and szymonrychu/agents-webhook as public repos with workbench:component-add in the meta epic agents-webhook-component? [answer: yes (done)]
+- Q12: Use Harbor containers/agents-webhook and charts/agents-webhook with the same HARBOR_USERNAME/HARBOR_PASSWORD CI secrets as agent-orchestrator? [answer: yes (working answer, kept)]
+- Q13: Is an endpoint https://lab.szymonrichert.pl/webhook/<suffix> with a 32-char random URL-safe suffix by default or a unique user suffix matching [A-Za-z0-9._~-]{1,128}, exactly one of the five types, one required preset and an optional prompt template, created, listed, credential-rotated and deleted but never edited (recreate to change type or preset)? [recommended: yes (D7)]
+- Q14: Are credentials a random username wh-<8 hex> and a 43-char random password by default, both overridable (password at least 16 chars), stored only as a salted scrypt hash, with the password shown once at create or rotate and never revealable later? [recommended: yes (D18)]
+- Q15: Do an unknown or deleted suffix, a missing or malformed header and a wrong username or password all get the identical 401 with WWW-Authenticate Basic, with a dummy scrypt for unknown suffixes and auth checked before the body is read, so suffixes cannot be enumerated? [recommended: yes (D18)]
+- Q16: Against brute force, do more than 10 failed authentications a minute from one client get 429 with Retry-After (in memory per ingest replica, client from X-Forwarded-For only behind WEBHOOK_TRUSTED_PROXIES), with still no limit on successful deliveries? [recommended: yes (D18)]
+- Q17: Are the per-source HMAC/token checks and their three already-bootstrapped (never applied) SOPS secrets dropped, an event of another type at an endpoint stored ignored type_mismatch, and endpoint_removed replacing no_mapping/mapping_removed? [recommended: yes (D3, D4)]
+- Q18: Are dedup keys scoped per endpoint, with latest-wins while new kept and exact provider redeliveries (X-GitHub-Delivery, X-Gitlab-Event-UUID) ignored as duplicate? [recommended: yes (D5)]
+- Q19: With reuse on, is a new event whose dedup key (platform/repo/mr-id, platform/repo/issue-id, alert labels) matches an event whose cluster is still running (GET /clusters/{id} on the service port answers and it is not deleting or discarded, whether or not the first turn completed) delivered to that cluster as an update message and recorded handled with a link to the parent run, a new cluster starting only when none runs for the key, autoclose ending it; rather than the alternative reading that any event on the same endpoint goes to its running agent? [recommended: yes, per item key, not per endpoint (D16)]
+- Q20: Is reuse opt-in per preset as the sparse optional spec field reuse_running_agent (default false), ignored by the orchestrator so it applies only to trigger-service runs (user-created clusters ignore it), read from the preset when an event is claimed, and honoured by agents-schedule too with the same rule keyed by the schedule? [recommended: yes (D17; schedule epic note in design)]
+- Q21: With reuse off, does an event for a key already in progress wait until that run's first turn ends and then start its own cluster (replacing the old update-message-while-in-progress rule)? [recommended: yes (D16)]
+- Q22: Are deliveries for one key sent one at a time in arrival order, queued in the orchestrator while the agent is busy and never merged, handled once the message is sent, and when the cluster is discarded before or during delivery does the event fall back to a new cluster with nothing lost? [recommended: yes (D16)]
+- Q23: Are the limits 3 in progress overall and 1 per endpoint (was per mapping), with deliveries to a running agent bypassing the caps, a 500-event queue cap and a 5 MiB body cap? [recommended: yes (D6)]
+- Q24: Does the shared reuse support ship as agents-common v0.2.0 (a new irreversible tag; v0.1.0 untouched), with agents-webhook moving its pin to v0.2.0? [recommended: yes (D19)]
+- Q25: Is the public ingest at the singular /webhook/ prefix from your URL form, as a second agents-webhook prefix beside the SSO-protected /webhooks/api/v1, in its own Deployment without SSO? [recommended: yes (D12)]
+- Q26: Does the Webhooks page show an Endpoints section (create dialog with type, preset, optional suffix, optional credentials, optional template; a one-time credentials dialog with the full URL, copy buttons and per-type hints; a list with URL, type, preset, username, rotate and delete behind a confirm) above the recent events list with status and endpoint filters, plus a Reuse running agent switch in the preset form? [recommended: yes (D11)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -166,7 +201,7 @@ The reuse support is shared, so it ships in agents-common as additive v0.2.0 (ta
 | research-docs | skipped: basic auth and scrypt are standard-library (`hashlib.scrypt`, `hmac.compare_digest`); forge basic-auth support is confirmed by the live smoke and docs task | - | - |
 | frontend-decoupling brief | read | one host with path routing, runtime `config.json` backends, vendored openapi per backend | BFF, subdomains, micro-frontends |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -222,7 +257,127 @@ The reuse support is shared, so it ships in agents-common as additive v0.2.0 (ta
 | frontend-decoupling brief | one host, path routing, single cert-manager annotation (A4) | webhook-chart-network |
 | retro history | no proposal bearing on this re-plan beyond the live-apply rule already in Constraints | apply-smoke-webhook |
 
-## Decision coverage
+## Irreversible operations
+
+- Pushing tag `v0.2.0` on agents-common's main merge commit (common-release-v0-2-0); tags are never re-pointed. Approval A12. (`v0.1.0` is already pushed.)
+- Publishing images and charts to Harbor from the new repo's main CI (webhook-ci-images). Approval A8.
+- `mise run apply` in agents-helmfile, run by the orchestrator in its main session: creates the CNPG cluster `agents-webhook-db`, the agents-webhook release and its public Ingress prefix `/webhook/`, adds the orchestrator service port, and rotates nothing (apply-smoke-webhook). Approvals A7, A8.
+- Removing the never-applied source secrets from `values/agents-webhook/default.secrets.yaml` (helmfile-drop-source-secrets); recoverable from git history, no live secret changes. Approval A11.
+
+## Migrated notes
+
+### README.md: Gate questions
+
+Re-plan 2026-10-25. Earlier working answers stand except where superseded (Q1 second half, Q2, Q3 auth and paths, Q4, Q7; see design.md Open questions). Each new or changed decision below is worded so that "yes" accepts it; answer "no" to override.
+
+13. Endpoints: https://lab.szymonrichert.pl/webhook/<suffix>, a 32-char random URL-safe suffix by default or a unique user suffix ([A-Za-z0-9._~-]{1,128}), exactly one of the five types, one required preset, an optional prompt template; created, listed, credential-rotated and deleted, never edited (recreate to change type or preset). Yes?
+14. Credentials: random username wh-<8 hex> and a 43-char random password by default, both overridable (password at least 16 chars), stored only as a salted scrypt hash; the password is shown once at create or rotate and never revealable later. Yes?
+15. Enumeration: unknown or deleted suffix, missing or malformed header, wrong username or password all get the identical 401 with WWW-Authenticate Basic, a dummy scrypt runs for unknown suffixes, and auth is checked before the body is read. Yes?
+16. Brute force: more than 10 failed authentications a minute from one client get 429 with Retry-After (in memory per ingest replica; client from X-Forwarded-For only behind the trusted ingress CIDR); successful deliveries stay unlimited. Yes?
+17. The per-source HMAC/token checks and their three already-bootstrapped, never-applied SOPS secrets are dropped; an event of another type at an endpoint is stored ignored type_mismatch; endpoint_removed replaces no_mapping and mapping_removed. Yes?
+18. Dedup keys are scoped per endpoint; latest-wins while new is kept; exact provider redeliveries (X-GitHub-Delivery, X-Gitlab-Event-UUID) are ignored as duplicate. Yes?
+19. Agent reuse (when on): a new event whose dedup key matches an event whose cluster is still running (GET /clusters/{id} on the service port answers and it is not deleting or discarded, whether or not its first turn completed) is delivered to that cluster as an update message and recorded handled with a link to the parent run; a new cluster starts only when none runs for the key; autoclose ends it. Not the alternative reading "any event on the same endpoint goes to its running agent". Yes?
+20. Reuse is opt-in per preset as the sparse spec field reuse_running_agent (default false); the orchestrator ignores it, so it applies only to trigger-service runs and user-created clusters ignore it; the worker reads it from the preset when it claims an event; agents-schedule honours it too, keyed by the schedule. Yes?
+21. With reuse off, an event for a key already in progress waits until that run's first turn ends and then starts its own cluster (replacing the old update-message-while-in-progress rule). Yes?
+22. Deliveries for one key go one at a time in arrival order, wait in the orchestrator queue while the agent is busy and are never merged, and count as handled once sent; if the cluster is discarded before or during delivery the event falls back to a new cluster and nothing is lost. Yes?
+23. Limits: 3 in progress overall and 1 per endpoint (was per mapping); deliveries to a running agent bypass the caps; 500-event queue cap; 5 MiB body cap. Yes?
+24. The shared reuse support ships as agents-common v0.2.0 (a new irreversible tag; v0.1.0 untouched) and agents-webhook moves its pin to v0.2.0. Yes?
+25. The public ingest uses the singular /webhook/ prefix from your URL form, a second agents-webhook prefix beside the SSO-protected /webhooks/api/v1, still in its own Deployment without SSO. Yes?
+26. The Webhooks page has an Endpoints section (create dialog with type, preset, optional suffix, optional credentials, optional template; a one-time credentials dialog with the full URL, copy buttons and per-type hints; a list with URL, type, preset, username, rotate and delete behind a confirm) above the recent events with status and endpoint filters, plus a Reuse running agent switch in the preset form. Yes?
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review of agents-webhook-microservice, 2026-10-25.
+
+- Whole-diff review, agents-webhook (989056e..883958c): 3 medium findings. Context lossy for draft/changed; non-UUID preset_id gave 503; 408 body shape. All fixed by task webhook-epic-review-fixes (a6557a5), reviewed PASS.
+- Whole-diff review, agent-orchestrator, agents-common, agents-web, agents-helmfile: PASS, no findings.
+- Scope audit: CLEAN, all 10 user requirements delivered, no duplicates.
+- Security review: 2 medium findings.
+  - The api was reachable in-cluster on the sidecar's http-insecure port without SSO. Fixed by webhook-api-source-allowlist (60c3fdc).
+  - Template filters could allocate unbounded memory. Fixed by webhook-template-memory-cap (379f315); the Linux CI test passes.
+  - Both reviewed PASS.
+- Full suites:
+  - agents-helmfile `mise run test` 116 passed, lint clean.
+  - agents-webhook main CI cc0f706 green (500 passed on Linux).
+  - agent-orchestrator a3c1b9d and agents-web 18f5132 main CI green.
+- Live: agents-webhook 0.1.0-main.cc0f706, agents-webhook-db, agent-orchestrator a3c1b9d and agents-web 18f5132 applied. Post-apply diff "No affected releases"; smoke OK including the webhook checks.
+- Deploy fixes found live:
+  - The probe port name was broken by the oauth2-proxy sidecar rename. Fixed by webhook-chart-probe-port (883958c).
+  - The first apply rolled back cleanly.
+- GitGuardian: two test-fixture strings in pre-squash commits. agents-webhook PR #1 was squash-merged so main history is clean. The incidents remain on the GitGuardian dashboard for the user to mark as false positives.
+
+### design.md: Summary
+
+A new Python service, agents-webhook, with its own CNPG Postgres database, receives GitHub and
+GitLab PR/MR, issue and comment webhooks and Grafana alerts on per-webhook public endpoints
+`https://lab.szymonrichert.pl/webhook/<suffix>`, each created with exactly one type, one required
+preset and HTTP basic-auth credentials. Events are stored in a FIFO queue table with content-aware
+dedup and limits and start agent clusters from the endpoint's preset through the orchestrator API
+("scheduler API" in the request). A preset may opt in to agent reuse: while the agent handling an
+item runs, later events for that item go to it instead of a new cluster. A Webhooks page in the web
+UI, between Clusters and Presets, manages the endpoints and lists recent events with their status.
+Headline decisions: a library component agents-common holds what agents-schedule-microservice
+reuses (D1, D19); the public ingest runs in its own Deployment without SSO (D2); per-webhook
+endpoints with basic auth are the only ingest path (D3, D7); agent reuse is a preset field (D16,
+D17); the orchestrator gains bearer service tokens on a dedicated internal port (D10); the UI lands
+in agents-web (D11).
+
+Re-planned in place on 2026-10-25 (user requirement in the scratchpad `wh-userreq2.md`, quoted in
+D3, D7, D16, D17): per-webhook endpoints replace the per-source `/webhooks/<source>` HMAC and token
+ingest and the mapping table; agent reuse added. Done tasks are untouched.
+
+### design.md: Intent and why
+
+The user wants more of tatara-new's behaviour in this system: forge and alert events start agent
+clusters automatically, as tatara-new's operator did with webhooks, a queue and Tasks. Here the
+unit of work is an agent cluster from a preset, the services talk only over HTTP, and each owns its
+database (AGENTS.md hard rules). One URL per assignment makes the routing explicit (the URL is the
+mapping) and lets each forge or Grafana contact point carry its own credentials. Agent reuse keeps
+one agent on one PR, MR, issue or alert for as long as it runs. The webhook service is the first
+trigger service; the schedule service follows and reuses its parts.
+
+### design.md: Goals
+
+- G1: `POST https://lab.szymonrichert.pl/webhook/<suffix>` accepts an event only with that endpoint's basic-auth credentials and answers 202 for accepted or ignored, 401 for an unknown suffix or wrong credentials (identical), 413 over 5 MiB, 429 after repeated failed authentications, 5xx only when the DB write fails.
+- G2: endpoints of type `github-pr`, `github-issue`, `gitlab-mr`, `gitlab-issue` and `grafana-alert` normalise their provider events (PR/MR created and updated, issue created and updated, comments added, Grafana alerts) into one event shape with a dedup key: `<platform>/<repo>/mr/<n>`, `<platform>/<repo>/issue/<n>`, `grafana/<sha256 of the sorted commonLabels>[:16]`.
+- G3: events are a FIFO queue (alerts first, then by sequence) with dedup per D5 and limits per D6.
+- G4: an endpoint event creates a cluster from the endpoint's preset, posts the rendered prompt and tracks the first turn; with agent reuse on, a later event for the same item goes to the cluster still running for it (D16); statuses new, in-progress, handled, ignored, failed, each with a reason where relevant.
+- G5: `/webhooks/api/v1` creates, lists, rotates and deletes endpoints (URL and password shown once) and lists events; documented in the README, committed `openapi.json`, drift-tested.
+- G6: the Webhooks UI entry sits between Clusters and Presets and manages endpoints and recent events; the preset form has a Reuse running agent switch.
+- G7: the orchestrator accepts the service's calls with a bearer service token on port 8002; every other caller sees no change; presets carry the optional `reuse_running_agent` field.
+- G8: released, pinned and applied with its CNPG database; the live smoke is green.
+
+### design.md: Non-goals
+
+- Forge write-back (comments, statuses), cluster deletion, rate limiting of successful deliveries, editing an endpoint's type or preset after creation (delete and recreate), revealing a password after creation, any change to the shape of existing `/api/v1` routes beyond the additive spec field.
+
+### design.md: Anti-goals
+
+- The public ingest Deployment reaching the UI API or carrying the SSO sidecar's session.
+- A plaintext password stored anywhere, logged, or returned outside the create and rotate responses.
+- A response that lets a caller tell an existing suffix from a missing one.
+- A restart or a duplicate delivery posting a second prompt or starting a second cluster for the same event.
+- An event lost when the cluster it was routed to goes away mid-delivery.
+- Event text reaching an agent as instructions instead of framed, escaped data.
+- Any new caller of the orchestrator main port, or the CIDR allowlist loosened.
+- Copies of the DB, settings, client or reuse code in agents-schedule later (the reason for agents-common).
+
+### design.md: Constraints
+
+- Python only for services; TypeScript only in agents-web (AGENTS.md hard rules).
+- Services talk only through HTTP; each table has one writer except queue tables, which change rows only through status-guarded updates (`code/agent-orchestrator/MEMORY.md` L19).
+- `/api/v1` of the orchestrator is additive-only (`code/agent-orchestrator/MEMORY.md` L17).
+- The oauth2-proxy injector has no skip-auth annotation (`infrastructure/code/containers/apps/oauth2proxy-injector/webhook.go` L404-450), so a public endpoint cannot share a pod with SSO.
+- The orchestrator `SourceAllowlist` reads only the socket peer; live `ORCH_ALLOWED_CIDRS` is `127.0.0.1/32` (`code/agents-helmfile/values/agent-orchestrator/common.yaml`).
+- agents-common v0.1.0 is tagged and published; tags are never re-pointed, so new shared code ships as v0.2.0 (D19).
+- Live applies run in the orchestrator's main session; the classifier refuses them in subagents, so no AC evidence runs `mise run apply` (apply-smoke-webhook).
+- Raw `sops` is blocked in agent shells; secret files change through the project's secret helper.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -246,7 +401,7 @@ The reuse support is shared, so it ships in agents-common as additive v0.2.0 (ta
 | D18 Credentials, constant time, brute force, enumeration | webhook-endpoints-repo, webhook-ingest-http, webhook-ui-api, web-webhook-endpoints |
 | D19 agents-common v0.2.0 | common-reuse-running, common-release-v0-2-0, webhook-reuse-routing |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -276,7 +431,7 @@ The reuse support is shared, so it ships in agents-common as additive v0.2.0 (ta
 
 Cross-epic (in `docs/plans/contracts.json`): the agents-common parts, `orch-service-tokens`, `orch-services-service`, `trigger-ui-page-pattern`, `agents-common-reuse` and `preset-reuse-running-agent` list agents-schedule-microservice as consumer; `webhook-api`, `webhook-ingest-url`, `agents-webhook-chart` and `agents-webhook-image` list agents-web and agents-helmfile. Consumed from other epics: `agents-web-url-layout` (with the recorded `/webhook/` exception, D12), `agents-web-backends-config`, `agents-web-backend-registry`, `agents-web-openapi-vendor` (owner frontend-decoupling), `orch-presets-api` and `orch-cluster-create-api` (owner cluster-presets), `orch-cluster-autoclose` (owner configuration-improvements; it ends reuse, D16).
 
-## Cross-epic impact: agents-schedule-microservice
+### design.md: Cross-epic impact: agents-schedule-microservice
 
 Not re-planned here; what its plan must change when it runs:
 
@@ -285,7 +440,7 @@ Not re-planned here; what its plan must change when it runs:
 - Wording only: its README and design say "similar to agents-webhooks (maps cronjob to preset)"; agents-webhook now maps a URL to a preset, so no shared mapping model exists to mirror.
 - Menu order unchanged: Clusters 10, Webhooks 20, Schedules 30, Presets 40.
 
-## Review focus
+### design.md: Review focus
 
 - webhook-endpoints-repo and webhook-ingest-http (full): one failure path for every auth failure, the dummy hash, auth before the body read, 429 before any DB or hash work, `X-Forwarded-For` honoured only from trusted proxies, no suffix, header or password in logs.
 - webhook-event-store: dedup under concurrent deliveries (two ingest replicas), guarded transitions, the partial unique index, FIFO, caps and per-key order in one claim query.
@@ -295,14 +450,14 @@ Not re-planned here; what its plan must change when it runs:
 - webhook-chart-workloads: the ingest Deployment has no oauth2-proxy annotations and no orchestrator token; the api has the annotations.
 - orch-preset-reuse-field: additive only; the orchestrator never acts on the field.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal module layout inside each package beyond the files named in tasks, as long as the contract files stay where the Contracts table says.
 - Pool sizes, poll intervals below 5 s, log formats, the limiter's data structure.
 - How claim_next expresses the per-key rule in SQL, within the AC.
 - agents-web component structure inside `src/webhooks/`, within frontend-decoupling's conventions.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - GitHub and GitLab send HTTP basic auth from `user:password@` in the hook URL, and Grafana's webhook contact point sends its basic-auth fields. Confirmed by the live check of smoke-webhook-check (Grafana path) and by the user wiring a forge after apply; webhook-docs-memory documents it from the providers' docs.
 - The ingress controller's source CIDR for `WEBHOOK_TRUSTED_PROXIES` is probed read-only in helmfile-webhook-releases (node pod CIDRs); until set, the limiter keys on the controller address, which is safe but coarse.
@@ -310,38 +465,17 @@ Not re-planned here; what its plan must change when it runs:
 - The CI robot secrets for Harbor are the same as agent-orchestrator's; the user sets them on the new repo if the agent cannot (webhook-ci-images ends `blocked`, whoCanClear user).
 - Local testcontainers Postgres failed in the frontend-decoupling baseline (Docker readiness); implementers rely on a working Docker or CI.
 
-## Open questions
+### approvals.json
 
-- Q1: Dedup: while the earlier event with the same key is new, does the newer payload replace it (keeping its FIFO place), and while it is in-progress, is the newer one sent as an update message to the same cluster and recorded handled? [answer: first half kept; second half superseded by Q19 and Q21 (re-plan 2026-10-25)]
-- Q2: Do limits mean concurrency caps (3 in progress, 1 per mapping, FIFO with alerts first), a 5 MiB body cap and a 500-event queue cap, with no per-minute rate limit? [answer: superseded by Q23 (per endpoint instead of per mapping)]
-- Q3: Is incoming auth tatara-new parity (GitHub HMAC, GitLab token, Grafana bearer), one SOPS secret per source, with public ingest at https://lab.szymonrichert.pl/webhooks/<source> in its own Deployment without SSO? [answer: own public Deployment without SSO kept; auth and paths superseded by Q13-Q17 and Q25]
-- Q4: Are events ignored (still listed with the reason) when no mapping matches, the actor is a bot login, the action is closed/merged/labeled/title-only edit, the alert is resolved, a duplicate, or the queue is full? [answer: superseded by Q17 (type_mismatch replaces no_mapping)]
-- Q5: Add a fifth status failed (create, message or turn failed, or a 1 h timeout) with a reason? [answer: yes (working answer, kept)]
-- Q6: Is an event handled when its first turn completes, with the service never deleting clusters (cleanup via configuration-improvements autoclose)? [answer: yes (working answer, kept); a delivery to a running agent is handled when sent (Q22)]
-- Q7: Is a mapping (source, kind, repo or any, Grafana label subset) to a preset plus optional prompt template, most specific wins, created from an event row and removable, not re-queuing past events? [answer: superseded by Q13 (endpoints replace mappings)]
-- Q8: Add an optional global author allowlist that ignores issue and comment events from other authors when set (off by default)? [answer: yes (working answer, kept; independent of mappings)]
-- Q9: Use bearer service tokens on a dedicated orchestrator port 8002 (sha256 hashes in ORCH_SERVICE_TOKENS) serving only the routes a trigger service needs? [answer: yes (built)]
-- Q10: Put shared code in a new library component agents-common pinned by git tag v0.1.0? [answer: yes (built and tagged)]
-- Q11: Create szymonrychu/agents-common and szymonrychu/agents-webhook as public repos with workbench:component-add in the meta epic agents-webhook-component? [answer: yes (done)]
-- Q12: Use Harbor containers/agents-webhook and charts/agents-webhook with the same HARBOR_USERNAME/HARBOR_PASSWORD CI secrets as agent-orchestrator? [answer: yes (working answer, kept)]
-- Q13: Is an endpoint https://lab.szymonrichert.pl/webhook/<suffix> with a 32-char random URL-safe suffix by default or a unique user suffix matching [A-Za-z0-9._~-]{1,128}, exactly one of the five types, one required preset and an optional prompt template, created, listed, credential-rotated and deleted but never edited (recreate to change type or preset)? [recommended: yes (D7)]
-- Q14: Are credentials a random username wh-<8 hex> and a 43-char random password by default, both overridable (password at least 16 chars), stored only as a salted scrypt hash, with the password shown once at create or rotate and never revealable later? [recommended: yes (D18)]
-- Q15: Do an unknown or deleted suffix, a missing or malformed header and a wrong username or password all get the identical 401 with WWW-Authenticate Basic, with a dummy scrypt for unknown suffixes and auth checked before the body is read, so suffixes cannot be enumerated? [recommended: yes (D18)]
-- Q16: Against brute force, do more than 10 failed authentications a minute from one client get 429 with Retry-After (in memory per ingest replica, client from X-Forwarded-For only behind WEBHOOK_TRUSTED_PROXIES), with still no limit on successful deliveries? [recommended: yes (D18)]
-- Q17: Are the per-source HMAC/token checks and their three already-bootstrapped (never applied) SOPS secrets dropped, an event of another type at an endpoint stored ignored type_mismatch, and endpoint_removed replacing no_mapping/mapping_removed? [recommended: yes (D3, D4)]
-- Q18: Are dedup keys scoped per endpoint, with latest-wins while new kept and exact provider redeliveries (X-GitHub-Delivery, X-Gitlab-Event-UUID) ignored as duplicate? [recommended: yes (D5)]
-- Q19: With reuse on, is a new event whose dedup key (platform/repo/mr-id, platform/repo/issue-id, alert labels) matches an event whose cluster is still running (GET /clusters/{id} on the service port answers and it is not deleting or discarded, whether or not the first turn completed) delivered to that cluster as an update message and recorded handled with a link to the parent run, a new cluster starting only when none runs for the key, autoclose ending it; rather than the alternative reading that any event on the same endpoint goes to its running agent? [recommended: yes, per item key, not per endpoint (D16)]
-- Q20: Is reuse opt-in per preset as the sparse optional spec field reuse_running_agent (default false), ignored by the orchestrator so it applies only to trigger-service runs (user-created clusters ignore it), read from the preset when an event is claimed, and honoured by agents-schedule too with the same rule keyed by the schedule? [recommended: yes (D17; schedule epic note in design)]
-- Q21: With reuse off, does an event for a key already in progress wait until that run's first turn ends and then start its own cluster (replacing the old update-message-while-in-progress rule)? [recommended: yes (D16)]
-- Q22: Are deliveries for one key sent one at a time in arrival order, queued in the orchestrator while the agent is busy and never merged, handled once the message is sent, and when the cluster is discarded before or during delivery does the event fall back to a new cluster with nothing lost? [recommended: yes (D16)]
-- Q23: Are the limits 3 in progress overall and 1 per endpoint (was per mapping), with deliveries to a running agent bypassing the caps, a 500-event queue cap and a 5 MiB body cap? [recommended: yes (D6)]
-- Q24: Does the shared reuse support ship as agents-common v0.2.0 (a new irreversible tag; v0.1.0 untouched), with agents-webhook moving its pin to v0.2.0? [recommended: yes (D19)]
-- Q25: Is the public ingest at the singular /webhook/ prefix from your URL form, as a second agents-webhook prefix beside the SSO-protected /webhooks/api/v1, in its own Deployment without SSO? [recommended: yes (D12)]
-- Q26: Does the Webhooks page show an Endpoints section (create dialog with type, preset, optional suffix, optional credentials, optional template; a one-time credentials dialog with the full URL, copy buttons and per-type hints; a list with URL, type, preset, username, rotate and delete behind a confirm) above the recent events list with status and endpoint filters, plus a Reuse running agent switch in the preset form? [recommended: yes (D11)]
-
-## Irreversible operations in scope
-
-- Pushing tag `v0.2.0` on agents-common's main merge commit (common-release-v0-2-0); tags are never re-pointed. Approval A12. (`v0.1.0` is already pushed.)
-- Publishing images and charts to Harbor from the new repo's main CI (webhook-ci-images). Approval A8.
-- `mise run apply` in agents-helmfile, run by the orchestrator in its main session: creates the CNPG cluster `agents-webhook-db`, the agents-webhook release and its public Ingress prefix `/webhook/`, adds the orchestrator service port, and rotates nothing (apply-smoke-webhook). Approvals A7, A8.
-- Removing the never-applied source secrets from `values/agents-webhook/default.secrets.yaml` (helmfile-drop-source-secrets); recoverable from git history, no live secret changes. Approval A11.
+- A1: A separate microservice agents-webhook with its own database receives GitHub/GitLab MR/PR created/updated, issue created/updated and comment added webhooks, and Grafana alerts (user request, 2026-10-25). [decisions: D1, D2, D3, D4] [tasks: webhook-scaffold, webhook-schema-settings, webhook-normalize, webhook-ingest-http, webhook-cli-entrypoints, webhook-chart-workloads, webhook-docs-memory, webhook-endpoints-repo] [status: approved]
+- A2: Events are cached in a FIFO queue with content-aware dedup (platform/repo/mr-id, platform/repo/issue-id, alert labels) and limits (user request, 2026-10-25). [decisions: D4, D5, D6] [tasks: webhook-schema-settings, webhook-normalize, webhook-event-store, webhook-dispatch-worker] [status: approved]
+- A3: Queued events are sent into the scheduler API (the orchestrator's /api/v1): a mapped event triggers an agent cluster defined by its preset (user request, 2026-10-25). Re-plan 2026-10-25: the event triggers the agent cluster defined by its webhook endpoint's preset (the endpoint replaces the mapping). [decisions: D7, D8, D9] [tasks: common-orchestrator-client, common-run-tracker, webhook-prompt-render, webhook-dispatch-worker, webhook-endpoints-repo] [status: pending]
+- A4: A web UI entry between Clusters and Presets manages webhook endpoints (create with type, preset, optional suffix and optional credentials, show the full URL and the credentials once, rotate credentials, delete) and shows recent events with their status (new/in-progress/handled/ignored/failed) (user request and re-plan decision, 2026-10-25). [decisions: D7, D11, D12, D18] [tasks: webhook-ui-api, web-trigger-ui-kit, web-webhook-api-client, web-webhook-events-page, web-webhook-menu-entry, helmfile-web-webhooks-entry, web-webhook-endpoints] [status: pending]
+- A5: The orchestrator's service-to-service auth change (other services are refused today) is a task of this epic in agent-orchestrator, reviewed at the full/panel tier (user decision, 2026-10-25). [decisions: D10] [tasks: orch-service-port-auth, orch-chart-services-port, orch-service-port-e2e, orch-service-port-docs] [status: approved]
+- A6: Creating the public GitHub repos szymonrychu/agents-webhook and szymonrychu/agents-common via workbench:component-add (epic agents-webhook-component), and the Harbor image and chart repos with CI secrets on agents-webhook, are explicit outward-facing tasks (user decision, 2026-10-25). [decisions: D15] [tasks: common-scaffold, webhook-scaffold, webhook-ci-images] [status: approved]
+- A7: The public webhook ingest https://lab.szymonrichert.pl/webhook/<suffix> sits in its own Deployment without SSO, protected per endpoint by HTTP basic auth (user decision, 2026-10-25; re-plan 2026-10-25 replaces the per-source paths /webhooks/{github,gitlab,grafana}). [decisions: D2, D3, D12, D18] [tasks: webhook-chart-workloads, webhook-chart-network, helmfile-webhook-releases, apply-smoke-webhook, webhook-ingest-http] [status: pending]
+- A8: Releases, pin bumps, the CNPG database and the helmfile apply plus smoke are tasks of this epic (user decision, 2026-10-25). [decisions: D13] [tasks: common-release-v0-1-0, webhook-ci-images, helmfile-service-token, deploy-pin-orch-service-port, helmfile-webhook-releases, helmfile-web-webhooks-entry, smoke-webhook-check, apply-smoke-webhook, helmfile-drop-source-secrets] [status: approved]
+- A9: Headless parity: a documented API and an API-only e2e for every capability (user decision, 2026-10-25). [decisions: D14] [tasks: webhook-ui-api, webhook-openapi-readme, webhook-api-e2e, orch-service-port-e2e, webhook-docs-memory, orch-preset-reuse-field] [status: approved]
+- A10: Shared parts later used by agents-schedule-microservice (DB/queue helpers, orchestrator client, preset mapping model, UI page pattern) are owned and built by this epic and registered as contracts (orchestrator ruling, 2026-10-25). [decisions: D1, D11, D19] [tasks: common-db-helpers, common-settings-runtime, common-orchestrator-client, common-run-tracker, common-release-v0-1-0, web-trigger-ui-kit, common-reuse-running, common-release-v0-2-0] [status: approved]
+- A11: Per-webhook endpoints https://<base>/webhook/<suffix> (suffix random by default or user-supplied and unique), each created with exactly one type (grafana-alert, gitlab-issue, gitlab-mr, github-issue, github-pr) and one required preset, protected by HTTP basic auth (random username and password by default, user may override both), are the only ingest path and each URL is unique per assignment; credentials stored as hashes, constant-time checks, brute-force and enumeration protection (user request and re-plan decision, 2026-10-25). [decisions: D3, D4, D5, D7, D12, D18] [tasks: webhook-schema-settings, webhook-normalize, webhook-endpoints-repo, webhook-event-store, webhook-ingest-http, webhook-ui-api, web-webhook-endpoints, helmfile-drop-source-secrets, webhook-api-e2e] [status: pending]
+- A12: As long as an agent handling a specific event is running, it receives any new webhooks/events instead of a new one being created; agent reuse is optional and set during preset creation (user requirement and clarification, 2026-10-25). [decisions: D16, D17, D19] [tasks: common-reuse-running, common-release-v0-2-0, orch-preset-reuse-field, web-preset-reuse-row, webhook-event-store, webhook-reuse-routing, webhook-api-e2e, deploy-pin-orch-service-port] [status: pending]
