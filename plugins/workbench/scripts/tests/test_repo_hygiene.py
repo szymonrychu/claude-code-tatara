@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-GITIGNORE = Path(__file__).resolve().parents[5] / ".gitignore"  # repo root; plugin has none
+ROOT = Path(__file__).resolve().parents[2]
+GITIGNORE = Path(__file__).resolve().parents[4] / ".gitignore"  # repo root; plugin has none
 
 # scripts/run-tests.sh greps node's own non-ASCII status glyphs, so it must contain them.
 EXCLUDED = ("scripts/run-tests.sh",)

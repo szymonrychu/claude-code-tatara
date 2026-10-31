@@ -31,7 +31,7 @@ def test_frontmatter():
     assert re.search(r"^name: plan-writer$", fm, re.M)
     assert re.search(r"^model: opus$", fm, re.M)
     assert re.search(rf"^tools: {re.escape(TOOLS)}$", fm, re.M)
-    src = (Path(__file__).parent / "test_repo_hygiene.py").read_text()
+    src = (ROOT / "scripts" / "tests" / "test_repo_hygiene.py").read_text()
     block = re.search(r"AGENT_KEYS = \((.*?)\)", src, re.S).group(1)
     allowed = set(re.findall(r"""['"](\w+)['"]""", block))
     assert set(re.findall(r"^([A-Za-z]+):", fm, re.M)) <= allowed

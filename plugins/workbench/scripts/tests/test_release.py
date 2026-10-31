@@ -8,7 +8,7 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 MARKETPLACE = ROOT.parents[1] / ".claude-plugin" / "marketplace.json"
 SD = ROOT / "skills" / "start-development"
 
