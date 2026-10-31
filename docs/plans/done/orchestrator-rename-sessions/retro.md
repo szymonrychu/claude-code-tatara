@@ -1,10 +1,28 @@
-# orchestrator rename and sessions record
+# orchestrator-rename-sessions retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+none
+
+## Delivery record (migrated)
+
+### Asked
 
 Rename agent-orchestrator to agents-orchestrator everywhere (repo, submodule, package, chart, images, release, docs) and call the unit a session instead of a cluster throughout the API, DB, client, webhook and UI, with no aliases. Free the word session by renaming the wrapper's session id to wrapper_session_id. Move the live namespace to the renamed releases without deleting data (old CNPG database hibernated). User request 2026-10-25: 'Agent-orchestrator 1. Rename to agents-orchestrator (consistency) 2. Nomenclature cleanup leading to webUI fixes -> clusters == sessions'.
 
-## Shipped
+### Shipped
 
 All 24 tasks done. Epic review verdict: pass (2026-10-25); scope audit CLEAN (no unit-meaning "cluster" left outside Kubernetes/CNPG/kind wording, applied migrations 0001-0004, changelogs and retirement guards; no duplicates). Security review: no medium-or-higher findings; LOW: old Secret agent-orchestrator-proxy pending deletion by terraform MR !260; LOW, noted and not done: no NetworkPolicies in the namespace, a shared S3 backup key, enableSuperuserAccess on the new CNPG cluster.
 
@@ -21,7 +39,7 @@ Live (agents namespace): agents-orchestrator, agents-webhook 0.1.0-main.838ba1f,
 
 Suites read from the review: agents-orchestrator bba074f 787 passed locally, e2e 36 passed; agents-web 5a8d6c8 335 passed; agents-helmfile 136 passed; agents-webhook, agents-common and any-mcp main CI green. I ran no tests myself.
 
-## Tasks
+### Tasks
 
 Status, repo, verified head and points (planned/actual) are from the task files (all `done`, all with a verified head). The plan-execute return value was not provided, so the independent verifier head, red evidence, declined, cannotVerify and forwardMerged entries could not be read, and review rounds and verification tails are "unknown"; the head shown is the task file's verified_head. The README review section says every task was reviewed alone, with fix rounds on: the sweep guard missing migration 0005, the bootstrap DB path, the stale smoke any-mcp pin, a MEMORY wording error, and the App.tsx split.
 
@@ -54,7 +72,7 @@ Status, repo, verified head and points (planned/actual) are from the task files 
 
 Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gate approval is in root MEMORY.md (2026-10-25, user: 'Go'; Q1-Q7 yes: rename DB tables and columns, new CNPG cluster by import, hibernate old DB, Keycloak client and proxy Secret via terraform, keep ORCH_ prefix, webhook-event-filters lands first, wrapper_session_id). Irreversible ops listed at the gate were approved: repo rename, any-mcp and agents-common v0.3.0 tags, helm uninstall of agent-orchestrator, live migrations, deleting the orphan agent-orchestrator-tls, live applies. Per-entry status: unknown.
 
-## Rulings
+### Rulings
 
 - O1/O2: the GitHub repo was renamed (`gh repo rename`, verified: `gh repo view szymonrychu/agents-orchestrator`) and the superrepo submodule moved to code/agents-orchestrator with `.gitmodules` section and url updated, then `mise run init:refresh` (root MEMORY.md: components now list agents-orchestrator). Cost if wrong: both reversible by renaming back; the old repo URL redirects.
 - Overlap check: ticket.py's in-progress file-overlap check was repo-agnostic (pyproject.toml, uv.lock, openapi.json, AGENTS.md collided across repos), so this epic and agents-matrix-connector could not run together. Ruled: the matrix claim was reverted (822b976, nothing had run), the rename ran first, and the overlap check was fixed to be repo-aware (ticket-overlap-repo-aware, 316e340). The user then split agents-matrix-connector and agents-schedule-microservice each into a core epic and a deploy epic (blocker orchestrator-rename-sessions); scope unchanged, only grouping. Cost if wrong: a repo-aware check could miss a real cross-repo collision; the per-repo split is regrouping only.
@@ -68,7 +86,7 @@ Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gat
 - Classifier block on the first glab merge: the permission classifier blocked the first `glab mr merge`; on the user's request the allow rule Bash(glab mr merge:*) was added to .claude/settings.local.json (gitignored) so the terraform user-step MRs merge without a block. Cost if wrong: glab merges in this clone no longer prompt; the rule is local and gitignored.
 - Webhook scale and apply order, release rename and database import followed design D7: old app uninstalled, new CNPG imported from the old one (no live data deleted), new releases applied, old database hibernated last. Cost if wrong: rollback before step 4 was resetting the old release to installed with the previous pins.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Pre-apply diff log (.logs/rename-prediff.log) ends "[diff] ERROR task failed" because `mise run diff` exits non-zero when there are changes ("Identified at least one change"); content was as expected.
 - Deletion of the old CNPG cluster, its S3 backups and the old Harbor repositories is a non-goal and stays undone: the user clears it when wanted.
@@ -79,11 +97,11 @@ Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gat
 - The workbench plugin session was not reachable when the overlap bug was found; it was reported to the user. Status: unknown.
 - Not verifiable by the epic reviewer: nothing else open; live apply and smoke are settled by the logs above.
 
-## Not pushed
+### Not pushed
 
 The superrepo submodule pins (4fbbbd5) and ticket moves are committed on main; main is not pushed; pushing the superrepo main stays with the user. All submodule PRs and tags are merged and pushed; both terraform MRs are merged.
 
-## Lessons routed to
+### Lessons routed to
 
 - The sweep guard missed migration 0005: a nomenclature guard test that scans every migration newer than the last applied-in-production one and fails on cluster-named tables, columns, indexes and constraints (added in orch-sessions-sweep).
 - The smoke asserted a stale any-mcp version: a lint or test in agents-helmfile that derives the smoke's expected any-mcp version from the ORCH_ANY_MCP_REF pin rather than a literal.

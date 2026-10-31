@@ -1,66 +1,44 @@
-# orchestrator rename and sessions design
+---
+title: orchestrator-rename-sessions
+repos: [agents-orchestrator, any-mcp, agents-common, agents-webhook, agents-web, agents-helmfile]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# orchestrator-rename-sessions
 
-agent-orchestrator becomes agents-orchestrator everywhere (GitHub repo, submodule, Python package, chart, OCI
-chart, Harbor image, helm releases, Kubernetes objects, CNPG database, Secrets, docs), and the orchestrator's unit
-"cluster" becomes "session" throughout: HTTP and agent APIs, DB tables and columns, Kubernetes labels, the
-agents-common client, agents-webhook, any-mcp's orchestrator plugin and every web UI label and component. The
-wrapper's own session id, which today owns the word "session" in the orchestrator, becomes `wrapper_session_id`.
-The live namespace moves by a new release set: the old app release is uninstalled, a new CNPG cluster is imported
-from the old one (which is then hibernated, never deleted), and the new releases come up under the new names. No
-aliases, shims or fallbacks anywhere.
+## What and why
 
-## Intent and why
+What: Rename agent-orchestrator to agents-orchestrator everywhere (repo, submodule, package, chart, images, release, docs) for consistency, and clean up nomenclature so a cluster is called a session throughout the API, UI and docs, fixing the web UI accordingly.
+How: The orchestrator renames the GitHub repo and moves the submodule; then one task chain per repo renames names and vocabulary test-first (nomenclature guard tests, forward DB migrations, any-mcp and agents-common v0.3.0), and the live namespace moves to new releases: old app uninstalled, a new CNPG database imported from the old one, new releases up, smoke green, old database hibernated. Design: design.md.
+Why: User request 2026-10-25: 'Agent-orchestrator 1. Rename to agents-orchestrator (consistency) 2. Nomenclature cleanup leading to webUI fixes -> clusters == sessions'
 
-User request 2026-10-25: "Agent-orchestrator 1. Rename to agents-orchestrator (consistency) 2. Nomenclature
-cleanup leading to webUI fixes -> clusters == sessions". Every other component is `agents-*`; the orchestrator is
-the odd one out. The UI already says "Sessions" in its menu but "New cluster", "No clusters yet" and "Message the
-cluster" everywhere else, and the API, client and docs say cluster. One word for one thing, before
-workspace-s3-cache and agents-schedule-microservice build more on the old names.
+The orchestrator is the only component not named agents-*, and its unit is called cluster in the API, DB, client, webhook and most of the UI while the UI menu already says Sessions. This epic renames the project and the unit across agents-orchestrator, any-mcp, agents-common, agents-webhook, agents-web and agents-helmfile with no aliases, frees the word session by renaming the wrapper's session id to wrapper_session_id, and moves the live namespace without deleting data. Blocked by webhook-event-filters, which touches the same agents-webhook and agents-web files.
 
-## Goals
+## Scope ladder
 
-- G1: no tracked file in any touched repo names `agent-orchestrator` or `agent_orchestrator` outside dated
-  history (MEMORY.md, CHANGELOG.md, ROADMAP.md, docs/plans/); the GitHub repo, submodule, package, chart, image and
-  releases carry `agents-orchestrator`.
-- G2: no tracked file in any touched repo uses "cluster" for the orchestrator's unit; the remaining hits are
-  Kubernetes, CNPG or kind clusters only, pinned by a per-repo nomenclature guard test.
-- G3: the HTTP API is `/api/v1/sessions...` with `session_id` fields; the agent API takes `X-Orch-Session`; the DB
-  has `sessions`, `session_leaders` and `session_id` columns.
-- G4: the web UI says session in every label, title, placeholder, tooltip and empty state.
-- G5: the live namespace runs the renamed releases with the presets carried over, and the smoke is green.
-- G6: no live data is deleted: the old database is kept hibernated.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: No tracked file in a touched repo names agent-orchestrator outside dated history; repo, submodule, package, chart, image and releases are agents-orchestrator.
+- 1.2: The orchestrator's unit is called session in every API, DB table and column, label, client, service and UI text; Kubernetes, CNPG and kind clusters keep their word; guard tests pin it.
+- 1.3: The web UI says session in every label, title, placeholder, tooltip and empty state.
+- 1.4: The live namespace runs the renamed releases with the presets carried over and a green smoke.
+- 1.5: No live data is deleted: the old database stays hibernated.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Deleting the old CNPG cluster, its PVCs or its S3 backups (kept; a later user decision).
-- Deleting the old Harbor repositories `containers/agent-orchestrator` and `charts/agent-orchestrator`.
-- Renaming the `ORCH_` env prefix, the `orch` CLI, the `X-Orch-*` header family or the `agent-<slug>` object prefix
-  of session pods (they name the orchestrator and the agents, not the repo or the unit).
-- Renaming the claude-code-wrapper's own `/v1/sessions` API (it is the wrapper's vocabulary).
-- Amending agents-schedule-microservice and workspace-s3-cache tasks (orchestrator step after the gate, see
-  Orchestrator steps).
+- Deleting the old CNPG cluster, its S3 backups or the old Harbor repositories.
+- Renaming ORCH_, orch, X-Orch-*, the agent-<slug> object prefix or the wrapper's own /v1/sessions API.
+- Amending agents-schedule-microservice and workspace-s3-cache (orchestrator step O3 after this epic).
 
-## Anti-goals
+## Design
 
-- A compatibility alias of any kind: old routes, old header, old env name, old DB view, old label, old Secret name.
-- A red main in any repo between tasks: each task keeps its repo's suite green.
-- Data loss: the presets (2 live rows) must survive the move, checked by the cutover.
-- Renaming Kubernetes or CNPG "cluster" terms (`cluster.local`, `ClusterIP`, `ClusterIssuer`, CNPG `Cluster`,
-  `cluster:` chart key, kind cluster) by an over-eager sed.
-
-## Constraints
-
-- House rules: no backward compatibility; least destructive action first; every irreversible operation named at
-  the gate; test first (renames are pinned by guard tests, deletions by `git ls-files` retirement tests).
-- The GitHub repo rename and the submodule move are orchestrator (main session) steps, never subagents.
-- Live applies (`mise run apply`) are run by the orchestrator in the main session; subagents run `mise run diff`
-  and `mise run smoke` only.
-- Each repo keeps its own verify commands (facts pack): `uv run pytest <files>` plus
-  `uv run ruff check . && uv run ruff format --check .` for Python repos; `npx vitest run <files>`,
-  `npm run lint`, `npm run check:api` for agents-web.
-- Tags are never re-pointed (any-mcp, agents-common).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -248,7 +226,141 @@ which the no-compatibility rule forbids. Each stays one task with directory entr
 a migration or client test as its behaviour, and the component suite plus lint as verify. Every other area that
 can move alone (package, chart and CI, wrapper session id, agent API, docs, UI pages, UI workspace) is its own task.
 
-## Orchestrator steps
+## Open questions
+
+- Q1: Rename the DB tables and columns too (clusters to sessions, cluster_id to session_id) through two forward migrations, rather than keeping cluster in the DB? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q2: Move the live database to a new CNPG cluster agents-orchestrator-db imported from the old one after the old app is uninstalled, rather than keeping the old agent-orchestrator-db name? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q3: After a green smoke, keep the old database hibernated (pods stopped, PVCs and S3 backups kept, reversible) rather than deleting it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q4: Rename the SSO Secret and Keycloak client to agents-orchestrator(-proxy) through a user-run terraform change in the infrastructure repo (add the new client before the cutover, remove the old one after)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q5: Keep the ORCH_ env prefix, the orch CLI and the X-Orch- header family (they abbreviate orchestrator)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q6: Let webhook-event-filters land first and start this epic's agents-webhook and agents-web tasks after it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q7: The wrapper's own session id becomes wrapper_session_id in the orchestrator DB and API, so session means only the orchestrator's unit? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+
+## Research
+
+| Lens | Ran / skipped | Adopted | Rejected |
+|---|---|---|---|
+| discovery (planner recon) | ran: origin/main of all six repos in detached trees, live namespace read-only, live DB row counts | D5 facts, D2 inventory (`git grep` over src, tests, chart, openapi.json) | - |
+| research-code-internal | skipped: no new helper or subsystem, a rename plus two SQL migrations | - | - |
+| research-code-external | skipped: no open design fork beyond D5, settled by the cnpg chart docs | - | - |
+| research-papers | skipped: no algorithmic core | - | - |
+| research-docs | ran (chart values): `helm show values cnpg/cluster --version 0.9.0` | `mode: recovery`, `recovery.method: import`, `import.type: microservice`, `source.passwordSecret`, `sslRootCertSecret` | pg_basebackup, object_store (D5) |
+
+### Research inputs
+
+- Wrapper session id collides with the new `session_id` (agents.session_id, events.session_id, EventView) - 0001_init.sql, api/streams.py - orch-wrapper-session-id.
+- The migration runner applies each pending file in one transaction under an advisory lock - db/migrate.py:run_migrations - orch-wrapper-session-id, orch-sessions-sweep.
+- SQL naming clusters or cluster_id lives in 21 src files beyond db/, and dict rows carry column names straight into API views (db/views.py dict_row), so DB, Python and API names move together - `git grep` - orch-sessions-sweep (D15).
+- orchestrator tests import any_mcp.orchestrator and any_mcp.config - tests/test_agent_scale.py, tests/test_on_start.py - orch-agent-api-sessions (pin v0.3.0).
+- Label key and managed-by value gate ownership in kube.py:owns - k8s/labels.py, k8s/kube.py - orch-package-rename (managed-by), orch-sessions-sweep (label key).
+- agents-web vendors openapi from a sibling checkout by repo name - scripts/sync-api.mjs:11 - web-api-layer-sessions.
+- UI menu already says "Sessions" while the rest says cluster - src/layout/SessionsMenu.tsx:34-36 - web-workspace-sessions.
+- agents-webhook stores cluster_id and cluster_slug and exposes them - migrations/0001_init.sql:54, api/schemas.py:74 - webhook-session-columns.
+- agents-common client, fake and run tracker carry the cluster API - orchestrator.py, fake_orchestrator.py, runs.py - common-client-sessions.
+- cnpg/cluster 0.9.0 supports import bootstrap - `helm show values` - helmfile-orch-db-import.
+- Old TLS Secret has no owner reference; its Certificate is owned by the old Ingress - live probe - deploy-cutover.
+- SSO Secret is terraform-owned outside the workbench - infrastructure keycloak_clients.tf:71-78 - deploy-cutover (U1/U2).
+- Retro (test-temp-dirs-outside-the-c, recurring): deletion and cleanup steps get "what runs if the producing step fails" in review - deploy-cutover, hibernate-old-orch-db (precondition probes stop the task before any apply).
+
+## Irreversible operations
+
+- GitHub repo rename szymonrychu/agent-orchestrator to agents-orchestrator (O1; reversible by renaming back, old
+  URL redirects until a new repo takes the old name).
+- Tags any-mcp v0.3.0 and agents-common v0.3.0 pushed to origin (never re-pointed).
+- Helm uninstall of release `agent-orchestrator` (deploy-cutover step 2): deletes its Deployments, Services,
+  Ingress, ConfigMap, Secrets agent-orchestrator-{claude,master-key,services} (values stay in SOPS, moved), the
+  cert-manager Certificate, and the helm release history (no `helm rollback` to it).
+- Forward migrations 0004 and 0005 on the new live orchestrator DB, and 0005 on the live agents-webhook DB
+  (column renames, no rows dropped).
+- Deletion of the orphan Secret `agent-orchestrator-tls` (a certificate, reissuable).
+- User-run terraform U2: deletes Keycloak client `agent-orchestrator` and Secret `agent-orchestrator-proxy`.
+- Downtime of `/api` and the webhook worker's orchestrator calls during the cutover (minutes).
+- Not in scope: deleting the old CNPG cluster, its PVCs, its S3 backups or the old Harbor repositories.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Epic review of orchestrator-rename-sessions, 2026-10-25.
+
+- Scope audit: CLEAN. No "cluster" meaning the unit is left in any repo (only Kubernetes/CNPG wording, applied migrations, changelogs and retirement guards). The GitHub repo and submodule are renamed, the live releases are renamed, the old DB is hibernated (not deleted), and terraform main has only the agents-orchestrator Keycloak client.
+- Security review: no medium-or-higher findings. SSO returns 302 on /api/v1/sessions, /webhooks/api/ and /. ORCH_ALLOWED_CIDRS is 127.0.0.1/32. Service port 8002 is ClusterIP with an exact allowlist. The agent API requires X-Orch-Session. The old DB has no endpoints. The new CNPG uses verify-full TLS and its own S3 path.
+  - LOW: the old Secret agent-orchestrator-proxy is pending deletion by the U2 terraform apply (MR !260).
+  - LOW, noted and not done now: no NetworkPolicies in the namespace, a shared S3 backup key, enableSuperuserAccess on the new cluster.
+- Every task was reviewed alone, with fix rounds where findings came up: the sweep guard missed migration 0005, the bootstrap DB path, the stale smoke any-mcp pin, a MEMORY wording error, and the App.tsx split.
+- Full suites (main CI green):
+  - agents-orchestrator bba074f: 787 passed locally, e2e 36 passed.
+  - agents-webhook 838ba1f, agents-web 5a8d6c8 (335 passed), agents-common v0.3.0, any-mcp v0.3.0.
+  - agents-helmfile: 136 passed.
+- Live: cutover applied, imported DB with 2 presets and schema 0001-0005, diff "No affected releases", smoke OK.
+
+### design.md: Summary
+
+agent-orchestrator becomes agents-orchestrator everywhere (GitHub repo, submodule, Python package, chart, OCI
+chart, Harbor image, helm releases, Kubernetes objects, CNPG database, Secrets, docs), and the orchestrator's unit
+"cluster" becomes "session" throughout: HTTP and agent APIs, DB tables and columns, Kubernetes labels, the
+agents-common client, agents-webhook, any-mcp's orchestrator plugin and every web UI label and component. The
+wrapper's own session id, which today owns the word "session" in the orchestrator, becomes `wrapper_session_id`.
+The live namespace moves by a new release set: the old app release is uninstalled, a new CNPG cluster is imported
+from the old one (which is then hibernated, never deleted), and the new releases come up under the new names. No
+aliases, shims or fallbacks anywhere.
+
+### design.md: Intent and why
+
+User request 2026-10-25: "Agent-orchestrator 1. Rename to agents-orchestrator (consistency) 2. Nomenclature
+cleanup leading to webUI fixes -> clusters == sessions". Every other component is `agents-*`; the orchestrator is
+the odd one out. The UI already says "Sessions" in its menu but "New cluster", "No clusters yet" and "Message the
+cluster" everywhere else, and the API, client and docs say cluster. One word for one thing, before
+workspace-s3-cache and agents-schedule-microservice build more on the old names.
+
+### design.md: Goals
+
+- G1: no tracked file in any touched repo names `agent-orchestrator` or `agent_orchestrator` outside dated
+  history (MEMORY.md, CHANGELOG.md, ROADMAP.md, docs/plans/); the GitHub repo, submodule, package, chart, image and
+  releases carry `agents-orchestrator`.
+- G2: no tracked file in any touched repo uses "cluster" for the orchestrator's unit; the remaining hits are
+  Kubernetes, CNPG or kind clusters only, pinned by a per-repo nomenclature guard test.
+- G3: the HTTP API is `/api/v1/sessions...` with `session_id` fields; the agent API takes `X-Orch-Session`; the DB
+  has `sessions`, `session_leaders` and `session_id` columns.
+- G4: the web UI says session in every label, title, placeholder, tooltip and empty state.
+- G5: the live namespace runs the renamed releases with the presets carried over, and the smoke is green.
+- G6: no live data is deleted: the old database is kept hibernated.
+
+### design.md: Non-goals
+
+- Deleting the old CNPG cluster, its PVCs or its S3 backups (kept; a later user decision).
+- Deleting the old Harbor repositories `containers/agent-orchestrator` and `charts/agent-orchestrator`.
+- Renaming the `ORCH_` env prefix, the `orch` CLI, the `X-Orch-*` header family or the `agent-<slug>` object prefix
+  of session pods (they name the orchestrator and the agents, not the repo or the unit).
+- Renaming the claude-code-wrapper's own `/v1/sessions` API (it is the wrapper's vocabulary).
+- Amending agents-schedule-microservice and workspace-s3-cache tasks (orchestrator step after the gate, see
+  Orchestrator steps).
+
+### design.md: Anti-goals
+
+- A compatibility alias of any kind: old routes, old header, old env name, old DB view, old label, old Secret name.
+- A red main in any repo between tasks: each task keeps its repo's suite green.
+- Data loss: the presets (2 live rows) must survive the move, checked by the cutover.
+- Renaming Kubernetes or CNPG "cluster" terms (`cluster.local`, `ClusterIP`, `ClusterIssuer`, CNPG `Cluster`,
+  `cluster:` chart key, kind cluster) by an over-eager sed.
+
+### design.md: Constraints
+
+- House rules: no backward compatibility; least destructive action first; every irreversible operation named at
+  the gate; test first (renames are pinned by guard tests, deletions by `git ls-files` retirement tests).
+- The GitHub repo rename and the submodule move are orchestrator (main session) steps, never subagents.
+- Live applies (`mise run apply`) are run by the orchestrator in the main session; subagents run `mise run diff`
+  and `mise run smoke` only.
+- Each repo keeps its own verify commands (facts pack): `uv run pytest <files>` plus
+  `uv run ruff check . && uv run ruff format --check .` for Python repos; `npx vitest run <files>`,
+  `npm run lint`, `npm run check:api` for agents-web.
+- Tags are never re-pointed (any-mcp, agents-common).
+
+### design.md: Orchestrator steps
 
 Run by the main session, in this order, outside the task loop:
 
@@ -267,33 +379,7 @@ Run by the main session, in this order, outside the task loop:
 - The applies of deploy-cutover and hibernate-old-orch-db (D7, D6), and the orphan TLS Secret deletion.
 - O3 after the epic merges (D13).
 
-## Research
-
-| Lens | Ran / skipped | Adopted | Rejected |
-|---|---|---|---|
-| discovery (planner recon) | ran: origin/main of all six repos in detached trees, live namespace read-only, live DB row counts | D5 facts, D2 inventory (`git grep` over src, tests, chart, openapi.json) | - |
-| research-code-internal | skipped: no new helper or subsystem, a rename plus two SQL migrations | - | - |
-| research-code-external | skipped: no open design fork beyond D5, settled by the cnpg chart docs | - | - |
-| research-papers | skipped: no algorithmic core | - | - |
-| research-docs | ran (chart values): `helm show values cnpg/cluster --version 0.9.0` | `mode: recovery`, `recovery.method: import`, `import.type: microservice`, `source.passwordSecret`, `sslRootCertSecret` | pg_basebackup, object_store (D5) |
-
-## Research inputs
-
-- Wrapper session id collides with the new `session_id` (agents.session_id, events.session_id, EventView) - 0001_init.sql, api/streams.py - orch-wrapper-session-id.
-- The migration runner applies each pending file in one transaction under an advisory lock - db/migrate.py:run_migrations - orch-wrapper-session-id, orch-sessions-sweep.
-- SQL naming clusters or cluster_id lives in 21 src files beyond db/, and dict rows carry column names straight into API views (db/views.py dict_row), so DB, Python and API names move together - `git grep` - orch-sessions-sweep (D15).
-- orchestrator tests import any_mcp.orchestrator and any_mcp.config - tests/test_agent_scale.py, tests/test_on_start.py - orch-agent-api-sessions (pin v0.3.0).
-- Label key and managed-by value gate ownership in kube.py:owns - k8s/labels.py, k8s/kube.py - orch-package-rename (managed-by), orch-sessions-sweep (label key).
-- agents-web vendors openapi from a sibling checkout by repo name - scripts/sync-api.mjs:11 - web-api-layer-sessions.
-- UI menu already says "Sessions" while the rest says cluster - src/layout/SessionsMenu.tsx:34-36 - web-workspace-sessions.
-- agents-webhook stores cluster_id and cluster_slug and exposes them - migrations/0001_init.sql:54, api/schemas.py:74 - webhook-session-columns.
-- agents-common client, fake and run tracker carry the cluster API - orchestrator.py, fake_orchestrator.py, runs.py - common-client-sessions.
-- cnpg/cluster 0.9.0 supports import bootstrap - `helm show values` - helmfile-orch-db-import.
-- Old TLS Secret has no owner reference; its Certificate is owned by the old Ingress - live probe - deploy-cutover.
-- SSO Secret is terraform-owned outside the workbench - infrastructure keycloak_clients.tf:71-78 - deploy-cutover (U1/U2).
-- Retro (test-temp-dirs-outside-the-c, recurring): deletion and cleanup steps get "what runs if the producing step fails" in review - deploy-cutover, hibernate-old-orch-db (precondition probes stop the task before any apply).
-
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -312,7 +398,7 @@ Cross-epic: these supersede the registered `agent-orchestrator-chart`, `agent-or
 agents-schedule-microservice and workspace-s3-cache. This repo's ticket.py (plugin 2.0.0) has no `contract`
 subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 
-## Decision coverage
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -332,7 +418,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 | D14 Ordering | webhook-session-columns, web-webhooks-session-fields |
 | D15 Sizing exception | orch-sessions-sweep, web-api-layer-sessions |
 
-## Review focus
+### design.md: Review focus
 
 - orch-wrapper-session-id and orch-sessions-sweep: the migrations keep every row (tests seed rows at 0003 and read
   them back), rename indexes and constraints, and no SQL string in src still names an old table or column.
@@ -342,7 +428,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 - helmfile-orch-db-import: the import source, TLS and password Secret names, and that the old release is untouched.
 - deploy-cutover: precondition probes stop before any apply; preset count equality after the import.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Exact names of renamed indexes and constraints, as long as none contains `cluster` and each matches its new
   column or table.
@@ -351,7 +437,7 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
 - Splitting a test file renamed with its module (for example test_clusters_repo.py to test_sessions_repo.py) as a
   `git mv` plus edits.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - helmfile with `--selector name=<release>` applies only the selected release (no `--include-needs`); confirmed by
   `mise run diff -- --selector ...` output in deploy-cutover before each apply.
@@ -361,27 +447,3 @@ subcommand, so the orchestrator updates `docs/plans/contracts.json` in O3.
   `mise run diff` after the cutover (any Cluster spec diff stops the task blocked).
 - The webhook worker retries `OrchestratorUnavailable` during the downtime window; confirmed in
   webhook-worker-sessions by reading worker.py (an existing test pins it, else the task adds one).
-
-## Open questions
-- Q1: Rename the DB tables and columns too (clusters to sessions, cluster_id to session_id) through two forward migrations, rather than keeping cluster in the DB? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q2: Move the live database to a new CNPG cluster agents-orchestrator-db imported from the old one after the old app is uninstalled, rather than keeping the old agent-orchestrator-db name? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q3: After a green smoke, keep the old database hibernated (pods stopped, PVCs and S3 backups kept, reversible) rather than deleting it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q4: Rename the SSO Secret and Keycloak client to agents-orchestrator(-proxy) through a user-run terraform change in the infrastructure repo (add the new client before the cutover, remove the old one after)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q5: Keep the ORCH_ env prefix, the orch CLI and the X-Orch- header family (they abbreviate orchestrator)? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q6: Let webhook-event-filters land first and start this epic's agents-webhook and agents-web tasks after it? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q7: The wrapper's own session id becomes wrapper_session_id in the orchestrator DB and API, so session means only the orchestrator's unit? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-
-## Irreversible operations in scope
-
-- GitHub repo rename szymonrychu/agent-orchestrator to agents-orchestrator (O1; reversible by renaming back, old
-  URL redirects until a new repo takes the old name).
-- Tags any-mcp v0.3.0 and agents-common v0.3.0 pushed to origin (never re-pointed).
-- Helm uninstall of release `agent-orchestrator` (deploy-cutover step 2): deletes its Deployments, Services,
-  Ingress, ConfigMap, Secrets agent-orchestrator-{claude,master-key,services} (values stay in SOPS, moved), the
-  cert-manager Certificate, and the helm release history (no `helm rollback` to it).
-- Forward migrations 0004 and 0005 on the new live orchestrator DB, and 0005 on the live agents-webhook DB
-  (column renames, no rows dropped).
-- Deletion of the orphan Secret `agent-orchestrator-tls` (a certificate, reissuable).
-- User-run terraform U2: deletes Keycloak client `agent-orchestrator` and Secret `agent-orchestrator-proxy`.
-- Downtime of `/api` and the webhook worker's orchestrator calls during the cutover (minutes).
-- Not in scope: deleting the old CNPG cluster, its PVCs, its S3 backups or the old Harbor repositories.
