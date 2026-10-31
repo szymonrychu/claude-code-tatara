@@ -1,21 +1,18 @@
 ---
 title: decision board
-blockers: [session-orchestration-mcp]
-stage: build
-owner: ""
 repos: [agents-web, any-mcp-tatara-plugins, agents-orchestrator, agents-helmfile]
 created: 2026-10-29
+owner: ""
+rung: ""
 ---
 
 # decision board
 
-## Project brief
+## What and why
 
 What: A web Tasks/Decision board where agents post questions with options and a recommendation, and the user answers, reviews history and requests amendments
 How: A new microservice with its own database, agents-web pages and an any-mcp tool, built on the session-orchestration-mcp tools
 Why: The user wants visibility and better UX for decisions agents need from them, complementing the skills
-
-## Description
 
 User request (chat 2026-10-28 21:02Z, relayed by mx-34 msg 263), verbatim:
 
@@ -38,20 +35,48 @@ Planning note (tatara, 2026-10-29): session scoping weakens the case for a separ
 
 README-only shell; plan it when it is reached.
 
-## Goals
+## Scope ladder
 
-- G1: A question or decision an agent needs from the user lands on a web UI page with the agent's options and its recommendation.
-- G2: The user picks an option or proposes their own, and the answer reaches the asking agent.
-- G3: The user sees past decisions with their history.
-- G4: The user can ask to amend a past decision, and the request becomes a properly planned change.
-- G5: Agents post questions and read answers through an MCP tool; the workbench skills' gate questions post there too.
-- G6: The decision board belongs to a session: each session has its own board, shown under that session in the web UI, and the agent tools post to and read from the caller's session board.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: A question or decision an agent needs from the user lands on a web UI page with the agent's options and its recommendation.
+- 1.2: G2: The user picks an option or proposes their own, and the answer reaches the asking agent.
+- 1.3: G3: The user sees past decisions with their history.
+- 1.4: G4: The user can ask to amend a past decision, and the request becomes a properly planned change.
+- 1.5: G5: Agents post questions and read answers through an MCP tool; the workbench skills' gate questions post there too.
+- 1.6: G6: The decision board belongs to a session: each session has its own board, shown under that session in the web UI, and the agent tools post to and read from the caller's session board.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
 - Replacing epics or the skills flow: agents still follow the skills as they are; the board complements them.
 - Immediate PTY message delivery and per-message priority (epic A, owned by cct2).
 
-## Review
+## Design
+
+none recorded in the epic format
+
+## Decisions
+
+none recorded in the epic format
+
+## Open questions
+
+none
+
+## Research
+
+none recorded in the epic format
+
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
