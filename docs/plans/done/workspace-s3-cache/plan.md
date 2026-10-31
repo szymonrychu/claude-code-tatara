@@ -1,84 +1,55 @@
-# Workspace S3 cache design
+---
+title: workspace s3 cache
+repos: [agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-25
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# workspace s3 cache
 
-Optional, per-preset workspace caching in S3, modelled on GitLab runner caches. When a session with
-`spec.cache` starts, the reconciler runs a restore Job that downloads `<prefix><key>.tar.zst` and
-unpacks it into the session workdir before the init scripts and the Claude sessions start; when the
-session ends (delete, idle autoclose, trigger close) the reconciler stops the agent pods, runs a save
-Job that archives the workdir and uploads it under the same object name, then discards the session.
-The S3 credentials live only in the reconciler, which hands each Job one presigned, short-lived URL
-for one object; agent pods and Job pods never hold a credential. Configuration is generic S3
-(endpoint, region, bucket, credentials Secret, path-style flag); the rook-ceph ObjectBucketClaim lives
-only in agents-helmfile. Written in post-rename names: this epic runs after orchestrator-rename-sessions
-(agent-orchestrator becomes agents-orchestrator, cluster becomes session).
+## What and why
 
-## Intent and why
+What: Optional per-preset workspace caching in S3, like GitLab runner caches: when a session starts its workspace archive is downloaded from S3 and unpacked; when it ends the workspace is archived and uploaded back under the same name. The cache key is a user-supplied slug or by default a pseudorandom preset-derived string. Generic S3 configuration, deployed with rook-ceph S3.
+How: the reconciler runs a restore Job before init and a save Job during the discard; each Job gets one presigned URL, so S3 credentials stay in the reconciler; tar.zst archive per key; generic S3 settings, rook-ceph ObjectBucketClaim in agents-helmfile.
+Why: User request 2026-10-25: 'S3 based workspace caching similar to caching in gitlab runners- when cluster/session starts, workspace is getting downloaded from S3, when it ends it's getting uploaded back to S3 (use zip or something to prepare archive, reuse the same name). Deploy using rook-ceph s3, but configuration must be generic and not assume anything about infra system will run on. Caching is an optional feature, preset coupled with preset. Optionally user can provide cache slug, by default it's pseudorandom (preset derived) string.'
 
-User request 2026-10-25: "S3 based workspace caching similar to caching in gitlab runners- when
-cluster/session starts, workspace is getting downloaded from S3, when it ends it's getting uploaded
-back to S3 (use zip or something to prepare archive, reuse the same name). Deploy using rook-ceph s3,
-but configuration must be generic and not assume anything about infra system will run on. Caching is
-an optional feature, preset coupled with preset. Optionally user can provide cache slug, by default
-it's pseudorandom (preset derived) string."
+Runs after orchestrator-rename-sessions (agents-orchestrator, sessions). A preset (or a session spec)
+sets `cache {key?, exclude?}`; the session spec gets the user's key or a pseudorandom key derived from
+the preset id. The reconciler restores `<prefix><key>.tar.zst` into the workdir with a Job before init
+and the Claude sessions, and at session end stops the agent pods and saves the workdir with a second
+Job under the same name before the PVC is deleted. S3 credentials stay in the reconciler, which gives
+each Job one presigned URL. Generic S3 settings in agents-orchestrator; the rook-ceph bucket
+(ObjectBucketClaim) and its wiring in agents-helmfile; the preset form in agents-web. Design:
+design.md.
 
-Every session starts from an empty RWX PVC today, so repeated sessions of one preset (webhook and
-schedule triggers especially) re-clone repos and re-install dependencies each time. A cache keyed per
-preset carries the workspace from one session to the next.
+## Scope ladder
 
-## Goals
+### Rung 1: agreed scope (migrated)
 
-- G1: A preset (and a session spec) can enable the workspace cache; it is off unless set.
-- G2: The cache key is the user-supplied slug, or by default a pseudorandom string derived from the
-  preset id, resolved into the session spec at create.
-- G3: At session start the archive is downloaded and unpacked into the workdir before init scripts
-  and Claude sessions run; a missing object is a cache miss, not an error.
-- G4: At session end the workdir is archived and uploaded under the same object name before the PVC
-  is deleted, on every deletion path that goes through the discard (explicit delete, idle autoclose,
-  trigger close).
-- G5: No S3 credential reaches an agent pod or a Job pod; only the reconciler holds it.
-- G6: S3 configuration is generic (endpoint, region, bucket, prefix, path-style, TLS verify,
-  credentials Secret); nothing in agents-orchestrator assumes rook-ceph.
-- G7: agents-helmfile provisions the bucket on rook-ceph (ObjectBucketClaim) and wires it into the
-  orchestrator release; agents-web exposes the cache in the preset form.
-- G8: The live smoke proves a value written in one session is restored in the next.
+- 1.1: G1: A preset (and a session spec) can enable the workspace cache; it is off unless set.
+- 1.2: G2: The cache key is the user-supplied slug, or by default a pseudorandom string derived from the preset id.
+- 1.3: G3: At session start the archive is downloaded and unpacked into the workdir before init scripts and Claude sessions run; a missing object is a miss.
+- 1.4: G4: At session end the workdir is archived and uploaded under the same object name before the PVC is deleted, on every path through the discard.
+- 1.5: G5: No S3 credential reaches an agent pod or a Job pod.
+- 1.6: G6: S3 configuration is generic; nothing in agents-orchestrator assumes rook-ceph.
+- 1.7: G7: agents-helmfile provisions the bucket on rook-ceph and wires it in; agents-web exposes the cache in the preset form.
+- 1.8: G8: The live smoke proves a value written in one session is restored in the next.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Caching anything outside the session workdir (the per-pod `/sessions` transcripts, `/opt/mise`,
-  `/opt/any-mcp`).
-- Periodic or mid-session saves; saving on agent pod restart, crash or node loss (the PVC survives
-  those; only the session end saves).
-- A cache delete, list or eviction API, and S3 lifecycle rules; objects stay until removed by hand.
-- Locking or merging between concurrent sessions sharing a key (D4: last writer wins).
-- Showing `status.cache` in the web UI session views (it is in the API status).
-- Any change to claude-code-wrapper.
-- Uploading through the agent pod, the wrapper or a sidecar (D1).
+- Caching outside the session workdir; periodic or mid-session saves; saving on pod crash or node loss.
+- A cache delete, list or eviction API, and bucket lifecycle rules.
+- Locking between concurrent sessions sharing a key (last writer wins).
+- Cache status in the web session views; any claude-code-wrapper change.
 
-## Anti-goals
+## Design
 
-- An S3 access key or secret key in any pod spec except the reconciler Deployment.
-- A failed or timed-out restore followed by a save that replaces a good archive with a partial or
-  empty workspace.
-- A session deletion held forever by an unreachable S3 endpoint (the PVC must still be discarded).
-- rook-ceph names, the rgw Service or ObjectBucketClaim types anywhere in agents-orchestrator.
-- An archive member that writes outside the workdir on restore (absolute paths, `..`, escaping links,
-  device nodes).
-
-## Constraints
-
-- Runs after orchestrator-rename-sessions lands: every task uses `code/agents-orchestrator`,
-  `src/agents_orchestrator`, `SessionSpec`, `api/sessions.py`, `db/sessions.py` and the chart
-  `chart/agents-orchestrator`. If that epic picked other module names, the same symbols apply
-  (today: `ClusterSpec` in `spec.py`, `_create_from_preset` in `api/clusters.py`,
-  `Reconciler._converge` and `_discard` in `reconciler/loop.py`); the orchestrator amends task file
-  lists with `ticket.py amend` before claiming the epic.
-- Python only (orchestrator, Job CLI); TypeScript only in agents-web.
-- Services talk through HTTP APIs; the reconciler stays the only writer of `sessions.status`.
-- Single-PUT upload: S3 and RGW cap one PUT at 5 GiB, so `ORCH_CACHE_MAX_BYTES` is at most
-  5368709120.
-- Deploy: the orchestrator runs `mise run apply` in agents-helmfile itself; it is never AC evidence.
-  The live kube context is guarded by agents-helmfile's `kube-context` task.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -217,6 +188,11 @@ Decision: the epic owns contracts `orch-session-spec-cache` (schema), `orch-sess
 (api) and `agents-orchestrator-chart-cache` (release, extends the rename epic's `agents-orchestrator-chart`
 with `cache` values); consumers agents-web and agents-helmfile. Registered in `docs/plans/contracts.json`.
 
+## Open questions
+
+- Q1: Concurrent sessions sharing one cache key (the default for every session of a preset): last finished save wins, with no locking, as GitLab runner caches do? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+- Q2: Cap one cache archive at 5 GiB compressed (the single-PUT limit) by default, where a bigger save fails and keeps the previous archive? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -226,7 +202,7 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
 | research-docs | skipped: OBC shape probed read-only on the live cluster (`kubectl get obc -A`, `monitoring/loki-bucket` Secret keys), botocore presign and tarfile `data` filter are documented stable APIs the builder exercises in tests | OBC with fixed `bucketName` | reading the OBC ConfigMap from the orchestrator |
 | research-papers | skipped: no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 - The init Job runner is the template for both cache Jobs (`code/agent-orchestrator/src/agent_orchestrator/reconciler/init.py`) - cache-restore-runner, cache-save-on-discard.
 - `_quiesce` scales to zero only when a hook is owed (`reconciler/loop.py:_quiesce`) - cache-save-on-discard.
@@ -236,7 +212,114 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
 - Prior deploy tasks pin the orchestrator chart only after its main CI publishes (`docs/plans/done/agent-init-scripts/tasks/deploy-pin-init-scripts.md`) - deploy-pin-workspace-cache.
 - Retro improvement (test-temp-dirs-outside-the-c): for any task that deletes or writes into a computed path, check what runs when the producing step fails or the variable is empty - cache-archive (restore never deletes, refuses an empty `CACHE_DIR`), cache-save-on-discard.
 
-## Decision coverage
+## Irreversible operations
+
+- Each save overwrites the previous archive of its key (no bucket versioning): by design (user
+  decision: same object name).
+- The live apply creates bucket `agents-workspace-cache` through an ObjectBucketClaim on StorageClass
+  `rook-ceph-bucket`, whose `reclaimPolicy` is `Delete`: deleting the OBC later deletes the bucket and
+  every cache. The apply is covered by the gate; no task deletes the OBC.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-26)
+
+Epic review of workspace-s3-cache (core), 2026-10-26.
+- Whole-diff review: 1 medium finding. The save skip deny-list let a partial restore overwrite a good archive. Fixed by cache-save-allowlist (45c221c), which saves only after restored or miss. Reviewed PASS.
+- Security review:
+  - 2 medium findings. Cache-key spoofing was fixed by cache-key-reserved-prefix (4c83e12, 8d8b2c3), which reserves the preset- prefix and makes a preset copy drop the source's derived key. The bucket total had no bound; that moves to workspace-s3-cache-deploy helmfile-cache-bucket as a quota.
+  - 2 low findings, accepted. The URL expiry is timeout+600 s by design. There is no member-count cap: same-session blast radius only, as in the cache-archive note.
+- Discovered: the orchestrator api did not reload the services Secret. Fixed by orch-services-secret-checksu (2290dbb).
+- Scope: G1-G6 delivered. The rook-ceph bucket, the web form and the smoke are in workspace-s3-cache-deploy.
+- Suites:
+  - PR #18 CI green on 2290dbb: lint, test, images, chart, e2e.
+  - Local full suite: 935 passed.
+
+### design.md: Summary
+
+Optional, per-preset workspace caching in S3, modelled on GitLab runner caches. When a session with
+`spec.cache` starts, the reconciler runs a restore Job that downloads `<prefix><key>.tar.zst` and
+unpacks it into the session workdir before the init scripts and the Claude sessions start; when the
+session ends (delete, idle autoclose, trigger close) the reconciler stops the agent pods, runs a save
+Job that archives the workdir and uploads it under the same object name, then discards the session.
+The S3 credentials live only in the reconciler, which hands each Job one presigned, short-lived URL
+for one object; agent pods and Job pods never hold a credential. Configuration is generic S3
+(endpoint, region, bucket, credentials Secret, path-style flag); the rook-ceph ObjectBucketClaim lives
+only in agents-helmfile. Written in post-rename names: this epic runs after orchestrator-rename-sessions
+(agent-orchestrator becomes agents-orchestrator, cluster becomes session).
+
+### design.md: Intent and why
+
+User request 2026-10-25: "S3 based workspace caching similar to caching in gitlab runners- when
+cluster/session starts, workspace is getting downloaded from S3, when it ends it's getting uploaded
+back to S3 (use zip or something to prepare archive, reuse the same name). Deploy using rook-ceph s3,
+but configuration must be generic and not assume anything about infra system will run on. Caching is
+an optional feature, preset coupled with preset. Optionally user can provide cache slug, by default
+it's pseudorandom (preset derived) string."
+
+Every session starts from an empty RWX PVC today, so repeated sessions of one preset (webhook and
+schedule triggers especially) re-clone repos and re-install dependencies each time. A cache keyed per
+preset carries the workspace from one session to the next.
+
+### design.md: Goals
+
+- G1: A preset (and a session spec) can enable the workspace cache; it is off unless set.
+- G2: The cache key is the user-supplied slug, or by default a pseudorandom string derived from the
+  preset id, resolved into the session spec at create.
+- G3: At session start the archive is downloaded and unpacked into the workdir before init scripts
+  and Claude sessions run; a missing object is a cache miss, not an error.
+- G4: At session end the workdir is archived and uploaded under the same object name before the PVC
+  is deleted, on every deletion path that goes through the discard (explicit delete, idle autoclose,
+  trigger close).
+- G5: No S3 credential reaches an agent pod or a Job pod; only the reconciler holds it.
+- G6: S3 configuration is generic (endpoint, region, bucket, prefix, path-style, TLS verify,
+  credentials Secret); nothing in agents-orchestrator assumes rook-ceph.
+- G7: agents-helmfile provisions the bucket on rook-ceph (ObjectBucketClaim) and wires it into the
+  orchestrator release; agents-web exposes the cache in the preset form.
+- G8: The live smoke proves a value written in one session is restored in the next.
+
+### design.md: Non-goals
+
+- Caching anything outside the session workdir (the per-pod `/sessions` transcripts, `/opt/mise`,
+  `/opt/any-mcp`).
+- Periodic or mid-session saves; saving on agent pod restart, crash or node loss (the PVC survives
+  those; only the session end saves).
+- A cache delete, list or eviction API, and S3 lifecycle rules; objects stay until removed by hand.
+- Locking or merging between concurrent sessions sharing a key (D4: last writer wins).
+- Showing `status.cache` in the web UI session views (it is in the API status).
+- Any change to claude-code-wrapper.
+- Uploading through the agent pod, the wrapper or a sidecar (D1).
+
+### design.md: Anti-goals
+
+- An S3 access key or secret key in any pod spec except the reconciler Deployment.
+- A failed or timed-out restore followed by a save that replaces a good archive with a partial or
+  empty workspace.
+- A session deletion held forever by an unreachable S3 endpoint (the PVC must still be discarded).
+- rook-ceph names, the rgw Service or ObjectBucketClaim types anywhere in agents-orchestrator.
+- An archive member that writes outside the workdir on restore (absolute paths, `..`, escaping links,
+  device nodes).
+
+### design.md: Constraints
+
+- Runs after orchestrator-rename-sessions lands: every task uses `code/agents-orchestrator`,
+  `src/agents_orchestrator`, `SessionSpec`, `api/sessions.py`, `db/sessions.py` and the chart
+  `chart/agents-orchestrator`. If that epic picked other module names, the same symbols apply
+  (today: `ClusterSpec` in `spec.py`, `_create_from_preset` in `api/clusters.py`,
+  `Reconciler._converge` and `_discard` in `reconciler/loop.py`); the orchestrator amends task file
+  lists with `ticket.py amend` before claiming the epic.
+- Python only (orchestrator, Job CLI); TypeScript only in agents-web.
+- Services talk through HTTP APIs; the reconciler stays the only writer of `sessions.status`.
+- Single-PUT upload: S3 and RGW cap one PUT at 5 GiB, so `ORCH_CACHE_MAX_BYTES` is at most
+  5368709120.
+- Deploy: the orchestrator runs `mise run apply` in agents-helmfile itself; it is never AC evidence.
+  The live kube context is guarded by agents-helmfile's `kube-context` task.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -253,7 +336,7 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
 | D11 Failure policy | cache-restore-runner, cache-save-on-discard, cache-docs |
 | D12 Contracts | cache-docs |
 
-## Review focus
+### design.md: Review focus
 
 - No Secret reference, `AWS_*` or `ORCH_CACHE_S3_*` credential env in the agent StatefulSet or the
   Job pods; credentials only on the reconciler Deployment.
@@ -264,13 +347,13 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
   save never blocks the discard.
 - Crash safety of both runners (state before create, `job` after).
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal module layout under `src/agents_orchestrator/cache/` beyond the named entry points.
 - The zstd compression level (fast levels, 1 to 6).
 - The HTTP fake used to test the CLI, and moto's server mode for the presign round trip.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - The rename epic keeps `prefix(slug)` object naming and the `status` JSON column; confirmed by
   reading its merged diff before claiming this epic (orchestrator).
@@ -278,16 +361,3 @@ with `cache` values); consumers agents-web and agents-helmfile. Registered in `d
   smoke-workspace-cache.
 - Harbor publishes the orchestrator chart `0.1.0-main.<sha7>` on main merge (previous epics); the pin
   task checks it.
-
-## Open questions
-
-- Q1: Concurrent sessions sharing one cache key (the default for every session of a preset): last finished save wins, with no locking, as GitLab runner caches do? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-- Q2: Cap one cache archive at 5 GiB compressed (the single-PUT limit) by default, where a bigger save fails and keeps the previous archive? [answer: yes, recommended answer (user: 'Go' on the combined gate, 2026-10-25)]
-
-## Irreversible operations in scope
-
-- Each save overwrites the previous archive of its key (no bucket versioning): by design (user
-  decision: same object name).
-- The live apply creates bucket `agents-workspace-cache` through an ObjectBucketClaim on StorageClass
-  `rook-ceph-bucket`, whose `reclaimPolicy` is `Delete`: deleting the OBC later deletes the bucket and
-  every cache. The apply is covered by the gate; no task deletes the OBC.

@@ -1,16 +1,34 @@
-# workspace s3 cache record
+# workspace s3 cache retro
 
-## Asked
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+none
+
+## Delivery record (migrated)
+
+### Asked
 
 Optional per-preset workspace caching in S3, like GitLab runner caches: at session start the workspace archive is downloaded and unpacked, at session end the workdir is archived and uploaded under the same name. Key is a user slug or a pseudorandom preset-derived string. S3 configuration generic, deployed on rook-ceph. User request 2026-10-25: 'S3 based workspace caching similar to caching in gitlab runners ... Deploy using rook-ceph s3, but configuration must be generic ... Optionally user can provide cache slug, by default it's pseudorandom (preset derived) string.' This record covers the core epic only (agents-orchestrator, G1-G6); the deploy half is the epic workspace-s3-cache-deploy.
 
-## Shipped
+### Shipped
 
 All 13 tasks done. Epic review verdict: pass (2026-10-26); G1-G6 delivered, G7 and G8 belong to workspace-s3-cache-deploy. Merged: agents-orchestrator PR #18 (747ca91), CI green on 2290dbb (lint, test, images, chart, e2e). Local full suite from the review: 935 passed.
 
 Not yet live: the deploy half (rook-ceph bucket, helmfile wiring, agents-web form, live smoke) is workspace-s3-cache-deploy, in progress. Nothing of the cache runs in the agents namespace yet.
 
-## Tasks
+### Tasks
 
 Status, repo, verified head and points (planned/actual) are from the task files (all `done`, all with a verified head). The plan-execute return value was not provided, so the independent verifier head, red evidence, declined, cannotVerify and forwardMerged entries could not be read; review rounds and verification tails are "unknown". The shown head is the task file's verified_head. All tasks are in agents-orchestrator.
 
@@ -32,7 +50,7 @@ Status, repo, verified head and points (planned/actual) are from the task files 
 
 Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gate approval is in root MEMORY.md (2026-10-25, user: 'Go'; workspace-s3-cache Q1 last-writer-wins, Q2 5 GiB cap keeps previous archive; irreversible ops approved: rook-ceph bucket creation and live applies). Per-entry status: unknown.
 
-## Rulings
+### Rulings
 
 - Split into core and deploy: the epic holds only agents-orchestrator work (G1-G6); the rook-ceph bucket, helmfile wiring, agents-web form and live smoke (G7, G8) moved to workspace-s3-cache-deploy. Why: the deploy tasks need the merged and published orchestrator chart. Cost if wrong: a feature that is merged but not live; the grouping is the only change, scope is unchanged.
 - botocore over boto3: presigning uses botocore (design D2), not the full boto3 client. Why: presigning is local and needs no transfer client; the task note sketches a boto3 client call, the design says botocore, the design wins. Cost if wrong: swapping the library later touches only the presign module. Whether boto3 was ever added as a dependency: unknown.
@@ -46,7 +64,7 @@ Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gat
 - Superrepo pointer for the moved submodule was stale until 2c2219c: the submodule moved to code/agents-orchestrator was not initialized in the main checkout, so earlier superrepo pins skipped it; 2c2219c pinned it at 747ca91. Cost if wrong: the superrepo pointed at a pre-cache commit; fixed.
 - Bucket total bound moved to deploy: security review medium (no bound on bucket total) moved to workspace-s3-cache-deploy helmfile-cache-bucket as a quota. Cost if wrong: unbounded bucket growth until that task lands.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Live S3 behaviour unproven: Moto does not enforce SigV4, so single-method and single-object scoping of the presigned URLs is unproven against real RGW (cache-presign note). Cleared by the live smoke in workspace-s3-cache-deploy.
 - 403 versus 404 on a missing key without ListBucket: a 403 would be `download_failed` and skip the save forever (epic review cannotVerify). Cleared by the live smoke in workspace-s3-cache-deploy.
@@ -55,11 +73,11 @@ Approvals ledger: the epic dir has no approvals.json, so no ledger rows. The gat
 - Low findings accepted: URL expiry is timeout+600 s by design; no member-count cap.
 - Not verifiable by me: nothing else open.
 
-## Not pushed
+### Not pushed
 
 Everything is pushed: agents-orchestrator PR #18 is merged (747ca91) and the superrepo pin 2c2219c is committed on main. Whether the superrepo main is pushed: unknown; pushing it stays with the user.
 
-## Lessons routed to
+### Lessons routed to
 
 - The save skip rule was a deny-list that missed restore failure reasons: a unit test that enumerates every restore state and reason and asserts the save runs only for `restored` and `miss` (added in cache-save-allowlist).
 - Cache-key spoofing through a user key equal to a derived key: a test that rejects a user key with the `preset-` prefix and that a preset copy drops the derived key (added in cache-key-reserved-prefix).
