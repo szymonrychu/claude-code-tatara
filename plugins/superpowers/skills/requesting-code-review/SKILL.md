@@ -32,7 +32,7 @@ The package (commits, stat and `git diff -U10`) is the whole diff, `git diff <ba
 
 **2. Dispatch the reviewer:**
 
-One `workbench:reviewer` (sonnet), set explicitly, in the background, with the template at [code-reviewer.md](code-reviewer.md). The agent carries the review order and reads `references/review-checklist.md` of the workbench plugin for quality; the template carries the plan, the range and the delivery checklist. A diff touching secrets, SOPS, RBAC, ingress, privilege, CI vars, image pins or hooks also gets one `security-researcher` (sonnet) on the same package.
+One `workbench:reviewer` (sonnet), set explicitly, in the background, with the template at [code-reviewer.md](code-reviewer.md). The agent carries the review order and reads the workbench plugin's review checklist (`review-checklist.md` in its references) for quality; the template carries the plan, the range and the delivery checklist. A diff touching secrets, SOPS, RBAC, ingress, privilege, CI vars, image pins or hooks also gets one `security-researcher` (sonnet) on the same package.
 
 **3. Act on feedback:**
 - `undelivered`, `overDelivered` and every finding go back to the implementer, at most two fix rounds by continuing the same agents (superpowers:subagent-driven-development).

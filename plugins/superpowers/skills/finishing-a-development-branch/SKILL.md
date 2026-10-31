@@ -19,7 +19,7 @@ description: "Use when a plan's review passed and retro.md exists: one workbench
 
 ## Step 2: Land
 
-Dispatch one `workbench:worktree-merger` (sonnet), opus only when the workbench plugin's `skills/worktree-merge/scripts/merge.py --name <plan> --assess` predicts a conflict, in the background, with the model set explicitly:
+Dispatch one `workbench:worktree-merger` (sonnet), opus only when `merge.py --name <plan> --assess` of the workbench plugin's `worktree-merge` skill predicts a conflict, in the background, with the model set explicitly:
 
 ```
 [wb <plan>/merge]
@@ -33,7 +33,7 @@ The merger gets the absolute ticket.py path because its own plugin root is anoth
 
 **Meta mode.** The merger runs `ticket.py close <plan> --verify '<final verify>'`: it rebases `<plan>` onto main in the plan tree, runs the verify on the rebased tip there, fast-forwards main only when that verify is green, runs the verify on main, writes `close.json`, moves the plan to done and sweeps its tree. A failed verify is exit 4 and main does not move. A rebase conflict is resolved in the plan tree, then close runs again. Pushing main stays with the user.
 
-**Component mode.** The merger runs `git-worktrees-commit`, `git-worktrees-push`, `pullrequests-update` and `pullrequests-watch` (host per repo, the workbench plugin's `references/merge-hosts.md`) and merges the pull request the moment it is green, mergeable and review-clean. Review threads go through `pullrequests-review-loop`. Deploy: `pullrequests-watch --deploy`, or the workbench plugin's `scripts/deploy-hook.py` for a `deploy` config; a step only the user may run follows the workbench plugin's `references/user-run-steps.md`. Post-deploy health: `grafana-debugging-start` when the `workbench-observability` pack is enabled, else the repo's `deploy.verify` command; a failed check continues in superpowers:systematic-debugging.
+**Component mode.** The merger runs `git-worktrees-commit`, `git-worktrees-push`, `pullrequests-update` and `pullrequests-watch` (host per repo, `merge-hosts.md` in the workbench plugin's references) and merges the pull request the moment it is green, mergeable and review-clean. Review threads go through `pullrequests-review-loop`. Deploy: `pullrequests-watch --deploy`, or the workbench plugin's `deploy-hook.py` script for a `deploy` config; a step only the user may run follows `user-run-steps.md` in the workbench plugin's references. Post-deploy health: `grafana-debugging-start` when the `workbench-observability` pack is enabled, else the repo's `deploy.verify` command; a failed check continues in superpowers:systematic-debugging.
 
 ## Step 3: Clean Up
 

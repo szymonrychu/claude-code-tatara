@@ -51,6 +51,13 @@ def test_rewrites_plugin_root_and_relative_paths(tree):
     assert "plugins/core/skills/paths/skills" not in body
 
 
+def test_rewrites_a_bare_plugin_root(tree):
+    body = "Resolve `${CLAUDE_PLUGIN_ROOT}` first; $CLAUDE_PLUGIN_ROOT is fixed."
+    skill(tree, "core", "bare", body)
+    body = render_skills(load_sources(tree))[".agents/skills/bare/SKILL.md"]
+    assert "Resolve `plugins/core` first; plugins/core is fixed." in body
+
+
 def test_rewrites_skill_references(tree):
     skill(tree, "core", "refs", "Use workbench:foo-bar then extra:gamma, not other:thing.")
     body = render_skills(load_sources(tree))[".agents/skills/refs/SKILL.md"]

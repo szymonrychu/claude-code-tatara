@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 
 _NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
-_PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/|\$CLAUDE_PLUGIN_ROOT/")
+_PLUGIN_ROOT = re.compile(r"(?:\$\{CLAUDE_PLUGIN_ROOT\}|\$CLAUDE_PLUGIN_ROOT\b)(/?)")
 _REL = re.compile(r"(?<![\w./${}-])((?:scripts|references|templates)/[\w./-]*)")
 
 QUESTIONS = "numbered prose questions (each with its options and a recommended answer)"
@@ -66,7 +66,7 @@ def _rewrite(
     skill_dir: Path | None = None,
     plugin_root: Path | None = None,
 ) -> str:
-    text = _PLUGIN_ROOT.sub(prefix + "/", rewrite_claude_constructs(text))
+    text = _PLUGIN_ROOT.sub(lambda m: prefix + m.group(1), rewrite_claude_constructs(text))
     if skill_dir is not None and plugin_root is not None:
         text = _REL.sub(lambda m: _relative(m, prefix, skill_dir, plugin_root), text)
     names = "|".join(re.escape(n) for n in sorted(plugin_names, key=len, reverse=True))
