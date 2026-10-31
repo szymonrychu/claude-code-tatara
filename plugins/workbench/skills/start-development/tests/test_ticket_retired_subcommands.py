@@ -53,7 +53,6 @@ DELETED = [
             "retro",
             "roadmap",
             "task_cmd",
-            "migrate",
         )
     ),
     *(
