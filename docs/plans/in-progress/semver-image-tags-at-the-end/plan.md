@@ -2,8 +2,8 @@
 title: Semver image tags at the end of main builds
 repos: [agents-orchestrator, agents-web, agents-webhook, agents-schedule, agents-matrix-connector, agents-helmfile]
 created: 2026-10-28
-owner: ""
-rung: "1"
+owner: Szymon Richert
+rung: 1
 ---
 
 # Semver image tags at the end of main builds
