@@ -1,5 +1,99 @@
 # Changelog
 
+## v3.0.0 - 2026-10-31
+
+### Breaking
+
+- refactor: ticket: S5 retire the task machinery, epic skills and old templates (b76f992)
+- plan-run: S12 plan-run skill replaces epic-run (0c02389)
+- agents: S13 plan-writer, plan-flow implementer, reviewer and merger; planner, record-writer, retro-writer, scope-auditor retired (0e7b265)
+
+### Features
+
+- cloud: make the workbench work in Claude Code cloud sessions (89ab4a3)
+- scripts: calibration lib for expected minutes and tokens per storypoint (94572e6)
+- lint: em dash lint over the whole tracked tree, no path exempt (e353f03)
+- workbench: main_checkout, scratchpad and logs resolvers (a779240)
+- hooks: protect-files denies edits that add an em dash, in every harness (d0915ce)
+- ticket: points, expected and actual fields on every task, filled by calibration (9aa4a1a)
+- rules: housekeeping rules in every AGENTS.md; orchestrator is the accountable supervisor (043b0a1)
+- scripts: test and flake-hunt logs land in the main checkout .logs (24919f8)
+- agents: implementer, reviewer, planner discipline (list, read once, no test tampering, ask) (4ba30da)
+- hooks: guard-bash denies git commit messages with an em dash (7b981e3)
+- ticket: new-task requires --points; lint reports tasks without points (f537948)
+- hooks: spill capped bash output to .logs/bash-output in the main checkout (0ace961)
+- scripts: agent_usage lib for per-agent transcript time and tokens (8a35468)
+- scratch: pin .scratchpad and .logs as the only scratch locations (10b287d)
+- hooks: agent-usage-recorder writes one usage record per subagent to .logs/agents (c9b15a7)
+- planner: points gate, new-task --points everywhere (956c333)
+- epic-run: prompt run markers and reviewer pointsActual (97b4dcb)
+- ticket: stamp measured actuals and points_actual at task done (41e2b02)
+- ticket: actuals --backfill recovers usage records from harness transcripts (9e451f9)
+- ticket: retro writes RETRO.md's tasks table and deltas in delivery order (a3b5940)
+- ticket: deltas reports estimate against actual per task, MdAPE and the bucket table (33596e4)
+- retro: retro-writer fills RETRO.md's Retro table and Improvements; planner reads retro history (dd9762a)
+- agent_usage: legacy transcript matcher for unmarked implementer and reviewer transcripts (eb07cbf)
+- calibration: points_for_minutes maps legacy minutes to the nearest SEED bucket (ca8830a)
+- retro-writer: record.md input and migrated-epic bootstrap path (c0abe24)
+- retro: read each epic's agent records once and order undated tasks by verified_head (daf9ab1)
+- ticket: migrate --dry-run maps old-scheme tasks to the template keys (904ed69)
+- ticket: migrate write path, one commit per changed epic with RETRO.md (3cc9cae)
+- epic-migrate: thin skill over ticket.py migrate, retro and deltas (4b54410)
+- start-development: S1 plan, implementation-plan and retro templates (8599c9e)
+- ticket: S2 plan core commands: slug, new, check, path, rename, old-format refusal (ba80069)
+- ticket: S3 claim and worktrees read plan.md and gate on rung and implementation plan (b1eb340)
+- ticket: S4 done, close and reap gate on retro.md; close moves the plan to done (d37304b)
+- ticket: S7 ticket.py migrate converts old epics to plans (8810482)
+- start-development: S11 skill and references describe the plan flow (23df930)
+
+### Fixes
+
+- scm: use REST instead of GraphQL for GitHub so PR skills work in cloud sessions (ef85c50)
+- hooks: em dash test constant uses the escape, not the character (5cb3a81)
+- hooks: fall back to TMPDIR when the main checkout is unwritable (2cfce07)
+- docs: every new-task command line carries --points (aa204bb)
+- test: neutral path in default_transcripts_dir test (1de816d)
+- ticket: default transcripts dir derives from the main checkout (4b27328)
+- plugin: README new-task span uses the real required flags (e963250)
+- migrate: a done epic with no RETRO.md counts as changed (1e6c59c)
+- run-tests: suite temp dirs in a mktemp dir outside any checkout (a28332f)
+- run-tests: exit 2 when the suite temp dir cannot be created (db1ad54)
+- workbench: plan terms in worktree-create integration(), drop the legacy epic/task key shim in the usage recorder (c581d0f)
+
+### Other
+
+- docs: memory: record the REST-only GitHub adapter decision (bd34594)
+- test: marketplace: assert one shared version instead of pinning 1.0.0 (3187a99)
+- refactor: hooks: single EM_DASH constant (844e9e4)
+- docs: plugin: name housekeeping rule in README rules list, pin with test (3fa787c)
+- style: hooks: ruff format core.py (46e8578)
+- docs: scripts: agent_usage docstring names no literal config-dir path (ed9bb75)
+- style: tests: ruff format test_ticket_files.py (3bc3800)
+- test: lean-flow: references/retro.md is the eighth kept reference (393ebc2)
+- docs: plugin: README ticket.py commands match the tool (2caa216)
+- refactor: agent_usage: one records_for path and non-creating logs dir; marker contract test (e46b3fa)
+- docs: memory: record the housekeeping-rules-estimates decisions (abf7744)
+- test: agent_usage: fix verifier fixture name (1dd83dd)
+- style: calibration: wrap long test table (f39c0dc)
+- docs: tickets: migrate mapping without retired key names (2e627ac)
+- refactor: ticket: retire deltas legacy minutes rows (Q10) (a461cea)
+- style: ticket: wrap deltas docstring (8213388)
+- style: migrate: wrap docstring line (0ee8cd3)
+- docs: memory: record the epic-and-task-migration-skil decisions (1fe0f84)
+- style: run-tests: wrap long test line (0eb3907)
+- docs: memory: record the test-temp-dirs-outside-the-c decisions (ff5b2d5)
+- docs: plans: plan-flow-rework plan and implementation plan (9e516cb)
+- test: start-development: S6 chunk 1 green: drop pins on removed templates and commands, unlink deleted templates (5bc9f85)
+- refactor: hooks: S8 usage records keyed by plan and role; calibration gone (4be05e5)
+- test: workbench: S10 chunk 2 green: exempt the migrator from retired-word pins, drop the three-part marker pin (21ab6d6)
+- test: workbench: S14 chunk 3 green: re-pin interrogate and worktree-merge tests, lint fixes (8e75e37)
+- docs: skills: S15 kept skills speak of plans, plan tree and plan-run (91f68d4)
+- docs: S16 rules, AGENTS.md, CLAUDE.md, READMEs, harness doc and plugin metadata describe the plan flow (4f2e3d0)
+- test: S17 retirement pins for the whole epic flow (6794473)
+- docs: memory: S18 plan flow replaced epics and tasks (e0f506e)
+- test: workbench: S18 chunk 4 green: the generated plan index is no longer ignored (b0868ef)
+- docs: plans: plan-flow-rework retro (95f11ad)
+
 ## v2.0.0 - 2026-10-24
 
 ### Breaking
