@@ -3,7 +3,7 @@ title: Semver image tags at the end of main builds
 repos: [agents-orchestrator, agents-web, agents-webhook, agents-schedule, agents-matrix-connector, agents-helmfile]
 created: 2026-10-28
 owner: ""
-rung: ""
+rung: "1"
 ---
 
 # Semver image tags at the end of main builds
@@ -27,20 +27,39 @@ Each image-building repo gets a release step at the end of a green main build: a
 - 1.3: Release jobs never race: one concurrency group per repo, full history and tags fetched.
 - 1.4: Tests that pin the CI layout are updated to the new layout, and each repo's lint and tests pass.
 - 1.5: agents-helmfile pins every one of the five components to an X.Y.Z image tag released by this epic, and the agents namespace is applied and healthy with every pod pulling a semver tag.
+- 1.6 (gate addition 2026-10-31): agents-helmfile `mise run test` fails when any harbor.szymonrichert.pl/containers image tag deployed by the helmfile (the layered values of every release) is not X.Y.Z semver.
+- 1.7 (gate addition 2026-10-31): the workbench AGENTS.md project block carries the Component hard rule "Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it", in the section `mise run init:refresh` preserves.
+- 1.8 (gate addition 2026-10-31): code/agents-helmfile AGENTS.md carries the same rule.
 
 ## Agreed scope
 
-not agreed yet
+Rung 1, all of it (1.1-1.5), plus the user's rule from the gate (1.6-1.8). Gate 2026-10-31, after a second incident: sessions could not start because Harbor retention deleted every deployed sha7 image (agents-orchestrator:2d6d722, used by the session cache-restore pod through `ORCH_CACHE_IMAGE`, agents-webhook:838ba1f, agents-web:ab78d97, agents-schedule:6cfa955, agents-matrix-connector:c98c501). Root cause: the containers retention policy in the separate infrastructure repo keeps no rule for 7-hex tags containing a letter. CI reruns re-push the five images as a stopgap (outside this plan).
+
+User's answers, verbatim:
+
+1. "Semver deploy tags" (run this plan so helmfile deploys v-tags, already kept by retention).
+2. "Fix it permanently by setting a rule to always semver tag containers before deploying"
+
+Modifications from answer 2: a test in agents-helmfile run by its `mise run test` fails on any non-X.Y.Z harbor.szymonrichert.pl/containers tag deployed by the helmfile (1.6); the Component hard rule "Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it" in the workbench AGENTS.md project block, preserved by `mise run init:refresh` (1.7), and in code/agents-helmfile AGENTS.md (1.8). The live apply of the agents namespace with a health check is the last step.
+
+Q1 was not asked again at this gate; the orchestrator recorded its recommended answer (remove chart-publish-tag, the `push: tags: [v*]` trigger and chart-version.sh's tag mode).
 
 ## Non-goals
 
-- Changing Harbor's retention policy (no admin access; semver tags already survive it).
+- Changing Harbor's retention policy (no admin access; semver tags already survive it; the user chose semver on 2026-10-31).
+- Re-pushing the pruned sha7 images (a CI-rerun stopgap run outside this plan).
 - claude-code-wrapper, any-mcp, agents-common, any-mcp-tatara-plugins release flows.
 - A shared reusable workflow or shared CI repo; each repo stays independent.
 
 ## Design
 
 Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
+
+Gate additions (2026-10-31):
+
+- Semver guard: new `code/agents-helmfile/tests/test_semver_pins.py`, parametrized per release of `helmfile.yaml.gotmpl` through the `layered_values` fixture (`tests/conftest.py`): every string leaf naming `harbor.szymonrichert.pl/containers/<repo>:<tag>` and every mapping whose `repository` starts with `harbor.szymonrichert.pl/containers/` must carry a tag matching `^\d+\.\d+\.\d+$` (a missing `tag` fails too: the charts default it to their sha7 appVersion, `chart/agents-orchestrator/templates/deployment.yaml` and `configmap.yaml` `ORCH_CACHE_IMAGE`). Runs under `mise run test` (`uv run pytest`), and so under `mise run apply`, which depends on `test`.
+- "Released before pinned" is already enforced by `code/agents-helmfile/scripts/check_pins.py` (mise `check-pins`, a dependency of `apply`): an X.Y.Z pin resolves through git tag vX.Y.Z and refuses unless that commit's checks are green. The plan reuses it unchanged.
+- The workbench hard rule lives in the AGENTS.md `workbench:project` block, section `## Component hard rules`: `scripts/init_engine/project_files.py:agents_md` keeps that section on refresh when no `--hard-rule` is passed (`pick`), so the block itself is the source. Pinned by a new test in `scripts/tests/test_agents_md.py`.
 
 ## Decisions
 
@@ -134,7 +153,7 @@ Why: the next agent in each repo reads its README and MEMORY.md, not this epic.
 
 ## Open questions
 
-- Q1: The release job now owns v* tags and a GITHUB_TOKEN tag push never triggers a workflow, so the tag-triggered chart-publish-tag job, the push: tags: [v*] trigger and chart-version.sh's tag mode are removed in agents-orchestrator, agents-web, agents-webhook and agents-schedule (main chart-publish stays). Confirm the removal? [recommended: yes, remove them (D9)]
+- Q1: The release job now owns v* tags and a GITHUB_TOKEN tag push never triggers a workflow, so the tag-triggered chart-publish-tag job, the push: tags: [v*] trigger and chart-version.sh's tag mode are removed in agents-orchestrator, agents-web, agents-webhook and agents-schedule (main chart-publish stays). Confirm the removal? [answer: yes, remove them (D9); the recommended answer, recorded by the orchestrator at the 2026-10-31 gate]
 
 ## Research
 
@@ -170,7 +189,7 @@ Retro proposals first (from `ticket.py retro --history`), then brief findings.
 
 - Git tags vX.Y.Z pushed by CI to five origins, and image tags X.Y.Z (immutable in intent) in Harbor: covered by the user's decision 2026-10-28 that every green main build releases; D5 and D7 stop duplicate or out-of-order tags; never forced.
 - Removing the `chart-publish-tag` job and `v*` trigger: covered by gate question Q1.
-- agents-helmfile apply to the live `agents` namespace: phase 6, after the gate, preceded by `helmfile diff` and the image-existence check.
+- agents-helmfile apply to the live `agents` namespace: the last step (S10), after the gate, under Lease `agents/agents-helmfile-apply`, preceded by `mise run diff` and the image-existence check.
 
 ## Migrated notes
 

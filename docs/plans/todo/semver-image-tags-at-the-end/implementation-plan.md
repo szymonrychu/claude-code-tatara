@@ -2,17 +2,29 @@
 
 ## Agreed rung
 
-Not agreed yet: a draft migrated from the epic's tasks; the plan-writer revises it after the gate.
+Rung 1 of plan.md, all items 1.1-1.8: 1.1-1.5 as migrated, 1.6-1.8 the user's gate rule of 2026-10-31 ("Fix it permanently by setting a rule to always semver tag containers before deploying"). Q1 answered with its recommendation: chart-publish-tag, the `push: tags: [v*]` trigger and chart-version.sh's tag mode are removed (D9). Nothing outside these items is built.
 
 ## Approach
 
-Migrated from the epic format: one step per task file, in dependency order, each with its status, files, verify, verified head and every body section.
+Component mode across six submodules plus the superrepo. Chunks run in order:
 
-## Chunk 1: migrated tasks (model: opus)
+1. Chunk 1 (S1-S6): the release job in the five image-building repos, one PR per repo (S2 and S5 share the agents-web PR). Migrated steps keep their epic-format body sections.
+2. Chunk 2 (S7): the workbench hard rule in the superrepo AGENTS.md, independent of chunk 1.
+3. Gate between chunk 2 and chunk 3 (orchestrator, not a build step): each chunk 1 PR is merged as soon as it is green (act on the first, never the batch), and its main run's `release` job is watched to green. Evidence per repo: `git -C code/<repo> ls-remote --tags origin 'v*'` lists vX.Y.Z; Harbor answers 200 for `GET https://harbor.szymonrichert.pl/v2/containers/<repo>/manifests/<X.Y.Z>` (read-only, credentials from Secret `regcred` in namespace agents, as in agents-helmfile MEMORY.md 2026-10-27); its digest equals the digest of `:<sha7>`. Then the superrepo pointer is committed. Chunk 3 needs these five versions.
+4. Chunk 3 (S8-S9): agents-helmfile, one PR: the semver guard, the X.Y.Z pins and the helmfile copy of the rule.
+5. Chunk 4 (S10): the live apply, run by the orchestrator session from agents-helmfile main after the chunk 3 PR merges.
+
+Rules for every chunk: read every file of the step in one pass before editing; TDD red then green, each run once; never edit, skip or xfail a test to pass unless it is named below as no longer accurate; targeted verify only; no em dashes; `UV_PYTHON=3.12` in agents-matrix-connector.
+
+## Chunk 1: release jobs (model: opus)
 
 ### S1: orchestrator release job
 
 - Status: todo
+- Covers: 1.1, 1.2, 1.3, 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `scripts/next_version.py`, `tests/test_next_version.py`, `.github/workflows/ci.yaml`, `tests/test_images.py`, `tests/test_chart_ci.py`, `scripts/chart-version.sh`, `README.md`, `MEMORY.md`
 - Verify: `mise run lint && mise exec -- uv run pytest tests/test_next_version.py tests/test_images.py tests/test_chart_ci.py tests/test_project_name.py tests/test_frontend_retired.py`
 - Verified head: none
@@ -171,6 +183,10 @@ On a green push to main the `release` job computes the version, copies `agents-o
 ### S2: web script tests wired
 
 - Status: todo
+- Covers: 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `package.json`, `.mise.toml`, `.github/workflows/ci.yaml`, `scripts/ci.test.mjs`
 - Verify: `mise run lint && mise exec -- npm run test:scripts`
 - Verified head: none
@@ -223,6 +239,10 @@ Discovery (verbatim): "`scripts/ci.test.mjs` (node:test, 13 tests) ... ORPHANED:
 ### S3: matrix connector release job
 
 - Status: todo
+- Covers: 1.1, 1.2, 1.3, 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `scripts/next_version.py`, `tests/test_next_version.py`, `.github/workflows/ci.yaml`, `tests/test_ci.py`, `README.md`, `MEMORY.md`
 - Verify: `mise run lint && mise exec -- uv run pytest tests/test_next_version.py tests/test_ci.py`
 - Verified head: none
@@ -368,6 +388,10 @@ On a green push to main the `release` job tags `agents-matrix-connector:<sha7>` 
 ### S4: schedule release job
 
 - Status: todo
+- Covers: 1.1, 1.2, 1.3, 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `scripts/next_version.py`, `tests/test_next_version.py`, `.github/workflows/ci.yaml`, `tests/test_ci_workflow.py`, `scripts/chart-version.sh`, `README.md`, `MEMORY.md`
 - Verify: `mise run lint && mise exec -- uv run pytest tests/test_next_version.py tests/test_ci_workflow.py`
 - Verified head: none
@@ -514,6 +538,10 @@ On a green push to main the `release` job tags `agents-schedule:<sha7>` as X.Y.Z
 ### S5: web release job
 
 - Status: todo
+- Covers: 1.1, 1.2, 1.3, 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `scripts/next_version.py`, `scripts/next_version.test.mjs`, `.github/workflows/ci.yaml`, `scripts/ci.test.mjs`, `scripts/chart-version.sh`, `README.md`, `MEMORY.md`
 - Verify: `mise run lint && mise exec -- npm run test:scripts`
 - Verified head: none
@@ -661,6 +689,10 @@ On a green push to main the `release` job tags `agents-web:<sha7>` as X.Y.Z, X.Y
 ### S6: webhook release job
 
 - Status: todo
+- Covers: 1.1, 1.2, 1.3, 1.4
+- Test first: the red steps under its #### Steps
+- Change: as its #### Requirement and #### Steps
+- Model: opus (chunk)
 - Files: `scripts/next_version.py`, `tests/test_next_version.py`, `.github/workflows/ci.yaml`, `tests/test_ci.py`, `scripts/chart-version.sh`, `README.md`, `MEMORY.md`
 - Verify: `UV_PYTHON=3.12 mise run lint && UV_PYTHON=3.12 mise exec -- uv run pytest tests/test_next_version.py tests/test_ci.py`
 - Verified head: none
@@ -804,14 +836,149 @@ On a green push to main the `release` job tags `agents-webhook:<sha7>` as X.Y.Z,
 - Never edit the two copied files here: a defect goes back to agents-orchestrator (return it as a discovered item), so every copy stays identical.
 - Noted, not doing now: anything else in ci.yaml (the existing jobs stay as they are).
 
+## Chunk 2: workbench hard rule (model: sonnet)
+
+### S7: semver deploy rule in the workbench AGENTS.md
+
+- Files: `AGENTS.md`, `scripts/tests/test_agents_md.py` (superrepo, workbench root; in the plan's superrepo worktree)
+- Covers: 1.7
+- Test first: `test_semver_deploy_hard_rule` in `scripts/tests/test_agents_md.py`, run red with `pytest scripts/tests/test_agents_md.py -q` (fails: the rule is absent from the project block).
+- Change: add one bullet at the end of `## Component hard rules` inside the `<!-- workbench:project:begin -->` block of `AGENTS.md`, verbatim: `- Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it.`
+- Verify: `pytest scripts/tests/test_agents_md.py -q && mise run lint:agents-md && mise run lint:em-dash`; expect all passed (skips unchanged) and both lints clean.
+- Model: sonnet
+
+#### Requirement
+
+User's gate answer 2 (verbatim): "Fix it permanently by setting a rule to always semver tag containers before deploying". The rule is a Component hard rule of the workbench AGENTS.md project block, placed where the init engine's refresh keeps it. Source of truth: `scripts/init_engine/project_files.py:agents_md` rebuilds the project block from the existing `## Component hard rules` section (`pick`: kept unless `--hard-rule` is passed or the section is a placeholder), so the AGENTS.md block itself is the source; there is no separate config (`.claude/workbench.json` holds only `refRunners`).
+
+#### Acceptance conditions
+
+- ac1: The project block's `## Component hard rules` section contains the line `- Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it.` [evidence: test:scripts/tests/test_agents_md.py::test_semver_deploy_hard_rule]
+- ac2: `mise run init:refresh` keeps the rule: after it, `grep -c "Deploy only semver-tagged images" AGENTS.md` prints 1 [evidence: command:mise run init:refresh && grep -c "Deploy only semver-tagged images" AGENTS.md]. Any other file refresh changes is not part of this step: report it with `git status --short` and restore it, never commit it.
+- ac3: The root test and lint families pass [evidence: command:pytest scripts/tests/test_agents_md.py -q && mise run lint:agents-md && mise run lint:em-dash]
+
+#### Notes
+
+- The test reads the block with the existing `_block("project")` helper and splits on `## ` headings; assert the rule sits under `Component hard rules`, not anywhere in the file.
+- Do not run `mise run harness-setup`; the rules block is not touched.
+
+## Chunk 3: agents-helmfile semver pins and guard (model: opus)
+
+Precondition: the chunk 1 PRs are merged and each repo's main `release` job is green (Approach, item 3). Work in `code/agents-helmfile` on a branch from `origin/main` (fetch first: the local checkout is behind, origin/main pins 2d6d722, ab78d97, 838ba1f, chart 0.1.0 plus image 6cfa955, c98c501).
+
+### S8: semver guard plus orchestrator, web and webhook pins
+
+- Files: `tests/test_semver_pins.py` (new), `values/agents-orchestrator/common.yaml`, `values/agents-web/common.yaml`, `values/agents-webhook/common.yaml`, `helmfile.yaml.gotmpl`, `tests/test_orchestrator_release.py`, `tests/test_web_release.py`, `tests/test_webhook_release.py`
+- Covers: 1.5 (three of five components), 1.6
+- Test first: write `tests/test_semver_pins.py`; run `uv run --frozen pytest tests/test_semver_pins.py -q` under `mise exec --`; expect it to fail for agents-orchestrator, agents-web, agents-webhook, agents-schedule and agents-matrix-connector (sha7 tags) and pass for the claude-code-wrapper 0.3.3 references.
+- Change: pin `image.tag` of the three components to their released X.Y.Z (quoted strings), and each chart `version:` in `helmfile.yaml.gotmpl` to `<Chart.yaml version>-main.<sha7 of that release commit>` (chart and image from one commit, design Deploy step 2); update the three release tests named below.
+- Verify: `mise exec -- uv run --frozen pytest tests/test_semver_pins.py tests/test_orchestrator_release.py tests/test_web_release.py tests/test_webhook_release.py -q -k "not agents-schedule and not agents-matrix-connector"` then `mise run lint`; expect all selected tests passed, lint clean.
+- Model: opus (chunk)
+
+#### Requirement
+
+Plan item 1.6 (gate addition, user's answer 2 verbatim: "Fix it permanently by setting a rule to always semver tag containers before deploying"): agents-helmfile `mise run test` fails when any harbor.szymonrichert.pl/containers image tag deployed by the helmfile is not X.Y.Z. Plan item 1.5: every one of the five components is pinned to an X.Y.Z image released by this plan.
+
+#### Acceptance conditions
+
+- ac1: `test_semver_pins.py` enumerates the releases from `helmfile build` (the `helmfile_build` fixture), skips releases with `installed: false`, and for each remaining release walks its `layered_values`: every string leaf matching `harbor\.szymonrichert\.pl/containers/[^:\s]+:(\S+)` and every mapping whose `repository` starts with `harbor.szymonrichert.pl/containers/` (with its `tag`; a missing tag fails) must have a tag matching `^\d+\.\d+\.\d+$`; parametrized with the release name as the test id [evidence: test:tests/test_semver_pins.py]
+- ac2: A non-vacuity test asserts that agents-orchestrator, agents-web, agents-webhook, agents-schedule and agents-matrix-connector each yield at least one containers image reference [evidence: test:tests/test_semver_pins.py::test_every_component_has_a_containers_image]
+- ac3: Red before the pins: the guard fails for the five component releases on origin/main's sha7 pins [evidence: judgement:the implementer quotes the red run's failure lines]
+- ac4: values/agents-orchestrator, agents-web and agents-webhook `image.tag` are X.Y.Z released by this plan, each with an existing Harbor manifest (`GET /v2/containers/<repo>/manifests/<X.Y.Z>` 200, as in MEMORY.md 2026-10-27) and git tag `vX.Y.Z` on origin [evidence: command:git -C ../<repo> ls-remote --tags origin vX.Y.Z]
+- ac5: Each of the three chart versions is `<version>-main.<sha7>` where sha7 is the commit of tag vX.Y.Z, and `helm show chart oci://harbor.szymonrichert.pl/charts/<chart> --version <v>` returns it [evidence: command:helm show chart oci://harbor.szymonrichert.pl/charts/<chart> --version <v>]
+- ac6: The selected tests and lint pass [evidence: command:the Verify line]
+
+#### Notes
+
+- Tests no longer accurate after the re-pin (the only tests changed, each because it hardcodes a sha7 pin the plan replaces): `tests/test_orchestrator_release.py` (`PIN = "2d6d722"`; `test_orchestrator_pin_matches_image` asserts `[0-9a-f]{7}` and `0.1.0-main.{tag}`): becomes an X.Y.Z regex on the image tag, the chart version equal to the pinned `-main.<sha7>` constant and the image tag equal to the pinned X.Y.Z constant. `tests/test_web_release.py::test_web_pin_matches_image` (`[0-9a-f]{7}`, `"ab78d97"`): same shape. `tests/test_webhook_release.py` (`SHA = "838ba1f"`, `test_webhook_pin_and_needs`): chart version the new constant, plus an image tag X.Y.Z assertion if it reads the tag. `test_agent_image_pins_agree` stays unchanged (wrapper 0.3.3).
+- Quote every X.Y.Z in YAML (`tag: "0.1.0"`).
+- `scripts/check_pins.py` already resolves an X.Y.Z image pin through tag vX.Y.Z; do not change it. Its docstring names only the orchestrator and web image tags as pin sources: noted, not doing now.
+- Pin the version each release job actually produced (read its log or `git ls-remote --tags`); never compute it locally.
+
+### S9: schedule and matrix-connector pins, helmfile rule
+
+- Files: `values/agents-schedule/common.yaml`, `values/agents-matrix-connector/common.yaml`, `helmfile.yaml.gotmpl`, `tests/test_schedule_release.py`, `tests/test_matrix_connector_release.py`, `AGENTS.md`, `MEMORY.md`
+- Covers: 1.5 (the remaining two components), 1.6 (all releases green), 1.8
+- Test first: the S8 guard is still red for agents-schedule and agents-matrix-connector; confirm with `mise exec -- uv run --frozen pytest tests/test_semver_pins.py -q` before editing. The AGENTS.md and MEMORY.md lines are doc edits (TDD exception: a doc edit).
+- Change: pin both components' `image.tag` to their released X.Y.Z and chart versions to `<version>-main.<sha7>` of the release commit (agents-schedule moves off chart `0.1.0` to its main chart of the same commit, design Deploy step 2); update the two release tests named below; add the rule to `AGENTS.md`; add a dated MEMORY.md entry.
+- Verify: `mise run lint && mise run test`; expect lint clean and `passed` with 0 failed. (Here the component suite is the targeted verify: the guard spans every release.)
+- Model: opus (chunk)
+
+#### Requirement
+
+Plan items 1.5 and 1.6 as in S8, for the remaining two components; plan item 1.8: code/agents-helmfile AGENTS.md carries the rule "Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it".
+
+#### Acceptance conditions
+
+- ac1: values/agents-schedule and agents-matrix-connector `image.tag` are X.Y.Z released by this plan, Harbor manifest 200 and git tag on origin [evidence: command:git -C ../<repo> ls-remote --tags origin vX.Y.Z]
+- ac2: Both chart versions are `<version>-main.<sha7>` of the vX.Y.Z commit and `helm show chart` returns them [evidence: command:helm show chart oci://harbor.szymonrichert.pl/charts/<chart> --version <v>]
+- ac3: The guard passes for every release [evidence: test:tests/test_semver_pins.py]
+- ac4: `AGENTS.md` has a `## Deploy rule` section with the rule line verbatim [evidence: command:grep -c "Deploy only semver-tagged images (X.Y.Z); never a sha tag" AGENTS.md]
+- ac5: MEMORY.md has a 2026-10-31 entry: the incident (every deployed sha7 pruned, cache-restore pod), the five X.Y.Z pins with their chart versions and digests, and that `tests/test_semver_pins.py` plus `check-pins` enforce the rule [evidence: doc-section:MEMORY.md]
+- ac6: `mise run check-pins` passes for the new pins [evidence: command:mise run check-pins]
+- ac7: The full component suite and lint pass [evidence: command:mise run lint && mise run test]
+
+#### Notes
+
+- Tests no longer accurate after the re-pin: `tests/test_schedule_release.py` (`version == "0.1.0"` twice, `tag == "6cfa955"`, `test_schedule_pin_matches_release` asserting `[0-9a-f]{7}`): an X.Y.Z regex on the tag, the chart version and tag equal to the new constants. `tests/test_matrix_connector_release.py` (`SHA = "c98c501"`, `test_matrix_connector_pin_and_needs`): the chart version the new constant.
+- Never put `mise run apply` in AC evidence (agents-helmfile MEMORY.md 2026-10-25 incident).
+
+## Chunk 4: deploy (model: sonnet)
+
+Run by the orchestrator session from `code/agents-helmfile` at origin/main after the chunk 3 PR merges; not an implementer task in a worktree tree.
+
+### S10: apply the agents namespace and check health
+
+- Files: none in git (the Lease manifest is written under `/Users/szymonri/Documents/claude-code-tatara/.scratchpad/semver-image-tags-at-the-end/lease.yaml`; logs under `/Users/szymonri/Documents/claude-code-tatara/.logs`)
+- Covers: 1.5 (applied and healthy)
+- Test first: none (a live operation; its checks are the acceptance conditions below).
+- Change: claim the deploy Lease, `mise run diff`, the image-existence check, `mise run apply`, health check, release the Lease.
+- Verify: `kubectl -n agents get pods` all Ready, and `mise run diff` exits 0 after the apply.
+- Model: sonnet
+
+#### Requirement
+
+Plan item 1.5: "the agents namespace is applied and healthy with every pod pulling a semver tag."
+
+#### Procedure
+
+1. Claim Lease `agents/agents-helmfile-apply` (workbench practice, cct2 2026-10-28): `kubectl -n agents create -f lease.yaml` with `apiVersion: coordination.k8s.io/v1`, `kind: Lease`, `spec: {holderIdentity: <this session>, acquireTime: <now, RFC 3339 micro>, leaseDurationSeconds: 3600}`. `create` failing means the Lease exists: under 60 minutes old, wait (bounded at 10 minutes, then re-check); stale, message its holder via the superleader before deleting it. Never apply without the Lease.
+2. `mise run kube-context` passes (local default `kubernetes-admin@kubernetes`; in a pod `EXPECTED_KUBE_CONTEXT=in-cluster-sa`); never bypass the guard.
+3. Every pinned X.Y.Z answers 200 on Harbor (`GET /v2/containers/<repo>/manifests/<X.Y.Z>`).
+4. `mise run diff` reviewed: only the five releases' image tags, chart versions and derived labels change.
+5. `mise run apply` (depends on lint, test, check-pins and kube-context), logged to `.logs/semver-apply-<timestamp>.log`.
+6. Health: every pod in namespace agents is Ready; `mise run smoke` ends with "smoke: OK".
+7. Delete the own Lease.
+
+#### Acceptance conditions
+
+- ac1: The Lease was created with this session as holderIdentity before the diff and deleted by it after the health check [evidence: judgement:orchestrator quotes holderIdentity, acquireTime and the delete]
+- ac2: Every pod in namespace agents is Ready [evidence: command:kubectl -n agents get pods]
+- ac3: Every harbor.szymonrichert.pl/containers image of a running pod has an X.Y.Z tag [evidence: command:kubectl -n agents get pods -o jsonpath='{..image}' | tr ' ' '\n' | grep harbor.szymonrichert.pl/containers/ | sort -u]
+- ac4: `ORCH_CACHE_IMAGE` in the orchestrator settings ConfigMap is `harbor.szymonrichert.pl/containers/agents-orchestrator:<X.Y.Z>` [evidence: command:kubectl -n agents get configmap -o yaml | grep ORCH_CACHE_IMAGE]
+- ac5: The post-apply diff shows no changes [evidence: command:mise run diff]
+- ac6: The smoke passes [evidence: command:mise run smoke]
+
 ## Files to delete
 
-none recorded in the epic format
+none
 
 ## Final verify
 
-none recorded in the epic format
+On the last commit of each repo, its own commands:
+
+- `mise run --cd code/agents-orchestrator lint && mise run --cd code/agents-orchestrator test`
+- `mise run --cd code/agents-web lint && mise run --cd code/agents-web test`
+- `mise run --cd code/agents-webhook lint && mise run --cd code/agents-webhook test`
+- `mise run --cd code/agents-schedule lint && mise run --cd code/agents-schedule test`
+- `UV_PYTHON=3.12 mise run --cd code/agents-matrix-connector lint && UV_PYTHON=3.12 mise run --cd code/agents-matrix-connector test`
+- `mise run --cd code/agents-helmfile lint && mise run --cd code/agents-helmfile test`
+- superrepo: `mise run lint && mise run test`
+
+DB and e2e suites that need Docker run in each PR's CI; that CI run is the full-suite gate where the local tree cannot run them.
 
 ## After merge
 
-none
+1. After each chunk 1 PR merges: its main `release` job green, tag and Harbor checks (Approach, item 3); commit the moved submodule pointer in the superrepo.
+2. After the chunk 3 PR merges: S10.
+3. Commit the final submodule pointers in the superrepo.
