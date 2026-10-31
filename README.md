@@ -101,8 +101,8 @@ agent to run init first.
 ## Plugins and packs
 
 The core plugin `workbench` is enabled by default. It brings the development
-flow, the epic-run loop, file-based epic tickets, research skills, tiered
-review, debugging flow, verification hooks, an epic integration worktree and
+flow, the plan-run loop, file-based plans, research skills, tiered
+review, debugging flow, verification hooks, a plan worktree and
 destructive-command guardrails.
 
 Optional packs, all requiring the core:
@@ -144,34 +144,35 @@ that carries all four needs no clarifying questions.
 > docs are updated.
 
 Several features in one message are fine: the agent splits them into separate
-epics, each with its own design, plan and branch, so they run independently.
+plans, each with its own scope ladder, worktree and branch, so they run independently.
 
 ### The one gate
 
-Non-trivial work starts with `workbench:start-development`: discovery, design
-and plan, then one approval gate. The gate lists the open questions as numbered
-options. Answer by number and state corrections bluntly.
+Non-trivial work starts with `workbench:start-development`: discovery, then a plan
+with a scope ladder from the smallest useful delivery to the complete one, then one
+approval gate. The gate lists the rungs and the open questions as numbered
+options. Pick a rung, answer by number and state corrections bluntly.
 
-> 1b, 2a, 3: no, drop it. The plan is wrong on step 4: the cache must be
+> Rung 2. 1b, 2a, 3: no, drop it. The plan is wrong on step 4: the cache must be
 > invalidated on write, not on a timer.
 
 After the gate nothing waits for you until the run ends.
 
 ### The autonomous run to merge
 
-Approval starts `epic-run`: per task, one implementer (tests first) and one
-reviewer, at most two fix rounds, then one scope audit over the whole epic and the merge. "Approved
-means fully delivered": every approved item is implemented in full, with its
+Your answer starts `plan-run`: one implementer per chunk (tests first), one reviewer
+on the whole diff for under- and over-delivery, at most two fix rounds, a retro and the merge. "Approved
+means fully delivered": every item of the agreed rung is implemented in full, with its
 tests and docs, and nothing is left half done. The only acceptable
 non-delivery is an external blocker, which the run names and escalates.
 
 ### Resume after an escalation
 
 When a run stops on a blocker (a credential, a permission, a human merge),
-clear the blocker, then resume. Task status lives in the ticket (`ticket.py task`
-records `done` or `escalated`), so `epic-run` picks up the tasks that are not `done`.
+clear the blocker, then resume. Progress lives in the git log of the plan tree (one commit per step), so
+`plan-run` resumes at the first step without a commit.
 
-> Continue the run from docs/plans/in-progress/<epic>/ with epic-run. The token is set now.
+> Continue the run of docs/plans/in-progress/<plan>/ with plan-run. The token is set now.
 
 ### Debug a field issue
 
@@ -186,11 +187,11 @@ Hand over the symptom and the evidence, not a theory.
 After a batch of work, ask for a review by a different or stronger model than
 the one that wrote it, through `workbench:start-review`.
 
-> Review the last three merged epics with a stronger model, against the design
-> docs. Findings that are real get fixed; the rest are dropped with a reason.
+> Review the last three merged plans with a stronger model, against their
+> plan.md and implementation-plan.md. Findings that are real get fixed; the rest are dropped with a reason.
 
 Then run a workflow retrospective: what stalled, what cost the most, what the
-agents got wrong. Turn the result into a new epic, planned and executed like any other work.
+agents got wrong (each finished plan's retro.md already lists its recommendations). Turn the result into a new plan, planned and executed like any other work.
 
 ### Research and feasibility
 
@@ -201,9 +202,9 @@ For questions with no code change attached, use `workbench:start-research`.
 
 Research output is a document; acting on it is a new request.
 
-### Parallel epics and background runs
+### Parallel plans and background runs
 
-Independent epics run in parallel, each in its own worktree. Long runs go to the
+Independent plans run in parallel, each in its own worktree. Long runs go to the
 background and report when they exit. Do not poll: the background Agent
 notification is the wake signal, with a bound (10 minutes unless a tool sets
 less); act on the first item that changes state instead of waiting for the whole batch.
@@ -385,8 +386,8 @@ lint) and the `secrets` job on every push.
 ## Worktree caveat
 
 The plugin loads from the main checkout, not from a git worktree. Edits to
-`plugins/` made in a task or integration tree take effect in Claude Code only
-after the epic merges to main and you run `/reload-plugins`.
+`plugins/` made in a plan tree take effect in Claude Code only
+after the plan merges to main and you run `/reload-plugins`.
 
 ## License
 

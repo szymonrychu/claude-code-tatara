@@ -124,17 +124,19 @@ def test_readme_agents_table_matches_files():
 def test_readme_lists_ticket_tools():
     readme = (ROOT / "README.md").read_text()
     for cmd in (
-        "tasks",
-        "task",
-        "amend",
-        "questions",
-        "roadmap",
+        "new",
+        "check",
+        "path",
+        "rename",
+        "move",
         "close",
         "worktrees --refresh",
-        "reap --epic",
+        "reap --plan",
+        "migrate",
     ):
         assert f"`ticket.py {cmd}" in readme, cmd
-    for gone in ("rule", "args", "continue", "contract", "graph --todo", "facts", "decide"):
+    retired = ("rule", "args", "continue", "contract", "graph --todo", "facts", "decide", "tasks")
+    for gone in retired:
         assert f"`ticket.py {gone}" not in readme, gone
     for word in (
         ".claude/workbench.json",

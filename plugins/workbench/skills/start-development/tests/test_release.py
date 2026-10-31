@@ -31,9 +31,9 @@ def test_plugin_json_version_and_description():
     desc = meta["description"]
     for word in (
         "one approval gate",
-        "file-based epic tickets",
+        "scope ladder",
         "research skills",
-        "epic-run",
+        "plan-run",
         "review",
         "debugging",
         "verification hooks",
@@ -41,6 +41,7 @@ def test_plugin_json_version_and_description():
         assert word in desc, word
     for gone in ("seven-phase", "approval ledger", "tiered review", "verifier", "plan execution"):
         assert gone not in desc, gone
+    assert not re.search(r"\bepics?\b|scope audit|file-based", desc, re.I)
 
 
 def test_manifests_do_not_mention_graphify():
@@ -74,13 +75,13 @@ def test_readme_wording():
         "research-papers",
         "research-docs",
         "reuse-hunter",
-        "record-writer",
+        "plan-writer",
         "## Documents",
         "doc_path.sh",
         "docs/research/",
     ):
         assert needle in text, needle
-    assert re.search(r"docs/plans/<date>-<slug>-\{design,plan,tasks,record\}", text)
+    assert "docs/plans/<date>-" not in text
 
 
 def test_readme_dispatch_phases_match_skill():
@@ -131,23 +132,28 @@ def test_readme_names_round_three():
     assert "intentionally forked" not in text
 
 
-def test_readme_describes_the_lean_flow():
+def test_readme_describes_the_plan_flow():
     text = (ROOT / "README.md").read_text()
     for needle in (
-        "docs/plans/{todo,in-progress,done}/<epic>/",
-        "tasks/<task>.md",
-        "legacy dated files were removed",
+        "docs/plans/{todo,in-progress,done}/<plan>/",
+        "plan.md",
+        "implementation-plan.md",
+        "retro.md",
         "skills/start-development/scripts/ticket.py",
-        "integration worktree",
-        "epic review before",
-        "epic-run",
-        "one implementer and one reviewer per task",
+        "plan tree",
+        "`plan-run`",
+        "scope ladder",
+        "one gate",
+        "one implementer",
+        "one reviewer",
         "at most two fix rounds",
-        "one scope audit per epic",
+        "under-delivery",
+        "over-delivery",
         "undelivered",
         "discovered",
         "verified head",
         "LSP and grep",
+        "ticket.py migrate --all",
     ):
         assert needle in text, needle
     for gone in (
@@ -158,12 +164,25 @@ def test_readme_describes_the_lean_flow():
         "gate-only fix rounds",
         "time estimate",
         "heartbeat",
-        "<epic>-<task>",
-        "--<task>",
+        "<epic>",
+        "<task>",
+        "scope audit",
+        "record-writer",
+        "retro-writer",
+        "scope-auditor",
+        "epic-run",
+        "new-task",
+        "points-actual",
+        "design.md",
     ):
         assert gone not in text, gone
+    assert not re.search(r"\bepics?\b", text, re.I)
     assert "graphify" not in text.lower()
-    assert "epic reached main" in text
+
+
+def test_gitignore_drops_the_generated_index():
+    gitignore = (ROOT.parents[1] / ".gitignore").read_text()
+    assert "docs/plans/index.json" not in gitignore
 
 
 def test_readme_documents_the_template():

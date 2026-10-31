@@ -53,10 +53,10 @@ _Filled by init: the surface where a mistake costs the most, and what must never
 
 1. **Development flow.** Non-trivial work (a feature, a cross-component change, a change to
    the workbench itself) starts with `start-development` (Claude Code:
-   `workbench:start-development`): discovery, design and plan behind one approval gate, then
+   `workbench:start-development`): discovery, a plan with a scope ladder behind one approval gate that picks the rung, then
    unattended execution. Reviews go through `start-review`, failures through
-   `start-debugging`. Implementation goes through `epic-run`: one implementer and one reviewer per
-   task, two fix rounds, one scope audit per epic; never hand-roll a loop beyond that. In
+   `start-debugging`. Implementation goes through `plan-run`: one implementer and one reviewer on the whole diff, two
+   fix rounds; never hand-roll a loop beyond that. In
    harnesses other than Claude Code, invoke the skills by their bare names.
 2. **Always use subagents, with an explicit model.** Set the model on every dispatch:
    research opus; implementation sonnet, opus only for the hardest tasks; review sonnet;
@@ -200,11 +200,11 @@ The user's standing rules for every agent, every harness and every task.
 
 1. **Supervisor only.** The agent the user talks to never writes code or builds
    anything. It is the supervisor, responsible and accountable for any and all
-   work its subagents do. Its own duties are not building: ticket and plan files
-   through `ticket.py` (design.md and record.md directly), running the repo's test
-   and lint commands to read results, and the git operations of close through
-   `ticket.py close`. It never edits source, tests, skills, agents, hooks or docs
-   outside `docs/plans/`.
+   work its subagents do. Its own duties are not building: `ticket.py`, running the
+   repo's test and lint commands to read results, and dispatching. plan.md and
+   implementation-plan.md are written by the plan-writer, retro.md by the
+   reviewer, and the git operations of close run through `ticket.py close` by the
+   worktree-merger. It never edits source, tests, skills, agents, hooks or docs.
 2. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and
    why. Tests make the code repeatable and guard against regressions.
@@ -237,7 +237,7 @@ Never run init here.
 - `mise run e2e` runs the slow full green-tree proofs (`pytest -m slow`, ~48 minutes); the
   default `mise run test` deselects them and CI runs them as the `e2e` job.
 - The plugin loads from the main checkout, not from a worktree: edits to `plugins/` made in
-  a task or integration tree take effect in Claude Code only after the epic merges to main
+  a plan tree take effect in Claude Code only after the plan merges to main
   and `/reload-plugins` runs.
 - The `workbench:rules` block is produced from `plugins/workbench/rules/`; change the rule
   files, then rebuild with `mise run harness-setup`, never edit the block by hand.

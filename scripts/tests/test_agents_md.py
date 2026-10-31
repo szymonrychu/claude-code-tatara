@@ -69,7 +69,7 @@ def test_ground_rules_content():
         "start-development",
         "start-review",
         "start-debugging",
-        "epic-run",
+        "plan-run",
         "research",
         "opus",
         "sonnet",
@@ -175,17 +175,20 @@ def test_model_table_has_haiku():
     assert "mechanical relays and classifiers: haiku" in flat
 
 
-def test_ground_rule_one_names_epic_run():
+def test_ground_rule_one_names_plan_run():
     start, end = AGENTS.index("1. **Development flow.**"), AGENTS.index("2. **Always")
     rule = " ".join(AGENTS[start:end].split())
     for needle in (
-        "epic-run",
-        "one implementer and one reviewer per task",
+        "plan-run",
+        "scope ladder",
+        "one approval gate",
+        "one implementer",
+        "one reviewer on the whole diff",
         "two fix rounds",
-        "one scope audit per epic",
     ):
         assert needle in rule, needle
-    assert "plan-execute" not in rule and "Workflow tool" not in rule
+    for gone in ("epic", "scope audit", "plan-execute", "Workflow tool"):
+        assert gone not in rule, gone
 
 
 def test_ground_rule_four_has_no_heartbeat():

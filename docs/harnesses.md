@@ -86,8 +86,8 @@ Each harness has a directory: `.claude` (Claude Code), `.github` (Copilot), `.cu
 
 What degrades, and why.
 
-- `epic-run` is a skill, not a script: other harnesses run the same loop (one implementer and
-  one reviewer per task, two fix rounds, one scope audit) with their own subagent facility.
+- `plan-run` is a skill, not a script: other harnesses run the same loop (one implementer per
+  chunk, one reviewer on the whole diff, two fix rounds) with their own subagent facility.
 - Plugin auto-enable has no equivalent. Generated, committed files replace it.
 - Per-agent models map to `inherit` (Cursor, Gemini CLI, Antigravity) or are omitted (Copilot,
   Codex), so each harness uses its default model. Override per target in
