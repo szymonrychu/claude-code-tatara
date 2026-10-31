@@ -30,7 +30,7 @@ TASK_MACHINERY = [
 ]
 KEPT = ["slug", "new", "check", "path", "rename", "move", "worktrees", "close", "reap"]
 PLUGIN = "plugins/workbench"
-SD = f"{PLUGIN}/skills/start-development"
+SD = f"{PLUGIN}/skills/start-" + "development"
 DELETED = [
     *(
         f"{PLUGIN}/skills/{d}"

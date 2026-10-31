@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3] / "workbench"
-SD = ROOT / "skills" / "start-development"
+BRAINSTORMING = ROOT.parent / "superpowers" / "skills" / "brainstorming" / "SKILL.md"
 TEMPLATES = ROOT.parent / "superpowers" / "templates"
 
 PLAN_KEYS = ["title", "repos", "created", "owner", "rung"]
@@ -107,11 +107,11 @@ def test_templates_have_no_parking_words_or_estimates():
 
 
 def test_plain_ascii_punctuation():
-    for p in [*(TEMPLATES / n for n in NEW_TEMPLATES), SD / "SKILL.md"]:
+    for p in [*(TEMPLATES / n for n in NEW_TEMPLATES), BRAINSTORMING]:
         assert not re.search(FANCY, read(p)), p
 
 
-PLAN_INPUTS_POINTER = "${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md"
+PLAN_INPUTS_POINTER = "the Discovery section of the `superpowers:brainstorming` skill"
 POINTERS = [
     *(
         ROOT / "skills" / n / "SKILL.md"
@@ -121,16 +121,15 @@ POINTERS = [
             "research-code-internal",
             "research-papers",
             "start-research",
-            "start-discovery",
         )
     ),
     ROOT / "agents" / "reuse-hunter.md",
 ]
 
 
-def test_plan_inputs_defined_once_in_phase_one():
-    skill = (SD / "SKILL.md").read_text()
-    phase1 = " ".join(skill[skill.index("## Phase 1") : skill.index("## Phase 2")].split())
+def test_plan_inputs_defined_once_in_discovery():
+    skill = BRAINSTORMING.read_text()
+    phase1 = " ".join(skill[skill.index("## Discovery") : skill.index("## The Plan")].split())
     assert "## Plan inputs" in phase1
     for fmt in (
         "name - file:symbol - which plan items need it",

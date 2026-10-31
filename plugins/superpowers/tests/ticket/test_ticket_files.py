@@ -267,7 +267,7 @@ def test_tickets_reference():
         "{what, where, why}",
         "implementation-plan.md",
         "retro.md",
-        "plan-writer",
+        "plan writer",
     ):
         assert needle.lower() in text.lower(), needle
     for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json", "escalated"):

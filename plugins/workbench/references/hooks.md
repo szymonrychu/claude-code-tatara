@@ -1,6 +1,6 @@
 # Hooks that hold the line
 
-Read from `start-development`. A rule an agent is only told about loses to the "end the turn and
+Read from `superpowers:subagent-driven-development`. A rule an agent is only told about loses to the "end the turn and
 report" reflex; these hooks make the rule mechanical. They ship with the plugin
 (`.claude-plugin/plugin.json`).
 
@@ -53,8 +53,8 @@ transcript path and, once the transcript is readable, the `[wb <plan>/<role>]` m
 SubagentStop recomputes model, end and tokens (input, cache creation, cache read and output, and
 their total) from the whole agent transcript and overwrites the record, keeping the first start, so a
 fix round that stops the same agent again grows the one record without double counting. The record carries `plan` and `role`. The role
-comes from the marker, else from the agent type (`workbench:plan-writer`, `workbench:implementer`,
-`workbench:reviewer`, `workbench:worktree-merger`).
+comes from the marker, else from the agent type (`workbench:implementer`, `workbench:reviewer`,
+`workbench:worktree-merger`).
 Internal agents (an empty agent type) write nothing. The recorder makes no decision: on any error it
 exits 0 with no output, so it never blocks or slows a stop. It is Claude-only: the Copilot, Codex,
 Gemini CLI, Cursor and Antigravity targets keep explicit hook allowlists and none emits it.

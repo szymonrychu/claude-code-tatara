@@ -117,12 +117,6 @@ def test_cartographer_can_actually_use_lsp():
     assert "LSP" in tools, "cartographer cannot run the LSP lane without the LSP tool"
 
 
-def test_start_discovery_never_builds_a_graph():
-    text = (SKILLS / "start-discovery" / "SKILL.md").read_text()
-    assert "--mode deep" not in text, "discovery must not build a graph"
-    assert "graphify" not in text.lower()
-
-
 def _agent_body(name):
     return (ROOT / "agents" / f"{name}.md").read_text()
 

@@ -282,7 +282,7 @@ def _step(n: int, doc) -> str:
 def _implementation_md(title: str, phase: str, tasks: list, rulings, close) -> str:
     model = "opus" if any(str(d.meta.get("model")) == "opus" for d in tasks) else "sonnet"
     agreed = (
-        "Not agreed yet: a draft migrated from the epic's tasks; the plan-writer revises it "
+        "Not agreed yet: a draft migrated from the epic's tasks; the plan writer revises it "
         "after the gate."
         if phase == "todo"
         else "Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks."

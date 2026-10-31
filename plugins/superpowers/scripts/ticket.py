@@ -656,7 +656,7 @@ def _move_in_progress(a: argparse.Namespace, root: Path, plan_dir: Path) -> int:
         )
     if not (plan_dir / PATH_KINDS["implementation"]).is_file():
         problems.append(
-            f"plan {name!r} has no implementation-plan.md; the plan-writer writes it after the gate"
+            f"plan {name!r} has no implementation-plan.md; the plan writer writes it after the gate"
         )
     _refuse(problems)
     if _in_git(root):

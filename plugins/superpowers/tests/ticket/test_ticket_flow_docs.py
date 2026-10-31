@@ -6,19 +6,30 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3] / "workbench"
-SD = ROOT / "skills" / "start-development"
 SP = ROOT.parent / "superpowers"
 TICKET = SP / "scripts" / "ticket.py"
 DOCS = [
-    SD / "SKILL.md",
-    *sorted((SD / "references").glob("*.md")),
+    *sorted((SP / "skills").glob("*/*.md")),
     *sorted((SP / "references").glob("*.md")),
-    ROOT / "skills" / "plan-run" / "SKILL.md",
-    *(
-        ROOT / "agents" / f"{n}.md"
-        for n in ("plan-writer", "implementer", "reviewer", "worktree-merger")
-    ),
+    *sorted((ROOT / "references").glob("*.md")),
+    *(ROOT / "agents" / f"{n}.md" for n in ("implementer", "reviewer", "worktree-merger")),
 ]
+FLOW = (
+    "brainstorming",
+    "writing-plans",
+    "subagent-driven-development",
+    "finishing-a-development-branch",
+)
+
+
+def flow_text() -> str:
+    """Return the flow skills' SKILL.md files, whitespace collapsed.
+
+    Returns:
+        str: the joined, collapsed text.
+    """
+    text = "\n".join((SP / "skills" / n / "SKILL.md").read_text() for n in FLOW)
+    return re.sub(r"\s+", " ", text)
 
 
 def subcommands():
@@ -64,8 +75,8 @@ def test_every_named_subcommand_is_real():
     assert not bad, bad
 
 
-def test_skill_names_the_flow_commands():
-    text = re.sub(r"\s+", " ", (SD / "SKILL.md").read_text())
+def test_flow_skills_name_the_flow_commands():
+    text = flow_text()
     for needle in (
         "ticket.py check --title",
         "ticket.py new --title",
@@ -78,5 +89,5 @@ def test_skill_names_the_flow_commands():
 
 
 def test_ticket_commits_its_own_changes():
-    t = re.sub(r"\s+", " ", (SD / "SKILL.md").read_text())
-    assert "the orchestrator commits them" in t
+    t = re.sub(r"\s+", " ", (SP / "references" / "tickets.md").read_text())
+    assert "After it succeeds it commits exactly the `docs/plans/` paths it wrote" in t

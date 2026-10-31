@@ -18,4 +18,4 @@ Three lists, each "none" when empty:
 
 - Discovered and not built: work the implementers found outside the agreed rung.
 - Out-of-scope ideas: improvements beyond the plan worth a plan of their own.
-- Impossible at planning time: facts only implementation could reveal, and what the plan-writer should ask next time.
+- Impossible at planning time: facts only implementation could reveal, and what the plan writer should ask next time.

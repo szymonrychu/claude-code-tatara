@@ -83,7 +83,7 @@ line per entry: `reuse` (name - file:symbol - which plan items need it),
 `do-not-build` (item - what provides it instead - source), `fix-as-ac`
 (anti-pattern - where - the step's Verify or Test first that pins the
 fix), `ideas` (adopted / rejected, one line each, with the source). You
-keep the brief paths, never their contents; the plan-writer places every
+keep the brief paths, never their contents; the plan writer places every
 entry.
 
 **Ground to cover.** This is territory for discovery and the plan, not a
@@ -128,15 +128,15 @@ Decisions.
 plan.md. Don't present the gate until the check is back. Sort what the
 builder asks into three piles:
 
-- **Answered already** by discovery or the project: the plan-writer puts
+- **Answered already** by discovery or the project: the plan writer puts
   the answer in plan.md.
 - **Minor:** a sensible builder could settle it without changing what gets
-  built. The plan-writer settles it as a Decision marked `(my call)`.
+  built. The plan writer settles it as a Decision marked `(my call)`.
 - **Theirs:** only your human partner can answer it, and the answer changes
-  what gets built. The plan-writer adds it as an open question with a
+  what gets built. The plan writer adds it as an open question with a
   recommended answer.
 
-Continue the plan-writer once with the piles; it revises and commits
+Continue the plan writer once with the piles; it revises and commits
 plan.md. Ask your human partner only what no probe can answer: a fact is
 settled by a read-only probe, a preference is theirs.
 
@@ -155,7 +155,7 @@ plan:
    rotation, shared force-push), by name.
 6. "Pick a rung per plan and answer, or tell me what to change."
 
-On changes, the plan-writer revises plan.md and the gate is presented
+On changes, the plan writer revises plan.md and the gate is presented
 again: the same single message, never a trickle of questions.
 
 <HARD-GATE>
@@ -180,6 +180,6 @@ skill.
 |---------|---------|
 | "I'll ask this one question now and the rest later" | Every question waits for the ONE gate, batched. |
 | "I'll fill in sensible defaults" | Good. Mark them `(my call)` in Decisions. A default they never saw is one they couldn't reject. |
-| "I'll write plan.md myself, it is quicker" | You orchestrate. The plan-writer writes it. |
+| "I'll write plan.md myself, it is quicker" | You orchestrate. The plan writer writes it. |
 | "They said 'sounds good' to the idea" | Approval is a picked rung and answered questions at the gate, nothing less. |
 | "Discovery can be skipped, I know this repo" | The lanes run, or plan.md says why one was skipped. |

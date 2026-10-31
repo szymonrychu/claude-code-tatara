@@ -1,6 +1,6 @@
 # Review checklist
 
-The single source read by the reviewer agent, the panel-reviewer agent and the start-review skill.
+The single source read by the reviewer agent, the panel-reviewer agent and the `superpowers:requesting-code-review` skill.
 Apply every section to the diff and the tree; do not substitute your own list.
 
 ## Tests first

@@ -1,6 +1,6 @@
 # Merge hosts: pick the host per repo, act per RESOLVED line
 
-Read from Phase 4 of `start-development`.
+Read from `superpowers:finishing-a-development-branch`.
 
 **Pick the host per repo, do not assume GitLab.** Check the remote before
 dispatching anything:

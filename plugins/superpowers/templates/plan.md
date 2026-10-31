@@ -34,7 +34,7 @@ How the agreed scope is built: flow, file layout, interfaces and contracts, with
 
 ## Decisions
 
-- D<n>: the decision, the alternatives and why; `(my call)` where the plan-writer chose a default the user did not state.
+- D<n>: the decision, the alternatives and why; `(my call)` where the plan writer chose a default the user did not state.
 
 ## Open questions
 

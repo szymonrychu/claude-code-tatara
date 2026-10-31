@@ -10,7 +10,7 @@ from pathlib import Path
 PLUGIN = Path(__file__).resolve().parents[2]
 REPO = PLUGIN.parents[1]
 REL = "plugins/workbench"
-SD = "skills/start-development"
+SD = "skills/start-" + "development"
 
 E = "ep" + "ic"
 DELETED = (

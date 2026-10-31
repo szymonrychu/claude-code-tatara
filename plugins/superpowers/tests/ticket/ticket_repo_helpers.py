@@ -55,7 +55,7 @@ def set_meta(path: Path, **kw) -> None:
 
 def mk_plan(root, title="Big plan", rung="3", impl=True, repos=None):
     """A todo plan through `new`; `rung` set and implementation-plan.md written when asked, the
-    way the plan-writer leaves it after the gate. Committed when root sits in a git repo."""
+    way the plan writer leaves it after the gate. Committed when root sits in a git repo."""
     args = ["new", "--root", root, "--title", title, "--force"]
     if repos:
         args += ["--repos", repos]

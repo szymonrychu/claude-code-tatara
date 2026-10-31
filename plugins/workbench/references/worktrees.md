@@ -1,7 +1,7 @@
 # Worktrees: one tree per plan
 
-Read from phase 4 of `start-development`. One tree per plan; every chunk of the plan runs in it,
-sequential, in the order implementation-plan.md lists them.
+Read from `superpowers:subagent-driven-development` and `superpowers:using-git-worktrees`.
+One tree per plan; every chunk of the plan runs in it, sequential, in the order implementation-plan.md lists them.
 
 ## The plan tree
 

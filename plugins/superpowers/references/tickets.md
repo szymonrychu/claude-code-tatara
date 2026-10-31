@@ -95,11 +95,11 @@ runs with its package's runner from the package root (the nearest `pyproject.tom
 
 ## Writer rule
 
-Only the orchestrator and the plan-writer write under `docs/plans/`: ticket.py for creation and moves,
+Only the orchestrator and the plan writer write under `docs/plans/`: ticket.py for creation and moves,
 only in the main checkout, never on the plan branch. Every mutating subcommand refuses inside a linked
 worktree (`ticket.py: run in the main checkout, not a linked worktree`). After it succeeds it commits
 exactly the `docs/plans/` paths it wrote as `chore(ticket): <plan> <event>`; unrelated dirty files stay
-uncommitted. The plan-writer commits plan.md and implementation-plan.md as `docs(plan): <plan> <event>`;
+uncommitted. The plan writer commits plan.md and implementation-plan.md as `docs(plan): <plan> <event>`;
 the reviewer writes retro.md, which ticket.py commits with the move to done.
 
 ## The `discovered` entry

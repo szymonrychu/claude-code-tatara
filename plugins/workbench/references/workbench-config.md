@@ -23,7 +23,7 @@ error naming the file and the key. Only `${CLAUDE_PLUGIN_ROOT}/scripts/lib/workb
   already runs with that package root as cwd, so a `cd {pkg}` template is wrong. A glob
   without `/` matches the basename of the ref's file, so `*.go` matches `pkg/x_test.go`.
   Overrides the built-in runners (pyproject.toml,
-  package.json, package.xml). Read by `workbench.py runner <ref> --repo <dir>`, and read by the plan-writer
+  package.json, package.xml). Read by `workbench.py runner <ref> --repo <dir>`, and read by the plan writer
   to choose between a test and a command in a step's Verify.
 - `suites`: shell commands the merger runs as the repo's test suites after the fast-forward
   (skip with `--no-suites`; a failing suite exits 4 and leaves the merge in place).

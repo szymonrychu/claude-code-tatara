@@ -1,4 +1,4 @@
-"""Pins the brainstorming adaptation: discovery subagents, one opus plan-writer, one gate."""
+"""Pins the brainstorming adaptation: discovery subagents, one opus plan writer, one gate."""
 
 import sys
 from pathlib import Path

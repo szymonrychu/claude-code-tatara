@@ -148,12 +148,7 @@ handoff                         write a handoff file so multi-day work resumes i
 git-submodules-add, git-submodules-refresh   submodule lifecycle
 git-worktrees-create, git-worktrees-commit, git-worktrees-push
 pullrequests-update, pullrequests-watch, pullrequests-list, pullrequests-review-loop   host-agnostic: GitHub (gh) or GitLab (glab) per repo from origin
-start-research, start-discovery, start-development, interrogate
-plan-run                        execute one agreed plan: one implementer per chunk, one reviewer on the whole diff, at most two fix rounds, then retro and merge
-start-review                    review a branch, diff, MR or PR against its intent: pinned ref, independent suite run, one reviewer for spec and quality, validated findings
-review                          alias of start-review (invoked as /workbench:review)
-start-debugging                 gated: reproduce with a red-capable command, minimise, hypothesise, root cause, proven regression test, fix through start-development
-debug                           alias of start-debugging (invoked as /workbench:debug)
+start-research                  several research lenses at once, briefs ending in Plan inputs
 worktree-create, worktree-merge
 release                         judge major/minor/patch from commits, write CHANGELOG, bump plugin.json and marketplace.json, commit and tag locally (never pushes)
 research-code-internal          plan adds a helper/reader/parser/schema field/subsystem, or a repo has > ~200 source files

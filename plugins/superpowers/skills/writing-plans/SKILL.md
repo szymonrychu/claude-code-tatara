@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-description: "Use after the brainstorming gate, when the user has picked a rung and answered the open questions: the same plan-writer records the agreed scope in plan.md and writes implementation-plan.md for the agreed rung only, in chunks with a pinned model. No second gate."
+description: "Use after the brainstorming gate, when the user has picked a rung and answered the open questions: the same plan writer records the agreed scope in plan.md and writes implementation-plan.md for the agreed rung only, in chunks with a pinned model. No second gate."
 ---
 
 # Writing Plans
@@ -9,7 +9,7 @@ description: "Use after the brainstorming gate, when the user has picked a rung 
 
 Write the implementation plan for an engineer who has not seen this codebase or this plan. Assume they write idiomatic code in the project's language once they know the exact interface and the exact test, and that they will make a reasonable choice wherever the plan leaves one open. What they cannot know is what you decided: which files, which names and signatures, which values from plan.md, which tests prove each step. Document those. Give them the agreed rung only, as right-sized steps. DRY. YAGNI. TDD. Frequent commits.
 
-**Who writes it:** the orchestrator never writes the plan. It continues the plan-writer that brainstorming dispatched (the general-purpose opus subagent briefed by `../brainstorming/plan-writer-prompt.md`) with SendMessage, in implementation mode, carrying the user's gate answer verbatim and nothing else. A plan prepared in another session gets a fresh opus subagent with the same prompt and the plan path.
+**Who writes it:** the orchestrator never writes the plan. It continues the plan writer that brainstorming dispatched (the general-purpose opus subagent briefed by `../brainstorming/plan-writer-prompt.md`) with SendMessage, in implementation mode, carrying the user's gate answer verbatim and nothing else. A plan prepared in another session gets a fresh opus subagent with the same prompt and the plan path.
 
 **Input:** the user's gate answer verbatim: the rung per plan and the answers to the open questions. It is binding; never re-ask it.
 
