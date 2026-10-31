@@ -3,7 +3,7 @@ title: "Superpowers-based plan flow replaces the workbench flow"
 repos: [claude-code-tatara]
 created: "2026-10-31"
 owner: ""
-rung: ""
+rung: "3"
 ---
 
 # Superpowers-based plan flow replaces the workbench flow
@@ -82,7 +82,14 @@ Rungs are cumulative. Recommended: **Rung 3**.
 
 ## Agreed scope
 
-not agreed yet
+Rung 3 (complete): items 1.1-1.10, 2.1-2.3 and 3.1-3.4, no modifications. Gate answer (user, 2026-10-31),
+verbatim: "Go" - every open question taken at its recommended answer.
+
+Implementation facts settled by read-only probes after the gate (they change how, not what):
+- 1.6: plugins install into one cache dir per plugin (`<cache>/<marketplace>/<plugin>/<version>`), so the moved
+  `ticket.py` cannot reach the workbench plugin by a relative path; it resolves the workbench plugin root once (D6).
+- 2.3: `ticket.py migrate --all --dry-run` prints "migrate: nothing to change" on 2026-10-31: every in-flight plan is
+  already plan.md; the item is delivered as a pin, not a migration.
 
 ## Non-goals
 
@@ -128,20 +135,40 @@ not agreed yet
 - D4: ticket.py moves with the flow instead of being rewritten. (my call)
 - D5: licensing: superpowers is MIT (c) 2025 Jesse Vincent; copying whole skills is allowed when the copyright and
   permission notice ship with them, hence LICENSE verbatim plus NOTICE. This repo's own LICENSE is MIT too.
+- D6: the moved ticket.py finds the workbench plugin (for `_lib/common.py`, `scripts/lib/workbench.py`,
+  worktree-create and worktree-merge) through one resolver: the sibling `plugins/workbench` in a source tree, else
+  the highest version under `<cache>/<marketplace>/workbench/` next to its own cache dir, else a named error.
+  Alternatives: copy the four modules into superpowers (two implementations of worktree handling), or keep ticket.py
+  in workbench (contradicts 1.6). (my call)
+- D7: the vendored flow dispatches the workbench agents that stay (`workbench:implementer`, `workbench:reviewer`,
+  `workbench:worktree-merger`, `workbench:codebase-cartographer`, `workbench:security-researcher`) with the upstream
+  prompt files as their brief; plan.md and implementation-plan.md are written by one general-purpose opus subagent
+  briefed by `brainstorming/plan-writer-prompt.md`, continued after the gate for writing-plans, since the
+  plan-writer agent retires (1.8). Alternative: upstream's general-purpose agents for every role, which loses the
+  agents' model pins and hooks. (my call)
+- D8: vendored per skill: only the files the flow uses. Dropped: brainstorming visual-companion and scripts,
+  SDD task-reviewer-prompt.md (no per-task reviewer), systematic-debugging CREATION-LOG.md and test-*.md,
+  using-superpowers references for harnesses with no target here (hermes, muse, pi), the `.codex-plugin`/`.opencode`
+  manifests (harness-setup already emits skills for every target), `run-hook.cmd` (Windows is unsupported). Em
+  dashes are replaced by hyphens in every vendored file (`mise run lint:em-dash` exempts no path); LICENSE is the one
+  verbatim file. (my call)
+- D9: the vendored plugin is versioned `1.0.0`, its NOTICE and UPSTREAM.md name upstream 7.0.0; workbench goes
+  3.0.0 -> 4.0.0 (skills removed). (my call)
 
 ## Open questions
 
 - Q1: Host the vendored superpowers fork in this repo's marketplace and have ~/Documents/infrastructure load it from
-  here (github source `szymonrychu/claude-code-tatara`)? [recommended: yes]
+  here (github source `szymonrychu/claude-code-tatara`)? [recommended: yes] [answer: yes]
 - Q2: Retire the debugging and review flows too (start-debugging, debug, start-review, review), replaced by
-  systematic-debugging and requesting/receiving-code-review (rung 2)? [recommended: yes]
+  systematic-debugging and requesting/receiving-code-review (rung 2)? [recommended: yes] [answer: yes]
 - Q3: Add one carve-out line to `~/.claude/rules/workbench-flow.md` (outside both repos): "repos whose
   .claude/settings.json enables superpowers@claude-code-tatara-workbench use superpowers:* as their flow; the table
   below does not apply there"? Without it the global rule redirects superpowers names to workbench. [recommended: yes]
+  [answer: yes, the diff is shown to the user before the file is written]
 - Q4: Keep the entry point named `superpowers:brainstorming` rather than adding a `start-development` alias?
-  [recommended: yes]
+  [recommended: yes] [answer: yes]
 - Q5: Leave the agent pods (claude-code-wrapper config: workbench required, superpowers disabled) on the workbench
-  flow for now? [recommended: yes]
+  flow for now? [recommended: yes] [answer: yes]
 
 ## Research
 
