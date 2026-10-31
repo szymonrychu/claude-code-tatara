@@ -1,94 +1,47 @@
-# slash commands from chat design
+---
+title: slash commands from chat
+repos: [claude-code-wrapper, agents-orchestrator, agents-web, any-mcp-tatara-plugins, agents-common, agents-webhook, agents-schedule, agents-matrix-connector]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# slash commands from chat
 
-Any slash command typed in the chat (by the user) or sent by a superleader through
-`orchestrator_session_send` runs as a Claude Code slash command on the target session, at any
-moment, and the session stays responsive. The orchestrator classifies slash text at both message
-routes into `messages.kind = 'command'` and dispatches it unframed, even to a busy agent, to the
-wrapper's `POST /v1/sessions/{id}/commands`. Slash text follows Claude Code's own parser. The wrapper
-command runner takes any name plus free args (they may span lines), detects completion at runtime per
-command class (local stdout, unknown, dialog dismissed by ESC, prompt command promoted to a real turn)
-under one deadline per command, and its turns path refuses slash text for every origin (422
-`slash_command`), which pins the reported `/reload-plugins` hang. The chat renders the wrapper's
-`command_*` events as one updating row. Wrapper 0.4.0 and any-mcp-tatara-plugins 0.3.0 are released
-and pinned by the orchestrator (amended 2026-10-29: Matrix released v0.2.0 first, user-approved
-order; the epic matrix-connector-agent-initi released plugins v0.2.0 and pinned the orchestrator to
-it, so this epic releases v0.3.0 on top of it and moves the pin v0.2.0 -> v0.3.0; wrapper `main` is
-at v0.3.3, this epic's wrapper release stays 0.4.0 and each epic branch rebases onto its repo's
-`main`); deploy is decided at the gate. Revised after the interrogate pass
-(interrogate.md, items 1-13) and the builder check (2026-10-27).
+## What and why
 
-## Intent and why
+What: Any slash command sent from chat, by the user or a superleader, runs as a Claude Code command at any moment without hanging the session
+How: route slash text to a generic command path in wrapper and orchestrator with completion detection and a bound, design settled by architect-researcher
+Why: /reload-plugins from chat made the session unresponsive
 
-User request (2026-10-27): "I tried to send `/reload-plugins` from chat window and it made session
-unresponsive. Allow these commands to be run from chat window at any moment. Both user and
-superleader can send them. Any / comand." Today the chat text is pasted into the PTY as a turn with
-a `<!-- ccw turn: id -->` marker; a local command never calls the model, so no Stop hook fires, the
-turn never ends (`limits.turn_max_seconds` defaults to 0) and every later turn gets 409 busy. A
-superleader's "/cmd" is framed as `<session-message>` prose and never runs as a command.
+User request (2026-10-27), verbatim:
 
-## Goals
+"## Allow / commands from chat
 
-- G1: any slash command typed in the chat runs as a Claude Code slash command on the session, at
-  any moment, and the session stays responsive afterwards.
-- G2: a superleader can send a slash command to a target session and it runs as a command, not as
-  framed prompt text.
-- G3: sending /reload-plugins (the reported case) no longer hangs the session; a regression test
-  pins it at wrapper and orchestrator level.
-- G4: the chat shows the command and its outcome.
+I tried to send `/reload-plugins` from chat window and it made session unresponsive. Allow these commands to be run from chat window at any moment. Both user and superleader can send them. Any / comand."
+
+Discovery (2026-10-27): chat text is typed into the PTY as a turn with a ccw turn marker; a local command such as /reload-plugins never calls the model, so no Stop hook fires, turn_max_seconds defaults to 0 and the session stays busy (every later turn gets 409). The wrapper command queue (POST /v1/sessions/{id}/commands) accepts only five built-ins. "Superleader" = a session with spec.session_messaging whose leader sends to other sessions via orchestrator_session_send; those messages are framed as <session-message>, so a "/cmd" never runs as a command today.
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: Any slash command typed in the chat runs as a Claude Code slash command on the session, at any moment, and the session stays responsive afterwards.
+- 1.2: A superleader can send a slash command to a target session and it runs as a command, not as framed prompt text.
+- 1.3: Sending /reload-plugins (the reported case) no longer hangs the session; a regression test pins it.
+- 1.4: The chat shows the command and its outcome.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No slash-command autocomplete or picker in the composer.
-- No helmfile pin, apply or smoke task: deploy is decided at the gate for all four new epics
-  together (user decision 4).
-- No free-form agent command picker in agents-web PresetForm (noted, not doing now).
 
-## Anti-goals
+## Design
 
-- A slash line is never typed into the PTY with the ccw turn marker appended (the marker becomes the
-  command's args).
-- Nothing is typed into a responding claude: commands run only at a quiet prompt (existing runner
-  rule, `wait_quiet`), mid-turn commands wait for the turn's Stop.
-- No command can hold a session busy without a bound (see Bounds).
-- No backward-compatibility shim for the five structured command params (Housekeeping rule 4).
-- A session-replacing, session-moving or account command (/exit, /clear, /resume, /cd, /login ...),
-  under any alias or letter case, never runs: it would break the wrapper's pinned claude session id
-  and lifecycle.
-- A worker session cannot run unframed commands on a superleader: only a superleader's slash text
-  becomes a command (D1).
-
-## Constraints
-
-- Python only (wrapper, orchestrator, plugin); TypeScript for agents-web.
-- Services talk only through HTTP; `messages` has one writer per transition (status-guarded
-  updates in `db/queue.py`).
-- Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
-  the fake-claude task edits `tests/conftest.py` (this epic never does).
-- Orchestrator route/schema changes regenerate `openapi.json`
-  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`); agents-web vendors it with
-  `npm run sync:api -- orchestrator`.
-- agents-web design rules (`src/layout/designRules.ts`): no colour literals outside `theme.ts`, no
-  arrows or decorative Unicode, fontWeight 400/500.
-- Environment of this container (user decision 5), so task verifies stay targeted and Docker-free
-  where possible:
-  - agents-orchestrator: every Postgres-backed test (`pool`/`dsn` fixtures, testcontainers) needs
-    Docker, absent here. `tests/test_api_messages.py`, `tests/test_agent_session_messaging.py`,
-    `tests/test_dispatcher.py`, `tests/test_queue_leader_routing.py`, `tests/test_ambiguous_verify.py`,
-    `tests/test_migrations.py` run only in CI (`mise run test` on GitHub) or a Docker host.
-    `tests/test_slash.py`, `tests/test_wrapper_client.py`, `tests/test_fake_wrapper_contract.py`
-    (fake leg), `tests/test_render.py`, `tests/test_spec_config.py`, `tests/test_images.py`,
-    `tests/test_readme_api.py` run here.
-  - agents-orchestrator real-wrapper contract leg (`-m integration`, `mise run test:integration`)
-    and kind e2e (`mise run test:e2e`, CI job e2e) are CI or Docker-host only.
-  - claude-code-wrapper: `tests/test_manager.py::test_shutdown_stops_all`,
-    `tests/test_pty_proc.py::test_exit_without_eof_still_fires` and
-    `tests/test_pty_proc.py::test_close_terminates_group_then_kill` fail here (PID 1 process group);
-    a verify that includes `tests/test_manager.py` deselects the first. `tests/test_container.py`
-    needs Docker.
-  - agents-web: the full suite has 10 load-dependent timeouts (PresetForm, ScheduleForm, Endpoints,
-    FiltersEditor); verifies name the chat test files only.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -506,28 +459,12 @@ failed or cancelled command posts the usual notice, and a completed command fini
 reason `command` and posts nothing (my call, Open questions Q4). Tasks common-command-outcome,
 common-release-0-4-0, webhook-common-pin-0-4-0, schedule-common-pin-0-4-0, mxc-command-outcome.
 
-## Bounds
+## Open questions
 
-- one deadline per command (my call, interrogate item 7): `timeout_seconds[name]`
-  (`default` 60 s, `compact` 600 s; operators may add names), counted from the runner taking the
-  command and spent by the quiet wait (`quiet_seconds` 1.5 s), typing, the completion wait and the
-  dialog leg together; "screen never settled" fails `timeout` at that deadline.
-- dialog: `dialog_grace_seconds` 2.0 s after the first footer hit; ESC budget 3, 1.5 s apart, never
-  two ESCs within 1 s; `dialog_stuck` after the budget; all inside the deadline.
-- at the deadline: ESC, 1.5 s, a second ESC only with a dialog pattern on screen -> `timeout`.
-- dialog still open after `dialog_stuck` or `timeout` (my call, interrogate item 6): one claude
-  relaunch with `--resume` before the slot is released, bounded by `boot.timeout_seconds` (60 s);
-  it does not count against `max_restarts`.
-- unknown command: completes on the informational line (under 1 s typically), the suggestion form
-  included; no ESC.
-- promoted turn: `limits.turn_max_seconds` (0 = unbounded, as every turn), `turn_stall_seconds` 1800
-  reports; the interrupt endpoint remains the manual bound.
-- worst-case slot hold for a non-promoted command: timeout + 1.5 s = about 62 s (default), plus one
-  relaunch of at most `boot.timeout_seconds` 60 s when a dialog stays open.
-- args: at most `MAX_COMMAND_ARGS` 20000 characters (D2).
-- orchestrator: `wrapper_send_timeout_seconds` 15 s per POST (exists); 409/429 requeue after
-  `retry_backoff_base_seconds`.
-- wrapper queue cap: `MAX_QUEUED` 4 per session (exists) -> 429.
+- Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision] (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the release is v0.3.0 on top of v0.2.0 and the pin moves v0.2.0 -> v0.3.0; the question text above is kept verbatim)
+- Q2: Claude Code's docs run some commands immediately even mid-turn (/status, /tasks, /usage; the 2.1.304 binary flags several commands 'immediate', .scratchpad/probe-slash/summaries/cmdtable.txt), so D9's 'run every mid-turn command at the turn's Stop' is only partly parity with the terminal. Keep D9 for every command, or run claude's immediate commands at once while a turn runs? [recommended: keep D9 for every command (the gate default: accepted at once, run at the turn's Stop); running immediate commands mid-turn would be an amend of task wrapper-commands-after-stop only]
+- Q3: desktop has the alias `app` in claude 2.1.304 (`name:"desktop",aliases:["app"]`), and D5 lists aliases by name so an alias cannot bypass the deny list; add `app` to `DEFAULT_COMMAND_DENY` with desktop (an amend of wrapper-deny-list-extend, its fake mirror and its pins)? [recommended: yes, add `app`]
+- Q4: a Messenger slash message whose command completes (ok, dismissed, skipped_cache) finishes handled; should the Matrix connector post a confirmation into the chat, or nothing? [recommended: post nothing; the run finishes `handled` with reason `command`, like `empty_reply` (task mxc-command-outcome as written)]
 
 ## Research
 
@@ -563,7 +500,7 @@ last probe's full transcript in config/projects/-workdir-workdir--scratchpad-pro
 | the compact button is refused 403 by a real wrapper | inferred (not run live) | agents-orchestrator.md Open questions 1; fixed by D11 either way |
 | plugin-namespaced commands (/workbench:x) also relay UserPromptSubmit | inferred | design section 8; contract leg with a login confirms |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics (`ticket.py retro --history`), recurring workflow
 ones first:
@@ -667,7 +604,145 @@ as written) and the user's decisions:
   acts on it: wrapper-slash-js-whitespace and wrapper-deny-list-extend verifies do not run
   test_manager.py. Not applicable: the gh credential helper (tag pushes are orchestrator-session steps).
 
-## Decision coverage
+## Irreversible operations
+
+- Tag `v0.4.0` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.0` and `:latest`):
+  covered by the gate approval of this plan; run by the orchestrator session after the `main` build of
+  the merge commit is green (task wrapper-release-0-4-0).
+- Tag `v0.3.0` pushed to any-mcp-tatara-plugins origin (amended 2026-10-29: Matrix released v0.2.0
+  first, user-approved order; was v0.2.0): covered by the gate approval; run by the
+  orchestrator session after the plugins PR merged and its CI is green (task plugins-release-0-2-0).
+- Migration `0010_slash_messages.sql` (amended 2026-10-29, was 0008; additive columns with defaults, idempotent `IF NOT EXISTS`):
+  runs on the next orchestrator deploy, which is decided at the gate.
+- Tag `v0.4.1` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.1` and `:latest`):
+  approved by the user and mx-34 #432; run by the orchestrator session after the wrapper PR merged
+  and the `main` build is green (task wrapper-release-0-4-1).
+- Tag `v0.4.0` pushed to agents-common origin: pending mx-34's confirmation (version, epic, live,
+  replaces sent to the leader first); run by the orchestrator session only after that confirmation
+  and the merge (task common-release-0-4-0).
+- Migration `0012_command_outcome_index.sql` (a partial index; idempotent `IF NOT EXISTS`; briefly
+  blocks event inserts while it builds): runs on the next orchestrator deploy.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+Any slash command typed in the chat (by the user) or sent by a superleader through
+`orchestrator_session_send` runs as a Claude Code slash command on the target session, at any
+moment, and the session stays responsive. The orchestrator classifies slash text at both message
+routes into `messages.kind = 'command'` and dispatches it unframed, even to a busy agent, to the
+wrapper's `POST /v1/sessions/{id}/commands`. Slash text follows Claude Code's own parser. The wrapper
+command runner takes any name plus free args (they may span lines), detects completion at runtime per
+command class (local stdout, unknown, dialog dismissed by ESC, prompt command promoted to a real turn)
+under one deadline per command, and its turns path refuses slash text for every origin (422
+`slash_command`), which pins the reported `/reload-plugins` hang. The chat renders the wrapper's
+`command_*` events as one updating row. Wrapper 0.4.0 and any-mcp-tatara-plugins 0.3.0 are released
+and pinned by the orchestrator (amended 2026-10-29: Matrix released v0.2.0 first, user-approved
+order; the epic matrix-connector-agent-initi released plugins v0.2.0 and pinned the orchestrator to
+it, so this epic releases v0.3.0 on top of it and moves the pin v0.2.0 -> v0.3.0; wrapper `main` is
+at v0.3.3, this epic's wrapper release stays 0.4.0 and each epic branch rebases onto its repo's
+`main`); deploy is decided at the gate. Revised after the interrogate pass
+(interrogate.md, items 1-13) and the builder check (2026-10-27).
+
+### design.md: Intent and why
+
+User request (2026-10-27): "I tried to send `/reload-plugins` from chat window and it made session
+unresponsive. Allow these commands to be run from chat window at any moment. Both user and
+superleader can send them. Any / comand." Today the chat text is pasted into the PTY as a turn with
+a `<!-- ccw turn: id -->` marker; a local command never calls the model, so no Stop hook fires, the
+turn never ends (`limits.turn_max_seconds` defaults to 0) and every later turn gets 409 busy. A
+superleader's "/cmd" is framed as `<session-message>` prose and never runs as a command.
+
+### design.md: Goals
+
+- G1: any slash command typed in the chat runs as a Claude Code slash command on the session, at
+  any moment, and the session stays responsive afterwards.
+- G2: a superleader can send a slash command to a target session and it runs as a command, not as
+  framed prompt text.
+- G3: sending /reload-plugins (the reported case) no longer hangs the session; a regression test
+  pins it at wrapper and orchestrator level.
+- G4: the chat shows the command and its outcome.
+
+### design.md: Non-goals
+
+- No slash-command autocomplete or picker in the composer.
+- No helmfile pin, apply or smoke task: deploy is decided at the gate for all four new epics
+  together (user decision 4).
+- No free-form agent command picker in agents-web PresetForm (noted, not doing now).
+
+### design.md: Anti-goals
+
+- A slash line is never typed into the PTY with the ccw turn marker appended (the marker becomes the
+  command's args).
+- Nothing is typed into a responding claude: commands run only at a quiet prompt (existing runner
+  rule, `wait_quiet`), mid-turn commands wait for the turn's Stop.
+- No command can hold a session busy without a bound (see Bounds).
+- No backward-compatibility shim for the five structured command params (Housekeeping rule 4).
+- A session-replacing, session-moving or account command (/exit, /clear, /resume, /cd, /login ...),
+  under any alias or letter case, never runs: it would break the wrapper's pinned claude session id
+  and lifecycle.
+- A worker session cannot run unframed commands on a superleader: only a superleader's slash text
+  becomes a command (D1).
+
+### design.md: Constraints
+
+- Python only (wrapper, orchestrator, plugin); TypeScript for agents-web.
+- Services talk only through HTTP; `messages` has one writer per transition (status-guarded
+  updates in `db/queue.py`).
+- Wrapper tests use the fake claude (`tests/fake_claude/fake_claude.py`), never a real claude; only
+  the fake-claude task edits `tests/conftest.py` (this epic never does).
+- Orchestrator route/schema changes regenerate `openapi.json`
+  (`uv run python -m agents_orchestrator.api.openapi > openapi.json`); agents-web vendors it with
+  `npm run sync:api -- orchestrator`.
+- agents-web design rules (`src/layout/designRules.ts`): no colour literals outside `theme.ts`, no
+  arrows or decorative Unicode, fontWeight 400/500.
+- Environment of this container (user decision 5), so task verifies stay targeted and Docker-free
+  where possible:
+  - agents-orchestrator: every Postgres-backed test (`pool`/`dsn` fixtures, testcontainers) needs
+    Docker, absent here. `tests/test_api_messages.py`, `tests/test_agent_session_messaging.py`,
+    `tests/test_dispatcher.py`, `tests/test_queue_leader_routing.py`, `tests/test_ambiguous_verify.py`,
+    `tests/test_migrations.py` run only in CI (`mise run test` on GitHub) or a Docker host.
+    `tests/test_slash.py`, `tests/test_wrapper_client.py`, `tests/test_fake_wrapper_contract.py`
+    (fake leg), `tests/test_render.py`, `tests/test_spec_config.py`, `tests/test_images.py`,
+    `tests/test_readme_api.py` run here.
+  - agents-orchestrator real-wrapper contract leg (`-m integration`, `mise run test:integration`)
+    and kind e2e (`mise run test:e2e`, CI job e2e) are CI or Docker-host only.
+  - claude-code-wrapper: `tests/test_manager.py::test_shutdown_stops_all`,
+    `tests/test_pty_proc.py::test_exit_without_eof_still_fires` and
+    `tests/test_pty_proc.py::test_close_terminates_group_then_kill` fail here (PID 1 process group);
+    a verify that includes `tests/test_manager.py` deselects the first. `tests/test_container.py`
+    needs Docker.
+  - agents-web: the full suite has 10 load-dependent timeouts (PresetForm, ScheduleForm, Endpoints,
+    FiltersEditor); verifies name the chat test files only.
+
+### design.md: Bounds
+
+- one deadline per command (my call, interrogate item 7): `timeout_seconds[name]`
+  (`default` 60 s, `compact` 600 s; operators may add names), counted from the runner taking the
+  command and spent by the quiet wait (`quiet_seconds` 1.5 s), typing, the completion wait and the
+  dialog leg together; "screen never settled" fails `timeout` at that deadline.
+- dialog: `dialog_grace_seconds` 2.0 s after the first footer hit; ESC budget 3, 1.5 s apart, never
+  two ESCs within 1 s; `dialog_stuck` after the budget; all inside the deadline.
+- at the deadline: ESC, 1.5 s, a second ESC only with a dialog pattern on screen -> `timeout`.
+- dialog still open after `dialog_stuck` or `timeout` (my call, interrogate item 6): one claude
+  relaunch with `--resume` before the slot is released, bounded by `boot.timeout_seconds` (60 s);
+  it does not count against `max_restarts`.
+- unknown command: completes on the informational line (under 1 s typically), the suggestion form
+  included; no ESC.
+- promoted turn: `limits.turn_max_seconds` (0 = unbounded, as every turn), `turn_stall_seconds` 1800
+  reports; the interrupt endpoint remains the manual bound.
+- worst-case slot hold for a non-promoted command: timeout + 1.5 s = about 62 s (default), plus one
+  relaunch of at most `boot.timeout_seconds` 60 s when a dialog stays open.
+- args: at most `MAX_COMMAND_ARGS` 20000 characters (D2).
+- orchestrator: `wrapper_send_timeout_seconds` 15 s per POST (exists); 409/429 requeue after
+  `retry_backoff_base_seconds`.
+- wrapper queue cap: `MAX_QUEUED` 4 per session (exists) -> 429.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -692,7 +767,7 @@ as written) and the user's decisions:
 | D19 command outcome on MessageView | orch-command-outcome |
 | D20 run trackers judge command outcomes | common-command-outcome, webhook-common-pin-0-4-0, schedule-common-pin-0-4-0, mxc-command-outcome |
 
-## Review focus
+### design.md: Review focus
 
 - The slot invariant: every path that takes the wrapper slot (begin_command, hold_for_commands,
   adopt_turn) releases it or hands it to a turn record; `end_command` in `finally`; no command can
@@ -713,7 +788,7 @@ as written) and the user's decisions:
   `max_restarts` untouched.
 - The fake claude's echo shapes match the probe transcripts (retro proposal).
 
-## Review notes
+### design.md: Review notes
 
 Phase 5 epic review (2026-10-29):
 
@@ -722,12 +797,12 @@ Phase 5 epic review (2026-10-29):
 - Dismissed: interrupt cancels client commands queued during that turn. This is the ruling, pinned
   by wrapper-commands-after-stop ac5; it stays as is (user decision).
 
-## Lead settlements after the revision (2026-10-27)
+### design.md: Lead settlements after the revision (2026-10-27)
 
 - (my call) The path-like-prose probe ('/workdir/foo is broken', '/etc/hosts') runs first: the implementers of orch-slash-parser and wrapper-slash-turn-guard run it before writing their classifier and pin its result; wrapper-command-signals re-checks it on the final parser.
 - (my call) Real-binary probes use the pod's existing Claude Code login in a throwaway dir under .scratchpad/probe-slash, trivial model calls only, every process killed afterwards; credentials are never copied or printed.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal helper names and module layout inside the named files (for example where `is_slash_text`
   lives in the wrapper, as long as `Session.submit` and `SessionRouter.submit_turn` share it).
@@ -736,7 +811,7 @@ Phase 5 epic review (2026-10-29):
   `command_started`, `command_completed` with the record shape of the real wrapper and runs a
   command queued during a turn after that turn completes.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Stop fires at the end of a promoted prompt-command turn on the real binary (inferred; the probe had
   no credentials). Settled by the real-binary probe of task wrapper-prompt-command-turn (recorded in
@@ -784,29 +859,3 @@ Phase 5 epic review (2026-10-29):
   deleting ESC (the todo epic's wrapper-paste-hygiene owns `pty_proc.py`).
 - agents-web keeps its vendored orchestrator spec pin; the chat already shows a command's outcome
   from the `command_*` events (web-command-rows), so `MessageView.command` needs no web task.
-
-## Open questions
-
-- Q1: Release any-mcp-tatara-plugins v0.2.0 after plugin-session-send-slash merges and bump the orchestrator's plugins pin (ORCH_ANY_MCP_PLUGINS_REF default, the any-mcp-tatara-orchestrator dev dependency, README, tests) to v0.2.0, as two small tasks added at the gate, so superleaders actually see the new session_send description? Without them the description change stays unreleased. [answer: yes (builder check settlement, my call): tasks plugins-release-0-2-0 and orch-plugins-pin-0-2-0 added; the helmfile value of ORCH_ANY_MCP_PLUGINS_REF stays with the gate's deploy decision] (amended 2026-10-29: Matrix released v0.2.0 first, user-approved order: the release is v0.3.0 on top of v0.2.0 and the pin moves v0.2.0 -> v0.3.0; the question text above is kept verbatim)
-- Q2: Claude Code's docs run some commands immediately even mid-turn (/status, /tasks, /usage; the 2.1.304 binary flags several commands 'immediate', .scratchpad/probe-slash/summaries/cmdtable.txt), so D9's 'run every mid-turn command at the turn's Stop' is only partly parity with the terminal. Keep D9 for every command, or run claude's immediate commands at once while a turn runs? [recommended: keep D9 for every command (the gate default: accepted at once, run at the turn's Stop); running immediate commands mid-turn would be an amend of task wrapper-commands-after-stop only]
-- Q3: desktop has the alias `app` in claude 2.1.304 (`name:"desktop",aliases:["app"]`), and D5 lists aliases by name so an alias cannot bypass the deny list; add `app` to `DEFAULT_COMMAND_DENY` with desktop (an amend of wrapper-deny-list-extend, its fake mirror and its pins)? [recommended: yes, add `app`]
-- Q4: a Messenger slash message whose command completes (ok, dismissed, skipped_cache) finishes handled; should the Matrix connector post a confirmation into the chat, or nothing? [recommended: post nothing; the run finishes `handled` with reason `command`, like `empty_reply` (task mxc-command-outcome as written)]
-
-## Irreversible operations in scope
-
-- Tag `v0.4.0` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.0` and `:latest`):
-  covered by the gate approval of this plan; run by the orchestrator session after the `main` build of
-  the merge commit is green (task wrapper-release-0-4-0).
-- Tag `v0.3.0` pushed to any-mcp-tatara-plugins origin (amended 2026-10-29: Matrix released v0.2.0
-  first, user-approved order; was v0.2.0): covered by the gate approval; run by the
-  orchestrator session after the plugins PR merged and its CI is green (task plugins-release-0-2-0).
-- Migration `0010_slash_messages.sql` (amended 2026-10-29, was 0008; additive columns with defaults, idempotent `IF NOT EXISTS`):
-  runs on the next orchestrator deploy, which is decided at the gate.
-- Tag `v0.4.1` pushed to claude-code-wrapper origin (release.yaml retags `:0.4.1` and `:latest`):
-  approved by the user and mx-34 #432; run by the orchestrator session after the wrapper PR merged
-  and the `main` build is green (task wrapper-release-0-4-1).
-- Tag `v0.4.0` pushed to agents-common origin: pending mx-34's confirmation (version, epic, live,
-  replaces sent to the leader first); run by the orchestrator session only after that confirmation
-  and the merge (task common-release-0-4-0).
-- Migration `0012_command_outcome_index.sql` (a partial index; idempotent `IF NOT EXISTS`; briefly
-  blocks event inserts while it builds): runs on the next orchestrator deploy.
