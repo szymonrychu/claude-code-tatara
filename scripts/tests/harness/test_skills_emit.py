@@ -175,3 +175,36 @@ def test_no_claude_only_constructs_emitted():
         for path, text in emitted.items():
             for token in CLAUDE_TOKENS:
                 assert token not in text, f"{target}: {path} carries {token!r}"
+
+
+VENDORED_FLOW_SKILLS = (
+    "brainstorming",
+    "dispatching-parallel-agents",
+    "finishing-a-development-branch",
+    "receiving-code-review",
+    "requesting-code-review",
+    "subagent-driven-development",
+    "systematic-debugging",
+    "test-driven-development",
+    "using-git-worktrees",
+    "using-superpowers",
+    "verification-before-completion",
+    "writing-plans",
+)
+PLUGIN_PATH = re.compile(r"[\w./-]*\b(?:scripts|references|templates)/[\w./-]*\w")
+
+
+def test_vendored_flow_skills_emitted_for_other_harnesses():
+    out = render_skills(load_sources(REAL))
+    vendored = REAL / "plugins/superpowers/skills"
+    assert sorted(p.name for p in vendored.iterdir() if p.is_dir()) == sorted(VENDORED_FLOW_SKILLS)
+    workbench = {p.name for p in (REAL / "plugins/workbench/skills").iterdir() if p.is_dir()}
+    assert not workbench & set(VENDORED_FLOW_SKILLS)
+    for name in VENDORED_FLOW_SKILLS:
+        body = out[f".agents/skills/{name}/SKILL.md"]
+        assert "superpowers:" not in body, name
+        for path in PLUGIN_PATH.findall(body):
+            assert path.startswith("plugins/superpowers/"), f"{name}: {path} not in the plugin"
+    for name in ("brainstorming", "writing-plans", "subagent-driven-development"):
+        body = out[f".agents/skills/{name}/SKILL.md"]
+        assert "plugins/superpowers/scripts/ticket.py" in body, name

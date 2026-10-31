@@ -33,6 +33,13 @@ Only the guards with an equivalent are registered on non-Claude harnesses: `guar
 `protect-files` and `subagent-commit-guard`. `verify-recorder`, `bash-output-filter` and
 `format-file` are Claude-only.
 
+Flow skills: the vendored flow in `plugins/superpowers` (brainstorming, writing-plans,
+subagent-driven-development and the rest) is generated like every other skill, as
+`.agents/skills/<name>/SKILL.md` with its `scripts/`, `references/` and `templates/` paths
+pointing into `plugins/superpowers/`. The using-superpowers SessionStart hook is Claude-only;
+other harnesses reach the flow through AGENTS.md ground rule 1. Per-harness tool notes live in
+`plugins/superpowers/skills/using-superpowers/references/`.
+
 ## Run it
 
     mise run harness-setup                     # sync AGENTS.md blocks, regenerate recorded targets
