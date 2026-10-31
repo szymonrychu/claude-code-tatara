@@ -1,12 +1,34 @@
-# cluster form defaults and gauge tick record
+# cluster form defaults and gauge tick retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked (2026-10-23): Model and Effort dropdowns in the cluster form, every field prefilled from /meta defaults (cpu 500m/4, memory 1Gi/8Gi real defaults on agent pods), the gauge auto-compact tick drawn on the ring, deployed.
 Shipped: 7 of 7 planned tasks done (2 original, 5 added from review, CI and deploy). Approvals A, B, C delivered. agent-orchestrator PR #3 merged as d5a7738, agents-helmfile PR #5 merged as 38a2543, applied to the cluster, smoke OK.
 Verdict: pass. Not verified: the visual render of the form and the gauge tick in a real browser (Chrome extension not connected; jsdom tests only).
 
-## Planned vs built
+### Planned vs built
 
 Runs: wf_169501a3-ea5 (return1), wf_e3cf829b-ffa (return2), wf_65f9bd95-aae (return3), wf_134d8e27-611 (return4, blocked), wf_e1400bda-eb3 (return5). Review rounds are from the run returns.
 
@@ -36,7 +58,7 @@ Approvals (from `approvals.json` and the run 1 return):
 | B | Every other form field shows its default when not provided; cpu 500m/4 and memory 1Gi/8Gi are real defaults on agent pods | none | meta-form-defaults, form-dropdowns-and-gauge-tic | delivered (defaults now applied at write time, see rulings) |
 | C | The ribbon gauge auto-compact tick sits on the ring | none | form-dropdowns-and-gauge-tic | delivered (geometry pinned in test; not seen in a browser) |
 
-## Deviations and rulings
+### Deviations and rulings
 
 - Whole-diff review found 3 medium issues, all fixed in run wf_e3cf829b-ffa: (1) render-time resource defaults would roll running clusters, contradicting the README non-goal; moved to write time (2d099ec), goldens byte-identical to pre-epic main. (2) PATCH returned 422 for stored legacy model/effort and for a high request without a limit; now validates only changed values and fills limits with a guard (2d099ec). (3) edit mode showed a blank Model select for a null model; added an empty default option (34631bd). Cost if wrong: running clusters roll on image deploy, or old clusters cannot be saved.
 - User ruling 2026-10-23: live session edit is not needed. Edit removal moves to the cluster-presets epic, so the PATCH legacy fixes are interim. Cost if wrong: interim code is removed later with that epic.
@@ -45,11 +67,11 @@ Approvals (from `approvals.json` and the run 1 return):
 - forwardMerged: none in any run.
 - Added tasks beyond the original two: model-default-option, defaults-at-write-time-and-l, deterministic-in-flight-cap, fast-full-spec-form-test, deploy-pin-d5a7738.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 none
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Run 4 (wf_134d8e27-611) blocked deploy-pin-d5a7738: chart 0.1.0-main.d5a7738 absent from Harbor because agent-orchestrator main chart-publish (run 39936687362) got 403 at Harbor login. Cleared: transient 403, passed on rerun; run 5 landed the pin.
 - Pre-existing flake test_at_most_eight_sends_in_flight (peak 7 under load): fixed in 3fcbb0b.
@@ -57,11 +79,11 @@ none
 - Process gap: stash@{0} left in the agent-orchestrator worktree by the fast-full-spec-form-test implementer. Clearer: orchestrator (drop the stash).
 - cannotVerify, open: visual render of form dropdowns and gauge tick at 28px and 40px (needs a connected browser; Szymon or the next session with Chrome); reconciler behaviour for existing clusters whose stored model is outside settings.models (validate_spec runs only on the API path); old flake absence under CPU load not stress-tested.
 
-## Research that changed the plan
+### Research that changed the plan
 
 none
 
-## Cost
+### Cost
 
 Five plan-execute runs; roles per run: sonnet implementers and reviewers, triage calls 4, 3, 1, 0, 1. Continuations: none. Audits: off, no scope audit in any run. Wall-clock: unknown (runs span 11:03 to 12:22 on 2026-10-23 per file times).
 
@@ -77,13 +99,13 @@ Five plan-execute runs; roles per run: sonnet implementers and reviewers, triage
 
 README Time: estimate 39 agent-min, critical path 22 min, expected wall 0.9 h at P=1.5, actual 0 min (not filled), remaining 0 min.
 
-## MRs and deploy
+### MRs and deploy
 
 - szymonrychu/agent-orchestrator#3: merged as d5a7738. Main CI chart-publish got a transient Harbor 403 and passed on rerun.
 - szymonrychu/agents-helmfile#5: merged as 38a2543, includes a ruff cleanup commit (7329bc8).
 - Deploy: `mise run apply` updated agent-orchestrator to chart 0.1.0-main.d5a7738. All 4 deployments run image d5a7738. Live /api/v1/meta returns the 4 models, 5 efforts and resource defaults 500m/4 and 1Gi/8Gi. `mise run smoke` OK (any-mcp Connected, v0.1.0, smoke cluster discarded).
 
-## Lessons routed to
+### Lessons routed to
 
 - Behaviour changes that alter rendered manifests must not roll running clusters: add a render test that pins golden output for a spec with no resources (now test_render_keeps_spec_resources_unchanged) and a CI check that golden files change only with a labelled migration. Mechanical.
 - Tests with sleep-based overlap flake under load: add a lint rule or test-review check flagging `asyncio.sleep` used as a synchronisation primitive in tests/test_dispatcher.py. Mechanical.
