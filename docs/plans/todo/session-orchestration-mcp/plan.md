@@ -1,90 +1,56 @@
-# session orchestration mcp design
+---
+title: session orchestration mcp
+repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-schedule, agents-web, agents-helmfile]
+created: 2026-10-27
+owner: ""
+rung: ""
+---
 
-## Summary
+# session orchestration mcp
 
-A per-preset (or per-spec) capability flag `session_orchestration`, set by the user only,
-gives that session's leader orchestrator MCP tools to manage presets, sessions and cron
-schedules it owns, through orchestrator `/agent/v1/orchestration/*` routes (architecture
-option A, `.scratchpad/design/session-orchestration-mcp-arch.md`). Writes run only in turns the
-user started (UI or Matrix connector origin); every write, refusals included, lands in an
-orchestrator audit table; schedule calls are relayed by the orchestrator to a token-protected
-relay listener on agents-schedule that records the owner. The plugin release, the pins, the
-agents-helmfile values, the live applies and a live smoke are part of the epic.
+## What and why
 
-## Intent and why
+What: MCP tools for a session to manage other sessions on the user's request: presets, sessions, cron schedules
+How: orchestrator-side tools behind a permission model naming who may orchestrate and which sessions
+Why: The user wants the Matrix-connected agent (mx-5) to set up presets, sessions and schedules from chat
 
-User request (2026-10-27, msg 124), verbatim: "Allow for session to orchestrate other sessions
-through appropriate mcp tooling. Eg you (matrix connected agent) would be allowed to define
-presets, sessions, cronjobs, etc on user request."
+User request (2026-10-27, relayed by the mx-5 leader, msg 124), verbatim:
 
-The decision is how an agent's authority is bounded when the only proven identity is "session
-S's leader is calling" (`api/agent.py:require_agent`). "On user request" must be checked by the
-server, because mx-5 takes in text from places other than the user: session messages from any
-session's leader, webhook-started content and non-owner senders in Matrix group chats. The user
-wants mx-5 to set up presets, sessions and schedules from chat now that the chat path exists.
+"Allow for session to orchestrate other sessions through appropriate mcp tooling. Eg you (matrix connected agent) would be allowed to define presets, sessions, cronjobs, etc on user request."
 
-## Goals
+Relayer's reading: MCP tools that let a session (for example mx-5, the Matrix-connected one) manage other sessions on the user's request: create and edit presets, create and delete sessions, set up cron jobs and so on, scoped by permissions (who may do this, and to which sessions).
 
-README Goals G1-G7, verbatim there. In short: flagged sessions get the tools (G1), writes only
-in user turns (G2), ownership scoping, masking, no escalation and delete safety (G3), audit and
-limits (G4), schedules relayed with the agent token kept in the orchestrator (G5), the web
-switch and "created by" (G6), released, deployed and live-smoked (G7).
+Queued right after slash-commands-from-chat, its only blocker (accepted queue, 2026-10-29); hive-decoupling and matrix-connector-agent-initi are done. immediate-message-delivery-w builds on this epic. Numbers (negotiated 2026-10-29, mx-34 #469/#470): orchestrator migration 0013, agents-schedule migration 0002, any-mcp-tatara-plugins v0.6.0, agents-schedule release v0.2.0 (negotiated, user answer pending). Every release tag is proposed via mx-34 and confirmed before tagging. Refreshed 2026-10-29 after a staleness audit (design.md, "Staleness refresh").
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: A session the user flagged `session_orchestration` (a per-preset or per-spec switch, off by default, set only by the user through agents-web or the public API) has orchestrator MCP tools to list, create, edit and delete presets, list, create, scale and delete sessions, and list, create, edit, delete and run cron schedules, on the user's request; only its leader may call them, and no unflagged session gets the tools.
+- 1.2: G2: "On user request" is checked by the server: a write is allowed only in a turn delivered by a message from the user (agents-web) or the Matrix connector by default; turns started by session messages, webhooks, schedules or no message are refused `not_user_turn`.
+- 1.3: G3: A flagged session changes only the sessions, presets and schedules it created; it reads all of them, with preset secrets masked except on its own; it cannot grant more privilege than it holds (`session_orchestration` is never grantable), cannot delete itself, and cannot delete a superleader or orchestrating session.
+- 1.4: G4: Every write call, refusals included, is recorded in an orchestrator audit table readable on the main API and by the caller through a tool; writes and owned objects are rate- and count-limited.
+- 1.5: G5: Schedule calls go through the orchestrator, which relays them to a token-protected listener on agents-schedule that records each schedule's owner; the agent token never leaves the orchestrator.
+- 1.6: G6: agents-web has the "Session orchestration" switch on the preset form (sessions take the flag from their preset), and shows "created by <slug>" on sessions, presets and schedules.
+- 1.7: G7: The plugin release, orchestrator pin, agents-helmfile values and live applies ship it, and a live smoke from a flagged throwaway session proves create, edit and delete of a preset, a session and a schedule, the refusals and the audit rows, leaving nothing behind.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
-README Non-goals, verbatim there (architect's do-not-build list plus the noted ideas).
+- Agents calling agents-schedule directly, an admin or service token in agent pods, or orchestrator-side schedule storage.
+- Scope lists, slug globs or per-target grants (option C); ownership is the target scope.
+- A two-step confirmation token before a delete.
+- A preset copy tool.
+- Any agents-common or agents-matrix-connector change.
+- Making `session_orchestration` editable in place on a running session (the spec stays immutable).
+- Noted, not doing now: a UI page for the audit trail, a shared bearer listener gate in agents-common, owner-sender marking on connector messages, schedules passing owner provenance to the sessions they fire.
 
-## Anti-goals
+## Design
 
-- Any session gaining create or delete power without the user flagging its preset (option B's
-  failure: silent privilege on upgrade).
-- The agent token, or any orchestrator credential usable from an agent pod, reaching
-  agents-schedule or any other service.
-- A flagged session deleting or editing what the user made in the UI, or deleting itself.
-- An agent-written preset, session spec or schedule preset carrying more privilege than the
-  caller holds.
-- A write that leaves no audit row, or an audit row that disappears with a purged session.
-- Live smoke leftovers: a throwaway preset, session or schedule still present after the run.
-
-## Constraints
-
-- Services talk only over HTTP or the queue. Each table has one writer (`orchestration_actions`:
-  the orchestrator api; `schedules`: agents-schedule). Queue rows change only through
-  status-guarded updates.
-- The only stable agent identity is session plus pod IP (`require_agent`); agent pods hold no
-  other secret safely.
-- Spec is immutable on a running session except `replicas` and `init_scripts`; tool lists are
-  fixed at render time.
-- No backward-compatibility shims. Python only, except agents-web (TypeScript).
-- Ordering (accepted queue, 2026-10-29): this epic runs right after slash-commands-from-chat, its
-  only README blocker; nothing is dispatched until slash-commands-from-chat has merged on every
-  repo it touches (B6; the first task is baseline-facts). hive-decoupling and
-  matrix-connector-agent-initi are done (docs/plans/done). immediate-message-delivery-w lists this
-  epic as its blocker and takes the numbers after it (migration 0014, plugins v0.7.0). Shared
-  files with slash-commands-from-chat: orchestrator `settings.py`, `db/queue.py`,
-  `api/messages.py`, `api/agent.py`, `k8s/on_start.py`, `tests/test_migrations.py`, the helmfile
-  values.
-- Numbers, negotiated 2026-10-29 (mx-34 #469/#470), never guessed:
-  - orchestrator migration `0013_session_orchestration.sql`: main ends at 0011 (2d6d722,
-    `0011_drop_feed_cursor.sql`); slash-commands-from-chat ships `0010_slash_messages.sql` and
-    `0012_command_outcome_index.sql`; the migrator applies by set;
-  - any-mcp-tatara-plugins v0.6.0: the latest tag is v0.5.1 (ef17204, hive-decoupling's advice
-    floor on top of slash's v0.5.0), which slash-commands-from-chat pins
-    (`ORCH_ANY_MCP_PLUGINS_REF` default v0.5.1); the plugin lists 16 tools (`ALL_TOOLS`), 32
-    after this epic;
-  - agents-schedule migration 0002 (only `0001_schedules.sql` exists; slash-commands-from-chat
-    adds none, no other epic claims one);
-  - agents-schedule release v0.2.0 from v0.1.0 (negotiated, user answer pending; tatara agreed).
-  baseline-facts confirms each on main; on a mismatch the orchestrator session proposes the new
-  number on mx-34, waits for the confirmation and amends the dependent tasks.
-- Live today (handover note 2026-10-29): orchestrator 2d6d722, plugins ref v0.4.0, agent image
-  0.3.3; the slash-commands-from-chat deploy moves the plugins ref to v0.5.1 and the agent image
-  to wrapper 0.4.1 or 0.4.2 before this epic deploys.
-- Standing user rules: deploy whenever possible (live applies need no approval); tags are
-  irreversible and listed below; send mx-5 one line before an apply restarts agent pods;
-  every release tag is proposed via mx-34 and confirmed before tagging.
-- No Docker in agent pods: orchestrator and schedule DB tests run in CI; each task keeps
-  non-DB cases where the behaviour allows, so the local verify has signal.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -291,93 +257,18 @@ recreate mx-5 itself (recreating drops mx-5's context). The live smoke probes an
 preset name and whether the owner DM is bound to mx-5 (facts the repos do not hold). Q2, Q3 and
 Q8, pending the gate.
 
-## Builder check settlements (2026-10-27)
+## Open questions
 
-Settled after the builder check of the plan. Each is the user's call unless marked otherwise. The
-tasks named were amended with `ticket.py amend`; where this section and an earlier decision
-differ, this section wins.
-
-- B2 (my call): `schedule_run` counts as an ok write against `ORCH_ORCHESTRATION_ACTIONS_PER_HOUR`
-  (D9). The global `max_sessions` is the only bound on fired sessions: no per-run or per-owner
-  cap is added in the orchestrator or in agents-schedule. Tasks: orch-orchestration-gate (the
-  count covers every ok action), orch-schedule-relay (run is a write, audited `schedule_run`),
-  sched-relay-routes (run-now adds no cap).
-- B3 (my call): agent-created schedules may be created enabled; the relay forwards `enabled`
-  untouched. Orphans after the owner's deletion stay and are managed from the UI (D4: ownership
-  is by session id, nothing is validated against a live session). Tasks: sched-relay-routes,
-  orch-schedule-relay, sched-schedule-owner (UI replace and delete of an orphan work).
-- B4 (my call): the build uses the merged slash-commands code. Origin `session` or `user` is
-  stored the same way on every enqueue path: `enqueue_message` takes `origin: str | None` as a
-  required keyword, no default, so no path can omit it (D3's "`session` in `enqueue_message`
-  when a sender is present" is now one case of that rule). Command-kind messages and
-  orchestrator-internal enqueues (no sender, no port) store NULL and never pass the user-turn
-  gate, whatever `ORCH_ORCHESTRATION_ORIGINS` holds. Tasks: orch-message-origin (two new ACs,
-  the call-site files recorded by baseline-facts are in scope), orch-orchestration-gate,
-  orch-orchestration-sessions (prompt origin explicit).
-- B5 (my call): on approval of the gate, the plan builds on the recommended answers of Q1 to Q9
-  as written; no task waits for a separate reply.
-- B6 (my call): the build starts only after hive-decoupling, matrix-connector-agent-initi and
-  slash-commands-from-chat have all merged. New first task `baseline-facts` reads the real
-  orchestrator and schedule migration numbers, the plugins version and latest tag, the plugin
-  tool count and every `messages` enqueue call site from main, records them in agents-orchestrator
-  `MEMORY.md`, and the orchestrator session amends the dependent tasks (orch-message-origin,
-  sched-schedule-owner, plugin-orchestration-tools, plugins-release-orch-tools,
-  orch-orchestration-tools-pin) so no AC carries an assumed number. orch-message-origin and
-  sched-schedule-owner now depend on it. The `files` entries that still name `NNNN` or `0002`
-  are replaced by the orchestrator session when it amends, from the recorded numbers.
-- Q9 (gate question, recommended yes): a flagged session may create sessions or schedules only
-  from presets it created itself (or from an explicit spec); presets made in the UI, which may
-  hold secrets in env, are refused `not_owner`, so their secrets never reach a pod the agent
-  controls. D5 gains this rule. One shared predicate `require_own_preset` in
-  `api/orchestration.py` (orch-orchestration-gate) is called by session create with a
-  `preset_id` (orch-orchestration-sessions) and by schedule create and update in the
-  orchestrator relay (orch-schedule-relay), the only place that knows who made a preset.
-  sched-relay-routes writes the rule into the relay contract (README and `openapi-relay.json`);
-  the listener keeps `_check_preset` for existence only. plugin-orchestration-tools descriptions
-  state it. Not added to the live smoke (a not_owner probe would need a throwaway UI-made
-  preset): noted, not doing now.
-
-## Staleness refresh (2026-10-29)
-
-The plan was re-checked against origin/main before the build (audit
-`.scratchpad/orch-mcp/staleness.md`; handover note `docs/plans/2026-10-29-tatara-handover-to-cct2.md`;
-heads read: agents-orchestrator 2d6d722, any-mcp-tatara-plugins ef17204 (v0.5.1), agents-schedule
-7651e29 (v0.1.0), agents-helmfile c2855fc, agents-web ab78d97, and the slash-commands-from-chat
-branches). Where this section and an earlier decision or settlement differ, this section wins.
-Tasks changed through `ticket.py amend`, each with its reason in Notes.
-
-- Blockers: slash-commands-from-chat only (B6's three-blocker rule is now one blocker);
-  numbers negotiated (Constraints). baseline-facts confirms them instead of deriving them.
-- D3: `ServiceGate` already hands the service name to the routes (`calling_service`), so
-  orch-message-origin edits `api/agent.py` instead of `api/service_auth.py`; the two real call
-  sites are named; `turn_origin` returns every message of the turn and the gate needs all of them
-  allowed (orch-message-origin, orch-orchestration-gate). B4's "orchestrator-internal enqueues"
-  has no instance on main.
-- D7: empty 204 and 202 pass through; the chat forward helper is shared (orch-schedule-relay).
-- D11: v0.6.0 from v0.5.1, 16 to 32 tools, `test_lists_all_tools`, the nomenclature test, the
-  mx-34 tag proposal (plugin-orchestration-tools, plugins-release-orch-tools,
-  orch-orchestration-tools-pin; the allow list covers both `orchestrator_allow` branches and
-  `chat=False`).
-- D13: 0013 and the four migration-list tests named (orch-message-origin); agents-schedule 0002
-  and its two migration tests named (sched-schedule-owner).
-- D16: the schedule pair is api-main-only, never the ConfigMap (orch-chart-schedule-relay,
-  helmfile-orchestration-pins); the earlier ac `test_schedule_url_in_configmap` would have
-  repeated the 2026-10-28 crash loop.
-- D17: agents-schedule pinned by release v0.2.0 (negotiated, user answer pending), new task
-  sched-release-0-2-0 (the only added task; the release needs its own version bump and tag);
-  check-pins in helmfile-orchestration-pins; idle-only rollout and the apply-from-pod procedure
-  in orchestration-live-smoke.
-- Smoke: the script sources `scripts/lib/smoke-common.sh` (orchestration-smoke-script, Notes
-  and Files only).
-- Reuse notes added to orch-orchestration-sessions (`_insert(**provenance)`),
-  orch-creator-messaging (`kind`), sched-relay-listener (not behind `SourceAllowlist`),
-  orch-schedule-relay-contract (the chat contract files), orch-orchestration-presets
-  (kubernetes-secret-backed-pre).
-- Not adopted from the audit: adding immediate-message-delivery-w and decouple-s3-session-cache-fr
-  as blockers (the accepted queue runs this epic right after slash-commands-from-chat, and
-  immediate-message-delivery-w already blocks on it); refusing trigger-created sessions in the
-  orchestration gate (no requirement asks for it; the user-turn gate already refuses
-  webhook and schedule turns).
+- Q1: A flagged session may change only the sessions, presets and schedules it created, and may read everything with secrets masked? [recommended: yes]
+- Q2: Grant mx-5 by flagging its preset in the UI and recreating the session (spec stays immutable)? [recommended: yes]
+- Q3: Writes are allowed only in turns started from the UI or the Matrix connector, and you flag only the owner DM's preset, so group chats cannot drive it? [recommended: yes]
+- Q4: A session and the sessions it created may message each other even when neither is a superleader? [recommended: yes]
+- Q5: Agent-created schedules may fire at most every 15 minutes, at most 10 per session; at most 5 live owned sessions and 30 writes per hour? [recommended: yes]
+- Q6: No separate confirmation step before a delete; the user-turn gate plus ownership is the safeguard? [recommended: yes]
+- Q7: agents-web shows 'created by <slug>' on sessions, presets and schedules? [recommended: yes]
+- Q8: After the deploy you flag mx-5's preset in the UI and recreate mx-5 yourself (the orchestrator sends mx-5 one line and never edits mx-5's preset or recreates it, since that drops mx-5's context), and the epic closes on the throwaway-session live smoke without waiting for the grant? [recommended: yes]
+- Q9: A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls? [recommended: yes]
+- Q10: Pin agents-schedule by release tag v0.2.0 (chart 0.2.0 from the tag, image the tagged commit's sha7) instead of a main build, as negotiated with tatara (mx-34 #469/#470)? [recommended: yes; the image stays a sha7 tag until semver-image-tags-at-the-end]
 
 ## Research
 
@@ -389,7 +280,7 @@ Tasks changed through `ticket.py amend`, each with its reason in Notes.
 | security review | skipped at plan time: the epic review runs it (authz surface); `workbench:interrogate` is recommended before the gate (authz, secrets) | | |
 | staleness audit (2026-10-29) | ran: `.scratchpad/orch-mcp/staleness.md` against origin/main and the slash branches | section Staleness refresh | new blockers beyond slash-commands-from-chat; a trigger-session refusal |
 
-## Research inputs
+### Research inputs
 
 Architect Plan inputs, every entry:
 
@@ -452,78 +343,7 @@ Retro proposals of the epics done since the plan (`ticket.py retro --history`, 2
 - 2026-10-28 incident (orchestrator MEMORY orch-chat-env-scope): a relay URL in the shared ConfigMap crash-looped every migrate init container: D16, orch-chart-schedule-relay, helmfile-orchestration-pins ac9.
 - 2026-10-28 incident (semver-image-tags-at-the-end README): Harbor retention pruned sha7 image tags within hours: D17, sched-release-0-2-0, orchestration-live-smoke.
 
-## Decision coverage
-
-| Decision | Tasks |
-|---|---|
-| D1 flag | orch-orchestration-flag, orch-orchestration-tools-pin, web-orchestration-switch |
-| D2 who may call | orch-orchestration-gate |
-| D3 user request | orch-message-origin, orch-orchestration-gate, plugin-orchestration-tools |
-| D4 target scope | orch-message-origin, orch-orchestration-presets, orch-orchestration-sessions, sched-schedule-owner, sched-relay-routes, web-created-by, web-schedule-owner |
-| D5 no escalation | orch-orchestration-gate, orch-orchestration-presets, orch-orchestration-sessions, orch-schedule-relay, sched-relay-routes, plugin-orchestration-tools |
-| D6 delete safety | orch-orchestration-sessions, orch-orchestration-presets |
-| D7 schedule relay | orch-schedule-relay, orch-schedule-relay-contract, sched-schedule-owner, sched-relay-listener, sched-relay-routes |
-| D8 audit | orch-message-origin, orch-orchestration-gate |
-| D9 limits | orch-orchestration-gate, orch-orchestration-sessions, sched-relay-listener, sched-relay-routes |
-| D10 created sessions work | orch-orchestration-sessions, orch-creator-messaging |
-| D11 tools and release | baseline-facts, plugin-orchestration-tools, plugins-release-orch-tools, orch-orchestration-tools-pin |
-| D12 Matrix compatibility | orch-schedule-relay, orch-orchestration-sessions |
-| D13 one migration | baseline-facts, orch-message-origin |
-| D14 body cap | orch-orchestration-gate, orch-schedule-relay |
-| D15 relay Service and port | sched-chart-relay-port, helmfile-orchestration-pins |
-| D16 relay token secrets | orch-chart-schedule-relay, sched-chart-relay-port, helmfile-relay-secrets, helmfile-orchestration-pins |
-| D17 pins and deploy | sched-release-0-2-0, helmfile-orchestration-pins, orchestration-live-smoke |
-| D18 live smoke | orchestration-smoke-script, orchestration-live-smoke |
-| D19 mx-5 grant | orchestration-live-smoke |
-
-## Review focus
-
-- The check order of D2 and D6 and the user-turn gate (D3): one dependency, every route through
-  it, every origin tested; reads never gated, writes always.
-- Ownership predicates and the live-owned-session count: one SQL predicate each, single-sourced
-  (retro: duplicate predicates found late).
-- No escalation (D5) on all three paths: preset spec, session spec or preset, schedule preset.
-- Masking (D4): every secret-bearing field of `SessionSpec` (`env`, `WrapperSettings` hooks
-  `secret` and `headers`, `CommandHook.env`, `McpStdio.env`, `McpRemote.headers`) masked on
-  non-owned presets, keys kept.
-- Audit (D8): a row for every write past `require_agent`, refusals included; no FK.
-- The relay never forwards the agent token or any inbound header; the schedule relay listener
-  token never reaches a log or an error body.
-- The smoke's cleanup trap and per-wait deadlines.
-- The schedule URL and token never in the settings ConfigMap or on any container but the api main one (D16; the 2026-10-28 crash loop).
-- The user-turn gate over every message of the turn, not the newest one (D3).
-- Anti-goal breaches are findings to fix, never Consider; values derived from a config field are checked against its bounds (hive-decoupling retro).
-
-## Left to the builder
-
-- Internal module layout under `api/` beyond the named modules (`api/orchestration.py`,
-  `api/orchestration_presets.py`, `api/orchestration_sessions.py`,
-  `api/orchestration_relay.py`), as long as the gate is one dependency.
-- The masked placeholder string (for example `"***"`), the same everywhere.
-- Index choice on `orchestration_actions` (caller and created_at at least).
-- The exact help texts of the web switch and the tool descriptions, within the ACs.
-
-## Assumptions and unknown facts
-
-- mx-5's preset name and whether the owner DM is bound to mx-5: not in any repo; probed live by
-  orchestration-live-smoke (GET `/api/v1/sessions`, the connector room binding) and recorded.
-- The plugins version and the migration numbers: negotiated (Constraints), confirmed on main by baseline-facts.
-- hive-decoupling landed (done 2026-10-29): it added `orchestrator_activity`, so the plugin lists 16 tools on main and 32 after this epic; `orchestrator_allow(spec, *, chat=True)` is its version as slash-commands-from-chat leaves it.
-- The Matrix connector's service token name is `agents-matrix-connector`: confirmed (agents-helmfile `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`).
-
-## Open questions
-- Q1: A flagged session may change only the sessions, presets and schedules it created, and may read everything with secrets masked? [recommended: yes]
-- Q2: Grant mx-5 by flagging its preset in the UI and recreating the session (spec stays immutable)? [recommended: yes]
-- Q3: Writes are allowed only in turns started from the UI or the Matrix connector, and you flag only the owner DM's preset, so group chats cannot drive it? [recommended: yes]
-- Q4: A session and the sessions it created may message each other even when neither is a superleader? [recommended: yes]
-- Q5: Agent-created schedules may fire at most every 15 minutes, at most 10 per session; at most 5 live owned sessions and 30 writes per hour? [recommended: yes]
-- Q6: No separate confirmation step before a delete; the user-turn gate plus ownership is the safeguard? [recommended: yes]
-- Q7: agents-web shows 'created by <slug>' on sessions, presets and schedules? [recommended: yes]
-- Q8: After the deploy you flag mx-5's preset in the UI and recreate mx-5 yourself (the orchestrator sends mx-5 one line and never edits mx-5's preset or recreates it, since that drops mx-5's context), and the epic closes on the throwaway-session live smoke without waiting for the grant? [recommended: yes]
-- Q9: A flagged session may create sessions or schedules only from presets it created itself (or from an explicit spec); presets made in the UI, which may hold secrets in env, are refused not_owner, so their secrets never reach a pod the agent controls? [recommended: yes]
-- Q10: Pin agents-schedule by release tag v0.2.0 (chart 0.2.0 from the tag, image the tagged commit's sha7) instead of a main build, as negotiated with tatara (mx-34 #469/#470)? [recommended: yes; the image stays a sha7 tag until semver-image-tags-at-the-end]
-
-## Irreversible operations in scope
+## Irreversible operations
 
 Standing user rules: deploy whenever possible, live applies need no approval (2026-10-27, msg
 105); every release tag is proposed via mx-34 and confirmed before tagging (2026-10-29). Tags are
@@ -555,3 +375,242 @@ listed here for the gate.
   through the public API and the orchestration routes, plus audit rows in
   `orchestration_actions` that stay by design (no delete path). Safeguard: the trap deletes every
   object the script created, and only those.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+A per-preset (or per-spec) capability flag `session_orchestration`, set by the user only,
+gives that session's leader orchestrator MCP tools to manage presets, sessions and cron
+schedules it owns, through orchestrator `/agent/v1/orchestration/*` routes (architecture
+option A, `.scratchpad/design/session-orchestration-mcp-arch.md`). Writes run only in turns the
+user started (UI or Matrix connector origin); every write, refusals included, lands in an
+orchestrator audit table; schedule calls are relayed by the orchestrator to a token-protected
+relay listener on agents-schedule that records the owner. The plugin release, the pins, the
+agents-helmfile values, the live applies and a live smoke are part of the epic.
+
+### design.md: Intent and why
+
+User request (2026-10-27, msg 124), verbatim: "Allow for session to orchestrate other sessions
+through appropriate mcp tooling. Eg you (matrix connected agent) would be allowed to define
+presets, sessions, cronjobs, etc on user request."
+
+The decision is how an agent's authority is bounded when the only proven identity is "session
+S's leader is calling" (`api/agent.py:require_agent`). "On user request" must be checked by the
+server, because mx-5 takes in text from places other than the user: session messages from any
+session's leader, webhook-started content and non-owner senders in Matrix group chats. The user
+wants mx-5 to set up presets, sessions and schedules from chat now that the chat path exists.
+
+### design.md: Goals
+
+README Goals G1-G7, verbatim there. In short: flagged sessions get the tools (G1), writes only
+in user turns (G2), ownership scoping, masking, no escalation and delete safety (G3), audit and
+limits (G4), schedules relayed with the agent token kept in the orchestrator (G5), the web
+switch and "created by" (G6), released, deployed and live-smoked (G7).
+
+### design.md: Non-goals
+
+README Non-goals, verbatim there (architect's do-not-build list plus the noted ideas).
+
+### design.md: Anti-goals
+
+- Any session gaining create or delete power without the user flagging its preset (option B's
+  failure: silent privilege on upgrade).
+- The agent token, or any orchestrator credential usable from an agent pod, reaching
+  agents-schedule or any other service.
+- A flagged session deleting or editing what the user made in the UI, or deleting itself.
+- An agent-written preset, session spec or schedule preset carrying more privilege than the
+  caller holds.
+- A write that leaves no audit row, or an audit row that disappears with a purged session.
+- Live smoke leftovers: a throwaway preset, session or schedule still present after the run.
+
+### design.md: Constraints
+
+- Services talk only over HTTP or the queue. Each table has one writer (`orchestration_actions`:
+  the orchestrator api; `schedules`: agents-schedule). Queue rows change only through
+  status-guarded updates.
+- The only stable agent identity is session plus pod IP (`require_agent`); agent pods hold no
+  other secret safely.
+- Spec is immutable on a running session except `replicas` and `init_scripts`; tool lists are
+  fixed at render time.
+- No backward-compatibility shims. Python only, except agents-web (TypeScript).
+- Ordering (accepted queue, 2026-10-29): this epic runs right after slash-commands-from-chat, its
+  only README blocker; nothing is dispatched until slash-commands-from-chat has merged on every
+  repo it touches (B6; the first task is baseline-facts). hive-decoupling and
+  matrix-connector-agent-initi are done (docs/plans/done). immediate-message-delivery-w lists this
+  epic as its blocker and takes the numbers after it (migration 0014, plugins v0.7.0). Shared
+  files with slash-commands-from-chat: orchestrator `settings.py`, `db/queue.py`,
+  `api/messages.py`, `api/agent.py`, `k8s/on_start.py`, `tests/test_migrations.py`, the helmfile
+  values.
+- Numbers, negotiated 2026-10-29 (mx-34 #469/#470), never guessed:
+  - orchestrator migration `0013_session_orchestration.sql`: main ends at 0011 (2d6d722,
+    `0011_drop_feed_cursor.sql`); slash-commands-from-chat ships `0010_slash_messages.sql` and
+    `0012_command_outcome_index.sql`; the migrator applies by set;
+  - any-mcp-tatara-plugins v0.6.0: the latest tag is v0.5.1 (ef17204, hive-decoupling's advice
+    floor on top of slash's v0.5.0), which slash-commands-from-chat pins
+    (`ORCH_ANY_MCP_PLUGINS_REF` default v0.5.1); the plugin lists 16 tools (`ALL_TOOLS`), 32
+    after this epic;
+  - agents-schedule migration 0002 (only `0001_schedules.sql` exists; slash-commands-from-chat
+    adds none, no other epic claims one);
+  - agents-schedule release v0.2.0 from v0.1.0 (negotiated, user answer pending; tatara agreed).
+  baseline-facts confirms each on main; on a mismatch the orchestrator session proposes the new
+  number on mx-34, waits for the confirmation and amends the dependent tasks.
+- Live today (handover note 2026-10-29): orchestrator 2d6d722, plugins ref v0.4.0, agent image
+  0.3.3; the slash-commands-from-chat deploy moves the plugins ref to v0.5.1 and the agent image
+  to wrapper 0.4.1 or 0.4.2 before this epic deploys.
+- Standing user rules: deploy whenever possible (live applies need no approval); tags are
+  irreversible and listed below; send mx-5 one line before an apply restarts agent pods;
+  every release tag is proposed via mx-34 and confirmed before tagging.
+- No Docker in agent pods: orchestrator and schedule DB tests run in CI; each task keeps
+  non-DB cases where the behaviour allows, so the local verify has signal.
+
+### design.md: Builder check settlements (2026-10-27)
+
+Settled after the builder check of the plan. Each is the user's call unless marked otherwise. The
+tasks named were amended with `ticket.py amend`; where this section and an earlier decision
+differ, this section wins.
+
+- B2 (my call): `schedule_run` counts as an ok write against `ORCH_ORCHESTRATION_ACTIONS_PER_HOUR`
+  (D9). The global `max_sessions` is the only bound on fired sessions: no per-run or per-owner
+  cap is added in the orchestrator or in agents-schedule. Tasks: orch-orchestration-gate (the
+  count covers every ok action), orch-schedule-relay (run is a write, audited `schedule_run`),
+  sched-relay-routes (run-now adds no cap).
+- B3 (my call): agent-created schedules may be created enabled; the relay forwards `enabled`
+  untouched. Orphans after the owner's deletion stay and are managed from the UI (D4: ownership
+  is by session id, nothing is validated against a live session). Tasks: sched-relay-routes,
+  orch-schedule-relay, sched-schedule-owner (UI replace and delete of an orphan work).
+- B4 (my call): the build uses the merged slash-commands code. Origin `session` or `user` is
+  stored the same way on every enqueue path: `enqueue_message` takes `origin: str | None` as a
+  required keyword, no default, so no path can omit it (D3's "`session` in `enqueue_message`
+  when a sender is present" is now one case of that rule). Command-kind messages and
+  orchestrator-internal enqueues (no sender, no port) store NULL and never pass the user-turn
+  gate, whatever `ORCH_ORCHESTRATION_ORIGINS` holds. Tasks: orch-message-origin (two new ACs,
+  the call-site files recorded by baseline-facts are in scope), orch-orchestration-gate,
+  orch-orchestration-sessions (prompt origin explicit).
+- B5 (my call): on approval of the gate, the plan builds on the recommended answers of Q1 to Q9
+  as written; no task waits for a separate reply.
+- B6 (my call): the build starts only after hive-decoupling, matrix-connector-agent-initi and
+  slash-commands-from-chat have all merged. New first task `baseline-facts` reads the real
+  orchestrator and schedule migration numbers, the plugins version and latest tag, the plugin
+  tool count and every `messages` enqueue call site from main, records them in agents-orchestrator
+  `MEMORY.md`, and the orchestrator session amends the dependent tasks (orch-message-origin,
+  sched-schedule-owner, plugin-orchestration-tools, plugins-release-orch-tools,
+  orch-orchestration-tools-pin) so no AC carries an assumed number. orch-message-origin and
+  sched-schedule-owner now depend on it. The `files` entries that still name `NNNN` or `0002`
+  are replaced by the orchestrator session when it amends, from the recorded numbers.
+- Q9 (gate question, recommended yes): a flagged session may create sessions or schedules only
+  from presets it created itself (or from an explicit spec); presets made in the UI, which may
+  hold secrets in env, are refused `not_owner`, so their secrets never reach a pod the agent
+  controls. D5 gains this rule. One shared predicate `require_own_preset` in
+  `api/orchestration.py` (orch-orchestration-gate) is called by session create with a
+  `preset_id` (orch-orchestration-sessions) and by schedule create and update in the
+  orchestrator relay (orch-schedule-relay), the only place that knows who made a preset.
+  sched-relay-routes writes the rule into the relay contract (README and `openapi-relay.json`);
+  the listener keeps `_check_preset` for existence only. plugin-orchestration-tools descriptions
+  state it. Not added to the live smoke (a not_owner probe would need a throwaway UI-made
+  preset): noted, not doing now.
+
+### design.md: Staleness refresh (2026-10-29)
+
+The plan was re-checked against origin/main before the build (audit
+`.scratchpad/orch-mcp/staleness.md`; handover note `docs/plans/2026-10-29-tatara-handover-to-cct2.md`;
+heads read: agents-orchestrator 2d6d722, any-mcp-tatara-plugins ef17204 (v0.5.1), agents-schedule
+7651e29 (v0.1.0), agents-helmfile c2855fc, agents-web ab78d97, and the slash-commands-from-chat
+branches). Where this section and an earlier decision or settlement differ, this section wins.
+Tasks changed through `ticket.py amend`, each with its reason in Notes.
+
+- Blockers: slash-commands-from-chat only (B6's three-blocker rule is now one blocker);
+  numbers negotiated (Constraints). baseline-facts confirms them instead of deriving them.
+- D3: `ServiceGate` already hands the service name to the routes (`calling_service`), so
+  orch-message-origin edits `api/agent.py` instead of `api/service_auth.py`; the two real call
+  sites are named; `turn_origin` returns every message of the turn and the gate needs all of them
+  allowed (orch-message-origin, orch-orchestration-gate). B4's "orchestrator-internal enqueues"
+  has no instance on main.
+- D7: empty 204 and 202 pass through; the chat forward helper is shared (orch-schedule-relay).
+- D11: v0.6.0 from v0.5.1, 16 to 32 tools, `test_lists_all_tools`, the nomenclature test, the
+  mx-34 tag proposal (plugin-orchestration-tools, plugins-release-orch-tools,
+  orch-orchestration-tools-pin; the allow list covers both `orchestrator_allow` branches and
+  `chat=False`).
+- D13: 0013 and the four migration-list tests named (orch-message-origin); agents-schedule 0002
+  and its two migration tests named (sched-schedule-owner).
+- D16: the schedule pair is api-main-only, never the ConfigMap (orch-chart-schedule-relay,
+  helmfile-orchestration-pins); the earlier ac `test_schedule_url_in_configmap` would have
+  repeated the 2026-10-28 crash loop.
+- D17: agents-schedule pinned by release v0.2.0 (negotiated, user answer pending), new task
+  sched-release-0-2-0 (the only added task; the release needs its own version bump and tag);
+  check-pins in helmfile-orchestration-pins; idle-only rollout and the apply-from-pod procedure
+  in orchestration-live-smoke.
+- Smoke: the script sources `scripts/lib/smoke-common.sh` (orchestration-smoke-script, Notes
+  and Files only).
+- Reuse notes added to orch-orchestration-sessions (`_insert(**provenance)`),
+  orch-creator-messaging (`kind`), sched-relay-listener (not behind `SourceAllowlist`),
+  orch-schedule-relay-contract (the chat contract files), orch-orchestration-presets
+  (kubernetes-secret-backed-pre).
+- Not adopted from the audit: adding immediate-message-delivery-w and decouple-s3-session-cache-fr
+  as blockers (the accepted queue runs this epic right after slash-commands-from-chat, and
+  immediate-message-delivery-w already blocks on it); refusing trigger-created sessions in the
+  orchestration gate (no requirement asks for it; the user-turn gate already refuses
+  webhook and schedule turns).
+
+### design.md: Decision coverage
+
+| Decision | Tasks |
+|---|---|
+| D1 flag | orch-orchestration-flag, orch-orchestration-tools-pin, web-orchestration-switch |
+| D2 who may call | orch-orchestration-gate |
+| D3 user request | orch-message-origin, orch-orchestration-gate, plugin-orchestration-tools |
+| D4 target scope | orch-message-origin, orch-orchestration-presets, orch-orchestration-sessions, sched-schedule-owner, sched-relay-routes, web-created-by, web-schedule-owner |
+| D5 no escalation | orch-orchestration-gate, orch-orchestration-presets, orch-orchestration-sessions, orch-schedule-relay, sched-relay-routes, plugin-orchestration-tools |
+| D6 delete safety | orch-orchestration-sessions, orch-orchestration-presets |
+| D7 schedule relay | orch-schedule-relay, orch-schedule-relay-contract, sched-schedule-owner, sched-relay-listener, sched-relay-routes |
+| D8 audit | orch-message-origin, orch-orchestration-gate |
+| D9 limits | orch-orchestration-gate, orch-orchestration-sessions, sched-relay-listener, sched-relay-routes |
+| D10 created sessions work | orch-orchestration-sessions, orch-creator-messaging |
+| D11 tools and release | baseline-facts, plugin-orchestration-tools, plugins-release-orch-tools, orch-orchestration-tools-pin |
+| D12 Matrix compatibility | orch-schedule-relay, orch-orchestration-sessions |
+| D13 one migration | baseline-facts, orch-message-origin |
+| D14 body cap | orch-orchestration-gate, orch-schedule-relay |
+| D15 relay Service and port | sched-chart-relay-port, helmfile-orchestration-pins |
+| D16 relay token secrets | orch-chart-schedule-relay, sched-chart-relay-port, helmfile-relay-secrets, helmfile-orchestration-pins |
+| D17 pins and deploy | sched-release-0-2-0, helmfile-orchestration-pins, orchestration-live-smoke |
+| D18 live smoke | orchestration-smoke-script, orchestration-live-smoke |
+| D19 mx-5 grant | orchestration-live-smoke |
+
+### design.md: Review focus
+
+- The check order of D2 and D6 and the user-turn gate (D3): one dependency, every route through
+  it, every origin tested; reads never gated, writes always.
+- Ownership predicates and the live-owned-session count: one SQL predicate each, single-sourced
+  (retro: duplicate predicates found late).
+- No escalation (D5) on all three paths: preset spec, session spec or preset, schedule preset.
+- Masking (D4): every secret-bearing field of `SessionSpec` (`env`, `WrapperSettings` hooks
+  `secret` and `headers`, `CommandHook.env`, `McpStdio.env`, `McpRemote.headers`) masked on
+  non-owned presets, keys kept.
+- Audit (D8): a row for every write past `require_agent`, refusals included; no FK.
+- The relay never forwards the agent token or any inbound header; the schedule relay listener
+  token never reaches a log or an error body.
+- The smoke's cleanup trap and per-wait deadlines.
+- The schedule URL and token never in the settings ConfigMap or on any container but the api main one (D16; the 2026-10-28 crash loop).
+- The user-turn gate over every message of the turn, not the newest one (D3).
+- Anti-goal breaches are findings to fix, never Consider; values derived from a config field are checked against its bounds (hive-decoupling retro).
+
+### design.md: Left to the builder
+
+- Internal module layout under `api/` beyond the named modules (`api/orchestration.py`,
+  `api/orchestration_presets.py`, `api/orchestration_sessions.py`,
+  `api/orchestration_relay.py`), as long as the gate is one dependency.
+- The masked placeholder string (for example `"***"`), the same everywhere.
+- Index choice on `orchestration_actions` (caller and created_at at least).
+- The exact help texts of the web switch and the tool descriptions, within the ACs.
+
+### design.md: Assumptions and unknown facts
+
+- mx-5's preset name and whether the owner DM is bound to mx-5: not in any repo; probed live by
+  orchestration-live-smoke (GET `/api/v1/sessions`, the connector room binding) and recorded.
+- The plugins version and the migration numbers: negotiated (Constraints), confirmed on main by baseline-facts.
+- hive-decoupling landed (done 2026-10-29): it added `orchestrator_activity`, so the plugin lists 16 tools on main and 32 after this epic; `orchestrator_allow(spec, *, chat=True)` is its version as slash-commands-from-chat leaves it.
+- The Matrix connector's service token name is `agents-matrix-connector`: confirmed (agents-helmfile `values/agents-orchestrator/service-token-agents-matrix-connector.secrets.yaml`).
