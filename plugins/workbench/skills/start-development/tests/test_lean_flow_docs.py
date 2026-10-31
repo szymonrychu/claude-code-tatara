@@ -190,6 +190,8 @@ def test_every_named_reference_and_template_exists():
 def _owned_files():
     files = [p for p in SD.rglob("*") if p.is_file() and "tests" not in p.relative_to(SD).parts]
     files = [p for p in files if "__pycache__" not in p.parts]
+    # ticket.py migrate reads the old epic files, so it is the one file that must name them
+    files = [p for p in files if p != SD / "scripts" / "ticket_cmds" / "migrate.py"]
     return [
         *files,
         ROOT / "agents" / "record-writer.md",
