@@ -1,46 +1,50 @@
-# agent init scripts design
+---
+title: agent init scripts
+repos: [agent-orchestrator, any-mcp, claude-code-wrapper, agents-helmfile]
+created: 2026-10-24
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# agent init scripts
 
-Clusters and presets gain `init_scripts`, a list of shell scripts. The reconciler runs them exactly once per cluster as one Job on the shared workdir and records the run in `clusters.status.init`; agent sessions start after it. The agent sees how it was initialised through `.agent-init/init.sh` and `init.log` in its workdir and the `orchestrator_init_scripts_get` tool, and edits them with `orchestrator_init_scripts_edit`, which writes the cluster's stored spec and its source preset, so the next cluster runs the new list. Every capability has a documented public route, an API-only e2e test, and UI (preset form rows, a cluster "Init scripts" dialog). The release is the orchestrator main merge, then a helmfile pin, apply and an extended smoke.
+## What and why
 
-Binding architecture: the foundation decisions of 2026-10-24 (D1-D6 there; its D5 is this epic). The shared parts F1-F5 (orchestrator any-mcp plugin with the init tools, agent API socket and `require_agent()`, token, render gating, hash pin test) are built by hive-mode-leadership-handove; this epic consumes them and builds none of them.
+What: Per-cluster init scripts stored on ClusterSpec and presets, run once per cluster, visible to the agent and editable by it
+How: init_scripts field, a once-per-cluster init Job recorded in clusters.status.init by the reconciler, scripts and log surfaced in the workdir (.agent-init/) and through the init tools of the shared orchestrator any-mcp plugin, an edit writing to the cluster and its source preset
+Why: An agent knows how its environment was built and can improve it for the next cluster
 
-## Intent and why
+User request (2026-10-24), verbatim:
 
-User request (2026-10-24): init scripts must be exposed to an agent that was initialised with them, so it knows how it was initialised and can edit them for next time, and they run once per cluster. Today only the wrapper's per-pod `init.setup_commands` exist, which run per session, not per cluster. An agent that can read and improve its environment recipe makes each new cluster from a preset better than the last.
+"agent configuration epic:
+* init scripts in the lab platform must be exposed to an agent that's been initialised with them (so it knows how it's initialised + it's able to edit it next time)
+* init scripts are running once per cluster"
 
-## Goals
+Scope confirmation (user, 2026-10-24): init scripts do not exist in agent-orchestrator yet (only the wrapper's per-pod init.setup_commands); this epic adds them to ClusterSpec and presets. An agent edit goes to the cluster's stored spec AND its source preset when there is one, so the next cluster from that preset gets it. The edit tool lives in the single shared "orchestrator" any-mcp plugin owned by the hive-mode-leadership-handove epic.
 
-- `ClusterSpec.init_scripts` exists, is valid in presets, and is snapshotted into a cluster created from a preset.
-- A cluster with scripts runs them once (one Job, never again for that cluster: not per pod, not per restart, not after scaling, not after an edit); a cluster without scripts records `skipped` and never runs any later.
-- Sessions start only after the run ends; a failed run starts sessions anyway with phase `degraded` and message `init failed`.
-- The agent can read the scripts, the run state and the log (tool and workdir files) and can edit the scripts; an edit writes the cluster spec and the source preset (when one exists, the Default preset included), never rolls a pod and never re-runs.
-- Public routes `GET|PUT /api/v1/clusters/{id}/init-scripts` are documented and covered by an API-only kind e2e; the UI edits scripts in presets and shows and edits them per cluster.
-- The live `agents` namespace runs the build, proven by the smoke.
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: Clusters and presets carry `init_scripts`; a cluster runs them exactly once, before its agent sessions start, and records the run in `status.init`.
+- 1.2: The agent reads its scripts, run state and log (workdir `.agent-init/` and the init tools) and edits them; an edit writes the cluster spec and its source preset, never rolls a pod and never re-runs.
+- 1.3: Documented public routes, an API-only kind e2e, preset form rows and a cluster Init scripts dialog.
+- 1.4: The live agents namespace runs the build; the smoke proves init scripts.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Re-running init on a running cluster, or a "run again" button.
-- Per-pod setup (the wrapper's `init.setup_commands` stays as it is).
-- Changes to any-mcp or claude-code-wrapper: the plugin tools and the main-agent-only gate come from hive F1 and F2.
-- Secrets for the Job beyond `spec.env`.
+- Re-running init on a running cluster.
+- Per-pod setup (wrapper `init.setup_commands` unchanged).
+- any-mcp or claude-code-wrapper changes (the init tools and the main-agent-only gate come from hive-mode-leadership-handove).
+- Secrets for the init Job beyond `spec.env`.
 
-## Anti-goals
+## Design
 
-- An init-scripts edit or the field itself changing the rendered ConfigMap, Secret or pod template (it would roll every agent; the hash pin test guards it).
-- Init running twice for one cluster, or racing across pods.
-- A cluster stuck forever because a script failed.
-- A second writer of `clusters` or `presets` (both stay api-written; `status` stays reconciler-written).
-
-## Constraints
-
-- Single writer per table: `clusters.spec`/`presets.spec` by the api process only; `clusters.status` by the reconciler only.
-- Spec immutability rule (MEMORY 2026-10-23) with the foundation D4 exception: `spec.replicas` and `spec.init_scripts` are mutable in place without a generation bump; PATCH stays 405.
-- The api never imports `k8s` or the wrapper (`tests/test_api_clusters.py::test_api_never_imports_k8s_or_wrapper`).
-- Every route, frame and table is in README, openapi.json and schema.d.ts (`tests/test_readme_api.py`).
-- Executes after the hive foundation tasks it needs (F1, F3, F4) are on main (README blocker).
-- Python only except the TypeScript frontend; theme tokens only in the UI.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -83,6 +87,10 @@ One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool 
 ### D13: X2 headless parity
 Headless parity: every UI capability has a documented public API and an API-only e2e test. (user decision)
 
+## Open questions
+
+none
+
 ## Research
 
 | Lens | Status | Adopted | Rejected |
@@ -91,7 +99,7 @@ Headless parity: every UI capability has a documented public API and an API-only
 | architecture | ran (foundation.md D5) | Job plus status.init, api-written spec field | separate runtime table, generation bump |
 | external, papers, docs | skipped: no new library; Kubernetes Job semantics already used by checks | | |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -108,7 +116,67 @@ Headless parity: every UI capability has a documented public API and an API-only
 | foundation D5 | Job, status.init, exposure, edit, edited-since-run | init-job-runner, init-scripts-public-api, init-scripts-agent-api |
 | smoke.sh pod selection by label | init Job pod carries the cluster label | smoke-init-scripts |
 
-## Decision coverage
+## Irreversible operations
+
+- `mise run apply` of the agents namespace (task apply-smoke-init-scripts): a live deploy, reversible by re-pinning and re-applying; guarded by lint, test and the kube-context check, preceded by a diff that must show only the orchestrator chart and image changing.
+- An agent or user edit writes the source preset, the Default preset included (C3); reversible by another edit.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-25)
+
+Evidence: Whole-diff review (sonnet), security review (sonnet), CI test/lint/frontend/e2e green on agent-orchestrator PR #10 (e2e 4 init-scripts failures fixed: init Job workingDir created as root; three test-shape bugs), live apply helm rev 11 chart 0.1.0-main.22cf283, post-apply diff clean, smoke OK.
+Acted on: smoke replicas 1 -> 2 (leader step), init Job workingDir, e2e test fixes, MEMORY smoke quote (PR #16), diff evidence in task notes.
+Dropped: security - no server-side main-agent gate (design: any agent may edit, wrapper gates subagents), Default preset rewritten (C3), init Job SA token (matches agent pod), log_tail exposure (C2); review - create_job error permanent (task spec), phase message wording (AC6).
+Follow-up noted, not built (Non-goal: any-mcp changes): any-mcp init_scripts_get description should name .agent-init/init.sh and next-cluster semantics.
+
+### design.md: Summary
+
+Clusters and presets gain `init_scripts`, a list of shell scripts. The reconciler runs them exactly once per cluster as one Job on the shared workdir and records the run in `clusters.status.init`; agent sessions start after it. The agent sees how it was initialised through `.agent-init/init.sh` and `init.log` in its workdir and the `orchestrator_init_scripts_get` tool, and edits them with `orchestrator_init_scripts_edit`, which writes the cluster's stored spec and its source preset, so the next cluster runs the new list. Every capability has a documented public route, an API-only e2e test, and UI (preset form rows, a cluster "Init scripts" dialog). The release is the orchestrator main merge, then a helmfile pin, apply and an extended smoke.
+
+Binding architecture: the foundation decisions of 2026-10-24 (D1-D6 there; its D5 is this epic). The shared parts F1-F5 (orchestrator any-mcp plugin with the init tools, agent API socket and `require_agent()`, token, render gating, hash pin test) are built by hive-mode-leadership-handove; this epic consumes them and builds none of them.
+
+### design.md: Intent and why
+
+User request (2026-10-24): init scripts must be exposed to an agent that was initialised with them, so it knows how it was initialised and can edit them for next time, and they run once per cluster. Today only the wrapper's per-pod `init.setup_commands` exist, which run per session, not per cluster. An agent that can read and improve its environment recipe makes each new cluster from a preset better than the last.
+
+### design.md: Goals
+
+- `ClusterSpec.init_scripts` exists, is valid in presets, and is snapshotted into a cluster created from a preset.
+- A cluster with scripts runs them once (one Job, never again for that cluster: not per pod, not per restart, not after scaling, not after an edit); a cluster without scripts records `skipped` and never runs any later.
+- Sessions start only after the run ends; a failed run starts sessions anyway with phase `degraded` and message `init failed`.
+- The agent can read the scripts, the run state and the log (tool and workdir files) and can edit the scripts; an edit writes the cluster spec and the source preset (when one exists, the Default preset included), never rolls a pod and never re-runs.
+- Public routes `GET|PUT /api/v1/clusters/{id}/init-scripts` are documented and covered by an API-only kind e2e; the UI edits scripts in presets and shows and edits them per cluster.
+- The live `agents` namespace runs the build, proven by the smoke.
+
+### design.md: Non-goals
+
+- Re-running init on a running cluster, or a "run again" button.
+- Per-pod setup (the wrapper's `init.setup_commands` stays as it is).
+- Changes to any-mcp or claude-code-wrapper: the plugin tools and the main-agent-only gate come from hive F1 and F2.
+- Secrets for the Job beyond `spec.env`.
+
+### design.md: Anti-goals
+
+- An init-scripts edit or the field itself changing the rendered ConfigMap, Secret or pod template (it would roll every agent; the hash pin test guards it).
+- Init running twice for one cluster, or racing across pods.
+- A cluster stuck forever because a script failed.
+- A second writer of `clusters` or `presets` (both stay api-written; `status` stays reconciler-written).
+
+### design.md: Constraints
+
+- Single writer per table: `clusters.spec`/`presets.spec` by the api process only; `clusters.status` by the reconciler only.
+- Spec immutability rule (MEMORY 2026-10-23) with the foundation D4 exception: `spec.replicas` and `spec.init_scripts` are mutable in place without a generation bump; PATCH stays 405.
+- The api never imports `k8s` or the wrapper (`tests/test_api_clusters.py::test_api_never_imports_k8s_or_wrapper`).
+- Every route, frame and table is in README, openapi.json and schema.d.ts (`tests/test_readme_api.py`).
+- Executes after the hive foundation tasks it needs (F1, F3, F4) are on main (README blocker).
+- Python only except the TypeScript frontend; theme tokens only in the UI.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -126,7 +194,7 @@ Headless parity: every UI capability has a documented public API and an API-only
 | D12 X1 one shared orchestrator plugin | init-scripts-agent-api |
 | D13 X2 headless parity | init-scripts-public-api, init-scripts-kind-e2e, fe-preset-init-scripts, fe-cluster-init-dialog |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -140,7 +208,7 @@ Outside this epic's tasks: the agents-helmfile smoke (smoke-init-scripts) reads 
 
 Consumed from hive-mode-leadership-handove (not rebuilt): `/agent/v1` auth and `require_agent()`, `ORCH_AGENT_TOKEN`/`ORCH_AGENT_URL`/`ORCH_CLUSTER_ID` pod env, `OrchestratorPlugin` tools `orchestrator_init_scripts_get|edit` (any-mcp v0.2.0, always in `allow`), wrapper `claude.main_agent_only_tools`, hash invariant test, README `## API` Versioning sentence.
 
-## Builder check
+### design.md: Builder check
 
 Answered (docs and code settle it):
 - Migrations: none. `ClusterSpec.init_scripts` lives in the existing `spec` JSONB and `status.init` in the existing `status` JSONB; no table or column is added. Hive owns `0003_hive.sql`, cluster-scaling `0004`; this epic would take `0005` only if a table were needed, and none is.
@@ -157,36 +225,37 @@ Minor (my call):
 
 Theirs: none.
 
-## Cross-epic
+### design.md: Cross-epic
 
 - Consumed hive contracts (registered with consumer agent-init-scripts): any-mcp-orchestrator-plugin, any-mcp-release-v0-2-0, wrapper-main-agent-only-tools, orch-hive-tables, orch-spec-cap-static, orch-agent-env, orch-agents-service, orch-agent-api-auth, orch-render-hash-invariant, orch-plugin-entry, orch-spec-runtime-mutable.
 - cluster-scaling edits the same orchestrator and frontend files; whichever epic lands second rebases onto the other (rebase, do not duplicate).
 
-## Review focus
+### design.md: Review focus
 
 - `reconciler/init.py`: the once guarantee across crashes, the `skipped` rule, the session gate, the Job never pruned by converge and deleted after its outcome.
 - `db/clusters.set_init_scripts`: one transaction, lock order clusters then presets, no generation bump, nothing rendered changes.
 - Agent routes: only `require_agent()`, cluster from the token, no new auth path.
 - The hash pin test must cover `init_scripts`.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The exact shell of the Job wrapper, within: files written as listed, `sh -eu`, the Job's exit code equals the script's.
 - UI layout details of the script rows and the dialog, within theme tokens and the existing env-row pattern.
 - Whether the checks helpers are renamed public when imported, keeping checks behaviour unchanged.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - Hive F1 builds the init tools against `orch-agent-init-scripts-api` and names `.agent-init/init.sh` in the description; confirmed by the parity test in init-scripts-agent-api.
 - Hive F3 lands `test_runtime_fields_change_only_statefulset_replicas`; if named differently on main, init-scripts-spec-field adds `test_init_scripts_never_rendered`.
 - `WORKDIR_ROOT` lives in `k8s/render.py`; the api computes paths without importing k8s (probe at build time, the boundary test enforces it).
 - Kind e2e runs in PR CI, not in the task container.
 
-## Open questions
+### approvals.json
 
-none
-
-## Irreversible operations in scope
-
-- `mise run apply` of the agents namespace (task apply-smoke-init-scripts): a live deploy, reversible by re-pinning and re-applying; guarded by lint, test and the kube-context check, preceded by a diff that must show only the orchestrator chart and image changing.
-- An agent or user edit writes the source preset, the Default preset included (C3); reversible by another edit.
+- A1: init_scripts on ClusterSpec and presets, with UI form fields and a documented API (user-approved scope, 2026-10-24). [decisions: D1, D5] [tasks: init-scripts-spec-field, init-scripts-public-api, fe-preset-init-scripts, fe-cluster-init-dialog] [status: approved]
+- A2: Releases, pin bumps and the helmfile apply plus smoke are tasks of this epic (user-approved scope, 2026-10-24). [decisions: D7] [tasks: smoke-init-scripts, deploy-pin-init-scripts, apply-smoke-init-scripts] [status: approved]
+- C1: Init scripts are new: ClusterSpec + preset field; run once per cluster (not per pod, not per restart). [decisions: D2, D9] [tasks: init-job-runner, init-scripts-kind-e2e, init-scripts-spec-field] [status: approved]
+- C2: Exposed to the agent initialised with them, so it knows how it was initialised. [decisions: D3, D10] [tasks: init-job-runner, init-scripts-agent-api] [status: approved]
+- C3: An agent edit writes to the cluster's stored spec AND to its source preset when there is one. [decisions: D4, D11] [tasks: init-scripts-agent-api, init-scripts-public-api] [status: approved]
+- X1: One shared orchestrator any-mcp plugin carries every agent-to-orchestrator tool, with a per-cluster scoped credential in the pod; built once by hive-mode-leadership-handove, the other epics add tools to it. [decisions: D6, D12] [tasks: init-scripts-agent-api] [status: approved]
+- X2: Headless parity: every UI capability has a documented public API and an API-only e2e test. [decisions: D5, D8, D13] [tasks: fe-cluster-init-dialog, fe-preset-init-scripts, init-scripts-kind-e2e, init-scripts-public-api] [status: approved]
