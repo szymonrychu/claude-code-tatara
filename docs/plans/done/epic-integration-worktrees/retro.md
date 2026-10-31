@@ -1,13 +1,60 @@
-# Epic integration worktrees record
+# Epic integration worktrees retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+- 2 of 23 tasks passed in 1 review round (common-worktree-path-sh, land-in-run); 16 more converged in 2 (record).
+- Time and tokens came in far under estimate on most tasks: land-in-run 9 vs 90 min (0.10), fork-point-diffs 6 vs 60 (0.10), forward-merge-via-epic 8 vs 65 (0.12).
+- Interrogate verdicts V-A..V-I amended the design after the gate and all A1-A4, Q1, Q2, V-A..V-I were delivered; scope audit found AC evidence for all.
+- Phase-5 review added two real tasks: sweep-guard (security: sweep trusted frontmatter branch, could delete main) and close-entry-docs (merge.py bypassed `ticket.py close` gates).
+- Red evidence was real on many tasks (slug-collision-guard `-k clashing`, epic-close-sweep `-k dry_run`, merge-target-worktree `'ep-t2' == ''`).
+- Cleanup was safe: 16 pre-rebase trees and 29 branches removed only after a cherry and subject check showed every commit on main.
+
+## What went wrong or could improve
+
+- 3 tasks needed 3 rounds or a re-run: name-lookup-parsers (run1 round-cap), slug-collision-guard (gate-repeat then run3), land-outcomes (3+3); slug-collision-guard 145 min vs 50 (2.90), land-outcomes 133 vs 50 (2.66).
+- Estimates are unreliable in both directions: MdAPE minutes 65.5%, tokens 178.2%; tokens ran 0.10-0.68 of expected on 16 of 17 measured tasks, only sweep-guard went over (1.07).
+- 6 of 23 tasks have no expected-vs-actual data (not recorded) and no task has post-delivery points, so MdAPE points is unmeasured.
+- sweep-guard round-cap and the fork-point-diffs / forward-merge-via-epic gate-repeats were verifier or flag false positives (`--prev-head unknown` crash; plan-execute.js:2115 state-describing comment), each needing an accepted ruling (rulings.json).
+- No red evidence for epic-base-wiring, docs-worktree-refs, builtin-worktree-guard, sweep-guard in the task file; builtin-worktree-guard tests were never seen red.
+- Full-suite verify hit the 600 s Bash cap (exit 144) in land-outcomes run 2; verifies were narrowed to component suites (5b82386), trading per-task cross-component coverage.
+- Rebase landings left duplicates (`ticket_names` in slug-collision-guard-2, `LEGACY_SEP` found by scope audit) and landing runs failed twice (epic-close-command lock deadlock, builtin-worktree-guard 1 failed 423 passed).
+
+## Recommendations
+
+- Code:
+  - plugins/workbench/skills/start-development/scripts/ticket.py: `branch` frontmatter is not validated; docs-flow-phases.md carries `branch: HEAD` while the other 22 tasks name a ref. A lint rejecting non-ref values would catch it.
+  - plugins/workbench/workflows/plan-execute.js:2115 (and run-handback.md:112): the parking-flag scan matches state-describing text ("Blocked from release"); needs an allowlist case plus test.
+  - verify-task.py: crashes with exit 2 on `--prev-head unknown` and `--tdd-revert` can leave files reverted; needs a test in its suite.
+  - epic-close-command: `close` passes `suites=False` to merge_back, which the spec's call omitted (implementer judgement, never ruled).
+- Delivered differently:
+  - Task `branch` frontmatter points at `-landed` or `-2` marker refs, not the original task branches (commit 0a93b10), because the installed ticket.py checks ancestry only.
+  - Verifies were narrowed from full suite to component suites (5b82386) after the 600 s cap; the plan assumed the full suite per task.
+  - 2 tasks (sweep-guard, close-entry-docs) were added after phase 5 instead of being in the 21 planned.
+  - forwardMerged was empty in all seven returns: no forward-merge fix reached a dependent through the workflow.
+- Tech debt:
+  - Unverified live paths (cannotVerify): land agent relaying `baseBefore` as `base`, merger resolving real re-conflicts, close against a real multi-repo component workbench (one component-mode test only); clear by a live run on the next epic.
+  - Installed ticket.py predates merge-contained-check, so move done relies on ancestry only until a version bump is checked.
+  - Nothing pushed; publishing docs/plans undecided (user call).
+- Workflow:
+  - recurring (housekeeping-rules-estimates): points, expected and actual figures are missing again, here for post-delivery points on all 23 tasks and for 6 tasks' actuals; migrated epics should backfill them (`actuals --backfill`) and phase 7 should record post-delivery points so MdAPE points is not "not recorded".
+  - recurring (housekeeping-rules-estimates: implementer reports and verification claims not trusted, false greens): tasks again shipped with no red evidence or hand-substituted verification (sweep-guard, builtin-worktree-guard); gate task completion in plan-execute on a non-empty `tests.red` or a named exception, and have the reviewer rerun the check.
+  - Estimates ran far high on tokens (MdAPE 178.2%) and minutes (65.5%) for infrastructure tasks that reuse existing helpers; calibrate the estimate table against the Deltas of this and the prior epic. One-off, retro table only otherwise.
+  - Gate-repeat and round-cap escalations from tool false positives cost accepted rulings thrice; make the verifier tolerate `--prev-head unknown` before the next epic.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: plain `git worktree` only (no harness built-in feature); per-epic integration worktree `<epic>`; task branches `<epic>-<task>` forking from and landing on it; epic merged to main and every tree swept at close.
 Shipped: all 21 planned tasks built and landed on main, plus 2 phase-5 remediation tasks (sweep-guard, close-entry-docs): 23 task files, all done. Seven plan-execute runs. All approvals A1-A4, Q1, Q2, V-A..V-I delivered.
 Verdict: pass (epic review 2026-10-22). mise run test and mise run lint green on main after every landing; last 2647 assertions.
 Not pushed: nothing pushed yet; pushing waits on the user's call on publishing docs/plans.
 
-## Planned vs built
+### Planned vs built
 
 Rounds = review rounds in the run that produced the verified head. Verifier head = `verification.head` from the plan-execute return (pre-landing SHA; landing rebased the branches, so these SHAs are not on main). Red = implementer's own `tests.red`; "none" = no `tests.red` in the return (not a claim that no TDD ran). No `tdd-revert` output is quoted as red evidence.
 
@@ -63,7 +110,7 @@ Approvals (ledger status `approved`; return status from the last run that carrie
 
 Run-level approvals returns showed `escalated` for A1/A2 in runs 1-4 (dependency-failed chains, 0 rounds) and `[]` in runs 6-7; the table uses the final state confirmed by the scope audit.
 
-## Deviations and rulings
+### Deviations and rulings
 
 - fork-point-diffs and forward-merge-via-epic accepted (rulings.json, runs 3 and 4). What: both stopped `gate-repeat`, clean=false, on a parking flag at plan-execute.js:2115 (and run-handback.md:112) from the land-outcomes commit c5a069a. Why: the flagged text "Blocked from release" describes a state; it is not a deferral (verified 739bb65, 7624d1d). Cost if wrong: a real deferral phrase ships in the workflow without a task owning it.
 - sweep-guard accepted (run 6). What: round-cap escalation. Why: the verifier crashed on `--prev-head unknown` (verify-task.py exit 2 before JSON); orchestrator hand-ran verify-task.py on 0c24045 (no --prev-head): clean, TDD revert red then green, AC1-AC5 met. Cost if wrong: the independent verify was substituted by the orchestrator's own run.
@@ -75,13 +122,13 @@ Run-level approvals returns showed `escalated` for A1/A2 in runs 1-4 (dependency
 - forwardMerged: empty in all seven returns. No forward-merge fix was delivered to a dependent through the workflow.
 - Landing: epic-close-command stopped in landing run 2 (deadlock between its test's internal suite-lock and the outer lock), fixed at 02a202b and landed separately (4f0a59c). builtin-worktree-guard failed the suite in landing run 5 (1 failed, 423 passed), needle fix 6e40270, landed ba81b5e.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 - Two discovered tasks about verifier timeouts dropped (commit 62cc648): epic flow-speed-and-token-optimiz, task verify-task-bounded-runs, covers them.
 - Rebases skipped commits already on main: land-outcomes-2 (1e34277, 29d1c79 = 08c26f1, c0ebe65 on main); builtin-worktree-guard-2 (4 duplicate readmes commits).
 - slug-collision-guard-2 rebase left a duplicate `ticket_names`; removed in 5b68491. Duplicate `LEGACY_SEP` in ticket.py found by scope audit, removed in 85da43f (close-entry-docs).
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Collision guard documented in tickets.md before ticket.py had it (run 4, docs-worktree-refs): resolved by slug-collision-guard landing.
 - Stale `<epic>--<task>` in plugins/workbench/README.md lines 202, 217 (docs-worktree-refs declined it): covered by docs-readmes-fallback.
@@ -92,11 +139,11 @@ Run-level approvals returns showed `escalated` for A1/A2 in runs 1-4 (dependency
 - Epic review: direct `merge.py` epic close in worktree-merger.md and worktree-merge SKILL.md bypassed `ticket.py close` gates: fixed in close-entry-docs.
 - Pending, user: push; publishing docs/plans undecided.
 
-## Research that changed the plan
+### Research that changed the plan
 
 Interrogate verdicts V-A..V-I (approvals.json) amended the design after the gate: patch-equivalence fallback, verify-before-ff, close order, MERGE-line landing mode, legacy upgrade path, fork-point diffs, re-conflict handling, legacy-tree acceptance. Phase 5 security review added sweep-guard; epic review and scope audit added close-entry-docs.
 
-## Cost
+### Cost
 
 Agent counts, continuations and wall-clock: unknown (not in the returns given). Audits: scope audit, epic review and security review, one sonnet agent each. Seven plan-execute runs; rounds per task in the table.
 
@@ -128,11 +175,11 @@ README Time: Estimate 1370 min | Actual 0 min | Remaining 0 min. Task files carr
 | slug-collision-guard | 50 | unknown |
 | sweep-guard | 45 | unknown |
 
-## MRs and deploy
+### MRs and deploy
 
 No MR or PR (meta mode, local rebase and fast-forward). Final main HEAD at record time: 400165c. Nothing pushed; push pending the user's call on publishing docs/plans. No deploy.
 
-## Lessons routed to
+### Lessons routed to
 
 - Verifier must not crash on `--prev-head unknown` and `--tdd-revert` must not leave the tree dirty: add a test in verify-task.py's suite (mechanical).
 - Parking-flag scan matched a state-describing comment twice (plan-execute.js:2115): add a lint/test allowlist case for "Blocked from release" style wording (mechanical).
