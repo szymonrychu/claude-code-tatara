@@ -44,6 +44,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 
 - Python only, except web frontends (TypeScript).
 - Services talk only through the queue or HTTP APIs; the only shared state is one service's own database, where each table has exactly one writer and queue tables change rows only through status-guarded updates.
+- Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main build releases the semver tag before helmfile pins it.
 
 ## Highest-risk surface
 

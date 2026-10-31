@@ -234,3 +234,12 @@ def test_housekeeping_rules():
         for needle in HOUSEKEEPING:
             assert needle in flat, needle
     assert len(re.findall(r"^## Housekeeping rules$", AGENTS, re.M)) == 1
+
+
+def test_semver_deploy_hard_rule():
+    sections = re.split(r"^## ", _block("project"), flags=re.M)
+    rules = next(s for s in sections if s.startswith("Component hard rules"))
+    assert (
+        "- Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main"
+        " build releases the semver tag before helmfile pins it."
+    ) in rules.splitlines()
