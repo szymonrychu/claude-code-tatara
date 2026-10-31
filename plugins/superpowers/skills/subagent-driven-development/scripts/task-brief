@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Extract one chunk's full text from an implementation-plan.md into a file the
+# implementer reads in one call, so the chunk text never has to be pasted
+# through the controller's context. A chunk runs from its
+# `## Chunk <k>: <name> (model: <sonnet|opus>)` header to the next level-2
+# header outside a code fence (the next chunk, or Files to delete).
+#
+# Usage: task-brief PLAN_FILE CHUNK_NUMBER [OUTFILE]
+# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/chunk-<k>-brief.md
+# (per plan and per worktree).
+set -euo pipefail
+
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+  echo "usage: task-brief PLAN_FILE CHUNK_NUMBER [OUTFILE]" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+if [ $# -eq 3 ]; then
+  out=$3
+else
+  # Invoke via bash rather than direct exec: some extractors (Python zipfile)
+  # strip Unix exec bits when unpacking marketplace packages (#2040).
+  dir=$("${BASH:-bash}" "$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+  out="$dir/chunk-${n}-brief.md"
+fi
+
+awk -v n="$n" '
+  /^```/ { infence = !infence }
+  !infence && /^##[ \t]/ {
+    inchunk = ($0 ~ ("^##[ \t]+Chunk[ \t]+" n ":"))
+  }
+  inchunk { print }
+' "$plan" > "$out"
+
+if [ ! -s "$out" ]; then
+  echo "chunk ${n} not found in ${plan} (no heading matching '## Chunk ${n}:')" >&2
+  exit 3
+fi
+
+echo "wrote ${out}: $(wc -l < "$out" | tr -d ' ') lines"
