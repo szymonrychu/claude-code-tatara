@@ -1,61 +1,46 @@
-# Semver image tags at the end of main builds design
+---
+title: Semver image tags at the end of main builds
+repos: [agents-orchestrator, agents-web, agents-webhook, agents-schedule, agents-matrix-connector, agents-helmfile]
+created: 2026-10-28
+owner: ""
+rung: ""
+---
 
-## Summary
+# Semver image tags at the end of main builds
 
-Every green push to main in agents-orchestrator, agents-web, agents-webhook, agents-schedule and
-agents-matrix-connector ends with a `release` job. It computes the next version with one
-stdlib-only Python script (`scripts/next_version.py`, byte-identical in the five repos, tested in
-each repo's own runner), retags the run's already-pushed sha7 image as X.Y.Z, X.Y and X with
-`regctl image copy` (manifest only) and pushes git tag vX.Y.Z last. The tag-triggered chart path
-is retired; main chart publishing stays. agents-helmfile then pins all five components to X.Y.Z
-in the phase 6 deploy step.
+## What and why
 
-## Intent and why
+What: A release job at the end of every green main build tags the image X.Y.Z, X.Y and X and pushes git tag vX.Y.Z; helmfile pins X.Y.Z.
+How: Tested in-repo next-version script over conventional commits, regctl image copy for manifest-only retags, contents: write and a concurrency group on the release job.
+Why: Harbor retention prunes sha7 tags within hours and broke deployed pods (incident 2026-10-28); semver tags survive it.
 
-Incident 2026-10-28: Harbor retention pruned the sha7 tags pinned in agents-helmfile
-(agents-orchestrator 96e46f3, agents-web 01e971c, agents-webhook 838ba1f, agents-schedule
-6cfa955, agents-matrix-connector 98b0803); new pods hit ImagePullBackOff. Semver tags survive
-retention (claude-code-wrapper keeps 0.2.0..0.3.1 for days). Every deploy of these five
-components is exposed until they pin semver tags.
+Incident 2026-10-28: Harbor retention pruned the sha7 image tags pinned in agents-helmfile (agents-orchestrator 96e46f3, agents-web 01e971c, agents-webhook 838ba1f, agents-schedule 6cfa955, agents-matrix-connector 98b0803), so new pods hit ImagePullBackOff and only node-cached pods kept running. Semver tags survive retention (claude-code-wrapper keeps 0.2.0..0.3.1 for days while every sha7 tag of the other repos was pruned within hours).
 
-## Goals
+Each image-building repo gets a release step at the end of a green main build: a tested in-repo script computes the next version from conventional commits since the last vX.Y.Z git tag, the job pushes git tag vX.Y.Z and retags the already-pushed sha7 image as X.Y.Z, X.Y and X with regctl image copy (manifest only). agents-helmfile then pins every component to its X.Y.Z image and the cluster is applied.
 
-- G1: Every green push to main in agents-orchestrator, agents-web, agents-webhook, agents-schedule and agents-matrix-connector ends with a release job that needs every other job of the run and computes the next version with a tested in-repo script: BREAKING (`!` or `BREAKING CHANGE` footer) bumps major, `feat` bumps minor, anything else bumps patch, from the last vX.Y.Z tag.
-- G2: The release job pushes git tag vX.Y.Z and image tags X.Y.Z, X.Y and X of the run's sha7 image to harbor.szymonrichert.pl/containers/<repo>, without re-uploading layers.
-- G3: Release jobs never race: one concurrency group per repo, full history and tags fetched.
-- G4: Tests that pin the CI layout are updated to the new layout, and each repo's lint and tests pass.
-- G5: agents-helmfile pins every one of the five components to an X.Y.Z image tag released by this epic, and the agents namespace is applied and healthy with every pod pulling a semver tag.
+## Scope ladder
 
-G1-G4 are covered by the six tasks' acceptance conditions. G5 is verified in the phase 6 deploy
-step (section "Deploy step (phase 6)"), because the X.Y.Z tags exist only after each repo's PR
-merges and its release job runs (user decision).
+### Rung 1: agreed scope (migrated)
+
+- 1.1: Every green push to main in agents-orchestrator, agents-web, agents-webhook, agents-schedule and agents-matrix-connector ends with a release job that needs every other job of the run and computes the next version with a tested in-repo script: BREAKING (`!` or `BREAKING CHANGE` footer) bumps major, `feat` bumps minor, anything else bumps patch, from the last vX.Y.Z tag.
+- 1.2: The release job pushes git tag vX.Y.Z and image tags X.Y.Z, X.Y and X of the run's sha7 image to harbor.szymonrichert.pl/containers/<repo>, without re-uploading layers.
+- 1.3: Release jobs never race: one concurrency group per repo, full history and tags fetched.
+- 1.4: Tests that pin the CI layout are updated to the new layout, and each repo's lint and tests pass.
+- 1.5: agents-helmfile pins every one of the five components to an X.Y.Z image tag released by this epic, and the agents namespace is applied and healthy with every pod pulling a semver tag.
+
+## Agreed scope
+
+not agreed yet
 
 ## Non-goals
 
 - Changing Harbor's retention policy (no admin access; semver tags already survive it).
 - claude-code-wrapper, any-mcp, agents-common, any-mcp-tatara-plugins release flows.
 - A shared reusable workflow or shared CI repo; each repo stays independent.
-- Changelogs, GitHub Releases, version commits, a `latest` tag.
-- Changing how the sha7 image is built or pushed (the `images` job stays as is).
-- Chart versioning: charts keep `<Chart.version>-main.<sha7>` from main.
 
-## Anti-goals
+## Design
 
-- A release job that retags X.Y.Z, X.Y or X onto an older commit than one already released.
-- A third-party version or tagging action in a job that holds `contents: write` and Harbor credentials.
-- Re-uploading image layers (Cloudflare 100 MB body limit; the import already chunks).
-- Five scripts that drift apart.
-- A red main in any of the five repos.
-
-## Constraints
-
-- Python stdlib only for the script; it runs on the runner's system `python3` (ubuntu-latest), so py312 syntax; it must pass ruff in the four Python repos (identical config: line-length 100, target py312, select E F I UP B SIM).
-- Default workflow token is read-only in all five repos (`gh api .../actions/permissions/workflow`, discovery); tag push needs `permissions: contents: write`. No tag rulesets (`gh api .../rulesets` is `[]`).
-- A tag pushed with GITHUB_TOKEN starts no workflow run (research finding 1).
-- agents-webhook local env: uv picks a managed Python 3.15 and fails building google-re2. Probe 2026-10-28: `UV_PYTHON=3.12 mise run lint` passed ("All checks passed!", "49 files already formatted") and `UV_PYTHON=3.12 mise exec -- uv run pytest tests/test_ci.py` passed ("12 passed"). Every webhook command in this epic sets `UV_PYTHON=3.12`.
-- agents-web local vitest needs `npm ci` (stale node_modules); this epic's web tests run with `node --test`, which needs only the installed `yaml` package (probe: `mise exec -- node --test 'scripts/*.test.mjs'` gave "pass 22 fail 0").
-- Workflow behaviour itself is proven only by CI; the PR runs and the first main runs are the authoritative evidence (phase 6).
-- House rules: TDD, no backward compatibility, no em dashes.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -147,6 +132,10 @@ Alternatives: design.md only.
 
 Why: the next agent in each repo reads its README and MEMORY.md, not this epic.
 
+## Open questions
+
+- Q1: The release job now owns v* tags and a GITHUB_TOKEN tag push never triggers a workflow, so the tag-triggered chart-publish-tag job, the push: tags: [v*] trigger and chart-version.sh's tag mode are removed in agents-orchestrator, agents-web, agents-webhook and agents-schedule (main chart-publish stays). Confirm the removal? [recommended: yes, remove them (D9)]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -155,7 +144,7 @@ Why: the next agent in each repo reads its README and MEMORY.md, not this epic.
 | Prior art | ran, .scratchpad/semver-tagging/research-prior-art.md | in-repo script (section 1), `regctl image copy` (section 3, https://regclient.org/cli/regctl/image/copy/), concurrency (https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs), `fetch-depth: 0` (https://github.com/actions/checkout) | third-party version actions (CVE-2025-30066, https://www.tenable.com/cve/CVE-2025-30066); docker retag (claude-code-wrapper release.yaml) |
 | Harbor retention | ran, research section 4 | X.Y.Z tags keep their artifact (https://goharbor.io/docs/2.13.0/working-with-projects/working-with-images/create-tag-retention-rules/) | changing retention (non-goal, no admin access) |
 
-## Research inputs
+### Research inputs
 
 Retro proposals first (from `ticket.py retro --history`), then brief findings.
 
@@ -177,7 +166,76 @@ Retro proposals first (from `ticket.py retro --history`), then brief findings.
 - An older queued run could compute an already released version (research "Contradictions": concurrency keeps one pending run): D5, orchestrator-release-job.
 - Noted, not doing now: agents-orchestrator's existing `regctl-installer@main` uses in `images` and `chart-publish`.
 
-## Decision coverage
+## Irreversible operations
+
+- Git tags vX.Y.Z pushed by CI to five origins, and image tags X.Y.Z (immutable in intent) in Harbor: covered by the user's decision 2026-10-28 that every green main build releases; D5 and D7 stop duplicate or out-of-order tags; never forced.
+- Removing the `chart-publish-tag` job and `v*` trigger: covered by gate question Q1.
+- agents-helmfile apply to the live `agents` namespace: phase 6, after the gate, preceded by `helmfile diff` and the image-existence check.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+### design.md: Summary
+
+Every green push to main in agents-orchestrator, agents-web, agents-webhook, agents-schedule and
+agents-matrix-connector ends with a `release` job. It computes the next version with one
+stdlib-only Python script (`scripts/next_version.py`, byte-identical in the five repos, tested in
+each repo's own runner), retags the run's already-pushed sha7 image as X.Y.Z, X.Y and X with
+`regctl image copy` (manifest only) and pushes git tag vX.Y.Z last. The tag-triggered chart path
+is retired; main chart publishing stays. agents-helmfile then pins all five components to X.Y.Z
+in the phase 6 deploy step.
+
+### design.md: Intent and why
+
+Incident 2026-10-28: Harbor retention pruned the sha7 tags pinned in agents-helmfile
+(agents-orchestrator 96e46f3, agents-web 01e971c, agents-webhook 838ba1f, agents-schedule
+6cfa955, agents-matrix-connector 98b0803); new pods hit ImagePullBackOff. Semver tags survive
+retention (claude-code-wrapper keeps 0.2.0..0.3.1 for days). Every deploy of these five
+components is exposed until they pin semver tags.
+
+### design.md: Goals
+
+- G1: Every green push to main in agents-orchestrator, agents-web, agents-webhook, agents-schedule and agents-matrix-connector ends with a release job that needs every other job of the run and computes the next version with a tested in-repo script: BREAKING (`!` or `BREAKING CHANGE` footer) bumps major, `feat` bumps minor, anything else bumps patch, from the last vX.Y.Z tag.
+- G2: The release job pushes git tag vX.Y.Z and image tags X.Y.Z, X.Y and X of the run's sha7 image to harbor.szymonrichert.pl/containers/<repo>, without re-uploading layers.
+- G3: Release jobs never race: one concurrency group per repo, full history and tags fetched.
+- G4: Tests that pin the CI layout are updated to the new layout, and each repo's lint and tests pass.
+- G5: agents-helmfile pins every one of the five components to an X.Y.Z image tag released by this epic, and the agents namespace is applied and healthy with every pod pulling a semver tag.
+
+G1-G4 are covered by the six tasks' acceptance conditions. G5 is verified in the phase 6 deploy
+step (section "Deploy step (phase 6)"), because the X.Y.Z tags exist only after each repo's PR
+merges and its release job runs (user decision).
+
+### design.md: Non-goals
+
+- Changing Harbor's retention policy (no admin access; semver tags already survive it).
+- claude-code-wrapper, any-mcp, agents-common, any-mcp-tatara-plugins release flows.
+- A shared reusable workflow or shared CI repo; each repo stays independent.
+- Changelogs, GitHub Releases, version commits, a `latest` tag.
+- Changing how the sha7 image is built or pushed (the `images` job stays as is).
+- Chart versioning: charts keep `<Chart.version>-main.<sha7>` from main.
+
+### design.md: Anti-goals
+
+- A release job that retags X.Y.Z, X.Y or X onto an older commit than one already released.
+- A third-party version or tagging action in a job that holds `contents: write` and Harbor credentials.
+- Re-uploading image layers (Cloudflare 100 MB body limit; the import already chunks).
+- Five scripts that drift apart.
+- A red main in any of the five repos.
+
+### design.md: Constraints
+
+- Python stdlib only for the script; it runs on the runner's system `python3` (ubuntu-latest), so py312 syntax; it must pass ruff in the four Python repos (identical config: line-length 100, target py312, select E F I UP B SIM).
+- Default workflow token is read-only in all five repos (`gh api .../actions/permissions/workflow`, discovery); tag push needs `permissions: contents: write`. No tag rulesets (`gh api .../rulesets` is `[]`).
+- A tag pushed with GITHUB_TOKEN starts no workflow run (research finding 1).
+- agents-webhook local env: uv picks a managed Python 3.15 and fails building google-re2. Probe 2026-10-28: `UV_PYTHON=3.12 mise run lint` passed ("All checks passed!", "49 files already formatted") and `UV_PYTHON=3.12 mise exec -- uv run pytest tests/test_ci.py` passed ("12 passed"). Every webhook command in this epic sets `UV_PYTHON=3.12`.
+- agents-web local vitest needs `npm ci` (stale node_modules); this epic's web tests run with `node --test`, which needs only the installed `yaml` package (probe: `mise exec -- node --test 'scripts/*.test.mjs'` gave "pass 22 fail 0").
+- Workflow behaviour itself is proven only by CI; the PR runs and the first main runs are the authoritative evidence (phase 6).
+- House rules: TDD, no backward compatibility, no em dashes.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -193,7 +251,7 @@ Retro proposals first (from `ticket.py retro --history`), then brief findings.
 | D10 agents-web script tests run by a runner | web-script-tests-wired, web-release-job |
 | D11 Docs and memory | orchestrator-release-job, web-release-job, webhook-release-job, schedule-release-job, matrix-connector-release-job |
 
-## Review focus
+### design.md: Review focus
 
 - `scripts/next_version.py`: the D5 "contained in" skip, the strict tag regex, numeric (not lexical) ordering, the merge-graph scan, and that the tests really exercise each rule against a real git repo (a test that passes against a stub script asserts nothing).
 - Byte identity of `scripts/next_version.py` across all five repos and of `tests/test_next_version.py` across the four Python repos; the epic review reruns the `cmp` loop after any fix round in agents-orchestrator.
@@ -201,22 +259,19 @@ Retro proposals first (from `ticket.py retro --history`), then brief findings.
 - Git tag strictly after the three copies; no `--force`; no `secrets.GITHUB_TOKEN`.
 - Each test edited or removed is one that the new layout made inaccurate, and the task names it.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal structure of `scripts/next_version.py` (functions, error messages), within the interface in the agents-orchestrator task.
 - Step names in the release job, and whether the version step also prints a "no release due" line.
 - Wording of the README and MEMORY.md entries, within D11.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - The Harbor robot can push a new tag to an existing manifest (`regctl image copy`): same push right as the import; unverified until the first main release job runs (phase 6 checks it).
 - `actions/checkout@v4` with `fetch-depth: 0` and the persisted job token can push a tag when the job has `contents: write`: confirmed by the first main release job (phase 6).
 - The runner's system `python3` (ubuntu-latest) is 3.12 or newer: confirmed by the first release job; the script avoids syntax newer than py312.
 
-## Open questions
-- Q1: The release job now owns v* tags and a GITHUB_TOKEN tag push never triggers a workflow, so the tag-triggered chart-publish-tag job, the push: tags: [v*] trigger and chart-version.sh's tag mode are removed in agents-orchestrator, agents-web, agents-webhook and agents-schedule (main chart-publish stays). Confirm the removal? [recommended: yes, remove them (D9)]
-
-## Deploy step (phase 6)
+### design.md: Deploy step (phase 6)
 
 Not a build-loop task: the versions exist only after each repo's PR merges and its release job runs (user decision).
 
@@ -224,9 +279,3 @@ Not a build-loop task: the versions exist only after each repo's PR merges and i
 2. agents-helmfile, one PR: pin each component's image tag to its X.Y.Z in `values/<component>/common.yaml` (agents-orchestrator, agents-webhook, agents-schedule, agents-matrix-connector, agents-web); chart versions pin the chart main published for the same release commit (`0.1.0-main.<sha7>`, all five, agents-schedule included, so chart and image always come from one commit). Update the tests that hardcode sha7 pins (`tests/test_orchestrator_release.py`, `tests/test_webhook_release.py`, `tests/test_schedule_release.py`, `tests/test_matrix_connector_release.py`, `tests/test_web_release.py`) to an X.Y.Z regex and the new pins; red first. `mise run lint` and `mise run test` locally (no helmfile CI).
 3. Before applying: `regctl image digest` of every pinned X.Y.Z succeeds.
 4. `helmfile diff` reviewed, then `mise run apply`; every pod in namespace `agents` is Ready and `kubectl get pods -n agents -o jsonpath='{..image}'` shows only semver tags for the five components (and the wrapper's 0.3.1). This verifies G5.
-
-## Irreversible operations in scope
-
-- Git tags vX.Y.Z pushed by CI to five origins, and image tags X.Y.Z (immutable in intent) in Harbor: covered by the user's decision 2026-10-28 that every green main build releases; D5 and D7 stop duplicate or out-of-order tags; never forced.
-- Removing the `chart-publish-tag` job and `v*` trigger: covered by gate question Q1.
-- agents-helmfile apply to the live `agents` namespace: phase 6, after the gate, preceded by `helmfile diff` and the image-existence check.
