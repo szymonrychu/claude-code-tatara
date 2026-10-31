@@ -1,12 +1,34 @@
-# any-mcp record
+# any-mcp retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: any-mcp, a Python MCP server that exposes any API or group of APIs as MCP tools through a plugin ABC (stdio default, streamable HTTP, FastMCP 4.x behind one adapter), with docs, examples, pip/git install and tag v0.1.0.
 Shipped: 30 task files, all `done` (28 planned + 2 discovered: python 3.12 pin, http client aclose; the 5 post-review security/hardening tasks are among the 30). All landed in PR #1 (merged as 2b9cc65), tag v0.1.0 pushed, release workflow run succeeded. Full suite on the tip: 202 passed (`full-suite2.log`), lint clean (62 files formatted).
 Verdict: pass (whole-diff review, security pass, scope audit A-J landed). Open items: see Discovered and blocked (nothing undelivered; several runtime behaviours were never exercised live).
 
-## Planned vs built
+### Planned vs built
 
 Status, rounds and verifier head are read from the plan-execute returns (return1-5) and checked against `git log origin/main` for the code/any-mcp repo. "Red" is the implementer's own `tests.red` run; no `tdd-revert` output is quoted anywhere. Where the verifier's evidence was only merge.py's `verify: pass <cmd>` line, the pytest count shown is the implementer's `selfVerification` and is labelled (self). No task ended without a verifier head, so none is `unverified`; earlier returns that listed tasks as `dependency-failed` or `impl-agent-died` were superseded by later runs (rows below use the final run).
 
@@ -62,7 +84,7 @@ Approvals (`approvals.json`, final status from the latest return per id, then ru
 
 The approvals the returns reported as `escalated` (return1-3) were mid-run states; the last return that carried each id (return2, 4, 5) or a ruling cleared them. Ids B/D/E/F/G were last `delivered` in return2, A/B/F in return5, H/I in return4. C and J were last reported `escalated` (return3/return2); they are `delivered` only through the rulings below.
 
-## Deviations and rulings
+### Deviations and rulings
 
 - cli-stdio, accept: fix agent died (safety classifier rate-limited) on findings the reviewer itself judged false positives (NotImplementedError at cli.py:107 is the exception suppressed around `add_signal_handler`; cli.py:96/97/154 are explanatory comments). Verified on cf2da99: 11 passed, lint clean. Cost if wrong: a real stub or deferred work stays in the CLI; the later whole-diff review and 202-test suite did not surface one.
 - docs-authoring and docs-reference, accept: gate-repeat on parking-wording false positives. plugin-authoring.md:460/462 state the input-required kind and the 2026-07-28-only caveat the task requires; transports.md:46 and :107 state protocol-era behaviour and that TLS terminates at a proxy. Verified on 78faf4e (3 passed) and c967152 (4 passed). Cost if wrong: a doc sentence that really defers work ships in v0.1.0.
@@ -75,11 +97,11 @@ The approvals the returns reported as `escalated` (return1-3) were mid-run state
 
 Declined verifier/reviewer findings (all judged speculative hardening or false positives by the reviewer, not settled by a ruling) are in the returns' `declined` arrays; the ones that could matter are carried to the next section.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 The returns' `duplicates` arrays are empty. The git log shows two pairs of commits with identical subjects: `cfe0936` and `61a1b3c` ("fix(http): reject empty bearer_token, treat only None as unset") and `e089fc9` and `edff6df` ("docs: configuration and transport references with tests"). I did not diff them; they are most likely a rebase or a repeated landing of the same change and the final tree holds one implementation each. Treated as unknown, not reconciled.
 
-## Discovered and blocked
+### Discovered and blocked
 
 Blocked: none. Undelivered: none (`undelivered` empty in every return).
 
@@ -95,7 +117,7 @@ Not exercised or not verified (taken from `cannotVerify` and `declined`; each is
 - Test-first not shown: call-pipeline round-2 fixes, plugin-abc bytes fix, cli-stdio, examples-small-medium, examples-big-group, nothing-ever-calls-aclose-on (mutation check claimed, not re-run). bounded-upstream-bodies is internally inconsistent: the return records both a red run (`wroteTestFirst: true`) and a process gap saying tests were written after implementation. The files win only partly: I cannot see the red run, so it is quoted as the implementer's claim.
 - Python 3.12 behaviour: fastmcp-adapter and http-transport were verified on the CPython 3.15 venv (http-transport also under `UV_PYTHON=3.12`); the 3.12 pin was added afterwards.
 
-## Research that changed the plan
+### Research that changed the plan
 
 - fastmcp 4.1.3 resolves to httpx2 v2.16.0 (scaffold, confirmed with `uv tree` and `uv.lock`; recorded only in the scaffold commit body): shaped the HTTP-client assumption for the adapter and http-binding.
 - uv picked CPython 3.15 despite the mise 3.12 pin (fastmcp-adapter finding): added the `.python-version` pin task and a test.
@@ -103,7 +125,7 @@ Not exercised or not verified (taken from `cannotVerify` and `declined`; each is
 - fastmcp takes whole-second cache TTLs and rejects 0, so the adapter sets the SDK `CacheHint` in ms directly (fastmcp-adapter, pinned by `test_list_result_cacheable`).
 - Security review of the whole diff produced the five hardening tasks listed under Deviations.
 
-## Cost
+### Cost
 
 - Agents by role: per-role counts are not in the returns. Recorded: 33 triage calls in total (return1 15, return2 10, return3 2, return5 6, return4 0), 5 workflow continuations, whole-diff review (sonnet), one security pass, one scope audit. Wall-clock: unknown.
 - Estimates come from the task files; `actual` and `actual_roles` are empty in all 30 task files, so no actual minutes are recorded. README `Time`: Estimate 150 agent-min, Critical path 80 min, expected wall 3.3 h (P=1.5, k=2.0), Actual 0 min, Remaining 0 min. Sum of per-task estimates: 150 over the 28 tasks that have one.
@@ -114,14 +136,14 @@ Not exercised or not verified (taken from `cannotVerify` and `declined`; each is
 | release, core-types, response-shaping, config-model, http-binding, schemas-and-validation, plugin-discovery, registry, call-pipeline, fastmcp-adapter, http-transport, input-required-adapter, testing-harness, docs-authoring, docs-reference, docs-readme-concepts, workflow-hardening, openapi-credential-hosts | 5 each | unknown |
 | nothing-ever-calls-aclose-on, uv-picks-cpython-3-15-for-th | none (discovered) | unknown |
 
-## MRs and deploy
+### MRs and deploy
 
 - PR https://github.com/szymonrychu/any-mcp/pull/1: merged as 2b9cc65, CI passed.
 - Tag v0.1.0 pushed. `gh run list --workflow release.yml --limit 1`: run 39879113219 "Merge pull request #1 from szymonrychu/any-mcp", push on v0.1.0, completed success, 1m16s, 2026-10-23T00:36:24Z.
 - Full suite on the tip: 202 passed in 46.56s; lint: all checks passed, 62 files formatted.
 - Deploy: no PyPI publishing by design (git tag only). Consumption by the agent-orchestrator agent image is not confirmed in this record.
 
-## Lessons routed to
+### Lessons routed to
 
 - Parking-wording gate flags factual doc sentences (6 false-positive escalations: cli-stdio, docs-authoring, docs-reference, docs-readme-concepts, bounded-upstream-bodies, release; `NotImplementedError` as an exception type). Mechanical: add a test for the gate with these sentences as fixtures and scope it to added lines in code files plus a banned-phrase list, not generic words, so verifier verdicts do not depend on a model reading a line it cannot see (the verdicts quoted "output does not show the wording").
 - Escalation verdicts labelled `real` whose reason is "verification output does not show the line": add a check in the verifier that a `real` verdict must quote the offending line; otherwise downgrade to `unconfirmed`. Mechanical.

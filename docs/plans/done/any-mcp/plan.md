@@ -1,85 +1,44 @@
-# any-mcp design
+---
+title: any-mcp
+repos: [any-mcp]
+created: 2026-10-22
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# any-mcp
 
-any-mcp is a Python MCP server that does nothing on its own: every tool comes from a plugin. A
-plugin subclasses `any_mcp.Plugin` and implements one required hook, `load_tools()`, plus any of
-the optional hooks (`setup`, `teardown`, `credentials`, `before_call`, `call`, `shape_response`,
-`on_error`), whose defaults do the common proxy work (HTTP binding, argument validation, response
-shaping, error mapping, reload). It runs over stdio by default and over streamable HTTP with
-`--transport http`. The MCP protocol layer is FastMCP 4.x, reached only through one adapter
-module, so plugins never import `fastmcp`. v1 serves tools only and ships as git tag `v0.1.0`,
-installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`.
+## What and why
 
-## Intent and why
+What: any-mcp, a Python MCP server that exposes any API, or groups of APIs, as MCP tools through plugins; it does nothing on its own.
+How: plugins subclass one ABC (load_tools required, other hooks defaulted); the core owns validation, errors, naming, reload, response budgets and both transports on FastMCP 4.x behind one adapter; shipped as a pip-installable package and git tag v0.1.0.
+Why: users write only the business logic of an API instead of a whole MCP server, and the agent-orchestrator agent image preinstalls any-mcp in every session.
 
-The user wants an "MCP to API proxy": one server that takes all the common MCP work (transports,
-protocol eras, schemas, validation, errors, reload) under one umbrella and asks its users only for
-the business logic of an API, as a small plugin. Writing one MCP server per API repeats that work
-every time and couples each server to a fast-moving framework (FastMCP shipped three majors in
-about ten months, prior-art brief F1/F2). The immediate consumer is the agent-orchestrator epic:
-every agent session starts with any-mcp preinstalled from a pinned git tag, so the CLI, the
-config format and the release tag are cross-epic contracts.
+any-mcp: an MCP server that does nothing on its own and exposes any API, or groups of APIs, as MCP tools through a plugin system. A plugin subclasses an abstract base class and overrides hook methods (tool load/reload, call, response shaping, errors). Runs over stdio by default and over streamable HTTP. Very well documented, with small and big plugin examples; plugins must be trivial to write. An MCP-to-API proxy that owns the common work so users provide only business logic.
 
-## Goals
+## Scope ladder
 
-- G1: a plugin is one class: `load_tools()` (or one `@tool` method) is the only thing it must
-  provide; every other hook has a working default.
-- G2: plugins load from the entry-point group `any_mcp.plugins` and from `module:Class` entries in
-  the config file (with optional `python_path` directories), several at once (a group of APIs).
-- G3: one entrypoint `any-mcp`: stdio by default, streamable HTTP with `--transport http`; both the
-  2026-07-28 protocol and handshake-era (`<=2025-11-25`) clients work.
-- G4: argument validation, exception-to-`isError` mapping, namespacing, deterministic tool order,
-  `ttlMs`/`cacheScope`, name sanitising, schema normalising and a response size budget are done by
-  the core, never by plugins.
-- G5: a built-in `OpenAPIPlugin` (the big example's base) and runnable, tested examples: hello
-  (one method), single-endpoint, a decorator multi-tool plugin with auth, a packaged OpenAPI
-  plugin, and a multi-plugin group config.
-- G6: docs with their own acceptance conditions: README, concepts, plugin authoring guide (small
-  and big), testing plugins, configuration reference, transport reference.
-- G7: CI on GitHub Actions (`mise run lint`, `mise run test`) and a release workflow; tag `v0.1.0`
-  installs with pip from git and `any-mcp --help` exits 0.
-- G10: a plugin can ask the client for input mid-call through one optional hook (`request_input`, MRTR `InputRequiredResult`), tested over stdio and HTTP and documented with an example (D19).
-- G11: the orchestrator onStart script can install any-mcp from the pinned tag with plain pip and write the config with the standard library only (D20).
-- G8: any-mcp is a standard pyproject package with the console script `any-mcp`, installable the same
-  ways as claude-code-wrapper: `pip install any-mcp` (package-index name), `pip install
-  git+https://github.com/szymonrychu/any-mcp`, `pip install .`, `pipx install any-mcp`, `uv tool
-  install any-mcp`; `any-mcp --version` works and the README documents every form.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: A plugin ABC whose only required hook returns the tool list; optional hooks have working defaults.
+- 1.2: Plugin discovery via entry points and config module:Class entries.
+- 1.3: stdio and streamable HTTP from one entrypoint, current MCP spec plus legacy clients.
+- 1.4: A built-in OpenAPI plugin as the big example, a one-method hello-world plugin as the small one.
+- 1.5: Docs: concepts, plugin authoring guide, both examples, configuration and transport reference.
+- 1.6: Published as a pinned git tag installable with pip.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No business-logic plugins beyond the examples.
-- No auth gateway (no OAuth server, no per-user consent, no token exchange); client tokens are
-  never forwarded downstream.
-- No MCP resources or prompts from plugins in v1 (tools only). MRTR (`InputRequiredResult`) is
-  in scope as a separate optional hook (D19).
-- No server-initiated sampling, elicitation, roots or MCP logging (deprecated in 2026-07-28).
-- No legacy HTTP+SSE transport.
+- No auth gateway; client tokens are never forwarded downstream.
 
-## Anti-goals
+## Design
 
-- A plugin that imports `fastmcp` or `mcp` to work: that couples every plugin to a framework major.
-- Correctness that depends on `tools/list_changed` reaching the client (Cursor ignores it, and it
-  only reaches `subscriptions/listen` subscribers).
-- A plugin exception surfacing as JSON-RPC `-32603` instead of an `isError` result the model can
-  read.
-- Mirroring a whole API 1:1 by default (context bloat): the OpenAPI plugin needs an explicit filter.
-- Anything other than MCP messages on stdout in stdio mode.
-- Inbound `Authorization` headers or cookies reaching any outbound request.
-
-## Constraints
-
-- New component repo at `code/any-mcp` (public GitHub origin `szymonrychu/any-mcp`, created by the
-  orchestrator after the gate). The `scaffold` task creates the layout inside it.
-- Python `>=3.12`, uv (`uv.lock` committed), hatchling, ruff (line length 100, rules E F I UP B
-  SIM), pytest with pytest-asyncio auto mode, mise tasks `lint` and `test`, GitHub Actions CI. These
-  mirror `code/claude-code-wrapper/pyproject.toml` and `mise.toml`.
-- Runtime dependencies are declared once by `scaffold`: `fastmcp>=4.1,<5`, `pydantic>=2`,
-  `jsonschema>=4.23`, `pyyaml`, `httpx`. Later tasks do not edit `pyproject.toml` or `uv.lock`
-  except `release`.
-- Only `src/any_mcp/_fastmcp_adapter.py` imports `fastmcp` or `mcp`; a test enforces it.
-- Task verify commands are `uv run --frozen pytest <named test files> -q && mise run lint`.
-- MIT license, matching the sibling components.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -275,6 +234,14 @@ MCP 2026-07-28 replaced server-initiated elicitation with multi round-trip reque
 
 The orchestrator installs any-mcp at agent start with one onStart hook script: `python -m venv /opt/any-mcp && /opt/any-mcp/bin/pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`, then writes `any-mcp.yaml`. The script has only the standard library, so it writes the config as JSON, which is valid YAML; `load_config` therefore accepts JSON files (and `.json` paths) and a test loads a `json.dumps` file. The release task pins the install command, the venv path `/opt/any-mcp/bin/any-mcp` and a test that installs with plain `venv` and `pip` (not uv) from `git+file` at HEAD and loads a JSON config with the installed interpreter. (user amendment.) Serves I.
 
+## Open questions
+
+- Q1: Build on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC, with one adapter module the only importer of fastmcp? [answer: yes: FastMCP 4 behind own ABC]
+- Q2: Keep v1 tools-only, with plugin resources and prompts not in the v1 API? [answer: yes: tools only (no resources or prompts)]
+- Q3: Keep MRTR (InputRequiredResult) out of the v1 plugin API? [answer: CHANGED: InputRequiredResult (MCP 2026-07-28 multi-round-trip) IS in v1 as a separate optional plugin hook with a default that never requests input, wired through the FastMCP adapter and call pipeline, documented in the authoring guide with an example, tested over stdio and HTTP]
+- Q4: Make the first release tag v0.1.0? [answer: yes: v0.1.0]
+- Q5: Make the OpenAPI plugin refuse to load without an allow or tags filter, so mirroring a whole API needs an explicit allow of every operation? [answer: yes: OpenAPI plugin requires an allow or tags filter]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -284,7 +251,7 @@ The orchestrator installs any-mcp at agent start with one onStart hook script: `
 | research-papers | skipped: no algorithmic or scientific core | none | none |
 | research-docs | ran: docs brief (MCP 2026-07-28 spec, `mcp` 2.x, FastMCP 4.x, Claude Code MCP docs) | dual-era server (spec versioning, FastMCP whats-new); stdout discipline and EOF exit (stdio transport spec); `ttlMs`/`cacheScope` (SEP-2549); `isError` vs `-32602` split (tools spec error handling); TextContent copy of structured content; Origin validation and loopback bind (streamable HTTP spec); Claude Code stdio registration forms (code.claude.com/docs/en/mcp) | HTTP+SSE transport (deprecated, SEP-2596); per-session tool sets (non-conformant for modern clients) |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -332,7 +299,107 @@ The orchestrator installs any-mcp at agent start with one onStart hook script: `
 | docs Plan inputs | open gap: FastMCP list_changed for out-of-request changes | fastmcp-adapter AC |
 | docs Plan inputs | open gap: Claude Code v2 opens `subscriptions/listen` over stdio | rejected: client behaviour; D8 makes correctness independent of it |
 
-## Decision coverage
+## Irreversible operations
+
+- Creating the public GitHub repository `szymonrychu/any-mcp` and pushing to it: the code becomes
+  public. Covered by the gate approval of item F; done by the orchestrator before phase 4.
+- Pushing tag `v0.1.0` to the public origin after the epic closes on `main`: a published tag is
+  never moved (agent-orchestrator pins it). Covered by the gate approval of item H; the release
+  workflow run on the tag is its check.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-23)
+
+Whole-diff review (sonnet): PASS; acted on list-tools client cleanup on setup failure and per-client aclose isolation. Security pass: no critical; acted on credential host pinning for OpenAPI specs, unknown-argument rejection, streamed upstream and spec bodies with caps, refusing a non-loopback HTTP bind without a token unless --insecure, CI/release least privilege and tag validation, credential redaction in error bodies; recorded the plugin-reference trust model in docs/configuration.md. Scope audit: A-J landed; H (v0.1.0 tag) is pushed after merge. Full suite on the epic tip: 202 passed, lint clean.
+Rulings: cli-stdio (fix agent died on false positives), docs-authoring/docs-reference/docs-readme-concepts (parking-wording false positives on factual doc sentences, one mandated verbatim), openapi-plugin re-run after a rate-limited implementer; discovered tasks python 3.12 pin and http client aclose built, probe-notes doc folded into docs-reference.
+
+### design.md: Summary
+
+any-mcp is a Python MCP server that does nothing on its own: every tool comes from a plugin. A
+plugin subclasses `any_mcp.Plugin` and implements one required hook, `load_tools()`, plus any of
+the optional hooks (`setup`, `teardown`, `credentials`, `before_call`, `call`, `shape_response`,
+`on_error`), whose defaults do the common proxy work (HTTP binding, argument validation, response
+shaping, error mapping, reload). It runs over stdio by default and over streamable HTTP with
+`--transport http`. The MCP protocol layer is FastMCP 4.x, reached only through one adapter
+module, so plugins never import `fastmcp`. v1 serves tools only and ships as git tag `v0.1.0`,
+installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`.
+
+### design.md: Intent and why
+
+The user wants an "MCP to API proxy": one server that takes all the common MCP work (transports,
+protocol eras, schemas, validation, errors, reload) under one umbrella and asks its users only for
+the business logic of an API, as a small plugin. Writing one MCP server per API repeats that work
+every time and couples each server to a fast-moving framework (FastMCP shipped three majors in
+about ten months, prior-art brief F1/F2). The immediate consumer is the agent-orchestrator epic:
+every agent session starts with any-mcp preinstalled from a pinned git tag, so the CLI, the
+config format and the release tag are cross-epic contracts.
+
+### design.md: Goals
+
+- G1: a plugin is one class: `load_tools()` (or one `@tool` method) is the only thing it must
+  provide; every other hook has a working default.
+- G2: plugins load from the entry-point group `any_mcp.plugins` and from `module:Class` entries in
+  the config file (with optional `python_path` directories), several at once (a group of APIs).
+- G3: one entrypoint `any-mcp`: stdio by default, streamable HTTP with `--transport http`; both the
+  2026-07-28 protocol and handshake-era (`<=2025-11-25`) clients work.
+- G4: argument validation, exception-to-`isError` mapping, namespacing, deterministic tool order,
+  `ttlMs`/`cacheScope`, name sanitising, schema normalising and a response size budget are done by
+  the core, never by plugins.
+- G5: a built-in `OpenAPIPlugin` (the big example's base) and runnable, tested examples: hello
+  (one method), single-endpoint, a decorator multi-tool plugin with auth, a packaged OpenAPI
+  plugin, and a multi-plugin group config.
+- G6: docs with their own acceptance conditions: README, concepts, plugin authoring guide (small
+  and big), testing plugins, configuration reference, transport reference.
+- G7: CI on GitHub Actions (`mise run lint`, `mise run test`) and a release workflow; tag `v0.1.0`
+  installs with pip from git and `any-mcp --help` exits 0.
+- G10: a plugin can ask the client for input mid-call through one optional hook (`request_input`, MRTR `InputRequiredResult`), tested over stdio and HTTP and documented with an example (D19).
+- G11: the orchestrator onStart script can install any-mcp from the pinned tag with plain pip and write the config with the standard library only (D20).
+- G8: any-mcp is a standard pyproject package with the console script `any-mcp`, installable the same
+  ways as claude-code-wrapper: `pip install any-mcp` (package-index name), `pip install
+  git+https://github.com/szymonrychu/any-mcp`, `pip install .`, `pipx install any-mcp`, `uv tool
+  install any-mcp`; `any-mcp --version` works and the README documents every form.
+
+### design.md: Non-goals
+
+- No business-logic plugins beyond the examples.
+- No auth gateway (no OAuth server, no per-user consent, no token exchange); client tokens are
+  never forwarded downstream.
+- No MCP resources or prompts from plugins in v1 (tools only). MRTR (`InputRequiredResult`) is
+  in scope as a separate optional hook (D19).
+- No server-initiated sampling, elicitation, roots or MCP logging (deprecated in 2026-07-28).
+- No legacy HTTP+SSE transport.
+
+### design.md: Anti-goals
+
+- A plugin that imports `fastmcp` or `mcp` to work: that couples every plugin to a framework major.
+- Correctness that depends on `tools/list_changed` reaching the client (Cursor ignores it, and it
+  only reaches `subscriptions/listen` subscribers).
+- A plugin exception surfacing as JSON-RPC `-32603` instead of an `isError` result the model can
+  read.
+- Mirroring a whole API 1:1 by default (context bloat): the OpenAPI plugin needs an explicit filter.
+- Anything other than MCP messages on stdout in stdio mode.
+- Inbound `Authorization` headers or cookies reaching any outbound request.
+
+### design.md: Constraints
+
+- New component repo at `code/any-mcp` (public GitHub origin `szymonrychu/any-mcp`, created by the
+  orchestrator after the gate). The `scaffold` task creates the layout inside it.
+- Python `>=3.12`, uv (`uv.lock` committed), hatchling, ruff (line length 100, rules E F I UP B
+  SIM), pytest with pytest-asyncio auto mode, mise tasks `lint` and `test`, GitHub Actions CI. These
+  mirror `code/claude-code-wrapper/pyproject.toml` and `mise.toml`.
+- Runtime dependencies are declared once by `scaffold`: `fastmcp>=4.1,<5`, `pydantic>=2`,
+  `jsonschema>=4.23`, `pyyaml`, `httpx`. Later tasks do not edit `pyproject.toml` or `uv.lock`
+  except `release`.
+- Only `src/any_mcp/_fastmcp_adapter.py` imports `fastmcp` or `mcp`; a test enforces it.
+- Task verify commands are `uv run --frozen pytest <named test files> -q && mise run lint`.
+- MIT license, matching the sibling components.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -357,7 +424,7 @@ The orchestrator installs any-mcp at agent start with one onStart hook script: `
 | D19 input-required hook (MRTR) | input-required-core, input-required-adapter, docs-authoring |
 | D20 orchestrator onStart install and config | config-model, release |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -382,7 +449,7 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
 `any-mcp-config` (the YAML schema the orchestrator's ConfigMap renders), `any-mcp-release` (tag
 `v0.1.0` installable with `pip install "any-mcp @ git+https://github.com/szymonrychu/any-mcp@v0.1.0"`).
 
-## Review focus
+### design.md: Review focus
 
 - `_fastmcp_adapter.py`: the only FastMCP surface; check that invalid arguments yield `isError`
   results (not FastMCP's own `-32602` validation), that `ttlMs`/`cacheScope` are on the wire, and
@@ -395,7 +462,7 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
   `Authorization` never reaches the upstream.
 - The import-boundary test: no module but the adapter imports `fastmcp` or `mcp`, examples included.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal class names, private helpers and module splits inside a task's files, as long as the
   public names in each task's Interfaces stay.
@@ -405,7 +472,7 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
 - The exact public API used for the single-endpoint example (any keyless public JSON API), as long
   as its test runs offline.
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - FastMCP 4.1 `Tool` subclasses accept a raw `parameters` schema and `run(arguments)` (docs brief
   3.3, medium): probed by the first fastmcp-adapter test; fallback is D1's `MCPServer` path.
@@ -419,17 +486,15 @@ agent-orchestrator): `any-mcp-cli` (`any-mcp --config <path>`, stdio default, `-
   `code/any-mcp` submodule before phase 4; the scaffold task fills it.
 - The agent-orchestrator image base runs Python 3.12 (claude-code-wrapper pins 3.12 in `mise.toml`).
 
-## Open questions
-- Q1: Build on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC, with one adapter module the only importer of fastmcp? [answer: yes: FastMCP 4 behind own ABC]
-- Q2: Keep v1 tools-only, with plugin resources and prompts not in the v1 API? [answer: yes: tools only (no resources or prompts)]
-- Q3: Keep MRTR (InputRequiredResult) out of the v1 plugin API? [answer: CHANGED: InputRequiredResult (MCP 2026-07-28 multi-round-trip) IS in v1 as a separate optional plugin hook with a default that never requests input, wired through the FastMCP adapter and call pipeline, documented in the authoring guide with an example, tested over stdio and HTTP]
-- Q4: Make the first release tag v0.1.0? [answer: yes: v0.1.0]
-- Q5: Make the OpenAPI plugin refuse to load without an allow or tags filter, so mirroring a whole API needs an explicit allow of every operation? [answer: yes: OpenAPI plugin requires an allow or tags filter]
+### approvals.json
 
-## Irreversible operations in scope
-
-- Creating the public GitHub repository `szymonrychu/any-mcp` and pushing to it: the code becomes
-  public. Covered by the gate approval of item F; done by the orchestrator before phase 4.
-- Pushing tag `v0.1.0` to the public origin after the epic closes on `main`: a published tag is
-  never moved (agent-orchestrator pins it). Covered by the gate approval of item H; the release
-  workflow run on the tag is its check.
+- A: An MCP server that exposes any API, or groups of APIs, and does nothing on its own: plugins extend methods of an abstract base class that are called during tool reload, calls, responses and errors, while the core does the common proxy work. [decisions: D2, D3, D6, D7, D8, D9] [tasks: core-types, http-binding, response-shaping, schemas-and-validation, plugin-abc, registry, call-pipeline, nothing-ever-calls-aclose-on, openapi-credential-hosts, bounded-upstream-bodies, error-redaction-and-cleanup] [status: approved]
+- B: Runs over stdio locally by default and can also run over streamable HTTP. [decisions: D10] [tasks: cli-stdio, http-transport, fastmcp-adapter, http-auth-on-non-loopback] [status: approved]
+- C: Well documented: README, concepts, plugin authoring guide covering small and big plugins, testing guide, configuration and transport reference, each with its own acceptance conditions. [decisions: D14, D19] [tasks: docs-readme-concepts, docs-authoring, docs-reference] [status: approved]
+- D: Good examples of small and big plugins, runnable and tested: hello, single endpoint, a decorator multi-tool plugin with auth, a packaged OpenAPI plugin and a group-of-APIs config. [decisions: D12, D13] [tasks: openapi-plugin, testing-harness, examples-small-medium, examples-big-group] [status: approved]
+- E: Plugins are very easy to implement: one class with one required hook, discovered from entry points or module:Class config entries, configured from one YAML file, testable in memory. [decisions: D2, D4, D5, D13] [tasks: plugin-abc, plugin-discovery, config-model, testing-harness] [status: approved]
+- F: Python, uv, ruff, pytest, mise tasks lint and test, GitHub Actions CI; a new component at code/any-mcp with the public GitHub origin szymonrychu/any-mcp created after the gate. [decisions: D17] [tasks: scaffold, uv-picks-cpython-3-15-for-th, workflow-hardening] [status: approved]
+- G: Built on FastMCP 4.x (fastmcp>=4.1,<5) behind any-mcp's own plugin ABC with one adapter module; client tokens are never forwarded downstream; plugin exceptions become structured MCP tool errors; arguments are validated against schemas; correctness never relies on tools/list_changed. [decisions: D1, D7, D8, D11] [tasks: fastmcp-adapter, call-pipeline, schemas-and-validation, registry, http-transport, http-binding] [status: approved]
+- H: v1 is tools only; released as the pinned git tag v0.1.0, installable via pip from git and consumed by the agent-orchestrator agent image. [decisions: D15, D16, D19] [tasks: fastmcp-adapter, release] [status: approved]
+- I: Installable with pip the same way as claude-code-wrapper: a standard pyproject package with the console script any-mcp, installable via pip install any-mcp, pip install git+https://github.com/szymonrychu/any-mcp, pip install ., pipx install any-mcp and uv tool install any-mcp; any-mcp --version works; the README documents these; a test builds the wheel with uv build --wheel, installs it into a fresh venv and runs any-mcp --version. No PyPI publishing. [decisions: D18, D20] [tasks: scaffold, cli-stdio, release, docs-readme-concepts, config-model] [status: approved]
+- J: A plugin can ask the client for input mid-call (MCP 2026-07-28 InputRequiredResult) through one separate optional hook with a default that never requests input, wired through the FastMCP adapter and the call pipeline, documented in the authoring guide with an example, and tested over stdio and HTTP. [decisions: D19] [tasks: input-required-core, input-required-adapter, docs-authoring] [status: approved]
