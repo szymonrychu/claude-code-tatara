@@ -51,7 +51,7 @@ line each, with the source). The planner places every entry (task Notes, a remov
 (`ticket.py new-epic --title "<title>"`) writes the README: project brief (what, how, why), description, goals,
 non-goals. Several viable approaches or a costly-to-reverse choice: `architect-researcher` (`fable` only for one
 framed consulting question). Ask the user only what no probe can answer: a fact is settled by a read-only probe, a
-preference is theirs. Full size: design.md from `templates/design.md` at `ticket.py path <epic> design`, unstated
+preference is theirs. Full size: design.md at `ticket.py path <epic> design`, unstated
 defaults marked `(my call)`.
 
 ## Phase 3 - Tasks
@@ -136,7 +136,7 @@ cannot close while a task is not `done`; never implement a task yourself, never 
 ## Phase 7 - Record
 
 Dispatch `record-writer` (sonnet) with the epic slug, base and branch per repo, MR URLs and your notes (per task:
-review rounds, the reviewer's verification tail; escalations judged, findings dropped); it fills `templates/record.md`
+review rounds, the reviewer's verification tail; escalations judged, findings dropped); it writes the record
 at `ticket.py path <epic> record`. Then `ticket.py retro <epic>` and `retro-writer` (sonnet): `references/retro.md`; old epics: `epic-migrate`.
 ONE closing message, three lines at most (`concise-orchestrator`): both paths, what needs the user, what is blocked.
 

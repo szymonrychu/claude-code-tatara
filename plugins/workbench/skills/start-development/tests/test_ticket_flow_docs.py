@@ -31,7 +31,6 @@ def test_phase_two_creates_the_epic():
             "ticket.py check",
             "ticket.py new-epic",
             "ticket.py path <epic> design",
-            "templates/design.md",
             "(my call)",
             "architect-researcher",
         ],

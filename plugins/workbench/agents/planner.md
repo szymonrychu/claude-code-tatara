@@ -28,8 +28,6 @@ its acceptance conditions, and nothing else.
 - `${CLAUDE_PLUGIN_ROOT}/skills/start-development/SKILL.md` phases 2 and 3.
 - `${CLAUDE_PLUGIN_ROOT}/skills/start-development/references/tickets.md` (the
   task frontmatter and the subcommands).
-- `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/design.md` and
-  `${CLAUDE_PLUGIN_ROOT}/skills/start-development/templates/task.md`.
 - The epic README: its Goals and Non-goals are what the tasks must cover.
 - `ticket.py retro --history`: the Retro and Improvements of the most recently done
   epics. Place each proposal that bears on this epic, recurring workflow ones first,
@@ -52,7 +50,7 @@ its acceptance conditions, and nothing else.
 
 ## Plan
 
-1. Write design.md from `templates/design.md`: every decision with its
+1. Write design.md: every decision with its
    alternatives and why, every user decision honoured.
 2. Create each task with `ticket.py new-task --epic <epic> --title ... --repo ...
    --value ... --files ... --verify ... --points <n> --depends-on ... --model ...

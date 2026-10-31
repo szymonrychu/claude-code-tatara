@@ -206,25 +206,6 @@ def test_no_retired_words_outside_tests():
     assert not hits, hits
 
 
-def test_record_template_and_writer_are_lean():
-    template = (SD / "templates" / "record.md").read_text()
-    writer = (ROOT / "agents" / "record-writer.md").read_text()
-    for text in (template, writer):
-        for gone in ("return value", "forwardMerged", "plan-execute", "approvals", "tdd-revert"):
-            assert gone not in text, gone
-    t = flat(template)
-    for s in (
-        "what was asked",
-        "what shipped",
-        "status, verified head, review rounds, verification tail",
-        "not pushed",
-    ):
-        assert s in t.lower(), s
-    w = flat(writer)
-    for s in ("task files", "git log", "orchestrator's notes", "verified_head", "unverified"):
-        assert s in w, s
-
-
 def test_plugin_json_and_readme_describe_the_lean_loop():
     meta = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
     desc = meta["description"]

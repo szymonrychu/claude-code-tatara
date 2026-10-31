@@ -39,8 +39,6 @@ def test_planner_boilerplate():
     t = _text()
     for s in (
         "references/tickets.md",
-        "templates/design.md",
-        "templates/task.md",
         "phases 2 and 3",
         "ticket.py new-task",
         "workbench.py runner <ref> --repo <dir>",
@@ -83,11 +81,6 @@ def test_planner_dispatched_in_phase_three():
     skill = (SD / "SKILL.md").read_text()
     phase3 = skill[skill.index("## Phase 3") : skill.index("## The gate")]
     assert "workbench:planner" in phase3
-
-
-def test_task_template_retirement_rule():
-    t = (SD / "templates" / "task.md").read_text()
-    assert "git ls-files <path>" in t and "never on the filesystem" in t
 
 
 def test_planner_sizing_and_heading_index():

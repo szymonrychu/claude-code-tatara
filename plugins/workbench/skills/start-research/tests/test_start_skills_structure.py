@@ -360,10 +360,6 @@ def test_execute_passes_the_task_file_and_tree():
 FRESHNESS_SENTENCE = (
     "a subagent cannot end a turn in a worktree whose last test run was not on its HEAD"
 )
-LESSONS_SENTENCE = (
-    "Each lesson names the check to add (a test, hook or lint rule) when the violation is"
-    " mechanical, and the skill or rule to edit only when it is a judgement call."
-)
 
 
 def _flat(text):
@@ -438,12 +434,6 @@ def test_tdd_section_requires_red_evidence_and_independent_verification():
     tdd = _flat(_section(_skill(), "## Test-driven, and verified before it is believed"))
     assert "the red run is part of the deliverable" in tdd
     assert "verified on HEAD <sha> by an agent that did not write it" in tdd
-
-
-def test_record_template_routes_lessons_to_checks():
-    text = _flat((START_DEVELOPMENT / "templates" / "record.md").read_text())
-    assert LESSONS_SENTENCE in text
-    assert "status, verified head, review rounds, verification tail" in text
 
 
 def test_record_writer_reads_verified_heads():
