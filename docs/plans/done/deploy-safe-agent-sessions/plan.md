@@ -1,29 +1,43 @@
-# deploy-safe agent sessions design
+---
+title: deploy-safe agent sessions
+repos: [agents-orchestrator, claude-code-wrapper, agents-web, agents-helmfile]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# deploy-safe agent sessions
 
-Agent sessions must survive deploys and pod restarts. The orchestrator ingester re-attaches after a wrapper resume and
-leaves `dead`; a dead agent never leads; agent StatefulSets use `updateStrategy: OnDelete` and a reconciler replacer
-rolls one idle pod at a time, leader last after a handover; the wrapper continues a turn interrupted by its own
-shutdown; the onStart plugin install is non-fatal; Claude transcripts (`/sessions`) are backed up to S3 at discard and
-restored on recreate through the existing cache Jobs; agents-web says what a discard loses and shows an
-agent-unavailable banner; no red main build is published or deployed; a kind e2e rolls the agent image mid-turn; then
-release, pin, apply and smoke with a live check.
+## What and why
 
-## Intent and why
+What: Agent sessions survive deploys and pod restarts: the ingester re-attaches after resume, rollouts never replace busy or leader pods, interrupted turns continue, transcripts are backed up, and red builds never deploy
+How: Orchestrator ingester/eligibility/reconciler fixes with OnDelete plus an idle-only replacer, wrapper turn continuation, S3 backup of /sessions via the existing cache jobs, web warnings, CI needs plus a helmfile pin check, and a kind e2e rolling the image mid-turn
+Why: On 2026-10-27 a deploy rolled every agent pod; the orchestrator never re-attached, sessions hung, the user discarded them and lost both conversations
 
-On 2026-10-27 the agents-helmfile #35 apply rolled every agent pod at once (default RollingUpdate), including the pod
-whose leader was running the apply. Every wrapper resume answered 200, but the ingester had ended each stream on the
-wrapper's `session_closed`, never re-attached (same wrapper session id, unchanged `AgentRef`) and re-marked the agent
-`dead` from the stored close (`ingester/loop.py:106-140,191-195,296-306`). The dispatcher delivers only to idle agents
-(`db/queue.py:273`), so messages sat queued for 20+ minutes. The user saw hung sessions, discarded both, and lost both
-conversations because discard deletes the PVC and the S3 cache never saved `/sessions`. Main CI run 40565058706
-(96e46f3) had failed e2e yet its image and chart were published and deployed. User request (verbatim): "Figuring out
-what happened that the session hanged 2. Convert the evidence into actionable epic and fix it autonomously".
+Incident 2026-10-27 (evidence: .scratchpad/session-loss/ in the workbench root, cluster-evidence.md, hang-analysis.md, code-analysis.md, carto-*.md, reuse.md, research.md; brief docs/research/2026-10-27-session-survival.md).
 
-## Goals
+At 20:03Z the agents-helmfile #35 apply upgraded agents-orchestrator to 96e46f3; the reconciler re-applied every agent StatefulSet and, with the default RollingUpdate, rolled every agent pod at once (wrapper 0.3.0 -> 0.3.1), including the pod whose leader was running the apply mid-turn (the apply died before agents-web; smoke never ran). Every resume returned 200, but the ingester had ended each agent's stream on the wrapper's session_closed, never re-attached after the resume (same session id, unchanged AgentRef) and re-marked the agent dead from the stored session_closed (ingester/loop.py:106-140,191-195,296-306). The dispatcher only delivers to idle agents (db/queue.py:273): queued messages sat 20+ minutes; leader eligibility ignores dead agents. The interrupted turn was never continued (API resume sends no continue prompt). The user saw hung sessions and discarded both at 20:29; discard deleted the PVCs and the Claude transcripts (/sessions), which the S3 cache does not save, so code came back but conversations did not.
 
-G1-G10 of the README, verbatim there; each is covered by acceptance conditions (Decision coverage below).
+User request (2026-10-27 20:44Z, relayed by mx-34 msg 150), verbatim: "Figuring out what happened that the session hanged 2. Convert the evidence into actionable epic and fix it autonomously". Approved scope (mx-34 msg 157, user standing decision 20:53Z): root cause fix; busy/leader-aware or staged agent StatefulSet template rollouts; resume continues the interrupted turn; non-fatal onStart plugin install; no deploy of a red main CI build; regression e2e rolling the image mid-turn; back up Claude transcripts (/sessions) with the workdir to S3 and restore them on recreate or resume; web UI warns before discarding a session's history; a deploy never runs inside a pod that the same deploy rolls. Gate pre-approved: every design question is answered with the recommended option, recorded as (my call).
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: After an agent pod restart and a successful wrapper resume, the ingester re-attaches from the last stored event, the agent leaves `dead`, and queued messages are delivered (the 20:07-20:29 hang cannot recur).
+- 1.2: G2: A dead agent is never eligible as leader; leadership moves to a live agent.
+- 1.3: G3: Agent StatefulSet template changes never replace a busy agent pod or the current leader mid-turn: updateStrategy OnDelete plus a reconciler replacer that deletes one outdated pod at a time, only when idle, leader last after handover; a pod running a deploy is therefore never rolled by that deploy.
+- 1.4: G4: A wrapper session resumed after a shutdown that interrupted a turn continues that turn with the continue prompt, and the orchestrator renders a default continue prompt.
+- 1.5: G5: A failed any-mcp plugin install in onStart is logged and leaves the agent pod Ready.
+- 1.6: G6: Claude transcripts (/sessions) are backed up to S3 with the workdir at discard and restored on recreate, and a recreated session resumes the restored conversation.
+- 1.7: G7: The web discard dialog states what history is lost or backed up; the chat shows an agent-unavailable banner with the age of the oldest queued message.
+- 1.8: G8: No red main build is published or deployed: CI publish jobs need e2e/tests, and the agents-helmfile apply refuses pins whose commit checks are not green.
+- 1.9: G9: A kind e2e rolls the agent image while a turn is running and proves no busy pod is replaced, the turn continues, and queued messages are delivered.
+- 1.10: G10: Released and deployed: wrapper release tag, orchestrator and web pins, agents-helmfile bump, apply and smoke green, with a live check that the deploy did not roll a busy agent.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
@@ -32,24 +46,9 @@ G1-G10 of the README, verbatim there; each is covered by acceptance conditions (
 - Changing hive leadership handover semantics beyond excluding dead agents.
 - Periodic (non-discard) transcript backups.
 
-## Anti-goals
+## Design
 
-- A busy agent pod or a leader mid-turn is ever deleted by the replacer, with or without a deadline.
-- The replacer or the sessions restore overwrites a live session's `/sessions` (a restore only ever runs before the
-  session's first agent pod exists).
-- A second S3 client, a second busy predicate, a second continue-prompt mechanism or a second GitHub status poller.
-- A pin check with an override flag, or a publish path that skips lint, test or e2e.
-- A test edited, skipped or xfailed to pass, except the ones named in the tasks as no longer accurate.
-
-## Constraints
-
-- Component hard rules: Python services (web is TypeScript), services talk only through HTTP or the queue, one writer
-  per table, queue rows change only through status-guarded updates.
-- Orchestrator conventions: level-triggered crash-safe reconcile (status written before the create), database clock for
-  times, every module docstring cites its decisions, MEMORY.md takes a dated entry with the why.
-- No Docker in agent pods: orchestrator DB and e2e tests run only in GitHub CI (retro, recurring).
-- Wrapper tests use the fake claude only; `uv run` only; ASCII only, no em dashes.
-- No backward compatibility shims; deploys and the planned release tag are pre-approved (D13).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -256,6 +255,12 @@ orch-e2e-main-failure, wrapper-shutdown-turn-resume, wrapper-patch-release, orch
 orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in `.scratchpad/session-loss/plan/`
 (`tasks.json` plus `<slug>.req.md` and `<slug>.ac.md`) and created once Q3 is answered.
 
+## Open questions
+
+- Q1 (settled, my call, 2026-10-27 under the user's standing "recommended everything" approval): this epic runs before slash-commands-from-chat (user order: incident first), so it tags claude-code-wrapper v0.3.2; if a higher tag exists when wrapper-patch-release runs, it cuts the next patch above the latest tag.
+- Q2 (settled, my call): no, narrowed. The banner shows when messages are queued and either no agent is ready and alive (none ready, or all `dead`), or the oldest queued message is older than 10 minutes. A queue behind a busy leader is normal and stays quiet; a stuck busy agent still surfaces after 10 minutes. The banner gives the queued count and the oldest message's age.
+- Q3 (settled, my call): no blocker. The user order puts this epic ahead of slash-commands-from-chat, so instead the parked slash-commands-from-chat epic is put in a new `parked` stage (workbench epic parked-epic-stage), which stops its unbuilt tasks from reserving files; the 11 prepared tasks are then created from `.scratchpad/session-loss/plan/`. The ingester migration takes the next free number on main when it runs (0008 today); slash-commands-from-chat rebases onto this epic when it resumes.
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -266,7 +271,7 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 | incident evidence (lane 4) | ran: `hang-analysis.md` (root cause), `cluster-evidence.md`, `code-analysis.md`, `mx34-hypotheses.md` | root cause D3; dead-leader D4; continue prompt D5; onStart D6; red-main publish D9 | hypotheses A (two status rows) and C (web) refuted by evidence |
 | research-papers | skipped: no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 | Finding | Source | Task |
 |---|---|---|
@@ -290,7 +295,92 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 | `_target_ready` omits `wrapper_session_id IS NOT NULL` (code item) | RETRO leader-auto-handover | not acted on: no ruling recorded; D4 only adds the dead exclusion |
 | agents-helmfile has no CI workflows (tech debt) | RETRO leader-auto-handover | noted, not doing now |
 
-## Decision coverage
+## Irreversible operations
+
+- Tag `v0.3.2` (or per Q1) pushed on claude-code-wrapper `main`; release.yaml retags `:0.3.2` and `:latest`
+  (pre-approved, D13; orchestrator session only).
+- `mise run apply` of agents-helmfile on the live namespace `agents`: the orchestrator migration adding the re-attach
+  column runs on start (additive); agent pods are then replaced by the replacer when idle (pre-approved, D13).
+- Sessions backup objects `<prefix>sessions/<slug>.tar.zst` are overwritten on every discard of that slug (same policy
+  as the workspace cache object).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-28)
+
+## Phase 5 judgement (tatara-0, 2026-10-28)
+Fix tasks (real):
+- orch README:119 onStart wording (review Act on) -> orch-review-fixes
+- rollout.py:50 replacer ignores dispatch reservation (sent-not-busy pod deletable) -> orch-rollout-reservation (deploy-safety core, real)
+- save_rule.py:31 discard before first converge: sessions save Job on missing PVC holds discard up to 30m -> orch-review-fixes
+- security M1 orchestrator ci.yaml regctl-installer@main -> pin by SHA (+ least-privilege permissions block) -> orch-review-fixes
+- security M2 part: /sessions archive has no excludes, so Claude credentials (config/.credentials.json) land in S3 -> exclude credential files (my call) -> orch-review-fixes
+- web: chart-publish-tag needs only chart (tag publish of red web build), DiscardSessionDialog wording for transcripts-skipped, ChatView banner mount test, permissions block -> web-review-fixes
+Accepted / noted:
+- M2 restore planting via bucket write: bucket write access is already trusted for the workdir cache restore; same trust boundary. Noted.
+- M3 check_pins name-only repo mapping: pins live in our own helmfile reviewed by PR; noted.
+- L check_pins all-skipped green: noted (no skip in our pins).
+- L on_error allow: by design D6.
+Scope audit gap dropped: helmfile-pin-check AC9 (grep for 96e46f3 refused) was a point-in-time check against the pins of that day; the hotfix moved pins to c042f79 (green), and the refusal is proven by tests/fixtures/check_runs_agents_orchestrator.json in the task's tests. Not a code gap.
+Noted, not doing now: claude-code-wrapper tests/test_manager.py::test_shutdown_stops_all fails locally on base fb005fd too (pre-existing).
+Fix task start heads: orchestrator e0b6e12 (rollout-dispatch-reserv), web 29e97be (web-review-fixes).
+
+### design.md: Summary
+
+Agent sessions must survive deploys and pod restarts. The orchestrator ingester re-attaches after a wrapper resume and
+leaves `dead`; a dead agent never leads; agent StatefulSets use `updateStrategy: OnDelete` and a reconciler replacer
+rolls one idle pod at a time, leader last after a handover; the wrapper continues a turn interrupted by its own
+shutdown; the onStart plugin install is non-fatal; Claude transcripts (`/sessions`) are backed up to S3 at discard and
+restored on recreate through the existing cache Jobs; agents-web says what a discard loses and shows an
+agent-unavailable banner; no red main build is published or deployed; a kind e2e rolls the agent image mid-turn; then
+release, pin, apply and smoke with a live check.
+
+### design.md: Intent and why
+
+On 2026-10-27 the agents-helmfile #35 apply rolled every agent pod at once (default RollingUpdate), including the pod
+whose leader was running the apply. Every wrapper resume answered 200, but the ingester had ended each stream on the
+wrapper's `session_closed`, never re-attached (same wrapper session id, unchanged `AgentRef`) and re-marked the agent
+`dead` from the stored close (`ingester/loop.py:106-140,191-195,296-306`). The dispatcher delivers only to idle agents
+(`db/queue.py:273`), so messages sat queued for 20+ minutes. The user saw hung sessions, discarded both, and lost both
+conversations because discard deletes the PVC and the S3 cache never saved `/sessions`. Main CI run 40565058706
+(96e46f3) had failed e2e yet its image and chart were published and deployed. User request (verbatim): "Figuring out
+what happened that the session hanged 2. Convert the evidence into actionable epic and fix it autonomously".
+
+### design.md: Goals
+
+G1-G10 of the README, verbatim there; each is covered by acceptance conditions (Decision coverage below).
+
+### design.md: Non-goals
+
+- Running helmfile apply as an in-cluster Job runner (G3 keeps the deployer's busy pod from being rolled instead).
+- Sending Claude's documented exit keystrokes on SIGTERM (inferred need only; noted, not doing now).
+- Changing hive leadership handover semantics beyond excluding dead agents.
+- Periodic (non-discard) transcript backups.
+
+### design.md: Anti-goals
+
+- A busy agent pod or a leader mid-turn is ever deleted by the replacer, with or without a deadline.
+- The replacer or the sessions restore overwrites a live session's `/sessions` (a restore only ever runs before the
+  session's first agent pod exists).
+- A second S3 client, a second busy predicate, a second continue-prompt mechanism or a second GitHub status poller.
+- A pin check with an override flag, or a publish path that skips lint, test or e2e.
+- A test edited, skipped or xfailed to pass, except the ones named in the tasks as no longer accurate.
+
+### design.md: Constraints
+
+- Component hard rules: Python services (web is TypeScript), services talk only through HTTP or the queue, one writer
+  per table, queue rows change only through status-guarded updates.
+- Orchestrator conventions: level-triggered crash-safe reconcile (status written before the create), database clock for
+  times, every module docstring cites its decisions, MEMORY.md takes a dated entry with the why.
+- No Docker in agent pods: orchestrator DB and e2e tests run only in GitHub CI (retro, recurring).
+- Wrapper tests use the fake claude only; `uv run` only; ASCII only, no em dashes.
+- No backward compatibility shims; deploys and the planned release tag are pre-approved (D13).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -309,7 +399,7 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 | D13 Release, pin, apply, smoke, live check | wrapper-patch-release, orch-wrapper-pin-patch, helmfile-deploy-pins, helmfile-apply-live-check |
 | D14 Sequencing with slash-commands-from-chat | orch-dead-agent-ineligible, orch-sessions-backup-save, orch-sessions-backup-restore, web-ci-publish-gate, helmfile-pin-check, helmfile-smoke-continuity |
 
-## Review focus
+### design.md: Review focus
 
 - The replacer: the window between its idle check and the pod delete (a message claimed in between must not be lost:
   it is retried through the existing verify path, never dropped); a pod is never deleted while busy, leading, or holding
@@ -322,7 +412,7 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 - The pin check's fakes match a captured real `gh api` response; every pin source in helmfile is covered; no override.
 - Smoke step: every wait has its own deadline (leader-auto-handover retro).
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The replacer's module layout (a new `reconciler/rollout.py` or functions in `loop.py`) and how `_converge` orders it
   with bootstrap and drain, within D1.
@@ -332,7 +422,7 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
   Harbor before lint, test and e2e pass, and e2e does not need the pushed image.
 - How the wrapper stores the interrupt marker (a TurnRecord field or a session.json field), within D5.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Real Kubernetes labels each StatefulSet pod with `controller-revision-hash` equal to a revision name compared with
   `status.updateRevision` (research.md marks the label low confidence); the kind e2e (orch-e2e-rollout-mid-turn)
@@ -342,17 +432,3 @@ orch-e2e-rollout-mid-turn, web-sync-session-safety-api) are prepared verbatim in
 - A restored wrapper session passes the wrapper's `_check_resumable` (config dir, transcript, workdir at the same path
   per slug); orch-sessions-backup-restore proves it against the real wrapper contract leg in CI.
 - Who runs `gh` in agents-helmfile (auth in the deploying pod) is the deploy session's; the apply task checks it first.
-
-## Open questions
-- Q1 (settled, my call, 2026-10-27 under the user's standing "recommended everything" approval): this epic runs before slash-commands-from-chat (user order: incident first), so it tags claude-code-wrapper v0.3.2; if a higher tag exists when wrapper-patch-release runs, it cuts the next patch above the latest tag.
-- Q2 (settled, my call): no, narrowed. The banner shows when messages are queued and either no agent is ready and alive (none ready, or all `dead`), or the oldest queued message is older than 10 minutes. A queue behind a busy leader is normal and stays quiet; a stuck busy agent still surfaces after 10 minutes. The banner gives the queued count and the oldest message's age.
-- Q3 (settled, my call): no blocker. The user order puts this epic ahead of slash-commands-from-chat, so instead the parked slash-commands-from-chat epic is put in a new `parked` stage (workbench epic parked-epic-stage), which stops its unbuilt tasks from reserving files; the 11 prepared tasks are then created from `.scratchpad/session-loss/plan/`. The ingester migration takes the next free number on main when it runs (0008 today); slash-commands-from-chat rebases onto this epic when it resumes.
-
-## Irreversible operations in scope
-
-- Tag `v0.3.2` (or per Q1) pushed on claude-code-wrapper `main`; release.yaml retags `:0.3.2` and `:latest`
-  (pre-approved, D13; orchestrator session only).
-- `mise run apply` of agents-helmfile on the live namespace `agents`: the orchestrator migration adding the re-attach
-  column runs on start (additive); agent pods are then replaced by the replacer when idle (pre-approved, D13).
-- Sessions backup objects `<prefix>sessions/<slug>.tar.zst` are overwritten on every discard of that slug (same policy
-  as the workspace cache object).
