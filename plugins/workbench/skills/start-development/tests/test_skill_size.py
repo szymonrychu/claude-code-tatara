@@ -13,7 +13,6 @@ KEPT = (
     "merge-hosts.md",
     "user-run-steps.md",
     "workbench-config.md",
-    "retro.md",
 )
 
 
@@ -21,8 +20,6 @@ def test_skill_md_within_line_cap():
     text = (SKILL_DIR / "SKILL.md").read_text()
     n = len(text.splitlines())
     assert n <= MAX_LINES, f"SKILL.md is {n} lines, cap {MAX_LINES}"
-    phase4 = text[text.index("## Phase 4 - Execute") : text.index("## Phase 5")]
-    assert "--status done --verified-head <head> --points-actual" in phase4
 
 
 def test_named_references_exist():
@@ -38,6 +35,4 @@ def test_every_kept_reference_is_linked_from_skill():
     for name in KEPT:
         assert (SKILL_DIR / "references" / name).is_file(), name
         assert f"references/{name}" in text, name
-    phase7 = " ".join(text[text.index("## Phase 7 - ") : text.index("## Non-negotiables")].split())
-    for needle in ("ticket.py retro <epic>", "retro-writer", "references/retro.md"):
-        assert needle in phase7, needle
+    assert "retro.md" not in KEPT

@@ -135,7 +135,7 @@ def test_plan_inputs_defined_once_in_phase_one():
     for fmt in (
         "name - file:symbol - which plan items need it",
         "item - what provides it instead - source",
-        "anti-pattern - where - the acceptance condition",
+        "anti-pattern - where - the step's Verify or Test first that pins the fix",
         "adopted / rejected, one line each",
     ):
         assert fmt in phase1, fmt

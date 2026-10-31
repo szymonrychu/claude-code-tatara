@@ -15,7 +15,7 @@ report" reflex; these hooks make the rule mechanical. They ship with the plugin
 | `agent-usage-recorder.py` | SubagentStart and SubagentStop | records each subagent's time, model and tokens to `.logs/agents/<agentId>.json` in the main checkout (the usage record below); never blocks |
 
 The two SubagentStop guards fire only in agent worktrees - `<configdir>/worktrees/<name>` from
-`worktree-create` (epic integration trees) and the legacy `.worktrees/<branch>/<repo>` from
+`worktree-create` (plan trees) and the legacy `.worktrees/<branch>/<repo>` from
 `git-worktrees-create`. The main checkout belongs to the human and is never blocked.
 
 ## The em dash check
@@ -42,18 +42,19 @@ ran on, whether the tree was dirty, whether it passed - to `<git dir>/workbench-
 SubagentStop guard reads it, so a subagent cannot end a turn in a worktree whose last test run was not
 on its HEAD. A run on an older HEAD (the stale green of a docs-only or test-only commit made after the
 run), on a dirty tree, or a run that failed sends the agent back to re-run that command on what it
-committed. A worktree with no recorded run is left to the reviewer, who runs the task's `verify` on HEAD.
+committed. A worktree with no recorded run is left to the reviewer, who runs the steps' Verify commands on HEAD.
 
 ## The usage record
 
 `agent-usage-recorder.py` keeps one record per subagent at `.logs/agents/<agentId>.json` in the main
 checkout, resolved from the event cwd, so an agent working in an integration tree still records there.
 SubagentStart (spawn and every resume) writes the start time, the agent id and type, the agent
-transcript path and, once the transcript is readable, the `[wb <epic>/<task>/<role>]` marker.
+transcript path and, once the transcript is readable, the `[wb <plan>/<role>]` marker (roles `plan`, `impl`, `review`, `merge`).
 SubagentStop recomputes model, end and tokens (input, cache creation, cache read and output, and
 their total) from the whole agent transcript and overwrites the record, keeping the first start, so a
-fix round that stops the same agent again grows the one record without double counting. The role
-comes from the marker, else from the agent type (`workbench:implementer`, `workbench:reviewer`).
+fix round that stops the same agent again grows the one record without double counting. The record carries `plan` and `role`. The role
+comes from the marker, else from the agent type (`workbench:plan-writer`, `workbench:implementer`,
+`workbench:reviewer`, `workbench:worktree-merger`).
 Internal agents (an empty agent type) write nothing. The recorder makes no decision: on any error it
 exits 0 with no output, so it never blocks or slows a stop. It is Claude-only: the Copilot, Codex,
 Gemini CLI, Cursor and Antigravity targets keep explicit hook allowlists and none emits it.
@@ -62,4 +63,4 @@ Gemini CLI, Cursor and Antigravity targets keep explicit hook allowlists and non
 
 A payload with `stop_hook_active` set means the agent already got the message, and the turn is allowed
 to end, so nothing can wedge. The hooks catch the agent before it reports; the reviewer, who did not
-write the code, decides what is believed by running the task's `verify` on the committed HEAD.
+write the code, decides what is believed by running every step's Verify on the committed HEAD.

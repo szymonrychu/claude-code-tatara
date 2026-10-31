@@ -1,4 +1,4 @@
-"""start-development routes to the planner, the epic-run loop, the suites and the deploy tools."""
+"""start-development routes to the plan-writer, plan-run, the deploy tools and the config."""
 
 import re
 from pathlib import Path
@@ -24,42 +24,33 @@ def check(heading, needles):
         assert n in body, f"{heading!r} does not contain {n!r}"
 
 
-def test_phase_three_dispatches_planner():
+def test_phase_two_dispatches_plan_writer():
     check(
-        "## Phase 3 - Tasks",
-        [
-            "workbench:planner",
-            "{epic, briefs[], userDecisions[]}",
-            "ticket.py lint <epic>",
-            "builder check",
-            "general-purpose agent on sonnet",
-            "only the questions",
-            "one test file's worth of behaviour, at most 8 files",
-            "more than five files",
-        ],
+        "## Phase 2 - Plan",
+        ["workbench:plan-writer", "{plan, briefs[]}", "docs(plan): <plan> plan", "opus"],
     )
 
 
-def test_gate_batches_questions():
-    check("## The gate", ["ticket.py questions", "every todo epic", "as one batch, numbered"])
+def test_phase_one_ends_in_plan_inputs():
+    check("## Phase 1 - Discovery", ["Plan inputs", "reuse", "do-not-build", "fix-as-ac", "ideas"])
 
 
 def test_phase_four_names_the_loop_tools():
     check(
-        "## Phase 4 - Execute",
-        ["epic-run", "ticket.py tasks <epic>", "ticket.py task <epic> <task>", "ticket.py amend"],
+        "## Phase 4 - Run",
+        ["plan-run", "ticket.py move <plan> in-progress", "ticket.py close <plan>", "retro.md"],
     )
 
 
-def test_phase_five_suites_from_config():
-    check("## Phase 5 - Epic review", ["suites", ".claude/workbench.json", "mise run lint"])
+def test_phase_four_deploy_hook_and_user_run_steps():
+    check("## Phase 4 - Run", ["deploy-hook.py", "deploy", "references/user-run-steps.md"])
 
 
-def test_phase_six_deploy_hook_and_user_run_steps():
-    check(
-        "## Phase 6 - Close or merge",
-        ["deploy-hook.py", "deploy", "references/user-run-steps.md"],
-    )
+def test_config_keys_are_read_by_the_right_readers():
+    cfg = flat((SD / "references" / "workbench-config.md").read_text())
+    assert "read by the plan-writer" in cfg
+    assert "Read by worktree-merge only" in cfg
+    assert "planner" not in cfg and "epic" not in cfg.lower()
 
 
 def test_skill_line_cap():

@@ -120,21 +120,17 @@ every pass, so routine work doesn't pay for them:
 | `start-development` phase 1 | `codebase-cartographer` | mapping a repo in scope (via `start-discovery`) |
 | `research-code-internal` | `reuse-hunter` | the reuse hunt |
 | `start-development` phase 2 | `architect-researcher` | >1 viable approach, or an expensive-to-reverse choice |
-| `start-development` phase 3 | `planner` | planning an epic from `{epic, briefs[], userDecisions[]}` |
+| `start-development` phase 2 | `plan-writer` | writing plan.md from `{plan, briefs[]}`, then implementation-plan.md after the gate |
 | `research-docs` | `research-docs-purist` | official docs of every library in scope |
 | `start-research` | `research-practitioner` | field experience, known failure modes |
 | `research-code-external` | `research-prior-art-scout` | similar open-source projects |
 | `research-papers` | `research-paper-scout` | literature for an algorithmic core |
 | `start-research` | `research-reviewer` | adversarial check of every research brief |
-| `start-development` phase 4 | `implementer` | every task, via `epic-run`, in the background |
-| `start-development` phase 4 | `reviewer` | every task, after its implementer and after each fix round |
-| `start-development` phase 5 | `reviewer` | the whole epic diff (via `start-review --single`) |
-| `start-development` phase 5 | `scope-auditor` | once per epic, before the verdict |
-| `start-development` phase 5 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
-| `start-development` phase 6 | `worktree-merger` | `ticket.py close` hit a rebase conflict |
+| `start-development` phase 4 | `implementer` | every chunk, via `plan-run`, in the background |
+| `start-development` phase 4 | `reviewer` | the whole diff, after the last chunk and after each fix round |
+| `start-development` phase 4 | `security-researcher` | diff touches secrets, RBAC, exposure, privilege, CI, or hooks |
+| `start-development` phase 4 | `worktree-merger` | landing the plan: `ticket.py close` or the MR |
 | `references/merge-hosts.md` | `scm-shepherd` | a pipeline failed and the cause is not in the log tail |
-| `start-development` phase 7 | `record-writer` | always: writes the epic record |
-| `start-development` phase 7 | `retro-writer` | always: fills RETRO.md's Retro table and Improvements after `ticket.py retro` |
 | `interrogate` | `panel-reviewer` | a review panel, one agent per model |
 | `git-submodules-refresh` | `submodule-auditor` | checkout state unknown before refreshing |
 

@@ -254,24 +254,21 @@ def test_dir_with_neither_plan_nor_readme_is_refused(root):
 def test_tickets_reference():
     text = (SD / "references" / "tickets.md").read_text()
     for needle in (
-        "docs/plans/<phase>/<epic>/README.md",
+        "docs/plans/<phase>/<plan>/plan.md",
         "todo",
         "in-progress",
         "done",
-        "57",
         "Integration branch",
         "slug freeze",
         "main checkout",
         "discovered",
         "{what, where, why}",
-        "design.md",
-        "record.md",
-        "record-writer",
-        "escalated",
-        "blocked",
+        "implementation-plan.md",
+        "retro.md",
+        "plan-writer",
     ):
         assert needle.lower() in text.lower(), needle
-    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json"):
+    for gone in ("<epic>--<task>", "approvals.json", "Run name", "rulings.json", "escalated"):
         assert gone not in text, gone
     assert text.isascii()
 
@@ -284,26 +281,28 @@ def test_tickets_doc_integration_naming_and_collision_rule():
     text = _doc("tickets.md")
     for needle in (
         "Integration branch",
-        "<configdir>/worktrees/<epic>",
+        "<configdir>/worktrees/<plan>",
         "Collision rule",
         "still on disk",
     ):
         assert needle in text, needle
-    for cmd in ("new-epic", "new-task", "rename"):
+    for cmd in ("`new`", "`rename`"):
         assert cmd in text, cmd
+    for gone in ("new-epic", "new-task"):
+        assert gone not in text, gone
     assert "MERGE <task>" not in text
 
 
 def test_worktrees_doc_integration_lifecycle():
     text = _doc("worktrees.md")
     for needle in (
-        "The integration tree",
-        "<configdir>/worktrees/<epic>",
-        "move <epic> in-progress",
+        "The plan tree",
+        "<configdir>/worktrees/<plan>",
+        "move <plan> in-progress",
         "worktree-merger",
-        "Every role on a task",
+        "Every role on the plan",
         "never calls the built-in `EnterWorktree`",
-        "move <epic> done",
+        "move <plan> done",
     ):
         assert needle in text, needle
     for gone in ("<epic>-<task>", "merge.py --base <epic> --keep", "fork_point", "forward merge"):
@@ -312,7 +311,7 @@ def test_worktrees_doc_integration_lifecycle():
 
 def test_tickets_doc_close():
     text = _doc("tickets.md")
-    for needle in ("close <epic> --verify <cmd>", "close.json", "exit 4"):
+    for needle in ("close <plan> --verify <cmd>", "close.json", "exit 4"):
         assert needle in text, needle
     assert "fork_point" not in text
 

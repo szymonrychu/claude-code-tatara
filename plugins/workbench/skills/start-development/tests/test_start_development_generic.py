@@ -9,11 +9,11 @@ FLAT = re.sub(r"\s+", " ", TEXT)
 
 
 def test_meta_mode_closes_by_local_fast_forward():
-    assert "Meta mode tasks commit on the integration branch `<epic>`" in FLAT
+    assert "Meta mode plans commit on the integration branch `<plan>`" in FLAT
     assert "rebase plus fast-forward of the local main" in FLAT
     assert "with or without an `origin` remote" in FLAT
     assert "pushing main stays with the user" in FLAT
-    assert "ticket.py close <epic> --verify" in FLAT
+    assert "ticket.py close <plan> --verify" in FLAT
     assert "never commits" not in FLAT
     assert "ends at reviewed, test-green edits" not in FLAT
 
