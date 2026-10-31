@@ -1,12 +1,59 @@
-# Flow speed and token optimization record
+# Flow speed and token optimization retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+- 2 of 21 tasks passed in one review round (cache-probe, verify-scope-wiring); 16 of 21 ended at 2 rounds with a quoted tail (e.g. estimate-and-actuals: 65 passed; ruff clean).
+- Phase 5 findings were turned into remediation tasks, not dropped: verify-shared-deadline, launch-land-verify, full-suite-split-shared, shell-quote-refs (all 2 rounds, verified clean in run 3).
+- Explicit rulings with cost-if-wrong: cache-prefix-change accepted as a recorded no-op (probe `CACHE none`), D8 amended so a mediumOnly task does not land before its ruling.
+- Cache probe was cheap (cache-probe 2 min vs 6, ratio 0.33) and saved a speculative prompt reorder.
+- Estimator and actuals landed, so this is the first epic with minutes and tokens deltas: MdAPE tokens 52.8% over 6 tasks.
+- Final main 6b4b660 green: plugin 2817 assertions, scripts 467 passed, lint green.
+
+## What went wrong or could improve
+
+- heartbeat-quiet and review-tiering took 3 rounds; review-tiering stopped at the round cap (still verified true), so the cap was reached on 2 of 21 tasks.
+- Phase 5 had to add 5 tasks after the plan: the estimate rose from 92 to 119 agent-min and the original plan missed a duplicated full-suite predicate (estimator.py vs validate-tasks.mjs) despite D13.
+- medium-only-hold was rejected once: the hold was not transitive (chain a -> b -> c built c without b's code); fixed in 62d3ec5, then accepted after 2 + 2 rounds.
+- Verify tasks ran 2.0-2.2x over formula (verify-task-bounded-runs 12 vs 6, verify-shared-deadline 12 vs 6, continue-launch 11 vs 5); MdAPE minutes 37.5%, overall 152 vs 119 (1.28).
+- Tokens actual recorded for only 6 of 21 tasks, points post-delivery for 0 of 21 (MdAPE points not recorded); medium-only-hold used 2308247 tokens vs 750000 (3.08x).
+- gate-repeat stops on parking wording (medium-only-hold, runs 3 and 4) and the verifier reported AC2-AC6 not met for audit-context-and-models although files and tests were fine (false findings).
+- `uv sync --frozen` exited 1 in the verifier install step on cache-probe, continue-launch, verify-task-bounded-runs (cause unknown); cache-probe tail unclear; disk full mid-run failed a medium-only-hold verify.
+- Red evidence (`tests.red`) present for 7 of 21 tasks; the other 14 have none, not verifiable from git.
+
+## Recommendations
+
+- Code:
+  - plugins/workbench/skills/start-development/scripts/verify-task.py and plan-execute.js: the `parking` wording gate flags comments that describe behaviour (plan-execute.js:859,869,2228,2257,2258); scan diff-added lines only or add an allow-list.
+  - estimator.json and validate-tasks.mjs: shared `fullSuiteExamples` now, but keep a test that both readers agree (full-suite-split-shared).
+  - verify step for `uv sync --frozen`: fails with exit 1 and is ignored as non-blocking; cause unknown.
+- Delivered differently:
+  - cache-prefix-change planned as a prompt reorder, delivered as a pinning test plus a MEMORY.md note, because the probe gave `CACHE none`.
+  - cascade-release: D8 amended, a mediumOnly task releases dependents but does not land until a ruling; AC5 rewritten (epic review found an in-run landing).
+  - 21 tasks delivered against 15 planned: 5 remediation tasks from phase 5 plus cache-probe.
+- Tech debt:
+  - Unverified live behaviour (`cannotVerify`): real verifier writing `$ACE`, haiku land/merge on real conflicts, `continue` and `apply-run` consuming `mediumOnly`, a clean dependent held by `behindHeld` never reported for landing; remove with one observed real plan-execute run.
+  - Security LOWs left: SHA_RE trailing newline, task-file verify trusted, triage fail-open.
+  - `declined` items (0-5 per task, sibling-owned) settled by no ruling; remove by triaging the run returns.
+- Workflow:
+  - `recurring` (housekeeping-rules-estimates): points and expected tokens/minutes are not recorded; here points post-delivery are missing for all 21 tasks and tokens for 15. Make `ticket.py migrate` and `apply-run` stamp post-delivery points and tokens, and make `ticket.py close` refuse an epic with none.
+  - `recurring` (housekeeping-rules-estimates): reports taken from tails or run before staging gave false greens there; here the verifier gave false AC-not-met (audit-context-and-models) and a gate-repeat on comments. Require a verifier AC-not-met claim to cite the missing file or test, and have the reviewer rerun the cited command.
+  - Add a `run-tests.sh` preflight on free disk (the medium-only-hold verify died with "No space left on device").
+  - Recalibrate estimator.json for tasks touching verify-task.py and plan-execute.js (1.8-2.2x over formula) once a second epic has data; add a note to phases-1-3.md planner sizing.
+  - Copy the Goals and analysis of a gitignored research brief into design.md before the phase 5 scope audit (Goals 1-2 were found only there).
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: make the workbench flow (start-development, plan-execute and its verifier, reviewer, merger roles) faster and cheaper while keeping the review loop, independent verification, scope audit and approval ledger; plus the estimate sidequest (agent minutes only, calibrated, epic-level delivery estimate).
 Shipped: 21 task files, all `done`: 15 planned tasks (14 plus cache-probe in run 1), cache-prefix-change (run 2, recorded no-op), and 5 phase-5 remediation tasks (run 3 plus one fix round for medium-only-hold in run 4). Measured baseline and ranked optimizations are in design.md; estimator, actuals recording, heartbeat quiet mode, bounded verify, triage in one call, review tiering, cascade release and docs landed on main.
 Verdict: pass (phase 5, 2026-10-22). Meta mode: no MR, nothing pushed. Main 6b4b660: plugin "components with tests: 27   assertions passed: 2817", scripts 467 passed, lint green.
 
-## Planned vs built
+### Planned vs built
 
 Review rounds = `rounds` in the task's latest run return. Verifier head = `tasks[].verification.head` (independent verifier SHA, 9 chars). All 21 tasks carry a verifier head; none is `unverified`. Planned file counts are from the task files; the run returns list only files changed in the last round, which differ for several tasks (for example ac-evidence-map: 6 planned, 2 in the return), so the task file wins.
 
@@ -48,7 +95,7 @@ Approvals (`<epic dir>/approvals.json` against the run 1 return; runs 2-4 return
 | Dd | Apply sizing lesson to this plan | D10 | planner-sizing-rule | delivered |
 | Q1 | Quiet heartbeat, 30-minute progress, END/STALL at once | D14 | heartbeat-quiet, flow-docs-update | delivered |
 
-## Deviations and rulings
+### Deviations and rulings
 
 - cache-prefix-change recorded as a no-op (ruling: accept). What: no prompt changed; the task adds a test pinning task-first order and records the probe in MEMORY.md. Why: probe verdict `CACHE none`. TDD skipped (no behaviour change); run 2 stopped gate-repeat on tdd-skipped. Cost if wrong: a possible cache-creation saving is forgone; the probe shows 14855 created / 6975 read on every agent regardless of order.
 - D8 amended: a mediumOnly task releases dependents but does not land on the epic branch until a ruling (the builder check answer wins over the earlier in-run landing). Why: epic review found a mediumOnly task landed before its ruling. Cost if wrong: dependents wait for a ruling; extra orchestrator turn. cascade-release AC5 rewritten to match.
@@ -57,11 +104,11 @@ Approvals (`<epic dir>/approvals.json` against the run 1 return; runs 2-4 return
 - Landing: tasks landed by plain `--no-ff` merges in landing trees (c2-land, c3-land, cp-land, us-land) with the full suite before each fast-forward of main. Landing fixes: personal-term fixture rename, E501 wrap, `--return` emitted for non-Claude harnesses, private suite lock in continue-launch tests, ticket tests updated for estimate_by/actual_roles and the targeted helper verify, rename of init_engine helpers (d87b383). Cost if wrong: merge history is noisier than a squash.
 - `forwardMerged`: empty in all four runs.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 Full-suite predicate semantics were duplicated between estimator.py and validate-tasks.mjs despite D13 (epic review finding 3); reconciled by full-suite-split-shared, which keeps one `fullSuiteExamples` list in estimator.json used by both. The run returns report no other duplicates.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Disk full mid-run ("No space left on device", 264Mi free) failed `run-tests.sh --only workflows` in the medium-only-hold verify; cleared by a docker prune (orchestrator). The verifier re-ran with `node --test` directly (569 pass).
 - Phase 5 findings, all fixed by remediation tasks: verify-task timeout per command (verify-shared-deadline); `continue --launch` landed with `true` as the verify (launch-land-verify); duplicated full-suite split (full-suite-split-shared); MEDIUM unquoted forkPoint/baseRef and LOW repoDir double quotes in verifier shell commands (shell-quote-refs).
@@ -71,13 +118,13 @@ Full-suite predicate semantics were duplicated between estimator.py and validate
 - `uv sync --frozen` exited 1 in the verifier install step on cache-probe, continue-launch and verify-task-bounded-runs (non-blocking). Cause unknown; the orchestrator can clear.
 - Files vs summaries: audit-context-and-models: the verifier reported AC2-AC6 not met, but the tree has the code and tests and they pass; the row says verified because the files win. medium-only-hold run 3 and 4 each stopped `gate-repeat` on parking wording that the files show is behaviour description.
 
-## Research that changed the plan
+### Research that changed the plan
 
 - Measured baseline (design.md "Measured baseline and ranked optimizations", 592 workflow agents over 27.3 h): verify is 55% of agent-minutes (1072 of 1942); rounds beyond the first are 38% of agent-minutes; full-suite verify is the strongest predictor of task time (r = 0.74); 19 root escalations caused 183 dependency-failed task runs. These ranked the 11 plan inputs and the cascade-release scope.
 - Cache probe (design.md "Cache probe result", run wf_c93a609a-e42): `CACHE none static=14855,14855 task=14855,14855`; changed cache-prefix-change from a prompt reorder to a recorded no-op.
 - Epic integration worktrees landing in the same period changed D8: only the beyond-in-run-landing cascade parts were built (Da).
 
-## Cost
+### Cost
 
 Agents: run 1 83 agents, 61 min wall (15 tasks); run 3 29 agents (5 remediation tasks); runs 2 and 4 agent counts unknown (one task each). Continuations: 3 relaunches (runs 2, 3, 4). Audit: `off` in all four plan-execute runs; the scope audit ran at phase 5 outside plan-execute (sonnet scope-auditor) plus the epic reviewer and security researcher (sonnet).
 Role totals from `actual_roles` (agent-min counts as recorded): impl 59, verify 48, review 30, fix 26, false-finding 1 (sum 164 role units against the 152 task total below).
@@ -111,11 +158,11 @@ Estimate vs actual (README Time: Estimate 119 agent-min, critical path 61 min, e
 
 Overall ratio actual/estimate = 152/119 = 1.28 (1.65 against the original 92). Over: verify-task-bounded-runs, verify-shared-deadline (2.0x), ac-evidence-map, continue-launch, triage-one-call (about 1.8-2.2x); under: cache-probe, estimator-model, full-suite-split-shared, cache-prefix-change. The actual wall-clock of the epic is unknown (run 1 was 61 min; other runs and orchestrator gaps not read). This is the estimator's first measurement; report only, not a budget.
 
-## MRs and deploy
+### MRs and deploy
 
 None. Meta mode in the workbench template repo: no MR or PR, nothing pushed. Deploy: not applicable. Landed on main locally, last verified at 6b4b660 (plugin 2817 assertions in 27 components, scripts 467 passed, lint green).
 
-## Lessons routed to
+### Lessons routed to
 
 - Mechanical, add a check: a test or lint that fails when a task's `verification.head` is missing from the run return (so `unverified` cannot read as done).
 - Mechanical, add a check: the parking-wording gate (`parking` in verify-task.py) flags comments that describe behaviour (plan-execute.js:859-2258); add an allow-list or a diff-added-lines-only scan test so it stops causing gate-repeat stops (medium-only-hold, runs 3 and 4).
