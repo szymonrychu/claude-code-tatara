@@ -1,21 +1,18 @@
 ---
 title: "Fix preset .env paste: auto-apply on save, accept secret-named keys"
-blockers: []
-stage: review
-owner: Szymon Richert
 repos: [agents-web, agents-helmfile]
 created: 2026-10-29
+owner: Szymon Richert
+rung: 1
 ---
 
 # Fix preset .env paste: auto-apply on save, accept secret-named keys
 
-## Project brief
+## What and why
 
 What: Preset form keeps pasted .env values on Create/Save without Apply and stops rejecting TOKEN/PASSWORD-style keys
 How: Submit applies a pending paste through the Apply merge (parse errors block it); drop the web-only SECRET_KEY rule from envKeyError; bump and apply the web chart pin
 Why: The user cannot enter the agents-helmfile secrets through the UI until this works
-
-## Description
 
 User report (verbatim): "When I try to paste .env and I don't hit "apply", create preset like this, it's not keeping the secret. When I attempt to paste .env and hit apply envs with TOKEN and PASSWORD are flagged as something that doesn't belong to envs."
 
@@ -25,12 +22,18 @@ Two defects in agents-web, both in the preset form (src/presets/PresetForm.tsx, 
 
 User decisions (relayed by mx-34 #386, 2026-10-29): auto-apply a pending paste on Create, refuse on parse errors, no secret-key check and no warning. Priority: ahead of the rest of slash, so the user can enter the agents-helmfile secrets through the fixed UI.
 
-## Goals
+## Scope ladder
 
-- Create and Save apply a pending (unapplied) .env paste with the same merge as Apply before submitting, so the pasted keys are in the saved spec.
-- A pending paste with any parse error blocks the submit: nothing is sent, the line errors show in the paste box.
-- Env keys containing TOKEN, SECRET, PASSWORD, CREDENTIAL, API_KEY, PRIVATE_KEY or ACCESS_KEY are accepted with no error and no warning, typed or pasted.
-- Deployed: agents-web chart pin bumped in agents-helmfile and applied under the deploy lease.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: Create and Save apply a pending (unapplied) .env paste with the same merge as Apply before submitting, so the pasted keys are in the saved spec.
+- 1.2: A pending paste with any parse error blocks the submit: nothing is sent, the line errors show in the paste box.
+- 1.3: Env keys containing TOKEN, SECRET, PASSWORD, CREDENTIAL, API_KEY, PRIVATE_KEY or ACCESS_KEY are accepted with no error and no warning, typed or pasted.
+- 1.4: Deployed: agents-web chart pin bumped in agents-helmfile and applied under the deploy lease.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
@@ -38,7 +41,29 @@ User decisions (relayed by mx-34 #386, 2026-10-29): auto-apply a pending paste o
 - No change to the reserved-name, name-shape or duplicate-key checks.
 - No secret storage (Kubernetes Secret backed presets is the separate epic kubernetes-secret-backed-pre).
 
-## Review
+## Design
+
+none recorded in the epic format
+
+## Decisions
+
+none recorded in the epic format
+
+## Open questions
+
+none
+
+## Research
+
+none recorded in the epic format
+
+## Irreversible operations
+
+none
+
+## Migrated notes
+
+### README.md: Review
 
 Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
 

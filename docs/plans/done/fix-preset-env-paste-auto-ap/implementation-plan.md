@@ -1,27 +1,23 @@
----
-title: web env paste fix
-status: done
-repo: agents-web
-value: "Pasted .env values, secret-named keys included, are kept when a preset is created or saved"
-files: [src/presets/PresetForm.tsx, src/sessions/sessionSpecForm.ts, src/presets/PresetForm.test.tsx]
-verify: "npx vitest run src/presets/PresetForm.test.tsx && npm run lint"
-depends_on: []
-model: sonnet
-review: ""
-verified_head: 7027bb150cec147e0fdb63ce0364d29cad07df7b
-points: 3
-expected_minutes: 8
-expected_tokens: 1003544
-points_actual: 3
-actual_minutes: 12
-actual_tokens: 657541
-actual_roles: "impl 8, review 4"
-actual_role_tokens: "impl 564374, review 93167"
----
+# Fix preset .env paste: auto-apply on save, accept secret-named keys implementation plan
 
-# web env paste fix
+## Agreed rung
 
-## Requirement
+Rung 1 of plan.md, migrated from the epic format: the steps are the epic's tasks.
+
+## Approach
+
+Migrated from the epic format: one step per task file, in dependency order, each with its status, files, verify, verified head and every body section.
+
+## Chunk 1: migrated tasks (model: sonnet)
+
+### S1: web env paste fix
+
+- Status: done
+- Files: `src/presets/PresetForm.tsx`, `src/sessions/sessionSpecForm.ts`, `src/presets/PresetForm.test.tsx`
+- Verify: `npx vitest run src/presets/PresetForm.test.tsx && npm run lint`
+- Verified head: 7027bb150cec147e0fdb63ce0364d29cad07df7b
+
+#### Requirement
 
 User report (verbatim): "When I try to paste .env and I don't hit "apply", create preset like this, it's not keeping the secret. When I attempt to paste .env and hit apply envs with TOKEN and PASSWORD are flagged as something that doesn't belong to envs."
 
@@ -33,7 +29,7 @@ Scope (agents-web):
 - src/presets/PresetForm.test.tsx: the tests 'validates env keys, webhook url and any-mcp json' (asserts API_TOKEN is flagged as a secret) and 'a pasted reserved or secret key shows its error and blocks submit' no longer match the required behaviour: change them to assert that API_TOKEN and PASSWORD-style keys are accepted (no error, Create enabled) while the reserved-key assertions stay. Add tests for the auto-apply on Create, auto-apply on Save of an existing preset, and refusal on a parse error.
 Test-first: write the new tests, see them fail, then change the code.
 
-## Acceptance conditions
+#### Acceptance conditions
 
 - AC1: Create with a pending unapplied paste `FOO=1\nAPI_TOKEN=secret` sends a spec whose env holds FOO and API_TOKEN with their values [evidence: test:src/presets/PresetForm.test.tsx::Paste .env > Create applies a pending paste]
 - AC2: Save of an existing preset with a pending paste sends the merged env (existing key replaced in place, new key appended) [evidence: test:src/presets/PresetForm.test.tsx::Paste .env > Save applies a pending paste]
@@ -43,28 +39,28 @@ Test-first: write the new tests, see them fail, then change the code.
 - AC6: no secret-key rule remains in the web source [evidence: command:! grep -rn "SECRET_KEY\|Looks like a secret" src --include=*.ts --include=*.tsx]
 - AC7: the full web suite and lint pass [evidence: command:mise run test && mise run lint]
 
-## Files
+#### Files
 
 - `src/presets/PresetForm.tsx`
 - `src/sessions/sessionSpecForm.ts`
 - `src/presets/PresetForm.test.tsx`
 
-## Interfaces
+#### Interfaces
 
 Signatures, schemas and contracts this task builds or must keep, with file:symbol.
 
-## Expected outcome
+#### Expected outcome
 
 Creating or saving a preset with text still in the Paste .env box keeps every pasted key and value; TOKEN/PASSWORD-style keys are accepted silently; a malformed pending paste blocks the submit with its line errors.
 
-## Steps
+#### Steps
 
 - Read src/presets/PresetForm.tsx, src/sessions/sessionSpecForm.ts and src/presets/PresetForm.test.tsx in one pass.
 - Red: add the AC1-AC4 tests and change the two secret-asserting tests (AC5 keeps the reserved part); run `npx vitest run src/presets/PresetForm.test.tsx`; expect the new and changed tests to fail.
 - Green: one parse+merge helper used by applyPaste and submit; submit applies a pending non-blank paste first and returns without sending on parse errors; remove SECRET_KEY from envKeyError; run the same vitest command; expect all pass.
 - Run `mise run test && mise run lint`; expect both green. Commit.
 
-## Notes
+#### Notes
 
 - The Create/Save button is disabled while `validate()` reports errors; keys from a pending paste are not in `values.env` until merged, so the auto-apply must run in submit, and when the merged rows carry an envKeyError (reserved, duplicate) set them into state and do not send (my call).
 - setState is async: submit must build the request body from the merged rows it computed, not from `values.env` read after `set()`.
@@ -72,3 +68,15 @@ Creating or saving a preset with text still in the Paste .env box keeps every pa
 - noted, not doing now: the web RESERVED_KEY lacks ORCH_* which the orchestrator rejects.
 
 - 2026-10-29 done
+
+## Files to delete
+
+none recorded in the epic format
+
+## Final verify
+
+none recorded in the epic format
+
+## After merge
+
+none
