@@ -75,8 +75,7 @@ START_DEVELOPMENT = SKILLS / "start-development"
 EXPECTED_SKILL_MENTIONS = (
     "git-submodules-refresh",
     "start-discovery",
-    "epic-run",
-    "scope-auditor",
+    "plan-run",
     "git-worktrees-commit",
     "git-worktrees-push",
     "pullrequests-update",
@@ -101,7 +100,7 @@ LOCAL_SKILL_DIRS = (
     "git-submodules-refresh",
     "start-research",
     "start-discovery",
-    "epic-run",
+    "plan-run",
     "git-worktrees-create",
     "git-worktrees-commit",
     "git-worktrees-push",
@@ -182,10 +181,10 @@ def test_boy_scout_rule_ships_with_the_plugin():
         assert clause in text, f"boy-scout rule does not cover {clause!r}"
 
 
-def test_execution_goes_through_epic_run():
-    """Phase 4 invokes the epic-run skill; the retired workflow is not named."""
+def test_execution_goes_through_plan_run():
+    """Phase 4 invokes the plan-run skill; the retired workflow is not named."""
     text = sd_text(START_DEVELOPMENT / "SKILL.md")
-    assert "`epic-run`" in text
+    assert "`plan-run`" in text
     assert "plan-execute" not in text
 
 
