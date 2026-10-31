@@ -1,80 +1,47 @@
-# File download in file browser design
+---
+title: file download in file browser
+repos: [claude-code-wrapper, agents-orchestrator, agents-web]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# file download in file browser
 
-Every downloadable row of the Files tree gets a small right-aligned download icon (MUI `FileDownloadOutlined`) that saves
-the workspace file to the user's computer, byte-exact, for text and binary files of any size. claude-code-wrapper gains
-a raw-bytes route `GET /v1/sessions/{id}/files/download?path=` built on the existing path guards; agents-orchestrator
-streams it through `GET /api/v1/sessions/{session_id}/files/download?path=&agent_id=` in the one wrapper seam
-(`api/workspace.py`); agents-web triggers it with a plain anchor to the relative basePath URL (no blob buffering). The
-listing gains a `target_type` field so the UI can tell a symlink to a file from a symlink to a directory.
+## What and why
 
-## Intent and why
+What: Download icon on each file row of the Files tree that saves the workspace file to the user's computer
+How: raw-bytes download route in claude-code-wrapper, streamed through an orchestrator route, right-aligned icon in FilesPanel
+Why: Users can take any file, text or binary, out of an agent's workspace
 
-User request (2026-10-27), verbatim: "In file browser, I need to be able to download a file. I expect small "arrow
-down" icon aligned with right side of the file browser, that's going to download a file to my computer from agent's
-workspace." Implementation order given by the user: 1. download, 2. markdown, 3. editor.
+User request (2026-10-27), verbatim:
 
-User decisions (binding, numbered here U1 to U5), verbatim:
+"## file download
 
-- U1: "(my call) Download every file type (text and binary) of any size through a new raw-bytes streaming route in the wrapper (Content-Type application/octet-stream or sniffed mime, Content-Disposition attachment with an RFC 6266 filename*), forwarded by a streaming orchestrator route under the existing sessions/{id}/files namespace, reusing the existing path traversal and workspace-root guards and auth; no size cap beyond what the guards impose."
-- U2: "(my call) Directories, symlinks to directories and type 'other' show no download icon; symlinks to files download the target bytes only if the existing guard allows it."
-- U3: "(my call) The UI triggers the download with a plain anchor to the relative basePath URL (download attribute), no blob buffering; icon FileDownloadOutlined, small IconButton with aria-label 'Download <name>', right-aligned in the tree row, click does not open the preview (stopPropagation); errors (e.g. 404, 403) cannot be read from a plain anchor, so state in design.md how errors surface (my call: plain anchor, browser shows the error page) or choose a fetch+blob path if you judge it necessary and say why."
-- U4: "(my call) After the orchestrator route lands, regenerate the web client schema with `npm run sync:api -- orchestrator` and keep `npm run check:api` green."
-- U5: "Environment facts: the orchestrator's Postgres tests need Docker, which this container lacks (525 errors in the full run); targeted verify commands must be tests that run without Docker, and design.md must say which checks only CI can run. The wrapper has 3 process-group tests failing here because of the container PID 1 (environment, not code). agents-web full suite has 10 load-dependent 5000 ms timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor tests) that pass alone: keep task verifies targeted."
+In file browser, I need to be able to download a file. I expect small "arrow down" icon aligned with right side of the file browser, that's going to download a file to my computer from agent's workspace."
 
-Today the only file read is `files/content`, JSON only: binary and over-1-MiB files carry `content: null`, so no file
-can leave the workspace through the UI except by copying preview text.
+Implementation order given by the user: 1. download, 2. markdown, 3. editor.
 
-## Goals
+## Scope ladder
 
-- G1: A small download (arrow down) icon on every file row of the Files tree, aligned to the right edge of the file
-  browser.
-- G2: Clicking it downloads that file from the agent's workspace to the user's computer, byte-exact, for text and binary
-  files of any size (no 1 MiB preview cap).
-- G3: New raw-bytes download route in claude-code-wrapper and an orchestrator route forwarding it, with the existing
-  workspace path guards.
+### Rung 1: agreed scope (migrated)
+
+- 1.1: A small download (arrow down) icon on every file row of the Files tree, aligned to the right edge of the file browser.
+- 1.2: Clicking it downloads that file from the agent's workspace to the user's computer, byte-exact, for text and binary files of any size (no 1 MiB preview cap).
+- 1.3: New raw-bytes download route in claude-code-wrapper and an orchestrator route forwarding it, with the existing workspace path guards.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No directory or multi-file (archive) download.
 - No upload.
-- No expanding of symlinks to directories in the tree (they stay unexpandable, as today). Noted, not doing now.
-- No deploy: this epic's repos are claude-code-wrapper, agents-orchestrator and agents-web; agents-helmfile pins are
-  not in it (open question Q1).
-- No fix of the 10 load-dependent agents-web timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor) that pass
-  alone; task verifies stay targeted (user decision). Noted, not doing now.
 
-## Anti-goals
+## Design
 
-- A download that buffers the whole file in the wrapper, the orchestrator or the browser (breaks "any size").
-- Any new way to read outside the workdir: the download must refuse exactly what `files/content` refuses today.
-- The derived wrapper bearer in a URL, a response header, a body or a log line.
-- A listing field that reveals anything about paths outside the workdir.
-- Clicking the icon also opening the preview or selecting the row.
-
-## Constraints
-
-- Python only for services; TypeScript for agents-web. No backward-compatibility shims.
-- Orchestrator layering pin: only `api/workspace.py` may import `agents_orchestrator.wrapper`
-  (`tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper`).
-- Orchestrator `openapi.json` is generated (`uv run python -m agents_orchestrator.api.openapi > openapi.json`) and every
-  route is documented in README `## API` (`tests/test_readme_api.py`); the wrapper README documents every route and error
-  code (`tests/test_readme_api.py` there).
-- agents-web: backends only through the relative `basePath` (`src/api/client.ts:base`); `src/api/schema.d.ts` is
-  generated, never hand-edited; designRules (`src/layout/designRules.ts`): no `title=` on IconButton (aria-label), no
-  colour literals outside `theme.ts`, spacing on the 0.5 grid.
-- Environment (user decision U5): this container has no Docker. Every task `verify` runs without Docker. Checks only CI
-  can run:
-  - agents-orchestrator DB-backed tests (testcontainers Postgres), including `tests/test_api_files.py` (525 errors
-    locally in the full run);
-  - the contract suite's real-wrapper leg (`pytest -m integration tests/test_fake_wrapper_contract.py`, real wrapper
-    image) and the kind e2e (`mise run test:e2e`, `tests/e2e/test_e2e_kind.py`);
-  - claude-code-wrapper `tests/test_container.py` (docker) and the 3 process-group tests (`tests/test_manager.py::test_shutdown_stops_all`,
-    `tests/test_pty_proc.py::test_exit_without_eof_still_fires`, `tests/test_pty_proc.py::test_close_terminates_group_then_kill`)
-    that fail here because the container PID 1 is not an init reaper (environment, not code).
-- pytest verify commands never add `-q`: both Python repos already set `-q` in `addopts`, and `-qq` hides the pass
-  counts a hand-back must quote.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -188,6 +155,11 @@ the dev dependency (`pyproject.toml`, `uv.lock`), README `## Images` and `e2e/ag
 `WRAPPER_SHA`), and the kind e2e gets a download case, so CI's integration leg and e2e run the real route. Precedent:
 done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin`.
 
+## Open questions
+
+- Q1: Deploy is not part of this epic (no agents-helmfile task), so the download works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the four queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
+- Q2: To hide the icon on symlinks to directories (U2), the file listing gains target_type (dir, file, other; null for non-symlinks and for dangling or workdir-escaping links), and symlinks whose target escapes the workdir show no icon; acceptable? [recommended: yes]
+
 ## Research
 
 | Lens | Ran / skipped | Adopted ideas | Rejected ideas |
@@ -198,7 +170,7 @@ done epic web-ui-cluster-tabs-with-fil task `wrapper-sha-pin`.
 | research-papers | skipped: no algorithmic core | - | - |
 | research-docs | skipped: `StreamingResponse` (wrapper api/turns.py:166, api/events.py:103) and httpx streaming (orchestrator wrapper/client.py:234) are already used the same way; RFC 6266 section 4.3 and RFC 5987 section 3.2 define `filename*` | RFC 6266 `filename*=UTF-8''` with an ASCII `filename` fallback (D2) | - |
 
-## Research inputs
+### Research inputs
 
 Workflow proposals from the retros of recently done epics, recurring first:
 
@@ -230,7 +202,106 @@ Brief plan inputs:
   targeted); noted, not doing now.
 - fix-as-ac (agents-orchestrator, slash commands, `/compact` allowlist): belongs to epic slash-commands-from-chat.
 
-## Decision coverage
+## Irreversible operations
+
+none (no tag, release, migration or deploy; PRs merge through the normal flow).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+## file-download-in-file-browse epic review notes
+
+- Whole-epic review (start-review --single, sonnet): clean, no findings. Cross-repo seams consistent (headers, error map, fake vs real, target_type).
+- Scope audit (sonnet): complete, no gaps, no new tasks. Fake duplicates three wrapper helpers by design (task note), pinned by the contract suite.
+- Security (sonnet): no critical/high/medium. Dropped LOW 1 (intermediate-symlink TOCTOU in resolve_in_workdir): pre-existing, shared with read_preview, exploitable only by the agent that already has a shell in the same container. Dropped LOW 2 (no concurrent-download cap): same posture as the existing file routes, behind ingress auth; outside this epic's scope.
+- Full suites, this container:
+  - agents-web: `Tests  515 passed (515)`, lint clean (.logs/fdl-web-full.log).
+  - agents-orchestrator: `1 failed, 571 passed, 59 deselected, 1 warning, 525 errors`; the 525 errors are testcontainers without Docker; the 1 failure (test_reconciler.py::test_lightkube_default_client_uses_env_config) fails identically on main 90f3ce3 (in-cluster KUBERNETES_SERVICE_HOST env). CI runs the full suite (.logs/fdl-orch-full.log).
+  - claude-code-wrapper (implementer run on 7f7cd15): `3 failed, 1682 passed, 26 deselected`; the 3 process-group tests fail identically on main ee10aa8 (no PID 1 reaper); PR #5 CI green (unit, integration, build-push), merged 4581f3b.
+- Deploy coupling: orchestrator FileEntry.target_type is required, so the orchestrator image must deploy with wrapper >= 4581f3b (for the later deploy epic).
+
+### design.md: Summary
+
+Every downloadable row of the Files tree gets a small right-aligned download icon (MUI `FileDownloadOutlined`) that saves
+the workspace file to the user's computer, byte-exact, for text and binary files of any size. claude-code-wrapper gains
+a raw-bytes route `GET /v1/sessions/{id}/files/download?path=` built on the existing path guards; agents-orchestrator
+streams it through `GET /api/v1/sessions/{session_id}/files/download?path=&agent_id=` in the one wrapper seam
+(`api/workspace.py`); agents-web triggers it with a plain anchor to the relative basePath URL (no blob buffering). The
+listing gains a `target_type` field so the UI can tell a symlink to a file from a symlink to a directory.
+
+### design.md: Intent and why
+
+User request (2026-10-27), verbatim: "In file browser, I need to be able to download a file. I expect small "arrow
+down" icon aligned with right side of the file browser, that's going to download a file to my computer from agent's
+workspace." Implementation order given by the user: 1. download, 2. markdown, 3. editor.
+
+User decisions (binding, numbered here U1 to U5), verbatim:
+
+- U1: "(my call) Download every file type (text and binary) of any size through a new raw-bytes streaming route in the wrapper (Content-Type application/octet-stream or sniffed mime, Content-Disposition attachment with an RFC 6266 filename*), forwarded by a streaming orchestrator route under the existing sessions/{id}/files namespace, reusing the existing path traversal and workspace-root guards and auth; no size cap beyond what the guards impose."
+- U2: "(my call) Directories, symlinks to directories and type 'other' show no download icon; symlinks to files download the target bytes only if the existing guard allows it."
+- U3: "(my call) The UI triggers the download with a plain anchor to the relative basePath URL (download attribute), no blob buffering; icon FileDownloadOutlined, small IconButton with aria-label 'Download <name>', right-aligned in the tree row, click does not open the preview (stopPropagation); errors (e.g. 404, 403) cannot be read from a plain anchor, so state in design.md how errors surface (my call: plain anchor, browser shows the error page) or choose a fetch+blob path if you judge it necessary and say why."
+- U4: "(my call) After the orchestrator route lands, regenerate the web client schema with `npm run sync:api -- orchestrator` and keep `npm run check:api` green."
+- U5: "Environment facts: the orchestrator's Postgres tests need Docker, which this container lacks (525 errors in the full run); targeted verify commands must be tests that run without Docker, and design.md must say which checks only CI can run. The wrapper has 3 process-group tests failing here because of the container PID 1 (environment, not code). agents-web full suite has 10 load-dependent 5000 ms timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor tests) that pass alone: keep task verifies targeted."
+
+Today the only file read is `files/content`, JSON only: binary and over-1-MiB files carry `content: null`, so no file
+can leave the workspace through the UI except by copying preview text.
+
+### design.md: Goals
+
+- G1: A small download (arrow down) icon on every file row of the Files tree, aligned to the right edge of the file
+  browser.
+- G2: Clicking it downloads that file from the agent's workspace to the user's computer, byte-exact, for text and binary
+  files of any size (no 1 MiB preview cap).
+- G3: New raw-bytes download route in claude-code-wrapper and an orchestrator route forwarding it, with the existing
+  workspace path guards.
+
+### design.md: Non-goals
+
+- No directory or multi-file (archive) download.
+- No upload.
+- No expanding of symlinks to directories in the tree (they stay unexpandable, as today). Noted, not doing now.
+- No deploy: this epic's repos are claude-code-wrapper, agents-orchestrator and agents-web; agents-helmfile pins are
+  not in it (open question Q1).
+- No fix of the 10 load-dependent agents-web timeouts (PresetForm, ScheduleForm, Endpoints, FiltersEditor) that pass
+  alone; task verifies stay targeted (user decision). Noted, not doing now.
+
+### design.md: Anti-goals
+
+- A download that buffers the whole file in the wrapper, the orchestrator or the browser (breaks "any size").
+- Any new way to read outside the workdir: the download must refuse exactly what `files/content` refuses today.
+- The derived wrapper bearer in a URL, a response header, a body or a log line.
+- A listing field that reveals anything about paths outside the workdir.
+- Clicking the icon also opening the preview or selecting the row.
+
+### design.md: Constraints
+
+- Python only for services; TypeScript for agents-web. No backward-compatibility shims.
+- Orchestrator layering pin: only `api/workspace.py` may import `agents_orchestrator.wrapper`
+  (`tests/test_api_sessions.py::test_api_never_imports_k8s_or_wrapper`).
+- Orchestrator `openapi.json` is generated (`uv run python -m agents_orchestrator.api.openapi > openapi.json`) and every
+  route is documented in README `## API` (`tests/test_readme_api.py`); the wrapper README documents every route and error
+  code (`tests/test_readme_api.py` there).
+- agents-web: backends only through the relative `basePath` (`src/api/client.ts:base`); `src/api/schema.d.ts` is
+  generated, never hand-edited; designRules (`src/layout/designRules.ts`): no `title=` on IconButton (aria-label), no
+  colour literals outside `theme.ts`, spacing on the 0.5 grid.
+- Environment (user decision U5): this container has no Docker. Every task `verify` runs without Docker. Checks only CI
+  can run:
+  - agents-orchestrator DB-backed tests (testcontainers Postgres), including `tests/test_api_files.py` (525 errors
+    locally in the full run);
+  - the contract suite's real-wrapper leg (`pytest -m integration tests/test_fake_wrapper_contract.py`, real wrapper
+    image) and the kind e2e (`mise run test:e2e`, `tests/e2e/test_e2e_kind.py`);
+  - claude-code-wrapper `tests/test_container.py` (docker) and the 3 process-group tests (`tests/test_manager.py::test_shutdown_stops_all`,
+    `tests/test_pty_proc.py::test_exit_without_eof_still_fires`, `tests/test_pty_proc.py::test_close_terminates_group_then_kill`)
+    that fail here because the container PID 1 is not an init reaper (environment, not code).
+- pytest verify commands never add `-q`: both Python repos already set `-q` in `addopts`, and `-qq` hides the pass
+  counts a hand-back must quote.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -244,7 +315,7 @@ Brief plan inputs:
 | D8 Web client schema regenerated | web-sync-orchestrator-api |
 | D9 Orchestrator pins the wrapper commit | orch-wrapper-pin-download |
 
-## Review focus
+### design.md: Review focus
 
 - Wrapper: no byte of a refused path is ever sent; open, `O_NOFOLLOW` and `fstat` happen once, before the response
   starts; the descriptor is closed on every path (complete, error, abandoned).
@@ -254,13 +325,13 @@ Brief plan inputs:
 - `Content-Disposition` quoting for names with quotes, backslashes, control and non-ASCII characters.
 - UI: the icon click does not open the preview or select the row; the URL is relative and percent-encoded.
 
-## Builder check settlements (2026-10-27)
+### design.md: Builder check settlements (2026-10-27)
 
 - (my call) epic-run merges the claude-code-wrapper PR mid-epic through the normal PR flow (green, mergeable, review-clean) before `orch-wrapper-pin-download`, and amends that task with the merged sha, as in the `wrapper-sha-pin` precedent.
 - (my call) `fake-wrapper-download`'s implementer is handed the claude-code-wrapper epic worktree path and the commit of `wrapper-file-download-route` to read `api/files.py` and the README from.
 - (my call) the mid-stream abort is pinned by `orch-file-download-route` ac10.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Chunk size up to 1 MiB, and whether the wrapper stream is a sync generator in the threadpool or an async generator
   over `asyncio.to_thread` reads, as long as the event loop never blocks on a read and the descriptor is closed on
@@ -272,7 +343,7 @@ Brief plan inputs:
 - The exact MUI layout props that keep the icon on the row's right edge (for example `flexGrow: 1` on the name), as
   long as the row test pins it.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Assumed: browsers report a non-2xx answer to an anchor with `download` in their own UI rather than saving the error
   body as the file. Behaviour differs by browser and is not tested here; the gate reviewer confirms by hand in one
@@ -282,12 +353,3 @@ Brief plan inputs:
 - Assumed: the Harbor image `claude-code-wrapper:<sha7>` exists for the wrapper merge commit (built on every wrapper
   `main` push); orch-wrapper-pin-download checks it with `regctl image digest` or falls back to `scripts/e2e.sh`
   building from source, as in the precedent.
-
-## Open questions
-
-- Q1: Deploy is not part of this epic (no agents-helmfile task), so the download works live only after a later deploy pins the new wrapper, orchestrator and web images; is that right? [recommended: yes, deploy the four queued epics (download, markdown, editor, slash commands) together in one agents-helmfile deploy epic afterwards]
-- Q2: To hide the icon on symlinks to directories (U2), the file listing gains target_type (dir, file, other; null for non-symlinks and for dangling or workdir-escaping links), and symlinks whose target escapes the workdir show no icon; acceptable? [recommended: yes]
-
-## Irreversible operations in scope
-
-none (no tag, release, migration or deploy; PRs merge through the normal flow).
