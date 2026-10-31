@@ -1,6 +1,28 @@
-# workspace-ui-fixes record
+# workspace ui fixes retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+### RETRO.md: Retro
+
+Filled by retro-writer from the reviewer tails, the rulings and the deltas, one row per point:
+
+## What went well
+
+none recorded in the epic format
+
+## What went wrong or could improve
+
+none recorded in the epic format
+
+## Recommendations
+
+Filled by retro-writer: potential improvements in the code, things delivered in a different way than expected, tech debt introduced anyway, and workflow improvement proposals for items recurring in `ticket.py retro --history`; "none" where a list is empty.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked (2026-10-24): visible vertical dividers between the files, chat and terminal panes; file tree updates by itself with no refresh button.
 Shipped in agent-orchestrator: 2px inline-flex-basis dividers, change-only tree refresh with pollExpanded, nearest-ancestor write refresh (incl. notebook_path), 3s visible-tab poll, preview refetch on mtime/size change, refresh button removed.
@@ -8,7 +30,7 @@ Build run wf_fb7b0769-f15: 3/3 clean, 0 escalated, 0 blocked. Epic-close audit w
 Verification: pytest 530 passed, vitest 200 passed, lint clean. `mise run apply` finished, `mise run smoke`: "smoke: OK".
 Open: live divider rendering/drag and live tree behaviour are not verified (user smoke).
 
-## Planned vs built
+### Planned vs built
 
 | Task | Status | Review rounds | Continuations | Files | Verifier head | Verification tail | Red evidence (implementer tests.red) |
 |---|---|---|---|---|---|---|---|
@@ -26,29 +48,29 @@ Approvals:
 | U2 | File tree updates automatically on file changes; refresh button removed. | D2 | tree-change-only-refresh, files-auto-poll-no-button | delivered (live behaviour: user smoke) |
 | X2 | Headless parity: no new UI capability without a documented public API; tree reads existing files API. | D3 | files-auto-poll-no-button | delivered (frontend + MEMORY.md only; check:api clean) |
 
-## Deviations and rulings
+### Deviations and rulings
 
 - No rulings escalated; forwardMerged: none.
 - Divider width 2px instead of earlier 4px. Why: requirement allows any explicit size; borderStrong token. Cost if wrong: cosmetic, one-line change.
 - Full suite not run by the files-auto-poll task (targeted tests only). Why: task instructions. Cost if wrong: regression elsewhere; covered by the later full run (pytest 530, vitest 200 passed).
 - Root retry in error/missing state uses mode 'first' (briefly flips loading each poll). Why: requirement only asks for retry. Cost if wrong: possible loading flicker while the root is in error; not verified against FilesPanel rendering.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 none reported by the audit. Git log shows 4ea4e96 and 708cd7e with identical subjects; not explained by the inputs (likely rebase/landing artifact); unknown.
 
-## Discovered and blocked
+### Discovered and blocked
 
 - cannotVerify, cleared by user smoke after deploy: live divider rendering, drag/double-click/keyboard resize in a browser; live tree updates with terminal writes (AC8); real EventSource onOpen on reconnect (tested via mocked stream); 409 agent_not_ready / 404 workdir recovery timing against a real backend.
 - Process gap: tree-change-only-refresh tests written after implementation (no red-first). Cleared by: none needed for this epic; see Lessons.
 - Declined review nits (no action): dead branch `if (mode !== 'refresh') settle(false)` and unused `renders` counter in useFileTree code/tests; no test isolates the busy-ref in-flight guard from dirs[p].loading; panel-level no-rerender not tested (pinned in hook tests).
 - Root cause found: react-resizable-panels 4.14.8 Separator writes inline `flex-basis: auto` that beats the emotion `flex` shorthand (recorded in MEMORY.md).
 
-## Research that changed the plan
+### Research that changed the plan
 
 react-resizable-panels 4.14.8 inline styleDefaults flex-basis: auto overrides CSS shorthand; plan changed to set an explicit inline flex-basis on both Dividers (pane-divider-lines requirement). Amends design D25 (refresh button) per U2.
 
-## Cost
+### Cost
 
 Build run: 15 agents; audit run: 2 agents. Continuations: unknown. Wall-clock: README Actual 10 min vs estimate 15 agent-min.
 
@@ -60,13 +82,13 @@ Build run: 15 agents; audit run: 2 agents. Continuations: unknown. Wall-clock: R
 
 README Time: Estimate 15 agent-min, critical path 10 min, Actual 10 min.
 
-## MRs and deploy
+### MRs and deploy
 
 - agent-orchestrator PR #7 (workspace-ui-fixes): merged, merge commit 964db9a.
 - agents-helmfile PR #10: merged, bump to 964db9a.
 - Deploy: `mise run apply` finished; `mise run smoke`: "smoke: OK". Pipeline state: unknown.
 
-## Lessons routed to
+### Lessons routed to
 
 - Tests written after code (tree-change-only-refresh): mechanical; the existing verify-task red check relies on implementer tests.red, and the result reported wroteTestFirst true against its own processGaps. Add a check that fails the task result when processGaps contains red-first and wroteTestFirst is true.
 - Inline-style vs CSS shorthand library defaults: judgement call; MEMORY.md pitfall entry already added, no further rule.
