@@ -1,87 +1,56 @@
-# hive decoupling design
+---
+title: hive decoupling
+repos: [agents-orchestrator, any-mcp-tatara-plugins, agents-helmfile]
+created: 2026-10-27
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# hive decoupling
 
-Hive members stop receiving the leader's activity stream. The dispatcher no longer sends the appended feed note;
-members keep only the keyed `hive_state` note, re-pushed when the leader, epoch, membership or readiness changes, and
-pull what peers did through a new agent route `GET /agent/v1/activity` and the plugin tool `orchestrator_activity`.
-A leader whose context reaches the effective handover threshold (its compaction percentage minus 15) gets one keyed
-`handover_due` note naming successor candidates with their ccw addresses and the handoff protocol. It briefs the
-successor over the existing ccw peer channel, then calls the existing `orchestrator_leadership_handover(to=...)`.
-Every handover request outcome reaches the requester as a keyed `leadership_request` note. Repos:
-agents-orchestrator, any-mcp-tatara-plugins (next minor release), agents-helmfile (pin, apply, smoke, live proof).
-claude-code-wrapper and agents-web are untouched. Architecture: fable brief
-`.scratchpad/design/hive-decoupling-arch.md` (D1-D9 there; D1-D11 here).
+## What and why
 
-## Intent and why
+What: Members stop receiving a truncated stream of the leader's activity; context moves on demand, and a leader near its limit hands over directly to a chosen successor
+How: fable-architected design on top of leader-auto-handover: on-demand handoff instead of streamed peer-notes, a limit signal to the leader, a direct leader-successor conversation
+Why: Streamed peer-notes consume every member's context on every turn
 
-User request (2026-10-27, verbatim in README): "Decouple agents in session more. Right now non-leaders get truncated
-stream of what's leader is doing. Ask fable architect to decouple or use handoff or something to consume non-leaders
-less. Maybe leader could get a signal to pass on its session details to another agent when it hits a limit and both
-could talk to each other about details for handoff?"
+User request (2026-10-27, relayed by the mx-5 leader, msg 124), verbatim:
 
-Today every member gets up to 8000 characters of `<peer-notes>` every 30 s of a busy turn (the feed, produced by
-`dispatcher/hive.py` `_push_agent` with `feed.render_feed`, truncated with "... N earlier lines omitted"), plus a
-`hive_state` block on every idle/busy flip of any member. Nothing warns a leader near its limit: the system only
-reacts after the compaction (done epic leader-auto-handover), when the details are gone.
+"Decouple agents in session more. Right now non-leaders get truncated stream of what's leader is doing. Ask fable architect to decouple or use handoff or something to consume non-leaders less.
+Maybe leader could get a signal to pass on its session details to another agent when it hits a limit and both could talk to each other about details for handoff?"
 
-## Goals
+Relayer's reading: non-leader members get a truncated stream of the leader's activity (seen as peer-notes on every turn), which uses up their context. A fable architect designs a better approach (on-demand handoff instead of streaming, or similar), including a leader-initiated handoff: near its limit the leader gets a signal, picks a successor, and the two talk directly to transfer details. Build on the done epic leader-auto-handover; do not duplicate it.
 
-- G1: Members receive no streamed activity: the dispatcher sends no appended feed note, `hive_state` is re-pushed
-  only when the leader, epoch, membership (pod, wrapper session) or readiness changes, and
-  `session_leaders.feed_cursor` is dropped.
-- G2: Any hive agent pulls recent activity on demand: `GET /agent/v1/activity` (optional `agent`, `limit` 1..200,
-  default 50) and the plugin tool `orchestrator_activity`.
-- G3: A leader at or above the effective handover threshold gets one keyed `handover_due` note with ranked successor
-  candidates, their ccw addresses and the handoff protocol; the `hive_state` hint and the plugin advice always use the
-  effective threshold.
-- G4: The leader briefs a chosen successor directly over ccw peer messaging, then hands over with
-  `orchestrator_leadership_handover(to=..., epoch=...)`; the requester learns every handover request outcome (applied,
-  or rejected with its reason) as a keyed `leadership_request` note.
-- G5: Released and deployed: any-mcp-tatara-plugins next minor tag, orchestrator pins, agents-helmfile bump, apply,
-  smoke covering the activity route and tool, and a live handoff proof.
+Queued after matrix-connector-agent-initi.
+
+## Scope ladder
+
+### Rung 1: agreed scope (migrated)
+
+- 1.1: G1: Members receive no streamed activity: the dispatcher sends no appended feed note, `hive_state` is re-pushed only when the leader, epoch, membership or readiness changes, and `session_leaders.feed_cursor` is dropped.
+- 1.2: G2: Any hive agent pulls recent activity on demand: `GET /agent/v1/activity` (optional `agent`, `limit` 1..200) and the plugin tool `orchestrator_activity`.
+- 1.3: G3: A leader at or above the effective handover threshold (its compaction percentage minus 15) gets one keyed `handover_due` note with ranked successor candidates, their ccw addresses and the handoff protocol; the `hive_state` hint and the plugin advice always use the effective threshold.
+- 1.4: G4: The leader briefs a chosen successor directly over ccw peer messaging, then hands over with `orchestrator_leadership_handover(to=..., epoch=...)`; the requester learns every handover request outcome (applied, or rejected with its reason) as a keyed `leadership_request` note.
+- 1.5: G5: Released and deployed: any-mcp-tatara-plugins next minor tag, orchestrator pins, agents-helmfile bump, apply, a smoke covering the activity route and tool, and a live handoff proof.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Any claude-code-wrapper change or release (no threshold hook, no new event, no notes config).
-- A digest or summarised stream to members (option B), or a shared journal file.
-- An automatic threshold handover by the orchestrator (H3), or any new automatic pick rule.
+- Any claude-code-wrapper change or release; any agents-web change.
+- A digest or summarised stream to members, or a shared journal file.
+- An automatic threshold handover by the orchestrator, or any new automatic pick rule.
 - An orchestrator-mediated handoff protocol, or a new table or writer for the brief.
-- A new `session_leaders.reason` value or stream frame; any agents-web change.
-- A per-session switch for the signal or the pull tool.
-- Pushing the compact summary to the successor (H4).
-- Changing any leader-auto-handover backstop (compaction step 5, scale-down step 3, claim hold, reconciler pod hold).
-- Rate limiting `activity` (brief idea; only if a polling member is observed).
-- Dropping `events.created_at` (added for the feed settle window, but `db/export.py` `SELECT * FROM events` exports
-  it).
+- A new `session_leaders.reason` value or stream frame; a per-session switch for the signal or the pull tool.
+- Pushing the compact summary to the successor.
+- Changing any leader-auto-handover backstop (compaction and scale-down handover, claim hold, reconciler pod hold).
+- Rate limiting `activity`; dropping `events.created_at` (the session export reads it).
 
-## Anti-goals
+## Design
 
-- A member learns a leader change late or not at all (`hive_state` must still push on every structural change).
-- Leadership flips before the successor has the brief (step 5 of D5 is the only flip).
-- A rejected handover stays invisible to the leader that asked.
-- The leader-auto-handover backstops regress (its kind e2e and DB tests stay green, unchanged).
-- Dead feed code or a dead column left behind "for compatibility".
-
-## Constraints
-
-- One writer per table: `session_leaders` dispatcher; `agent_status` and `events` ingester; `leadership_requests` api
-  inserts, dispatcher decides. The new route only reads `events`.
-- The agent API is the only agent-facing surface; tools come through the any-mcp orchestrator plugin; tool visibility
-  is fixed at render from `max_replicas`/`static`.
-- `PUSH_INTERVAL_SECONDS`, `LEADER_GRACE_SECONDS` and `HANDOVER_MARGIN_PCT` are module constants, not settings
-  (orchestrator MEMORY 2026-10-24).
-- No backward-compat shims (housekeeping 4).
-- Shared files with the epics before this one (slash-commands-from-chat, then matrix-connector-agent-initi): the
-  plugin `__init__.py`, `k8s/on_start.py`, `settings.py` and the agents-helmfile values. This epic is blocked on
-  matrix-connector-agent-initi and builds on whatever both merged; every task reads the current file first.
-- Plugin release rule: the next minor after the plugins pin the Matrix epic leaves (slash-commands releases v0.2.0,
-  Matrix v0.3.0, so v0.4.0 if nothing else lands). If another release landed first, the release and pin tasks are
-  amended to the next free minor before they start.
-- Orchestrator migration number: the next free one at build time (slash-commands adds 0008, so 0009 if nothing else
-  lands); the task is amended to the free number if 0009 is taken.
-- No Docker in agent pods: orchestrator DB tests (testcontainers) and the kind e2e run only in GitHub CI; CI on the PR
-  is the gate for them.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -234,6 +203,17 @@ the named successor over ccw, the handover is applied with reason `handover: con
 MEMORY.md. Standing rule (user): deploy whenever possible; live applies need no approval.
 Why: G5 and the recurring retro finding that deploys need a first-real-use acceptance.
 
+## Open questions
+
+- Q1: Remove the activity feed entirely and give members an on-demand orchestrator_activity tool instead of any digest? [recommended: yes]
+- Q2: Push hive_state only when the leader, epoch, membership or readiness changes (not on busy/idle or context changes)? [recommended: yes]
+- Q3: Threshold for the leader's signal is the effective compaction percentage minus 15, no new spec field (live today: mx-5 compacts at 25% so it is signalled from 10%; claude-code-tatara at 50%, from 35%; default 95%, from 80%)? [recommended: yes]
+- Q4: Two-step handoff (brief over ccw peer messaging, wait for the successor's reply, then leadership_handover(to=...)), with the leader free to hand over after one unanswered user turn? [recommended: yes]
+- Q5: The leader picks its successor from an advised list (ready, staying, idle first, lowest context); the automatic picks of leader-auto-handover stay free-longest? [recommended: yes]
+- Q6: Drop the session_leaders.feed_cursor column in a migration rather than leave it dead? [recommended: yes]
+- Q7: Release and deploy in this epic: any-mcp-tatara-plugins next minor after the Matrix epic's pin (v0.4.0 if nothing else lands), orchestrator pins, agents-helmfile bump, apply (rolls every running session's agent pods) and a live handoff proof, same shape as leader-auto-handover? [recommended: yes]
+- Q8: Leave out of the handover_due candidate list any agent already at or above the threshold, so leadership does not ping-pong between agents that are both due? [recommended: yes]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -244,7 +224,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 | research-code-external | skipped: the protocol is the user's own ("both could talk to each other"); no analogue changes it | none | none |
 | research-papers | skipped: no algorithmic core | none | none |
 
-## Research inputs
+### Research inputs
 
 | Finding | Source | Task |
 |---|---|---|
@@ -276,7 +256,151 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 | facts F1-F5 | brief Plan inputs facts | settled, see Assumptions |
 | preference questions 1-7 | brief Plan inputs questions | Open questions Q1-Q7 |
 
-## Decision coverage
+## Irreversible operations
+
+- Tag `v0.4.0` (or the next free minor under the release rule) pushed on the any-mcp-tatara-plugins merge commit
+  (task plugins-release-0-4-0, orchestrator session, after green CI; covered by G5 and Q7).
+- Migration dropping `session_leaders.feed_cursor` (0009 or the next free number) applied to the live orchestrator
+  database by the deployed orchestrator: a data deletion of bookkeeping values, forward only (task
+  orch-drop-feed-cursor, applied in helmfile-apply-live-proof; covered by G1 and Q6).
+- `mise run apply` on the live namespace (task helmfile-apply-live-proof, orchestrator session only, after `mise run
+  diff` shows only the pins): the orchestrator pods roll, and the plugins ref and on-start change roll the agent pods
+  of every running session (mx-5 and claude-code-tatara included). Standing user rule: live applies need no approval.
+- PR merges to `main` of agents-orchestrator, any-mcp-tatara-plugins and agents-helmfile (main stays green).
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-29)
+
+## hive-decoupling phase 5 judgement (tatara-2, 2026-10-29)
+
+Ranges: orchestrator a9f936f..be554bb; plugins 4506e70..6d5cc19 (v0.4.0); helmfile 52b6893..c786dc4 excluding PR #51. Reviewer sonnet (whole diff) and security-researcher sonnet.
+
+### README.md: Act on
+
+- F1 (validated: plugins __init__.py:119-123 renders `auto_compact_pct - 15` with no floor; spec.py:475 allows ge=1): G3 says the plugin advice always uses the effective threshold `max(compact - 15, 1)`. Fix task plugin-advice-threshold-floo, plugin 0.5.1 on cct2's v0.5.0; the ref pin rides with cct2's slash deploy.
+
+### README.md: Consider
+
+- F2: the effective compaction point is spelled in 4 places (hive.py compact_pct, k8s/on_start.py:73, k8s/render.py:149, db/views.py:76). Design line 205 itself spells the rendered plugin config inline, so this is not a spec breach; reuse of hive.compact_pct is a cheap cleanup for cct2.
+- F3: dispatcher/feed.py keeps the synthetic `leadership` branch (nothing produces it) and digest_lines returns a `pending` list the only caller drops. Design D1/D3 say digest_lines stays unchanged; the anti-goal says no dead feed code. Low cost cleanup; handed to cct2 as optional.
+
+### README.md: Noted
+
+- Security LOW: GET /agent/v1/activity loads up to 1000 event rows with full data per call, no rate limit (own session only; rate limiting is a non-goal).
+- Security LOW: activity lines carry Bash commands unredacted to every pod of the session (pre-existing with the feed; now pulled, not pushed).
+- Security INFO: authz (require_agent, session-scoped query), SQL parameterized, migration 0011 DROP COLUMN IF EXISTS, helmfile exposes no secrets.
+- Live orchestrator df2b80e lacks the PR #37 fix fe2c623 until be554bb is deployed (task helmfile-orch-flaky-fix-pin).
+
+### README.md: Dismissed
+
+- none.
+
+### README.md: Cannot verify
+
+- Live apply and handoff proof rest on MEMORY.md and .logs/hive-decoupling-deploy-2026-10-29/live-proof.md (the reviewer of PR #53 checked them against the logs).
+- Migration 0010 from slash-commands merging after 0011 (migrator applies by set, per run notes).
+
+### README.md: Independent verification (supervisor, review worktrees at origin/main heads)
+
+- agents-helmfile c786dc4: test "301 passed in 479.74s"; lint "All checks passed!", "no leaks found".
+- agents-orchestrator be554bb: lint "All checks passed!"; test "1 failed, 699 passed, 69 deselected, 1 warning, 629 errors": the 629 errors are DB tests without Docker (docker unixconn FileNotFoundError, CI-only per design); the 1 failure test_reconciler.py::test_lightkube_default_client_uses_env_config is pod-environment (in-cluster SA env wins over KUBECONFIG). CI evidence: main run 40901222840 test/lint/chart green, e2e as watched by the pin task.
+- any-mcp-tatara-plugins dfa0355: lint "All checks passed!"; test "1 failed, 27 passed": known pod-only tests/test_source_install.py (git 2.39 --end-of-options), CI green.
+
+### README.md: After the scope audit
+
+- F2 and F3 (also scope audit gaps 1 and 2) were acted on, not left as Consider: task orch-feed-dead-code-and-comp (orchestrator PR #38, 2d6d722), pinned by helmfile-orch-cleanup-pin (PR #55), deployed and smoke OK.
+- F1 fixed in plugins v0.5.1 (PR #5). Its live pin rides with cct2's slash deploy (mx-34 #460/#461).
+- Verdict: pass.
+
+### design.md: Summary
+
+Hive members stop receiving the leader's activity stream. The dispatcher no longer sends the appended feed note;
+members keep only the keyed `hive_state` note, re-pushed when the leader, epoch, membership or readiness changes, and
+pull what peers did through a new agent route `GET /agent/v1/activity` and the plugin tool `orchestrator_activity`.
+A leader whose context reaches the effective handover threshold (its compaction percentage minus 15) gets one keyed
+`handover_due` note naming successor candidates with their ccw addresses and the handoff protocol. It briefs the
+successor over the existing ccw peer channel, then calls the existing `orchestrator_leadership_handover(to=...)`.
+Every handover request outcome reaches the requester as a keyed `leadership_request` note. Repos:
+agents-orchestrator, any-mcp-tatara-plugins (next minor release), agents-helmfile (pin, apply, smoke, live proof).
+claude-code-wrapper and agents-web are untouched. Architecture: fable brief
+`.scratchpad/design/hive-decoupling-arch.md` (D1-D9 there; D1-D11 here).
+
+### design.md: Intent and why
+
+User request (2026-10-27, verbatim in README): "Decouple agents in session more. Right now non-leaders get truncated
+stream of what's leader is doing. Ask fable architect to decouple or use handoff or something to consume non-leaders
+less. Maybe leader could get a signal to pass on its session details to another agent when it hits a limit and both
+could talk to each other about details for handoff?"
+
+Today every member gets up to 8000 characters of `<peer-notes>` every 30 s of a busy turn (the feed, produced by
+`dispatcher/hive.py` `_push_agent` with `feed.render_feed`, truncated with "... N earlier lines omitted"), plus a
+`hive_state` block on every idle/busy flip of any member. Nothing warns a leader near its limit: the system only
+reacts after the compaction (done epic leader-auto-handover), when the details are gone.
+
+### design.md: Goals
+
+- G1: Members receive no streamed activity: the dispatcher sends no appended feed note, `hive_state` is re-pushed
+  only when the leader, epoch, membership (pod, wrapper session) or readiness changes, and
+  `session_leaders.feed_cursor` is dropped.
+- G2: Any hive agent pulls recent activity on demand: `GET /agent/v1/activity` (optional `agent`, `limit` 1..200,
+  default 50) and the plugin tool `orchestrator_activity`.
+- G3: A leader at or above the effective handover threshold gets one keyed `handover_due` note with ranked successor
+  candidates, their ccw addresses and the handoff protocol; the `hive_state` hint and the plugin advice always use the
+  effective threshold.
+- G4: The leader briefs a chosen successor directly over ccw peer messaging, then hands over with
+  `orchestrator_leadership_handover(to=..., epoch=...)`; the requester learns every handover request outcome (applied,
+  or rejected with its reason) as a keyed `leadership_request` note.
+- G5: Released and deployed: any-mcp-tatara-plugins next minor tag, orchestrator pins, agents-helmfile bump, apply,
+  smoke covering the activity route and tool, and a live handoff proof.
+
+### design.md: Non-goals
+
+- Any claude-code-wrapper change or release (no threshold hook, no new event, no notes config).
+- A digest or summarised stream to members (option B), or a shared journal file.
+- An automatic threshold handover by the orchestrator (H3), or any new automatic pick rule.
+- An orchestrator-mediated handoff protocol, or a new table or writer for the brief.
+- A new `session_leaders.reason` value or stream frame; any agents-web change.
+- A per-session switch for the signal or the pull tool.
+- Pushing the compact summary to the successor (H4).
+- Changing any leader-auto-handover backstop (compaction step 5, scale-down step 3, claim hold, reconciler pod hold).
+- Rate limiting `activity` (brief idea; only if a polling member is observed).
+- Dropping `events.created_at` (added for the feed settle window, but `db/export.py` `SELECT * FROM events` exports
+  it).
+
+### design.md: Anti-goals
+
+- A member learns a leader change late or not at all (`hive_state` must still push on every structural change).
+- Leadership flips before the successor has the brief (step 5 of D5 is the only flip).
+- A rejected handover stays invisible to the leader that asked.
+- The leader-auto-handover backstops regress (its kind e2e and DB tests stay green, unchanged).
+- Dead feed code or a dead column left behind "for compatibility".
+
+### design.md: Constraints
+
+- One writer per table: `session_leaders` dispatcher; `agent_status` and `events` ingester; `leadership_requests` api
+  inserts, dispatcher decides. The new route only reads `events`.
+- The agent API is the only agent-facing surface; tools come through the any-mcp orchestrator plugin; tool visibility
+  is fixed at render from `max_replicas`/`static`.
+- `PUSH_INTERVAL_SECONDS`, `LEADER_GRACE_SECONDS` and `HANDOVER_MARGIN_PCT` are module constants, not settings
+  (orchestrator MEMORY 2026-10-24).
+- No backward-compat shims (housekeeping 4).
+- Shared files with the epics before this one (slash-commands-from-chat, then matrix-connector-agent-initi): the
+  plugin `__init__.py`, `k8s/on_start.py`, `settings.py` and the agents-helmfile values. This epic is blocked on
+  matrix-connector-agent-initi and builds on whatever both merged; every task reads the current file first.
+- Plugin release rule: the next minor after the plugins pin the Matrix epic leaves (slash-commands releases v0.2.0,
+  Matrix v0.3.0, so v0.4.0 if nothing else lands). If another release landed first, the release and pin tasks are
+  amended to the next free minor before they start.
+- Orchestrator migration number: the next free one at build time (slash-commands adds 0008, so 0009 if nothing else
+  lands); the task is amended to the free number if 0009 is taken.
+- No Docker in agent pods: orchestrator DB tests (testcontainers) and the kind e2e run only in GitHub CI; CI on the PR
+  is the gate for them.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -292,7 +416,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 | D10 test coverage by layer | orch-e2e-hive-activity |
 | D11 smoke and live proof | helmfile-smoke-activity, helmfile-apply-live-proof |
 
-## Review focus
+### design.md: Review focus
 
 - `hive.py` claim/release bookkeeping after the feed phase is gone: one failing receiver still retries alone;
   `state_pushed_at` semantics unchanged.
@@ -305,13 +429,13 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 - Duplicate-predicate sweep before the last orchestrator code task merges (recurring retro finding).
 - Smoke step deadlines: each new wait has its own deadline.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - The activity row bound and index path (D3), within "bounded, newest first, then ascending".
 - Exact note wording beyond the phrases the acceptance conditions quote.
 - Internal helper names and the `HiveState` field shapes for D4 and D6.
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - F1 settled (planner probe 2026-10-27, read-only `psql` on agents-orchestrator-db-cluster-1): live leaders report
   `context_pct` (claude-code-tatara leader 17, mx-5 leader 7; members 6-36). helmfile-apply-live-proof re-checks it.
@@ -328,7 +452,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 - The ccw address of an agent is `<pod_name>/<wrapper_session_id>` (render sets `peers.name = ${POD_NAME}`); the live
   proof confirms a send to it is delivered.
 
-## Builder check settlements (2026-10-27)
+### design.md: Builder check settlements (2026-10-27)
 
 1. The build starts only after slash-commands-from-chat and matrix-connector-agent-initi have merged; the epic is blocked on them already (my call). The first task, orch-activity-route, makes the orchestrator session read the real next migration number and plugins tag from main and amend the dependent tasks (orch-drop-feed-cursor, plugins-release-0-4-0, orch-plugins-pin-0-4-0, helmfile-deploy-pin). Their acceptance conditions hold the placeholders `<MIGRATION>`, `<TAG>` and `<VERSION>` until then; no number is assumed (`0009` and `v0.4.0` elsewhere in this document are only the expectation). The migration test is named `test_drop_feed_cursor_migration`, without the number.
 2. The live apply rolls the agent pods of the session that runs it (my call). Before the apply the orchestrator session writes a handoff checkpoint (`workbench:handoff`) naming the apply, smoke and proof steps; the helm apply runs to completion before the reconciler rolls pods; after the roll the resumed leader re-runs smoke and the live proof from the checkpoint. Placed in helmfile-apply-live-proof (step 3, ac8).
@@ -341,29 +465,7 @@ Why: G5 and the recurring retro finding that deploys need a first-real-use accep
 
 Q8 (exclude candidates at or above the threshold) stays open for the gate.
 
-## Open questions
-- Q1: Remove the activity feed entirely and give members an on-demand orchestrator_activity tool instead of any digest? [recommended: yes]
-- Q2: Push hive_state only when the leader, epoch, membership or readiness changes (not on busy/idle or context changes)? [recommended: yes]
-- Q3: Threshold for the leader's signal is the effective compaction percentage minus 15, no new spec field (live today: mx-5 compacts at 25% so it is signalled from 10%; claude-code-tatara at 50%, from 35%; default 95%, from 80%)? [recommended: yes]
-- Q4: Two-step handoff (brief over ccw peer messaging, wait for the successor's reply, then leadership_handover(to=...)), with the leader free to hand over after one unanswered user turn? [recommended: yes]
-- Q5: The leader picks its successor from an advised list (ready, staying, idle first, lowest context); the automatic picks of leader-auto-handover stay free-longest? [recommended: yes]
-- Q6: Drop the session_leaders.feed_cursor column in a migration rather than leave it dead? [recommended: yes]
-- Q7: Release and deploy in this epic: any-mcp-tatara-plugins next minor after the Matrix epic's pin (v0.4.0 if nothing else lands), orchestrator pins, agents-helmfile bump, apply (rolls every running session's agent pods) and a live handoff proof, same shape as leader-auto-handover? [recommended: yes]
-- Q8: Leave out of the handover_due candidate list any agent already at or above the threshold, so leadership does not ping-pong between agents that are both due? [recommended: yes]
-
-## Irreversible operations in scope
-
-- Tag `v0.4.0` (or the next free minor under the release rule) pushed on the any-mcp-tatara-plugins merge commit
-  (task plugins-release-0-4-0, orchestrator session, after green CI; covered by G5 and Q7).
-- Migration dropping `session_leaders.feed_cursor` (0009 or the next free number) applied to the live orchestrator
-  database by the deployed orchestrator: a data deletion of bookkeeping values, forward only (task
-  orch-drop-feed-cursor, applied in helmfile-apply-live-proof; covered by G1 and Q6).
-- `mise run apply` on the live namespace (task helmfile-apply-live-proof, orchestrator session only, after `mise run
-  diff` shows only the pins): the orchestrator pods roll, and the plugins ref and on-start change roll the agent pods
-  of every running session (mx-5 and claude-code-tatara included). Standing user rule: live applies need no approval.
-- PR merges to `main` of agents-orchestrator, any-mcp-tatara-plugins and agents-helmfile (main stays green).
-
-## Build-time settlements (2026-10-29, tatara-0)
+### design.md: Build-time settlements (2026-10-29, tatara-0)
 
 - (my call) slash-commands-from-chat is dropped as a blocker: it is parked, owned by hive cct2 (split agreed 2026-10-28), and its branch is 46 commits behind orchestrator main. Waiting would stall this epic indefinitely; whichever epic merges second renumbers its migration and rebases onto the other. Matrix (the other blocker) is done.
 - Migration number assigned at merge (agreed with cct2 via mx-34 msg 337): planned 0011 because slash-commands-from-chat claims 0010; the first epic to merge to orchestrator main takes 0010, the second renumbers to the next free one in its rebase and amends its own tasks and migration test.
