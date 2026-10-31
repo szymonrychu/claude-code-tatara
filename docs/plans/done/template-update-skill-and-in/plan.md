@@ -1,79 +1,45 @@
-# Template update skill and init docs cleanup design
+---
+title: Template update skill and init docs cleanup
+repos: [workbench]
+created: 2026-10-22
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# Template update skill and init docs cleanup
 
-The template repo keeps its own development docs tracked (plans, records, contracts, research,
-MEMORY.md and ROADMAP.md entries). Projects made from it must never carry them. Two changes:
+## What and why
 
-- One instance-owned path list (`scripts/init_engine/owned.py`) drives init's template-history
-  cleanup, which now also drops `docs/plans/contracts.json`, `docs/plans/index.json` and
-  `docs/handoffs`.
-- A new engine command `mise run init:update` merges the template (`git merge --no-commit`),
-  restores every instance-owned path to the project's HEAD, keeps the project side of known
-  generated files, re-runs the merged tree's refresh writers, runs lint and ends in one merge commit
-  `chore(workbench): template update <sha>`. A new `template-update` skill runs it and reports.
+What: init removes all template-specific docs; a new skill updates an existing workbench from the template without the template's own docs
+How: extend the init engine's template-history cleanup; add a tested engine command plus a skill that fetches the template, merges tooling and keeps instance-owned docs
+Why: new workbenches must not inherit the template's plans, records and memory, and pulling template updates today is a manual merge with conflicts
 
-## Intent and why
+The template repo (this workbench) carries its own development docs: epic plans and records under docs/plans, the contracts file, research briefs, and its own MEMORY.md and ROADMAP.md entries. These stay in the template repo (the user decided not to gitignore them). Two things follow for projects made from the template:
 
-User decisions (2026-10-22, verbatim): "don't add to gitignore. During initial setup, cleanup the
-docs. Add a skill, that will refresh future instances of workbenches without workbench specific
-docs." Workbench-specific docs are the template repo's own development docs: docs/plans epics and
-records (todo, in-progress, done), docs/plans/contracts.json, index.json, facts.md, docs/research,
-and the template's MEMORY.md and ROADMAP.md entries. User docs that ship with the template
-(README.md, docs/enterprise.md, docs/harnesses.md, plugin docs) are not template-specific.
+- Initial setup (`init:new`, `init:adopt`) removes every template-specific doc, so a new workbench starts with empty plan folders, no template research, and fresh MEMORY.md and ROADMAP.md. init already clears docs/plans phases, docs/research and facts.md; anything left behind (for example docs/plans/contracts.json) is cleaned too.
+- A new skill refreshes an existing workbench instance from the template: it pulls the template's tooling and rules changes and never brings the template's own docs back. Today this is a manual `git merge template/main` plus hand-resolved conflicts plus `mise run init:refresh` (README "Pulling template updates").
 
-Today init clears the plan phases, docs/research and facts.md (`scripts/init_engine/finalize.py:128`
-`clear_template_history`, first init only, `finalize.py:210`) but leaves the tracked
-`docs/plans/contracts.json`. Pulling template updates is a manual `git merge template/main`, hand
-conflict resolution and `mise run init:refresh` (README.md:319), and that merge brings every new
-template epic, research file and MEMORY.md entry into the project.
+## Scope ladder
 
-## Goals
+### Rung 1: agreed scope (migrated)
 
-- After `init:new` or `init:adopt`, `git ls-files docs/plans` lists only the three phase
-  `.gitkeep` files, `git ls-files docs/research docs/handoffs` is empty, and MEMORY.md and
-  ROADMAP.md are the fresh init versions.
-- `mise run init:update` in an initialised, clean workbench brings template tooling, plugins, rules
-  and generated blocks; brings no template plan, record, research, contracts, MEMORY.md or
-  ROADMAP.md entry; leaves the project's own docs and AGENTS.md answers intact; ends in exactly one
-  commit with `mise run lint` green.
-- It refuses a dirty tree and an uninitialised workbench, and aborts with no half-applied state on
-  conflicts outside the known paths, naming them.
-- The `template-update` skill runs it, asking nothing except in the unrelated-history case.
-- README "Pulling template updates" points at the skill.
+- 1.1: init leaves no template-specific doc in a new or adopted workbench: docs/plans holds only empty phase folders, no docs/research, no contracts or facts files, MEMORY.md and ROADMAP.md are fresh.
+- 1.2: One skill, run in an initialised workbench, updates it from the template in one tested engine command through mise: template tooling, plugins, rules and generated blocks arrive; template plans, records, research, contracts, MEMORY.md and ROADMAP.md entries never arrive; the user's own docs and AGENTS.md answers stay intact; it ends in one commit with lint green.
+- 1.3: README "Pulling template updates" points at the skill instead of the manual merge.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
-- Gitignoring docs/plans in the template (user decision).
+- Gitignoring docs/plans in the template (the user decided against it).
 - Changes to the personal plugin at ~/Documents/claude-infra-plugin.
-- Pushing anything; the update commits locally only.
-- Updating components under `code/`; only the workbench superrepo is updated.
+- Pushing anything; the update skill commits locally only.
 
-## Anti-goals
+## Design
 
-- A template doc reappearing in a project after any update.
-- A refused or failed update that leaves conflict markers, a MERGE_HEAD, a replace ref, staged
-  changes or new untracked files behind.
-- The owned-path list duplicated between init and update so the two drift.
-- An update that loses the project's AGENTS.md answers, its own epics or its MEMORY.md history.
-
-## Constraints
-
-- The init engine is stdlib python run with `python3` through mise tasks only
-  (`.claude/rules/python.md`); skills call `mise run`, never a script path
-  (`plugins/workbench/skills/init/tests/test_init_skills.py::test_engine_only_through_mise_tasks`).
-- Root scripts tests run as `pytest scripts/tests/...` from the repo root (`mise-tasks/test/scripts`);
-  plugin skill tests run per skill (`cd plugins/workbench && bash scripts/run-tests.sh --only <skill>`).
-  Lint for the engine is `ruff check scripts` plus shellcheck on `mise-tasks/*` (`mise-tasks/lint/root`).
-- Git: only commands available on the git shipped with macOS (no `git merge-tree --merge-base`);
-  `git replace --graft` is allowed.
-- Epic flow-speed-and-token-optimiz is running and owns plugins/workbench/workflows,
-  plugins/workbench/scripts, start-development references, plugins/workbench/rules and AGENTS.md.
-  This epic touches none of them. It touches root `MEMORY.md`, which that epic's
-  cache-prefix-change task also edits; MEMORY.md is a doc file under the default `overlapIgnore`,
-  so the two only append separate entries.
-- The plugin README must name every skill
-  (`plugins/workbench/skills/start-development/tests/test_release.py::test_readme_documents_the_template`).
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -178,6 +144,10 @@ removed at init. Root MEMORY.md gets a dated entry for D3 to D7. Serves A2, A3.
 ### D10: docs/handoffs is instance-owned
 Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and the template update never brings it. (user decision)
 
+## Open questions
+
+none: Q1 (docs/handoffs instance-owned) answered yes at the gate on 2026-10-22.
+
 ## Research
 
 | Lens | Ran or skipped | Adopted ideas | Rejected ideas |
@@ -186,7 +156,7 @@ Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and th
 | code external (copier, cruft) | skipped: the caller laid out the copier/cruft option; D3 weighs it | none | manifest-based sync (D3 alternative b) |
 | docs, papers | skipped: git plumbing only | none | none |
 
-## Research inputs
+### Research inputs
 
 | Source | Entry | Lands in |
 |---|---|---|
@@ -199,7 +169,106 @@ Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and th
 | plugins/workbench/skills/init/tests/test_init_skills.py | skill test shape (frontmatter, mise only, flags in cli help) | template-update-skill |
 | test_release.py::test_readme_documents_the_template | plugin README names every skill | template-update-skill |
 
-## Decision coverage
+## Irreversible operations
+
+- `git merge --abort` and removal of untracked files on a failed update: safe because the preflight
+  refuses any dirty or untracked state, so only files the run created are removed.
+- init cleanup deletes template docs on first init only (existing behaviour, extended to
+  contracts.json, index.json and docs/handoffs).
+- No push, no force operation, no remote change except adding a missing `template` remote.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-22)
+
+Epic review, phase 5, over 0f89dfe..6b4b660 (docs/plans excluded).
+- Epic review (reviewer, sonnet): no findings; single owned list shared by init cleanup and update confirmed.
+- Security review (security-researcher, sonnet): HIGH restore_owned deleted gitignored docs/research and docs/handoffs notes; MEDIUM --url ignored with an existing template remote; LOW option-like --branch/--base; MEDIUM non-default --url runs that template's scripts. All fixed in update-safety (red against pre-fix code: 8 failed; now 17 passed); skill asks before a non-default --url. Hidden --lint-command (test-only) and git add -A after refresh: by design, dismissed.
+- Scope audit (scope-auditor, sonnet): behaviour delivered; three AC refs retargeted to renamed tests; one gap (existing template remote keeps its URL) fixed by existing-remote-kept (pin test, red by mutation).
+- Landing fixes: README init:update flags after --; init_engine helpers renamed init_helpers (shadowed e2e helpers in one pytest run); skill text describes the default URL instead of spelling it (personal-term lint).
+- Full suite: mise run test and mise run lint green on main 6b4b660 (scripts 467 passed, plugin 2817 assertions).
+- Rulings: docs-update-flow accepted (empty verifier evidence, hand-verified); existing-remote-kept accepted (TDD-skipped exception, pin test).
+
+### design.md: Summary
+
+The template repo keeps its own development docs tracked (plans, records, contracts, research,
+MEMORY.md and ROADMAP.md entries). Projects made from it must never carry them. Two changes:
+
+- One instance-owned path list (`scripts/init_engine/owned.py`) drives init's template-history
+  cleanup, which now also drops `docs/plans/contracts.json`, `docs/plans/index.json` and
+  `docs/handoffs`.
+- A new engine command `mise run init:update` merges the template (`git merge --no-commit`),
+  restores every instance-owned path to the project's HEAD, keeps the project side of known
+  generated files, re-runs the merged tree's refresh writers, runs lint and ends in one merge commit
+  `chore(workbench): template update <sha>`. A new `template-update` skill runs it and reports.
+
+### design.md: Intent and why
+
+User decisions (2026-10-22, verbatim): "don't add to gitignore. During initial setup, cleanup the
+docs. Add a skill, that will refresh future instances of workbenches without workbench specific
+docs." Workbench-specific docs are the template repo's own development docs: docs/plans epics and
+records (todo, in-progress, done), docs/plans/contracts.json, index.json, facts.md, docs/research,
+and the template's MEMORY.md and ROADMAP.md entries. User docs that ship with the template
+(README.md, docs/enterprise.md, docs/harnesses.md, plugin docs) are not template-specific.
+
+Today init clears the plan phases, docs/research and facts.md (`scripts/init_engine/finalize.py:128`
+`clear_template_history`, first init only, `finalize.py:210`) but leaves the tracked
+`docs/plans/contracts.json`. Pulling template updates is a manual `git merge template/main`, hand
+conflict resolution and `mise run init:refresh` (README.md:319), and that merge brings every new
+template epic, research file and MEMORY.md entry into the project.
+
+### design.md: Goals
+
+- After `init:new` or `init:adopt`, `git ls-files docs/plans` lists only the three phase
+  `.gitkeep` files, `git ls-files docs/research docs/handoffs` is empty, and MEMORY.md and
+  ROADMAP.md are the fresh init versions.
+- `mise run init:update` in an initialised, clean workbench brings template tooling, plugins, rules
+  and generated blocks; brings no template plan, record, research, contracts, MEMORY.md or
+  ROADMAP.md entry; leaves the project's own docs and AGENTS.md answers intact; ends in exactly one
+  commit with `mise run lint` green.
+- It refuses a dirty tree and an uninitialised workbench, and aborts with no half-applied state on
+  conflicts outside the known paths, naming them.
+- The `template-update` skill runs it, asking nothing except in the unrelated-history case.
+- README "Pulling template updates" points at the skill.
+
+### design.md: Non-goals
+
+- Gitignoring docs/plans in the template (user decision).
+- Changes to the personal plugin at ~/Documents/claude-infra-plugin.
+- Pushing anything; the update commits locally only.
+- Updating components under `code/`; only the workbench superrepo is updated.
+
+### design.md: Anti-goals
+
+- A template doc reappearing in a project after any update.
+- A refused or failed update that leaves conflict markers, a MERGE_HEAD, a replace ref, staged
+  changes or new untracked files behind.
+- The owned-path list duplicated between init and update so the two drift.
+- An update that loses the project's AGENTS.md answers, its own epics or its MEMORY.md history.
+
+### design.md: Constraints
+
+- The init engine is stdlib python run with `python3` through mise tasks only
+  (`.claude/rules/python.md`); skills call `mise run`, never a script path
+  (`plugins/workbench/skills/init/tests/test_init_skills.py::test_engine_only_through_mise_tasks`).
+- Root scripts tests run as `pytest scripts/tests/...` from the repo root (`mise-tasks/test/scripts`);
+  plugin skill tests run per skill (`cd plugins/workbench && bash scripts/run-tests.sh --only <skill>`).
+  Lint for the engine is `ruff check scripts` plus shellcheck on `mise-tasks/*` (`mise-tasks/lint/root`).
+- Git: only commands available on the git shipped with macOS (no `git merge-tree --merge-base`);
+  `git replace --graft` is allowed.
+- Epic flow-speed-and-token-optimiz is running and owns plugins/workbench/workflows,
+  plugins/workbench/scripts, start-development references, plugins/workbench/rules and AGENTS.md.
+  This epic touches none of them. It touches root `MEMORY.md`, which that epic's
+  cache-prefix-change task also edits; MEMORY.md is a doc file under the default `overlapIgnore`,
+  so the two only append separate entries.
+- The plugin README must name every skill
+  (`plugins/workbench/skills/start-development/tests/test_release.py::test_readme_documents_the_template`).
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -214,7 +283,7 @@ Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and th
 | D9 docs point at the skill | docs-update-flow |
 | D10 docs/handoffs is instance-owned | instance-owned-paths |
 
-## Contracts
+### design.md: Contracts
 
 | Part | Owner | Consumers | Where defined |
 |---|---|---|---|
@@ -223,7 +292,7 @@ Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and th
 
 No cross-epic contracts: no other todo or in-progress epic reads or writes these parts.
 
-## Review focus
+### design.md: Review focus
 
 - Every failure path after `git merge` starts: tree, index, HEAD, MERGE_HEAD and `refs/replace`
   exactly as before. Tests assert on `git status --porcelain`, `git rev-parse HEAD` and
@@ -233,7 +302,7 @@ No cross-epic contracts: no other todo or in-progress epic reads or writes these
 - The refresh runs the merged tree's cli, not the imported pre-merge module.
 - `clear_template_history` and `update` both read `INSTANCE_OWNED`; no path literal elsewhere.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal structure of `scripts/init_engine/update.py` and the exact wording of messages, within
   the refusal and output lines named in the tasks.
@@ -241,7 +310,7 @@ No cross-epic contracts: no other todo or in-progress epic reads or writes these
   `workbench.config_dir`, or a function).
 - Which root commit is grafted when the project history has several roots (the oldest by default).
 
-## Assumptions and unknowns
+### design.md: Assumptions and unknowns
 
 - Assumed: a cloned instance keeps the template history. Confirmed by `gitops.rename_template_origin`
   and the e2e fixture (upstream cloned from the pre-init commit).
@@ -250,22 +319,18 @@ No cross-epic contracts: no other todo or in-progress epic reads or writes these
 - The default template URL `https://github.com/szymonrychu/workbench` matches `TEMPLATE_URL_RE`
   (gitops.py:7); tests map it to a local upstream with `url.<local>.insteadOf` so no network is used.
 
-## Open questions
-
-none: Q1 (docs/handoffs instance-owned) answered yes at the gate on 2026-10-22.
-
-## Irreversible operations in scope
-
-- `git merge --abort` and removal of untracked files on a failed update: safe because the preflight
-  refuses any dirty or untracked state, so only files the run created are removed.
-- init cleanup deletes template docs on first init only (existing behaviour, extended to
-  contracts.json, index.json and docs/handoffs).
-- No push, no force operation, no remote change except adding a missing `template` remote.
-
-## Builder check answers
+### design.md: Builder check answers
 
 - The MEMORY.md "template update <sha>" line needs `refresh` to accept an event: update-command adds a hidden `--event <text>` to `cli.py refresh` (passed to `write_all(event=...)`) and extends `scripts/tests/init_engine/test_refresh.py` for it; tests match the dated line by regex. (my call)
 - The lint gate runs after the refresh and before `git add -A`; the abort path also removes anything lint created. (my call)
 - Abort cleanup: `git merge --abort` plus removal of only the untracked files the run created (the preflight refuses any untracked state, so every untracked file at abort time is the run's); gitignored files are never touched. update-conflicts-and-abort's abort test asserts a pre-existing gitignored file survives. (my call)
 - `--base` candidate when no commit matches (squashed or amended project root): print `candidate base: none` and refuse, as specced. (answered)
 - e2e-template-update may touch `update.py` only to fix a real gap the e2e exposes. (answered)
+
+### approvals.json
+
+- A1: Don't add the template's docs to .gitignore: the template repo keeps its own plans, records, contracts, MEMORY.md and ROADMAP.md tracked. [decisions: D1] [tasks: instance-owned-paths] [status: approved]
+- A2: During initial setup, clean up the docs: init removes every workbench-specific doc so a new or adopted workbench starts with empty plan folders and fresh MEMORY.md and ROADMAP.md. [decisions: D2, D9] [tasks: instance-owned-paths, e2e-template-update, docs-update-flow] [status: approved]
+- A3: Add a skill that refreshes future instances of workbenches from the template without the workbench-specific docs. [decisions: D3, D4, D5, D6, D7, D8, D9] [tasks: update-command, update-conflicts-and-abort, update-unrelated-history, e2e-template-update, template-update-skill, docs-update-flow] [status: approved]
+- A4: Workbench-specific docs are the template repo's own development docs: docs/plans epics and records (todo, in-progress, done), docs/plans/contracts.json, index.json, facts.md, docs/research, and the template's MEMORY.md and ROADMAP.md entries; README.md, docs/enterprise.md, docs/harnesses.md and plugin docs are user docs and ship. [decisions: D2] [tasks: instance-owned-paths, update-command, e2e-template-update] [status: approved]
+- Q1: Yes: docs/handoffs is on the instance-owned list; init cleanup removes it and the template update never brings it. [decisions: D10] [tasks: instance-owned-paths] [status: approved]

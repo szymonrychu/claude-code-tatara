@@ -1,13 +1,63 @@
-# Template update skill and init docs cleanup record
+# Template update skill and init docs cleanup retro
 
-## Summary
+## Review
+
+Migrated from the epic format.
+
+## What went well
+
+- 7 planned tasks landed; all 9 tasks done, verdict pass, main 6b4b660 with scripts 467 passed, plugin 2817 assertions, lint green.
+- Phase 5 found a real HIGH: restore_owned deleted gitignored docs/research and docs/handoffs; update-safety added, red against pre-fix update.py (8 failed), now 17 passed.
+- Scope audit found the update-command AC4 gap (existing template remote keeps its URL); existing-remote-kept pinned it, red by mutation.
+- Red evidence recorded per behaviour task (instance-owned-paths: ModuleNotFoundError, 3 failed; update-command: 1 failed, 13 passed); exceptions named for the rest.
+- Rulings carried cost-if-wrong (docs-update-flow, existing-remote-kept, Q1 handoffs).
+- Landing used plain --no-ff merges in landing trees with the full suite before each fast-forward of main; no forward merges, no blocked or undelivered tasks.
+
+## What went wrong or could improve
+
+- 7 of 9 tasks needed 2 review rounds (update-command to existing-remote-kept); only instance-owned-paths passed in round 1, and docs-update-flow escalated.
+- The HIGH data-loss bug shipped through all 7 planned tasks' reviews and was caught only by the epic security review.
+- update-command: independent verifier reported AC2-AC8 not met and the implementer could not reproduce it; later suites passed, so the verdict was noise (2 rounds spent).
+- docs-update-flow: `verified` false with empty evidence caused a gate-repeat; hand-verified (check_personal rc 0, README grep rc 0), and the README `init:update` flags then needed a `--` fix at landing.
+- existing-remote-kept stopped on the TDD-skipped gate for a pin test with no non-test change; accepted by ruling.
+- Landing fixes outside task scope: init_engine helpers shadowed e2e helpers (d87b383), the spelled default URL tripped the personal-term lint (1b4755a), three AC refs broke on renamed tests.
+- Deltas are all "not recorded": no post-delivery points, no actual minutes on the 7 planned tasks, README Time Actual 0 (never filled); the two remediation tasks have actuals (11 and 4 min, 1422602 and 362093 tokens) but no estimate. MdAPE unmeasurable.
+- Open cannotVerify: no live run against the real template URL, git versions other than 2.56 unchecked, ignored files created by refresh are not removed on abort.
+
+## Recommendations
+
+- Code:
+  - scripts/init_engine/update.py: URL comparison is a strict string compare; trailing-slash or `.git` variants count as a different URL. Normalise if wanted.
+  - scripts/init_engine/update.py: abort cleanup leaves ignored files created by refresh; handle them scoped to owned paths, with a test.
+  - scripts/tests (test_update_conflicts.py, test_update_unrelated.py): wiring and rename-only tests have no red; add a mutation check for the engine paths they guard.
+  - MEMORY.md: duplicate 2026-10-20 line (pre-existing) left in place.
+- Delivered differently:
+  - Two remediation tasks (update-safety, existing-remote-kept) were added in phase 5 beyond the 7 planned; the plan missed ignored-file safety and the existing-remote AC test.
+  - update-safety's fix was committed earlier (0c61e73) than its task; the task only renamed tests, so its red was shown by restoring pre-fix update.py.
+  - README `init:update` flags were planned without `--`; the landing put them after `--` (217e844).
+  - Skill text describes the default URL instead of spelling it, to satisfy the personal-term lint (1b4755a).
+- Tech debt:
+  - Hidden test-only `--lint-command` flag in update.py and `git add -A` after refresh: dismissed by design; removal needs a test seam that does not ship in the CLI.
+  - Live behaviour of the skill's confirmation prompt for a non-default `--url` is untested; remove with a live skill run.
+  - No live run against the real GitHub template (local upstreams and `insteadOf` only); remove with one manual run.
+- Workflow:
+  - recurring (housekeeping-rules-estimates): points, expected and actual minutes and tokens read "not recorded" again, so Deltas and MdAPE are empty. Change: epic-run records actuals at each task close, `move done` refuses while README Time Actual is 0 or a planned task lacks post-delivery points, and remediation tasks are created with estimates.
+  - recurring (housekeeping-rules-estimates): implementer or verifier claims were unreliable (empty verifier evidence here; false greens from tail reads there). Change: the gate fails a task whose evidence is empty while the command passed, and the reviewer reruns the check itself instead of trusting the report.
+  - Add a lint that each task's AC test refs resolve to a collected test, and a collection-time check for duplicate helper module names under scripts/tests (three refs broke, one shadowing).
+  - Add `check_personal.py` to the verify command of tasks that edit skills or docs, so it fails before landing.
+  - Name "pin test, red by mutation" as a listed exception in the tdd rule so it stops tripping the TDD-skipped gate.
+  - Add a security-review prompt line: run destructive commands against trees with ignored owned paths. Seen once; raise to a proposal only if it recurs.
+
+## Delivery record (migrated)
+
+### Summary
 
 Asked: init removes every template-specific doc from a new or adopted workbench, and a new skill updates an existing workbench from the template without the template's own docs (approvals A1-A4, Q1).
 Shipped: single instance-owned path list (`scripts/init_engine/owned.py`) driving init cleanup and `init:update`; engine command `init:update` (clean, conflict, abort and unrelated-history `--base` paths); `template-update` skill; README "Pulling template updates" rewritten; e2e round trip on a real template copy. Phase 5 added two remediation tasks (update-safety, existing-remote-kept).
 7 planned + 2 remediation = 9 tasks, all landed on main by plain --no-ff merges in landing trees with the full suite before each fast-forward of main. Nothing pushed, no MR (meta mode).
 Verdict: pass. Main 6b4b660: scripts 467 passed, plugin "components with tests: 27   assertions passed: 2817", lint green.
 
-## Planned vs built
+### Planned vs built
 
 Verifier head = `tasks[].verification.head` from the run return. Review rounds from the return. Per-task continuation counts: unknown (runs 2 and 3 were the two remediation runs).
 
@@ -44,7 +94,7 @@ Approvals (ledger `approvals.json`; status from the run 1 return, then the rulin
 
 Runs 2 and 3 returned `approvals: []`; the remediation tasks carry no ledger entries.
 
-## Deviations and rulings
+### Deviations and rulings
 
 - docs-update-flow accepted despite gate-repeat on an empty verifier evidence field. Why: the finding was a missing verification run, not a defect; hand-verified check_personal rc 0 and README grep rc 0. Cost if wrong: README could ship a wrong flag form; the landing fix put `init:update` flags after `--` (217e844).
 - existing-remote-kept accepted with TDD skipped (pin test of existing behaviour, no non-test file changed). Why: update.py already kept the remote; red shown by mutation. Cost if wrong: the pin could be vacuous; the mutation run shows it fails when the URL is rewritten.
@@ -53,11 +103,11 @@ Runs 2 and 3 returned `approvals: []`; the remediation tasks carry no ledger ent
 - Landing method: tasks landed by plain --no-ff merges in landing trees (tu-land, c2-land, cp-land, c3-land) with the full suite before each fast-forward of main.
 - forwardMerged: none in any run.
 
-## Duplicates reconciled
+### Duplicates reconciled
 
 None (`duplicates: []` in all three run returns).
 
-## Discovered and blocked
+### Discovered and blocked
 
 - Blocked: none (`blocked: []`, `undelivered: []` in all runs).
 - Declined by agents, no ruling: duplicate 2026-10-20 MEMORY.md line (pre-existing, not in the task diff); engine mutation check on the e2e test; trailing-slash or `.git` URL variants counted as a different URL (strict string compare kept); live agent behaviour of the skill's confirmation prompt. The user can clear these if normalisation or live-behaviour tests are wanted.
@@ -65,7 +115,7 @@ None (`duplicates: []` in all three run returns).
 - Security review dismissed by design: hidden test-only `--lint-command`; `git add -A` after refresh.
 - Run 1 return had `finished: false` and `unverified: ["docs-update-flow"]`; settled by the ruling above.
 
-## Research that changed the plan
+### Research that changed the plan
 
 Phase 5 findings (security-review.md, review-notes.md):
 - HIGH: restore_owned deleted gitignored docs/research and docs/handoffs; preflight `status --porcelain` hides ignored files. Added task update-safety (keeps ignored notes, refuses an overwrite collision).
@@ -74,7 +124,7 @@ Phase 5 findings (security-review.md, review-notes.md):
 - MEDIUM: a non-default `--url` runs that template's scripts. The skill now asks before using one.
 - Scope audit: update-command AC4 had no test for an existing template remote keeping its URL; added task existing-remote-kept. Three AC refs retargeted to renamed tests.
 
-## Cost
+### Cost
 
 Run 1: 2566 s wall, 36 agents (7 tasks). Run 2: 640 s (update-safety). Run 3: 208 s (existing-remote-kept). Total 3414 s (about 57 min) of run wall-clock. Per-role agent counts for runs 2 and 3, audits and continuation counts: unknown. Phase 5 used a reviewer, a security-researcher and a scope-auditor (sonnet each).
 
@@ -94,11 +144,11 @@ README Time: Estimate 53 min | Actual 0 min (never filled) | Remaining 0 min. Ta
 
 Estimates sum to 53 for the seven planned tasks.
 
-## MRs and deploy
+### MRs and deploy
 
 None. Meta mode; nothing pushed; no MR or PR. Landed locally on main (6b4b660). Deploy: not applicable.
 
-## Lessons routed to
+### Lessons routed to
 
 - Empty verifier evidence caused a gate-repeat on a docs-only task: add a check in the plan-execute verifier tests that fails a task when `evidence` is empty while the command passed (mechanical).
 - Test names must match AC refs (three refs broke, AC1-AC3 flagged ref-missing): add a lint that checks each task's AC test refs resolve to a collected test before verification (mechanical).
