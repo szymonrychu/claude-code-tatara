@@ -1,73 +1,45 @@
-# Generic any-mcp with git and local plugin sources design
+---
+title: Generic any-mcp with git and local plugin sources
+repos: [any-mcp, any-mcp-tatara-plugins, agents-orchestrator, agents-web, agents-helmfile]
+created: 2026-10-26
+owner: Szymon Richert
+rung: 1
+---
 
-## Summary
+# Generic any-mcp with git and local plugin sources
 
-any-mcp drops its only platform-specific plugin (the orchestrator plugin) and gains plugin sources in
-a Terraform/go-getter subset notation: local directories and git repos with an optional `//subdir` and
-`?ref=`. A source is a Python package that any-mcp fetches, pip-installs into its own environment and
-loads by its `any_mcp.plugins` entry point. The orchestrator plugin moves, unchanged in tools and
-behaviour, to the new repo any-mcp-tatara-plugins under the topic `orchestration/`. agents-orchestrator
-renders its reserved plugin entry as a source pinned to a plugins-repo tag and accepts a per-session
-`any_mcp_sources` list; agents-web edits that list with a "+" button; agents-helmfile deploys it.
+## What and why
 
-## Intent and why
+What: any-mcp becomes generic; platform plugins move to any-mcp-tatara-plugins by topic; plugins install from Terraform-module-like git or local sources
+How: Source parser and installer in any-mcp, orchestration topic in the plugins repo, orchestrator renders sources and a per-session sources list, preset form + button, helmfile deploy
+Why: Keep any-mcp reusable outside this platform and let sessions pull platform tools from a versioned plugin bucket
 
-User request, verbatim (2026-10-27): "Make anyMcp generic. Create separate any-mcp-tatara-plugins repo,
-which will serve as a bucket for platform specific tools. Group them into topics in subdirs. Allow to
-install plugins using similar notation as terraform modules allow to. In webUI add ability to provide
-links to such plugins (defined by repo, or dir in repo in git ref) (plus button, shows line textbox
-where it can be pasted- multiple plugins can be provided). It must still be possible (when using pip
-installed any-mcp) to provide path to local dir, where plugin is defined (again- similar to terraform
-module handling)."
+Make any-mcp a generic MCP server with no platform-specific tools, and move those tools to the new repo any-mcp-tatara-plugins, grouped into topic subdirectories. any-mcp gains plugin installation from Terraform-module-like sources: a git repo with an optional subdirectory and ref, or a local directory (for pip-installed any-mcp). The orchestrator renders its reserved orchestrator plugin from the plugins repo and lets presets and sessions list extra plugin sources, which the web preset form edits with a "+" button adding one pasteable line per source.
 
-any-mcp is meant to be reusable outside this platform; today it ships agents-orchestrator tools inside
-its own package (MEMORY.md 2026-10-24 decision, reversed here). Sessions should pull platform tools
-from a versioned plugin bucket instead.
+## Scope ladder
 
-## Goals
+### Rung 1: agreed scope (migrated)
 
-- G1: any-mcp contains no platform-specific plugin; the orchestrator plugin lives in
-  any-mcp-tatara-plugins under a topic subdirectory, with the same tools and behaviour.
-- G2: any-mcp installs and loads plugins from Terraform-module-like sources: git repo with optional
-  //subdir and ?ref=, and local directory paths.
-- G3: any-mcp-tatara-plugins is a working repo: topic subdirectories, per-plugin packages, tests and
-  lint in CI, documented source notation.
-- G4: agents-orchestrator renders the orchestrator plugin from the plugins repo at a pinned ref and
-  accepts a list of extra plugin sources per preset and session, installed in agent pods.
-- G5: the agents-web preset form edits the plugin sources: a "+" button adds a one-line text box per
-  source, several sources allowed.
-- G6: deployed through agents-helmfile; agent sessions still get the orchestrator tools.
+- 1.1: any-mcp contains no platform-specific plugin; the orchestrator plugin lives in any-mcp-tatara-plugins under a topic subdirectory, with the same tools and behaviour.
+- 1.2: any-mcp installs and loads plugins from Terraform-module-like sources: git repo with optional //subdir and ?ref=, and local directory paths.
+- 1.3: any-mcp-tatara-plugins is a working repo: topic subdirectories, per-plugin packages, tests and lint in CI, documented source notation.
+- 1.4: agents-orchestrator renders the orchestrator plugin from the plugins repo at a pinned ref and accepts a list of extra plugin sources per preset and session, installed in agent pods.
+- 1.5: The agents-web preset form edits the plugin sources: a "+" button adds a one-line text box per source, several sources allowed.
+- 1.6: Deployed through agents-helmfile; agent sessions still get the orchestrator tools.
+
+## Agreed scope
+
+Rung 1, migrated from the epic format: the epic's goals were its agreed scope.
 
 ## Non-goals
 
 - No backward-compatibility alias for the removed any_mcp.orchestrator module.
-- No plugin registry or marketplace beyond git and local sources; no `?depth=` or archive (http
-  tarball) sources.
+- No plugin registry or marketplace beyond git and local sources; no `?depth=` or archive (http tarball) sources.
 - No per-plugin dependency isolation (separate venvs or processes).
 
-## Anti-goals
+## Design
 
-- An agent session that starts without the orchestrator tools (a broken reserved entry blocks the
-  session through onStart `on_error: deny`).
-- Any platform name (`/agent/v1`, orchestrator, hive) left in any-mcp's src, examples or docs.
-- Git or pip invoked with user-controlled values in option position, or a subdir escaping its checkout.
-- A source change that needs a coordinated edit in two parsers with different rules: the web parser
-  mirrors the any-mcp grammar and both are pinned by tests on the same cases.
-
-## Constraints
-
-- Python 3.12 in any-mcp and the plugins repo (the scaffold's `python = "3.14.6"` is replaced).
-- Execution starts after epic cross-session-messaging-and merges. Base files: its merged state of
-  agents-orchestrator `k8s/on_start.py` (session tools for every session, D11 there), settings and
-  pyproject pinning any-mcp `v0.4.0`, `tests/test_agent_session_messaging.py`; agents-web
-  `sessionSpecForm.ts` and `PresetForm.tsx` with the session option switches; agents-helmfile
-  `values/agents-orchestrator/common.yaml`, `tests/test_orchestrator_release.py` and
-  `tests/test_smoke_script.py` with the v0.4.0 pins and the session option smoke steps.
-- Nomenclature guards in any-mcp, agents-orchestrator, agents-web and agents-helmfile: no new path or
-  text uses the word "cluster".
-- Cross-repo releases happen between tasks, by the orchestrator, never by implementers (Rollout).
-- House rules: no backward compatibility, tests changed only when no longer accurate (named per task),
-  retirement tests on `git ls-files`.
+Migrated from the epic format; the design sections without a plan.md heading are under Migrated notes.
 
 ## Decisions
 
@@ -230,6 +202,17 @@ orchestrator pins, then web, then helmfile. Each pin bump is its own task after 
 merge and tag (Rollout). Alternative: plugins repo first, pinned to any-mcp v0.4.0 (rejected: its
 end-to-end install test needs `any-mcp plugins install`, which ships in v0.5.0).
 
+## Open questions
+
+Resolved 2026-10-27 under the user's advance gate approval ("Any-mcp is small, I approve it without seeing it"), with the recommended answers:
+- Q1: yes - the orchestrator and the web form accept only remote https git sources; local paths stay supported in any-mcp itself. (my call)
+- Q2: yes - no host allowlist. (my call)
+- Builder check: orchestrator, web and helmfile tasks start only after cross-session-messaging-and merges; their integration trees are reset onto the new main first (no commits on them before then). Deploy windows (R4) and tags are orchestrator steps. The "cluster" word guard exists in any-mcp and agents-orchestrator; new text in every repo avoids the word, existing scaffold text in the plugins repo is not touched unless the bootstrap task rewrites it. (my call)
+
+Original questions:
+- Q1: Should the orchestrator and the web form accept only remote https git sources (git::https://... and github.com/...) in any_mcp_sources and in any_mcp_config source entries, refusing local paths, git::ssh and git::file (agent pods have no SSH keys and no meaningful local plugin dirs)? Local paths stay fully supported in any-mcp itself. [recommended: yes, remote https git only in the orchestrator and web]
+- Q2: Should any_mcp_sources accept any git host and repo, with no allowlist, since preset authors can already run arbitrary init scripts in agent pods? [recommended: yes, no host allowlist]
+
 ## Research
 
 | Lens | Ran or skipped | Adopted | Rejected |
@@ -239,7 +222,7 @@ end-to-end install test needs `any-mcp plugins install`, which ships in v0.5.0).
 | sources (Terraform, pip, git, importlib) | ran (docs/research/2026-10-27-anymcp-generic-sources.md) | go-getter grammar subset, fetch-by-SHA with fallback, blob filter and sparse checkout, `--` before user values, timeouts, subdir escape check, install as a distribution for entry points and deps (D5) | `sys.modules` collision detection (sources fix-as-ac; pip-installed distributions share site-packages and isolation is a non-goal), `git clone --revision` (needs git 2.49), tree sha256 in the manifest, `uv pip --dry-run` preflight (not asked; pip fails on conflicts) |
 | reuse hunt | skipped: the two cartographer maps cover reuse | - | - |
 
-## Research inputs
+### Research inputs
 
 Retro proposals of the most recently done epics, recurring workflow ones first:
 
@@ -284,7 +267,116 @@ Findings:
 - `examples/petstore` is a packaged plugin with an entry point that loads with an empty config. Acts:
   helmfile-smoke-plugin-tools.
 
-## Decision coverage
+## Irreversible operations
+
+- any-mcp tag `v0.5.0` push (R1) and any-mcp-tatara-plugins tag `v0.1.0` push (R2): published release
+  tags; covered by the gate approval.
+- The agents-helmfile apply (R4): rolls every running agent pod once (in-flight turns are interrupted);
+  covered by the gate approval and run when no turn is in flight.
+
+## Migrated notes
+
+### README.md: Review
+
+Filled when the epic reaches stage `review`: the verdict, the findings acted on, the findings dropped.
+
+Verdict: pass (2026-10-27)
+
+## generic-any-mcp-with-git-and - review and close notes (2026-10-27)
+
+Phase 5: whole-diff review, security review and scope audit ran across any-mcp, any-mcp-tatara-plugins, agents-orchestrator, agents-web and agents-helmfile. Each finding became a task and was fixed:
+- web/any-mcp parser parity: no-path git URLs, whitespace/control characters; local paths may contain spaces (amended).
+- orchestrator refuses credentials in source URLs.
+
+Notable events:
+- GitGuardian flagged a fake basic-auth string in an orchestrator test. I folded the fix into history, but force-push was denied, so I pushed a new branch, opened PR #24 and closed #23.
+- The scope auditor left code/any-mcp detached; restored to main.
+
+Deploy:
+- Pins: helmfile be673ca (orchestrator b3a2975, web 4701820, any-mcp v0.5.0, plugins v0.1.0). Rollouts OK; helmfile tests 222 passed.
+
+Live smoke:
+- Run 1: failed at step 10b. `any-mcp --list-tools` prints a JSON array, and the smoke grepped `^petstore_` as text.
+- Fix: task helmfile-smoke-plugin-tools, fix round 1, 3fd172f.
+  - The reviewer found it clean: 120 passed, pointsActual 3.
+  - Merged as agents-helmfile PR #33 (0ed86cf).
+- Run 2: failed at the matrix step, unrelated to this epic.
+  - Cause: agents-matrix-connector was rollout-restarted at 03:30Z outside this session, and image 98b0803 was missing from Harbor.
+  - Fix: re-ran the connector CI images job (run 40282930555, attempt 2) to re-push the tag; the pods recovered.
+- Run 3: passed. Log: .logs/plugins-smoke-rerun2.log.
+  - "orchestrator plugin installed from any-mcp-tatara-plugins//orchestration/orchestrator?ref=v0.1.0; --list-tools lists orchestrator_sessions_list"
+  - "extra source git::https://github.com/szymonrychu/any-mcp//examples/petstore?ref=v0.5.0 installed ...; --list-tools lists petstore_ tools"
+
+### design.md: Summary
+
+any-mcp drops its only platform-specific plugin (the orchestrator plugin) and gains plugin sources in
+a Terraform/go-getter subset notation: local directories and git repos with an optional `//subdir` and
+`?ref=`. A source is a Python package that any-mcp fetches, pip-installs into its own environment and
+loads by its `any_mcp.plugins` entry point. The orchestrator plugin moves, unchanged in tools and
+behaviour, to the new repo any-mcp-tatara-plugins under the topic `orchestration/`. agents-orchestrator
+renders its reserved plugin entry as a source pinned to a plugins-repo tag and accepts a per-session
+`any_mcp_sources` list; agents-web edits that list with a "+" button; agents-helmfile deploys it.
+
+### design.md: Intent and why
+
+User request, verbatim (2026-10-27): "Make anyMcp generic. Create separate any-mcp-tatara-plugins repo,
+which will serve as a bucket for platform specific tools. Group them into topics in subdirs. Allow to
+install plugins using similar notation as terraform modules allow to. In webUI add ability to provide
+links to such plugins (defined by repo, or dir in repo in git ref) (plus button, shows line textbox
+where it can be pasted- multiple plugins can be provided). It must still be possible (when using pip
+installed any-mcp) to provide path to local dir, where plugin is defined (again- similar to terraform
+module handling)."
+
+any-mcp is meant to be reusable outside this platform; today it ships agents-orchestrator tools inside
+its own package (MEMORY.md 2026-10-24 decision, reversed here). Sessions should pull platform tools
+from a versioned plugin bucket instead.
+
+### design.md: Goals
+
+- G1: any-mcp contains no platform-specific plugin; the orchestrator plugin lives in
+  any-mcp-tatara-plugins under a topic subdirectory, with the same tools and behaviour.
+- G2: any-mcp installs and loads plugins from Terraform-module-like sources: git repo with optional
+  //subdir and ?ref=, and local directory paths.
+- G3: any-mcp-tatara-plugins is a working repo: topic subdirectories, per-plugin packages, tests and
+  lint in CI, documented source notation.
+- G4: agents-orchestrator renders the orchestrator plugin from the plugins repo at a pinned ref and
+  accepts a list of extra plugin sources per preset and session, installed in agent pods.
+- G5: the agents-web preset form edits the plugin sources: a "+" button adds a one-line text box per
+  source, several sources allowed.
+- G6: deployed through agents-helmfile; agent sessions still get the orchestrator tools.
+
+### design.md: Non-goals
+
+- No backward-compatibility alias for the removed any_mcp.orchestrator module.
+- No plugin registry or marketplace beyond git and local sources; no `?depth=` or archive (http
+  tarball) sources.
+- No per-plugin dependency isolation (separate venvs or processes).
+
+### design.md: Anti-goals
+
+- An agent session that starts without the orchestrator tools (a broken reserved entry blocks the
+  session through onStart `on_error: deny`).
+- Any platform name (`/agent/v1`, orchestrator, hive) left in any-mcp's src, examples or docs.
+- Git or pip invoked with user-controlled values in option position, or a subdir escaping its checkout.
+- A source change that needs a coordinated edit in two parsers with different rules: the web parser
+  mirrors the any-mcp grammar and both are pinned by tests on the same cases.
+
+### design.md: Constraints
+
+- Python 3.12 in any-mcp and the plugins repo (the scaffold's `python = "3.14.6"` is replaced).
+- Execution starts after epic cross-session-messaging-and merges. Base files: its merged state of
+  agents-orchestrator `k8s/on_start.py` (session tools for every session, D11 there), settings and
+  pyproject pinning any-mcp `v0.4.0`, `tests/test_agent_session_messaging.py`; agents-web
+  `sessionSpecForm.ts` and `PresetForm.tsx` with the session option switches; agents-helmfile
+  `values/agents-orchestrator/common.yaml`, `tests/test_orchestrator_release.py` and
+  `tests/test_smoke_script.py` with the v0.4.0 pins and the session option smoke steps.
+- Nomenclature guards in any-mcp, agents-orchestrator, agents-web and agents-helmfile: no new path or
+  text uses the word "cluster".
+- Cross-repo releases happen between tasks, by the orchestrator, never by implementers (Rollout).
+- House rules: no backward compatibility, tests changed only when no longer accurate (named per task),
+  retirement tests on `git ls-files`.
+
+### design.md: Decision coverage
 
 | Decision | Tasks |
 |---|---|
@@ -301,7 +393,7 @@ Findings:
 | D11 deploy and smoke | helmfile-smoke-plugin-tools, helmfile-deploy-pin |
 | D12 release order | anymcp-release-0-5-0, plugins-orchestration-plugin, orch-plugins-dev-dependency, helmfile-deploy-pin |
 
-## Review focus
+### design.md: Review focus
 
 - anymcp-source-parser and anymcp-source-installer: every git argument after `--`, refs starting with
   `-` refused, subdir `..` and symlink escape refused, timeouts on every subprocess, no shell. These are
@@ -317,7 +409,7 @@ Findings:
 - web-plugin-source-parser: the same accept and reject cases as the Python parser for the forms D8
   allows.
 
-## Left to the builder
+### design.md: Left to the builder
 
 - Internal names in `any_mcp.sources` and `any_mcp.install` beyond the interfaces in the tasks; the
   manifest's JSON layout beyond the recorded fields; git and pip timeout values (module constants).
@@ -327,7 +419,7 @@ Findings:
   for same-named test modules), within D6.
 - UI wording within D10 and the nomenclature guards.
 
-## Rollout
+### design.md: Rollout
 
 Release and deploy steps run by the orchestrator between and after tasks:
 
@@ -348,7 +440,7 @@ Release and deploy steps run by the orchestrator between and after tasks:
 
 User steps, asked up front at the gate: none (the plugins repo exists and its CI needs no secrets).
 
-## Assumptions and unknown facts
+### design.md: Assumptions and unknown facts
 
 - Agent pods reach github.com over https (probe of the previous epic's builder check: HTTP 200).
 - `pip` in the `/opt/any-mcp` venv installs a hatchling package from a local directory without network
@@ -357,21 +449,3 @@ User steps, asked up front at the gate: none (the plugins repo exists and its CI
   install independent of them.
 - `pytest` `testpaths` globbing and uv workspace members over `*/*` work with the pinned uv; confirmed
   by plugins-repo-bootstrap's own run, never assumed in a later task.
-
-## Open questions
-
-Resolved 2026-10-27 under the user's advance gate approval ("Any-mcp is small, I approve it without seeing it"), with the recommended answers:
-- Q1: yes - the orchestrator and the web form accept only remote https git sources; local paths stay supported in any-mcp itself. (my call)
-- Q2: yes - no host allowlist. (my call)
-- Builder check: orchestrator, web and helmfile tasks start only after cross-session-messaging-and merges; their integration trees are reset onto the new main first (no commits on them before then). Deploy windows (R4) and tags are orchestrator steps. The "cluster" word guard exists in any-mcp and agents-orchestrator; new text in every repo avoids the word, existing scaffold text in the plugins repo is not touched unless the bootstrap task rewrites it. (my call)
-
-Original questions:
-- Q1: Should the orchestrator and the web form accept only remote https git sources (git::https://... and github.com/...) in any_mcp_sources and in any_mcp_config source entries, refusing local paths, git::ssh and git::file (agent pods have no SSH keys and no meaningful local plugin dirs)? Local paths stay fully supported in any-mcp itself. [recommended: yes, remote https git only in the orchestrator and web]
-- Q2: Should any_mcp_sources accept any git host and repo, with no allowlist, since preset authors can already run arbitrary init scripts in agent pods? [recommended: yes, no host allowlist]
-
-## Irreversible operations in scope
-
-- any-mcp tag `v0.5.0` push (R1) and any-mcp-tatara-plugins tag `v0.1.0` push (R2): published release
-  tags; covered by the gate approval.
-- The agents-helmfile apply (R4): rolls every running agent pod once (in-flight turns are interrupted);
-  covered by the gate approval and run when no turn is in flight.
