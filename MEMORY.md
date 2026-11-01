@@ -53,3 +53,4 @@ Dated entries, newest last. Supersede an entry rather than deleting it. One line
 2026-10-31: template update 7c5935b2b1a6.
 2026-10-31: the development flow is the vendored superpowers 7.0.0 fork (plugins/superpowers); workbench keeps the tooling; why: user request, D1.
 2026-10-31: the in-repo superpowers fork is retired: vanilla superpowers (superpowers@claude-plugins-official 7.0.0, never modified) governs all work and the workbench skills, agents and hooks are helpers stitched to its skill names; docs/plans, ticket.py, the plan-run agents, worktree-create/-merge, verify-recorder and subagent-commit-guard are gone; why: user request.
+2026-11-01: components now: claude-code-wrapper, any-mcp, agents-orchestrator, agents-helmfile, agents-web, agents-common, agents-webhook, agents-schedule, agents-matrix-connector, any-mcp-tatara-plugins, agents-usage; via component add --url.

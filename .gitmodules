@@ -38,3 +38,7 @@
 	path = code/any-mcp-tatara-plugins
 	url = https://github.com/szymonrychu/any-mcp-tatara-plugins
 	branch = main
+[submodule "agents-usage"]
+	path = code/agents-usage
+	url = https://github.com/szymonrychu/agents-usage
+	branch = main
