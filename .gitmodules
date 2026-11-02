@@ -49,3 +49,7 @@
 	path = code/agents-taskboard
 	url = https://github.com/szymonrychu/agents-taskboard
 	branch = main
+[submodule "agents-app-connector"]
+	path = code/agents-app-connector
+	url = https://github.com/szymonrychu/agents-app-connector
+	branch = main
