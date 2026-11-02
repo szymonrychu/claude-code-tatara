@@ -3,7 +3,7 @@
 ## Components
 
 ```
-claude-code-tatara/
+workdir/
   code/
     claude-code-wrapper/  (python)
     any-mcp/  (python)
@@ -17,6 +17,7 @@ claude-code-tatara/
     any-mcp-tatara-plugins/  (python)
     agents-usage/  (python)
     agents-history/  (python)
+    agents-taskboard/  (python)
 ```
 
 - `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks
@@ -31,6 +32,7 @@ claude-code-tatara/
 - `code/any-mcp-tatara-plugins` (python): Bucket of platform-specific any-mcp plugins grouped into topic subdirectories, installed by any-mcp from a git repo, subdirectory and ref (terraform-module-like source notation)
 - `code/agents-usage` (python): Python microservice with its own Postgres that collects Claude plan usage windows (5-hour, weekly) pushed by the agents' claude-code-wrapper statusLine relay, with a lazy CLI probe as fallback, and records session start/end marks; serves current, history and marks for the orchestrator's usage gate and the web UI
 - `code/agents-history` (python): Python microservice with its own Postgres that stores and searches historical agent session logs (transcripts) exported by agents-orchestrator, with retention cleanup and user-only delete; serves read and search to superleaders
+- `code/agents-taskboard` (python): Python microservice with its own Postgres: tasks, decisions answered once, todo, comments and history for users and agents
 
 ## Plugins
 

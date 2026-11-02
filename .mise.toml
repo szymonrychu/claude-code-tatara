@@ -40,6 +40,7 @@ run = [
   "mise run --cd code/any-mcp-tatara-plugins test",
   "mise run --cd code/agents-usage test",
   "mise run --cd code/agents-history test",
+  "mise run --cd code/agents-taskboard test",
 ]
 
 [tasks."code:lint"]
@@ -57,6 +58,7 @@ run = [
   "mise run --cd code/any-mcp-tatara-plugins lint",
   "mise run --cd code/agents-usage lint",
   "mise run --cd code/agents-history lint",
+  "mise run --cd code/agents-taskboard lint",
 ]
 
 [tasks."code:fmt"]
@@ -74,5 +76,6 @@ run = [
   "mise run --cd code/any-mcp-tatara-plugins fmt",
   "mise run --cd code/agents-usage fmt",
   "mise run --cd code/agents-history fmt",
+  "mise run --cd code/agents-taskboard fmt",
 ]
 # workbench:code-tasks:end

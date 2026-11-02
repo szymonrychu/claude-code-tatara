@@ -45,4 +45,7 @@
 [submodule "agents-history"]
 	path = code/agents-history
 	url = https://github.com/szymonrychu/agents-history
+[submodule "agents-taskboard"]
+	path = code/agents-taskboard
+	url = https://github.com/szymonrychu/agents-taskboard
 	branch = main
