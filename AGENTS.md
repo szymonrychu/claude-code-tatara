@@ -41,7 +41,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 | any-mcp-tatara-plugins | python | Bucket of platform-specific any-mcp plugins grouped into topic subdirectories, installed by any-mcp from a git repo, subdirectory and ref (terraform-module-like source notation) | `mise run --cd code/any-mcp-tatara-plugins test` |
 | agents-usage | python | Python microservice with its own Postgres that collects Claude plan usage windows (5-hour, weekly) pushed by the agents' claude-code-wrapper statusLine relay, with a lazy CLI probe as fallback, and records session start/end marks; serves current, history and marks for the orchestrator's usage gate and the web UI | `mise run --cd code/agents-usage test` |
 | agents-history | python | Python microservice with its own Postgres that stores and searches historical agent session logs (transcripts) exported by agents-orchestrator, with retention cleanup and user-only delete; serves read and search to superleaders | `mise run --cd code/agents-history test` |
-| agents-taskboard | python | Python microservice with its own Postgres: tasks, decisions answered once, todo, comments and history for users and agents | `mise run --cd code/agents-taskboard test` |
+| agents-taskboard | python | Python microservice with its own Postgres: tasks, decisions answered once, todo, comments and history for users and agents; agents reach it through an orchestrator relay, user answers notify the asking session | `mise run --cd code/agents-taskboard test` |
 
 ## Component hard rules
 
