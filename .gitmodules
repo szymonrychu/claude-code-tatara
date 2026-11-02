@@ -42,3 +42,7 @@
 	path = code/agents-usage
 	url = https://github.com/szymonrychu/agents-usage
 	branch = main
+[submodule "agents-history"]
+	path = code/agents-history
+	url = https://github.com/szymonrychu/agents-history
+	branch = main

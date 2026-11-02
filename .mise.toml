@@ -39,6 +39,7 @@ run = [
   "mise run --cd code/agents-matrix-connector test",
   "mise run --cd code/any-mcp-tatara-plugins test",
   "mise run --cd code/agents-usage test",
+  "mise run --cd code/agents-history test",
 ]
 
 [tasks."code:lint"]
@@ -55,6 +56,7 @@ run = [
   "mise run --cd code/agents-matrix-connector lint",
   "mise run --cd code/any-mcp-tatara-plugins lint",
   "mise run --cd code/agents-usage lint",
+  "mise run --cd code/agents-history lint",
 ]
 
 [tasks."code:fmt"]
@@ -71,5 +73,6 @@ run = [
   "mise run --cd code/agents-matrix-connector fmt",
   "mise run --cd code/any-mcp-tatara-plugins fmt",
   "mise run --cd code/agents-usage fmt",
+  "mise run --cd code/agents-history fmt",
 ]
 # workbench:code-tasks:end
