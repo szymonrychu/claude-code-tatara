@@ -275,6 +275,8 @@ TASKBOARD = (
     "assignee_self",
     "task t-<n> was updated",
     "docs/plans/<name>/plan.md",
+    "when the `orchestrator_task_*` tools are available",
+    "only when the `orchestrator_task_*` tools are available",
 )
 
 
