@@ -214,7 +214,11 @@ the improvement's kebab-case name.
    complete. Every question offers options and always marks one option "MVP" and one
    "Recommended" (the same option may carry both). After the user answers,
    `superpowers:writing-plans` writes the implementation plan with no second human review,
-   and execution (`superpowers:subagent-driven-development`) starts immediately.
+   and execution (`superpowers:subagent-driven-development`) starts immediately. The
+   questions are also posted as taskboard decisions with `orchestrator_decision_ask` (one
+   option marked recommended; MVP marked in the option text). Answers arrive as a chat
+   notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The question
+   text still goes in `docs/plans/<name>/plan.md`, so it survives a dead leader.
 3. **Paths.** These override the superpowers locations, including the worktree location
    choice of `using-git-worktrees`:
    - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
@@ -233,4 +237,8 @@ the improvement's kebab-case name.
    inline, it dispatches a subagent instead. It is responsible and accountable for all work
    its subagents do. Its own duties: dispatching, reading results, running the repo's test
    and lint commands to verify, and git merge and push of reviewed work.
+6. **Taskboard lifecycle.** When work starts, create or claim a task
+   (`orchestrator_task_create`, or `orchestrator_task_update` with `assignee_self`). Keep its
+   todo current (`orchestrator_todo_set` / `orchestrator_todo_update`). When the work lands,
+   close the task (status `done` or `dropped`).
 <!-- workbench:rules:end -->

@@ -263,3 +263,24 @@ def test_semver_deploy_hard_rule():
         "- Deploy only semver-tagged images (X.Y.Z); never a sha tag; a component's main"
         " build releases the semver tag before helmfile pins it."
     ) in rules.splitlines()
+
+
+TASKBOARD = (
+    "orchestrator_decision_ask",
+    "orchestrator_task_get",
+    "orchestrator_task_create",
+    "orchestrator_task_update",
+    "orchestrator_todo_set",
+    "orchestrator_todo_update",
+    "assignee_self",
+    "task t-<n> was updated",
+    "docs/plans/<name>/plan.md",
+)
+
+
+def test_taskboard_rules():
+    rule = (ROOT / "plugins/workbench/rules/superpowers-flow.md").read_text()
+    for text in (rule, AGENTS):
+        flat = " ".join(text.split()).lower()
+        for needle in TASKBOARD:
+            assert needle in flat, needle
