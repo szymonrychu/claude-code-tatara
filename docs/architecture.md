@@ -18,7 +18,7 @@ workdir/
     agents-usage/  (python)
     agents-history/  (python)
     agents-taskboard/  (python)
-    agents-app-connector/  (generic)
+    agents-app-connector/  (python)
 ```
 
 - `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks
@@ -34,7 +34,7 @@ workdir/
 - `code/agents-usage` (python): Python microservice with its own Postgres that collects Claude plan usage windows (5-hour, weekly) pushed by the agents' claude-code-wrapper statusLine relay, with a lazy CLI probe as fallback, and records session start/end marks; serves current, history and marks for the orchestrator's usage gate and the web UI
 - `code/agents-history` (python): Python microservice with its own Postgres that stores and searches historical agent session logs (transcripts) exported by agents-orchestrator, with retention cleanup and user-only delete; serves read and search to superleaders
 - `code/agents-taskboard` (python): Python microservice with its own Postgres: tasks, decisions answered once, todo, comments and history for users and agents; agents reach it through an orchestrator relay, user answers notify the asking session
-- `code/agents-app-connector` (generic): Python microservice with its own Postgres and a PVC: client-plugin connector for user devices; plugin sketch pairs Boox devices, takes sketch uploads, translates them into versioned markdown specs through a sketch-translator agent session, streams progress and hands specs off to sessions
+- `code/agents-app-connector` (python): Python microservice with its own Postgres and a PVC: client-plugin connector for user devices; plugin sketch pairs Boox devices, takes sketch uploads, translates them into versioned markdown specs through a sketch-translator agent session, streams progress and hands specs off to sessions
 
 ## Plugins
 
