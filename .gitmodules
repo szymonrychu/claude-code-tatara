@@ -53,3 +53,7 @@
 	path = code/agents-app-connector
 	url = https://github.com/szymonrychu/agents-app-connector
 	branch = main
+[submodule "agents-boox-sketch"]
+	path = code/agents-boox-sketch
+	url = https://github.com/szymonrychu/agents-boox-sketch.git
+	branch = main

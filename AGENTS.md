@@ -43,6 +43,7 @@ A Python reimplementation of tatara-new: a decentralised set of small microservi
 | agents-history | python | Python microservice with its own Postgres that stores and searches historical agent session logs (transcripts) exported by agents-orchestrator, with retention cleanup and user-only delete; serves read and search to superleaders | `mise run --cd code/agents-history test` |
 | agents-taskboard | python | Python microservice with its own Postgres: tasks, decisions answered once, todo, comments and history for users and agents; agents reach it through an orchestrator relay, user answers notify the asking session | `mise run --cd code/agents-taskboard test` |
 | agents-app-connector | python | Python microservice with its own Postgres and a PVC: client-plugin connector for user devices; plugin sketch pairs Boox devices, takes sketch uploads, translates them into versioned markdown specs through a sketch-translator agent session, streams progress and hands specs off to sessions | `mise run --cd code/agents-app-connector test` |
+| agents-boox-sketch | generic | Kotlin Android app for BOOX e-ink tablets: pen board with pages, multi-page sketch upload to agents-app-connector, spec panel, hand-off; signed APKs on GitHub Releases | `mise run --cd code/agents-boox-sketch test` |
 
 ## Component hard rules
 
