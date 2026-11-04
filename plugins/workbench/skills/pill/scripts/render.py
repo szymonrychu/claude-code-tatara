@@ -143,8 +143,9 @@ def figure_extension(base: Path, max_width_pt: float, images: list[Path]):
             if path.suffix.lower() == ".svg" and not img.get("width"):
                 w, h = svg_size_pt(path)
                 scale = min(1.0, max_width_pt / w)
-                img.set("width", f"{w * scale:.1f}pt")
-                img.set("height", f"{h * scale:.1f}pt")
+                # CSS, not width/height attributes: xhtml2pdf reads those as
+                # px and scales them by 0.75, so a figure came out 75% wide
+                img.set("style", f"width: {w * scale:.1f}pt; height: {h * scale:.1f}pt")
 
         def _figure(self, img, n):
             fig = ET.Element("div", {"class": "figure"})
@@ -162,19 +163,29 @@ def figure_extension(base: Path, max_width_pt: float, images: list[Path]):
     return FigureExtension()
 
 
+LINE_HEIGHT = 1.35
+FOOTER_SCALE = 0.8
+# room for a title long enough to wrap the footer onto a second line
+FOOTER_LINES = 2
+
+
 def css(page: Page) -> str:
-    bottom = page.margin_mm + 8
+    footer_font = page.font_pt * FOOTER_SCALE
+    footer_mm = (FOOTER_LINES * footer_font * LINE_HEIGHT + 2) / MM_TO_PT
+    footer_bottom = page.margin_mm / 2
+    bottom = footer_bottom + footer_mm + page.margin_mm / 2
     return f"""
 @page {{
   size: {page.width_mm}mm {page.height_mm}mm;
-  margin: {page.margin_mm}mm {page.margin_mm}mm {bottom}mm {page.margin_mm}mm;
+  margin: {page.margin_mm}mm {page.margin_mm}mm {bottom:.1f}mm {page.margin_mm}mm;
   @frame footer {{
     -pdf-frame-content: footer;
-    bottom: {page.margin_mm / 2:.1f}mm; height: 6mm;
+    bottom: {footer_bottom:.1f}mm; height: {footer_mm:.1f}mm;
     margin-left: {page.margin_mm}mm; margin-right: {page.margin_mm}mm;
   }}
 }}
-body {{ font-family: Helvetica; font-size: {page.font_pt}pt; line-height: 1.35; }}
+body {{ font-family: Helvetica; font-size: {page.font_pt}pt; line-height: {LINE_HEIGHT};
+  overflow-wrap: break-word; }}
 h1 {{ font-size: {page.font_pt * 1.7:.1f}pt; margin-top: 10pt; }}
 h2 {{ font-size: {page.font_pt * 1.35:.1f}pt; margin-top: 8pt; }}
 h3 {{ font-size: {page.font_pt * 1.15:.1f}pt; }}
@@ -186,7 +197,7 @@ table {{ border: 0.5pt solid #888888; padding: 2pt; }}
 th {{ background-color: #e6e6e6; font-weight: bold; }}
 .figure {{ text-align: center; margin: 6pt 0; }}
 .caption {{ font-size: {page.font_pt * 0.9:.1f}pt; font-style: italic; text-align: center; }}
-.footer {{ text-align: center; font-size: {page.font_pt * 0.8:.1f}pt; color: #555555; }}
+.footer {{ text-align: center; font-size: {footer_font:.1f}pt; color: #555555; }}
 .cover-title {{ font-size: {page.font_pt * 2.4:.1f}pt; font-weight: bold;
   margin-top: {page.height_mm / 4:.0f}mm; text-align: center; }}
 .cover-sub {{ font-size: {page.font_pt * 1.3:.1f}pt; text-align: center; margin-top: 8pt; }}

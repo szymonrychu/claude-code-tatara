@@ -158,3 +158,80 @@ def test_shipped_template_and_example_figure_render(tmp_path, pdf_deps):
     text = "\n".join(p.extract_text() for p in pdf_deps.PdfReader(str(out)).pages)
     for needle in ("{Question 1}", "{Question 2}", "producer", "Figure 1.", "References"):
         assert needle in text, needle
+
+
+WIDE_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">'
+    '<rect x="0" y="0" width="800" height="200" fill="#cde"/></svg>'
+)
+LONG_URL = "https://example.org/" + "/".join(f"segment{i}" for i in range(20)) + "/end.html"
+LONG_TOKEN = "an_identifier_" * 10 + "end"
+
+
+def _layout(pdf):
+    pytest.importorskip("pdfminer")
+    from pdfminer.high_level import extract_pages
+
+    return list(extract_pages(str(pdf)))
+
+
+def _walk(obj):
+    yield obj
+    if hasattr(obj, "__iter__"):
+        for child in obj:
+            yield from _walk(child)
+
+
+@pytest.mark.parametrize("page", ["a4", "phone"])
+def test_wide_figure_fills_content_width(tmp_path, pdf_deps, page):
+    from pdfminer.layout import LTCurve
+
+    (tmp_path / "figures").mkdir()
+    (tmp_path / "figures" / "wide.svg").write_text(WIDE_SVG)
+    src = tmp_path / "p.md"
+    src.write_text("# A\n\n![Wide](figures/wide.svg)\n")
+    out = tmp_path / "p.pdf"
+    assert render.main([str(src), "-o", str(out), "--page", page]) == 0
+    spec = render.PAGES[page]
+    content = (spec.width_mm - 2 * spec.margin_mm) * render.MM_TO_PT
+    widths = [o.width for p in _layout(out) for o in _walk(p) if isinstance(o, LTCurve)]
+    assert widths, "the figure rectangle was not drawn"
+    assert max(widths) == pytest.approx(content, rel=0.02)
+
+
+@pytest.mark.parametrize("page", ["a4", "phone"])
+def test_long_url_and_token_stay_inside_the_margin(tmp_path, pdf_deps, page):
+    from pdfminer.layout import LTChar
+
+    src = tmp_path / "p.md"
+    src.write_text(
+        f"# A\n\nSee {LONG_URL} and `{LONG_TOKEN}`.\n\n"
+        f"[{LONG_URL}]({LONG_URL})\n\n| col |\n|---|\n| {LONG_URL} |\n"
+    )
+    out = tmp_path / "p.pdf"
+    assert render.main([str(src), "-o", str(out), "--page", page]) == 0
+    spec = render.PAGES[page]
+    right = (spec.width_mm - spec.margin_mm) * render.MM_TO_PT
+    for p in _layout(out):
+        overflow = [o.get_text() for o in _walk(p) if isinstance(o, LTChar) and o.x1 > right + 1]
+        assert not overflow, f"text past the right margin on page {p.pageid}"
+    reader = pdf_deps.PdfReader(str(out))
+    uris = [
+        a.get_object()["/A"]["/URI"]
+        for pg in reader.pages
+        for a in pg.get("/Annots", [])
+        if "/A" in a.get_object()
+    ]
+    assert LONG_URL in uris  # the link target is kept exact
+
+
+@pytest.mark.parametrize("page", ["a4", "phone"])
+def test_footer_fits_its_frame(tmp_path, pdf_deps, page, caplog):
+    src = tmp_path / "p.md"
+    src.write_text(
+        "---\ntitle: How the Linux kernel scheduler picks the next task to run"
+        " on a busy multi-core machine today\n---\n# A\n\nx\n"
+    )
+    with caplog.at_level("WARNING"):
+        assert render.main([str(src), "-o", str(tmp_path / "p.pdf"), "--page", page]) == 0
+    assert not [r for r in caplog.records if "static frame" in r.getMessage()]

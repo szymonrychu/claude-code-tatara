@@ -4,3 +4,4 @@ svglib==2.3.3
 reportlab==5.1.0
 pypdf==6.21.4
 pytest==9.2.0
+pdfminer.six==20260107
