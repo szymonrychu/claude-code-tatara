@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120">
+  <rect x="10" y="30" width="120" height="60" rx="6" fill="#dbe8f5" stroke="#333333"/>
+  <text x="70" y="65" font-family="Helvetica" font-size="14" text-anchor="middle">producer</text>
+  <line x1="130" y1="60" x2="275" y2="60" stroke="#333333" stroke-width="2"/>
+  <polygon points="290,60 275,52 275,68" fill="#333333"/>
+  <text x="210" y="50" font-family="Helvetica" font-size="12" text-anchor="middle">enqueue</text>
+  <rect x="290" y="30" width="120" height="60" rx="6" fill="#f5e3d5" stroke="#333333"/>
+  <text x="350" y="65" font-family="Helvetica" font-size="14" text-anchor="middle">consumer</text>
+</svg>

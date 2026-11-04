@@ -7,6 +7,14 @@
     {
       "path": "**",
       "pattern": "5aebe8db67638020eeaab4fc46cee85832e521e32552846ae2130001fbd846d1"
+    },
+    {
+      "path": "plugins/workbench/skills/pill/**",
+      "pattern": ".lan"
+    },
+    {
+      "path": "plugins/workbench/skills/pill/**",
+      "pattern": "28d81f2e7f99e2f862924d4748a4b71c4fd94e3ec26e0c6da17ce1252992af68"
     }
   ]
 }
