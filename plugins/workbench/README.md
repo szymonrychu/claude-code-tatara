@@ -146,7 +146,7 @@ research-code-internal          plan adds a helper/reader/parser/schema field/su
 research-code-external          the change has known analogues (protocol, parser, scheduler, cache, auth flow, rules engine) or an open design fork
 research-papers                 the problem has a scientific or algorithmic core, or the user names a paper
 research-docs                   a library, framework, provider or platform API is used in a new way, upgraded, or touched in >= 3 call sites
-pill                            a cited study PDF on a topic: research agents, optional pod measurements, SVG figures, pure-pip render, scp to the NAS books dir
+pill                            a cited study PDF on a topic: research agents, optional pod measurements, SVG figures, pure-pip render, kubectl cp into a pod mounting the books dir
 ```
 
 `init` is the entry point of a fresh clone: it asks the questions, confirms any forge

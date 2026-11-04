@@ -1,12 +1,12 @@
 ---
 name: pill
-description: "Produce a study PDF (a 'pill') on a topic: cited primary-source research via research subagents, optional in-pod measurements for empirical questions, pandoc-style markdown with numbered references and hand-written SVG diagrams, rendered to PDF with a pure-pip stack and delivered by scp to the NAS books directory. Use when the user asks for a pill, a study PDF, a reading pack or an explainer document on a topic."
+description: "Produce a study PDF (a 'pill') on a topic: cited primary-source research via research subagents, optional in-pod measurements for empirical questions, pandoc-style markdown with numbered references and hand-written SVG diagrams, rendered to PDF with a pure-pip stack and delivered by kubectl cp into a pod that mounts the books library writable. Use when the user asks for a pill, a study PDF, a reading pack or an explainer document on a topic."
 ---
 
 # pill
 
 Turns a topic (and an optional list of questions) into a short, cited study PDF and
-drops it into the NAS books library, so it shows up in the e-reader apps. The
+drops it into the books library through a pod that mounts it, so it shows up in the e-reader apps. The
 research is fanned out to the workbench research agents, the writing and the
 diagrams are done in the calling thread, and three scripts do the mechanical
 parts:
@@ -15,7 +15,7 @@ parts:
 |---|---|---|
 | `scripts/lint_text.py` | fails on em dashes, smart quotes and unicode arrows | stdlib |
 | `scripts/render.py` | markdown + SVG figures -> PDF with cover, contents, page numbers, captions | the venv |
-| `scripts/deliver.py` | `send`: mkdir, scp, size check, prints the remote path; `discover`: finds the books dir | ssh, scp |
+| `scripts/deliver.py` | `send`: kubectl cp, size check, prints the in-pod and node paths; `discover`: finds a pod mounting the books dir writable | kubectl |
 
 `S=${CLAUDE_PLUGIN_ROOT}/skills/pill/scripts` below.
 
@@ -24,9 +24,11 @@ parts:
 - `topic` (required): one line.
 - `questions` (optional): the questions the pill must answer, in order.
 - `page`: `a4` (default) or `phone` (100x178 mm, fills a phone screen).
-- `host`, `user`, `dir`: delivery overrides; otherwise `PILL_NAS_HOST` (default
-  `nas.lan`), `PILL_NAS_USER` (default: what ssh picks, e.g. `~/.ssh/config`),
-  `PILL_NAS_DIR` (no default, see step 6), `PILL_NAS_PORT`.
+- `namespace`, `pod`, `container`, `dir`: delivery overrides; otherwise
+  `PILL_K8S_NAMESPACE` (default `media`), `PILL_K8S_POD` (pod name or name
+  prefix) or `PILL_K8S_SELECTOR` (label selector), `PILL_K8S_CONTAINER`,
+  `PILL_K8S_DIR` (in-pod dir). Unset values come from the best writable
+  `discover` candidate (step 6).
 
 ## Procedure
 
@@ -99,34 +101,40 @@ parts:
    character outside Latin-1 slipped in; replace it.
    Read the PDF back (page count, contents page, a figure page) before delivering.
 
-6. **Deliver.** When neither `dir` nor `PILL_NAS_DIR` is set, find the books dir first:
+6. **Deliver.** Check the target first:
    ```
-   python3 $S/deliver.py discover [--host H] [--user U]
+   python3 $S/deliver.py discover [-n NS] [-l SELECTOR] [--match books]
    ```
-   Read-only, over ssh: lists the Jellyfin and Audiobookshelf containers' docker
-   mounts, the Jellyfin library paths (`root/default/<library>/options.xml` and
-   `*.mblink` under the config dir; native installs under `/var/lib/jellyfin`),
-   and the Audiobookshelf library folders (`absdatabase.sqlite`, opened
-   read-only), maps container paths to host paths and prints candidates, books
-   before audiobooks before the rest, with a `suggested: PILL_NAS_DIR=...` line.
-   Use the suggestion when it is a books (not audiobooks or video) library;
-   otherwise ask the user in writing, with the candidates. Then:
+   Read-only, one `kubectl get pods -o json`: for every running container it
+   joins the volumeMounts with their volume source (hostPath with subPath, or
+   PVC), and lists the mounts whose mountPath or hostPath contains `books`, as
+   `rw|ro  pod  container  in_pod_dir  node_path  via`. A parent hostPath mount
+   (node `/media/hdd` at `/media`) that holds a books node dir seen in any pod
+   yields the derived dir `/media/books`. Writable mounts rank first, books
+   before audiobooks, reader apps (Jellyfin, Audiobookshelf) before the rest;
+   read-only ones are listed but never chosen. The last line is
+   `suggested: PILL_K8S_NAMESPACE=... PILL_K8S_POD=... PILL_K8S_CONTAINER=... PILL_K8S_DIR=...`.
+   Use it when it is a books (not audiobooks or video) dir; otherwise ask the
+   user in writing, with the candidates. Then:
    ```
-   python3 $S/deliver.py send $W/<date>-<slug>.pdf --dir <books dir> [--host H] [--user U]
+   python3 $S/deliver.py send $W/<date>-<slug>.pdf [-n NS] [--pod P | -l SEL] [-c C] [--dir D]
    ```
-   It runs `mkdir -p` remotely, copies with scp in BatchMode (never prompts),
-   compares the remote byte count with the local one and prints
-   `delivered: [user@]host:/dir/<file>.pdf (N bytes)`. `--dry-run` prints the
-   three commands only. A BatchMode auth failure means no usable key: report it,
-   do not retry interactively.
+   It checks that `tar` runs in the container (kubectl cp needs it; with no tar,
+   pick another pod mounting the same node dir), runs `mkdir -p` only for a dir
+   under a writable mount of that container, copies with `kubectl cp`, compares
+   the remote size (`stat -c %s`, `ls -ln` fallback) with the local one and
+   prints `delivered: <ns>/<pod>:<dir>/<file>.pdf (container C, N bytes)` and
+   `node path: <hostPath>/<file>.pdf`. `--dry-run` reads the pods and prints the
+   write commands only.
 
-7. **Report** in a few lines: the exact remote path from the `delivered:` line,
+7. **Report** in a few lines: the in-pod and node paths from the `send` output,
    page count, the questions answered, and any question left open (with why).
 
 ## Never
 
 - Cite a source you did not read, or a number you did not measure or find in a
   cited source.
-- Hardcode a private host or path in a pill or a script: hosts and dirs come from
-  arguments or `PILL_NAS_*`.
-- Write to the NAS outside the chosen books dir; `discover` changes nothing.
+- Hardcode a private host or path in a pill or a script: namespaces, pods and
+  dirs come from arguments or `PILL_K8S_*`.
+- Change the cluster beyond the one file in the chosen books dir: no applies,
+  restarts or exec writes elsewhere; `discover` changes nothing.
