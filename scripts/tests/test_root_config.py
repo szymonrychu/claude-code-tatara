@@ -142,3 +142,10 @@ def test_slow_marker_registered_and_deselected_by_default(request):
     assert any(m.startswith("slow") for m in markers)
     body = (ROOT / "mise-tasks/test/scripts").read_text()
     assert 'pytest scripts/tests -m "not slow"' in body
+
+
+def test_precommit_default_stage_is_pre_commit():
+    # The commit-msg git hook is installed too; without this every hook would also run there
+    # with the COMMIT_EDITMSG path, which lies outside the tree in a worktree and breaks commits.
+    text = (ROOT / ".pre-commit-config.yaml").read_text()
+    assert re.search(r"^default_stages:\s*\[pre-commit\]\s*$", text, re.M)
