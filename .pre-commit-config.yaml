@@ -1,4 +1,5 @@
 # Every hook is local and calls a mise-pinned tool: no github.com egress needed.
+default_stages: [pre-commit]
 repos:
   - repo: local
     hooks:
