@@ -57,3 +57,7 @@
 	path = code/agents-boox-sketch
 	url = https://github.com/szymonrychu/agents-boox-sketch.git
 	branch = main
+[submodule "agents-vault"]
+	path = code/agents-vault
+	url = https://github.com/szymonrychu/agents-vault
+	branch = main

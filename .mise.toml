@@ -43,6 +43,7 @@ run = [
   "mise run --cd code/agents-taskboard test",
   "mise run --cd code/agents-app-connector test",
   "mise run --cd code/agents-boox-sketch test",
+  "mise run --cd code/agents-vault test",
 ]
 
 [tasks."code:lint"]
@@ -63,6 +64,7 @@ run = [
   "mise run --cd code/agents-taskboard lint",
   "mise run --cd code/agents-app-connector lint",
   "mise run --cd code/agents-boox-sketch lint",
+  "mise run --cd code/agents-vault lint",
 ]
 
 [tasks."code:fmt"]
@@ -83,5 +85,6 @@ run = [
   "mise run --cd code/agents-taskboard fmt",
   "mise run --cd code/agents-app-connector fmt",
   "mise run --cd code/agents-boox-sketch fmt",
+  "mise run --cd code/agents-vault fmt",
 ]
 # workbench:code-tasks:end
