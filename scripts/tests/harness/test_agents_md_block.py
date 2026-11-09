@@ -9,7 +9,13 @@ from harness import agents_md, emit, setup
 from harness.sources import _rules
 
 REPO = Path(__file__).resolve().parents[3]
-RULE_NAMES = ("boy-scout.md", "concise-orchestrator.md", "housekeeping.md", "superpowers-flow.md")
+RULE_NAMES = (
+    "boy-scout.md",
+    "concise-orchestrator.md",
+    "housekeeping.md",
+    "secrets-model.md",
+    "superpowers-flow.md",
+)
 
 
 class Fake(emit.Emitter):

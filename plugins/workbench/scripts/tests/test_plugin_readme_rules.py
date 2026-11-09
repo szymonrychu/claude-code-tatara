@@ -9,7 +9,7 @@ AGENTS_MD = REPO / "scripts" / "harness" / "agents_md.py"
 
 
 def rule_files():
-    m = re.search(r"^RULE_FILES = \((.*?)\)", AGENTS_MD.read_text(), re.M)
+    m = re.search(r"^RULE_FILES = \((.*?)\)", AGENTS_MD.read_text(), re.M | re.S)
     return re.findall(r'"([^"]+\.md)"', m.group(1))
 
 

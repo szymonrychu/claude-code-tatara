@@ -16,8 +16,7 @@ How secret values move through the agents system, and what every change must pre
 - `project:` labels on an entry restrict where it may attach; only the vault evaluates the match,
   from labels the orchestrator derives from the preset's project. A session gets exactly the
   versions pinned at create.
-- Anything that can read Secrets in the agents namespace (cluster-admin sessions, privileged
-  sidecars, node root, operators) is outside the model; rotation is the response.
+- Anything that can read Secrets in the namespace (cluster-admin sessions, node root) is outside the model; rotation is the response.
 
 ## Invariants
 1. Write-only Kubernetes: no code, test fake or Role grants get/list/watch on secrets. Secrets
@@ -57,13 +56,10 @@ How secret values move through the agents system, and what every change must pre
   canary coverage. Exports and archives rely on the wrapper having redacted first.
 - Logging: type names, ids, env names, counts. Never request bodies, upstream bodies, env dumps
   or settings reprs. Settings fields holding tokens use repr=False and SecretStr.
-- Tests and fixtures: obviously fake markers (CANARY-...); assert they are absent from logs
-  (caplog), rows (every table, base64 too) and responses. Never put a real token in a test,
-  README or OpenAPI example.
+- Tests: fake CANARY-... markers only; never a real token in tests, README or OpenAPI examples.
 - RBAC and charts: Secret verbs stay create/patch/delete; name restrictions belong in an
   admission policy; mount a ServiceAccount token only into the container that calls the API;
   external Secrets for tokens, never values.yaml literals; semver image pins.
-- Migrations: forward-only, never read a value, refuse data they would misinterpret.
 - Transcripts and history: treat every tool result as possibly holding a secret the model
   echoed. Redact in the wrapper before storage; history is searchable by superleaders, so what
   reaches it must already be clean.
@@ -79,9 +75,3 @@ How secret values move through the agents system, and what every change must pre
 ## Avoid
 - Deriving "is secret" from a variable name pattern alone.
 - Returning upstream error bodies, pydantic input values or dict keys in 422 messages.
-- Reading a Secret to compare or to copy untouched values during rotate.
-- One service token shared by two services, or accepted by the service that sends it.
-- Storing readable values in a second place without the same retention awareness (backups).
-- Logging settings objects, request bodies, env maps or Kubernetes objects.
-- A tool for agents that returns readable values of entries outside the caller's project.
-- Widening the vault web allowlist or trusting Forwarded headers for the allowlist decision.
