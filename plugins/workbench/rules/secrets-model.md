@@ -1,3 +1,13 @@
+---
+paths:
+  - "code/agents-*/**"
+  - "code/claude-code-wrapper/**"
+  - "code/any-mcp*/**"
+  - ".worktrees/**/agents-*/**"
+  - ".worktrees/**/claude-code-wrapper/**"
+  - ".worktrees/**/any-mcp*/**"
+---
+
 # Secrets model
 
 ## The model in brief (who sees what)
