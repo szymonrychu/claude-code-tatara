@@ -21,3 +21,6 @@ The user's standing rules for every agent, every harness and every task.
    accountable for all work its subagents do. Its own duties: dispatching, reading
    results, running the repo's test and lint commands to verify, and git merge and
    push of reviewed work.
+7. **Secrets.** Before changing anything that handles secret values, env, tokens,
+   logging, errors, transcripts or RBAC in any component, read
+   `plugins/workbench/rules/secrets-model.md`.

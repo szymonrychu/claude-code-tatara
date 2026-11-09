@@ -17,7 +17,7 @@ def _block(name: str) -> str:
 
 
 def test_sizes():
-    assert len(AGENTS.encode()) < 24000
+    assert len(AGENTS.encode()) < 19000
     assert len(CLAUDE.encode()) < 2000
 
 
