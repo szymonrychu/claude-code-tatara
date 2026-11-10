@@ -221,11 +221,11 @@ the improvement's kebab-case name.
    "Recommended" (the same option may carry both). After the user answers,
    `superpowers:writing-plans` writes the implementation plan with no second human review,
    and execution (`superpowers:subagent-driven-development`) starts immediately. When the
-   `orchestrator_task_*` tools are available, the questions are also posted as taskboard
+   `orchestrator_task_*` tools are available, the questions are posted as taskboard
    decisions with `orchestrator_decision_ask` (one option marked recommended; MVP marked in
-   the option text). Answers arrive as a chat
-   notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The question
-   text still goes in `docs/plans/<name>/plan.md`, so it survives a dead leader.
+   the option text), never as chat text; a chat line may link the task. Answers arrive as a
+   chat notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The
+   question text still goes in `docs/plans/<name>/plan.md`, so it survives a dead leader.
 3. **Paths.** These override the superpowers locations, including the worktree location
    choice of `using-git-worktrees`:
    - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
