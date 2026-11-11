@@ -17,7 +17,7 @@ def _block(name: str) -> str:
 
 
 def test_sizes():
-    assert len(AGENTS.encode()) < 19000
+    assert len(AGENTS.encode()) < 21000
     assert len(CLAUDE.encode()) < 2000
 
 
@@ -285,4 +285,24 @@ def test_taskboard_rules():
     for text in (rule, AGENTS):
         flat = " ".join(text.split()).lower()
         for needle in TASKBOARD:
+            assert needle in flat, needle
+
+
+SPEC_RULES = (
+    "orchestrator_spec_push",
+    "orchestrator_spec_pull",
+    ".scratchpad/<name>/spec/",
+    "research/<topic>.md",
+    "retro.md",
+    "only when the `orchestrator_spec_*` tools are available",
+    "192 kib",
+    "docs/plans/<name>/implementation.md",
+)
+
+
+def test_spec_rules():
+    rule = (ROOT / "plugins/workbench/rules/superpowers-flow.md").read_text()
+    for text in (rule, AGENTS):
+        flat = " ".join(text.split()).lower()
+        for needle in SPEC_RULES:
             assert needle in flat, needle

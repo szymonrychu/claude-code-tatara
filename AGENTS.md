@@ -225,7 +225,7 @@ the improvement's kebab-case name.
    decisions with `orchestrator_decision_ask` (one option marked recommended; MVP marked in
    the option text), never as chat text; a chat line may link the task. Answers arrive as a
    chat notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The
-   question text still goes in `docs/plans/<name>/plan.md`, so it survives a dead leader.
+   question text still goes in `docs/plans/<name>/plan.md`, so it survives a dead leader (see item 7 for the server spec).
 3. **Paths.** These override the superpowers locations, including the worktree location
    choice of `using-git-worktrees`:
    - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
@@ -233,12 +233,12 @@ the improvement's kebab-case name.
    - logs of every tool the agents run: `<workbench root>/.logs/<name>/`
    - plan (spec): `docs/plans/<name>/plan.md`; implementation plan:
      `docs/plans/<name>/implementation.md` (instead of `docs/superpowers/specs` and
-     `docs/superpowers/plans`)
+     `docs/superpowers/plans`); with the spec tools, item 7 places the plan, research and retro
 4. **Final reviewer.** Besides correctness and completeness of the delivered work against
    the agreed scope (under- and over-delivery), the final reviewer writes
    `docs/plans/<name>/retro.md`: what came up during implementation and what was overlooked
    during discovery and planning. The orchestrator relays the retro recommendations in its
-   closing message.
+   closing message. With the spec tools, the retro is a document of the spec (item 7).
 5. **The orchestrator never edits.** The orchestrating agent never updates code (source,
    tests, skills, agents, hooks, rules, docs); where a superpowers skill would have it edit
    inline, it dispatches a subagent instead. It is responsible and accountable for all work
@@ -249,4 +249,17 @@ the improvement's kebab-case name.
    (`orchestrator_task_create`, or `orchestrator_task_update` with `assignee_self`). Keep its
    todo current (`orchestrator_todo_set` / `orchestrator_todo_update`). When the work lands,
    close the task (status `done` or `dropped`).
+7. **Specs on the server.** Only when the `orchestrator_spec_*` tools are available;
+   otherwise the `docs/plans/<name>/` paths of items 2-4 apply. Every task that goes through
+   brainstorming gets a spec; small fixes keep only a task. The spec is spec `<name>` in the
+   session's project. Its documents: `plan.md` (the brainstorming plan, with the question
+   text), `research/<topic>.md` (the final brief of each research step only; lens briefs stay
+   in `.scratchpad/<name>/`), `retro.md` (the final reviewer's retro). The improvement's own
+   task (rule 6) is linked to the spec (`orchestrator_task_update` with `spec`) and holds the
+   gate questions as decisions; when all are answered the gate is open (pressing Approve in
+   the web is optional and records the approved versions). Subagents write the documents as
+   files in the working copy `.scratchpad/<name>/spec/` (`orchestrator_spec_pull` creates
+   it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit (pushing
+   is not editing). A document stays under 192 KiB: split a larger one. The implementation
+   plan is still `docs/plans/<name>/implementation.md`.
 <!-- workbench:rules:end -->
