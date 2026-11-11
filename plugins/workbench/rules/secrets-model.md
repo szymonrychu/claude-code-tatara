@@ -14,7 +14,7 @@ paths:
 - Protected value: exists only in the user's browser input, the vault web request body (SecretStr), an immutable Kubernetes Secret `vault-<entry>-v<n>`, and the env of the claude child in a session pod pinned to it. Nobody else: not Postgres, not events, not logs, not error bodies, not views, not tool output, not transcripts.
 - Readable value: stored in the vault database, shown in vault views and to the orchestrator; it is configuration, not a secret. Anything that must stay secret is protected; never store a secret as readable "for convenience".
 - Users (SSO) manage entries on the vault web listener. The orchestrator (service token) resolves, pins and releases. Agents never talk to the vault; they see entry names, ids, env names and pin metadata through orchestrator tools, and the values only as env of their own pod.
-- Scope: `project:` labels on an entry restrict where it may be attached; the vault alone evaluates the match from the labels the orchestrator derives from the preset's project. A session gets exactly the versions pinned at its create.
+- Scope: `project:` labels on an entry restrict where it may be attached; the vault alone evaluates the match from the labels the orchestrator derives from the session's project scope (home plus user-approved extra projects). A session gets exactly the versions pinned at its create.
 - Trust boundary: anything that can read Secrets in the agents namespace (cluster-admin sessions, privileged sidecars, node root, cluster operators) is outside the model; rotation is the response after such access.
 
 ## Invariants to preserve
@@ -24,7 +24,7 @@ paths:
 4. Error texts are fixed strings plus env names, entry ids and versions. Never echo a caller-chosen key or an upstream API body; Kubernetes error bodies are dropped, only the exception type name is logged.
 5. Pins are immutable per session: a retry returns the first pins; rotate never moves a running session; readable values are not versioned.
 6. Render only what the spec references: a pin renders when the spec entry is a vault ref, and Secret names and keys are validated against the vault's grammar before they reach a pod spec.
-7. Labels: the orchestrator sends exactly one `project:` label (its preset's project); user or agent supplied labels never carry the `project:` prefix.
+7. Labels: each secret has one owning project (its `project:` label). A session may use secrets of any project in its scope (home project plus extra projects); the orchestrator sends one `project:` label per project of that scope and the vault matches an entry when its project is in it. Every widening of a scope (an extra project on a preset or a running session) is granted only by a user-approved proposal; user or agent supplied labels never carry the `project:` prefix.
 8. Redaction in the wrapper must not depend on the env name: every env the orchestrator marks as secret is redacted by value in events, tails, hook output and transcript-derived records, kept out of shell terminals and out of children that run repository code.
 9. Tokens between services: raw tokens live in Kubernetes Secrets applied from SOPS files; a service holds the sha256 of tokens it verifies and the raw token only of the upstream it calls; a token that opens service X is never also accepted by X's own listener; constant-time compare; never logged, never in a URL.
 10. Superleader = agent with admin reach. Every admin route and tool it gets must assume prompt injection: names and ids only, no values, scoped to the caller's project, audited.
