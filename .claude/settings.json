@@ -22,7 +22,14 @@
     "workbench@workbench-template": false
   },
   "permissions": {
-    "allow": []
+    "allow": [
+      "Bash(mise run apply)",
+      "Bash(mise run apply *)",
+      "Bash(mise run --cd code/agents-helmfile apply)",
+      "Bash(mise run --cd code/agents-helmfile apply *)",
+      "Bash(mise run --cd /workdir/workdir/code/agents-helmfile apply)",
+      "Bash(mise run --cd /workdir/workdir/code/agents-helmfile apply *)"
+    ]
   },
   "hooks": {
     "SessionStart": [
