@@ -270,5 +270,5 @@ the improvement's kebab-case name.
    `orchestrator_plan_step_next` (`claim: true`) and records branches and PRs with
    `orchestrator_plan_step_update`; the final reviewer reads the step history and the
    orchestrating agent pushes `retro.md`. Work already executing from an imported
-   `implementation.md` finish from it.
+   `implementation.md` finishes from it.
 <!-- workbench:rules:end -->
