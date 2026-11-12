@@ -21,6 +21,7 @@ workdir/
     agents-app-connector/  (python)
     agents-boox-sketch/  (kotlin)
     agents-vault/  (python)
+    agents-mindmap/  (python)
 ```
 
 - `code/claude-code-wrapper` (python): HTTP microservice that runs long-lived interactive Claude Code sessions under PTYs and exposes turns, an SSE event stream and lifecycle hooks
@@ -39,6 +40,7 @@ workdir/
 - `code/agents-app-connector` (python): Python microservice with its own Postgres and a PVC: client-plugin connector for user devices; plugin sketch pairs Boox devices, takes sketch uploads, translates them into versioned markdown specs through a sketch-translator agent session, streams progress and hands specs off to sessions
 - `code/agents-boox-sketch` (kotlin): Kotlin Android app for BOOX e-ink tablets: pen board with pages, multi-page sketch upload to agents-app-connector, spec panel, hand-off; signed APKs on GitHub Releases
 - `code/agents-vault` (python): Python microservice with its own Postgres that owns secret values: write-only versioned entries stored as immutable Kubernetes Secrets, entry labels, per-session pins and garbage collection; users manage entries on the web listener, the orchestrator resolves and pins references on the service listener
+- `code/agents-mindmap` (python): Python microservice with its own Postgres (pgvector) that stores research mind maps per project: nodes, versioned growth, edges, links to tasks and specs, directions, full-text and semantic search, an outbox notifier and an embedder; three listeners (web, delegate, service) behind the orchestrator relay
 
 ## Plugins
 
