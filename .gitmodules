@@ -61,3 +61,7 @@
 	path = code/agents-vault
 	url = https://github.com/szymonrychu/agents-vault
 	branch = main
+[submodule "agents-mindmap"]
+	path = code/agents-mindmap
+	url = https://github.com/szymonrychu/agents-mindmap.git
+	branch = main
