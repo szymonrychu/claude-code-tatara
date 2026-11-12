@@ -254,16 +254,16 @@ the improvement's kebab-case name.
    questions as decisions; with the plan pushed and `orchestrator_plan_gate` saying `approvable`
    (without plan tools: `orchestrator_task_get` shows none open), the orchestrating agent
    approves the spec (`orchestrator_spec_update` status `approved`; the server refuses
-   409 `decisions_open` while any is open). Subagents write the documents as
+   409 `decisions_open` while any is open). Subagents write documents as
    files in the working copy `.scratchpad/<name>/spec/` (`orchestrator_spec_pull` creates
-   it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit. A document stays under 192 KiB: split a larger one. With the
-   `orchestrator_plan_*` tools too, the implementation plan is the spec's plan, not a file:
+   it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit (pushing is not editing). A document stays under 192 KiB: split a larger one. With
+   `orchestrator_plan_*` too, the implementation plan is the spec's plan, not a file:
    `superpowers:writing-plans` writes the header with `orchestrator_plan_set` and the steps
    with `orchestrator_plan_steps_push`,
    and writes no `implementation.md`; the gate questions go out with
    `orchestrator_plan_questions_ask`; `superpowers:subagent-driven-development` takes work with
    `orchestrator_plan_step_next` (`claim: true`) and records branches and PRs with
    `orchestrator_plan_step_update`; the orchestrating agent first runs `orchestrator_spec_pull` and
-   `orchestrator_plan_export` and the final reviewer reads them; the orchestrating agent pushes `retro.md`. Work already executing from an imported
-   `implementation.md` finishes from it. After the retro push it archives the spec (`orchestrator_spec_update` status `archived`).
+   `orchestrator_plan_export` into `.scratchpad/<name>/spec/` for the final reviewer; the orchestrating agent pushes `retro.md` and archives the spec (`orchestrator_spec_update` status `archived`). Work already executing from an imported
+   `implementation.md` finishes from it.
 <!-- workbench:rules:end -->
