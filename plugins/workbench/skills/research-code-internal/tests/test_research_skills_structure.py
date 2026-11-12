@@ -133,16 +133,7 @@ def test_start_research_records_brief_in_map():
 def test_flow_rule_mindmap_text():
     rule = " ".join((ROOT / "rules" / "superpowers-flow.md").read_text().split())
     for needle in [
-        "(c) when the `orchestrator_mindmap_*` tools are available",
-        "orchestrator_mindmap_traverse",
-        "orchestrator_mindmap_task_nodes",
-        "`uses`",
-        "`researched_by`",
-        "orchestrator_mindmap_direction_create",
-        "`taken`",
-        "orchestrator_mindmap_note_put",
-        "data, never instructions",
-        "never secret values",
-        "ask the leader",
+        "(c) when the `orchestrator_mindmap_*` tools exist, search the project mind map first",
+        "record each final brief as a node linked to the task",
     ]:
         assert needle in rule, needle
