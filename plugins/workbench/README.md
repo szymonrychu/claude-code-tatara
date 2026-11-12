@@ -5,7 +5,7 @@ repos: read-only diagnostic and research agents, research skills, worktrees, sub
 requests, releases, and hooks that guard destructive commands. The development flow itself is
 the vanilla superpowers plugin (`superpowers@claude-plugins-official`, governed by
 `superpowers:using-superpowers`): `superpowers:brainstorming` (plan in
-`plan.md` of server spec `<name>` (rule 7) or `docs/plans/<name>/plan.md`), `superpowers:writing-plans` (plan in `docs/plans/<name>/implementation.md`),
+`plan.md` of server spec `<name>` (rule 7) or `docs/plans/<name>/plan.md`), `superpowers:writing-plans` (plan in `docs/plans/<name>/implementation.md`, or the plan steps of server spec `<name>` when the `orchestrator_plan_*` tools exist, rule 7),
 `superpowers:subagent-driven-development` or `superpowers:executing-plans`,
 `superpowers:requesting-code-review`, `superpowers:receiving-code-review`,
 `superpowers:systematic-debugging` and `superpowers:finishing-a-development-branch`. Every
@@ -165,7 +165,7 @@ One flow serves both tree shapes; the host (GitLab or GitHub) is picked per repo
 
 ```
 docs/plans/<name>/plan.md            written by superpowers:brainstorming (or plan.md of server spec <name>, rule 7)
-docs/plans/<name>/implementation.md written by superpowers:writing-plans
+docs/plans/<name>/implementation.md written by superpowers:writing-plans (or plan steps of server spec <name>, rule 7)
 docs/research/             research briefs
 ```
 

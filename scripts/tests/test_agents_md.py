@@ -297,6 +297,12 @@ SPEC_RULES = (
     "only when the `orchestrator_spec_*` tools are available",
     "192 kib",
     "docs/plans/<name>/implementation.md",
+    "orchestrator_plan_set",
+    "orchestrator_plan_steps_push",
+    "orchestrator_plan_step_next",
+    "orchestrator_plan_step_update",
+    "orchestrator_plan_questions_ask",
+    "writes no `implementation.md`",
 )
 
 

@@ -45,7 +45,8 @@ the improvement's kebab-case name.
    todo current (`orchestrator_todo_set` / `orchestrator_todo_update`). When the work lands,
    close the task (status `done` or `dropped`).
 7. **Specs on the server.** Only when the `orchestrator_spec_*` tools are available;
-   otherwise the `docs/plans/<name>/` paths of items 2-4 apply. Every task that goes through
+   otherwise the `docs/plans/<name>/` paths of items 2-4 apply, with the implementation plan in
+   `docs/plans/<name>/implementation.md`. Every task that goes through
    brainstorming gets a spec; small fixes keep only a task. The spec is spec `<name>` in the
    session's project. Its documents: `plan.md` (the brainstorming plan, with the question
    text), `research/<topic>.md` (the final brief of each research step only; lens briefs stay
@@ -55,5 +56,13 @@ the improvement's kebab-case name.
    the web is optional and records the approved versions). Subagents write the documents as
    files in the working copy `.scratchpad/<name>/spec/` (`orchestrator_spec_pull` creates
    it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit (pushing
-   is not editing). A document stays under 192 KiB: split a larger one. The implementation
-   plan is still `docs/plans/<name>/implementation.md`.
+   is not editing). A document stays under 192 KiB: split a larger one. When the
+   `orchestrator_plan_*` tools are available too, the implementation plan is the spec's plan,
+   not a file: `superpowers:writing-plans` writes the header with `orchestrator_plan_set` and
+   the steps with `orchestrator_plan_steps_push` (a JSON file a subagent writes in the working
+   copy), and writes no `implementation.md`; the gate questions go out with
+   `orchestrator_plan_questions_ask`; `superpowers:subagent-driven-development` takes work with
+   `orchestrator_plan_step_next` (`claim: true`) and records branches and PRs with
+   `orchestrator_plan_step_update`; the final reviewer reads the step history and the
+   orchestrating agent pushes `retro.md`. Work already executing from an imported
+   `implementation.md` finish from it.
