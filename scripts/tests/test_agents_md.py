@@ -307,7 +307,7 @@ SPEC_RULES = (
     "orchestrator_plan_gate",
     "approvable",
     "orchestrator_spec_update",
-    "archive the spec",
+    "archives the spec",
     "every decision on its open tasks is answered",
 )
 
