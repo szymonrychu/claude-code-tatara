@@ -202,7 +202,7 @@ The user's standing rules for every agent, harness and task.
 ## Superpowers flow in this workbench
 
 The development flow is the vanilla `superpowers` plugin. These amendments override its
-defaults here. `<name>` is
+defaults here (superpowers gives user instructions precedence over its skills). `<name>` is
 the improvement's kebab-case name.
 
 1. **Research first.** Every development workflow starts with a research step before
@@ -214,7 +214,7 @@ the improvement's kebab-case name.
    The plan is more detailed than the superpowers default: what, why, research findings,
    design, files and components touched, test approach, risks, and the scope from MVP to
    complete. Every question offers options and always marks one option "MVP" and one
-   "Recommended". After the user answers,
+   "Recommended" (one option may carry both). After the user answers,
    `superpowers:writing-plans` writes the implementation plan with no second human review,
    and execution (`superpowers:subagent-driven-development`) starts only once every decision on its open tasks is answered
    and, with the spec tools, the spec is approved. When the
