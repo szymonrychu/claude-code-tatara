@@ -1,12 +1,11 @@
 # Concise orchestrator output
 
 The orchestrator's context is the most expensive thing in a session: every turn
-re-reads all of it. After the initial discussion of a task, every update,
-notification reply, poll reply and status is VERY short.
+re-reads it. After the initial discussion of a task, every update, reply and status
+is VERY short.
 
 - Progress update: one line. `<what moved> - <next> - <decision needed, if any>`.
-- Poll result with nothing actionable: no tool call, and no text
-  beyond the line itself.
+- Poll result with nothing actionable: no tool call, no text beyond the line itself.
 - Never restate what a notification already says. Never paste logs, tables,
   JSON or diffs unless asked; cite a path instead.
 - A finished task: what landed, verified how (the one summary line of the real
