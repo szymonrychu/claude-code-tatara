@@ -63,6 +63,7 @@ the improvement's kebab-case name.
    copy), and writes no `implementation.md`; the gate questions go out with
    `orchestrator_plan_questions_ask`; `superpowers:subagent-driven-development` takes work with
    `orchestrator_plan_step_next` (`claim: true`) and records branches and PRs with
-   `orchestrator_plan_step_update`; the final reviewer reads the step history and the
-   orchestrating agent pushes `retro.md`. Work already executing from an imported
+   `orchestrator_plan_step_update`; the orchestrating agent first runs `orchestrator_spec_pull` and
+   `orchestrator_plan_export` into `.scratchpad/<name>/spec/` and the final reviewer reads
+   those files; the orchestrating agent pushes `retro.md`. Work already executing from an imported
    `implementation.md` finishes from it.

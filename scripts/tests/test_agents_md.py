@@ -302,6 +302,7 @@ SPEC_RULES = (
     "orchestrator_plan_step_next",
     "orchestrator_plan_step_update",
     "orchestrator_plan_questions_ask",
+    "orchestrator_plan_export",
     "writes no `implementation.md`",
 )
 
