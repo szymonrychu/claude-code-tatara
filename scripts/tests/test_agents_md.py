@@ -304,6 +304,11 @@ SPEC_RULES = (
     "orchestrator_plan_questions_ask",
     "orchestrator_plan_export",
     "writes no `implementation.md`",
+    "orchestrator_plan_gate",
+    "approvable",
+    "orchestrator_spec_update",
+    "archive the spec",
+    "every decision on its open tasks is answered",
 )
 
 
