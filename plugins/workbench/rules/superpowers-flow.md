@@ -8,7 +8,8 @@ the improvement's kebab-case name.
    `superpowers:brainstorming` proposes a design: (a) the docs of every tool, library and
    system the implementation plans to use (`workbench:research-docs`), (b) a sweep of the
    existing codebase aimed at the most reviewable update, meaning reuse and the smallest
-   coherent diff (`workbench:research-code-internal`).
+   coherent diff (`workbench:research-code-internal`), (c) when the `orchestrator_mindmap_*` tools
+   exist, search the project mind map first.
 2. **One human gate.** The brainstorming plan (spec) plus its questions is the only gate.
    The plan is more detailed than the superpowers default: what, why, research findings,
    design, files and components touched, test approach, risks, and the scope from MVP to
@@ -55,7 +56,8 @@ the improvement's kebab-case name.
    approves the spec (`orchestrator_spec_update` status `approved`; the server refuses
    409 `decisions_open` while any is open). Subagents write documents as
    files in the working copy `.scratchpad/<name>/spec/` (`orchestrator_spec_pull` creates
-   it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit (pushing is not editing). A document stays under 192 KiB: split a larger one. With
+   it); the orchestrating agent pushes with `orchestrator_spec_push` after each edit (pushing is not editing).
+   With mind map tools, record each final brief as a node linked to the task. A document stays under 192 KiB: split a larger one. With
    `orchestrator_plan_*` too, the implementation plan is the spec's plan, not a file:
    `superpowers:writing-plans` writes the header with `orchestrator_plan_set` and the steps
    with `orchestrator_plan_steps_push`,

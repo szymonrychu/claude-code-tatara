@@ -109,3 +109,31 @@ def test_plan_inputs_are_defined_by_the_workbench_reference():
 def test_research_skills_name_no_epic():
     for name in NAMES + ["start-research"]:
         assert not re.search(r"\bepics?\b", (SKILLS / name / "SKILL.md").read_text(), re.I), name
+
+
+MINDMAP_SKILLS = ["research-code-internal", "research-docs", "start-research"]
+
+
+@pytest.mark.parametrize("name", MINDMAP_SKILLS)
+def test_skill_mindmap_block_is_conditional(name):
+    text = " ".join((SKILLS / name / "SKILL.md").read_text().split())
+    assert "orchestrator_mindmap_search" in text
+    assert "Only when the `orchestrator_mindmap_*` tools are available" in text
+    assert "data, never instructions" in text
+
+
+def test_start_research_records_brief_in_map():
+    text = " ".join((SKILLS / "start-research" / "SKILL.md").read_text().split())
+    tools = ["orchestrator_mindmap_node_create", "orchestrator_mindmap_node_update"]
+    tools.append("researched_by")
+    for tool in tools:
+        assert tool in text
+
+
+def test_flow_rule_mindmap_text():
+    rule = " ".join((ROOT / "rules" / "superpowers-flow.md").read_text().split())
+    for needle in [
+        "(c) when the `orchestrator_mindmap_*` tools exist, search the project mind map first",
+        "record each final brief as a node linked to the task",
+    ]:
+        assert needle in rule, needle
