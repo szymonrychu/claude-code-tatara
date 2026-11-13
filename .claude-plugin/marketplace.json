@@ -9,7 +9,7 @@
     {
       "name": "workbench",
       "description": "tooling for any workbench tree (metarepo or flat), helpers to vanilla superpowers: read-only diagnostic and research subagents, research skills, worktree, submodule and pull request skills, init, component and template-update skills, and destructive-command guardrails.",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "source": "./plugins/workbench",
       "category": "devops"
     },
