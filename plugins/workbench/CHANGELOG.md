@@ -1,5 +1,26 @@
 # Changelog
 
+## v5.0.0 - 2026-11-13
+
+### Breaking
+
+- rules: rules and ground rule 1 move to the vanilla superpowers flow (2315a3fd)
+- hooks: verify-recorder and subagent-commit-guard retire (a7fe2e01)
+- workbench: the plan-run agents and worktree-create/-merge are removed (e5a3ac79)
+
+### Features
+
+- workbench: per-improvement scratchpad/logs names and .worktrees/<name>/<repo> for git-worktrees helpers (a728ea23)
+- pill: study PDF skill with pure-pip render, NAS delivery and kubectl cp into a pod (d657b5f1, f6ba191d)
+
+### Fixes
+
+- pill: full-width figures, wrapping long URLs, footer frame that fits (4b579231)
+
+### Other
+
+- rules: taskboard decisions and task lifecycle, secrets model, server specs and plan steps, research flow uses mind maps, spec approval before implementation (#9, #10, #14, #16, #18, #25, #27, 1636981e)
+
 ## v4.0.0 - 2026-10-31
 
 ### Breaking
