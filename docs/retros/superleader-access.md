@@ -1,4 +1,10 @@
-# Retro: superleader-access
+# superleader-access: retro
+
+## Verdict
+
+Slice 3 (S-31, tools T-169..T-184) is implemented, merged and live-smoked on orchestrator 7.20.1, with one gap:
+`project_update` archiving `default` (expected 422) was not tried. The deploy needed another hive because
+`mise run apply` is not runnable from an agent pod.
 
 ## Slice 3 (2026-11-13)
 
@@ -46,4 +52,13 @@ Recommendations:
 
 ### Live smoke
 
-After the apply by tatara-mindmaps (agents-helmfile main b329d58, orchestrator 7.20.1), all 8 slice 3 tools passed a live smoke on a throwaway project, plus the preset_patch superleader_manageable=false case. Not tried: archiving `default` (expected 422; production risk, denied by the classifier) and the 409 open_proposals refusal (needs an open proposal). Cleanup: the smoke sessions had to be force-discarded because a pre-existing "settings" discard hook failed with ConnectError (worth a follow-up); the throwaway project is left archived because there is no project delete route.
+After the apply by tatara-mindmaps (agents-helmfile main b329d58, orchestrator 7.20.1), the 8 slice 3 tools
+were smoked on a throwaway project, plus the preset_patch superleader_manageable=false case. All cases tried
+passed, including spec_suggestion_dismiss and, in a later addendum run, the 409 open_proposals refusal.
+
+Not tried: `project_update` archiving `default` (expected 422); skipped for production risk and denied by the
+classifier. So the 422 guard on `default` is untested live.
+
+Cleanup: the normal session discard got stuck on a failing "settings" discard hook (ConnectError, already
+broken before this work, worth a follow-up). The smoke sessions were force-discarded and their PVCs deleted by
+hand. The throwaway project is left archived because there is no project delete route.
