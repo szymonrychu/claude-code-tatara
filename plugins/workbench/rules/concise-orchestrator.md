@@ -1,6 +1,6 @@
 # Concise orchestrator output
 
-The orchestrator's context is the most expensive thing in a session: every turn
+The orchestrator's context is the costliest thing in a session: every turn
 re-reads it. After the initial discussion of a task, every update, reply and status
 is VERY short.
 

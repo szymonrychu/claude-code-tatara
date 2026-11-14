@@ -2,8 +2,8 @@
 
 The user's standing rules for every agent, harness and task.
 
-1. **No em dash characters** in any code, comment, commit, message or content of
-   any kind. Use a plain hyphen.
+1. **No em dash characters** in any code, comment, commit, message or other
+   content. Use a plain hyphen.
 2. **No backward compatibility** (shims, aliases, legacy fallbacks) unless the
    user explicitly asks for it.
 3. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
@@ -13,7 +13,7 @@ The user's standing rules for every agent, harness and task.
    `.scratchpad/<name>/` in the workbench root (the main checkout, never a
    worktree), `<name>` being the improvement's kebab-case name
    (`workbench.py scratchpad <name>` prints it).
-5. **One log dir per improvement.** Every log of every tool the agents run lands
+5. **One log dir per improvement.** Every agent tool log lands
    in the gitignored `.logs/<name>/` in the workbench root
    (`workbench.py logs <name>` prints it).
 6. **The orchestrator never edits.** It dispatches, verifies with the repo's test and lint
