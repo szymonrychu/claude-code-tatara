@@ -308,6 +308,7 @@ or a sandbox.
 - `.claude/rules/` holds per-language rules (python, go, terraform, helm ...).
 - `docs/superpowers/` holds designs and plans, `docs/research/` research output,
   `docs/handoffs/` context handoffs.
+- `docs/dreaming/` holds the nightly dreaming prompts and apply skill ([docs/dreaming/README.md](docs/dreaming/README.md)).
 - Before working in a component, read its `AGENTS.md`, `MEMORY.md` and
   `ROADMAP.md`.
 
