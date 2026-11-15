@@ -78,7 +78,7 @@ You are the lead. You orchestrate and never do the reading yourself.
 4. Output, per room with at least one item:
    - spec `dreaming-<room-slug>-<YYYY-MM-DD>` (date of the run, Europe/Warsaw), created with
      orchestrator_spec_create and labels dreaming and the room slug;
-   - document request.md in the layout of docs/dreaming/change-request.md (sections Notes,
+   - document request.md in this layout (source: workbench repo, docs/dreaming/change-request.md; items carry an id, an op, a target, before/after text and an evidence citation; sections Notes,
      Skills, Mind map, Prompt updates, Tasks filed, CONFLICTs, Pending carried over,
      Watermark), pushed with orchestrator_spec_push;
    - document retro.md: how the room's prompts and skills are written, what worked, what to
