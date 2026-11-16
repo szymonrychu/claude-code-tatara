@@ -1,8 +1,9 @@
 # request.md layout
 
 Each night the dreaming lead writes one spec per room with changes,
-`dreaming-<room-slug>-<YYYY-MM-DD>`, and its document `request.md` follows this layout. The
-orchestrator session mx-526 applies it with the chat skill "dreaming-apply" (apply-skill.md).
+`dreaming-<room-slug>-<YYYY-MM-DD>`, and its document `request.md` follows this layout. Dreaming applies the
+Notes, Skills and Mind map items itself; the owner-dm session keeps the CONFLICTs and Prompt
+updates with the skill "dreaming-apply" (apply-skill.md).
 
 Rules for every item:
 
@@ -33,6 +34,7 @@ Provided information, Repeatable workflows.
 - New item: "<exact new text>" (add and update only)
 - Evidence: <session slug> event <id> <timestamp> (<tier>); ...
 - Why: <one line>
+- Status: applied | conflict | pending (<reason>)
 
 ## Skills
 
@@ -41,6 +43,7 @@ Provided information, Repeatable workflows.
 - Description: <when to use it, at most 1024 characters>
 - Evidence: <the 3 or more sessions where the workflow ran and worked, with ids>
 - Why: <one line>
+- Status: applied (edited in place at <project>/skills/<name>, saved with backup_save) | pending
 - Body (full text, at most 8000 characters):
 
     <skill body: the steps with their inputs>
@@ -53,6 +56,7 @@ Provided information, Repeatable workflows.
 - Change: <fields and values, or edge from <node> to <node> with its kind>
 - Evidence: <citations>
 - Why: <one line>
+- Status: applied | pending (<reason>)
 
 ## Prompt updates
 
