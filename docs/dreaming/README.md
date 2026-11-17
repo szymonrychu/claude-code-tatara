@@ -13,7 +13,7 @@ decisions and prompt proposals) to the owner-dm session. Dreaming never uses ext
 2. The session (the lead, framed by [preset-system-append.md](preset-system-append.md)) runs a
    mandatory probe (one subagent calls one read tool; on refusal it stops and files nothing),
    reads each room's watermark, checks the usage window, and fans out subagents in parallel per
-   room and topic. Subagents read the retrospective read tools directly; the lead may do small
+   room and topic. Subagents read the read tools directly; the lead may do small
    lookups itself.
 3. It applies what it found in place: room notes with `orchestrator_chat_admin_notes_update`
    (only for rooms whose bound preset project is granted), mind map updates, and skills, rules
