@@ -7,7 +7,7 @@ kebab-case name.
 1. **Research first.** Every development workflow starts with a research step before `superpowers:brainstorming`
    designs: (a) the docs of every tool, library and system the plan uses (`workbench:research-docs`), (b) a sweep of the
    codebase for reuse and the smallest coherent diff (`workbench:research-code-internal`), (c) when the
-   `orchestrator_mindmap_*` tools exist, search the project mind map first, (d) list tools by role.
+   `orchestrator_mindmap_*` tools exist, search the project mind map first, (d) list every tool the plan calls and which role may call it.
 2. **One human gate.** The brainstorming plan (spec) plus its questions is the only gate. The plan covers what, why,
    research findings, design, files and components touched, test approach, risks, and the scope from MVP to complete.
    Every question offers options, one marked "MVP" and one "Recommended" (one may carry both). After the
@@ -16,7 +16,7 @@ kebab-case name.
    the spec tools, the spec is approved. When the `orchestrator_task_*` tools are available, the questions are posted as
    taskboard decisions with `orchestrator_decision_ask` (recommended option marked; MVP in the option text), never as
    chat text. Answers arrive as a chat notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The
-   question text still goes in `docs/plans/<name>/plan.md`, to survive a dead leader (item 7). Answers regenerate the plan summary.
+   question text still goes in `docs/plans/<name>/plan.md`, to survive a dead leader (item 7). When an answer changes the design, regenerate the plan summary.
 3. **Paths.** These override the superpowers locations (also for `using-git-worktrees`):
    - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
    - scratchpad: `<workbench root>/.scratchpad/<name>/`
