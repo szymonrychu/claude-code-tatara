@@ -15,7 +15,7 @@ Copy the text between the two lines below as the schedule prompt.
 ---
 
 Dreaming run {{ schedule_name }} for {{ fired_at[:10] }} (fired {{ fired_at }}). Follow your
-system prompt: run the probe, read the watermarks of rooms owner-dm and mtg-agent, fan out the
+start prompt: run the probe, read the watermarks of rooms owner-dm and mtg-agent, fan out the
 subagents, apply notes, mind map changes and skills, write one spec per room with changes named
 dreaming-<room-slug>-{{ fired_at[:10] }}, file tasks, then send the owner-dm session the one
 hand-over line and call self_close. If nothing changed since the watermarks, send only the line
