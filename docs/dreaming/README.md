@@ -81,7 +81,7 @@ Known limit (F17): `max_replicas` stays 1; there is no member-pod read path.
 | Id | Decision |
 |---|---|
 | #723 | Only rooms `owner-dm` and `mtg-agent`, with the priorities listed in preset-system-append.md. |
-| Q1 B | A preset "dreaming" copied from "facebook chat", plus the `retrospective` flag; the dream frame is its system_append. |
+| Q1 B | A preset "dreaming" copied from "facebook chat", plus the `retrospective` flag; the dream instructions are its spec.start_prompt. |
 | 765 | Saves at discard and through `orchestrator_backup_save` only. |
 | 766 | Later save wins, the earlier is kept as a version, no merge. |
 | 767 | Explicit backup entries only, no built-in entries. |
@@ -98,8 +98,8 @@ Known limit (F17): `max_replicas` stays 1; there is no member-pod read path.
 ## Deploy
 
 1. The preset "dreaming" is a copy of "facebook chat" with: `retrospective: true`,
-   `session_messaging` as needed for the admin read tools, `wrapper.system_append` from
-   preset-system-append.md, `autoclose_after_seconds: 10800`, `reuse_running_agent` off, model
+   `session_messaging` as needed for the admin read tools, `spec.start_prompt` from
+   preset-system-append.md (`wrapper.system_append` keeps only a secrets line), `autoclose_after_seconds: 10800`, `reuse_running_agent` off, model
    and effort at the strongest tier, and `backup` entries (workspace, mode both) for the
    `skills`, `rules` and `scripts` paths of each room project.
 2. The schedule `dreaming-nightly` is created as in schedule-prompt.md, checked with
@@ -110,7 +110,7 @@ Known limit (F17): `max_replicas` stays 1; there is no member-pod read path.
 ## Change it
 
 - Edit the file here first, land it through a PR, then copy the new text to its target: the
-  preset system_append through a preset proposal (the preset is privileged), the schedule prompt
+  preset start_prompt through a preset proposal (the preset is privileged), the schedule prompt
   with `orchestrator_schedule_update`, the apply skill into the owner-dm project skills path
   followed by `orchestrator_backup_save`.
 - Rooms and their priorities live in preset-system-append.md and apply-skill.md; change both.
