@@ -119,6 +119,27 @@ Each harness asks once before it runs project hooks or reads project config.
 - Gemini CLI: approve each hook fingerprint on first run; a changed hook asks again.
 - Antigravity: open the workspace as trusted so `.agents/hooks.json` runs.
 
+## Harness choice (S-74, 2026-11-21)
+
+Verdict: superpowers v7 stays the flow spine of the Claude Code harness, trimmed onto native
+mechanics. Spec: S-74 (decisions 817-821, task T-581).
+
+- 817: keep superpowers v7 as the spine rather than replacing it.
+- 818: task classes scale the flow to the size of the work.
+- 819: native `/code-review` plus the spec-reviewer replace the bespoke review machinery.
+- 820: verification runs through an opt-in Stop hook.
+- 821: `workbench-lite` is the portable user-scope plugin for repos that are not workbenches.
+
+Pin: superpowers comes from the official marketplace, which pins it to sha
+22f0b463e7a5e579904dd6211a520321035526f7 (v7.0.2). A marketplace `ref` pin is refused for the
+reserved name `claude-plugins-official` (https://code.claude.com/docs/en/plugins/marketplace-reference.md,
+field `ref`) and a local fork is retired, so `mise run doctor` warns when the installed version
+drifts from 7.0.2. To accept a new version, read the upstream release notes, then bump
+`SUPERPOWERS_PINNED_VERSION` in `scripts/doctor.py`.
+
+Later tasks add task classes, review and verification mechanics to
+`plugins/workbench/rules/superpowers-flow.md`.
+
 ## Unverified
 
 These behaviours are taken from documentation only. Treat each as unverified, and check it in

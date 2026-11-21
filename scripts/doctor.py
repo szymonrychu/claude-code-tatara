@@ -22,6 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "plugins" / "workbench" / "scripts" / "lib"))
 import workbench as wb  # noqa: E402
 
+# Upstream's claude-plugins-official marketplace pins superpowers to obra/superpowers sha
+# 22f0b463e7a5e579904dd6211a520321035526f7 (tag v7.0.2). A marketplace ref pin is refused for
+# the reserved name and a fork is retired, so drift is only warned about here.
+SUPERPOWERS_PINNED_VERSION = "7.0.2"
+
 
 def is_initialised(root: Path) -> bool:
     """Shared check from init_engine.project_files, loaded from the sibling directory."""
@@ -92,6 +97,38 @@ def write_overrides(root: Path, keys: list[str]) -> None:
         print(f'wrote "{k}": false to {local}')
 
 
+def _version_key(name: str) -> list[int]:
+    return [int(p) if p.isdigit() else 0 for p in name.split(".")]
+
+
+def installed_superpowers_versions() -> list[str]:
+    """Installed superpowers versions, oldest first, from the active Claude config dir."""
+    bases = []
+    if os.environ.get("CLAUDE_CONFIG_DIR"):
+        bases.append(Path(os.environ["CLAUDE_CONFIG_DIR"]))
+    bases.append(Path.home() / wb.HARNESS_DIRS["claude"])
+    for base in bases:
+        cache = base / "plugins" / "cache" / "claude-plugins-official" / "superpowers"
+        names = [d.name for d in cache.glob("*") if d.is_dir()]
+        if names:
+            return sorted(names, key=_version_key)
+    return []
+
+
+def superpowers_drift_line() -> str:
+    versions = installed_superpowers_versions()
+    if not versions:
+        return "superpowers: not installed (pinned " + SUPERPOWERS_PINNED_VERSION + ")"
+    newest = versions[-1]
+    if newest == SUPERPOWERS_PINNED_VERSION:
+        return f"superpowers: ok {newest}"
+    return (
+        f"superpowers: WARN installed {newest} differs from pinned "
+        f"{SUPERPOWERS_PINNED_VERSION}; read upstream release notes, then bump "
+        "SUPERPOWERS_PINNED_VERSION in scripts/doctor.py"
+    )
+
+
 def run(root: Path, user_file: Path) -> None:
     agents = root / "AGENTS.md"
     if not agents.is_file():
@@ -116,6 +153,8 @@ def run(root: Path, user_file: Path) -> None:
     on = sorted(k for k, v in enabled.items() if v is True)
     print("plugins: " + (", ".join(on) or "(none)"))
     print("packs: " + (", ".join(k for k in on if k.startswith("workbench-")) or "(none)"))
+
+    print(superpowers_drift_line())
 
     write_overrides(root, collisions(user_file, mname))
 

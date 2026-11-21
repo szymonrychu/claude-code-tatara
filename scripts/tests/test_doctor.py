@@ -1,6 +1,7 @@
 """Pins scripts/doctor.py: state, plugins, collision override, broken-tree exits."""
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -149,3 +150,41 @@ def test_local_disable_is_gitignored(tmp_path):
     finally:
         if not existed:
             local.unlink(missing_ok=True)
+
+
+def _installed(tmp_path, *versions):
+    cfg = tmp_path / "cfgdir"
+    base = cfg / "plugins" / "cache" / "claude-plugins-official" / "superpowers"
+    base.mkdir(parents=True, exist_ok=True)
+    for v in versions:
+        (base / v).mkdir()
+    return cfg
+
+
+def _run_drift(tmp_path, cfg):
+    root = _tree(tmp_path)
+    env = {**os.environ, "CLAUDE_CONFIG_DIR": str(cfg)}
+    cmd = [sys.executable, str(DOCTOR), "--root", str(root)]
+    cmd += ["--user-settings", str(tmp_path / "absent.json")]
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=root, env=env)
+
+
+def test_superpowers_pinned_version_is_ok(tmp_path):
+    r = _run_drift(tmp_path, _installed(tmp_path, "7.0.2"))
+    assert r.returncode == 0, r.stderr
+    assert "superpowers: ok 7.0.2" in r.stdout
+
+
+def test_superpowers_newer_version_warns(tmp_path):
+    r = _run_drift(tmp_path, _installed(tmp_path, "7.0.2", "7.1.0"))
+    assert r.returncode == 0, r.stderr
+    warn = [ln for ln in r.stdout.splitlines() if ln.startswith("superpowers: WARN")]
+    assert warn and "7.1.0" in warn[0] and "7.0.2" in warn[0]
+
+
+def test_superpowers_missing_is_info(tmp_path):
+    cfg = tmp_path / "emptycfg"
+    cfg.mkdir()
+    r = _run_drift(tmp_path, cfg)
+    assert r.returncode == 0, r.stderr
+    assert "superpowers: not installed" in r.stdout
