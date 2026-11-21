@@ -124,11 +124,14 @@ Each harness asks once before it runs project hooks or reads project config.
 Verdict: superpowers v7 stays the flow spine of the Claude Code harness, trimmed onto native
 mechanics. Spec: S-74 (decisions 817-821, task T-581).
 
-- 817: keep superpowers v7 as the spine rather than replacing it.
-- 818: task classes scale the flow to the size of the work.
-- 819: native `/code-review` plus the spec-reviewer replace the bespoke review machinery.
-- 820: verification runs through an opt-in Stop hook.
-- 821: `workbench-lite` is the portable user-scope plugin for repos that are not workbenches.
+- 817: Keep v7 as spine, trimmed onto native mechanics.
+- 818: Scale by task class: spike skips, bounded 1 impl + 1 review, architectural full.
+- 819: Keep, amended against test inflation with a reviewer check on test value (the TDD skill).
+- 820: Native /code-review plus workbench spec reviewer; keep receiving-code-review.
+- 821: Native plus portable workbench-lite user plugin plus superpowers v7 on demand.
+
+The opt-in Stop verification hook comes from the spec's Recommended scope item
+cc-harness-verify-hook (replacing verification-before-completion mechanics), not from a decision.
 
 Pin: superpowers comes from the official marketplace, which pins it to sha
 22f0b463e7a5e579904dd6211a520321035526f7 (v7.0.2). A marketplace `ref` pin is refused for the

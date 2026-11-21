@@ -103,16 +103,10 @@ def _version_key(name: str) -> list[int]:
 
 def installed_superpowers_versions() -> list[str]:
     """Installed superpowers versions, oldest first, from the active Claude config dir."""
-    bases = []
-    if os.environ.get("CLAUDE_CONFIG_DIR"):
-        bases.append(Path(os.environ["CLAUDE_CONFIG_DIR"]))
-    bases.append(Path.home() / wb.HARNESS_DIRS["claude"])
-    for base in bases:
-        cache = base / "plugins" / "cache" / "claude-plugins-official" / "superpowers"
-        names = [d.name for d in cache.glob("*") if d.is_dir()]
-        if names:
-            return sorted(names, key=_version_key)
-    return []
+    configured = os.environ.get("CLAUDE_CONFIG_DIR")
+    base = Path(configured) if configured else Path.home() / wb.HARNESS_DIRS["claude"]
+    cache = base / "plugins" / "cache" / "claude-plugins-official" / "superpowers"
+    return sorted((d.name for d in cache.glob("*") if d.is_dir()), key=_version_key)
 
 
 def superpowers_drift_line() -> str:

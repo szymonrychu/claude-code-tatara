@@ -163,7 +163,7 @@ def _installed(tmp_path, *versions):
 
 def _run_drift(tmp_path, cfg):
     root = _tree(tmp_path)
-    env = {**os.environ, "CLAUDE_CONFIG_DIR": str(cfg)}
+    env = {**os.environ, "CLAUDE_CONFIG_DIR": str(cfg), "HOME": str(tmp_path)}
     cmd = [sys.executable, str(DOCTOR), "--root", str(root)]
     cmd += ["--user-settings", str(tmp_path / "absent.json")]
     return subprocess.run(cmd, capture_output=True, text=True, cwd=root, env=env)
