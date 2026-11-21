@@ -115,6 +115,10 @@ Optional packs, all requiring the core:
 | `workbench-observability` | Grafana, Prometheus, Loki and Kubernetes health diagnostics |
 | `workbench-secrets` | dotenv and SOPS secret handling guardrails |
 
+`workbench-lite` is separate: a portable user-scope subset (research and diagnostic agents,
+`start-research`, `handoff`) for repos that are not workbenches; it does not require the core and
+must not be enabled with it. See `plugins/workbench-lite/README.md`.
+
 Enable a pack by flipping it to `true` in `.claude/settings.json`, then run
 `/reload-plugins`:
 

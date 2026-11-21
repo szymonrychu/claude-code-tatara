@@ -52,3 +52,5 @@ enabled in `.claude/settings.json`), never modified here. The root marketplace
   submodule and pull request skills, init and template-update, hooks.
 - `plugins/workbench-infra`, `plugins/workbench-observability`, `plugins/workbench-secrets`:
   optional packs.
+- `plugins/workbench-lite`: portable user-scope subset generated from `plugins/workbench` by
+  `scripts/sync_lite.py`, for repos that are not workbenches.

@@ -130,6 +130,15 @@ mechanics. Spec: S-74 (decisions 817-821, task T-581).
 - 820: Native /code-review plus workbench spec reviewer; keep receiving-code-review.
 - 821: Native plus portable workbench-lite user plugin plus superpowers v7 on demand.
 
+workbench-lite (decision 821, Claude Code): `plugins/workbench-lite` is a portable user-scope
+plugin for repos that are not workbenches: eleven read-only agents plus the `start-research` and
+`handoff` skills, no hooks. It is generated from `plugins/workbench` by `scripts/sync_lite.py`
+(drift fails `mise run lint:lite`); where a source leans on the workbench root, `overrides/`
+holds the adapted file. Never enable it together with `workbench` in one project. In a flat repo
+use the harness's native worktree isolation for single-repo subagent work; in this metarepo the
+built-in isolation stays banned. superpowers v7 is enabled per project on demand. See
+`plugins/workbench-lite/README.md`.
+
 The opt-in Stop verification hook comes from the spec's Recommended scope item
 cc-harness-verify-hook (replacing verification-before-completion mechanics), not from a decision.
 

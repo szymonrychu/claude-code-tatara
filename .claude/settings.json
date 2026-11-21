@@ -18,6 +18,7 @@
     "workbench-infra@claude-code-tatara-workbench": true,
     "workbench-observability@claude-code-tatara-workbench": true,
     "workbench-secrets@claude-code-tatara-workbench": true,
+    "workbench-lite@claude-code-tatara-workbench": false,
     "superpowers@claude-plugins-official": true,
     "workbench@workbench-template": false
   },

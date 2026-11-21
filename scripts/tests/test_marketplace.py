@@ -9,8 +9,9 @@ PLUGINS = {
     "workbench-infra": "./plugins/workbench-infra",
     "workbench-observability": "./plugins/workbench-observability",
     "workbench-secrets": "./plugins/workbench-secrets",
+    "workbench-lite": "./plugins/workbench-lite",
 }
-PACKS = [n for n in PLUGINS if n.startswith("workbench-")]
+PACKS = [n for n in PLUGINS if n.startswith("workbench-") and n != "workbench-lite"]
 
 
 def _json(rel: str) -> dict:
@@ -68,6 +69,7 @@ def test_project_settings_exact():
             "workbench-infra@workbench-template": False,
             "workbench-observability@workbench-template": False,
             "workbench-secrets@workbench-template": False,
+            "workbench-lite@workbench-template": False,
         },
         "permissions": {"allow": []},
         "hooks": {

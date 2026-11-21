@@ -33,6 +33,13 @@
       "version": "1.0.0",
       "source": "./plugins/workbench-secrets",
       "category": "devops"
+    },
+    {
+      "name": "workbench-lite",
+      "description": "Portable user-scope subset of the workbench plugin for any git repo: read-only research and diagnostic subagents, the start-research and handoff skills. No hooks, no workbench root needed.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench-lite",
+      "category": "devops"
     }
   ]
 }
