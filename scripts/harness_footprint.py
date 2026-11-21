@@ -17,6 +17,11 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.path.insert(
+    0, str(Path(__file__).resolve().parents[1] / "plugins" / "workbench" / "scripts" / "lib")
+)
+from workbench import HARNESS_DIRS  # noqa: E402
+
 KINDS = ("instructions", "rule", "skill-description", "agent-description", "session-start")
 
 
@@ -122,7 +127,7 @@ def default_superpowers_dir() -> Path | None:
     bases = []
     if os.environ.get("CLAUDE_CONFIG_DIR"):
         bases.append(Path(os.environ["CLAUDE_CONFIG_DIR"]))
-    bases.append(Path.home() / ".claude")
+    bases.append(Path.home() / HARNESS_DIRS["claude"])
     for base in bases:
         cache = base / "plugins" / "cache" / "claude-plugins-official" / "superpowers"
         versions = sorted(

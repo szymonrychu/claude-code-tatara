@@ -1,12 +1,10 @@
 # Harness context baseline (2026-11-21)
 
-This measures the always-loaded context of the Claude Code harness in this workbench: root CLAUDE.md and AGENTS.md, rules without `paths:` frontmatter, skill and agent description frontmatter, and the superpowers SessionStart bootstrap (full text of using-superpowers/SKILL.md). Tokens are ceil(chars / 4), an approximation. It is the S-74 pre-change baseline, to be rerun by the future `cc-harness-usage-recheck`.
+This measures the always-loaded context of the Claude Code harness in this workbench: root CLAUDE.md and AGENTS.md, rules without `paths:` frontmatter, skill and agent description frontmatter, and the superpowers SessionStart bootstrap (full text of using-superpowers/SKILL.md). Tokens are ceil(chars / 4), an approximation. The using-superpowers skill appears twice by design (its description, and the full text injected by the session-start bootstrap). The `/skill-doctor` context numbers include name and overhead, so they differ from the description-only counts here. It is the S-74 pre-change baseline, to be rerun by the future `cc-harness-usage-recheck`.
 
 Command:
 
     python3 scripts/harness_footprint.py --date 2026-11-21
-
-Measured 2026-11-21. Tokens are ceil(chars / 4), an approximation.
 
 | Source | Kind | Chars | Tokens |
 |---|---|---|---|
