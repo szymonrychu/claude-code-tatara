@@ -4,7 +4,7 @@ The development flow is the vanilla `superpowers` plugin; these amendments overr
 here (user instructions take precedence over its skills). `<name>` is the improvement's
 kebab-case name.
 
-1. **Research first.** Every development workflow starts with a research step before `superpowers:brainstorming`
+1. **Research first.** (Scaled by task class, item 10.) Every development workflow starts with a research step before `superpowers:brainstorming`
    designs: (a) the docs of every tool, library and system the plan uses (`workbench:research-docs`), (b) a sweep of the
    codebase for reuse and the smallest coherent diff (`workbench:research-code-internal`), (c) when the
    `orchestrator_mindmap_*` tools exist, search the project mind map first, (d) list every tool the plan calls and which role may call it.
@@ -17,7 +17,7 @@ kebab-case name.
    taskboard decisions with `orchestrator_decision_ask` (recommended option marked; MVP in the option text), never as
    chat text. Answers arrive as a chat notice `Task T-<n> was updated: <link>`; then call `orchestrator_task_get`. The
    question text still goes in `docs/plans/<name>/plan.md`, to survive a dead leader (item 7). When an answer changes the design, regenerate the plan summary.
-3. **Paths.** These override the superpowers locations (also for `using-git-worktrees`):
+3. **Paths.** (Spikes use none of them, item 10.) These override the superpowers locations (also for `using-git-worktrees`):
    - worktrees: `<workbench root>/.worktrees/<name>/<repo>` for each repo involved
    - scratchpad: `<workbench root>/.scratchpad/<name>/`
    - logs of every tool the agents run: `<workbench root>/.logs/<name>/`
@@ -56,3 +56,22 @@ kebab-case name.
    it claims the gate task, runs `superpowers:writing-plans` from the approved spec (unless the plan exists),
    then `superpowers:subagent-driven-development`, review, release and deploy, retro and archive.
 9. **Approvals.** With `orchestrator_approval_*` tools: `plugins/workbench/rules/approvals.md`.
+10. **Task classes.** The orchestrator states the class in the task (label `class:spike`, `class:bounded` or
+    `class:architectural`) when it creates or claims it; when unsure, the higher class. Items 1 and 3 apply in full only
+    to `architectural`; the others scale down:
+    - `spike`: throwaway or one-file exploration, no production merge. No research lenses, no spec, no
+      subagent-driven development, inline work; the orchestrator still never edits in code/ repos.
+    - `bounded`: a change inside one component with clear scope. Research is limited to
+      `workbench:research-code-internal` (plus `workbench:research-docs` only when a library is used in a new way);
+      subagent-driven development with exactly one implementer and one reviewer per task.
+    - `architectural`: cross-component, a new subsystem or hard to reverse. Full research, full gate, full
+      subagent-driven development with per-task and final review.
+11. **Native mechanics over superpowers mechanics.**
+    - `superpowers:dispatching-parallel-agents`: use native parallel subagents (several Agent calls in one message, fork).
+    - `superpowers:using-git-worktrees`: use native `isolation: worktree` for a single-repo subagent, not for
+      multi-repo work, which uses `workbench:git-worktrees-*` under `.worktrees/<name>/<repo>` (item 3 paths still apply).
+    - `superpowers:writing-plans`: lean plans; steps carry decisions, not code bodies.
+    - `superpowers:finishing-a-development-branch`: before merging, `git status --porcelain` must be empty in every repo
+      touched; uncommitted work is committed or cleared per the boy-scout rule.
+    - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to an opt-in Stop hook
+      described in docs/harnesses.md.
