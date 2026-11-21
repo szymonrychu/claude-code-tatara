@@ -271,8 +271,8 @@ kebab-case name.
       the submodule.
     - `superpowers:writing-plans`: lean plans; steps carry decisions, not code.
     - `superpowers:finishing-a-development-branch`: before merging, `git status --porcelain` is empty in every repo; uncommitted work is committed or cleared (boy-scout rule).
-    - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to an opt-in Stop hook
-      (opt-in Stop hook, docs/harnesses.md).
+    - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to the opt-in Stop hook
+      `verify-on-stop.py` (`WORKBENCH_VERIFY_ON_STOP=1`).
 12. **Tests earn their place.** `superpowers:test-driven-development` stays. Test only observable behaviour named in
     the plan step or spec (inputs to outputs, side effects at a boundary), never helpers, constants or framework
     behaviour. One test per behaviour; parametrise variants. No test whose
