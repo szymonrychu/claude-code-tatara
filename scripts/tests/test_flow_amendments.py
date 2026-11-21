@@ -39,3 +39,22 @@ def test_tdd_amendment():
     assert "12. **Tests earn their place.**" in TEXT
     for phrase in ("observable behaviour", "parametrise", "test count"):
         assert phrase in TEXT
+
+
+def test_review_item():
+    assert "13. **Review.**" in TEXT
+    for phrase in ("/code-review", "workbench:spec-reviewer", "superpowers:receiving-code-review"):
+        assert phrase in TEXT
+    item4 = TEXT.split("4. **Final reviewer.**")[1].split("5. **")[0]
+    assert "workbench:spec-reviewer" in item4
+
+
+def test_spec_reviewer_agent_is_read_only():
+    text = (RULE.parents[1] / "agents/spec-reviewer.md").read_text()
+    front = text.split("---")[1]
+    assert "name: spec-reviewer" in front
+    assert "model: sonnet" in front
+    tools = next(ln for ln in front.splitlines() if ln.startswith("tools:"))
+    for banned in ("Edit", "Write"):
+        assert banned not in tools
+    assert "Verdict: PASS|FAIL" in text

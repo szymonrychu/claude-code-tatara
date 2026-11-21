@@ -224,8 +224,8 @@ kebab-case name.
    - logs of every tool the agents run: `<workbench root>/.logs/<name>/`
    - plan (spec): `docs/plans/<name>/plan.md`; implementation plan: `docs/plans/<name>/implementation.md` (instead of
      `docs/superpowers/*`); with the spec tools, item 7 places the plan, research and retro
-4. **Final reviewer.** Besides correctness and completeness against the agreed scope (under- and over-delivery), the
-   final reviewer writes `docs/plans/<name>/retro.md`: what came up in implementation and what discovery and planning
+4. **Final reviewer.** The final reviewer is `workbench:spec-reviewer` (item 13): correctness and completeness
+   against the agreed scope (under- and over-delivery). It writes `docs/plans/<name>/retro.md`: what came up in implementation and what discovery and planning
    overlooked. The orchestrator relays its recommendations in closing. With the spec tools, the retro is a spec document
    (item 7).
 5. **The orchestrator never edits.** It never updates code (source, tests, skills, agents, hooks, rules, docs); where a
@@ -278,4 +278,10 @@ kebab-case name.
     behaviour. One test per behaviour; parametrise variants. No test whose
     failure would not signal a real defect. The per-task reviewer (item 13) rejects such tests; every task
     report states the net test count delta. Deleting them does not breach housekeeping rule 3.
+13. **Review.** Per task, run native `/code-review` (the `code-review` skill at effort `medium` for bounded, `high`
+    for architectural; never `max` or `ultra` unless the user asks) for correctness, then dispatch
+    `workbench:spec-reviewer` for scope and test value; spikes skip review. Findings go through
+    `superpowers:receiving-code-review` (judge each, fix the real ones). This item replaces
+    `superpowers:requesting-code-review`. Final branch review: `workbench:spec-reviewer` over the whole branch plus
+    native `/code-review` at `high`.
 <!-- workbench:rules:end -->

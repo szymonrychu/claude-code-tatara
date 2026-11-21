@@ -95,6 +95,7 @@ research ones on opus (they exist for judgement).
 | `research-prior-art-scout` | sonnet | similar open-source projects, shapes and dead ends |
 | `research-paper-scout` | sonnet | literature for the algorithmic core, cited by DOI or arXiv id |
 | `research-reviewer` | sonnet | adversarial check of research briefs |
+| `spec-reviewer` | sonnet | reviews a diff against its plan step or spec for scope and test value; verdict PASS or FAIL |
 
 `scm-shepherd` decides per repo from `remote get-url`, so one agent serves GitHub and GitLab trees.
 
