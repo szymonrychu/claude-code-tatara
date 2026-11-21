@@ -34,3 +34,9 @@ def test_items_1_to_9_numbering_kept():
 def test_native_mechanics_item():
     for phrase in ("isolation: worktree", "git status --porcelain", "git-worktrees-"):
         assert phrase in TEXT
+
+
+def test_tdd_amendment():
+    assert "12. **Tests earn their place.**" in TEXT
+    for phrase in ("observable behaviour", "parametrise", "test count"):
+        assert phrase in TEXT

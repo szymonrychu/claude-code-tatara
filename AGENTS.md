@@ -276,4 +276,10 @@ kebab-case name.
       touched; uncommitted work is committed or cleared per the boy-scout rule.
     - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to an opt-in Stop hook
       described in docs/harnesses.md.
+12. **Tests earn their place.** `superpowers:test-driven-development` stays. A test is written only for
+    observable behaviour named in the plan step or spec (inputs to outputs, side effects at a boundary), never for private helpers,
+    constants, framework behaviour or restating the implementation. One test per behaviour; parametrise variants
+    instead of copying. No test whose failure would not point to a real defect. The per-task reviewer (item 13)
+    rejects tests that fail this check, and every task report states the net test count delta. Deleting such tests is
+    allowed and is not a breach of housekeeping rule 3, which protects tests that guard behaviour.
 <!-- workbench:rules:end -->
