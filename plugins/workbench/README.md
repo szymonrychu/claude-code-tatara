@@ -197,6 +197,7 @@ Both SCM families ship deliberately. They are parallel implementations, not drif
 | `protect_files.py` | PreToolUse/Edit,Write | blocks edits to secrets, state files, `.git`, encrypted-secret files |
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file with the formatter for its language when one is installed |
 | `agent-usage-recorder.py` | SubagentStart and SubagentStop | records each subagent's time, model and tokens to `.logs/agents/<agentId>.json` in the main checkout; Claude-only, never blocks |
+| `verify-on-stop.py` | Stop | opt-in (`WORKBENCH_VERIFY_ON_STOP=1`): runs `mise run test` in dirty repos and worktrees and blocks the stop on failure; Claude-only, fails open |
 
 `guard-bash.py` is an advisory guardrail against agent mistakes, not a security sandbox.
 Enterprises that need enforcement should use managed permissions (deny rules) or a
