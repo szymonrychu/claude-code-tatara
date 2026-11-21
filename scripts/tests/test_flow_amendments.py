@@ -49,12 +49,13 @@ def test_review_item():
     assert "workbench:spec-reviewer" in item4
 
 
-def test_spec_reviewer_agent_is_read_only():
+def test_spec_reviewer_agent_writes_only_retro():
     text = (RULE.parents[1] / "agents/spec-reviewer.md").read_text()
     front = text.split("---")[1]
     assert "name: spec-reviewer" in front
     assert "model: sonnet" in front
     tools = next(ln for ln in front.splitlines() if ln.startswith("tools:"))
-    for banned in ("Edit", "Write"):
-        assert banned not in tools
+    assert "Edit" not in tools
+    assert "Write" in tools
+    assert "exactly one file, the retro path" in text
     assert "Verdict: PASS|FAIL" in text

@@ -225,8 +225,8 @@ kebab-case name.
    - plan (spec): `docs/plans/<name>/plan.md`; implementation plan: `docs/plans/<name>/implementation.md` (instead of
      `docs/superpowers/*`); with the spec tools, item 7 places the plan, research and retro
 4. **Final reviewer.** The final reviewer is `workbench:spec-reviewer` (item 13): correctness and completeness
-   against the agreed scope (under- and over-delivery). It writes `docs/plans/<name>/retro.md`: what came up in implementation and what discovery and planning
-   overlooked. The orchestrator relays its recommendations in closing. With the spec tools, the retro is a spec document
+   against the agreed scope (under- and over-delivery). It writes only the retro (`docs/plans/<name>/retro.md`): what came up in
+   implementation and what discovery and planning overlooked. The orchestrator relays its recommendations in closing. With the spec tools, the retro is a spec document
    (item 7).
 5. **The orchestrator never edits.** It never updates code (source, tests, skills, agents, hooks, rules, docs); where a
    skill would edit inline, it dispatches a subagent, and answers for them. Duties: dispatching, reading results,
@@ -272,7 +272,7 @@ kebab-case name.
     - `superpowers:writing-plans`: lean plans; steps carry decisions, not code.
     - `superpowers:finishing-a-development-branch`: before merging, `git status --porcelain` is empty in every repo; uncommitted work is committed or cleared (boy-scout rule).
     - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to an opt-in Stop hook
-      (item 13, docs/harnesses.md).
+      (opt-in Stop hook, docs/harnesses.md).
 12. **Tests earn their place.** `superpowers:test-driven-development` stays. Test only observable behaviour named in
     the plan step or spec (inputs to outputs, side effects at a boundary), never helpers, constants or framework
     behaviour. One test per behaviour; parametrise variants. No test whose
