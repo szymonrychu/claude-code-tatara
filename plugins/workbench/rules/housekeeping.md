@@ -8,7 +8,7 @@ The user's standing rules for every agent, harness and task.
    user explicitly asks for it.
 3. **Tests are not negotiable.** Never edit, delete or xfail a test to make it
    pass, unless the test itself is no longer accurate; then say which test and
-   why. Tests guard against regressions.
+   why. Tests guard against regressions (tests guarding no behaviour may go: flow item 12).
 4. **One scratchpad per improvement.** Every scratchpad edit lands under
    `.scratchpad/<name>/` in the workbench root (the main checkout, never a
    worktree), `<name>` being the improvement's kebab-case name

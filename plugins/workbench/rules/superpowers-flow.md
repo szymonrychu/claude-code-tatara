@@ -56,28 +56,24 @@ kebab-case name.
    it claims the gate task, runs `superpowers:writing-plans` from the approved spec (unless the plan exists),
    then `superpowers:subagent-driven-development`, review, release and deploy, retro and archive.
 9. **Approvals.** With `orchestrator_approval_*` tools: `plugins/workbench/rules/approvals.md`.
-10. **Task classes.** The orchestrator states the class in the task (label `class:spike`, `class:bounded` or
-    `class:architectural`) when it creates or claims it; when unsure, the higher class. Items 1 and 3 apply in full only
-    to `architectural`; the others scale down:
-    - `spike`: throwaway or one-file exploration, no production merge. No research lenses, no spec, no
-      subagent-driven development, inline work; the orchestrator still never edits in code/ repos.
-    - `bounded`: a change inside one component with clear scope. Research is limited to
-      `workbench:research-code-internal` (plus `workbench:research-docs` only when a library is used in a new way);
-      subagent-driven development with exactly one implementer and one reviewer per task.
-    - `architectural`: cross-component, a new subsystem or hard to reverse. Full research, full gate, full
-      subagent-driven development with per-task and final review.
+10. **Task classes.** Label the task `class:spike`, `class:bounded` or `class:architectural` when creating or
+    claiming it; when unsure, the higher class. Items 1 and 3 apply in full only to `architectural`:
+    - `spike`: throwaway or one-file exploration, no production merge. No research, spec or subagent-driven
+      development; inline work (the orchestrator never edits in code/).
+    - `bounded`: a change inside one component. Research is only `workbench:research-code-internal` (plus
+      `workbench:research-docs` for a library used in a new way); one implementer and one reviewer per task.
+    - `architectural`: cross-component, a new subsystem or hard to reverse. Everything in full.
 11. **Native mechanics over superpowers mechanics.**
-    - `superpowers:dispatching-parallel-agents`: use native parallel subagents (several Agent calls in one message, fork).
-    - `superpowers:using-git-worktrees`: use native `isolation: worktree` for a single-repo subagent, not for
-      multi-repo work, which uses `workbench:git-worktrees-*` under `.worktrees/<name>/<repo>` (item 3 paths still apply).
-    - `superpowers:writing-plans`: lean plans; steps carry decisions, not code bodies.
-    - `superpowers:finishing-a-development-branch`: before merging, `git status --porcelain` must be empty in every repo
-      touched; uncommitted work is committed or cleared per the boy-scout rule.
+    - `superpowers:dispatching-parallel-agents`: use native parallel subagents (several Agent calls in one message).
+    - `superpowers:using-git-worktrees`: served here by `workbench:git-worktrees-*` under `.worktrees/<name>/<repo>`
+      (item 3); the harness built-in worktree isolation is not used: in a metarepo it isolates the superrepo, not
+      the submodule.
+    - `superpowers:writing-plans`: lean plans; steps carry decisions, not code.
+    - `superpowers:finishing-a-development-branch`: before merging, `git status --porcelain` is empty in every repo; uncommitted work is committed or cleared (boy-scout rule).
     - `superpowers:verification-before-completion`: keep the skill text; its mechanics move to an opt-in Stop hook
-      described in docs/harnesses.md.
-12. **Tests earn their place.** `superpowers:test-driven-development` stays. A test is written only for
-    observable behaviour named in the plan step or spec (inputs to outputs, side effects at a boundary), never for private helpers,
-    constants, framework behaviour or restating the implementation. One test per behaviour; parametrise variants
-    instead of copying. No test whose failure would not point to a real defect. The per-task reviewer (item 13)
-    rejects tests that fail this check, and every task report states the net test count delta. Deleting such tests is
-    allowed and is not a breach of housekeeping rule 3, which protects tests that guard behaviour.
+      (item 13, docs/harnesses.md).
+12. **Tests earn their place.** `superpowers:test-driven-development` stays. Test only observable behaviour named in
+    the plan step or spec (inputs to outputs, side effects at a boundary), never helpers, constants or framework
+    behaviour. One test per behaviour; parametrise variants. No test whose
+    failure would not signal a real defect. The per-task reviewer (item 13) rejects such tests; every task
+    report states the net test count delta. Deleting them does not breach housekeeping rule 3.

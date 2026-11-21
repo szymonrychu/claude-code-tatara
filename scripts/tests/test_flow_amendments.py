@@ -8,7 +8,6 @@ TEXT = RULE.read_text()
 
 def test_task_classes_defined():
     for word in ("spike", "bounded", "architectural"):
-        assert word in TEXT
         assert f"class:{word}" in TEXT
 
 
@@ -32,7 +31,7 @@ def test_items_1_to_9_numbering_kept():
 
 
 def test_native_mechanics_item():
-    for phrase in ("isolation: worktree", "git status --porcelain", "git-worktrees-"):
+    for phrase in ("git status --porcelain", "git-worktrees-"):
         assert phrase in TEXT
 
 
