@@ -68,8 +68,9 @@ Origins are on GitHub: changes land through pull requests (PRs), via `gh`.
    (`superpowers:using-superpowers`); workbench skills and agents are helpers to it.
    Non-trivial work starts with `superpowers:brainstorming`, `superpowers:writing-plans`
    writes the plan, and `superpowers:subagent-driven-development` or
-   `superpowers:executing-plans` runs it. Reviews go through
-   `superpowers:requesting-code-review` and `superpowers:receiving-code-review`, failures
+   `superpowers:executing-plans` runs it. Reviews run native
+   `/code-review` plus `workbench:spec-reviewer` (item 13), findings through
+   `superpowers:receiving-code-review`, failures
    through `superpowers:systematic-debugging`, and the branch lands through
    `superpowers:finishing-a-development-branch`. In harnesses other than Claude Code, invoke
    the skills by their bare names. The workbench amendments (research step first, one human
@@ -224,10 +225,8 @@ kebab-case name.
    - logs of every tool the agents run: `<workbench root>/.logs/<name>/`
    - plan (spec): `docs/plans/<name>/plan.md`; implementation plan: `docs/plans/<name>/implementation.md` (instead of
      `docs/superpowers/*`); with the spec tools, item 7 places the plan, research and retro
-4. **Final reviewer.** The final reviewer is `workbench:spec-reviewer` (item 13): correctness and completeness
-   against the agreed scope (under- and over-delivery). It writes only the retro (`docs/plans/<name>/retro.md`): what came up in
-   implementation and what discovery and planning overlooked. The orchestrator relays its recommendations in closing. With the spec tools, the retro is a spec document
-   (item 7).
+4. **Final reviewer.** The final reviewer is `workbench:spec-reviewer` (item 13): completeness
+   against the agreed scope; correctness is `/code-review` at `high`. It writes only the retro (`docs/plans/<name>/retro.md`): what implementation hit and planning missed. The orchestrator relays its recommendations in closing. With the spec tools, the retro is a spec document (item 7).
 5. **The orchestrator never edits.** It never updates code (source, tests, skills, agents, hooks, rules, docs); where a
    skill would edit inline, it dispatches a subagent, and answers for them. Duties: dispatching, reading results,
    test and lint, and git merge and push of reviewed work.
@@ -260,9 +259,10 @@ kebab-case name.
 10. **Task classes.** Label the task `class:spike`, `class:bounded` or `class:architectural` when creating or
     claiming it; when unsure, the higher class. Items 1 and 3 apply in full only to `architectural`:
     - `spike`: throwaway or one-file exploration, no production merge. No research, spec or subagent-driven
-      development; inline work (the orchestrator never edits in code/).
+      development; inline work by one subagent (item 5).
     - `bounded`: a change inside one component. Research is only `workbench:research-code-internal` (plus
-      `workbench:research-docs` for a library used in a new way); one implementer and one reviewer per task.
+      `workbench:research-docs` for a library used in a new way); one implementer per task; one review round (item 13: `/code-review` and `spec-reviewer`
+      together), more only if findings need a fix.
     - `architectural`: cross-component, a new subsystem or hard to reverse. Everything in full.
 11. **Native mechanics over superpowers mechanics.**
     - `superpowers:dispatching-parallel-agents`: use native parallel subagents (several Agent calls in one message).

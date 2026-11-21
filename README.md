@@ -102,8 +102,7 @@ agent to run init first.
 The plugins `superpowers` (vanilla, from the official `claude-plugins-official`
 marketplace, never modified here) and `workbench` are enabled by default. `superpowers`
 brings the development flow (`brainstorming`, `writing-plans`, `subagent-driven-development`
-or `executing-plans`, `finishing-a-development-branch`), review (`requesting-code-review`,
-`receiving-code-review`) and debugging (`systematic-debugging`); `using-superpowers` governs.
+or `executing-plans`, `finishing-a-development-branch`), review (`receiving-code-review`; native `/code-review`) and debugging (`systematic-debugging`); `using-superpowers` governs.
 The core plugin `workbench` brings helpers to it: research and diagnostic agents, research
 skills, multi-submodule worktree and pull request skills, and destructive-command guardrails.
 
@@ -177,7 +176,7 @@ Hand over the symptom and the evidence, not a theory.
 ### Independent review and retrospective
 
 After a batch of work, ask for a review by a different or stronger model than
-the one that wrote it, through `superpowers:requesting-code-review`.
+the one that wrote it, through native `/code-review` and `workbench:spec-reviewer`.
 
 > Review the last three merged plans with a stronger model, against their
 > designs and plans in docs/superpowers/. Findings that are real get fixed; the rest are dropped with a reason.

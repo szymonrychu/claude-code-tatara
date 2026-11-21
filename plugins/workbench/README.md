@@ -7,7 +7,7 @@ the vanilla superpowers plugin (`superpowers@claude-plugins-official`, governed 
 `superpowers:using-superpowers`): `superpowers:brainstorming` (plan in
 `plan.md` of server spec `<name>` (rule 7) or `docs/plans/<name>/plan.md`), `superpowers:writing-plans` (plan in `docs/plans/<name>/implementation.md`, or the plan steps of server spec `<name>` when the `orchestrator_plan_*` tools exist, rule 7),
 `superpowers:subagent-driven-development` or `superpowers:executing-plans`,
-`superpowers:requesting-code-review`, `superpowers:receiving-code-review`,
+native `/code-review` with `workbench:spec-reviewer`, `superpowers:receiving-code-review`,
 `superpowers:systematic-debugging` and `superpowers:finishing-a-development-branch`. Every
 workbench skill and agent is a helper to one of those skills.
 
@@ -217,7 +217,7 @@ What each hook enforces and why: references/hooks.md.
 
 ## Review and debugging
 
-systematic-debugging supersedes engineering:debug and requesting-code-review supersedes /code-review for work in these trees.
+systematic-debugging supersedes engineering:debug and native `/code-review` plus `workbench:spec-reviewer` replace `superpowers:requesting-code-review` for work in these trees (flow item 13).
 
 ## Scripts
 

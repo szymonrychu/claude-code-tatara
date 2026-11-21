@@ -156,8 +156,8 @@ field `ref`) and a local fork is retired, so `mise run doctor` warns when the in
 drifts from 7.0.2. To accept a new version, read the upstream release notes, then bump
 `SUPERPOWERS_PINNED_VERSION` in `scripts/doctor.py`.
 
-Later tasks add task classes, review and verification mechanics to
-`plugins/workbench/rules/superpowers-flow.md`.
+Task classes, review and verification mechanics are in
+`plugins/workbench/rules/superpowers-flow.md` (items 10 to 13).
 
 ## Unverified
 
