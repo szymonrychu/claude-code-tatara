@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Fail when plugins/workbench-lite drifted from plugins/workbench"
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+exec python3 scripts/sync_lite.py --check

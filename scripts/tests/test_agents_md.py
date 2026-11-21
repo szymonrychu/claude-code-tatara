@@ -17,7 +17,7 @@ def _block(name: str) -> str:
 
 
 def test_sizes():
-    assert len(AGENTS.encode()) < 22000
+    assert len(AGENTS.encode()) < 24000
     assert len(CLAUDE.encode()) < 2000
 
 
@@ -69,7 +69,7 @@ def test_ground_rules_content():
         "brainstorming",
         "writing-plans",
         "subagent-driven-development",
-        "requesting-code-review",
+        "code-review",
         "receiving-code-review",
         "systematic-debugging",
         "research",
@@ -185,7 +185,8 @@ def test_ground_rule_one_names_the_flow():
         "superpowers:writing-plans",
         "superpowers:subagent-driven-development",
         "superpowers:executing-plans",
-        "superpowers:requesting-code-review",
+        "/code-review",
+        "workbench:spec-reviewer",
         "superpowers:receiving-code-review",
         "superpowers:systematic-debugging",
         "superpowers:finishing-a-development-branch",

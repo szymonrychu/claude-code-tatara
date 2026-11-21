@@ -1,5 +1,15 @@
 # Changelog
 
+## v5.1.0 - 2026-11-21
+
+### Features
+
+- doctor: footprint baseline script and superpowers v7.0.2 drift check (S-74)
+- rules: flow items 10-13: task classes, native mechanics, tests earn their place, review (S-74)
+- agents: spec-reviewer agent, which may write only the retro file (S-74)
+- hooks: opt-in verify-on-stop Stop hook running the repo test task (S-74)
+- workbench-lite: new 1.0.0 portable user-scope plugin pack (S-74)
+
 ## v5.0.0 - 2026-11-13
 
 ### Breaking

@@ -9,7 +9,7 @@
     {
       "name": "workbench",
       "description": "tooling for any workbench tree (metarepo or flat), helpers to vanilla superpowers: read-only diagnostic and research subagents, research skills, worktree, submodule and pull request skills, init, component and template-update skills, and destructive-command guardrails.",
-      "version": "5.0.0",
+      "version": "5.1.0",
       "source": "./plugins/workbench",
       "category": "devops"
     },
@@ -32,6 +32,13 @@
       "description": "Secrets pack for the workbench template: dotenv and SOPS secret handling guardrails. Requires the workbench core plugin.",
       "version": "1.0.0",
       "source": "./plugins/workbench-secrets",
+      "category": "devops"
+    },
+    {
+      "name": "workbench-lite",
+      "description": "Portable user-scope subset of the workbench plugin for any git repo: read-only research and diagnostic subagents, the start-research and handoff skills. No hooks, no workbench root needed.",
+      "version": "1.0.0",
+      "source": "./plugins/workbench-lite",
       "category": "devops"
     }
   ]

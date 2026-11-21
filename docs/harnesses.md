@@ -26,7 +26,7 @@ Copilot cloud agent share the `copilot` target.
 | Rules | native `.claude/rules/` | generated `.github/instructions/<rule>.instructions.md` | same file | same file | generated `.cursor/rules/<rule>.mdc` | degraded: `workbench:path-rules` block in `AGENTS.md` | degraded: `workbench:path-rules` block in `AGENTS.md` | generated `.agents/rules/<rule>.md` |
 | Skills | native (plugin) | generated `.agents/skills/<name>/SKILL.md` | same | same | same | same | same | same |
 | Agents | native (plugin) | generated `.github/agents/<name>.agent.md` | same | same | generated `.cursor/agents/<name>.md` | generated `.codex/agents/<name>.toml` | generated `.gemini/agents/<name>.md` | generated `.agents/agents/<name>.md` |
-| Hooks | native (plugin) | generated `.github/hooks/workbench.json` | same (needs `chat.useClaudeHooks` or the same file, see trust) | degraded: unverified | generated `.cursor/hooks.json` | generated `.codex/hooks.json` | generated `.gemini/settings.json` | generated `.agents/hooks.json` |
+| Hooks | native (plugin; the opt-in Stop hook is Claude-only) | generated `.github/hooks/workbench.json` | same (needs `chat.useClaudeHooks` or the same file, see trust) | degraded: unverified | generated `.cursor/hooks.json` | generated `.codex/hooks.json` | generated `.gemini/settings.json` | generated `.agents/hooks.json` |
 | MCP | native `.mcp.json` | native root `.mcp.json` | generated `.vscode/mcp.json` | manual: repository Settings | generated `.cursor/mcp.json` | generated `.codex/config.toml` | generated `.gemini/settings.json` | generated `.agents/mcp_config.json` |
 
 Only the guards with an equivalent are registered on non-Claude harnesses: `guard-bash` and
@@ -118,6 +118,46 @@ Each harness asks once before it runs project hooks or reads project config.
   hook file needs approval again.
 - Gemini CLI: approve each hook fingerprint on first run; a changed hook asks again.
 - Antigravity: open the workspace as trusted so `.agents/hooks.json` runs.
+
+## Harness choice (S-74, 2026-11-21)
+
+Verdict: superpowers v7 stays the flow spine of the Claude Code harness, trimmed onto native
+mechanics. Spec: S-74 (decisions 817-821, task T-581).
+
+- 817: Keep v7 as spine, trimmed onto native mechanics.
+- 818: Scale by task class: spike skips, bounded 1 impl + 1 review, architectural full.
+- 819: Keep, amended against test inflation with a reviewer check on test value (the TDD skill).
+- 820: Native /code-review plus workbench spec reviewer; keep receiving-code-review.
+- 821: Native plus portable workbench-lite user plugin plus superpowers v7 on demand.
+
+workbench-lite (decision 821, Claude Code): `plugins/workbench-lite` is a portable user-scope
+plugin for repos that are not workbenches: eleven read-only agents plus the `start-research` and
+`handoff` skills, no hooks. It is generated from `plugins/workbench` by `scripts/sync_lite.py`
+(drift fails `mise run lint:lite`); where a source leans on the workbench root, `overrides/`
+holds the adapted file. Never enable it together with `workbench` in one project. In a flat repo
+use the harness's native worktree isolation for single-repo subagent work; in this metarepo the
+built-in isolation stays banned. superpowers v7 is enabled per project on demand. See
+`plugins/workbench-lite/README.md`.
+
+The opt-in Stop verification hook comes from the spec's Recommended scope item
+cc-harness-verify-hook (replacing verification-before-completion mechanics), not from a decision.
+
+Enabling the Stop hook (Claude Code only): export `WORKBENCH_VERIFY_ON_STOP=1` in the shell that
+starts Claude Code. On each stop it runs `mise run test` in the repo of the session cwd and in
+every `.worktrees/*/*` worktree that has uncommitted changes and a `test` task, and blocks the
+stop with the last 40 output lines when one fails or times out (`WORKBENCH_VERIFY_TIMEOUT`
+seconds, default 600). It never loops (`stop_hook_active`) and fails open on its own errors.
+Source: `plugins/workbench/hooks/verify-on-stop.py`.
+
+Pin: superpowers comes from the official marketplace, which pins it to sha
+22f0b463e7a5e579904dd6211a520321035526f7 (v7.0.2). A marketplace `ref` pin is refused for the
+reserved name `claude-plugins-official` (https://code.claude.com/docs/en/plugins/marketplace-reference.md,
+field `ref`) and a local fork is retired, so `mise run doctor` warns when the installed version
+drifts from 7.0.2. To accept a new version, read the upstream release notes, then bump
+`SUPERPOWERS_PINNED_VERSION` in `scripts/doctor.py`.
+
+Task classes, review and verification mechanics are in
+`plugins/workbench/rules/superpowers-flow.md` (items 10 to 13).
 
 ## Unverified
 

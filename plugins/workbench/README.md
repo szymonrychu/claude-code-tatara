@@ -7,7 +7,7 @@ the vanilla superpowers plugin (`superpowers@claude-plugins-official`, governed 
 `superpowers:using-superpowers`): `superpowers:brainstorming` (plan in
 `plan.md` of server spec `<name>` (rule 7) or `docs/plans/<name>/plan.md`), `superpowers:writing-plans` (plan in `docs/plans/<name>/implementation.md`, or the plan steps of server spec `<name>` when the `orchestrator_plan_*` tools exist, rule 7),
 `superpowers:subagent-driven-development` or `superpowers:executing-plans`,
-`superpowers:requesting-code-review`, `superpowers:receiving-code-review`,
+native `/code-review` with `workbench:spec-reviewer`, `superpowers:receiving-code-review`,
 `superpowers:systematic-debugging` and `superpowers:finishing-a-development-branch`. Every
 workbench skill and agent is a helper to one of those skills.
 
@@ -95,6 +95,7 @@ research ones on opus (they exist for judgement).
 | `research-prior-art-scout` | sonnet | similar open-source projects, shapes and dead ends |
 | `research-paper-scout` | sonnet | literature for the algorithmic core, cited by DOI or arXiv id |
 | `research-reviewer` | sonnet | adversarial check of research briefs |
+| `spec-reviewer` | sonnet | reviews a diff against its plan step or spec for scope and test value; verdict PASS or FAIL |
 
 `scm-shepherd` decides per repo from `remote get-url`, so one agent serves GitHub and GitLab trees.
 
@@ -196,6 +197,7 @@ Both SCM families ship deliberately. They are parallel implementations, not drif
 | `protect_files.py` | PreToolUse/Edit,Write | blocks edits to secrets, state files, `.git`, encrypted-secret files |
 | `format-file.sh` | PostToolUse/Edit,Write | formats the edited file with the formatter for its language when one is installed |
 | `agent-usage-recorder.py` | SubagentStart and SubagentStop | records each subagent's time, model and tokens to `.logs/agents/<agentId>.json` in the main checkout; Claude-only, never blocks |
+| `verify-on-stop.py` | Stop | opt-in (`WORKBENCH_VERIFY_ON_STOP=1`): runs `mise run test` in dirty repos and worktrees and blocks the stop on failure; Claude-only, fails open |
 
 `guard-bash.py` is an advisory guardrail against agent mistakes, not a security sandbox.
 Enterprises that need enforcement should use managed permissions (deny rules) or a
@@ -215,7 +217,7 @@ What each hook enforces and why: references/hooks.md.
 
 ## Review and debugging
 
-systematic-debugging supersedes engineering:debug and requesting-code-review supersedes /code-review for work in these trees.
+systematic-debugging supersedes engineering:debug and native `/code-review` plus `workbench:spec-reviewer` replace `superpowers:requesting-code-review` for work in these trees (flow item 13).
 
 ## Scripts
 
