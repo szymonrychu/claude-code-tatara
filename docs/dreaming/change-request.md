@@ -1,9 +1,11 @@
 # request.md layout
 
-Each night the dreaming lead writes one spec per room with changes,
-`dreaming-<room-slug>-<YYYY-MM-DD>`, and its document `request.md` follows this layout. Dreaming applies the
-Notes, Skills and Mind map items itself; the owner-dm session keeps the CONFLICTs and Prompt
-updates with the skill "dreaming-apply" (apply-skill.md).
+Each night the leader of a project's dream run writes one spec per room with changes,
+`dreaming-<room-slug>-<YYYY-MM-DD>`, and its document `request.md` follows this layout. The run
+applies the Notes, Skills and Mind map items itself. It files each CONFLICT as a decision
+(`decision_ask`) on the task `dreaming: <project-slug>` and each Prompt update as a proposal
+(`proposal_put` on a preset of the project); the owner answers on the taskboard. Nothing is
+handed to another session.
 
 Rules for every item:
 
@@ -43,7 +45,7 @@ Provided information, Repeatable workflows.
 - Description: <when to use it, at most 1024 characters>
 - Evidence: <the 3 or more sessions where the workflow ran and worked, with ids>
 - Why: <one line>
-- Status: applied (edited in place at <project>/skills/<name>, saved with backup_save) | pending
+- Status: applied (edited in place at <project>/skills/<name>, saved with volume_save) | pending
 - Body (full text, at most 8000 characters):
 
     <skill body: the steps with their inputs>
@@ -61,6 +63,7 @@ Provided information, Repeatable workflows.
 ## Prompt updates
 
 ### P1 <preset name> (<preset id>)
+- Proposal: <proposal id from proposal_put>
 - Field: wrapper.system_append | start_prompt
 - Before:
 
@@ -84,6 +87,7 @@ Provided information, Repeatable workflows.
 - Side B: "<claim>" (<citation>, <tier>)
 - Affects: <N/S/M/P item or current note text>
 - Question for the owner: <one line, with the options>
+- Decision: <decision id on the task dreaming: <project-slug>>
 
 ## Pending carried over
 
