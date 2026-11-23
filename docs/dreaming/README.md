@@ -65,9 +65,14 @@ normally the preset bound to the project's main room. There is no schema field; 
 record. Other presets of the project are covered by the same run (their rooms and sessions are in
 P). Keep it current.
 
-| Project | Primary preset | Schedule |
-|---|---|---|
-| agents | (fill: preset name and id) | `dream-agents` |
+| Primary preset id | Schedule |
+|---|---|
+| 89f08b34 | `dream-<project-slug>` |
+| 3b719da7 | `dream-<project-slug>` |
+| 8f607d19 | `dream-<project-slug>` |
+| 45325158 | `dream-<project-slug>` |
+| 9f987216 | `dream-<project-slug>` |
+| d229f983 | `dream-<project-slug>` |
 
 Add one row per project that dreams; the schedule is always `dream-<project-slug>`.
 
