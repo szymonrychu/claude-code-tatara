@@ -12,9 +12,9 @@ sources.
    primary preset with `session_overrides: {"replicas": 1, "start_prompt": ""}` and the prompt in
    [schedule-prompt.md](schedule-prompt.md). The pod is a leader; the preset's regular start
    prompt is not queued, and a fresh session is always started, never a live hive.
-2. Preflight: the watermark comes from the newest `dreaming-*` spec of the project. Above 80
-   percent of the 5-hour usage window the run stops; nothing new since the watermark: it calls
-   self_close at once.
+2. Preflight: each room has its own watermark, from the newest `dreaming-<room-slug>-*` spec of
+   that room. Above 80 percent of the 5-hour usage window the run stops; nothing new in any room
+   since its watermark: it calls self_close at once.
 3. It tells the live sessions of the project that share its skills, rules or scripts volumes that
    it will edit the shared .claude directory (session_send, notice only, no lock).
 4. It fans out subagents (read only) per room per topic: notes, mind map, skills from usage,
@@ -40,7 +40,8 @@ instructions. A dream run never posts to a chat room.
 - Skills, rules, scripts: edited in place, then `volume_save` per changed volume.
 - Spec `dreaming-<room-slug>-<YYYY-MM-DD>` per room (`dreaming-<project-slug>-<YYYY-MM-DD>` for
   items not tied to a room) with request.md ([change-request.md](change-request.md)) and retro.md;
-  the Watermark section is written last.
+  the Watermark section is written last; a room examined without items still gets a spec with
+  only the Watermark.
 - Tasks per methodology or tooling problem, after a duplicate check.
 - CONFLICTs: decisions (`decision_ask`) on the task `dreaming: <project-slug>`, created by the
   first run after a duplicate check and reused afterwards.

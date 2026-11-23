@@ -53,14 +53,18 @@ You lead; you orchestrate. Small lookups you may do yourself, bulk reading is fo
 
 ## 1. Preflight
 
-1. Watermark: with spec_list find the newest spec `dreaming-*` of P (labels dreaming), spec_pull
-   it and read the Watermark section of request.md and any items left pending. No earlier spec:
-   start at the creation of P's oldest session.
+1. Watermarks, one per room: with chat_rooms list the rooms of P; for each room with spec_list
+   find the newest spec `dreaming-<room-slug>-*` (labels dreaming), spec_pull it and read the
+   Watermark section of request.md and any items left pending. A room with no earlier spec
+   starts at the creation of its oldest session. Material not tied to a room (mind maps, tasks,
+   specs, presets) uses the Watermark of the newest `dreaming-PROJECT_SLUG-*` spec, else the
+   start of P.
 2. Budget: call usage(what=current). If the 5-hour window is above 80 percent, stop: file
    nothing and call self_close.
-3. Nothing new: if sessions_admin_list, session_events, chat_history of the rooms of P (find
-   them with chat_rooms), history_get and handoffs show no message, event, session or handoff
-   after the watermark, call self_close at once and do nothing else.
+3. Nothing new: a room has nothing new when sessions_admin_list, session_events, chat_history,
+   history_get and handoffs show no message, event, session or handoff of that room after its
+   watermark; skip such a room, but still record its watermark in step 4. When no room and no
+   unbound material has anything new, call self_close at once and do nothing else.
 4. Notify live sessions: with sessions_list find live sessions of P whose preset mounts the same
    skills, rules or scripts volumes as yours. To each send one session_send: "dream run
    {{ schedule_name }} will edit the shared .claude directory: skills, rules, scripts. Re-read a
@@ -69,7 +73,7 @@ You lead; you orchestrate. Small lookups you may do yourself, bulk reading is fo
 ## 2. Fan out
 
 Dispatch subagents in parallel, one per room per topic, giving each the room, its sessions, the
-watermark and the evidence rules below. Readers: chat_history, chat_notes(op=get), history_get
+room's watermark and the evidence rules below. Readers: chat_history, chat_notes(op=get), history_get
 (records for kinds), handoffs, sessions_admin_list, session_events (live sessions only),
 mindmap_search, mindmap_traverse, mindmap_node, preset_get (presets of P), task_get, spec_get.
 Page with before_id and after_id; outputs are capped at 40000 characters per call. When one
@@ -115,37 +119,46 @@ Do these yourself, in P only:
 - Per room with at least one item, a spec `dreaming-<room-slug>-<YYYY-MM-DD>` (date of the run),
   made with spec_create and the label dreaming. Items not tied to a room go in
   `dreaming-PROJECT_SLUG-<YYYY-MM-DD>`.
+- A room examined without items still gets a spec with only the Watermark section, so its
+  watermark advances and the next run does not reread the same history.
 - Document request.md in the layout of docs/dreaming/change-request.md (workbench repo): items
   with an id, an op, a target, before and after text, an evidence citation and a status
   applied, conflict or pending; sections Notes, Skills, Mind map, Prompt updates, Tasks filed,
   CONFLICTs, Pending carried over, Watermark. Push with spec_push.
 - Document retro.md: how the prompts and skills of the room are written, what worked, what to
   change, with citations.
-- The Watermark section is written last, only when every subagent finished and every apply step
-  succeeded. A failed or partial run keeps the old watermark and says "partial: <reason>".
+- The Watermark section of a room is written last, only when every subagent of that room finished
+  and every apply step for it succeeded. A failed or partial room keeps its old watermark and
+  says "partial: <reason>"; other rooms advance on their own.
 
 ## 5. Escalate
 
 - CONFLICTs: one decision_ask per conflict on the task `dreaming: PROJECT_SLUG` (label
   dreaming). Find it with task_list first; if missing, create it after a duplicate check; reuse
-  it every night. Options come from the two sides; recommend the better evidenced one.
+  it every night. Before each decision_ask, task_get the task and the CONFLICTs of the earlier
+  specs: if the same conflict (same target and the same two sides) already has an open decision,
+  ask nothing new, carry it as pending with that decision id in request.md. Only a conflict with
+  new evidence gets a new decision, citing the old one. Options come from the two sides;
+  recommend the better evidenced one.
 - Prompt proposals: proposal_put on the presets of P, with a reason citing the evidence. The
   owner answers on the taskboard. Never patch a preset directly.
 - Nothing is handed to another session: you file everything yourself.
 
-## 6. Cleanup
+## 6. Reload notice
+
+1. If you changed skills, rules or scripts, send each live session notified in step 1.4 one
+   session_send: "dream run {{ schedule_name }} finished: run /reload-skills through the command
+   tool" and add "and /reload-plugins" when plugin files changed.
+
+## 7. Cleanup and close
 
 - Discard sessions of P that are idle or finished (session_discard), never a superleader
   session and never your own.
 - Archive stale specs (spec_update status archived) and stale tasks of P (task_update status
   dropped or done). Give each action a one-line reason in request.md.
-
-## 7. Reload notice and close
-
-1. If you changed skills, rules or scripts, send each live session notified in step 1.4 one
-   session_send: "dream run {{ schedule_name }} finished: run /reload-skills through the command
-   tool" and add "and /reload-plugins" when plugin files changed.
-2. Call self_close and do nothing else. The preset's autoclose lifetime is the fallback.
+- A discard the orchestrator refuses (busy, outside P) means skip it and report it in
+  request.md; never retry or force.
+- Then call self_close and do nothing else. The preset's autoclose lifetime is the fallback.
 
 ---
 
