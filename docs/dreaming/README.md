@@ -65,14 +65,14 @@ normally the preset bound to the project's main room. There is no schema field; 
 record. Other presets of the project are covered by the same run (their rooms and sessions are in
 P). Keep it current.
 
-| Project | Primary preset | Schedule |
-|---|---|---|
-| agents | claude-code-tatara (89f08b34-9d2c-4015-a814-72e7994d575a) | `dream-agents` |
-| infrastructure | infrastructure (3b719da7-e9e7-4a9f-a3e6-4785873ca754) | `dream-infrastructure` |
-| media | media-chat-krole-i-wladcy (8f607d19-b900-42ef-8555-e6616281dfdf) | `dream-media` |
-| personal | facebook chat (45325158-a467-44ef-9a35-e0ca7f1c7c18) | `dream-personal` |
-| ros2 | ros2-lerobot-sverve-platform (9f987216-f638-4469-8665-0b6bfe61ba9a) | `dream-ros2` |
-| spellslinger | spellslinger (d229f983-12e2-46c2-803e-8e6337df648d) | `dream-spellslinger` |
+| Primary preset id | Schedule |
+|---|---|
+| 89f08b34 | `dream-<project-slug>` |
+| 3b719da7 | `dream-<project-slug>` |
+| 8f607d19 | `dream-<project-slug>` |
+| 45325158 | `dream-<project-slug>` |
+| 9f987216 | `dream-<project-slug>` |
+| d229f983 | `dream-<project-slug>` |
 
 Add one row per project that dreams; the schedule is always `dream-<project-slug>`.
 
