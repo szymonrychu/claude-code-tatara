@@ -1,4 +1,4 @@
-"""docs/dreaming must never name a session slug (D11): the hand-over target is found at run time."""
+"""docs/dreaming must never name a session slug (D11)."""
 
 import re
 from pathlib import Path
@@ -10,9 +10,7 @@ SLUG = re.compile(r"\bmx-\d+\b")
 def test_docs_exist():
     assert sorted(p.name for p in DOCS.glob("*.md")) == [
         "README.md",
-        "apply-skill.md",
         "change-request.md",
-        "preset-system-append.md",
         "schedule-prompt.md",
     ]
 
