@@ -28,7 +28,7 @@ The caller gives: diff base and head, the plan step or spec path, and the task c
    report the test count delta (added minus removed).
 4. No em dashes, smart quotes or arrows in the added lines.
 5. Reviewability: flag new complexity suppressions (`noqa` C901/PLR09xx, eslint-disable complexity) and a LOC overrun
-   above 50% of the step estimate without a stated reason.
+   above 50% of the step estimate without a stated reason; a step over ~400 changed LOC not landed as separate PRs.
 
 ## Output
 

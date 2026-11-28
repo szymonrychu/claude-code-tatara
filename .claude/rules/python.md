@@ -28,5 +28,5 @@ Verify before claiming done: use the repo's own wrapper first
   max-complexity = 10
   ```
 
-  Complexity noqa only as the S-99 baseline; remove it when the function is touched.
+  Baseline existing violations once with `ruff check --add-noqa --select C901,PLR0911,PLR0912,PLR0915`; no new complexity `noqa`; boy-scout removes baseline ones in touched functions.
 - pytest markers: unit, integration, e2e, live, critical, with `--strict-markers`.
