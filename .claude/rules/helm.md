@@ -11,6 +11,7 @@ paths:
 Verify before claiming done:
 `helm lint <chart> && helm template <chart> | kubeconform -strict`
 
+- No pytest render tests for charts; the chart check is the repo's `lint:chart`.
 - `helm lint` alone is not enough. A wrong `nindent` produces well-formed YAML
   with the wrong structure - a key silently promoted to a sibling of
   `containers` renders happily and passes lint. Only schema validation against
@@ -19,5 +20,5 @@ Verify before claiming done:
   `helm upgrade`/`install`/`uninstall` from a session; produce the diff.
 - `values.schema.json` and chart READMEs are generated. Edit the generator
   inputs, never the outputs.
-- Where the project keeps secrets in encrypted values files, put them only there, never plaintext.
+- Secrets live in sops-encrypted values files, never plaintext.
 - Bump `Chart.yaml` version per semver on every chart change.

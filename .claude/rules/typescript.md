@@ -9,7 +9,7 @@ paths:
 # TypeScript / React
 
 Verify before claiming done:
-`pnpm typecheck && pnpm lint && pnpm test:run`
+`npm run lint && npm test && npm run build`
 (`tsc --noEmit` where there is no typecheck script). Never leave `tsc` errors.
 
 - Do not invent props, hooks, or exports on a third-party component. Read its
@@ -20,6 +20,6 @@ Verify before claiming done:
   naming the reason.
 - Hooks at the top level only. Keep `exhaustive-deps` clean rather than
   disabling it.
-- Accessibility is lintable, not aspirational: keep `jsx-a11y` rules passing
-  rather than promising to remember alt text and labels.
+- ESLint complexity rules: complexity 15, max-depth 4, max-lines-per-function 80 (skip blanks and comments),
+  max-params 4, max-lines 400; bulk suppressions are the only baseline.
 - Named exports over default exports.

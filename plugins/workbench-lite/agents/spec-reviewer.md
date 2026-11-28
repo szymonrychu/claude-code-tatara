@@ -20,10 +20,14 @@ The caller gives: diff base and head, the plan step or spec path, and the task c
 ## Checks, in order
 
 1. Every requirement of the step or spec is met; cite file:line for each.
-2. Nothing outside the scope was added (files, features, refactors, hardening).
+2. Nothing outside the scope was added (files, features, refactors, hardening); flag code above the MVP with no answered question.
 3. Tests have value: only observable behaviour named in the step, one test per
-   behaviour, none that could not signal a real defect. List offending tests and report the test count delta (added minus removed).
+   behaviour, none that could not signal a real defect.
+   Also flag B3 tests (configuration or structure) and missing level markers. List offending tests and
+   report the test count delta (added minus removed).
 4. No em dashes, smart quotes or arrows in the added lines.
+5. Reviewability: flag new complexity suppressions (`noqa` C901/PLR09xx, eslint-disable complexity) and a LOC overrun
+   above 50% of the step estimate without a stated reason.
 
 ## Output
 

@@ -11,6 +11,7 @@ paths:
 Verify before claiming done:
 `helm lint <chart> && helm template <chart> | kubeconform -strict`
 
+- No pytest render tests for charts; the chart check is the repo's `lint:chart`.
 - `helm lint` alone is not enough. A wrong `nindent` produces well-formed YAML
   with the wrong structure - a key silently promoted to a sibling of
   `containers` renders happily and passes lint. Only schema validation against
